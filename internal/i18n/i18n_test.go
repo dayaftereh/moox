@@ -17,7 +17,7 @@ func TestCommittedRaceTraitLanguagesLoad(t *testing.T) {
 		want      string
 		wantCount int
 	}{
-		"en": {"technology.alien_management_center.name", "Alien Management Center", 328},
+		"en": {"ship_hull.doom_star.name", "Doom Star", 334},
 		"de": {"race_traits.group.population_growth.name", "Bev\u00f6lkerung", 64},
 		"fr": {"race_traits.option.government_democracy.name", "D\u00e9mocratie", 64},
 		"es": {"race_traits.group.population_growth.name", "Poblaci\u00f3n", 64},

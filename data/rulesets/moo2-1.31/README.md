@@ -72,7 +72,8 @@ The semantic asset catalog is tracked separately from original artwork. It curre
 - 52 farmer/worker/scientist/marine role icons,
 - 13 generic race-icon keys kept explicitly pending until a universal source variant is proven.
 - 13 selected UI/production references from independently revalidated render mappings,
-- 1 directly documented building anchor: Alien Management Center -> BLDG0.LBX block 0,`r`n- 48 confirmed `building.<id>.colony` sets with 36 original-position variants each (1,728 references total).
+- 1 directly documented building anchor: Alien Management Center -> `BLDG0.LBX` block 0,
+- 48 confirmed `building.<id>.colony` sets with 36 original-position variants each (1,728 references total).
 
 Confirmed references include the original archive, block, frame, dimensions and block SHA-256. No original image bytes are stored in this directory.
 
@@ -130,3 +131,21 @@ out\moox-analyze-windows-amd64.exe normalize technologies `
 ```
 
 This identity layer intentionally does not yet claim research field, research cost or exact effect formulas; those are separate decoding tasks.
+## `ship_hulls.json`
+
+The six player ship hull identities are normalized directly from the original 1.31 data:
+
+- `TECHNAME.LBX` block 0 contains the consecutive hull-name sequence `Frigate`, `Destroyer`, `Cruiser`, `Battleship`, `Titan`, `Doom Star`,
+- the hash-verified `Auto_Design_Ship_` picture-selection code assigns eight picture IDs to size indices 0..4 (`size_index*8 + style`) and hard-codes size index 5 to picture ID 43,
+- this yields picture-ID ranges 0..7, 8..15, 16..23, 24..31, 32..39, and 43 for the six hulls.
+
+The ruleset records stable hull IDs, size indices, original name offsets, strategic picture IDs and a semantic strategic asset key. Tactical multi-frame graphics are intentionally handled as a separate next step rather than pretending frame 0 represents the entire combat sprite set.
+
+Generate it with:
+
+```powershell
+out\moox-analyze-windows-amd64.exe normalize ship-hulls `
+  -out data\rulesets\moo2-1.31\ship_hulls.json `
+  -languages-dir data\languages `
+  C:\ASH\Temp\mastori2
+```

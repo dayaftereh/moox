@@ -112,6 +112,17 @@ The generated ruleset is runtime-oriented: stable IDs and numeric values are aut
 
 
 
+
+## Normalize ship hulls
+
+```powershell
+out\moox-analyze-windows-amd64.exe normalize ship-hulls `
+  -out data\rulesets\moo2-1.31\ship_hulls.json `
+  -languages-dir data\languages `
+  C:\ASH\Temp\mastori2
+```
+
+The decoder combines the original six-name `TECHNAME.LBX` hull sequence with a SHA-256-verified `Auto_Design_Ship_` code range from `Orion2.exe`. Sizes 0..4 use eight picture IDs each (`size*8 + style`); size 5 uses picture ID 43. This identity layer is deliberately separate from tactical multi-frame sprite semantics.
 ## Normalize technologies
 
 ```powershell

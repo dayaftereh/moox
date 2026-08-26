@@ -46,6 +46,15 @@
       "block": 0,
       "sha256": "917653c6d4b767166c2223bb72e3e8608b2eb8415cef0a4436ed9a7391d10a4e",
       "block_sha256": "3079adf60539bd200d0b55b750f52c1e5cd1d2b59bdf4e2243f1c17d6d3978e9"
+    },
+    {
+      "id": "moo2-1.31-techname-ship-hull-names",
+      "type": "original-observed",
+      "description": "Player ship hull names from TECHNAME.LBX block 0",
+      "archive": "TECHNAME.LBX",
+      "block": 0,
+      "sha256": "917653c6d4b767166c2223bb72e3e8608b2eb8415cef0a4436ed9a7391d10a4e",
+      "block_sha256": "3079adf60539bd200d0b55b750f52c1e5cd1d2b59bdf4e2243f1c17d6d3978e9"
     }
   ],
   "strings": {
@@ -174,6 +183,12 @@
     "race_traits.option.trans_dimensional.name": "Trans Dimensional",
     "race_traits.option.uncreative.name": "Uncreative",
     "race_traits.option.warlord.name": "Warlord",
+    "ship_hull.battleship.name": "Battleship",
+    "ship_hull.cruiser.name": "Cruiser",
+    "ship_hull.destroyer.name": "Destroyer",
+    "ship_hull.doom_star.name": "Doom Star",
+    "ship_hull.frigate.name": "Frigate",
+    "ship_hull.titan.name": "Titan",
     "technology.achilles_targeting_unit.name": "Achilles Targeting Unit",
     "technology.adamantium_armor.name": "Adamantium Armor",
     "technology.advanced_city_planning.name": "Advanced City Planning",
