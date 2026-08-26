@@ -119,10 +119,10 @@ out\moox-analyze-windows-amd64.exe image `
   C:\ASH\Temp\mastori2\RACESEL.LBX 15
 ```
 
-The pure-Go decoder handles image headers, internal palette shift/count, frame offsets and sparse pixel sequences. Graphics that rely only on external palettes are rejected for now so the analyzer does not emit knowingly wrong colors. See `docs/research/MOO2_GRAPHICS.md`.
+The pure-Go decoder handles image headers, internal palette shift/count, frame offsets, sparse pixel sequences, raw `NoCompression` frames and cumulative `Junction` animations. The single-image command still requires either an internal palette or an explicitly supplied external palette, so it never guesses colors. See `docs/research/MOO2_GRAPHICS.md`.
 ## Batch graphics catalog/export
 
-Catalog every structurally recognized MOO2 graphic block and export every frame whose block carries an internal palette:
+Catalog every structurally recognized MOO2 graphic block and export every frame with sufficient palette context. Internal palettes are used directly; externally paletted blocks are exported only when the resolver has a confirmed context rule:
 
 ```powershell
 out\moox-analyze-windows-amd64.exe graphics `
@@ -131,7 +131,7 @@ out\moox-analyze-windows-amd64.exe graphics `
   C:\ASH\Temp\mastori2
 ```
 
-Use `-manifest-only` to inventory graphics without writing PNGs. The generated private `manifest.json` records archive/block/frame provenance, dimensions, flags, palette mode, hashes and per-frame decode status. Graphics that require an external palette are cataloged as `external_palette_pending` rather than being color-guessed.
+Use `-manifest-only` to inventory graphics without writing PNGs. Manifest schema v2 records archive/block/frame provenance, dimensions, flags, palette mode, hashes, per-frame decode status and palette-context status/source/evidence/confidence. The first confirmed automatic rules are `BLDG0.LBX -> FONTS.LBX#2` and `COUNCIL.LBX -> COUNCIL.LBX#0`; all other unresolved external/mixed contexts remain `external_palette_pending` rather than being color-guessed. See `docs/research/MOO2_PALETTES.md`.
 ## External palette extraction
 
 Export the 13 `FONTS.LBX` and 4 `IFONTS.LBX` external palettes:

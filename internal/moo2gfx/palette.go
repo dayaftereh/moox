@@ -71,3 +71,16 @@ func (p *ExternalPalette) Swatch(cell int) *image.NRGBA {
 	}
 	return img
 }
+
+// ApplyPaletteFromGraphic fills palette entries that are missing on target
+// from valid entries carried by another MOO2 graphic. Existing target entries
+// win so mixed/internal palette overrides are preserved.
+func ApplyPaletteFromGraphic(source, target *Graphic) {
+	for i, valid := range source.PaletteValid {
+		if !valid || target.PaletteValid[i] {
+			continue
+		}
+		target.Palette[i] = source.Palette[i]
+		target.PaletteValid[i] = true
+	}
+}

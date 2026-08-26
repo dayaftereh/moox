@@ -40,7 +40,7 @@ func graphicsCmd(args []string) error {
 	}
 
 	fmt.Printf("cataloged %d graphic blocks across %d LBX archives\n", manifest.GraphicBlocks, manifest.LBXArchives)
-	fmt.Printf("palette: %d internal, %d external\n", manifest.InternalPalette, manifest.ExternalPalette)
+	fmt.Printf("palette: %d internal, %d external; contexts: %d resolved, %d pending\n", manifest.InternalPalette, manifest.ExternalPalette, manifest.PaletteContextsResolved, manifest.PaletteContextsPending)
 	fmt.Printf("frames: %d total, %d exported (%d complete, %d partial), %d failed\n", manifest.FramesTotal, manifest.FramesExported, manifest.FramesComplete, manifest.FramesPartial, manifest.FramesFailed)
 	return nil
 }

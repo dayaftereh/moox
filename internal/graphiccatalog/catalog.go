@@ -18,7 +18,7 @@ import (
 	"moox/internal/moo2gfx"
 )
 
-const SchemaVersion = 1
+const SchemaVersion = 2
 
 type Options struct {
 	ExportPNG bool
@@ -35,19 +35,21 @@ type Progress struct {
 }
 
 type Manifest struct {
-	SchemaVersion   int             `json:"schema_version"`
-	SourceRoot      string          `json:"source_root"`
-	GeneratedAt     time.Time       `json:"generated_at"`
-	LBXArchives     int             `json:"lbx_archives"`
-	GraphicBlocks   int             `json:"graphic_blocks"`
-	InternalPalette int             `json:"internal_palette_blocks"`
-	ExternalPalette int             `json:"external_palette_blocks"`
-	FramesTotal     int             `json:"frames_total"`
-	FramesExported  int             `json:"frames_exported"`
-	FramesComplete  int             `json:"frames_complete"`
-	FramesPartial   int             `json:"frames_partial_palette"`
-	FramesFailed    int             `json:"frames_failed"`
-	Archives        []ArchiveRecord `json:"archives"`
+	SchemaVersion           int             `json:"schema_version"`
+	SourceRoot              string          `json:"source_root"`
+	GeneratedAt             time.Time       `json:"generated_at"`
+	LBXArchives             int             `json:"lbx_archives"`
+	GraphicBlocks           int             `json:"graphic_blocks"`
+	InternalPalette         int             `json:"internal_palette_blocks"`
+	ExternalPalette         int             `json:"external_palette_blocks"`
+	PaletteContextsResolved int             `json:"palette_contexts_resolved"`
+	PaletteContextsPending  int             `json:"palette_contexts_pending"`
+	FramesTotal             int             `json:"frames_total"`
+	FramesExported          int             `json:"frames_exported"`
+	FramesComplete          int             `json:"frames_complete"`
+	FramesPartial           int             `json:"frames_partial_palette"`
+	FramesFailed            int             `json:"frames_failed"`
+	Archives                []ArchiveRecord `json:"archives"`
 }
 
 type ArchiveRecord struct {
@@ -58,17 +60,21 @@ type ArchiveRecord struct {
 }
 
 type GraphicRecord struct {
-	Block          int           `json:"block"`
-	BlockSHA256    string        `json:"block_sha256"`
-	Width          int           `json:"width"`
-	Height         int           `json:"height"`
-	FrameCount     int           `json:"frame_count"`
-	Delay          uint16        `json:"delay"`
-	Flags          uint16        `json:"flags"`
-	Palette        string        `json:"palette"`
-	PaletteShift   int           `json:"palette_shift,omitempty"`
-	PaletteEntries int           `json:"palette_entries,omitempty"`
-	Frames         []FrameRecord `json:"frames,omitempty"`
+	Block                    int           `json:"block"`
+	BlockSHA256              string        `json:"block_sha256"`
+	Width                    int           `json:"width"`
+	Height                   int           `json:"height"`
+	FrameCount               int           `json:"frame_count"`
+	Delay                    uint16        `json:"delay"`
+	Flags                    uint16        `json:"flags"`
+	Palette                  string        `json:"palette"`
+	PaletteShift             int           `json:"palette_shift,omitempty"`
+	PaletteEntries           int           `json:"palette_entries,omitempty"`
+	PaletteContextStatus     string        `json:"palette_context_status,omitempty"`
+	PaletteContextSource     string        `json:"palette_context_source,omitempty"`
+	PaletteContextEvidence   string        `json:"palette_context_evidence,omitempty"`
+	PaletteContextConfidence string        `json:"palette_context_confidence,omitempty"`
+	Frames                   []FrameRecord `json:"frames,omitempty"`
 }
 
 type FrameRecord struct {
@@ -111,6 +117,7 @@ func Build(sourceRoot, outDir string, options Options) (*Manifest, error) {
 		return nil, err
 	}
 	manifest := &Manifest{SchemaVersion: SchemaVersion, SourceRoot: sourceAbs, GeneratedAt: time.Now().UTC()}
+	resolver := newPaletteResolver(sourceAbs)
 
 	for archiveIndex, archivePath := range archives {
 		rel, err := filepath.Rel(sourceAbs, archivePath)
@@ -153,17 +160,43 @@ func Build(sourceRoot, outDir string, options Options) (*Manifest, error) {
 			manifest.GraphicBlocks++
 			manifest.FramesTotal += graphic.FrameCount
 			record.GraphicBlocks++
-			if graphic.Flags&moo2gfx.FlagInternalPalette != 0 {
+			hasInternalPalette := graphic.Flags&moo2gfx.FlagInternalPalette != 0
+			embeddedEntries := paletteEntries(graphic)
+			if hasInternalPalette {
 				gr.Palette = "internal"
 				gr.PaletteShift = graphic.PaletteShift
-				gr.PaletteEntries = paletteEntries(graphic)
+				gr.PaletteEntries = embeddedEntries
 				manifest.InternalPalette++
-				if options.ExportPNG {
-					gr.Frames = exportFrames(outAbs, rel, blockIndex, graphic, manifest)
-				}
 			} else {
 				gr.Palette = "external"
 				manifest.ExternalPalette++
+			}
+
+			needsPaletteContext := embeddedEntries < 256
+			resolution := paletteResolution{}
+			if needsPaletteContext {
+				resolution, err = resolver.Resolve(rel, blockIndex, parsed, graphic)
+				if err != nil {
+					return nil, fmt.Errorf("resolve palette for %s block %d: %w", rel, blockIndex, err)
+				}
+			}
+			if resolution.Resolved {
+				gr.PaletteContextStatus = "resolved"
+				gr.PaletteContextSource = resolution.Source
+				gr.PaletteContextEvidence = resolution.Evidence
+				gr.PaletteContextConfidence = resolution.Confidence
+				manifest.PaletteContextsResolved++
+			} else if needsPaletteContext {
+				gr.PaletteContextStatus = "pending"
+				manifest.PaletteContextsPending++
+			} else {
+				gr.PaletteContextStatus = "self"
+			}
+
+			canExport := hasInternalPalette || resolution.Resolved
+			if canExport && options.ExportPNG {
+				gr.Frames = exportFrames(outAbs, rel, blockIndex, graphic, manifest)
+			} else if !canExport {
 				gr.Frames = make([]FrameRecord, graphic.FrameCount)
 				for frame := range gr.Frames {
 					gr.Frames[frame] = FrameRecord{Frame: frame, Status: "external_palette_pending"}

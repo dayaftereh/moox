@@ -95,3 +95,99 @@ func buildLBX(blocks [][]byte) []byte {
 	}
 	return data
 }
+
+func TestBuildResolvesConfirmedBLDG0Palette(t *testing.T) {
+	source := t.TempDir()
+	out := filepath.Join(t.TempDir(), "out")
+
+	palette := make([]byte, 256*4)
+	for i := 0; i < 256; i++ {
+		palette[i*4] = 1
+	}
+	palette[128*4+1] = 63
+	palette[129*4+2] = 63
+	fonts := buildLBX([][]byte{[]byte("font"), []byte("unused"), palette})
+	if err := os.WriteFile(filepath.Join(source, "FONTS.LBX"), fonts, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	bldg := buildLBX([][]byte{syntheticGraphic(false)})
+	if err := os.WriteFile(filepath.Join(source, "BLDG0.LBX"), bldg, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	manifest, err := Build(source, out, Options{ExportPNG: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	archive := findArchiveRecord(t, manifest, "BLDG0.LBX")
+	gr := archive.Graphics[0]
+	if gr.PaletteContextStatus != "resolved" || gr.PaletteContextSource != "FONTS.LBX#2" || gr.PaletteContextConfidence != "confirmed" {
+		t.Fatalf("palette context=%+v", gr)
+	}
+	if len(gr.Frames) != 1 || gr.Frames[0].Status != "complete" {
+		t.Fatalf("frames=%+v", gr.Frames)
+	}
+	if manifest.PaletteContextsResolved < 1 {
+		t.Fatalf("resolved contexts=%d", manifest.PaletteContextsResolved)
+	}
+}
+
+func TestBuildResolvesConfirmedCouncilPaletteCarrier(t *testing.T) {
+	source := t.TempDir()
+	out := filepath.Join(t.TempDir(), "out")
+	council := buildLBX([][]byte{syntheticFullPaletteGraphic(), syntheticGraphic(false)})
+	if err := os.WriteFile(filepath.Join(source, "COUNCIL.LBX"), council, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	manifest, err := Build(source, out, Options{ExportPNG: true})
+	if err != nil {
+		t.Fatal(err)
+	}
+	archive := findArchiveRecord(t, manifest, "COUNCIL.LBX")
+	if len(archive.Graphics) != 2 {
+		t.Fatalf("graphics=%d", len(archive.Graphics))
+	}
+	gr := archive.Graphics[1]
+	if gr.PaletteContextStatus != "resolved" || gr.PaletteContextSource != "COUNCIL.LBX#0" {
+		t.Fatalf("palette context=%+v", gr)
+	}
+	if len(gr.Frames) != 1 || gr.Frames[0].Status != "complete" {
+		t.Fatalf("frames=%+v", gr.Frames)
+	}
+}
+
+func syntheticFullPaletteGraphic() []byte {
+	frame := []byte{1, 0, 0, 0, 2, 0, 0, 0, 128, 129, 0, 0, 0xE8, 0x03}
+	const headerEnd = 20
+	const paletteBytes = 4 + 256*4
+	frameOffset := headerEnd + paletteBytes
+	data := make([]byte, frameOffset+len(frame))
+	binary.LittleEndian.PutUint16(data[0:2], 2)
+	binary.LittleEndian.PutUint16(data[2:4], 1)
+	binary.LittleEndian.PutUint16(data[6:8], 1)
+	binary.LittleEndian.PutUint16(data[10:12], 0x1000)
+	binary.LittleEndian.PutUint32(data[12:16], uint32(frameOffset))
+	binary.LittleEndian.PutUint32(data[16:20], uint32(len(data)))
+	binary.LittleEndian.PutUint16(data[20:22], 0)
+	binary.LittleEndian.PutUint16(data[22:24], 256)
+	for i := 0; i < 256; i++ {
+		off := 24 + i*4
+		data[off] = 1
+	}
+	data[24+128*4+1] = 63
+	data[24+129*4+2] = 63
+	copy(data[frameOffset:], frame)
+	return data
+}
+
+func findArchiveRecord(t *testing.T, manifest *Manifest, path string) ArchiveRecord {
+	t.Helper()
+	for _, archive := range manifest.Archives {
+		if archive.Path == path {
+			return archive
+		}
+	}
+	t.Fatalf("archive %s not found", path)
+	return ArchiveRecord{}
+}

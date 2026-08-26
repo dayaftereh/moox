@@ -93,4 +93,5 @@ A batch catalog/export command now inventories all recognized graphics and expor
 
 ### Reference extraction checkpoint
 
-The first complete extraction pass now provides 10,655 local PNG frames backed by a manifest covering all 6,532 recognized graphic blocks; internally paletted raw and Junction frames now decode with zero frame failures. Semantic classification can proceed against this library without moving original-derived bytes into the distributable `assets/` tree.
+The first complete extraction pass now provides 12,273 local PNG frames backed by a manifest covering all 6,532 recognized graphic blocks; internally paletted raw and Junction frames now decode with zero frame failures. Semantic classification can proceed against this library without moving original-derived bytes into the distributable `assets/` tree.
+The graphics catalog now also records explicit palette-context provenance. The first confirmed resolver rules cover 556 external-palette blocks / 1,618 frames (`BLDG0` and `COUNCIL`); all unverified contexts remain pending rather than being guessed.

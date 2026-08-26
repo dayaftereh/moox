@@ -116,3 +116,25 @@ This especially affects the `SR_R*_SC/SP/TR.LBX` animation archives. Their later
 The raw frame codec is no longer the limiting factor for internally paletted graphics. The main remaining work is palette-context resolution for the 5,819 external/mixed-palette blocks and functional-color behavior used for effects such as dynamic shadows/transparency.
 
 See `MOO2_PALETTES.md` for the evidence registry and palette-resolution plan.
+## Confirmed external-palette checkpoint - 2026-08-26
+
+The batch exporter now has an evidence-gated palette-context resolver. It records palette context status, source, evidence URL and confidence in manifest schema v2, and exports an externally paletted frame only when an enabled rule supplies a known context.
+
+The first confirmed rules add:
+
+- 360 `BLDG0.LBX` blocks / 360 frames using `FONTS.LBX#2`,
+- 196 `COUNCIL.LBX` blocks / 1,258 frames using the complete internal palette carried by `COUNCIL.LBX#0`.
+
+A complete local 1.31 export now reports:
+
+- 12,273 PNG frames exported,
+- 11,415 frames with complete palette coverage,
+- 858 frames with partial/mixed palette coverage,
+- 556 palette contexts resolved automatically,
+- 5,934 palette contexts still pending,
+- 0 frame decode failures,
+- approximately 434.99 MiB of private PNG references.
+
+An independent end-to-end check of `BLDG0.LBX` block 0 through the explicit `image -palette-file FONTS.LBX -palette-block 2` path produced the same SHA-256 PNG as the automatic batch resolver (`895A3C64102716349E0FA388C381280A12C5C2F691C7D8EC5CE4E8C85A852629`).
+
+Community-derived palette mappings are documented in `MOO2_PALETTES.md`, but they remain disabled by default until promoted with stronger evidence.
