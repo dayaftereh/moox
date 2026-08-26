@@ -44,3 +44,86 @@ func TestParseAndDecodeInternalPaletteGraphic(t *testing.T) {
 		t.Fatalf("pixels=%+v %+v", p0, p1)
 	}
 }
+
+func TestDecodeNoCompressionFrame(t *testing.T) {
+	const headerEnd = 20
+	const paletteBytes = 12
+	frameOffset := headerEnd + paletteBytes
+	frame := []byte{0, 1, 1, 0}
+	data := make([]byte, frameOffset+len(frame))
+	binary.LittleEndian.PutUint16(data[0:2], 2)
+	binary.LittleEndian.PutUint16(data[2:4], 2)
+	binary.LittleEndian.PutUint16(data[6:8], 1)
+	binary.LittleEndian.PutUint16(data[10:12], FlagInternalPalette|FlagNoCompression)
+	binary.LittleEndian.PutUint32(data[12:16], uint32(frameOffset))
+	binary.LittleEndian.PutUint32(data[16:20], uint32(len(data)))
+	binary.LittleEndian.PutUint16(data[20:22], 0)
+	binary.LittleEndian.PutUint16(data[22:24], 2)
+	copy(data[24:28], []byte{0, 63, 0, 0})
+	copy(data[28:32], []byte{0, 0, 63, 0})
+	copy(data[frameOffset:], frame)
+
+	g, err := Parse(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	img, info, err := g.DecodeFrame(0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if info.DrawnPixels != 4 || info.MissingPalettePixels != 0 {
+		t.Fatalf("decode info=%+v", info)
+	}
+	if got := img.NRGBAAt(0, 0); got.R != 252 || got.G != 0 {
+		t.Fatalf("pixel 0,0=%+v", got)
+	}
+	if got := img.NRGBAAt(1, 0); got.G != 252 || got.R != 0 {
+		t.Fatalf("pixel 1,0=%+v", got)
+	}
+}
+
+func TestDisplayDecoderCompositesJunctionFrames(t *testing.T) {
+	frame0 := []byte{1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0xE8, 0x03}
+	frame1 := []byte{1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0xE8, 0x03}
+	const headerEnd = 24
+	const paletteBytes = 12
+	frame0Offset := headerEnd + paletteBytes
+	frame1Offset := frame0Offset + len(frame0)
+	data := make([]byte, frame1Offset+len(frame1))
+	binary.LittleEndian.PutUint16(data[0:2], 2)
+	binary.LittleEndian.PutUint16(data[2:4], 1)
+	binary.LittleEndian.PutUint16(data[6:8], 2)
+	binary.LittleEndian.PutUint16(data[10:12], FlagInternalPalette|FlagJunction)
+	binary.LittleEndian.PutUint32(data[12:16], uint32(frame0Offset))
+	binary.LittleEndian.PutUint32(data[16:20], uint32(frame1Offset))
+	binary.LittleEndian.PutUint32(data[20:24], uint32(len(data)))
+	binary.LittleEndian.PutUint16(data[24:26], 0)
+	binary.LittleEndian.PutUint16(data[26:28], 2)
+	copy(data[28:32], []byte{0, 63, 0, 0})
+	copy(data[32:36], []byte{0, 0, 63, 0})
+	copy(data[frame0Offset:], frame0)
+	copy(data[frame1Offset:], frame1)
+
+	g, err := Parse(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	decoder := g.NewDisplayDecoder()
+	first, _, err := decoder.DecodeNext()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := first.NRGBAAt(0, 0); got.R != 252 || got.G != 0 {
+		t.Fatalf("first pixel=%+v", got)
+	}
+	second, _, err := decoder.DecodeNext()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := second.NRGBAAt(0, 0); got.R != 252 || got.G != 0 {
+		t.Fatalf("composite retained pixel=%+v", got)
+	}
+	if got := second.NRGBAAt(1, 0); got.G != 252 || got.R != 0 {
+		t.Fatalf("composite updated pixel=%+v", got)
+	}
+}

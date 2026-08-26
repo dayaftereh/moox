@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"image/draw"
 )
 
 const (
@@ -33,6 +34,44 @@ type DecodeInfo struct {
 	DrawnPixels          int
 }
 
+type DisplayDecoder struct {
+	graphic   *Graphic
+	next      int
+	composite *image.NRGBA
+	broken    bool
+}
+
+func (g *Graphic) NewDisplayDecoder() *DisplayDecoder {
+	return &DisplayDecoder{graphic: g}
+}
+
+func (d *DisplayDecoder) DecodeNext() (*image.NRGBA, DecodeInfo, error) {
+	var info DecodeInfo
+	if d.next >= d.graphic.FrameCount {
+		return nil, info, fmt.Errorf("display frame %d out of range [0,%d)", d.next, d.graphic.FrameCount)
+	}
+	frame := d.next
+	d.next++
+	if d.broken {
+		return nil, info, fmt.Errorf("junction display sequence is incomplete after an earlier frame decode failure")
+	}
+
+	delta, info, err := d.graphic.DecodeFrame(frame)
+	if err != nil {
+		if d.graphic.Flags&FlagJunction != 0 {
+			d.broken = true
+		}
+		return nil, info, err
+	}
+	if d.graphic.Flags&FlagJunction == 0 {
+		return delta, info, nil
+	}
+	if d.composite == nil {
+		d.composite = image.NewNRGBA(image.Rect(0, 0, d.graphic.Width, d.graphic.Height))
+	}
+	draw.Draw(d.composite, d.composite.Bounds(), delta, image.Point{}, draw.Over)
+	return d.composite, info, nil
+}
 func Parse(data []byte) (*Graphic, error) {
 	if len(data) < 20 {
 		return nil, fmt.Errorf("graphic payload too small: %d bytes", len(data))
@@ -111,6 +150,10 @@ func (g *Graphic) DecodeFrame(frame int) (*image.NRGBA, DecodeInfo, error) {
 	if start+4 > end || end > len(g.Data) {
 		return nil, info, fmt.Errorf("invalid frame %d range [%d,%d)", frame, start, end)
 	}
+	if g.Flags&FlagNoCompression != 0 {
+		return g.decodeUncompressedFrame(frame, start, end)
+	}
+
 	indicator := binary.LittleEndian.Uint16(g.Data[start : start+2])
 	if indicator != 1 {
 		return nil, info, fmt.Errorf("frame %d has unsupported start indicator %d", frame, indicator)
@@ -176,6 +219,28 @@ func (g *Graphic) DecodeFrame(frame int) (*image.NRGBA, DecodeInfo, error) {
 			pos++
 		}
 		x += count
+	}
+	return img, info, nil
+}
+
+func (g *Graphic) decodeUncompressedFrame(frame, start, end int) (*image.NRGBA, DecodeInfo, error) {
+	var info DecodeInfo
+	expected := g.Width * g.Height
+	if end-start != expected {
+		return nil, info, fmt.Errorf("uncompressed frame %d size mismatch: got %d, want %d", frame, end-start, expected)
+	}
+
+	img := image.NewNRGBA(image.Rect(0, 0, g.Width, g.Height))
+	for i, raw := range g.Data[start:end] {
+		idx := int(raw)
+		if !g.PaletteValid[idx] {
+			info.MissingPalettePixels++
+			continue
+		}
+		x := i % g.Width
+		y := i / g.Width
+		img.SetNRGBA(x, y, g.Palette[idx])
+		info.DrawnPixels++
 	}
 	return img, info, nil
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"image"
 	"image/png"
 	"os"
 	"path/filepath"
@@ -68,9 +69,16 @@ func imageCmd(args []string) error {
 	if graphic.Flags&moo2gfx.FlagInternalPalette == 0 && *paletteFile == "" {
 		return errors.New("graphic uses an external palette; provide -palette-file and -palette-block")
 	}
-	img, info, err := graphic.DecodeFrame(*frame)
-	if err != nil {
-		return err
+	decoder := graphic.NewDisplayDecoder()
+	var img image.Image
+	var info moo2gfx.DecodeInfo
+	for i := 0; i <= *frame; i++ {
+		decoded, frameInfo, err := decoder.DecodeNext()
+		if err != nil {
+			return err
+		}
+		img = decoded
+		info = frameInfo
 	}
 	abs, err := filepath.Abs(*out)
 	if err != nil {

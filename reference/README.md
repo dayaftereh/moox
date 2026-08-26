@@ -6,10 +6,15 @@ Do not commit original game binaries, LBX archives, screenshots, music, video, m
 
 Recommended local-only folders:
 
-- `original/` - canonical local reference material derived 1:1 from the owned original. Decoded original images belong under `original/images/` with source archive/block/frame preserved.`r`n- `original/unpacked/` - complete raw LBX block decomposition plus renamed Smacker files and provenance manifest.
+- `original/` - canonical local reference material derived 1:1 from the owned original. Decoded original images belong under `original/images/` with source archive/block/frame preserved.
+- `original/unpacked/` - complete raw LBX block decomposition plus renamed Smacker files and provenance manifest.
 - `extracted/` - temporary/intermediate decoder output that has not yet been promoted to canonical original reference material.
 - `screenshots/` - locally captured UI comparison images.
-- `catalogs/` - inventories/hashes that may contain original filenames or extracted text.`r`n- `original/palettes/` - decoded external palette JSON/swatches and provenance, local only.`r`n- `original/audio/` - 1:1 RIFF/WAVE block copies and audio metadata, local only.`r`n- `original/text/` - structural text catalog and ASCII-only previews; raw bytes remain in `original/unpacked/`.`r`n- `original/support/` - all non-LBX installation files copied 1:1 with path/hash provenance, local only.
+- `catalogs/` - inventories/hashes that may contain original filenames or extracted text.
+- `original/palettes/` - decoded external palette JSON/swatches and provenance, local only.
+- `original/audio/` - 1:1 RIFF/WAVE block copies and audio metadata, local only.
+- `original/text/` - structural text catalog and ASCII-only previews; raw bytes remain in `original/unpacked/`.
+- `original/support/` - all non-LBX installation files copied 1:1 with path/hash provenance, local only.
 
 Current original-image layout:
 
@@ -24,6 +29,6 @@ reference/original/images/
     ...
 ```
 
-`manifest.json` records source archive, block, frame, dimensions, palette/decode status and SHA-256 so a later MOOX asset can always be traced back to its visual reference. The current batch contains 10,646 PNG frames; this private tree is intentionally not versioned.
+`manifest.json` records source archive, block, frame, dimensions, palette/decode status and SHA-256 so a later MOOX asset can always be traced back to its visual reference. The current batch contains 10,655 PNG frames (~414.35 MiB after cumulative Junction-frame materialization), with zero frame decode failures. This private tree is intentionally not versioned.
 
 MOOX-owned observations and normalized factual rule data belong in `docs/` and `data/rulesets/`. New independently created artwork belongs under `assets/`, never under `reference/original/`.

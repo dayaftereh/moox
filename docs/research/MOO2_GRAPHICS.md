@@ -52,13 +52,13 @@ The analyzer generated:
 - 14 `RACESEL` PNGs under `reference/original/images/racesel/`,
 - 30 `PLANETS` PNGs under `reference/original/images/planets/`.
 
-Total: 44 current reference PNGs. These are deliberately ignored by Git because they are original copyrighted game artwork used only for local development comparison.
+This initial 44-image subset was the first visually verified seed. It has since been superseded by the complete internal-palette batch extraction described below. All original-derived PNGs remain ignored by Git.
 
 ## Broader local scan
 
 A structural scan of all standard LBX containers in the local 1.31 installation found 6,532 plausible MOO2 graphic blocks. 713 advertise an internal palette and are candidates for color-correct decoding without first resolving an external palette context.
 
-The 44 currently promoted PNGs are only the first verified subset, not the limit of available reference artwork.
+The first 44 promoted PNGs were only a seed set; the current private reference library now covers every internally paletted frame that the decoder can reconstruct.
 
 
 ## Batch extraction
@@ -75,9 +75,9 @@ The CLI therefore currently refuses normal PNG export for graphics without an in
 
 The extracted original artwork is a reference for fidelity, not distributable MOOX content. The eventual product should either use independently created artwork or have an explicit licensed compatibility/content strategy.
 
-## Full private export checkpoint - 2026-08-26
+## Complete internal-palette decoder checkpoint - 2026-08-26
 
-The first complete batch scan/export of the local official 1.31 reference finished successfully.
+The full local official 1.31 scan now completes with zero frame decode failures.
 
 Observed inventory:
 
@@ -86,17 +86,33 @@ Observed inventory:
 - 30,929 frames represented in the manifest,
 - 713 graphic blocks advertise an internal palette,
 - 5,819 graphic blocks depend on an external palette/context,
-- 10,646 PNG frames exported from internal-palette blocks,
-- 9,795 exported frames have complete palette coverage,
-- 851 exported frames have partial palette coverage,
-- 9 internal-palette frames are not yet decoded,
-- current private PNG footprint: approximately 135.46 MiB.
+- 10,655 PNG frames exported from internal-palette blocks,
+- 9,797 exported frames have complete palette coverage,
+- 858 exported frames have partial/mixed palette coverage,
+- 0 frame decode failures,
+- current private PNG footprint: approximately 414.35 MiB after Junction frames are materialized as complete display frames.
 
-The 9 decode failures are narrowly grouped:
+### NoCompression
 
-- `CMBTSFX.LBX` block 1, frames 0..6: start indicator `0`,
-- `RACEOPT.LBX` blocks 0 and 4, frame 0: start indicator `257`.
+Local 1.31 data resolves the previously unknown `0x0100` flag. `FlagNoCompression` frames are raw row-major 8-bit palette-index buffers: the frame payload is exactly `width * height` bytes and has no compressed-frame start indicator or run headers.
 
-These are retained in the manifest as `decode_failed`; they are not silently skipped. The partial-palette group is also explicitly tagged. `BUFFER0.LBX` accounts for 640 of the 851 partial frames, with smaller groups in `SPHERSFX`, `BEAMS`, `CMBTSFX`, `RACESEL`, `PLANETS`, animation archives and a few UI archives.
+This is confirmed by all 43 no-compression graphic blocks found locally, including the former nine failures in `CMBTSFX.LBX` and `RACEOPT.LBX`. After adding this path the complete internal-palette batch reports zero decode failures.
 
-This checkpoint means the private reference library is now broad enough to start systematic semantic classification while palette/codec edge cases continue to be improved.
+### Junction
+
+`FlagJunction` (`0x2000`) marks delta animations. Frame 0 establishes the image and later frames contain only changed pixels. The display frame is produced by compositing each delta over the previous result.
+
+Local inventory contains:
+
+- 250 Junction graphic blocks,
+- 3,099 Junction frames total,
+- 39 internally paletted Junction blocks,
+- 1,339 internally paletted Junction frames now exported as cumulative display frames.
+
+This especially affects the `SR_R*_SC/SP/TR.LBX` animation archives. Their later frame payloads are small deltas, but their PNG references are now full 640x480 display states rather than sparse patches.
+
+### Remaining graphics work
+
+The raw frame codec is no longer the limiting factor for internally paletted graphics. The main remaining work is palette-context resolution for the 5,819 external/mixed-palette blocks and functional-color behavior used for effects such as dynamic shadows/transparency.
+
+See `MOO2_PALETTES.md` for the evidence registry and palette-resolution plan.

@@ -191,9 +191,10 @@ func exportFrames(outRoot, archiveRel string, blockIndex int, graphic *moo2gfx.G
 	archiveDir := strings.TrimSuffix(filepath.ToSlash(archiveRel), filepath.Ext(archiveRel))
 	archiveDir = strings.ToLower(archiveDir)
 	records := make([]FrameRecord, graphic.FrameCount)
+	decoder := graphic.NewDisplayDecoder()
 	for frame := 0; frame < graphic.FrameCount; frame++ {
 		rec := FrameRecord{Frame: frame}
-		img, info, err := graphic.DecodeFrame(frame)
+		img, info, err := decoder.DecodeNext()
 		if err != nil {
 			rec.Status = "decode_failed"
 			rec.Error = err.Error()
