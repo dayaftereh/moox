@@ -39,6 +39,9 @@ var confirmedExternalPaletteRules = map[string]externalPaletteRule{
 	"DESIGN.LBX":   {Archive: "FONTS.LBX", PaletteBlock: 5, Evidence: moo2WorkshopEvidence, ExternalOnly: true},
 	"MAINMENU.LBX": {Archive: "FONTS.LBX", PaletteBlock: 6, Evidence: moo2WorkshopEvidence, ExternalOnly: true},
 	"CMBTMISL.LBX": {Archive: "FONTS.LBX", PaletteBlock: 4, Evidence: moo2WorkshopEvidence, ExternalOnly: true},
+	"CMBTFGTR.LBX": {Archive: "FONTS.LBX", PaletteBlock: 4, Evidence: moo2WorkshopEvidence, ExternalOnly: true},
+	"COLGCBT.LBX":  {Archive: "FONTS.LBX", PaletteBlock: 2, Evidence: moo2WorkshopEvidence, ExternalOnly: true},
+	"COLROADS.LBX": {Archive: "FONTS.LBX", PaletteBlock: 2, Evidence: moo2WorkshopEvidence, ExternalOnly: true},
 }
 
 type paletteResolver struct {
@@ -123,10 +126,79 @@ func (r *paletteResolver) Resolve(archiveRel string, blockIndex int, archive *lb
 
 	case "MONSTER.LBX":
 		return r.resolveMonster(blockIndex, archive, graphic)
+
+	case "GSTAR.LBX":
+		return r.resolveGStar(blockIndex, graphic)
+
+	case "COLONY.LBX":
+		return r.resolveColony(blockIndex, graphic)
+
+	case "MULTIGM.LBX":
+		return r.resolveMultiGame(blockIndex, archive, graphic)
 	}
 	return paletteResolution{}, nil
 }
 
+func (r *paletteResolver) resolveGStar(blockIndex int, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	switch {
+	case blockIndex >= 0 && blockIndex <= 22:
+		return r.applyExternalPalette(graphic, 1)
+	case blockIndex >= 23 && blockIndex <= 32:
+		return r.applyExternalPalette(graphic, 2)
+	default:
+		return paletteResolution{}, nil
+	}
+}
+
+func (r *paletteResolver) resolveColony(blockIndex int, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	if blockIndex < 5 || blockIndex > 18 {
+		return paletteResolution{}, nil
+	}
+	return r.applyExternalPalette(graphic, 2)
+}
+
+func (r *paletteResolver) resolveMultiGame(blockIndex int, archive *lbx.File, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	carrierBlock := multiGamePaletteCarrier(blockIndex)
+	if carrierBlock < 0 {
+		return paletteResolution{}, nil
+	}
+	expectedEntries := 256
+	if carrierBlock == 42 {
+		expectedEntries = 192
+	}
+	carrier, err := r.loadLocalCarrier("MULTIGM.LBX", archive, carrierBlock, 0, expectedEntries)
+	if err != nil {
+		return paletteResolution{}, err
+	}
+	moo2gfx.ApplyPaletteFromGraphic(carrier, graphic)
+	return paletteResolution{
+		Resolved:   true,
+		Source:     fmt.Sprintf("MULTIGM.LBX#%d", carrierBlock),
+		Evidence:   moo2WorkshopEvidence,
+		Confidence: "confirmed",
+	}, nil
+}
+
+func multiGamePaletteCarrier(block int) int {
+	switch {
+	case block >= 1 && block <= 39:
+		return 0
+	case block == 40:
+		return 42
+	case block == 41:
+		return 0
+	case block >= 43 && block <= 45:
+		return 42
+	case block >= 46 && block <= 149:
+		return 0
+	case block >= 150 && block <= 253:
+		return 42
+	case block >= 254 && block <= 260:
+		return 0
+	default:
+		return -1
+	}
+}
 func (r *paletteResolver) resolveBuffer0(blockIndex int, graphic *moo2gfx.Graphic) (paletteResolution, error) {
 	if !buffer0UsesFonts1(blockIndex) {
 		return paletteResolution{}, nil

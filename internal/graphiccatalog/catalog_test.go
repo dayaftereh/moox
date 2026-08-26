@@ -373,3 +373,39 @@ func TestMonsterPaletteMapping(t *testing.T) {
 		}
 	}
 }
+
+func TestMultiGamePaletteCarrierMapping(t *testing.T) {
+	tests := map[int]int{
+		1: 0, 39: 0,
+		40: 42,
+		41: 0,
+		43: 42, 45: 42,
+		46: 0, 149: 0,
+		150: 42, 253: 42,
+		254: 0, 260: 0,
+	}
+	for block, want := range tests {
+		if got := multiGamePaletteCarrier(block); got != want {
+			t.Fatalf("block %d carrier=%d, want %d", block, got, want)
+		}
+	}
+	for _, block := range []int{0, 42, 261} {
+		if got := multiGamePaletteCarrier(block); got != -1 {
+			t.Fatalf("block %d carrier=%d, want unresolved/self", block, got)
+		}
+	}
+}
+
+func TestWorkshopArchiveWidePaletteRules(t *testing.T) {
+	tests := map[string]int{
+		"CMBTFGTR.LBX": 4,
+		"COLGCBT.LBX":  2,
+		"COLROADS.LBX": 2,
+	}
+	for archive, want := range tests {
+		rule, ok := confirmedExternalPaletteRules[archive]
+		if !ok || rule.Archive != "FONTS.LBX" || rule.PaletteBlock != want || !rule.ExternalOnly {
+			t.Fatalf("archive %s rule=%+v ok=%v, want FONTS#%d external-only", archive, rule, ok, want)
+		}
+	}
+}

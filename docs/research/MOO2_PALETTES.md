@@ -241,6 +241,32 @@ MOOX enables only rules whose rendered target has complete coverage:
 - block 25 -> `FONTS#1 + MONSTER#13`.
 
 Carrier-only Workshop dependencies remain pending. Empirical decoding showed missing used palette indices for blocks 0, 10 and 11, confirming that the named 32-color carrier by itself is insufficient. This conservative rule keeps those contexts explicit instead of fabricating a base palette.
+
+## MULTIGM.LBX local palette carriers
+
+`MULTIGM.LBX` contains two archive-local palette sources described by Workshop:
+
+- block 0 carries a complete 256-entry internal palette,
+- block 42 carries 192 internal colors beginning at index 0.
+
+Workshop maps the external graphics as follows:
+
+- blocks 1..39, 41, 46..149 and 254..260 -> `MULTIGM#0`,
+- block 40, blocks 43..45 and 150..253 -> `MULTIGM#42`.
+
+An isolated export confirms that both dependency groups provide complete palette coverage for every target: 259 resolved target blocks / 326 target frames, with zero partial target frames and zero decode failures. Block 42 itself remains a palette-source/context record rather than being assigned a fabricated base palette.
+
+## Additional Workshop-confirmed archive ranges
+
+The same validation pass enables several simple explicit dependencies:
+
+- `GSTAR` blocks 0..22 -> `FONTS#1`, blocks 23..32 -> `FONTS#2` (33 blocks / 262 frames),
+- all 80 `CMBTFGTR` blocks -> `FONTS#4` (256 frames),
+- all 22 `COLGCBT` blocks -> `FONTS#2` (219 frames),
+- all 156 `COLROADS` blocks -> `FONTS#2` (156 frames),
+- `COLONY` blocks 5..18 -> `FONTS#2` (14 blocks / 194 frames); blocks 0..4 keep their own/no separately documented context.
+
+An isolated export of `FONTS`, `MULTIGM`, `GSTAR`, `CMBTFGTR`, `COLGCBT`, `COLROADS`, and `COLONY` produced all 1,424 available frames with complete palette coverage and zero decode failures.
 ## Junction and functional colors
 
 Palette context is independent from frame reconstruction:
@@ -269,12 +295,12 @@ The graphics manifest records palette-context status, source, evidence and confi
 
 The current full local 1.31 manifest-only validation reports:
 
-- 4,108 palette contexts resolved automatically,
-- 17,630 frames covered by those resolved contexts,
-- 2,382 palette contexts still explicitly pending,
+- 4,672 palette contexts resolved automatically,
+- 19,043 frames covered by those resolved contexts,
+- 1,818 palette contexts still explicitly pending,
 - 0 structural/frame decode failures.
 
-The resolved set now includes verified archive-wide palettes, mixed ship/combat palettes, local full-palette carriers, and conservative range rules for `BUFFER0`, `OFFICER`, `FLEET`, `DIPLOMAT`, and `MONSTER`.
+The resolved set now includes verified archive-wide palettes, mixed ship/combat palettes, local full/partial palette carriers whose targets have been coverage-tested, and conservative range rules for UI, colony, diplomacy, fleet and combat graphics.
 
 Carrier-only dependencies that do not cover every palette index actually used by their targets remain pending even when Workshop names the carrier. This is intentional: `pending` means the exact rendering context is incomplete, not that the underlying graphic data is corrupt.
 
