@@ -345,4 +345,4 @@ The resolved set now covers nearly all contexts for which MoO2 Workshop or indep
 
 The remaining pending set is dominated by Workshop `none`/runtime-context graphics, internal partial palettes with no documented base, and known source/carrier records. These need a different research method (runtime/original-engine context or deeper executable analysis), not palette guessing.
 
-The canonical private PNG tree under `reference/original/images/` is regenerated after this checkpoint so the on-disk reference library matches the accumulated verified resolver rules.
+The canonical private PNG tree under `reference/original/images/` has been regenerated from this checkpoint. It contains 30,395 PNGs (~581.03 MiB): 30,225 complete frames and 170 partial frames, with every partial frame still belonging to a `pending` context. Another 534 pending external-palette frames are cataloged but intentionally not exported. Decode failures are zero.

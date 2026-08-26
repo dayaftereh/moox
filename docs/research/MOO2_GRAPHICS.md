@@ -113,10 +113,10 @@ This especially affects the `SR_R*_SC/SP/TR.LBX` animation archives. Their later
 
 ### Remaining graphics work
 
-The raw frame codec is no longer the limiting factor for internally paletted graphics. The main remaining work is palette-context resolution for the 5,819 external/mixed-palette blocks and functional-color behavior used for effects such as dynamic shadows/transparency.
+The raw frame codec is no longer the limiting factor. The evidence-gated palette resolver now resolves 5,646 contexts; 844 remain pending because their exact runtime/base palette is not yet known or they are partial source/carrier records. Functional-color behavior used for effects such as dynamic shadows/transparency also remains a separate fidelity task.
 
 See `MOO2_PALETTES.md` for the evidence registry and palette-resolution plan.
-## Confirmed external-palette checkpoint - 2026-08-26
+## Canonical graphics extraction checkpoint - 2026-08-26
 
 The batch exporter now has an evidence-gated palette-context resolver. It records palette context status, source, evidence URL and confidence in manifest schema v2, and exports an externally paletted frame only when an enabled rule supplies a known context.
 
@@ -127,13 +127,7 @@ The first confirmed rules add:
 
 A complete local 1.31 export now reports:
 
-- 15,145 PNG frames exported,
-- 14,287 frames with complete palette coverage,
-- 858 frames with partial/mixed palette coverage,
-- 2,793 palette contexts resolved automatically,
-- 3,697 palette contexts still pending,
-- 0 frame decode failures,
-- approximately 447.28 MiB of private PNG references.
+- 30,395 PNG frames exported,`n- 30,225 exported frames with complete palette coverage,`n- 170 exported frames with partial palette coverage, all belonging to `pending` contexts,`n- 534 external-palette frames still unexported/pending,`n- 5,646 palette contexts resolved automatically,`n- 844 palette contexts still pending,`n- 0 frame decode failures,`n- approximately 581.03 MiB of private PNG references.
 
 An independent end-to-end check of `BLDG0.LBX` block 0 through the explicit `image -palette-file FONTS.LBX -palette-block 2` path produced the same SHA-256 PNG as the automatic batch resolver (`895A3C64102716349E0FA388C381280A12C5C2F691C7D8EC5CE4E8C85A852629`).
 
