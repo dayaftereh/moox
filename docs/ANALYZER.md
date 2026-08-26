@@ -167,3 +167,15 @@ out\moox-analyze-windows-amd64.exe classify `
 ```
 
 Current classes include graphics, known external palettes, RIFF/WAVE, structurally exact `fixed_record_v1` records, conservative string-table candidates, empty blocks and unknowns. See `docs/research/BLOCK_CLASSIFICATION_2026-08-26.md`.
+## Lossless WAVE extraction
+
+Copy every structurally verified RIFF/WAVE LBX block without transcoding:
+
+```powershell
+out\moox-analyze-windows-amd64.exe audio `
+  -clean `
+  -out reference\original\audio `
+  C:\ASH\Temp\mastori2
+```
+
+The private manifest records WAVE/PCM metadata and hashes. See `docs/research/AUDIO_EXTRACTION_2026-08-26.md`.
