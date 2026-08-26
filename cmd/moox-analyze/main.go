@@ -15,7 +15,7 @@ import (
 	"moox/internal/textscan"
 )
 
-const version = "0.4.0"
+const version = "0.5.0"
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
@@ -47,6 +47,8 @@ func run(args []string) error {
 		return imageCmd(args[1:])
 	case "graphics":
 		return graphicsCmd(args[1:])
+	case "palettes":
+		return palettesCmd(args[1:])
 	case "extract":
 		return extractCmd(args[1:])
 	case "strings":
@@ -65,6 +67,7 @@ Usage:
   moox-analyze inspect [options] <file.lbx>
   moox-analyze image -out <file.png> <file.lbx> <block-index>
   moox-analyze graphics -out <directory> [options] <installation-directory>
+  moox-analyze palettes -out <directory> [options] <installation-directory>
   moox-analyze extract [options] <file.lbx> <block-index>
   moox-analyze strings [options] <file.lbx>
   moox-analyze version
@@ -75,6 +78,7 @@ Commands:
   inspect    Validate one LBX and show its block table.
   image      Decode a MOO2 graphic block with an embedded palette to PNG.
   graphics   Catalog all MOO2 graphics and batch-export internally paletted frames.
+  palettes   Export known FONTS/IFONTS external palettes as JSON and swatches.
   extract    Copy one raw LBX block to a file.
   strings    Show printable ASCII strings from one or all LBX blocks.
 

@@ -132,3 +132,15 @@ out\moox-analyze-windows-amd64.exe graphics `
 ```
 
 Use `-manifest-only` to inventory graphics without writing PNGs. The generated private `manifest.json` records archive/block/frame provenance, dimensions, flags, palette mode, hashes and per-frame decode status. Graphics that require an external palette are cataloged as `external_palette_pending` rather than being color-guessed.
+## External palette extraction
+
+Export the 13 `FONTS.LBX` and 4 `IFONTS.LBX` external palettes:
+
+```powershell
+out\moox-analyze-windows-amd64.exe palettes `
+  -clean `
+  -out reference\original\palettes `
+  C:\ASH\Temp\mastori2
+```
+
+The `image` command can also be given `-palette-file` and `-palette-block` to decode a graphic with an explicitly known external palette. Mixed palettes preserve internal entries and fill only missing indices from the external base palette.

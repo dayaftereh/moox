@@ -9,7 +9,7 @@ Recommended local-only folders:
 - `original/` - canonical local reference material derived 1:1 from the owned original. Decoded original images belong under `original/images/` with source archive/block/frame preserved.
 - `extracted/` - temporary/intermediate decoder output that has not yet been promoted to canonical original reference material.
 - `screenshots/` - locally captured UI comparison images.
-- `catalogs/` - inventories/hashes that may contain original filenames or extracted text.
+- `catalogs/` - inventories/hashes that may contain original filenames or extracted text.`r`n- `original/palettes/` - decoded external palette JSON/swatches and provenance, local only.
 
 Current original-image layout:
 

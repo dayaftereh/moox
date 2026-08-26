@@ -18,6 +18,8 @@ func imageCmd(args []string) error {
 	out := fs.String("out", "", "output PNG path (required)")
 	frame := fs.Int("frame", 0, "animation frame index")
 	force := fs.Bool("force", false, "overwrite an existing output file")
+	paletteFile := fs.String("palette-file", "", "optional LBX containing an external palette")
+	paletteBlock := fs.Int("palette-block", -1, "block index in -palette-file")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -43,8 +45,28 @@ func imageCmd(args []string) error {
 	if err != nil {
 		return err
 	}
-	if graphic.Flags&moo2gfx.FlagInternalPalette == 0 {
-		return errors.New("graphic uses an external palette; embedded/internal palette export is supported first")
+
+	if *paletteFile != "" {
+		if *paletteBlock < 0 {
+			return errors.New("-palette-file requires -palette-block")
+		}
+		paletteArchive, err := lbx.Open(*paletteFile)
+		if err != nil {
+			return fmt.Errorf("open palette archive: %w", err)
+		}
+		paletteData, err := paletteArchive.ReadEntry(*paletteBlock)
+		if err != nil {
+			return fmt.Errorf("read palette block: %w", err)
+		}
+		palette, err := moo2gfx.ParseExternalPalette(paletteData)
+		if err != nil {
+			return fmt.Errorf("parse external palette: %w", err)
+		}
+		palette.Apply(graphic)
+	}
+
+	if graphic.Flags&moo2gfx.FlagInternalPalette == 0 && *paletteFile == "" {
+		return errors.New("graphic uses an external palette; provide -palette-file and -palette-block")
 	}
 	img, info, err := graphic.DecodeFrame(*frame)
 	if err != nil {
