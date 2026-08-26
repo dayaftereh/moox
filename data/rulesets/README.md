@@ -1,4 +1,4 @@
-﻿# MOOX ruleset data
+# MOOX ruleset data
 
 This directory contains normalized, MOOX-owned rule data that the game core can load directly.
 
@@ -31,7 +31,7 @@ Contains the Master of Orion II 1.31 custom-race design model:
 - 53 selectable race-design options,
 - stable IDs,
 - language-independent `name_key` references for every group/option,
-- standard-game Pick costs,
+- original-observed Pick costs with source block/byte provenance,
 - simple numeric modifier values for directly readable stat traits,
 - government/ability IDs,
 - known incompatibilities,

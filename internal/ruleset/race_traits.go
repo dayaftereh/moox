@@ -51,6 +51,7 @@ type RaceTraitOption struct {
 	NameKey        string           `json:"name_key"`
 	DescriptionKey string           `json:"description_key,omitempty"`
 	PickCost       int              `json:"pick_cost"`
+	PickCostSource FieldProvenance  `json:"pick_cost_source"`
 	Scope          string           `json:"scope,omitempty"`
 	Value          *float64         `json:"value,omitempty"`
 	ValueKind      string           `json:"value_kind,omitempty"`

@@ -10,24 +10,23 @@ import (
 func TestDecodeRaceTraits(t *testing.T) {
 	root := t.TempDir()
 	path := filepath.Join(root, "RACESTUF.LBX")
-	block := make([]byte, 0, 1024)
+	labels := make([]byte, 0, 1024)
+	costs := make([]byte, 0, 57)
 	for _, group := range raceTraitSpecs() {
-		block = append(block, []byte(group.Label)...)
-		block = append(block, 0)
+		labels = append(labels, []byte(group.Label)...)
+		labels = append(labels, 0)
 		for _, option := range group.Options {
-			block = append(block, []byte(option.Label)...)
-			block = append(block, 0)
+			labels = append(labels, []byte(option.Label)...)
+			labels = append(labels, 0)
+			costs = append(costs, byte(int8(option.PickCost)))
 		}
 	}
+	costs = append(costs, 0, 0, 0, 0)
 
-	const dataOffset = 0x800
-	file := make([]byte, dataOffset+len(block))
-	binary.LittleEndian.PutUint16(file[0:2], 1)
-	binary.LittleEndian.PutUint16(file[2:4], 0xFEAD)
-	binary.LittleEndian.PutUint32(file[4:8], 0)
-	binary.LittleEndian.PutUint32(file[8:12], dataOffset)
-	binary.LittleEndian.PutUint32(file[12:16], uint32(dataOffset+len(block)))
-	copy(file[dataOffset:], block)
+	blocks := make([][]byte, 7)
+	blocks[0] = labels
+	blocks[6] = costs
+	file := buildTestLBX(blocks)
 	if err := os.WriteFile(path, file, 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -45,12 +44,14 @@ func TestDecodeRaceTraits(t *testing.T) {
 
 	var optionCount int
 	var creativeCost int
+	var creativeCostSource string
 	var foundLithovoreMutex bool
 	for _, group := range decoded.Groups {
 		optionCount += len(group.Options)
 		for _, option := range group.Options {
 			if option.ID == "creative" {
 				creativeCost = option.PickCost
+				creativeCostSource = option.PickCostSource.SourceID
 			}
 			if option.ID == "lithovore" {
 				for _, id := range option.MutexWith {
@@ -67,7 +68,34 @@ func TestDecodeRaceTraits(t *testing.T) {
 	if creativeCost != 8 {
 		t.Fatalf("creative cost=%d want=8", creativeCost)
 	}
+	if creativeCostSource != raceStuffCostsSourceID {
+		t.Fatalf("creative cost source=%q", creativeCostSource)
+	}
 	if !foundLithovoreMutex {
 		t.Fatal("lithovore/farming incompatibility not encoded")
 	}
+}
+
+func buildTestLBX(blocks [][]byte) []byte {
+	const dataOffset = 0x800
+	count := len(blocks)
+	offsets := make([]uint32, count+1)
+	cursor := dataOffset
+	for i, block := range blocks {
+		offsets[i] = uint32(cursor)
+		cursor += len(block)
+	}
+	offsets[count] = uint32(cursor)
+	file := make([]byte, cursor)
+	binary.LittleEndian.PutUint16(file[0:2], uint16(count))
+	binary.LittleEndian.PutUint16(file[2:4], 0xFEAD)
+	for i, offset := range offsets {
+		binary.LittleEndian.PutUint32(file[8+i*4:12+i*4], offset)
+	}
+	cursor = dataOffset
+	for _, block := range blocks {
+		copy(file[cursor:], block)
+		cursor += len(block)
+	}
+	return file
 }

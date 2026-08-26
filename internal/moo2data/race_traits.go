@@ -15,8 +15,9 @@ import (
 )
 
 const (
-	raceStuffSourceID = "moo2-1.31-racestuf-block0"
-	raceWikiSourceID  = "strategywiki-moo2-race-design-options"
+	raceStuffSourceID      = "moo2-1.31-racestuf-block0"
+	raceStuffCostsSourceID = "moo2-1.31-racestuf-block6"
+	raceWikiSourceID       = "strategywiki-moo2-race-design-options"
 )
 
 type raceOptionSpec struct {
@@ -64,8 +65,8 @@ func DecodeRaceTraitsBundle(installationRoot string) (*RaceTraitsBundle, error) 
 	if err != nil {
 		return nil, fmt.Errorf("open RACESTUF.LBX: %w", err)
 	}
-	if len(archive.Entries) < 1 {
-		return nil, fmt.Errorf("RACESTUF.LBX has no blocks")
+	if len(archive.Entries) <= 6 {
+		return nil, fmt.Errorf("RACESTUF.LBX does not contain required blocks 0 and 6")
 	}
 
 	block, err := archive.ReadEntry(0)
@@ -75,11 +76,26 @@ func DecodeRaceTraitsBundle(installationRoot string) (*RaceTraitsBundle, error) 
 	observed := textscan.ASCII(block, 2)
 	specs := raceTraitSpecs()
 	expectedStrings := 0
+	expectedCosts := 0
 	for _, group := range specs {
 		expectedStrings += 1 + len(group.Options)
+		expectedCosts += len(group.Options)
 	}
 	if len(observed) != expectedStrings {
 		return nil, fmt.Errorf("RACESTUF.LBX block 0 yielded %d strings, expected %d", len(observed), expectedStrings)
+	}
+
+	costBlock, err := archive.ReadEntry(6)
+	if err != nil {
+		return nil, fmt.Errorf("read RACESTUF.LBX block 6: %w", err)
+	}
+	if len(costBlock) != expectedCosts+4 {
+		return nil, fmt.Errorf("RACESTUF.LBX block 6 has %d bytes, expected %d pick costs plus 4 trailing bytes", len(costBlock), expectedCosts)
+	}
+	for i, b := range costBlock[expectedCosts:] {
+		if b != 0 {
+			return nil, fmt.Errorf("RACESTUF.LBX block 6 trailing byte %d is 0x%02X, expected zero", expectedCosts+i, b)
+		}
 	}
 
 	fileHash, err := sha256File(archivePath)
@@ -87,7 +103,9 @@ func DecodeRaceTraitsBundle(installationRoot string) (*RaceTraitsBundle, error) 
 		return nil, err
 	}
 	blockSum := sha256.Sum256(block)
+	costBlockSum := sha256.Sum256(costBlock)
 	blockIndex := 0
+	costBlockIndex := 6
 	out := &ruleset.RaceTraitsFile{
 		SchemaVersion: ruleset.RaceTraitsSchemaVersion,
 		Ruleset:       "moo2-1.31",
@@ -106,9 +124,18 @@ func DecodeRaceTraitsBundle(installationRoot string) (*RaceTraitsBundle, error) 
 				BlockSHA256: hex.EncodeToString(blockSum[:]),
 			},
 			{
+				ID:          raceStuffCostsSourceID,
+				Type:        "original-observed",
+				Description: "Race Design pick costs observed as signed bytes in the local official Master of Orion II 1.31 RACESTUF.LBX data set",
+				Archive:     "RACESTUF.LBX",
+				Block:       &costBlockIndex,
+				SHA256:      fileHash,
+				BlockSHA256: hex.EncodeToString(costBlockSum[:]),
+			},
+			{
 				ID:           raceWikiSourceID,
 				Type:         "secondary-reference",
-				Description:  "Standard-game pick budget, pick costs, trait scopes and behavioral cross-check",
+				Description:  "Standard-game pick budget, trait scopes and behavioral cross-check",
 				URL:          "https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Race_design_options",
 				AccessedDate: "2026-08-26",
 			},
@@ -116,6 +143,7 @@ func DecodeRaceTraitsBundle(installationRoot string) (*RaceTraitsBundle, error) 
 	}
 
 	cursor := 0
+	costCursor := 0
 	for _, groupSpec := range specs {
 		groupLabel := observed[cursor]
 		if groupLabel.Value != groupSpec.Label {
@@ -140,17 +168,24 @@ func DecodeRaceTraitsBundle(installationRoot string) (*RaceTraitsBundle, error) 
 			}
 			cursor++
 			offset := item.Offset
+			costOffset := costCursor
+			pickCost := int(int8(costBlock[costCursor]))
+			if pickCost != optionSpec.PickCost {
+				return nil, fmt.Errorf("RACESTUF pick cost %d for %s does not match expected research mapping %d", pickCost, optionSpec.ID, optionSpec.PickCost)
+			}
+			costCursor++
 			group.Options = append(group.Options, ruleset.RaceTraitOption{
-				ID:           optionSpec.ID,
-				NameKey:      optionNameKey(optionSpec.ID),
-				PickCost:     optionSpec.PickCost,
-				Scope:        optionSpec.Scope,
-				Value:        optionSpec.Value,
-				ValueKind:    optionSpec.ValueKind,
-				Ability:      optionSpec.Ability,
-				MutexWith:    optionSpec.MutexWith,
-				NameSource:   ruleset.FieldProvenance{SourceID: raceStuffSourceID, Offset: &offset},
-				Verification: ruleset.VerificationInfo{Name: "original-observed", PickCost: "secondary-reference", Effects: optionSpec.Effects},
+				ID:             optionSpec.ID,
+				NameKey:        optionNameKey(optionSpec.ID),
+				PickCost:       pickCost,
+				PickCostSource: ruleset.FieldProvenance{SourceID: raceStuffCostsSourceID, Offset: &costOffset},
+				Scope:          optionSpec.Scope,
+				Value:          optionSpec.Value,
+				ValueKind:      optionSpec.ValueKind,
+				Ability:        optionSpec.Ability,
+				MutexWith:      optionSpec.MutexWith,
+				NameSource:     ruleset.FieldProvenance{SourceID: raceStuffSourceID, Offset: &offset},
+				Verification:   ruleset.VerificationInfo{Name: "original-observed", PickCost: "original-observed", Effects: optionSpec.Effects},
 			})
 		}
 		out.Groups = append(out.Groups, group)
