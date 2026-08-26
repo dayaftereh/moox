@@ -16,6 +16,7 @@ The repository was empty except for `.git` before this baseline. This first comm
 - `docs/research/MOO2_DATA_AND_FILE_FORMATS.md` - original data formats, LBX research and extraction strategy.
 - `docs/research/SOURCES.md` - curated source register with links and usage notes.
 - `docs/IMPLEMENTATION_PLAN.md` - proposed clean-room development phases.
+- docs/architecture/ADR-0001-go-wails-v3.md - Go/Wails v3 portability decision and layer boundary.
 - `reference/README.md` - policy for locally supplied original-game files.
 
 ## Fidelity target

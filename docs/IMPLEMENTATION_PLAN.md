@@ -18,7 +18,7 @@ moox/
   data/          MOOX-owned normalized rules/content
 ```
 
-The concrete language/engine is intentionally not selected in the research commit.
+Architecture decision ADR-0001 selects a Go-first core with Wails v3 as the planned application shell. Core simulation, persistence, analyzers and developer tools remain Wails-independent and target pure-Go builds with `CGO_ENABLED=0`.
 
 ## Phase 0 - Research baseline
 
