@@ -1,0 +1,22 @@
+# Private/original MOO2 reference material
+reference/original/
+reference/extracted/
+reference/screenshots/
+reference/catalogs/
+
+# Local configuration
+.env
+.env.*
+*.local
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Build outputs
+build/
+dist/
+out/
+coverage/
