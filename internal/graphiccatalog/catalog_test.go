@@ -243,3 +243,59 @@ func TestCombatShipPaletteCarrierMapping(t *testing.T) {
 		}
 	}
 }
+
+func TestCombatSFXPaletteMapping(t *testing.T) {
+	tests := map[int]int{
+		2: 4, 7: 4,
+		8: 1,
+		9: 2, 13: 2,
+		14: 4, 15: 4,
+		16: 2, 39: 2,
+		41: 2, 42: 2,
+		43: 4, 46: 4,
+		48: 4, 51: 4,
+		52: 2, 67: 2,
+		69: 1, 78: 1,
+	}
+	for block, want := range tests {
+		if got := combatSFXPaletteBlock(block); got != want {
+			t.Fatalf("block %d palette=%d, want %d", block, got, want)
+		}
+	}
+	for _, block := range []int{0, 1, 40, 47, 68, 79} {
+		if got := combatSFXPaletteBlock(block); got != -1 {
+			t.Fatalf("block %d palette=%d, want unresolved", block, got)
+		}
+	}
+}
+
+func TestBeamsPaletteMapping(t *testing.T) {
+	tests := []struct {
+		block   int
+		palette int
+		carrier bool
+	}{
+		{1, 3, false}, {16, 3, false},
+		{17, 1, false}, {32, 1, false},
+		{33, 3, false}, {48, 3, false},
+		{49, 1, false}, {64, 1, false},
+		{65, 2, false}, {66, 2, false},
+		{67, 4, false}, {68, 4, true}, {69, 4, false},
+		{70, 4, true}, {87, 4, true},
+		{88, 4, false}, {108, 4, false},
+		{109, 4, true}, {129, 4, true},
+		{131, 4, true}, {152, 4, true},
+	}
+	for _, tt := range tests {
+		palette, carrier := beamsPaletteRule(tt.block)
+		if palette != tt.palette || carrier != tt.carrier {
+			t.Fatalf("block %d rule=(%d,%v), want (%d,%v)", tt.block, palette, carrier, tt.palette, tt.carrier)
+		}
+	}
+	for _, block := range []int{0, 130, 153} {
+		palette, carrier := beamsPaletteRule(block)
+		if palette != -1 || carrier {
+			t.Fatalf("block %d rule=(%d,%v), want unresolved", block, palette, carrier)
+		}
+	}
+}

@@ -150,6 +150,46 @@ The exact ranges are:
 This resolves all 352 externally paletted combat-ship blocks, covering 7,040 display frames. The eight carrier blocks contain 20 frames each and remain identifiable as palette-source records.
 
 An isolated `FONTS.LBX + CMBTSHP.LBX` MOOX export produced all 7,200 frames with complete palette coverage and zero decode failures. Visual spot checks of blocks 0, 45 and 90 also show the expected successive player-color groups.
+
+## CMBTSFX.LBX palette ranges
+
+MoO2 Workshop describes explicit base-palette dependencies for 74 of the 79 `CMBTSFX` graphic blocks. MOOX applies these bases while preserving any embedded partial palette entries already carried by the target graphic:
+
+- blocks 2..7 -> `FONTS#4`,
+- block 8 -> `FONTS#1`,
+- blocks 9..13 -> `FONTS#2`,
+- blocks 14..15 -> `FONTS#4`,
+- blocks 16..39 -> `FONTS#2`,
+- blocks 41..42 -> `FONTS#2`,
+- blocks 43..46 -> `FONTS#4`,
+- blocks 48..51 -> `FONTS#4`,
+- blocks 52..67 -> `FONTS#2`,
+- blocks 69..78 -> `FONTS#1`.
+
+Blocks 0, 1, 40, 47 and 68 carry internal partial palettes but have no Workshop base dependency, so they remain conservatively pending. The verified rules cover 1,189 frames.
+
+## BEAMS.LBX palette ranges
+
+`BEAMS.LBX` uses several base palettes plus a local high-range carrier in block 67. Local 1.31 inspection confirms block 67 carries 15 internal colors beginning at palette index 241.
+
+Confirmed rules are:
+
+- 1..16 -> `FONTS#3`,
+- 17..32 -> `FONTS#1`,
+- 33..48 -> `FONTS#3`,
+- 49..64 -> `FONTS#1`,
+- 65..66 -> `FONTS#2`,
+- 67 -> `FONTS#4` while preserving its internal high colors,
+- 68 -> `FONTS#4 + BEAMS#67`,
+- 69 -> `FONTS#4`,
+- 70..87 -> `FONTS#4 + BEAMS#67`,
+- 88..108 -> `FONTS#4`,
+- 109..129 -> `FONTS#4 + BEAMS#67`,
+- 131..152 -> `FONTS#4 + BEAMS#67`.
+
+Block 0 has its own complete 256-color internal palette. Block 130 is intentionally left pending: Workshop records only `BEAMS#67` there and does not identify the base palette, so MOOX does not infer one from neighboring blocks. The confirmed rules cover 151 blocks / 945 frames.
+
+An isolated `FONTS + CMBTSFX + BEAMS` export produced 2,178 PNG frames with zero decode failures; 2,154 had complete palette coverage and 24 remained partial due only to the explicitly unresolved internal-palette special blocks.
 ## Junction and functional colors
 
 Palette context is independent from frame reconstruction:

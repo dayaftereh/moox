@@ -47,6 +47,7 @@ type paletteResolver struct {
 	councilPalette     *moo2gfx.Graphic
 	shipCarriers       map[int]*moo2gfx.Graphic
 	combatShipCarriers map[int]*moo2gfx.Graphic
+	beamsCarrier       *moo2gfx.Graphic
 }
 
 func newPaletteResolver(sourceRoot string) *paletteResolver {
@@ -99,10 +100,143 @@ func (r *paletteResolver) Resolve(archiveRel string, blockIndex int, archive *lb
 
 	case "CMBTSHP.LBX":
 		return r.resolveCombatShips(blockIndex, archive, graphic)
+
+	case "CMBTSFX.LBX":
+		return r.resolveCombatSFX(blockIndex, graphic)
+
+	case "BEAMS.LBX":
+		return r.resolveBeams(blockIndex, archive, graphic)
 	}
 	return paletteResolution{}, nil
 }
 
+func (r *paletteResolver) resolveCombatSFX(blockIndex int, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	paletteBlock := combatSFXPaletteBlock(blockIndex)
+	if paletteBlock < 0 {
+		return paletteResolution{}, nil
+	}
+	palette, err := r.loadExternalPalette("FONTS.LBX", paletteBlock)
+	if err != nil {
+		return paletteResolution{}, err
+	}
+	palette.Apply(graphic)
+	return paletteResolution{
+		Resolved:   true,
+		Source:     fmt.Sprintf("FONTS.LBX#%d", paletteBlock),
+		Evidence:   moo2WorkshopEvidence,
+		Confidence: "confirmed",
+	}, nil
+}
+
+func combatSFXPaletteBlock(block int) int {
+	switch {
+	case block >= 2 && block <= 7:
+		return 4
+	case block == 8:
+		return 1
+	case block >= 9 && block <= 13:
+		return 2
+	case block >= 14 && block <= 15:
+		return 4
+	case block >= 16 && block <= 39:
+		return 2
+	case block >= 41 && block <= 42:
+		return 2
+	case block >= 43 && block <= 46:
+		return 4
+	case block >= 48 && block <= 51:
+		return 4
+	case block >= 52 && block <= 67:
+		return 2
+	case block >= 69 && block <= 78:
+		return 1
+	default:
+		return -1
+	}
+}
+
+func (r *paletteResolver) resolveBeams(blockIndex int, archive *lbx.File, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	paletteBlock, useCarrier := beamsPaletteRule(blockIndex)
+	if paletteBlock < 0 {
+		return paletteResolution{}, nil
+	}
+	if useCarrier {
+		carrier, err := r.loadBeamsCarrier(archive)
+		if err != nil {
+			return paletteResolution{}, err
+		}
+		moo2gfx.ApplyPaletteFromGraphic(carrier, graphic)
+	}
+	palette, err := r.loadExternalPalette("FONTS.LBX", paletteBlock)
+	if err != nil {
+		return paletteResolution{}, err
+	}
+	palette.Apply(graphic)
+	source := fmt.Sprintf("FONTS.LBX#%d", paletteBlock)
+	if useCarrier {
+		source += " + BEAMS.LBX#67"
+	}
+	return paletteResolution{
+		Resolved:   true,
+		Source:     source,
+		Evidence:   moo2WorkshopEvidence,
+		Confidence: "confirmed",
+	}, nil
+}
+
+func beamsPaletteRule(block int) (paletteBlock int, useCarrier bool) {
+	switch {
+	case block >= 1 && block <= 16:
+		return 3, false
+	case block >= 17 && block <= 32:
+		return 1, false
+	case block >= 33 && block <= 48:
+		return 3, false
+	case block >= 49 && block <= 64:
+		return 1, false
+	case block >= 65 && block <= 66:
+		return 2, false
+	case block == 67:
+		return 4, false
+	case block == 68:
+		return 4, true
+	case block == 69:
+		return 4, false
+	case block >= 70 && block <= 87:
+		return 4, true
+	case block >= 88 && block <= 108:
+		return 4, false
+	case block >= 109 && block <= 129:
+		return 4, true
+	case block >= 131 && block <= 152:
+		return 4, true
+	default:
+		return -1, false
+	}
+}
+
+func (r *paletteResolver) loadBeamsCarrier(archive *lbx.File) (*moo2gfx.Graphic, error) {
+	if r.beamsCarrier != nil {
+		return r.beamsCarrier, nil
+	}
+	const block = 67
+	if block >= len(archive.Entries) {
+		return nil, fmt.Errorf("BEAMS.LBX does not contain palette carrier block %d", block)
+	}
+	data, err := archive.ReadEntry(block)
+	if err != nil {
+		return nil, fmt.Errorf("read BEAMS.LBX palette carrier block %d: %w", block, err)
+	}
+	graphic, err := moo2gfx.Parse(data)
+	if err != nil {
+		return nil, fmt.Errorf("parse BEAMS.LBX palette carrier block %d: %w", block, err)
+	}
+	if graphic.Flags&moo2gfx.FlagInternalPalette == 0 || paletteEntries(graphic) != 15 || graphic.PaletteShift != 241 {
+		return nil, fmt.Errorf("BEAMS.LBX block %d is not the expected 15-color palette carrier at shift 241", block)
+	}
+	r.beamsCarrier = graphic
+	return graphic, nil
+}
 func (r *paletteResolver) resolveCombatShips(blockIndex int, archive *lbx.File, graphic *moo2gfx.Graphic) (paletteResolution, error) {
 	if graphic.Flags&moo2gfx.FlagInternalPalette != 0 {
 		return paletteResolution{}, nil
