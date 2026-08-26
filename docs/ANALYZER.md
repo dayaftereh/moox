@@ -144,3 +144,15 @@ out\moox-analyze-windows-amd64.exe palettes `
 ```
 
 The `image` command can also be given `-palette-file` and `-palette-block` to decode a graphic with an explicitly known external palette. Mixed palettes preserve internal entries and fill only missing indices from the external base palette.
+## Full raw LBX extraction
+
+Extract every block from every normal LBX archive and copy `.LBX`-named Smacker movies as `.smk`:
+
+```powershell
+out\moox-analyze-windows-amd64.exe unpack `
+  -clean `
+  -out reference\original\unpacked `
+  C:\ASH\Temp\mastori2
+```
+
+The private manifest keeps archive/block offsets, sizes and SHA-256 hashes so every later decoder can work from a stable raw block path while the source installation remains untouched.
