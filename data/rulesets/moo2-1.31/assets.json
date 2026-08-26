@@ -1,0 +1,1044 @@
+{
+  "schema_version": 1,
+  "ruleset": "moo2-1.31",
+  "sources": [
+    {
+      "id": "moo2-1.31-racesel-portraits",
+      "type": "original-observed",
+      "description": "RACESEL.LBX blocks 15..27 visually match the 13 preset races in canonical race order; block 28 is the custom-race portrait",
+      "archive": "RACESEL.LBX",
+      "sha256": "daaa124da63afd501d390836b44bcfc31b3fdcac1c68455ce17af931c480f7ed"
+    },
+    {
+      "id": "moo2-1.31-raceicon-matrix",
+      "type": "original-observed",
+      "description": "RACEICON.LBX blocks 0..168 form a 13 race x 13 variant matrix in canonical race order",
+      "archive": "RACEICON.LBX",
+      "sha256": "4cc5c285f7b3ea766c13ba467a5b878d1e30b3b1bb2f5a6ecec2e26616d2c86d"
+    },
+    {
+      "id": "openmoo2-race-role-usage",
+      "type": "secondary-community",
+      "description": "OpenMOO2 colony screens use RACEICON variants 1, 3, 5 and 7 for farmer, worker, scientist and marine population icons respectively; used as factual usage evidence only",
+      "url": "https://github.com/mimi1vx/openmoo2/blob/2cd3c344aed24380390caaaa819bf7a010b8f4a2/oldmess/gui/colony_screen.py",
+      "accessed_date": "2026-08-26"
+    }
+  ],
+  "assets": [
+    {
+      "key": "race.alkari.portrait",
+      "kind": "race_portrait",
+      "status": "confirmed",
+      "verification": "original-order-visual-confirmed",
+      "reference": {
+        "archive": "RACESEL.LBX",
+        "block": 15,
+        "frame": 0,
+        "block_sha256": "d7c8f22dbf97002ccbc9635b6b68ee108dd6effbe7680df40381d37af06bafff",
+        "width": 290,
+        "height": 322
+      }
+    },
+    {
+      "key": "race.alkari.icon",
+      "kind": "race_icon",
+      "status": "pending",
+      "verification": "matrix-confirmed-role-unspecified",
+      "unresolved_reason": "RACEICON contains 13 context/role variants per race; no current evidence identifies one variant as the canonical generic icon"
+    },
+    {
+      "key": "race.alkari.icon.farmer",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 1,
+        "frame": 0,
+        "block_sha256": "c884721aa90d7f284773196c53947f09e4302165106bccf9a8bc693058718d1a",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.alkari.icon.worker",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 3,
+        "frame": 0,
+        "block_sha256": "a276d0fea0ea60fbf29cbbd9605b32b81a6a4d04704d9348c2ad09dc5ab8c793",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.alkari.icon.scientist",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 5,
+        "frame": 0,
+        "block_sha256": "042afed9418f80965253f8f01dadbb644fc11c7f77225cda8a76334fc544c19f",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.alkari.icon.marine",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 7,
+        "frame": 0,
+        "block_sha256": "4f68296105fe4dde652b9ef4d6d89c9450f22e11d9dfb1fa3113a31ec66307a7",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.bulrathi.portrait",
+      "kind": "race_portrait",
+      "status": "confirmed",
+      "verification": "original-order-visual-confirmed",
+      "reference": {
+        "archive": "RACESEL.LBX",
+        "block": 16,
+        "frame": 0,
+        "block_sha256": "fe237c341ea6fc4723bc20935a0d97599e181de5073de742fa3decbd8d84b5f9",
+        "width": 290,
+        "height": 322
+      }
+    },
+    {
+      "key": "race.bulrathi.icon",
+      "kind": "race_icon",
+      "status": "pending",
+      "verification": "matrix-confirmed-role-unspecified",
+      "unresolved_reason": "RACEICON contains 13 context/role variants per race; no current evidence identifies one variant as the canonical generic icon"
+    },
+    {
+      "key": "race.bulrathi.icon.farmer",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 14,
+        "frame": 0,
+        "block_sha256": "92595dee30f9857181c2e917aee32cbdfe4e43f6919f622b66f43d888e6bd2eb",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.bulrathi.icon.worker",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 16,
+        "frame": 0,
+        "block_sha256": "d19f697a4fe9d6d49255980273c328a747fe02557f7c1a5c41af5742bcf7de96",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.bulrathi.icon.scientist",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 18,
+        "frame": 0,
+        "block_sha256": "2d95944e3924cc54db674f77ca4cbbaa3cf541dbd47458fc132f3c2e3c55afd4",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.bulrathi.icon.marine",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 20,
+        "frame": 0,
+        "block_sha256": "bebc46a6f7231e842097c99fbd02a316aa6928a88a70a3432b30ea544d52545e",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.darlok.portrait",
+      "kind": "race_portrait",
+      "status": "confirmed",
+      "verification": "original-order-visual-confirmed",
+      "reference": {
+        "archive": "RACESEL.LBX",
+        "block": 17,
+        "frame": 0,
+        "block_sha256": "16bf7366d6af33b7231609910d300ea258f4ba604be4af27b839b321653d4d90",
+        "width": 290,
+        "height": 322
+      }
+    },
+    {
+      "key": "race.darlok.icon",
+      "kind": "race_icon",
+      "status": "pending",
+      "verification": "matrix-confirmed-role-unspecified",
+      "unresolved_reason": "RACEICON contains 13 context/role variants per race; no current evidence identifies one variant as the canonical generic icon"
+    },
+    {
+      "key": "race.darlok.icon.farmer",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 27,
+        "frame": 0,
+        "block_sha256": "681635786c5557296adcd71328e8ad419a5564ca1eac2fe54a5ddf9c583f6a43",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.darlok.icon.worker",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 29,
+        "frame": 0,
+        "block_sha256": "bbb894571eb3c3aca22a42f93ed53477786e545b31854b8a9408216111b0cdde",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.darlok.icon.scientist",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 31,
+        "frame": 0,
+        "block_sha256": "bd0e94ab4e693515797d5326ab996e60140a6e5dc66cd4126e58595065fe86f7",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.darlok.icon.marine",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 33,
+        "frame": 0,
+        "block_sha256": "09e486341ac625f5dc1be4a6c40a0141e1143d52a55a6101d798d50852c769b3",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.elerian.portrait",
+      "kind": "race_portrait",
+      "status": "confirmed",
+      "verification": "original-order-visual-confirmed",
+      "reference": {
+        "archive": "RACESEL.LBX",
+        "block": 18,
+        "frame": 0,
+        "block_sha256": "b4756039c7b5c78d6d7de023ec70ad88e80bcbc376d64d1486db1c54b326a6d3",
+        "width": 290,
+        "height": 322
+      }
+    },
+    {
+      "key": "race.elerian.icon",
+      "kind": "race_icon",
+      "status": "pending",
+      "verification": "matrix-confirmed-role-unspecified",
+      "unresolved_reason": "RACEICON contains 13 context/role variants per race; no current evidence identifies one variant as the canonical generic icon"
+    },
+    {
+      "key": "race.elerian.icon.farmer",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 40,
+        "frame": 0,
+        "block_sha256": "8dfa1fc517bfce18848f4993bc5ced4e710f06d377ed393cf6ee3ccca4583d19",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.elerian.icon.worker",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 42,
+        "frame": 0,
+        "block_sha256": "3a73dbc95ad60ea6f69f57cfdd8866ab1fb61057f7416f525fd5972acee955bd",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.elerian.icon.scientist",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 44,
+        "frame": 0,
+        "block_sha256": "e5feb8c59e40f689e85d701852813ac54f194c3e8fb95270119e12e73d25df84",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.elerian.icon.marine",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 46,
+        "frame": 0,
+        "block_sha256": "4b469a4c1a4b6e09588a86a24dd95223461daf0280ea95491b9ccac7d1aa06ac",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.gnolam.portrait",
+      "kind": "race_portrait",
+      "status": "confirmed",
+      "verification": "original-order-visual-confirmed",
+      "reference": {
+        "archive": "RACESEL.LBX",
+        "block": 19,
+        "frame": 0,
+        "block_sha256": "b9a22ee63218d6a7c6f38efdcc71e69b830f92cb7423c68bf79bc4ea4df43779",
+        "width": 290,
+        "height": 322
+      }
+    },
+    {
+      "key": "race.gnolam.icon",
+      "kind": "race_icon",
+      "status": "pending",
+      "verification": "matrix-confirmed-role-unspecified",
+      "unresolved_reason": "RACEICON contains 13 context/role variants per race; no current evidence identifies one variant as the canonical generic icon"
+    },
+    {
+      "key": "race.gnolam.icon.farmer",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 53,
+        "frame": 0,
+        "block_sha256": "92027b11033120f8545e3401baebdd85f842057eb00b59cbbeec6a98414e2b3b",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.gnolam.icon.worker",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 55,
+        "frame": 0,
+        "block_sha256": "43949c11b7bdf0eda1fd64882245402a4e905b536fb662a94a5699aeeb257009",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.gnolam.icon.scientist",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 57,
+        "frame": 0,
+        "block_sha256": "64b22684c3a33f331614563e56ac393f0f6a1065ef846380928fbb681434580f",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.gnolam.icon.marine",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 59,
+        "frame": 0,
+        "block_sha256": "8168075ba453c3496f1f7b6aee648a32f7dab80316c2ef1085aea0b9279b4c66",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.human.portrait",
+      "kind": "race_portrait",
+      "status": "confirmed",
+      "verification": "original-order-visual-confirmed",
+      "reference": {
+        "archive": "RACESEL.LBX",
+        "block": 20,
+        "frame": 0,
+        "block_sha256": "3f30e9c67c082a57336a11233415275fcf66b12e4eec271b11e858b3e5b24bd2",
+        "width": 290,
+        "height": 322
+      }
+    },
+    {
+      "key": "race.human.icon",
+      "kind": "race_icon",
+      "status": "pending",
+      "verification": "matrix-confirmed-role-unspecified",
+      "unresolved_reason": "RACEICON contains 13 context/role variants per race; no current evidence identifies one variant as the canonical generic icon"
+    },
+    {
+      "key": "race.human.icon.farmer",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 66,
+        "frame": 0,
+        "block_sha256": "54f7b30deb0df6c721f588a2cb3b9e53944c8444483c317741cb033e769fbe34",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.human.icon.worker",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 68,
+        "frame": 0,
+        "block_sha256": "43197727fa646797287950299115fe17cf85d60c3ee2564a5ba9147c35bf313e",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.human.icon.scientist",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 70,
+        "frame": 0,
+        "block_sha256": "acc4eeace3c9a0c4de72ff453efe593d2adb08c72da20413568a8fb89049c06d",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.human.icon.marine",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 72,
+        "frame": 0,
+        "block_sha256": "1d142b8798eea4cd512fc9a3990214f6392ce337f98eaadf52d795dacb20153c",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.klackon.portrait",
+      "kind": "race_portrait",
+      "status": "confirmed",
+      "verification": "original-order-visual-confirmed",
+      "reference": {
+        "archive": "RACESEL.LBX",
+        "block": 21,
+        "frame": 0,
+        "block_sha256": "fc3f28fbc84ba044422782bbde720b0645d0888aa60c804071eac0bd68361671",
+        "width": 290,
+        "height": 322
+      }
+    },
+    {
+      "key": "race.klackon.icon",
+      "kind": "race_icon",
+      "status": "pending",
+      "verification": "matrix-confirmed-role-unspecified",
+      "unresolved_reason": "RACEICON contains 13 context/role variants per race; no current evidence identifies one variant as the canonical generic icon"
+    },
+    {
+      "key": "race.klackon.icon.farmer",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 79,
+        "frame": 0,
+        "block_sha256": "80b086ab376ae36c001af0818d893d4a72538e493cb5039b22ee0447908cd0d9",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.klackon.icon.worker",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 81,
+        "frame": 0,
+        "block_sha256": "6cc62770f947ce9ab8053324845d7537eb01445daae0cfd376d4d6429e9c3fa4",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.klackon.icon.scientist",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 83,
+        "frame": 0,
+        "block_sha256": "00b92206057e5f8a4a74e556d9580c90c376004c04b8d156f1ff46391de24cb9",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.klackon.icon.marine",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 85,
+        "frame": 0,
+        "block_sha256": "19419e270023eb143043c674fcddc63e3c80556ecc749f6c94568c5ea1eb61cc",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.meklar.portrait",
+      "kind": "race_portrait",
+      "status": "confirmed",
+      "verification": "original-order-visual-confirmed",
+      "reference": {
+        "archive": "RACESEL.LBX",
+        "block": 22,
+        "frame": 0,
+        "block_sha256": "3f1fc5630968a5a47dfa8b43ee834c72ed0f8b48183644c65eec9b9614a20675",
+        "width": 290,
+        "height": 322
+      }
+    },
+    {
+      "key": "race.meklar.icon",
+      "kind": "race_icon",
+      "status": "pending",
+      "verification": "matrix-confirmed-role-unspecified",
+      "unresolved_reason": "RACEICON contains 13 context/role variants per race; no current evidence identifies one variant as the canonical generic icon"
+    },
+    {
+      "key": "race.meklar.icon.farmer",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 92,
+        "frame": 0,
+        "block_sha256": "0432feb743479a353788e5d3caf6c48ec40017c20f2bef2cb43f0d219ab0817a",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.meklar.icon.worker",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 94,
+        "frame": 0,
+        "block_sha256": "b7233d44ee0a661d16ec7c75d73c6171df607547f90d3e694ade9721809c965d",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.meklar.icon.scientist",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 96,
+        "frame": 0,
+        "block_sha256": "69cc2bb5582e8f0fca0bd2e030a21d6641d868c039350d92abe5ee4fa8512dd6",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.meklar.icon.marine",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 98,
+        "frame": 0,
+        "block_sha256": "8e7f28a35b6bcb831c063230c9489695d4a50d97397e2c661e904a868bdba6bf",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.mrrshan.portrait",
+      "kind": "race_portrait",
+      "status": "confirmed",
+      "verification": "original-order-visual-confirmed",
+      "reference": {
+        "archive": "RACESEL.LBX",
+        "block": 23,
+        "frame": 0,
+        "block_sha256": "e979c14581ca1f54991ee0e09d653fd2ce540f81d3892ecb2ff33947bcaf1952",
+        "width": 290,
+        "height": 322
+      }
+    },
+    {
+      "key": "race.mrrshan.icon",
+      "kind": "race_icon",
+      "status": "pending",
+      "verification": "matrix-confirmed-role-unspecified",
+      "unresolved_reason": "RACEICON contains 13 context/role variants per race; no current evidence identifies one variant as the canonical generic icon"
+    },
+    {
+      "key": "race.mrrshan.icon.farmer",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 105,
+        "frame": 0,
+        "block_sha256": "3a832ab85c36ee0b6dbe2b0fb23ed7ee6d34d544ac5de3d181eb15ab230fa2f8",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.mrrshan.icon.worker",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 107,
+        "frame": 0,
+        "block_sha256": "49572071f6860ed6cf30641cee000c5ba34451b11f9792604d3101a3509728a2",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.mrrshan.icon.scientist",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 109,
+        "frame": 0,
+        "block_sha256": "cac1669029b3ec66b607617a4e95ec197a8c3cd40492485d3afaa5f6d09afda1",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.mrrshan.icon.marine",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 111,
+        "frame": 0,
+        "block_sha256": "58cd5f7664b369eb4929f2a1ab2d18f3f8163580229aef6eeb63374c5b742cfc",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.psilon.portrait",
+      "kind": "race_portrait",
+      "status": "confirmed",
+      "verification": "original-order-visual-confirmed",
+      "reference": {
+        "archive": "RACESEL.LBX",
+        "block": 24,
+        "frame": 0,
+        "block_sha256": "903430bf5f6092099dc473c165e29319207394728de27d8b2e5b60e652715613",
+        "width": 290,
+        "height": 322
+      }
+    },
+    {
+      "key": "race.psilon.icon",
+      "kind": "race_icon",
+      "status": "pending",
+      "verification": "matrix-confirmed-role-unspecified",
+      "unresolved_reason": "RACEICON contains 13 context/role variants per race; no current evidence identifies one variant as the canonical generic icon"
+    },
+    {
+      "key": "race.psilon.icon.farmer",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 118,
+        "frame": 0,
+        "block_sha256": "a886afb93af4f8d5139b9ae67205341bd183856695c571f2dd5df72a4fafc782",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.psilon.icon.worker",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 120,
+        "frame": 0,
+        "block_sha256": "9fa5129b26d6934a8c6070ca6a82351490d0a068cd0296005314af4faae10a14",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.psilon.icon.scientist",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 122,
+        "frame": 0,
+        "block_sha256": "ed4b7b3908db4761b83820a36765b0fc69b3c7ebe77899c1257da50df0a58234",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.psilon.icon.marine",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 124,
+        "frame": 0,
+        "block_sha256": "94cd1fbad8b64b1aecc5c1ffada81ed71aa5f4b2da26ef65ecc1fb84a7f8769a",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.sakkra.portrait",
+      "kind": "race_portrait",
+      "status": "confirmed",
+      "verification": "original-order-visual-confirmed",
+      "reference": {
+        "archive": "RACESEL.LBX",
+        "block": 25,
+        "frame": 0,
+        "block_sha256": "fbbca78bb318133c48369ac451b0d5aeeaea3aa25fc71364fb005ca720f20187",
+        "width": 290,
+        "height": 322
+      }
+    },
+    {
+      "key": "race.sakkra.icon",
+      "kind": "race_icon",
+      "status": "pending",
+      "verification": "matrix-confirmed-role-unspecified",
+      "unresolved_reason": "RACEICON contains 13 context/role variants per race; no current evidence identifies one variant as the canonical generic icon"
+    },
+    {
+      "key": "race.sakkra.icon.farmer",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 131,
+        "frame": 0,
+        "block_sha256": "7414c3809b7fa4bdf1179100dad4503c27a48724dc2c212012688efc7989323f",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.sakkra.icon.worker",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 133,
+        "frame": 0,
+        "block_sha256": "4b10300ca99cbd5ef4678b62bb2dc32c4bd755fe995a222535dd1fffd35c49f1",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.sakkra.icon.scientist",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 135,
+        "frame": 0,
+        "block_sha256": "29a44ff0a4e29db6521dcfc8fb7b65023b89626966623bc3fdb5934e101dc080",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.sakkra.icon.marine",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 137,
+        "frame": 0,
+        "block_sha256": "b69afdfc438c12b083362bd7418d5b66249b80211f77522c958bc0548fbd002d",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.silicoid.portrait",
+      "kind": "race_portrait",
+      "status": "confirmed",
+      "verification": "original-order-visual-confirmed",
+      "reference": {
+        "archive": "RACESEL.LBX",
+        "block": 26,
+        "frame": 0,
+        "block_sha256": "d4a0c1d5cda7b8e38c85af59da6bec50402b8577c59dafe595d91eda076ec0d6",
+        "width": 290,
+        "height": 322
+      }
+    },
+    {
+      "key": "race.silicoid.icon",
+      "kind": "race_icon",
+      "status": "pending",
+      "verification": "matrix-confirmed-role-unspecified",
+      "unresolved_reason": "RACEICON contains 13 context/role variants per race; no current evidence identifies one variant as the canonical generic icon"
+    },
+    {
+      "key": "race.silicoid.icon.farmer",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 144,
+        "frame": 0,
+        "block_sha256": "92fec77ae4484d8c0cb00b20a876fde50735497ecaf7f7c536c8ea5facba14ef",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.silicoid.icon.worker",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 146,
+        "frame": 0,
+        "block_sha256": "cd77b7dc84bd4b3f3e62b622ed20b758e2abef5b67310b2fdb469e8f98e9a047",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.silicoid.icon.scientist",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 148,
+        "frame": 0,
+        "block_sha256": "91884e3860f959e277ed3c418573bc729657012ce57044e35b5feaba9bdcaf99",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.silicoid.icon.marine",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 150,
+        "frame": 0,
+        "block_sha256": "2a9367d98f3b783b8e1297f0f42ebe91026cbe2875fa29f87b2e9312d1442201",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.trilarian.portrait",
+      "kind": "race_portrait",
+      "status": "confirmed",
+      "verification": "original-order-visual-confirmed",
+      "reference": {
+        "archive": "RACESEL.LBX",
+        "block": 27,
+        "frame": 0,
+        "block_sha256": "083186633f2e1cbee6ca726d8012f3fa7fa9ba9c813351eaa888ed3f7ae25761",
+        "width": 290,
+        "height": 322
+      }
+    },
+    {
+      "key": "race.trilarian.icon",
+      "kind": "race_icon",
+      "status": "pending",
+      "verification": "matrix-confirmed-role-unspecified",
+      "unresolved_reason": "RACEICON contains 13 context/role variants per race; no current evidence identifies one variant as the canonical generic icon"
+    },
+    {
+      "key": "race.trilarian.icon.farmer",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 157,
+        "frame": 0,
+        "block_sha256": "297d85dfb08726458fb74564915d4d4561367705eebda0dbab80cb2818dcfdfb",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.trilarian.icon.worker",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 159,
+        "frame": 0,
+        "block_sha256": "6da28dc40b80a9474df6b542aeff2222772ad2e9e3e1da33f2235fa4b24c2386",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.trilarian.icon.scientist",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 161,
+        "frame": 0,
+        "block_sha256": "a421ba682fc2741d9fa5bc7a97920fb94db783d377575fef009352dc46c4d14c",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.trilarian.icon.marine",
+      "kind": "race_role_icon",
+      "status": "confirmed",
+      "verification": "original-matrix-plus-secondary-usage-confirmed",
+      "reference": {
+        "archive": "RACEICON.LBX",
+        "block": 163,
+        "frame": 0,
+        "block_sha256": "964dd6225aaf25a3fcacc0358e3a6db022b98505f257711734bba7b8febc0dbb",
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "key": "race.custom.portrait",
+      "kind": "race_portrait",
+      "status": "confirmed",
+      "verification": "original-sequence-visual-confirmed",
+      "reference": {
+        "archive": "RACESEL.LBX",
+        "block": 28,
+        "frame": 0,
+        "block_sha256": "33f5e490f6c7294cb450a261dd48905bc3e8817efd26ebdc289e7f18c6fd53dd",
+        "width": 290,
+        "height": 322
+      }
+    }
+  ]
+}

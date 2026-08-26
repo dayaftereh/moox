@@ -15,15 +15,17 @@ import (
 
 func normalizeCmd(args []string) error {
 	if len(args) == 0 {
-		return errors.New("normalize requires a dataset name; currently supported: race-traits, races")
+		return errors.New("normalize requires a dataset name; currently supported: race-traits, races, assets")
 	}
 	switch args[0] {
 	case "race-traits":
 		return normalizeRaceTraitsCmd(args[1:])
 	case "races":
 		return normalizeRacesCmd(args[1:])
+	case "assets":
+		return normalizeAssetsCmd(args[1:])
 	default:
-		return fmt.Errorf("unknown normalize dataset %q; currently supported: race-traits, races", args[0])
+		return fmt.Errorf("unknown normalize dataset %q; currently supported: race-traits, races, assets", args[0])
 	}
 }
 
@@ -180,5 +182,46 @@ func normalizeRacesCmd(args []string) error {
 	for _, race := range bundle.Rules.Races {
 		fmt.Printf("  %-10s traits=%d derived_picks=%d\n", race.ID, len(race.TraitSelections), race.DerivedPickTotal)
 	}
+	return nil
+}
+
+func normalizeAssetsCmd(args []string) error {
+	fs := flag.NewFlagSet("normalize assets", flag.ContinueOnError)
+	out := fs.String("out", "", "semantic assets JSON output path (required)")
+	racesPath := fs.String("races", "", "normalized races.json path (required)")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if fs.NArg() != 1 {
+		return errors.New("normalize assets requires exactly one MOO2 installation directory")
+	}
+	if *out == "" || *racesPath == "" {
+		return errors.New("normalize assets requires -out <path> and -races <races.json>")
+	}
+
+	races, err := ruleset.LoadRaces(*racesPath)
+	if err != nil {
+		return fmt.Errorf("load races: %w", err)
+	}
+	assets, err := moo2data.DecodeAssets(fs.Arg(0), races)
+	if err != nil {
+		return err
+	}
+	path, err := writeJSONAtomic(*out, assets)
+	if err != nil {
+		return err
+	}
+
+	confirmed := 0
+	pending := 0
+	for _, asset := range assets.Assets {
+		switch asset.Status {
+		case "confirmed":
+			confirmed++
+		case "pending":
+			pending++
+		}
+	}
+	fmt.Printf("normalized %d semantic assets (%d confirmed, %d pending) -> %s\n", len(assets.Assets), confirmed, pending, path)
 	return nil
 }

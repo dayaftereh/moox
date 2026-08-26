@@ -109,6 +109,21 @@ This command validates the expected English `RACESTUF.LBX` block layout before g
 
 The generated ruleset is runtime-oriented: stable IDs and numeric values are authoritative, while user-visible text is referenced by language keys. `-language-out` generates a separate language JSON (currently English from the original 1.31 block). Provenance deliberately distinguishes direct 1.31 observations from secondary-reference Pick costs and still-unverified behavioral formulas.
 
+
+## Normalize semantic assets
+
+Generate tracked semantic asset metadata from the private original reference and normalized race order:
+
+```powershell
+out\moox-analyze-windows-amd64.exe normalize assets `
+  -out data\rulesets\moo2-1.31\assets.json `
+  -races data\rulesets\moo2-1.31\races.json `
+  C:\ASH\Temp\mastori2
+```
+
+The first semantic slice validates the `RACESEL` portrait sequence and the 13x13 `RACEICON` matrix against the actual 1.31 archives. Confirmed asset references store archive/block/frame, dimensions and block SHA-256. Known colony-role variants map farmer/worker/scientist/marine to RACEICON variants 1/3/5/7. Generic `race.<id>.icon` keys remain `pending` rather than arbitrarily selecting one of the 13 variants.
+
+The generated `assets.json` is distributable metadata only; original graphics remain below ignored `reference/original/` paths.
 ## Decode graphics
 
 Graphics with embedded/internal palettes can now be exported directly to PNG:
