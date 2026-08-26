@@ -112,9 +112,9 @@ ruleset: moox-default
 
 ## 8. Local installation status
 
-On 2026-08-26 the LLO Desktop was checked in common GOG and Steam locations (including standard C: locations and common D:/E: SteamLibrary paths). No MOO2 installation was found.
+A local reference installation was subsequently found at `C:\ASH\Temp\mastori2`. Its included `README.TXT` identifies it as **Master of Orion II Version 1.31**, dated 11 April 1997. The set contains 420 files (about 322.38 MiB), including 373 `.LBX` archives, `Orion2.exe`, `ORION95.EXE`, `PATCH13.LBX` and one `.GAM` save. See `LOCAL_REFERENCE_2026-08-26.md` for the non-copyrighted inventory metadata.
 
-No game data was downloaded from abandonware/piracy sites.
+No game data was downloaded from abandonware/piracy sites as part of this research.
 
 A legitimate current copy is available commercially through GOG and Steam. GOG additionally lists manuals/reference extras for owners of the package.
 
@@ -229,3 +229,4 @@ Original sprites, portraits, music, sound, cinematics, manual prose and branded 
 8. Create automated comparison cases against the running original game.
 9. Keep all original/extracted assets ignored locally.
 10. Commit only MOOX-authored schemas, observations, tests and documentation.
+

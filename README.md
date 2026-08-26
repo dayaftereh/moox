@@ -44,7 +44,7 @@ Do **not** commit original MOO2 game binaries, manuals, screenshots, music, soun
 
 A legitimate GOG/Steam/local installation can still be very useful as a private reference source. The planned tooling will be able to point at such an installation, catalog archive structures/hashes and extract information into local ignored directories. Original files and extracted copyrighted assets remain outside Git.
 
-The LLO desktop was checked on 2026-08-26 in common Steam/GOG locations and no MOO2 installation was found there yet.
+A local Master of Orion II 1.31 reference installation was subsequently found at `C:\ASH\Temp\mastori2`. It is treated as private research input and is not copied into Git; see `docs/research/LOCAL_REFERENCE_2026-08-26.md`.
 
 ## Public reverse-engineering references
 
@@ -71,3 +71,4 @@ Before picking the rendering/UI technology, build a **deterministic headless sim
 - save and reload the exact game state.
 
 After this baseline is stable we can add race design, diplomacy, ship design and tactical combat without coupling game rules to the UI.
+
