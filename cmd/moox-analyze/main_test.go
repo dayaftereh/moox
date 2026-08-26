@@ -64,3 +64,13 @@ func TestTextCommandIsRegistered(t *testing.T) {
 		t.Fatalf("text command is not registered: %v", err)
 	}
 }
+
+func TestSupportCommandIsRegistered(t *testing.T) {
+	err := run([]string{"support"})
+	if err == nil {
+		t.Fatal("support without arguments should fail")
+	}
+	if strings.Contains(err.Error(), "unknown command") {
+		t.Fatalf("support command is not registered: %v", err)
+	}
+}
