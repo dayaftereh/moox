@@ -108,3 +108,19 @@ out\moox-analyze-windows-amd64.exe normalize buildings `
   -languages-dir data\languages `
   C:\ASH\Temp\mastori2
 ```
+## `technologies.json`
+
+The original English `TECHNAME.LBX` block 0 contains a directly identifiable 203-entry concrete technology sequence. It begins immediately after `No Tech` with `Achilles Targeting Unit` and ends with `Zortrium Armor`; the next string is `Biology`, beginning another name section.
+
+`technologies.json` preserves that original ordering as `technology_id` 1..203. Stable runtime IDs and language keys are derived from the original names, while every name records its exact source offset in the original block.
+
+Generate it with:
+
+```powershell
+out\moox-analyze-windows-amd64.exe normalize technologies `
+  -out data\rulesets\moo2-1.31\technologies.json `
+  -languages-dir data\languages `
+  C:\ASH\Temp\mastori2
+```
+
+This identity layer intentionally does not yet claim research field, research cost or exact effect formulas; those are separate decoding tasks.

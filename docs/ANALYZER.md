@@ -111,6 +111,17 @@ The generated ruleset is runtime-oriented: stable IDs and numeric values are aut
 
 
 
+
+## Normalize technologies
+
+```powershell
+out\moox-analyze-windows-amd64.exe normalize technologies `
+  -out data\rulesets\moo2-1.31\technologies.json `
+  -languages-dir data\languages `
+  C:\ASH\Temp\mastori2
+```
+
+The decoder identifies the bounded 203-name technology section directly in English `TECHNAME.LBX` block 0 (`No Tech` -> Achilles... through Zortrium Armor -> next `Biology` section). The resulting IDs 1..203 are therefore original-observed, not imported from a secondary tech table.
 ## Normalize colony buildings
 
 ```powershell

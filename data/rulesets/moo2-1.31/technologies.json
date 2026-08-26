@@ -1,0 +1,2047 @@
+{
+  "schema_version": 1,
+  "ruleset": "moo2-1.31",
+  "sources": [
+    {
+      "id": "moo2-1.31-techname-block0-technologies",
+      "type": "original-observed",
+      "description": "The 203-entry concrete technology-name section in Master of Orion II 1.31 TECHNAME.LBX block 0, bounded by No Tech and the following Biology section",
+      "archive": "TECHNAME.LBX",
+      "block": 0,
+      "sha256": "917653c6d4b767166c2223bb72e3e8608b2eb8415cef0a4436ed9a7391d10a4e",
+      "block_sha256": "3079adf60539bd200d0b55b750f52c1e5cd1d2b59bdf4e2243f1c17d6d3978e9"
+    }
+  ],
+  "technologies": [
+    {
+      "id": "achilles_targeting_unit",
+      "order": 0,
+      "technology_id": 1,
+      "name_key": "technology.achilles_targeting_unit.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1418
+      }
+    },
+    {
+      "id": "adamantium_armor",
+      "order": 1,
+      "technology_id": 2,
+      "name_key": "technology.adamantium_armor.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1442
+      }
+    },
+    {
+      "id": "advanced_city_planning",
+      "order": 2,
+      "technology_id": 3,
+      "name_key": "technology.advanced_city_planning.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1459
+      }
+    },
+    {
+      "id": "advanced_damage_control",
+      "order": 3,
+      "technology_id": 4,
+      "name_key": "technology.advanced_damage_control.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1482
+      }
+    },
+    {
+      "id": "alien_management_center",
+      "order": 4,
+      "technology_id": 5,
+      "name_key": "technology.alien_management_center.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1506
+      }
+    },
+    {
+      "id": "android_farmers",
+      "order": 5,
+      "technology_id": 6,
+      "name_key": "technology.android_farmers.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1530
+      }
+    },
+    {
+      "id": "android_scientists",
+      "order": 6,
+      "technology_id": 7,
+      "name_key": "technology.android_scientists.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1546
+      }
+    },
+    {
+      "id": "android_workers",
+      "order": 7,
+      "technology_id": 8,
+      "name_key": "technology.android_workers.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1565
+      }
+    },
+    {
+      "id": "anti_grav_harness",
+      "order": 8,
+      "technology_id": 9,
+      "name_key": "technology.anti_grav_harness.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1581
+      }
+    },
+    {
+      "id": "anti_matter_bomb",
+      "order": 9,
+      "technology_id": 10,
+      "name_key": "technology.anti_matter_bomb.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1599
+      }
+    },
+    {
+      "id": "anti_matter_drive",
+      "order": 10,
+      "technology_id": 11,
+      "name_key": "technology.anti_matter_drive.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1616
+      }
+    },
+    {
+      "id": "anti_matter_torpedoes",
+      "order": 11,
+      "technology_id": 12,
+      "name_key": "technology.anti_matter_torpedoes.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1634
+      }
+    },
+    {
+      "id": "anti_missile_rockets",
+      "order": 12,
+      "technology_id": 13,
+      "name_key": "technology.anti_missile_rockets.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1656
+      }
+    },
+    {
+      "id": "armor_barracks",
+      "order": 13,
+      "technology_id": 14,
+      "name_key": "technology.armor_barracks.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1677
+      }
+    },
+    {
+      "id": "artemis_system_net",
+      "order": 14,
+      "technology_id": 15,
+      "name_key": "technology.artemis_system_net.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1692
+      }
+    },
+    {
+      "id": "planet_construction",
+      "order": 15,
+      "technology_id": 16,
+      "name_key": "technology.planet_construction.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1711
+      }
+    },
+    {
+      "id": "assault_shuttles",
+      "order": 16,
+      "technology_id": 17,
+      "name_key": "technology.assault_shuttles.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1731
+      }
+    },
+    {
+      "id": "astro_university",
+      "order": 17,
+      "technology_id": 18,
+      "name_key": "technology.astro_university.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1748
+      }
+    },
+    {
+      "id": "atmospheric_renewer",
+      "order": 18,
+      "technology_id": 19,
+      "name_key": "technology.atmospheric_renewer.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1765
+      }
+    },
+    {
+      "id": "augmented_engines",
+      "order": 19,
+      "technology_id": 20,
+      "name_key": "technology.augmented_engines.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1785
+      }
+    },
+    {
+      "id": "autolab",
+      "order": 20,
+      "technology_id": 21,
+      "name_key": "technology.autolab.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1803
+      }
+    },
+    {
+      "id": "automated_factories",
+      "order": 21,
+      "technology_id": 22,
+      "name_key": "technology.automated_factories.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1811
+      }
+    },
+    {
+      "id": "automated_repair_unit",
+      "order": 22,
+      "technology_id": 23,
+      "name_key": "technology.automated_repair_unit.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1831
+      }
+    },
+    {
+      "id": "battleoids",
+      "order": 23,
+      "technology_id": 24,
+      "name_key": "technology.battleoids.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1853
+      }
+    },
+    {
+      "id": "battle_pods",
+      "order": 24,
+      "technology_id": 25,
+      "name_key": "technology.battle_pods.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1864
+      }
+    },
+    {
+      "id": "battle_scanner",
+      "order": 25,
+      "technology_id": 26,
+      "name_key": "technology.battle_scanner.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1876
+      }
+    },
+    {
+      "id": "battlestation",
+      "order": 26,
+      "technology_id": 27,
+      "name_key": "technology.battlestation.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1891
+      }
+    },
+    {
+      "id": "bio_terminator",
+      "order": 27,
+      "technology_id": 28,
+      "name_key": "technology.bio_terminator.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1905
+      }
+    },
+    {
+      "id": "biomorphic_fungi",
+      "order": 28,
+      "technology_id": 29,
+      "name_key": "technology.biomorphic_fungi.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1920
+      }
+    },
+    {
+      "id": "black_hole_generator",
+      "order": 29,
+      "technology_id": 30,
+      "name_key": "technology.black_hole_generator.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1937
+      }
+    },
+    {
+      "id": "bomber_bays",
+      "order": 30,
+      "technology_id": 31,
+      "name_key": "technology.bomber_bays.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1958
+      }
+    },
+    {
+      "id": "capitol",
+      "order": 31,
+      "technology_id": 32,
+      "name_key": "technology.capitol.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1970
+      }
+    },
+    {
+      "id": "class_i_shield",
+      "order": 32,
+      "technology_id": 33,
+      "name_key": "technology.class_i_shield.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1978
+      }
+    },
+    {
+      "id": "class_iii_shield",
+      "order": 33,
+      "technology_id": 34,
+      "name_key": "technology.class_iii_shield.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 1993
+      }
+    },
+    {
+      "id": "class_v_shield",
+      "order": 34,
+      "technology_id": 35,
+      "name_key": "technology.class_v_shield.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2010
+      }
+    },
+    {
+      "id": "class_vii_shield",
+      "order": 35,
+      "technology_id": 36,
+      "name_key": "technology.class_vii_shield.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2025
+      }
+    },
+    {
+      "id": "class_x_shield",
+      "order": 36,
+      "technology_id": 37,
+      "name_key": "technology.class_x_shield.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2042
+      }
+    },
+    {
+      "id": "cloaking_device",
+      "order": 37,
+      "technology_id": 38,
+      "name_key": "technology.cloaking_device.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2057
+      }
+    },
+    {
+      "id": "cloning_center",
+      "order": 38,
+      "technology_id": 39,
+      "name_key": "technology.cloning_center.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2073
+      }
+    },
+    {
+      "id": "colony_base",
+      "order": 39,
+      "technology_id": 40,
+      "name_key": "technology.colony_base.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2088
+      }
+    },
+    {
+      "id": "colony_ship",
+      "order": 40,
+      "technology_id": 41,
+      "name_key": "technology.colony_ship.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2100
+      }
+    },
+    {
+      "id": "confederation",
+      "order": 41,
+      "technology_id": 42,
+      "name_key": "technology.confederation.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2112
+      }
+    },
+    {
+      "id": "cyber_security_link",
+      "order": 42,
+      "technology_id": 43,
+      "name_key": "technology.cyber_security_link.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2126
+      }
+    },
+    {
+      "id": "cybertronic_computer",
+      "order": 43,
+      "technology_id": 44,
+      "name_key": "technology.cybertronic_computer.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2146
+      }
+    },
+    {
+      "id": "damper_field",
+      "order": 44,
+      "technology_id": 45,
+      "name_key": "technology.damper_field.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2167
+      }
+    },
+    {
+      "id": "dauntless_guidance_system",
+      "order": 45,
+      "technology_id": 46,
+      "name_key": "technology.dauntless_guidance_system.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2180
+      }
+    },
+    {
+      "id": "death_ray",
+      "order": 46,
+      "technology_id": 47,
+      "name_key": "technology.death_ray.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2206
+      }
+    },
+    {
+      "id": "death_spores",
+      "order": 47,
+      "technology_id": 48,
+      "name_key": "technology.death_spores.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2216
+      }
+    },
+    {
+      "id": "deep_core_mining",
+      "order": 48,
+      "technology_id": 49,
+      "name_key": "technology.deep_core_mining.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2229
+      }
+    },
+    {
+      "id": "core_waste_dumps",
+      "order": 49,
+      "technology_id": 50,
+      "name_key": "technology.core_waste_dumps.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2246
+      }
+    },
+    {
+      "id": "deuterium_fuel_cells",
+      "order": 50,
+      "technology_id": 51,
+      "name_key": "technology.deuterium_fuel_cells.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2263
+      }
+    },
+    {
+      "id": "dimensional_portal",
+      "order": 51,
+      "technology_id": 52,
+      "name_key": "technology.dimensional_portal.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2284
+      }
+    },
+    {
+      "id": "displacement_device",
+      "order": 52,
+      "technology_id": 53,
+      "name_key": "technology.displacement_device.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2303
+      }
+    },
+    {
+      "id": "disrupter_cannon",
+      "order": 53,
+      "technology_id": 54,
+      "name_key": "technology.disrupter_cannon.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2323
+      }
+    },
+    {
+      "id": "doom_star_construction",
+      "order": 54,
+      "technology_id": 55,
+      "name_key": "technology.doom_star_construction.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2340
+      }
+    },
+    {
+      "id": "reinforced_hull",
+      "order": 55,
+      "technology_id": 56,
+      "name_key": "technology.reinforced_hull.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2363
+      }
+    },
+    {
+      "id": "ecm_jammer",
+      "order": 56,
+      "technology_id": 57,
+      "name_key": "technology.ecm_jammer.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2379
+      }
+    },
+    {
+      "id": "electronic_computer",
+      "order": 57,
+      "technology_id": 58,
+      "name_key": "technology.electronic_computer.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2390
+      }
+    },
+    {
+      "id": "emissions_guidance_system",
+      "order": 58,
+      "technology_id": 59,
+      "name_key": "technology.emissions_guidance_system.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2410
+      }
+    },
+    {
+      "id": "energy_absorber",
+      "order": 59,
+      "technology_id": 60,
+      "name_key": "technology.energy_absorber.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2436
+      }
+    },
+    {
+      "id": "biospheres",
+      "order": 60,
+      "technology_id": 61,
+      "name_key": "technology.biospheres.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2452
+      }
+    },
+    {
+      "id": "evolutionary_mutation",
+      "order": 61,
+      "technology_id": 62,
+      "name_key": "technology.evolutionary_mutation.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2463
+      }
+    },
+    {
+      "id": "extended_fuel_tanks",
+      "order": 62,
+      "technology_id": 63,
+      "name_key": "technology.extended_fuel_tanks.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2485
+      }
+    },
+    {
+      "id": "fast_missile_racks",
+      "order": 63,
+      "technology_id": 64,
+      "name_key": "technology.fast_missile_racks.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2505
+      }
+    },
+    {
+      "id": "federation",
+      "order": 64,
+      "technology_id": 65,
+      "name_key": "technology.federation.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2524
+      }
+    },
+    {
+      "id": "fighter_bays",
+      "order": 65,
+      "technology_id": 66,
+      "name_key": "technology.fighter_bays.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2535
+      }
+    },
+    {
+      "id": "fighter_garrison",
+      "order": 66,
+      "technology_id": 67,
+      "name_key": "technology.fighter_garrison.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2548
+      }
+    },
+    {
+      "id": "food_replicators",
+      "order": 67,
+      "technology_id": 68,
+      "name_key": "technology.food_replicators.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2565
+      }
+    },
+    {
+      "id": "freighters",
+      "order": 68,
+      "technology_id": 69,
+      "name_key": "technology.freighters.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2582
+      }
+    },
+    {
+      "id": "fusion_beam",
+      "order": 69,
+      "technology_id": 70,
+      "name_key": "technology.fusion_beam.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2593
+      }
+    },
+    {
+      "id": "fusion_bomb",
+      "order": 70,
+      "technology_id": 71,
+      "name_key": "technology.fusion_bomb.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2605
+      }
+    },
+    {
+      "id": "fusion_drive",
+      "order": 71,
+      "technology_id": 72,
+      "name_key": "technology.fusion_drive.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2617
+      }
+    },
+    {
+      "id": "fusion_rifle",
+      "order": 72,
+      "technology_id": 73,
+      "name_key": "technology.fusion_rifle.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2630
+      }
+    },
+    {
+      "id": "gaia_transformation",
+      "order": 73,
+      "technology_id": 74,
+      "name_key": "technology.gaia_transformation.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2643
+      }
+    },
+    {
+      "id": "galactic_currency_exchange",
+      "order": 74,
+      "technology_id": 75,
+      "name_key": "technology.galactic_currency_exchange.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2663
+      }
+    },
+    {
+      "id": "galactic_cybernet",
+      "order": 75,
+      "technology_id": 76,
+      "name_key": "technology.galactic_cybernet.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2690
+      }
+    },
+    {
+      "id": "galactic_unification",
+      "order": 76,
+      "technology_id": 77,
+      "name_key": "technology.galactic_unification.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2708
+      }
+    },
+    {
+      "id": "gauss_cannon",
+      "order": 77,
+      "technology_id": 78,
+      "name_key": "technology.gauss_cannon.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2729
+      }
+    },
+    {
+      "id": "graviton_beam",
+      "order": 78,
+      "technology_id": 79,
+      "name_key": "technology.graviton_beam.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2742
+      }
+    },
+    {
+      "id": "gyro_destabilizer",
+      "order": 79,
+      "technology_id": 80,
+      "name_key": "technology.gyro_destabilizer.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2756
+      }
+    },
+    {
+      "id": "hard_shields",
+      "order": 80,
+      "technology_id": 81,
+      "name_key": "technology.hard_shields.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2774
+      }
+    },
+    {
+      "id": "heavy_armor",
+      "order": 81,
+      "technology_id": 82,
+      "name_key": "technology.heavy_armor.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2787
+      }
+    },
+    {
+      "id": "heavy_fighter_bays",
+      "order": 82,
+      "technology_id": 83,
+      "name_key": "technology.heavy_fighter_bays.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2799
+      }
+    },
+    {
+      "id": "heightened_intelligence",
+      "order": 83,
+      "technology_id": 84,
+      "name_key": "technology.heightened_intelligence.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2818
+      }
+    },
+    {
+      "id": "high_energy_focus",
+      "order": 84,
+      "technology_id": 85,
+      "name_key": "technology.high_energy_focus.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2842
+      }
+    },
+    {
+      "id": "holo_simulator",
+      "order": 85,
+      "technology_id": 86,
+      "name_key": "technology.holo_simulator.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2860
+      }
+    },
+    {
+      "id": "hydroponic_farm",
+      "order": 86,
+      "technology_id": 87,
+      "name_key": "technology.hydroponic_farm.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2875
+      }
+    },
+    {
+      "id": "hyper_drive",
+      "order": 87,
+      "technology_id": 88,
+      "name_key": "technology.hyper_drive.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2891
+      }
+    },
+    {
+      "id": "megafluxers",
+      "order": 88,
+      "technology_id": 89,
+      "name_key": "technology.megafluxers.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2903
+      }
+    },
+    {
+      "id": "hyper_x_capacitors",
+      "order": 89,
+      "technology_id": 90,
+      "name_key": "technology.hyper_x_capacitors.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2915
+      }
+    },
+    {
+      "id": "hyperspace_communications",
+      "order": 90,
+      "technology_id": 91,
+      "name_key": "technology.hyperspace_communications.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2934
+      }
+    },
+    {
+      "id": "imperium",
+      "order": 91,
+      "technology_id": 92,
+      "name_key": "technology.imperium.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2960
+      }
+    },
+    {
+      "id": "inertial_nullifier",
+      "order": 92,
+      "technology_id": 93,
+      "name_key": "technology.inertial_nullifier.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2969
+      }
+    },
+    {
+      "id": "inertial_stabilizer",
+      "order": 93,
+      "technology_id": 94,
+      "name_key": "technology.inertial_stabilizer.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 2988
+      }
+    },
+    {
+      "id": "interphased_drive",
+      "order": 94,
+      "technology_id": 95,
+      "name_key": "technology.interphased_drive.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3008
+      }
+    },
+    {
+      "id": "ion_drive",
+      "order": 95,
+      "technology_id": 96,
+      "name_key": "technology.ion_drive.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3026
+      }
+    },
+    {
+      "id": "ion_pulse_cannon",
+      "order": 96,
+      "technology_id": 97,
+      "name_key": "technology.ion_pulse_cannon.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3036
+      }
+    },
+    {
+      "id": "iridium_fuel_cells",
+      "order": 97,
+      "technology_id": 98,
+      "name_key": "technology.iridium_fuel_cells.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3053
+      }
+    },
+    {
+      "id": "jump_gate",
+      "order": 98,
+      "technology_id": 99,
+      "name_key": "technology.jump_gate.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3072
+      }
+    },
+    {
+      "id": "laser_cannon",
+      "order": 99,
+      "technology_id": 100,
+      "name_key": "technology.laser_cannon.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3082
+      }
+    },
+    {
+      "id": "laser_rifle",
+      "order": 100,
+      "technology_id": 101,
+      "name_key": "technology.laser_rifle.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3095
+      }
+    },
+    {
+      "id": "lightning_field",
+      "order": 101,
+      "technology_id": 102,
+      "name_key": "technology.lightning_field.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3107
+      }
+    },
+    {
+      "id": "marine_barracks",
+      "order": 102,
+      "technology_id": 103,
+      "name_key": "technology.marine_barracks.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3123
+      }
+    },
+    {
+      "id": "mass_driver",
+      "order": 103,
+      "technology_id": 104,
+      "name_key": "technology.mass_driver.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3139
+      }
+    },
+    {
+      "id": "mauler_device",
+      "order": 104,
+      "technology_id": 105,
+      "name_key": "technology.mauler_device.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3151
+      }
+    },
+    {
+      "id": "merculite_missile",
+      "order": 105,
+      "technology_id": 106,
+      "name_key": "technology.merculite_missile.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3165
+      }
+    },
+    {
+      "id": "microbiotics",
+      "order": 106,
+      "technology_id": 107,
+      "name_key": "technology.microbiotics.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3183
+      }
+    },
+    {
+      "id": "microlite_construction",
+      "order": 107,
+      "technology_id": 108,
+      "name_key": "technology.microlite_construction.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3196
+      }
+    },
+    {
+      "id": "outpost_ship",
+      "order": 108,
+      "technology_id": 109,
+      "name_key": "technology.outpost_ship.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3219
+      }
+    },
+    {
+      "id": "moleculartronic_computer",
+      "order": 109,
+      "technology_id": 110,
+      "name_key": "technology.moleculartronic_computer.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3232
+      }
+    },
+    {
+      "id": "multi_wave_ecm_jammer",
+      "order": 110,
+      "technology_id": 111,
+      "name_key": "technology.multi_wave_ecm_jammer.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3257
+      }
+    },
+    {
+      "id": "multi_phased_shields",
+      "order": 111,
+      "technology_id": 112,
+      "name_key": "technology.multi_phased_shields.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3279
+      }
+    },
+    {
+      "id": "nano_disassemblers",
+      "order": 112,
+      "technology_id": 113,
+      "name_key": "technology.nano_disassemblers.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3300
+      }
+    },
+    {
+      "id": "neural_scanner",
+      "order": 113,
+      "technology_id": 114,
+      "name_key": "technology.neural_scanner.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3319
+      }
+    },
+    {
+      "id": "neutron_blaster",
+      "order": 114,
+      "technology_id": 115,
+      "name_key": "technology.neutron_blaster.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3334
+      }
+    },
+    {
+      "id": "neutron_scanner",
+      "order": 115,
+      "technology_id": 116,
+      "name_key": "technology.neutron_scanner.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3350
+      }
+    },
+    {
+      "id": "neutronium_armor",
+      "order": 116,
+      "technology_id": 117,
+      "name_key": "technology.neutronium_armor.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3366
+      }
+    },
+    {
+      "id": "neutronium_bomb",
+      "order": 117,
+      "technology_id": 118,
+      "name_key": "technology.neutronium_bomb.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3383
+      }
+    },
+    {
+      "id": "nuclear_bomb",
+      "order": 118,
+      "technology_id": 119,
+      "name_key": "technology.nuclear_bomb.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3399
+      }
+    },
+    {
+      "id": "nuclear_drive",
+      "order": 119,
+      "technology_id": 120,
+      "name_key": "technology.nuclear_drive.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3412
+      }
+    },
+    {
+      "id": "nuclear_missile",
+      "order": 120,
+      "technology_id": 121,
+      "name_key": "technology.nuclear_missile.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3426
+      }
+    },
+    {
+      "id": "optronic_computer",
+      "order": 121,
+      "technology_id": 122,
+      "name_key": "technology.optronic_computer.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3442
+      }
+    },
+    {
+      "id": "particle_beam",
+      "order": 122,
+      "technology_id": 123,
+      "name_key": "technology.particle_beam.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3460
+      }
+    },
+    {
+      "id": "personal_shield",
+      "order": 123,
+      "technology_id": 124,
+      "name_key": "technology.personal_shield.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3474
+      }
+    },
+    {
+      "id": "phase_shifter",
+      "order": 124,
+      "technology_id": 125,
+      "name_key": "technology.phase_shifter.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3490
+      }
+    },
+    {
+      "id": "phasing_cloak",
+      "order": 125,
+      "technology_id": 126,
+      "name_key": "technology.phasing_cloak.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3504
+      }
+    },
+    {
+      "id": "phasor",
+      "order": 126,
+      "technology_id": 127,
+      "name_key": "technology.phasor.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3518
+      }
+    },
+    {
+      "id": "phasor_rifle",
+      "order": 127,
+      "technology_id": 128,
+      "name_key": "technology.phasor_rifle.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3525
+      }
+    },
+    {
+      "id": "planetary_barrier_shield",
+      "order": 128,
+      "technology_id": 129,
+      "name_key": "technology.planetary_barrier_shield.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3538
+      }
+    },
+    {
+      "id": "planetary_flux_shield",
+      "order": 129,
+      "technology_id": 130,
+      "name_key": "technology.planetary_flux_shield.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3563
+      }
+    },
+    {
+      "id": "planetary_gravity_generator",
+      "order": 130,
+      "technology_id": 131,
+      "name_key": "technology.planetary_gravity_generator.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3585
+      }
+    },
+    {
+      "id": "planetary_missile_base",
+      "order": 131,
+      "technology_id": 132,
+      "name_key": "technology.planetary_missile_base.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3613
+      }
+    },
+    {
+      "id": "ground_batteries",
+      "order": 132,
+      "technology_id": 133,
+      "name_key": "technology.ground_batteries.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3636
+      }
+    },
+    {
+      "id": "planetary_radiation_shield",
+      "order": 133,
+      "technology_id": 134,
+      "name_key": "technology.planetary_radiation_shield.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3653
+      }
+    },
+    {
+      "id": "planetary_stock_exchange",
+      "order": 134,
+      "technology_id": 135,
+      "name_key": "technology.planetary_stock_exchange.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3680
+      }
+    },
+    {
+      "id": "planetary_supercomputer",
+      "order": 135,
+      "technology_id": 136,
+      "name_key": "technology.planetary_supercomputer.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3705
+      }
+    },
+    {
+      "id": "plasma_cannon",
+      "order": 136,
+      "technology_id": 137,
+      "name_key": "technology.plasma_cannon.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3729
+      }
+    },
+    {
+      "id": "plasma_rifle",
+      "order": 137,
+      "technology_id": 138,
+      "name_key": "technology.plasma_rifle.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3743
+      }
+    },
+    {
+      "id": "plasma_torpedoes",
+      "order": 138,
+      "technology_id": 139,
+      "name_key": "technology.plasma_torpedoes.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3756
+      }
+    },
+    {
+      "id": "plasma_web",
+      "order": 139,
+      "technology_id": 140,
+      "name_key": "technology.plasma_web.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3773
+      }
+    },
+    {
+      "id": "pleasure_dome",
+      "order": 140,
+      "technology_id": 141,
+      "name_key": "technology.pleasure_dome.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3784
+      }
+    },
+    {
+      "id": "pollution_processor",
+      "order": 141,
+      "technology_id": 142,
+      "name_key": "technology.pollution_processor.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3798
+      }
+    },
+    {
+      "id": "positronic_computer",
+      "order": 142,
+      "technology_id": 143,
+      "name_key": "technology.positronic_computer.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3818
+      }
+    },
+    {
+      "id": "powered_armor",
+      "order": 143,
+      "technology_id": 144,
+      "name_key": "technology.powered_armor.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3838
+      }
+    },
+    {
+      "id": "pulse_rifle",
+      "order": 144,
+      "technology_id": 145,
+      "name_key": "technology.pulse_rifle.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3852
+      }
+    },
+    {
+      "id": "proton_torpedoes",
+      "order": 145,
+      "technology_id": 146,
+      "name_key": "technology.proton_torpedoes.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3864
+      }
+    },
+    {
+      "id": "psionics",
+      "order": 146,
+      "technology_id": 147,
+      "name_key": "technology.psionics.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3881
+      }
+    },
+    {
+      "id": "pulsar",
+      "order": 147,
+      "technology_id": 148,
+      "name_key": "technology.pulsar.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3890
+      }
+    },
+    {
+      "id": "pulson_missile",
+      "order": 148,
+      "technology_id": 149,
+      "name_key": "technology.pulson_missile.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3897
+      }
+    },
+    {
+      "id": "quantum_detonator",
+      "order": 149,
+      "technology_id": 150,
+      "name_key": "technology.quantum_detonator.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3912
+      }
+    },
+    {
+      "id": "rangemaster_unit",
+      "order": 150,
+      "technology_id": 151,
+      "name_key": "technology.rangemaster_unit.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3930
+      }
+    },
+    {
+      "id": "recyclotron",
+      "order": 151,
+      "technology_id": 152,
+      "name_key": "technology.recyclotron.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3947
+      }
+    },
+    {
+      "id": "reflection_field",
+      "order": 152,
+      "technology_id": 153,
+      "name_key": "technology.reflection_field.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3959
+      }
+    },
+    {
+      "id": "robotic_factory",
+      "order": 153,
+      "technology_id": 154,
+      "name_key": "technology.robotic_factory.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3976
+      }
+    },
+    {
+      "id": "research_laboratory",
+      "order": 154,
+      "technology_id": 155,
+      "name_key": "technology.research_laboratory.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 3992
+      }
+    },
+    {
+      "id": "robo_miners",
+      "order": 155,
+      "technology_id": 156,
+      "name_key": "technology.robo_miners.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4012
+      }
+    },
+    {
+      "id": "space_scanner",
+      "order": 156,
+      "technology_id": 157,
+      "name_key": "technology.space_scanner.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4024
+      }
+    },
+    {
+      "id": "scout_lab",
+      "order": 157,
+      "technology_id": 158,
+      "name_key": "technology.scout_lab.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4038
+      }
+    },
+    {
+      "id": "security_stations",
+      "order": 158,
+      "technology_id": 159,
+      "name_key": "technology.security_stations.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4048
+      }
+    },
+    {
+      "id": "sensors",
+      "order": 159,
+      "technology_id": 160,
+      "name_key": "technology.sensors.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4066
+      }
+    },
+    {
+      "id": "shield_capacitors",
+      "order": 160,
+      "technology_id": 161,
+      "name_key": "technology.shield_capacitors.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4074
+      }
+    },
+    {
+      "id": "soil_enrichment",
+      "order": 161,
+      "technology_id": 162,
+      "name_key": "technology.soil_enrichment.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4092
+      }
+    },
+    {
+      "id": "space_academy",
+      "order": 162,
+      "technology_id": 163,
+      "name_key": "technology.space_academy.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4108
+      }
+    },
+    {
+      "id": "spaceport",
+      "order": 163,
+      "technology_id": 164,
+      "name_key": "technology.spaceport.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4122
+      }
+    },
+    {
+      "id": "spatial_compressor",
+      "order": 164,
+      "technology_id": 165,
+      "name_key": "technology.spatial_compressor.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4132
+      }
+    },
+    {
+      "id": "spy_network",
+      "order": 165,
+      "technology_id": 166,
+      "name_key": "technology.spy_network.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4151
+      }
+    },
+    {
+      "id": "standard_fuel_cells",
+      "order": 166,
+      "technology_id": 167,
+      "name_key": "technology.standard_fuel_cells.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4163
+      }
+    },
+    {
+      "id": "star_base",
+      "order": 167,
+      "technology_id": 168,
+      "name_key": "technology.star_base.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4183
+      }
+    },
+    {
+      "id": "star_fortress",
+      "order": 168,
+      "technology_id": 169,
+      "name_key": "technology.star_fortress.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4193
+      }
+    },
+    {
+      "id": "star_gate",
+      "order": 169,
+      "technology_id": 170,
+      "name_key": "technology.star_gate.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4207
+      }
+    },
+    {
+      "id": "stasis_field",
+      "order": 170,
+      "technology_id": 171,
+      "name_key": "technology.stasis_field.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4217
+      }
+    },
+    {
+      "id": "stealth_field",
+      "order": 171,
+      "technology_id": 172,
+      "name_key": "technology.stealth_field.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4230
+      }
+    },
+    {
+      "id": "stealth_suit",
+      "order": 172,
+      "technology_id": 173,
+      "name_key": "technology.stealth_suit.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4244
+      }
+    },
+    {
+      "id": "stellar_converter",
+      "order": 173,
+      "technology_id": 174,
+      "name_key": "technology.stellar_converter.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4257
+      }
+    },
+    {
+      "id": "structural_analyzer",
+      "order": 174,
+      "technology_id": 175,
+      "name_key": "technology.structural_analyzer.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4275
+      }
+    },
+    {
+      "id": "sub_space_communications",
+      "order": 175,
+      "technology_id": 176,
+      "name_key": "technology.sub_space_communications.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4295
+      }
+    },
+    {
+      "id": "sub_space_teleporter",
+      "order": 176,
+      "technology_id": 177,
+      "name_key": "technology.sub_space_teleporter.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4320
+      }
+    },
+    {
+      "id": "subterranean_farms",
+      "order": 177,
+      "technology_id": 178,
+      "name_key": "technology.subterranean_farms.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4341
+      }
+    },
+    {
+      "id": "survival_pods",
+      "order": 178,
+      "technology_id": 179,
+      "name_key": "technology.survival_pods.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4360
+      }
+    },
+    {
+      "id": "tachyon_communications",
+      "order": 179,
+      "technology_id": 180,
+      "name_key": "technology.tachyon_communications.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4374
+      }
+    },
+    {
+      "id": "tachyon_scanner",
+      "order": 180,
+      "technology_id": 181,
+      "name_key": "technology.tachyon_scanner.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4397
+      }
+    },
+    {
+      "id": "telepathic_training",
+      "order": 181,
+      "technology_id": 182,
+      "name_key": "technology.telepathic_training.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4413
+      }
+    },
+    {
+      "id": "terraforming",
+      "order": 182,
+      "technology_id": 183,
+      "name_key": "technology.terraforming.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4433
+      }
+    },
+    {
+      "id": "thorium_fuel_cells",
+      "order": 183,
+      "technology_id": 184,
+      "name_key": "technology.thorium_fuel_cells.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4446
+      }
+    },
+    {
+      "id": "time_warp_facilitator",
+      "order": 184,
+      "technology_id": 185,
+      "name_key": "technology.time_warp_facilitator.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4465
+      }
+    },
+    {
+      "id": "titan_construction",
+      "order": 185,
+      "technology_id": 186,
+      "name_key": "technology.titan_construction.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4487
+      }
+    },
+    {
+      "id": "titanium_armor",
+      "order": 186,
+      "technology_id": 187,
+      "name_key": "technology.titanium_armor.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4506
+      }
+    },
+    {
+      "id": "tractor_beam",
+      "order": 187,
+      "technology_id": 188,
+      "name_key": "technology.tractor_beam.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4521
+      }
+    },
+    {
+      "id": "transport",
+      "order": 188,
+      "technology_id": 189,
+      "name_key": "technology.transport.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4534
+      }
+    },
+    {
+      "id": "transporters",
+      "order": 189,
+      "technology_id": 190,
+      "name_key": "technology.transporters.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4544
+      }
+    },
+    {
+      "id": "tritanium_armor",
+      "order": 190,
+      "technology_id": 191,
+      "name_key": "technology.tritanium_armor.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4557
+      }
+    },
+    {
+      "id": "troop_pods",
+      "order": 191,
+      "technology_id": 192,
+      "name_key": "technology.troop_pods.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4573
+      }
+    },
+    {
+      "id": "universal_antidote",
+      "order": 192,
+      "technology_id": 193,
+      "name_key": "technology.universal_antidote.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4584
+      }
+    },
+    {
+      "id": "urridium_fuel_cells",
+      "order": 193,
+      "technology_id": 194,
+      "name_key": "technology.urridium_fuel_cells.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4603
+      }
+    },
+    {
+      "id": "virtual_reality_network",
+      "order": 194,
+      "technology_id": 195,
+      "name_key": "technology.virtual_reality_network.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4623
+      }
+    },
+    {
+      "id": "warp_dissipater",
+      "order": 195,
+      "technology_id": 196,
+      "name_key": "technology.warp_dissipater.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4647
+      }
+    },
+    {
+      "id": "warp_interdictor",
+      "order": 196,
+      "technology_id": 197,
+      "name_key": "technology.warp_interdictor.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4663
+      }
+    },
+    {
+      "id": "weather_control_system",
+      "order": 197,
+      "technology_id": 198,
+      "name_key": "technology.weather_control_system.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4680
+      }
+    },
+    {
+      "id": "wide_area_jammer",
+      "order": 198,
+      "technology_id": 199,
+      "name_key": "technology.wide_area_jammer.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4703
+      }
+    },
+    {
+      "id": "xeno_psychology",
+      "order": 199,
+      "technology_id": 200,
+      "name_key": "technology.xeno_psychology.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4720
+      }
+    },
+    {
+      "id": "xentronium_armor",
+      "order": 200,
+      "technology_id": 201,
+      "name_key": "technology.xentronium_armor.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4736
+      }
+    },
+    {
+      "id": "zeon_missile",
+      "order": 201,
+      "technology_id": 202,
+      "name_key": "technology.zeon_missile.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4753
+      }
+    },
+    {
+      "id": "zortrium_armor",
+      "order": 202,
+      "technology_id": 203,
+      "name_key": "technology.zortrium_armor.name",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-block0-technologies",
+        "offset": 4766
+      }
+    }
+  ]
+}
