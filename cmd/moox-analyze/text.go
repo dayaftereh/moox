@@ -25,6 +25,6 @@ func textCmd(args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("cataloged %d fixed records + %d string-table candidates with %d ASCII runs -> %s\n", manifest.FixedRecords, manifest.StringTableCandidates, manifest.ASCIIRuns, *out)
+	fmt.Printf("cataloged %d fixed records + %d fixed arrays + %d string-table candidates with %d ASCII runs -> %s\n", manifest.FixedRecords, manifest.FixedArrays, manifest.StringTableCandidates, manifest.ASCIIRuns, *out)
 	return nil
 }

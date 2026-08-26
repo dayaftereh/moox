@@ -18,7 +18,7 @@ import (
 	"moox/internal/textscan"
 )
 
-const SchemaVersion = 1
+const SchemaVersion = 2
 
 type Options struct {
 	Clean bool
@@ -29,6 +29,7 @@ type Manifest struct {
 	SourceRoot            string       `json:"source_root"`
 	GeneratedAt           time.Time    `json:"generated_at"`
 	FixedRecords          int          `json:"fixed_records"`
+	FixedArrays           int          `json:"fixed_arrays"`
 	StringTableCandidates int          `json:"string_table_candidates"`
 	ASCIIRuns             int          `json:"ascii_runs"`
 	Records               []TextRecord `json:"records"`
@@ -43,11 +44,25 @@ type TextRecord struct {
 	BodyOffset     int               `json:"body_offset,omitempty"`
 	BodySize       int               `json:"body_size,omitempty"`
 	BodySHA256     string            `json:"body_sha256,omitempty"`
+	ArrayCount     int               `json:"array_count,omitempty"`
+	RecordSize     int               `json:"record_size,omitempty"`
 	NonZeroBytes   int               `json:"nonzero_bytes"`
 	HighBytes      int               `json:"high_bytes"`
 	PrintableRatio float64           `json:"printable_ratio"`
 	Runs           []textscan.String `json:"ascii_runs,omitempty"`
+	ArrayRecords   []ArrayRecord     `json:"array_records,omitempty"`
 	PreviewPath    string            `json:"preview_path,omitempty"`
+}
+
+type ArrayRecord struct {
+	Index          int               `json:"index"`
+	Offset         int               `json:"offset"`
+	Size           int               `json:"size"`
+	SHA256         string            `json:"sha256"`
+	NonZeroBytes   int               `json:"nonzero_bytes"`
+	HighBytes      int               `json:"high_bytes"`
+	PrintableRatio float64           `json:"printable_ratio"`
+	Runs           []textscan.String `json:"ascii_runs,omitempty"`
 }
 
 func Build(sourceRoot, outDir string, options Options) (*Manifest, error) {
@@ -95,13 +110,16 @@ func Build(sourceRoot, outDir string, options Options) (*Manifest, error) {
 			if !ok {
 				continue
 			}
-			if rec.Kind == "fixed_record_v1" {
+			switch rec.Kind {
+			case "fixed_record_v1":
 				manifest.FixedRecords++
-			} else {
+			case "fixed_array_v1":
+				manifest.FixedArrays++
+			case "string_table_candidate":
 				manifest.StringTableCandidates++
 			}
-			manifest.ASCIIRuns += len(rec.Runs)
-			if len(rec.Runs) > 0 {
+			manifest.ASCIIRuns += countRuns(rec)
+			if countRuns(rec) > 0 {
 				previewRel := filepath.ToSlash(filepath.Join(strings.ToLower(strings.TrimSuffix(rel, filepath.Ext(rel))), fmt.Sprintf("block_%04d.ascii.txt", block)))
 				if err := writePreview(filepath.Join(outAbs, filepath.FromSlash(previewRel)), rec); err != nil {
 					return nil, err
@@ -130,30 +148,66 @@ func analyze(archive string, block int, data []byte) (TextRecord, bool) {
 	if _, err := moo2gfx.Parse(data); err == nil {
 		return TextRecord{}, false
 	}
-	sum := sha256.Sum256(data)
-	rec := TextRecord{Archive: archive, Block: block, BlockSize: len(data), BlockSHA256: hex.EncodeToString(sum[:])}
-	body := data
+	blockSum := sha256.Sum256(data)
+	rec := TextRecord{Archive: archive, Block: block, BlockSize: len(data), BlockSHA256: hex.EncodeToString(blockSum[:])}
+
 	if len(data) >= 4 && binary.LittleEndian.Uint16(data[0:2]) == 1 {
 		bodySize := int(binary.LittleEndian.Uint16(data[2:4]))
 		if bodySize == len(data)-4 {
+			body := data[4:]
 			rec.Kind = "fixed_record_v1"
 			rec.BodyOffset = 4
 			rec.BodySize = bodySize
-			body = data[4:]
 			bodySum := sha256.Sum256(body)
 			rec.BodySHA256 = hex.EncodeToString(bodySum[:])
+			rec.Runs = textscan.ASCII(body, 4)
+			rec.NonZeroBytes, rec.HighBytes, rec.PrintableRatio = byteMetrics(body)
+			return rec, true
 		}
 	}
-	rec.Runs = textscan.ASCII(body, 4)
-	rec.NonZeroBytes, rec.HighBytes, rec.PrintableRatio = byteMetrics(body)
-	if rec.Kind == "fixed_record_v1" {
-		return rec, true
+
+	if len(data) >= 4 {
+		count := int(binary.LittleEndian.Uint16(data[0:2]))
+		recordSize := int(binary.LittleEndian.Uint16(data[2:4]))
+		if count > 0 && recordSize > 0 && 4+count*recordSize == len(data) {
+			rec.Kind = "fixed_array_v1"
+			rec.ArrayCount = count
+			rec.RecordSize = recordSize
+			rec.NonZeroBytes, rec.HighBytes, rec.PrintableRatio = byteMetrics(data[4:])
+			rec.ArrayRecords = make([]ArrayRecord, 0, count)
+			totalRuns := 0
+			for i := 0; i < count; i++ {
+				offset := 4 + i*recordSize
+				row := data[offset : offset+recordSize]
+				rowSum := sha256.Sum256(row)
+				ar := ArrayRecord{Index: i, Offset: offset, Size: recordSize, SHA256: hex.EncodeToString(rowSum[:])}
+				ar.NonZeroBytes, ar.HighBytes, ar.PrintableRatio = byteMetrics(row)
+				ar.Runs = textscan.ASCII(row, 4)
+				totalRuns += len(ar.Runs)
+				rec.ArrayRecords = append(rec.ArrayRecords, ar)
+			}
+			if totalRuns == 0 {
+				return TextRecord{}, false
+			}
+			return rec, true
+		}
 	}
+
+	rec.Runs = textscan.ASCII(data, 4)
+	rec.NonZeroBytes, rec.HighBytes, rec.PrintableRatio = byteMetrics(data)
 	if rec.PrintableRatio >= 0.60 && len(rec.Runs) >= 2 {
 		rec.Kind = "string_table_candidate"
 		return rec, true
 	}
 	return TextRecord{}, false
+}
+
+func countRuns(rec TextRecord) int {
+	n := len(rec.Runs)
+	for _, row := range rec.ArrayRecords {
+		n += len(row.Runs)
+	}
+	return n
 }
 
 func byteMetrics(data []byte) (nonzero, high int, printableRatio float64) {
@@ -183,8 +237,21 @@ func writePreview(path string, rec TextRecord) error {
 	fmt.Fprintf(&b, "# %s block %d (%s)\n", rec.Archive, rec.Block, rec.Kind)
 	fmt.Fprintf(&b, "# This is an ASCII-only research preview. Raw bytes remain authoritative.\n")
 	fmt.Fprintf(&b, "# High bytes are not decoded here.\n\n")
-	for _, run := range rec.Runs {
-		fmt.Fprintf(&b, "0x%04X\t%s\n", run.Offset+rec.BodyOffset, run.Value)
+	if len(rec.ArrayRecords) > 0 {
+		for _, row := range rec.ArrayRecords {
+			if len(row.Runs) == 0 {
+				continue
+			}
+			fmt.Fprintf(&b, "## record %d offset 0x%04X size %d\n", row.Index, row.Offset, row.Size)
+			for _, run := range row.Runs {
+				fmt.Fprintf(&b, "0x%04X\t%s\n", row.Offset+run.Offset, run.Value)
+			}
+			b.WriteByte('\n')
+		}
+	} else {
+		for _, run := range rec.Runs {
+			fmt.Fprintf(&b, "0x%04X\t%s\n", run.Offset+rec.BodyOffset, run.Value)
+		}
 	}
 	return os.WriteFile(path, []byte(b.String()), 0o644)
 }
