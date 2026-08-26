@@ -74,3 +74,29 @@ The CLI therefore currently refuses normal PNG export for graphics without an in
 ## Future asset strategy
 
 The extracted original artwork is a reference for fidelity, not distributable MOOX content. The eventual product should either use independently created artwork or have an explicit licensed compatibility/content strategy.
+
+## Full private export checkpoint - 2026-08-26
+
+The first complete batch scan/export of the local official 1.31 reference finished successfully.
+
+Observed inventory:
+
+- 363 real LBX archives scanned,
+- 6,532 structurally recognized graphic blocks,
+- 30,929 frames represented in the manifest,
+- 713 graphic blocks advertise an internal palette,
+- 5,819 graphic blocks depend on an external palette/context,
+- 10,646 PNG frames exported from internal-palette blocks,
+- 9,795 exported frames have complete palette coverage,
+- 851 exported frames have partial palette coverage,
+- 9 internal-palette frames are not yet decoded,
+- current private PNG footprint: approximately 135.46 MiB.
+
+The 9 decode failures are narrowly grouped:
+
+- `CMBTSFX.LBX` block 1, frames 0..6: start indicator `0`,
+- `RACEOPT.LBX` blocks 0 and 4, frame 0: start indicator `257`.
+
+These are retained in the manifest as `decode_failed`; they are not silently skipped. The partial-palette group is also explicitly tagged. `BUFFER0.LBX` accounts for 640 of the 851 partial frames, with smaller groups in `SPHERSFX`, `BEAMS`, `CMBTSFX`, `RACESEL`, `PLANETS`, animation archives and a few UI archives.
+
+This checkpoint means the private reference library is now broad enough to start systematic semantic classification while palette/codec edge cases continue to be improved.

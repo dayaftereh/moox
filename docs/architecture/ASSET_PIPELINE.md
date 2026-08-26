@@ -90,3 +90,7 @@ As of 2026-08-26:
   - 30 from `PLANETS.LBX`.
 
 A batch catalog/export command now inventories all recognized graphics and exports internal-palette frames. The next graphics tooling improvement is external-palette resolution, followed by semantic mapping of the resulting private reference library.
+
+### Reference extraction checkpoint
+
+The first complete extraction pass now provides 10,646 local PNG frames backed by a manifest covering all 6,532 recognized graphic blocks. Semantic classification can proceed against this library without moving original-derived bytes into the distributable `assets/` tree.
