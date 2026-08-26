@@ -45,6 +45,8 @@ func run(args []string) error {
 		return inspectCmd(args[1:])
 	case "image":
 		return imageCmd(args[1:])
+	case "graphics":
+		return graphicsCmd(args[1:])
 	case "extract":
 		return extractCmd(args[1:])
 	case "strings":
