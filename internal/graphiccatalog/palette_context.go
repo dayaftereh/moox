@@ -42,6 +42,8 @@ var confirmedExternalPaletteRules = map[string]externalPaletteRule{
 	"CMBTFGTR.LBX": {Archive: "FONTS.LBX", PaletteBlock: 4, Evidence: moo2WorkshopEvidence, ExternalOnly: true},
 	"COLGCBT.LBX":  {Archive: "FONTS.LBX", PaletteBlock: 2, Evidence: moo2WorkshopEvidence, ExternalOnly: true},
 	"COLROADS.LBX": {Archive: "FONTS.LBX", PaletteBlock: 2, Evidence: moo2WorkshopEvidence, ExternalOnly: true},
+	"COLVEGGI.LBX": {Archive: "FONTS.LBX", PaletteBlock: 2, Evidence: moo2WorkshopEvidence, ExternalOnly: true},
+	"STARBG.LBX":   {Archive: "FONTS.LBX", PaletteBlock: 1, Evidence: moo2WorkshopEvidence, ExternalOnly: true},
 }
 
 type paletteResolver struct {
@@ -135,10 +137,243 @@ func (r *paletteResolver) Resolve(archiveRel string, blockIndex int, archive *lb
 
 	case "MULTIGM.LBX":
 		return r.resolveMultiGame(blockIndex, archive, graphic)
+
+	case "PLNTSUM.LBX":
+		return r.resolveLocalFullPaletteRange("PLNTSUM.LBX", blockIndex, 1, 83, 0, archive, graphic)
+
+	case "RACES.LBX":
+		return r.resolveLocalFullPaletteRange("RACES.LBX", blockIndex, 1, 63, 0, archive, graphic)
+
+	case "INFO.LBX":
+		return r.resolveInfo(blockIndex, archive, graphic)
+
+	case "COLSUM.LBX":
+		return r.resolveLocalFullPaletteRange("COLSUM.LBX", blockIndex, 1, 20, 21, archive, graphic)
+
+	case "COMBAT.LBX":
+		return r.resolveCombatUI(blockIndex, archive, graphic)
+
+	case "DIPSTARS.LBX":
+		return r.resolveDipStars(blockIndex, graphic)
+
+	case "APP_PICS.LBX":
+		return r.resolveAppPics(blockIndex, graphic)
+
+	case "MAINPUPS.LBX":
+		return r.resolveMainPups(blockIndex, graphic)
+
+	case "COLSYSDI.LBX":
+		return r.resolveTwoRangeFonts(blockIndex, graphic, 5, 1, 65, 2)
+
+	case "SYSDISP.LBX":
+		return r.resolveTwoRangeFonts(blockIndex, graphic, 5, 1, 61, 2)
+
+	case "GAME.LBX":
+		return r.resolveGame(blockIndex, graphic)
+
+	case "COLONY2.LBX":
+		return r.resolveColony2(blockIndex, graphic)
+
+	case "RACESEL.LBX":
+		return r.resolveRaceSel(blockIndex, archive, graphic)
+
+	case "TECHSEL.LBX":
+		return r.resolveTechSel(blockIndex, archive, graphic)
+
+	case "NEWGAME.LBX":
+		return r.resolveNewGame(blockIndex, archive, graphic)
 	}
 	return paletteResolution{}, nil
 }
 
+func (r *paletteResolver) resolveLocalFullPaletteRange(archiveName string, blockIndex, first, last, carrierBlock int, archive *lbx.File, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	if blockIndex < first || blockIndex > last {
+		return paletteResolution{}, nil
+	}
+	carrier, err := r.loadLocalCarrier(archiveName, archive, carrierBlock, 0, 256)
+	if err != nil {
+		return paletteResolution{}, err
+	}
+	moo2gfx.ApplyPaletteFromGraphic(carrier, graphic)
+	return paletteResolution{Resolved: true, Source: fmt.Sprintf("%s#%d", archiveName, carrierBlock), Evidence: moo2WorkshopEvidence, Confidence: "confirmed"}, nil
+}
+
+func (r *paletteResolver) resolveInfo(blockIndex int, archive *lbx.File, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	if blockIndex == 1 {
+		return paletteResolution{}, nil
+	}
+	if blockIndex != 0 && (blockIndex < 2 || blockIndex > 25) {
+		return paletteResolution{}, nil
+	}
+	carrier, err := r.loadLocalCarrier("INFO.LBX", archive, 1, 0, 256)
+	if err != nil {
+		return paletteResolution{}, err
+	}
+	moo2gfx.ApplyPaletteFromGraphic(carrier, graphic)
+	return paletteResolution{Resolved: true, Source: "INFO.LBX#1", Evidence: moo2WorkshopEvidence, Confidence: "confirmed"}, nil
+}
+
+func (r *paletteResolver) resolveCombatUI(blockIndex int, archive *lbx.File, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	if blockIndex >= 45 && blockIndex <= 49 {
+		return r.applyExternalPalette(graphic, 4)
+	}
+	if (blockIndex >= 0 && blockIndex <= 10) || (blockIndex >= 12 && blockIndex <= 44) || (blockIndex >= 50 && blockIndex <= 89) {
+		carrier, err := r.loadLocalCarrier("COMBAT.LBX", archive, 11, 0, 256)
+		if err != nil {
+			return paletteResolution{}, err
+		}
+		moo2gfx.ApplyPaletteFromGraphic(carrier, graphic)
+		return paletteResolution{Resolved: true, Source: "COMBAT.LBX#11", Evidence: moo2WorkshopEvidence, Confidence: "confirmed"}, nil
+	}
+	return paletteResolution{}, nil
+}
+
+func (r *paletteResolver) resolveDipStars(blockIndex int, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	if blockIndex < 0 || blockIndex > 11 {
+		return paletteResolution{}, nil
+	}
+	carrier, err := r.loadArchiveCarrier("DIPLOMAT.LBX", 0, 0, 256)
+	if err != nil {
+		return paletteResolution{}, err
+	}
+	moo2gfx.ApplyPaletteFromGraphic(carrier, graphic)
+	return paletteResolution{Resolved: true, Source: "DIPLOMAT.LBX#0", Evidence: moo2WorkshopEvidence, Confidence: "confirmed"}, nil
+}
+
+func (r *paletteResolver) resolveAppPics(blockIndex int, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	if blockIndex != 0 {
+		return paletteResolution{}, nil
+	}
+	carrier, err := r.loadArchiveCarrier("INFO.LBX", 1, 0, 256)
+	if err != nil {
+		return paletteResolution{}, err
+	}
+	moo2gfx.ApplyPaletteFromGraphic(carrier, graphic)
+	return paletteResolution{Resolved: true, Source: "INFO.LBX#1", Evidence: moo2WorkshopEvidence, Confidence: "confirmed"}, nil
+}
+
+func (r *paletteResolver) resolveMainPups(blockIndex int, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	switch {
+	case blockIndex >= 0 && blockIndex <= 51:
+		return r.applyExternalPalette(graphic, 1)
+	case blockIndex >= 53 && blockIndex <= 55:
+		return r.applyExternalPalette(graphic, 1)
+	case blockIndex == 56:
+		return r.applyExternalPalette(graphic, 2)
+	case blockIndex >= 57 && blockIndex <= 60:
+		return r.applyExternalPalette(graphic, 1)
+	case blockIndex == 61:
+		return r.applyExternalPalette(graphic, 2)
+	case blockIndex >= 62 && blockIndex <= 72:
+		return r.applyExternalPalette(graphic, 1)
+	case blockIndex == 73:
+		return r.applyExternalPalette(graphic, 2)
+	case blockIndex >= 74 && blockIndex <= 83:
+		return r.applyExternalPalette(graphic, 1)
+	default:
+		return paletteResolution{}, nil
+	}
+}
+
+func (r *paletteResolver) resolveTwoRangeFonts(blockIndex int, graphic *moo2gfx.Graphic, firstEnd, firstPalette, lastEnd, lastPalette int) (paletteResolution, error) {
+	switch {
+	case blockIndex >= 0 && blockIndex <= firstEnd:
+		return r.applyExternalPalette(graphic, firstPalette)
+	case blockIndex > firstEnd && blockIndex <= lastEnd:
+		return r.applyExternalPalette(graphic, lastPalette)
+	default:
+		return paletteResolution{}, nil
+	}
+}
+
+func (r *paletteResolver) resolveGame(blockIndex int, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	switch {
+	case blockIndex >= 0 && blockIndex <= 19:
+		return r.applyExternalPalette(graphic, 1)
+	case blockIndex >= 20 && blockIndex <= 26:
+		return r.applyExternalPalette(graphic, 6)
+	case blockIndex >= 27 && blockIndex <= 31:
+		return r.applyExternalPalette(graphic, 1)
+	default:
+		return paletteResolution{}, nil
+	}
+}
+
+func (r *paletteResolver) resolveColony2(blockIndex int, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	if (blockIndex >= 0 && blockIndex <= 49) || blockIndex == 52 {
+		return r.applyExternalPalette(graphic, 2)
+	}
+	return paletteResolution{}, nil
+}
+
+func (r *paletteResolver) resolveRaceSel(blockIndex int, archive *lbx.File, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	if (blockIndex >= 0 && blockIndex <= 14) || (blockIndex >= 29 && blockIndex <= 33) {
+		return r.applyExternalPalette(graphic, 10)
+	}
+	if blockIndex < 34 || blockIndex > 137 {
+		return paletteResolution{}, nil
+	}
+	carrier, err := r.loadLocalCarrier("RACESEL.LBX", archive, 32, 128, 128)
+	if err != nil {
+		return paletteResolution{}, err
+	}
+	base, err := r.loadExternalPalette("FONTS.LBX", 10)
+	if err != nil {
+		return paletteResolution{}, err
+	}
+	base.Apply(carrier)
+	moo2gfx.ApplyPaletteFromGraphic(carrier, graphic)
+	return paletteResolution{Resolved: true, Source: "FONTS.LBX#10 + RACESEL.LBX#32", Evidence: moo2WorkshopEvidence, Confidence: "confirmed"}, nil
+}
+
+func (r *paletteResolver) resolveTechSel(blockIndex int, archive *lbx.File, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	if blockIndex >= 14 && blockIndex <= 22 {
+		return r.applyExternalPalette(graphic, 1)
+	}
+	if blockIndex < 23 || blockIndex > 27 {
+		return paletteResolution{}, nil
+	}
+	carrier, err := r.loadLocalCarrier("TECHSEL.LBX", archive, 14, 224, 16)
+	if err != nil {
+		return paletteResolution{}, err
+	}
+	base, err := r.loadExternalPalette("FONTS.LBX", 1)
+	if err != nil {
+		return paletteResolution{}, err
+	}
+	base.Apply(carrier)
+	moo2gfx.ApplyPaletteFromGraphic(carrier, graphic)
+	return paletteResolution{Resolved: true, Source: "FONTS.LBX#1 + TECHSEL.LBX#14", Evidence: moo2WorkshopEvidence, Confidence: "confirmed"}, nil
+}
+
+func (r *paletteResolver) resolveNewGame(blockIndex int, archive *lbx.File, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	carrier, err := r.loadLocalCarrier("NEWGAME.LBX", archive, 1, 128, 128)
+	if err != nil {
+		return paletteResolution{}, err
+	}
+	if blockIndex == 0 || (blockIndex >= 4 && blockIndex <= 22) {
+		moo2gfx.ApplyPaletteFromGraphic(carrier, graphic)
+		return paletteResolution{Resolved: true, Source: "NEWGAME.LBX#1", Evidence: moo2WorkshopEvidence, Confidence: "confirmed"}, nil
+	}
+	if blockIndex >= 23 && blockIndex <= 29 {
+		moo2gfx.ApplyPaletteFromGraphic(carrier, graphic)
+		base, err := r.loadExternalPalette("FONTS.LBX", 10)
+		if err != nil {
+			return paletteResolution{}, err
+		}
+		base.Apply(graphic)
+		return paletteResolution{Resolved: true, Source: "FONTS.LBX#10 + NEWGAME.LBX#1", Evidence: moo2WorkshopEvidence, Confidence: "confirmed"}, nil
+	}
+	return paletteResolution{}, nil
+}
+
+func (r *paletteResolver) loadArchiveCarrier(archiveName string, block, expectedShift, expectedEntries int) (*moo2gfx.Graphic, error) {
+	archive, err := lbx.Open(filepath.Join(r.sourceRoot, archiveName))
+	if err != nil {
+		return nil, fmt.Errorf("open %s palette source: %w", archiveName, err)
+	}
+	return r.loadLocalCarrier(archiveName, archive, block, expectedShift, expectedEntries)
+}
 func (r *paletteResolver) resolveGStar(blockIndex int, graphic *moo2gfx.Graphic) (paletteResolution, error) {
 	switch {
 	case blockIndex >= 0 && blockIndex <= 22:

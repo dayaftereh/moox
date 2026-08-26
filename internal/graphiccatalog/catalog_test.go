@@ -401,6 +401,8 @@ func TestWorkshopArchiveWidePaletteRules(t *testing.T) {
 		"CMBTFGTR.LBX": 4,
 		"COLGCBT.LBX":  2,
 		"COLROADS.LBX": 2,
+		"COLVEGGI.LBX": 2,
+		"STARBG.LBX":   1,
 	}
 	for archive, want := range tests {
 		rule, ok := confirmedExternalPaletteRules[archive]

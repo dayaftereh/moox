@@ -267,6 +267,35 @@ The same validation pass enables several simple explicit dependencies:
 - `COLONY` blocks 5..18 -> `FONTS#2` (14 blocks / 194 frames); blocks 0..4 keep their own/no separately documented context.
 
 An isolated export of `FONTS`, `MULTIGM`, `GSTAR`, `CMBTFGTR`, `COLGCBT`, `COLROADS`, and `COLONY` produced all 1,424 available frames with complete palette coverage and zero decode failures.
+
+## UI and full-palette carrier batch
+
+A further Workshop cross-check identifies several complete local palettes and deterministic UI ranges:
+
+- `PLNTSUM#0` is a full 256-color source for blocks 1..83,
+- `RACES#0` is a full 256-color source for blocks 1..63,
+- `INFO#1` is a full 256-color source for `INFO#0`, `INFO#2..25`, and `APP_PICS#0`,
+- `COLSUM#21` is a full 256-color source for blocks 1..20,
+- `COMBAT#11` is a full 256-color source for blocks 0..10, 12..44 and 50..89; blocks 45..49 use `FONTS#4`,
+- `DIPSTARS#0..11` use the already verified full palette from `DIPLOMAT#0`.
+
+Workshop also gives direct FONTS ranges that now resolve:
+
+- all documented `MAINPUPS` blocks, using `FONTS#1` except blocks 56, 61 and 73 which use `FONTS#2`,
+- all `COLVEGGI` blocks -> `FONTS#2`,
+- `COLSYSDI` blocks 0..5 -> `FONTS#1`, 6..65 -> `FONTS#2`,
+- `SYSDISP` blocks 0..5 -> `FONTS#1`, 6..61 -> `FONTS#2`,
+- all `STARBG` blocks -> `FONTS#1`,
+- `GAME` blocks 0..19 and 27..31 -> `FONTS#1`, blocks 20..26 -> `FONTS#6`,
+- `COLONY2` blocks 0..49 and 52 -> `FONTS#2`; blocks 50..51 remain undescribed/pending.
+
+Mixed partial-palette contexts are reconstructed only where Workshop explicitly supplies the base:
+
+- `RACESEL` blocks 0..14 and 29..33 use `FONTS#10`; block 32 carries the 128-entry high range used, together with its resolved FONTS base, by blocks 34..137,
+- `TECHSEL` blocks 14..22 use `FONTS#1`; blocks 23..27 use `FONTS#1 + TECHSEL#14`,
+- `NEWGAME` block 0 and blocks 4..22 use local carrier `NEWGAME#1`; blocks 23..29 use `FONTS#10 + NEWGAME#1`. The carrier-only targets were retained only after end-to-end coverage validation.
+
+An isolated export across these 19 archives produced 2,436 PNGs with zero decode failures. All resolved-context frames had complete palette coverage; the 11 partial frames belonged exclusively to blocks still marked `pending` (`COLONY2#50` and undocumented `RACESEL` special blocks).
 ## Junction and functional colors
 
 Palette context is independent from frame reconstruction:
@@ -295,13 +324,13 @@ The graphics manifest records palette-context status, source, evidence and confi
 
 The current full local 1.31 manifest-only validation reports:
 
-- 4,672 palette contexts resolved automatically,
-- 19,043 frames covered by those resolved contexts,
-- 1,818 palette contexts still explicitly pending,
+- 5,582 palette contexts resolved automatically,
+- 20,327 frames covered by those resolved contexts,
+- 908 palette contexts still explicitly pending,
 - 0 structural/frame decode failures.
 
-The resolved set now includes verified archive-wide palettes, mixed ship/combat palettes, local full/partial palette carriers whose targets have been coverage-tested, and conservative range rules for UI, colony, diplomacy, fleet and combat graphics.
+The resolved set now includes verified archive-wide palettes, mixed ship/combat palettes, full archive-local palettes, tested partial-palette carriers, and deterministic UI/colony/diplomacy range rules.
 
-Carrier-only dependencies that do not cover every palette index actually used by their targets remain pending even when Workshop names the carrier. This is intentional: `pending` means the exact rendering context is incomplete, not that the underlying graphic data is corrupt.
+No frame belonging to a `resolved` context is currently known to have incomplete palette coverage in the isolated validation sets. Carrier-only or undocumented contexts that leave actually used palette indices undefined remain `pending` even when a neighboring/source palette looks visually plausible.
 
-The canonical private PNG tree under `reference/original/images/` has not yet been regenerated for every rule in this checkpoint; manifest-only validation is used while palette research is still advancing, and a later full export will materialize the accumulated verified contexts in one pass.
+The canonical private PNG tree under `reference/original/images/` has not yet been regenerated for every rule in this checkpoint; manifest-only and focused export validation are used while palette research is still advancing, and a later full export will materialize the accumulated verified contexts in one pass.
