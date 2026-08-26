@@ -15,7 +15,7 @@ import (
 	"moox/internal/textscan"
 )
 
-const version = "0.1.0"
+const version = "0.2.0"
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
@@ -39,6 +39,8 @@ func run(args []string) error {
 		return nil
 	case "inventory":
 		return inventoryCmd(args[1:])
+	case "normalize":
+		return normalizeCmd(args[1:])
 	case "inspect":
 		return inspectCmd(args[1:])
 	case "extract":
@@ -55,6 +57,7 @@ func usage(w io.Writer) {
 
 Usage:
   moox-analyze inventory [options] <installation-directory>
+  moox-analyze normalize race-traits -out <file.json> <installation-directory>
   moox-analyze inspect [options] <file.lbx>
   moox-analyze extract [options] <file.lbx> <block-index>
   moox-analyze strings [options] <file.lbx>
@@ -62,6 +65,7 @@ Usage:
 
 Commands:
   inventory  Catalog files, hashes, LBX metadata and Smacker files as JSON.
+  normalize  Convert verified MOO2 source data into loadable MOOX ruleset JSON.
   inspect    Validate one LBX and show its block table.
   extract    Copy one raw LBX block to a file.
   strings    Show printable ASCII strings from one or all LBX blocks.

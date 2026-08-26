@@ -1,0 +1,1062 @@
+{
+  "schema_version": 1,
+  "ruleset": "moo2-1.31",
+  "pick_budget": {
+    "starting_picks": 10,
+    "max_negative_picks": 10
+  },
+  "sources": [
+    {
+      "id": "moo2-1.31-racestuf-block0",
+      "type": "original-observed",
+      "description": "English Race Design labels observed in the local official Master of Orion II 1.31 data set",
+      "archive": "RACESTUF.LBX",
+      "block": 0,
+      "sha256": "a7942f4f13ca081c6d8d4f53266a3ee79198f92c786402bd41c33abbeecbb5b4",
+      "block_sha256": "5583d8d5744e3a075b2e925282ab7f98f0c40418e3c029e82718136ffd665970"
+    },
+    {
+      "id": "strategywiki-moo2-race-design-options",
+      "type": "secondary-reference",
+      "description": "Standard-game pick budget, pick costs, trait scopes and behavioral cross-check",
+      "url": "https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Race_design_options",
+      "accessed_date": "2026-08-26"
+    }
+  ],
+  "groups": [
+    {
+      "id": "population_growth",
+      "label": "Population",
+      "scope": "genetic",
+      "selection_mode": "single",
+      "required": false,
+      "source": {
+        "source_id": "moo2-1.31-racestuf-block0",
+        "offset": 0
+      },
+      "options": [
+        {
+          "id": "population_growth_minus_50",
+          "label": "-50% Growth",
+          "pick_cost": -4,
+          "value": 0.5,
+          "value_kind": "population_growth_multiplier",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 11
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "population_growth_plus_50",
+          "label": "+50% Growth",
+          "pick_cost": 3,
+          "value": 1.5,
+          "value_kind": "population_growth_multiplier",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 23
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "population_growth_plus_100",
+          "label": "+100% Growth",
+          "pick_cost": 6,
+          "value": 2,
+          "value_kind": "population_growth_multiplier",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 35
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        }
+      ]
+    },
+    {
+      "id": "farming",
+      "label": "Farming",
+      "scope": "genetic",
+      "selection_mode": "single",
+      "required": false,
+      "source": {
+        "source_id": "moo2-1.31-racestuf-block0",
+        "offset": 48
+      },
+      "options": [
+        {
+          "id": "farming_minus_half",
+          "label": "-1/2 Food",
+          "pick_cost": -3,
+          "value": -0.5,
+          "value_kind": "food_per_farmer_delta",
+          "mutex_with": [
+            "lithovore"
+          ],
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 56
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "farming_plus_1",
+          "label": "+1 Food",
+          "pick_cost": 4,
+          "value": 1,
+          "value_kind": "food_per_farmer_delta",
+          "mutex_with": [
+            "lithovore"
+          ],
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 66
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "farming_plus_2",
+          "label": "+2 Food",
+          "pick_cost": 7,
+          "value": 2,
+          "value_kind": "food_per_farmer_delta",
+          "mutex_with": [
+            "lithovore"
+          ],
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 74
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        }
+      ]
+    },
+    {
+      "id": "industry",
+      "label": "Industry",
+      "scope": "genetic",
+      "selection_mode": "single",
+      "required": false,
+      "source": {
+        "source_id": "moo2-1.31-racestuf-block0",
+        "offset": 82
+      },
+      "options": [
+        {
+          "id": "industry_minus_1",
+          "label": "-1 Production",
+          "pick_cost": -3,
+          "value": -1,
+          "value_kind": "production_per_worker_delta",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 91
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "industry_plus_1",
+          "label": "+1 Production",
+          "pick_cost": 3,
+          "value": 1,
+          "value_kind": "production_per_worker_delta",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 105
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "industry_plus_2",
+          "label": "+2 Production",
+          "pick_cost": 6,
+          "value": 2,
+          "value_kind": "production_per_worker_delta",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 119
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        }
+      ]
+    },
+    {
+      "id": "science",
+      "label": "Science",
+      "scope": "genetic",
+      "selection_mode": "single",
+      "required": false,
+      "source": {
+        "source_id": "moo2-1.31-racestuf-block0",
+        "offset": 133
+      },
+      "options": [
+        {
+          "id": "science_minus_1",
+          "label": "-1 Research",
+          "pick_cost": -3,
+          "value": -1,
+          "value_kind": "research_per_scientist_delta",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 141
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "science_plus_1",
+          "label": "+1 Research",
+          "pick_cost": 3,
+          "value": 1,
+          "value_kind": "research_per_scientist_delta",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 153
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "science_plus_2",
+          "label": "+2 Research",
+          "pick_cost": 6,
+          "value": 2,
+          "value_kind": "research_per_scientist_delta",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 165
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        }
+      ]
+    },
+    {
+      "id": "money",
+      "label": "Money",
+      "scope": "empire",
+      "selection_mode": "single",
+      "required": false,
+      "source": {
+        "source_id": "moo2-1.31-racestuf-block0",
+        "offset": 177
+      },
+      "options": [
+        {
+          "id": "money_minus_0_5",
+          "label": "-0.5 BC",
+          "pick_cost": -4,
+          "value": -0.5,
+          "value_kind": "tax_bc_per_population_delta",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 183
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "money_plus_0_5",
+          "label": "+0.5 BC",
+          "pick_cost": 5,
+          "value": 0.5,
+          "value_kind": "tax_bc_per_population_delta",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 191
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "money_plus_1_0",
+          "label": "+1.0 BC",
+          "pick_cost": 8,
+          "value": 1,
+          "value_kind": "tax_bc_per_population_delta",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 199
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ship_defense",
+      "label": "Ship Defense",
+      "scope": "empire",
+      "selection_mode": "single",
+      "required": false,
+      "source": {
+        "source_id": "moo2-1.31-racestuf-block0",
+        "offset": 207
+      },
+      "options": [
+        {
+          "id": "ship_defense_minus_20",
+          "label": "-20",
+          "pick_cost": -2,
+          "value": -20,
+          "value_kind": "ship_defense_bonus",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 220
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "ship_defense_plus_25",
+          "label": "+25",
+          "pick_cost": 3,
+          "value": 25,
+          "value_kind": "ship_defense_bonus",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 224
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "ship_defense_plus_50",
+          "label": "+50",
+          "pick_cost": 7,
+          "value": 50,
+          "value_kind": "ship_defense_bonus",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 228
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ship_attack",
+      "label": "Ship Attack",
+      "scope": "empire",
+      "selection_mode": "single",
+      "required": false,
+      "source": {
+        "source_id": "moo2-1.31-racestuf-block0",
+        "offset": 232
+      },
+      "options": [
+        {
+          "id": "ship_attack_minus_20",
+          "label": "-20",
+          "pick_cost": -2,
+          "value": -20,
+          "value_kind": "ship_attack_bonus",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 244
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "ship_attack_plus_20",
+          "label": "+20",
+          "pick_cost": 2,
+          "value": 20,
+          "value_kind": "ship_attack_bonus",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 248
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "ship_attack_plus_50",
+          "label": "+50",
+          "pick_cost": 4,
+          "value": 50,
+          "value_kind": "ship_attack_bonus",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 252
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        }
+      ]
+    },
+    {
+      "id": "ground_combat",
+      "label": "Ground Combat",
+      "scope": "empire",
+      "selection_mode": "single",
+      "required": false,
+      "source": {
+        "source_id": "moo2-1.31-racestuf-block0",
+        "offset": 256
+      },
+      "options": [
+        {
+          "id": "ground_combat_minus_10",
+          "label": "-10",
+          "pick_cost": -2,
+          "value": -10,
+          "value_kind": "ground_combat_bonus",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 270
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "ground_combat_plus_10",
+          "label": "+10",
+          "pick_cost": 2,
+          "value": 10,
+          "value_kind": "ground_combat_bonus",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 274
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "ground_combat_plus_20",
+          "label": "+20",
+          "pick_cost": 4,
+          "value": 20,
+          "value_kind": "ground_combat_bonus",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 278
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        }
+      ]
+    },
+    {
+      "id": "spying",
+      "label": "Spying",
+      "scope": "empire",
+      "selection_mode": "single",
+      "required": false,
+      "source": {
+        "source_id": "moo2-1.31-racestuf-block0",
+        "offset": 282
+      },
+      "options": [
+        {
+          "id": "spying_minus_10",
+          "label": "-10",
+          "pick_cost": -3,
+          "value": -10,
+          "value_kind": "spying_bonus",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 289
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "spying_plus_10",
+          "label": "+10",
+          "pick_cost": 3,
+          "value": 10,
+          "value_kind": "spying_bonus",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 293
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        },
+        {
+          "id": "spying_plus_20",
+          "label": "+20",
+          "pick_cost": 6,
+          "value": 20,
+          "value_kind": "spying_bonus",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 297
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "original-label-derived; exact formula integration pending subsystem parity tests"
+          }
+        }
+      ]
+    },
+    {
+      "id": "government",
+      "label": "Governments",
+      "scope": "empire",
+      "selection_mode": "single",
+      "required": true,
+      "default_option_id": "government_dictatorship",
+      "source": {
+        "source_id": "moo2-1.31-racestuf-block0",
+        "offset": 301
+      },
+      "options": [
+        {
+          "id": "government_feudal",
+          "label": "Feudal",
+          "pick_cost": -4,
+          "scope": "empire",
+          "ability": "government_feudal",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 313
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "government_dictatorship",
+          "label": "Dictatorship",
+          "pick_cost": 0,
+          "scope": "empire",
+          "ability": "government_dictatorship",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 320
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "government_democracy",
+          "label": "Democracy",
+          "pick_cost": 7,
+          "scope": "empire",
+          "ability": "government_democracy",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 333
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "government_unification",
+          "label": "Unification",
+          "pick_cost": 6,
+          "scope": "empire",
+          "ability": "government_unification",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 343
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        }
+      ]
+    },
+    {
+      "id": "special_abilities",
+      "label": "Special Abilities",
+      "scope": "mixed",
+      "selection_mode": "multi",
+      "required": false,
+      "source": {
+        "source_id": "moo2-1.31-racestuf-block0",
+        "offset": 355
+      },
+      "options": [
+        {
+          "id": "low_g_world",
+          "label": "Low-G World",
+          "pick_cost": -5,
+          "scope": "genetic_homeworld",
+          "ability": "low_g_world",
+          "mutex_with": [
+            "high_g_world"
+          ],
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 373
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "high_g_world",
+          "label": "High-G World",
+          "pick_cost": 6,
+          "scope": "genetic_homeworld",
+          "ability": "high_g_world",
+          "mutex_with": [
+            "low_g_world"
+          ],
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 385
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "aquatic",
+          "label": "Aquatic",
+          "pick_cost": 5,
+          "scope": "genetic_homeworld",
+          "ability": "aquatic",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 398
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "subterranean",
+          "label": "Subterranean",
+          "pick_cost": 6,
+          "scope": "genetic",
+          "ability": "subterranean",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 406
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "large_home_world",
+          "label": "Large Home World",
+          "pick_cost": 1,
+          "scope": "homeworld",
+          "ability": "large_home_world",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 419
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "rich_home_world",
+          "label": "Rich Home World",
+          "pick_cost": 2,
+          "scope": "homeworld",
+          "ability": "rich_home_world",
+          "mutex_with": [
+            "poor_home_world"
+          ],
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 436
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "poor_home_world",
+          "label": "Poor Home World",
+          "pick_cost": -1,
+          "scope": "homeworld",
+          "ability": "poor_home_world",
+          "mutex_with": [
+            "rich_home_world"
+          ],
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 452
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "artifacts_world",
+          "label": "Artifacts World",
+          "pick_cost": 3,
+          "scope": "homeworld",
+          "ability": "artifacts_world",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 468
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "cybernetic",
+          "label": "Cybernetic",
+          "pick_cost": 4,
+          "scope": "genetic",
+          "ability": "cybernetic",
+          "mutex_with": [
+            "lithovore"
+          ],
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 484
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "lithovore",
+          "label": "Lithovore",
+          "pick_cost": 10,
+          "scope": "genetic",
+          "ability": "lithovore",
+          "mutex_with": [
+            "cybernetic",
+            "farming_minus_half",
+            "farming_plus_1",
+            "farming_plus_2"
+          ],
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 495
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "repulsive",
+          "label": "Repulsive",
+          "pick_cost": -6,
+          "scope": "empire",
+          "ability": "repulsive",
+          "mutex_with": [
+            "charismatic"
+          ],
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 505
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "charismatic",
+          "label": "Charismatic",
+          "pick_cost": 3,
+          "scope": "empire",
+          "ability": "charismatic",
+          "mutex_with": [
+            "repulsive"
+          ],
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 515
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "uncreative",
+          "label": "Uncreative",
+          "pick_cost": -4,
+          "scope": "empire",
+          "ability": "uncreative",
+          "mutex_with": [
+            "creative"
+          ],
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 527
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "creative",
+          "label": "Creative",
+          "pick_cost": 8,
+          "scope": "empire",
+          "ability": "creative",
+          "mutex_with": [
+            "uncreative"
+          ],
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 538
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "tolerant",
+          "label": "Tolerant",
+          "pick_cost": 10,
+          "scope": "genetic",
+          "ability": "tolerant",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 547
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "fantastic_traders",
+          "label": "Fantastic Traders",
+          "pick_cost": 4,
+          "scope": "empire",
+          "ability": "fantastic_traders",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 556
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "telepathic",
+          "label": "Telepathic",
+          "pick_cost": 6,
+          "scope": "empire",
+          "ability": "telepathic",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 574
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "lucky",
+          "label": "Lucky",
+          "pick_cost": 3,
+          "scope": "empire",
+          "ability": "lucky",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 585
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "omniscient",
+          "label": "Omniscient",
+          "pick_cost": 3,
+          "scope": "empire",
+          "ability": "omniscient",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 591
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "stealthy_ships",
+          "label": "Stealthy Ships",
+          "pick_cost": 4,
+          "scope": "empire",
+          "ability": "stealthy_ships",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 602
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "trans_dimensional",
+          "label": "Trans Dimensional",
+          "pick_cost": 5,
+          "scope": "empire",
+          "ability": "trans_dimensional",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 617
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        },
+        {
+          "id": "warlord",
+          "label": "Warlord",
+          "pick_cost": 4,
+          "scope": "empire",
+          "ability": "warlord",
+          "source": {
+            "source_id": "moo2-1.31-racestuf-block0",
+            "offset": 635
+          },
+          "verification": {
+            "label": "original-observed",
+            "pick_cost": "secondary-reference",
+            "effects": "ability-identified; exact behavioral implementation pending parity tests"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -94,3 +94,17 @@ The analyzer never modifies the source installation. Raw extracted game data bel
 7. Events/diplomacy.
 8. Save-game fixtures.
 9. Graphics/palettes/audio only as private development reference tooling.
+
+## Normalize loadable ruleset data
+
+The analyzer now has a normalization layer in addition to raw binary inspection.
+
+```powershell
+out\moox-analyze-windows-amd64.exe normalize race-traits `
+  -out data\rulesets\moo2-1.31\race_traits.json `
+  C:\ASH\Temp\mastori2
+```
+
+This command validates the expected English `RACESTUF.LBX` block layout before generating data. A mismatched archive/string order fails instead of silently producing a wrong ruleset.
+
+The generated file is runtime-oriented: stable IDs and numeric values are authoritative, while original labels are carried as source-verified metadata/display defaults. Provenance deliberately distinguishes direct 1.31 observations from secondary-reference Pick costs and still-unverified behavioral formulas.
