@@ -13,7 +13,10 @@ import (
 	"moox/internal/textscan"
 )
 
-const technologyNamesSourceID = "moo2-1.31-techname-block0-technologies"
+const (
+	technologyNamesSourceID = "moo2-1.31-techname-block0-technologies"
+	technologyCount         = 203
+)
 
 type TechnologiesBundle struct {
 	Rules   *ruleset.TechnologiesFile
@@ -37,24 +40,10 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 	blockSum := sha256.Sum256(block)
 	blockIndex := 0
 
-	runs := textscan.ASCII(block, 3)
-	start := -1
-	for i, run := range runs {
-		if run.Value == "Achilles Targeting Unit" {
-			start = i
-			break
-		}
-	}
-	if start < 1 || runs[start-1].Value != "No Tech" {
-		return nil, fmt.Errorf("TECHNAME block 0 technology section start not found after No Tech")
-	}
-	const technologyCount = 203
-	end := start + technologyCount - 1
-	if end >= len(runs) || runs[end].Value != "Zortrium Armor" {
-		return nil, fmt.Errorf("TECHNAME block 0 technology section end mismatch")
-	}
-	if end+1 >= len(runs) || runs[end+1].Value != "Biology" {
-		return nil, fmt.Errorf("TECHNAME block 0 expected Biology after technology section")
+	allRuns := textscan.ASCII(block, 3)
+	techRuns, err := concreteTechnologyRuns(allRuns)
+	if err != nil {
+		return nil, err
 	}
 
 	out := &ruleset.TechnologiesFile{
@@ -85,8 +74,7 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 		Strings: make(map[string]string, technologyCount),
 	}
 
-	for order := 0; order < technologyCount; order++ {
-		run := runs[start+order]
+	for order, run := range techRuns {
 		id := stableTechnologyID(run.Value)
 		if id == "" {
 			return nil, fmt.Errorf("technology %d name %q produced empty stable id", order+1, run.Value)
@@ -110,6 +98,27 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 		return nil, err
 	}
 	return &TechnologiesBundle{Rules: out, English: english}, nil
+}
+
+func concreteTechnologyRuns(runs []textscan.String) ([]textscan.String, error) {
+	start := -1
+	for i, run := range runs {
+		if run.Value == "Achilles Targeting Unit" {
+			start = i
+			break
+		}
+	}
+	if start < 1 || runs[start-1].Value != "No Tech" {
+		return nil, fmt.Errorf("TECHNAME block 0 technology section start not found after No Tech")
+	}
+	end := start + technologyCount - 1
+	if end >= len(runs) || runs[end].Value != "Zortrium Armor" {
+		return nil, fmt.Errorf("TECHNAME block 0 technology section end mismatch")
+	}
+	if end+1 >= len(runs) || runs[end+1].Value != "Biology" {
+		return nil, fmt.Errorf("TECHNAME block 0 expected Biology after technology section")
+	}
+	return runs[start : end+1], nil
 }
 
 func stableTechnologyID(name string) string {

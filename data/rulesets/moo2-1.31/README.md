@@ -98,6 +98,12 @@ Name provenance is original 1.31 data:
 
 Production IDs 1..48 and their order are currently marked `secondary-id-order-original-name-confirmed`: the ordering comes from a secondary implementation, while every display name is independently verified against the local original data. This field should be promoted only after the ID table is located/measured directly in the original executable/data.
 
+Technology links are now cross-checked against the original 203-entry TECHNAME.LBX technology sequence:
+
+- 46 buildings map by exact original technology name and therefore carry direct original technology IDs,
+- Hydroponic Farms maps to original technology 87 Hydroponic Farm and is marked as a singular-name alias,
+- Artificial Planet maps to original technology 16 Planet Construction; the technology identity is original, but that building-to-tech relationship remains explicitly secondary-verified.
+
 Only Alien Management Center currently carries a confirmed colony-screen semantic asset key. The remaining BLDG graphic groups are intentionally not named yet because the complete building-ID-to-graphic-group formula has not been independently proven.
 
 Generate it with:

@@ -64,7 +64,11 @@ func DecodeBuildings(installationRoot string) (*BuildingsBundle, error) {
 	}
 	techNameBlockHash := sha256.Sum256(techNameBlock)
 	techNameBlockIndex := 0
-	techNameRuns := textscan.ASCII(techNameBlock, 4)
+	allTechNameRuns := textscan.ASCII(techNameBlock, 3)
+	techRuns, err := concreteTechnologyRuns(allTechNameRuns)
+	if err != nil {
+		return nil, err
+	}
 
 	specs := buildingSpecs()
 	out := &ruleset.BuildingsFile{
@@ -92,7 +96,7 @@ func DecodeBuildings(installationRoot string) (*BuildingsBundle, error) {
 			{
 				ID:           buildingIDsSourceID,
 				Type:         "secondary-community",
-				Description:  "OpenMOO2 building table provides the standard production IDs 1..48 and their order; MOOX independently verifies every displayed name against local original data",
+				Description:  "OpenMOO2 building table provides the standard production IDs 1..48 and their order, plus the Artificial Planet -> Planet Construction relationship fallback; all display names and referenced technology identities are independently verified against local original data",
 				URL:          "https://github.com/mimi1vx/openmoo2/blob/2cd3c344aed24380390caaaa819bf7a010b8f4a2/oldmess/_buildings.py",
 				AccessedDate: "2026-08-26",
 			},
@@ -133,7 +137,7 @@ func DecodeBuildings(installationRoot string) (*BuildingsBundle, error) {
 				return nil, fmt.Errorf("building %s: %w", spec.ID, helpErr)
 			}
 			var occurrences int
-			nameOffset, occurrences = findFirstExactStringOffset(techNameRuns, spec.Name)
+			nameOffset, occurrences = findFirstExactStringOffset(allTechNameRuns, spec.Name)
 			if nameOffset < 0 {
 				return nil, fmt.Errorf("building %s: original name %q not found in HELP heading or TECHNAME block 0", spec.ID, spec.Name)
 			}
@@ -145,17 +149,26 @@ func DecodeBuildings(installationRoot string) (*BuildingsBundle, error) {
 			}
 		}
 
+		technologyID, technologyKey, technologyVerification, technologySource, err := buildingTechnologyLink(spec, techRuns)
+		if err != nil {
+			return nil, err
+		}
+
 		nameKey := "building." + spec.ID + ".name"
 		productionSource := ruleset.FieldProvenance{SourceID: buildingIDsSourceID}
 		building := ruleset.Building{
-			ID:                       spec.ID,
-			Order:                    order,
-			ProductionID:             order + 1,
-			ProductionIDVerification: "secondary-id-order-original-name-confirmed",
-			ProductionIDSource:       productionSource,
-			NameKey:                  nameKey,
-			NameVerification:         nameVerification,
-			NameSource:               ruleset.FieldProvenance{SourceID: nameSourceID, Offset: &nameOffset},
+			ID:                         spec.ID,
+			Order:                      order,
+			ProductionID:               order + 1,
+			ProductionIDVerification:   "secondary-id-order-original-name-confirmed",
+			ProductionIDSource:         productionSource,
+			TechnologyID:               technologyID,
+			TechnologyKey:              technologyKey,
+			TechnologyLinkVerification: technologyVerification,
+			TechnologySource:           technologySource,
+			NameKey:                    nameKey,
+			NameVerification:           nameVerification,
+			NameSource:                 ruleset.FieldProvenance{SourceID: nameSourceID, Offset: &nameOffset},
 		}
 		if spec.ID == "alien_management_center" {
 			building.ColonyReferenceAssetKey = "building.alien_management_center.colony_reference"
@@ -173,6 +186,44 @@ func DecodeBuildings(installationRoot string) (*BuildingsBundle, error) {
 	return &BuildingsBundle{Rules: out, English: english}, nil
 }
 
+func buildingTechnologyLink(spec buildingSpec, techRuns []textscan.String) (technologyID int, technologyKey, verification string, source ruleset.FieldProvenance, err error) {
+	if len(techRuns) != technologyCount {
+		return 0, "", "", source, fmt.Errorf("building %s: expected %d concrete technology runs, got %d", spec.ID, technologyCount, len(techRuns))
+	}
+
+	if spec.ID == "artificial_planet" {
+		const id = 16
+		run := techRuns[id-1]
+		if run.Value != "Planet Construction" {
+			return 0, "", "", source, fmt.Errorf("building %s: technology %d is %q, expected Planet Construction", spec.ID, id, run.Value)
+		}
+		return id, stableTechnologyID(run.Value), "secondary-building-tech-link-original-tech-id-confirmed", ruleset.FieldProvenance{SourceID: buildingIDsSourceID}, nil
+	}
+
+	technologyName := spec.Name
+	verification = "original-techname-exact"
+	if spec.ID == "hydroponic_farms" {
+		technologyName = "Hydroponic Farm"
+		verification = "original-techname-singular-alias"
+	}
+
+	found := -1
+	for index, run := range techRuns {
+		if run.Value != technologyName {
+			continue
+		}
+		if found >= 0 {
+			return 0, "", "", source, fmt.Errorf("building %s: technology name %q occurs more than once in the concrete technology section", spec.ID, technologyName)
+		}
+		found = index
+	}
+	if found < 0 {
+		return 0, "", "", source, fmt.Errorf("building %s: technology name %q not found in the concrete technology section", spec.ID, technologyName)
+	}
+	run := techRuns[found]
+	offset := run.Offset
+	return found + 1, stableTechnologyID(run.Value), verification, ruleset.FieldProvenance{SourceID: technologyNamesSourceID, Offset: &offset}, nil
+}
 func findUniqueHelpHeading(data []byte, count, recordSize int, heading string) (recordIndex, recordOffset, nameOffset int, recordHash string, err error) {
 	found := -1
 	for i := 0; i < count; i++ {
