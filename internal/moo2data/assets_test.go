@@ -10,7 +10,7 @@ import (
 	"moox/internal/ruleset"
 )
 
-func TestDecodeAssetsBuildsRaceAndBuildingSemantics(t *testing.T) {
+func TestDecodeAssetsBuildsRaceBuildingAndShipSemantics(t *testing.T) {
 	root := t.TempDir()
 
 	raceSelBlocks := make([][]byte, 29)
@@ -41,21 +41,25 @@ func TestDecodeAssetsBuildsRaceAndBuildingSemantics(t *testing.T) {
 
 	races := syntheticAssetRaces()
 	buildings := syntheticAssetBuildings()
-	assets, err := decodeAssetsWithEvidence(root, races, buildings, buildingGraphicsEvidence{
+	shipHulls := syntheticAssetShipHulls()
+	assets, err := decodeAssetsWithEvidence(root, races, buildings, shipHulls, buildingGraphicsEvidence{
 		ExecutableSHA256: "synthetic-exe",
 		EStringsSHA256:   "synthetic-estrings",
 		EStringsBlockSHA: "synthetic-estrings-block",
-	})
+	}, shipStrategicGraphicsEvidence{ExecutableSHA256: "synthetic-exe", ShipsSHA256: "synthetic-ships"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(assets.Assets) != 141 {
-		t.Fatalf("assets=%d, want 141", len(assets.Assets))
+	if len(assets.Assets) != 150 {
+		t.Fatalf("assets=%d, want 150", len(assets.Assets))
 	}
 	if err := assets.ValidateAgainstRaces(races); err != nil {
 		t.Fatal(err)
 	}
 	if err := assets.ValidateAgainstBuildings(buildings); err != nil {
+		t.Fatal(err)
+	}
+	if err := assets.ValidateAgainstShipHulls(shipHulls); err != nil {
 		t.Fatal(err)
 	}
 
@@ -261,4 +265,53 @@ func writeKnownAssetTestArchives(t *testing.T, root string) {
 		}
 		write(fmt.Sprintf("BLDG%d.LBX", archiveIndex), blocks)
 	}
+
+	ships := make([][]byte, 449)
+	for i := range ships {
+		ships[i] = []byte{0}
+	}
+	for colorIndex := 0; colorIndex < 8; colorIndex++ {
+		for pictureID := 0; pictureID <= 48; pictureID++ {
+			width, height := 52, 48
+			if pictureID == 43 {
+				height = 52
+			}
+			if pictureID == 49 {
+				width, height = 2, 1
+			}
+			ships[colorIndex*50+pictureID] = syntheticAssetGraphic(width, height)
+		}
+	}
+	for i := 400; i < len(ships); i++ {
+		ships[i] = syntheticAssetGraphic(52, 48)
+	}
+	write("SHIPS.LBX", ships)
+}
+
+func syntheticAssetShipHulls() *ruleset.ShipHullsFile {
+	file := &ruleset.ShipHullsFile{SchemaVersion: ruleset.ShipHullsSchemaVersion, Ruleset: "moo2-1.31"}
+	specs := []struct {
+		id       string
+		pictures []int
+	}{
+		{id: "frigate", pictures: []int{0, 1, 2, 3, 4, 5, 6, 7}},
+		{id: "destroyer", pictures: []int{8, 9, 10, 11, 12, 13, 14, 15}},
+		{id: "cruiser", pictures: []int{16, 17, 18, 19, 20, 21, 22, 23}},
+		{id: "battleship", pictures: []int{24, 25, 26, 27, 28, 29, 30, 31}},
+		{id: "titan", pictures: []int{32, 33, 34, 35, 36, 37, 38, 39}},
+		{id: "doom_star", pictures: []int{43}},
+	}
+	for sizeIndex, spec := range specs {
+		file.Hulls = append(file.Hulls, ruleset.ShipHull{
+			ID:                       spec.id,
+			SizeIndex:                sizeIndex,
+			NameKey:                  "ship_hull." + spec.id + ".name",
+			NameSource:               ruleset.FieldProvenance{SourceID: "test-techname"},
+			StrategicPictureIDs:      spec.pictures,
+			PictureLogicVerification: "test",
+			PictureLogicSource:       ruleset.FieldProvenance{SourceID: "test-picture-logic"},
+			StrategicAssetKey:        "ship_hull." + spec.id + ".strategic",
+		})
+	}
+	return file
 }

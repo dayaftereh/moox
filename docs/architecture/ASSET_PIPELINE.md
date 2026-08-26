@@ -101,6 +101,8 @@ The catalog now contains 93 semantic asset records. The race slice contributes 7
 
 The second confirmed slice adds 14 references: the main-menu splash, main/colonies/colony panels, starfield background, eight production-value icon keys (with the original money-10 alias sharing the money block), and the published BLDG0#0 Alien Management Center colony-screen anchor.
 
+The building slice adds 48 uilding.<id>.colony assets with 36 original-position variants each (1,728 references). The strategic ship slice adds six ship_hull.<id>.strategic assets plus Colony/Outpost/Transport, totaling 352 SHIPS.LBX references across eight player colors and the verified hull-style picture IDs.
+
 The portrait sequence is tied to the same canonical race order already normalized in `races.json`. The role-icon block formula is `race_order * 13 + variant`, with variants 1/3/5/7 verified as farmer/worker/scientist/marine by observed community implementation usage and cross-checked against the local matrix. Every confirmed record stores archive, block, frame, dimensions and original block SHA-256.
 
 Generate/validate this layer with:
@@ -109,7 +111,9 @@ Generate/validate this layer with:
 out\moox-analyze-windows-amd64.exe normalize assets `
   -out data\rulesets\moo2-1.31\assets.json `
   -races data\rulesets\moo2-1.31\races.json `
+  -buildings data\rulesets\moo2-1.31\buildings.json `
+  -ship-hulls data\rulesets\moo2-1.31\ship_hulls.json `
   C:\ASH\Temp\mastori2
 ```
 
-The next semantic mapping work should extend this catalog with colony buildings, ship/hull graphics, planet classes, technologies and high-value UI assets, always preserving a verification/confidence boundary.
+The next semantic mapping work should decode tactical multi-frame ship semantics, planet classes, technology artwork and additional high-value UI assets, always preserving a verification/confidence boundary.

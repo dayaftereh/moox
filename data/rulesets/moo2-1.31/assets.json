@@ -51,6 +51,20 @@
       "archive": "ESTRINGS.LBX",
       "sha256": "46add2b2b1c6758b66e780341ed5138ffe4e4f3587b4e1b2bf117b8512a520cd",
       "block_sha256": "dd6c3c368e280b609facc54e73cdc8cd3eb644c65af7b8b99383f7086e9075c5"
+    },
+    {
+      "id": "moo2-1.31-orion2-strategic-ship-graphics",
+      "type": "original-observed",
+      "description": "Orion2.exe 1.31 Get_Ship_Picture_Seg_ selects SHIPS.LBX block color_index*50+picture_id and Load_Player_Ship_Palette_ selects color_index*50+49. Colony, Outpost and Transport design functions assign strategic picture IDs 45, 46 and 47. All referenced function ranges are hash-validated before generation.",
+      "archive": "Orion2.exe",
+      "sha256": "7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5"
+    },
+    {
+      "id": "moo2-1.31-ships-strategic-graphics",
+      "type": "original-observed",
+      "description": "SHIPS.LBX strategic ship graphics; player colors 0..7 occupy 50-slot groups. Standard strategic picture blocks are one-frame graphics; slot 49 is the per-color palette selected by the original executable.",
+      "archive": "SHIPS.LBX",
+      "sha256": "3c7c082d9681d3b0c4e103512ba000a9242a8eb48d528454433843c47f41ce65"
     }
   ],
   "assets": [
@@ -29293,6 +29307,5686 @@
             "effective_frame": 30,
             "grid_x": 5,
             "grid_y": 5
+          }
+        }
+      ]
+    },
+    {
+      "key": "ship_hull.frigate.strategic",
+      "kind": "ship_hull_strategic_set",
+      "status": "confirmed",
+      "verification": "original-executable-player-color-50-slot-picture-formula",
+      "variants": [
+        {
+          "id": "color_0_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 0,
+            "frame": 0,
+            "block_sha256": "4b6ce7626dac81b4afb1e157958299d2eecf420bcfd109821227ee9cd17c1234",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 0,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_0_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 1,
+            "frame": 0,
+            "block_sha256": "233ec95119e99fbf896751c0dd4f3e44491b564ee13c66ed25f9ab12eb7dd417",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 1,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_0_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 2,
+            "frame": 0,
+            "block_sha256": "ca860fcf2523f4fd65a5c728cc096785b19f769b4593e72f1f5be4375e3aab9b",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 2,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_0_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 3,
+            "frame": 0,
+            "block_sha256": "e02d5c7d17978a16381ebb0afe3a9b97d7ff85c4b21d0319ae751a1c95db773d",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 3,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_0_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 4,
+            "frame": 0,
+            "block_sha256": "0b8b14ab42ab9b7b26606578ef7401365ee3d2184e02988bf70d0642f70ddd72",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 4,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_0_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 5,
+            "frame": 0,
+            "block_sha256": "1220b9cdd33716f22d72e6a6a7125f6bcff44bc66cb54538dd21669bc224eb6c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 5,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_0_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 6,
+            "frame": 0,
+            "block_sha256": "63ec501282edfc10ae14ad138fcd8343f8d04b5a105a6306420afc115c95bbcd",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 6,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_0_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 7,
+            "frame": 0,
+            "block_sha256": "513f3a7f92975306744ed202335e16a482b834b816e063d471e563623cb99fdb",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 7,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_1_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 50,
+            "frame": 0,
+            "block_sha256": "5f373390faac232276a32b300c8032473b0022f7cfa74f3c11edda547ff11e1d",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 0,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_1_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 51,
+            "frame": 0,
+            "block_sha256": "d0ef0177ab4d8f250bc9eb23f5793bc69f8329e86cd84abb007251abd9030405",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 1,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_1_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 52,
+            "frame": 0,
+            "block_sha256": "40f8356a53476dad343312c09db78273e1d2614767ec5d18884b6930db42a808",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 2,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_1_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 53,
+            "frame": 0,
+            "block_sha256": "d4c5b548fc8e21b5828a6a7485796dd9f208d16dc4ff4a43c2b35e09789dcd90",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 3,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_1_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 54,
+            "frame": 0,
+            "block_sha256": "09b97f76c57421e63014d454b9aa0861f0e51879d1cf667ba6e12d4468731de8",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 4,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_1_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 55,
+            "frame": 0,
+            "block_sha256": "fc4d4b556e98a5c90fc3140a87e45b7e429ebd3739ee47d3261c9bf12f8789de",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 5,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_1_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 56,
+            "frame": 0,
+            "block_sha256": "32ec14c8343577428e770c90ef7cfe46d9a2edfa3f0d56b9ba91f6236f69f5f0",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 6,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_1_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 57,
+            "frame": 0,
+            "block_sha256": "01b7afbe9f711b1d261c653f58249dc5052e4cc17fa2d945bed9be30df03a553",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 7,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_2_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 100,
+            "frame": 0,
+            "block_sha256": "9e61c84883885006393013d01cf5e81a81c7c90a64cbe751b93564946ebef808",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 0,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_2_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 101,
+            "frame": 0,
+            "block_sha256": "8fda7a90d516e2b55a860aa4e909a8ff296c074eb5ccc7c27aaa0db3d5b8d23c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 1,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_2_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 102,
+            "frame": 0,
+            "block_sha256": "58a2b0a265b1e37eae364d1e379ca1faf5770262cff3666cbe3ab5606e1f22c3",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 2,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_2_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 103,
+            "frame": 0,
+            "block_sha256": "c5a79e8b0220dff8d64c4d44b78805995d9dce75899ac2d5709b853a2ab47d85",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 3,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_2_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 104,
+            "frame": 0,
+            "block_sha256": "6ef3b1815e1bcb84bb1e6e8e135a11444169eb59415eff62b9a397885d063d86",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 4,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_2_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 105,
+            "frame": 0,
+            "block_sha256": "498e6c819a214c6878b30f3cfb5e7293969bb157211cbae5170d6beaa764cfd6",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 5,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_2_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 106,
+            "frame": 0,
+            "block_sha256": "055ad6c09e540bf329456a7873292d9beb96e303c28d3e71a1545e1a640c1680",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 6,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_2_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 107,
+            "frame": 0,
+            "block_sha256": "ded9f01f4af7676954b198641f437d68b7b741adfde05bb45c7c4b286061b1e4",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 7,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_3_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 150,
+            "frame": 0,
+            "block_sha256": "d0960f8be8eae9b29c4e229e41c91a4733b6863ef4bf3b14009f31c9ce84d730",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 0,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_3_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 151,
+            "frame": 0,
+            "block_sha256": "1795aea1e0e7305c2c69054a5b5f153f37675a9ad00c637e91dc2f526c56f6f9",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 1,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_3_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 152,
+            "frame": 0,
+            "block_sha256": "dd270519f854225162d13c19c2f853aa3a39ca31ff3193f06ac627a42f0276a2",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 2,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_3_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 153,
+            "frame": 0,
+            "block_sha256": "b5f3abdf488a6f1da7b0da07f9e1d037be2fc630eabbc107ea63e9b2afe71cad",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 3,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_3_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 154,
+            "frame": 0,
+            "block_sha256": "5e95b5f830cd90b296e11deb465df34035ab2e9f3e9e63136ab5ed57afa6c7f7",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 4,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_3_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 155,
+            "frame": 0,
+            "block_sha256": "1f14e948106cbdbecfb432dad3943d68eacd1bf53d5c57c9fb4c18eb7619b23d",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 5,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_3_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 156,
+            "frame": 0,
+            "block_sha256": "2a33722e5dbf8d83184eaf7bfcdbab462653d5798e68830f2ab80388f2646450",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 6,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_3_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 157,
+            "frame": 0,
+            "block_sha256": "b1a35155af59ba886680e5929085452c5a411757c0f4fdfe24ec72faedd469b2",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 7,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_4_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 200,
+            "frame": 0,
+            "block_sha256": "9f4dfb9ebb91a6eefaab724262051804ae5c778cba7bfcf99541c3a661ba0851",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 0,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_4_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 201,
+            "frame": 0,
+            "block_sha256": "a24b3067c0902d0ab9c4e5e614e5ca8fee9d7ea7310187bcef0dacf130a29c42",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 1,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_4_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 202,
+            "frame": 0,
+            "block_sha256": "bb9a0e8e85a7a5886baa20842fa6af202d23b528d6c18ba355bd6a7004579bb2",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 2,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_4_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 203,
+            "frame": 0,
+            "block_sha256": "f2d0a8485b53886add5cf3f66909f0a6248573be18b78b2e3f4b75c2463ac8a4",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 3,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_4_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 204,
+            "frame": 0,
+            "block_sha256": "e822dd318a09c76ce203e006d021aa22da2850fa17bb28a8d7d8750149af4609",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 4,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_4_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 205,
+            "frame": 0,
+            "block_sha256": "4a34ecde10d9bfb23ef78ffc1f83779dedde48ecdcfee7c65be04b201a74f2c9",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 5,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_4_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 206,
+            "frame": 0,
+            "block_sha256": "7741139086250ec32adfc17a3ce3ef29ea1a378bce09b4cbcc3d6b0a509c0b05",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 6,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_4_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 207,
+            "frame": 0,
+            "block_sha256": "ec87539f84c312a6794a0ce9d6573b4cdfa9ce7ae5aef90eca557fcaee9b51cc",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 7,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_5_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 250,
+            "frame": 0,
+            "block_sha256": "f9bc032a970fa68b6bc184f7b8856e1f411d2a55b6156d2668249aeaaada62de",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 0,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_5_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 251,
+            "frame": 0,
+            "block_sha256": "14239420bc50744950801e304138dc929c0709bd772d15fec774c90d9f16158e",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 1,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_5_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 252,
+            "frame": 0,
+            "block_sha256": "84684caa0a70254d63079b373265a0df2c5e0fb25fe2ddf9e5e39be9df30cb2f",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 2,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_5_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 253,
+            "frame": 0,
+            "block_sha256": "22e8d44bb9ab5e26b6b2771c110dcc1d53adbbcd44e6a873b9ea607d25083f81",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 3,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_5_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 254,
+            "frame": 0,
+            "block_sha256": "18c08dc10bfbd13c9a633fbc4e37caceca5b1aceee49840ae5fbce077b0914bf",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 4,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_5_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 255,
+            "frame": 0,
+            "block_sha256": "99c313491832eac5497336f7403820e2b772d7c8d012e0714bfbb2fddff084a4",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 5,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_5_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 256,
+            "frame": 0,
+            "block_sha256": "1bcdbe598568495c35bfdfcf1e94e29d82f7e8064bf8b00b241cf5c0c9136e5e",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 6,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_5_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 257,
+            "frame": 0,
+            "block_sha256": "3ebb97029c28091fa8d8ca25d7a21b929380413b2092e4f449c93aa9edcd0388",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 7,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_6_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 300,
+            "frame": 0,
+            "block_sha256": "85a3a71f44acb3842052414f402b32785818c9db7d9c1e6c351bcee5556daaf2",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 0,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_6_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 301,
+            "frame": 0,
+            "block_sha256": "9fe53c8349b14a0d93d302dddce76d9f79239a7be5162c97ca4749459ba22279",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 1,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_6_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 302,
+            "frame": 0,
+            "block_sha256": "73946a0f0c8fd13ff165cb534141aef8d8571ba63ab8db1d2f337c4d345b8957",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 2,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_6_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 303,
+            "frame": 0,
+            "block_sha256": "99ccd3d016f7cef853baed4103a07e960a9cd03f95a54a25d64c802248f270f1",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 3,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_6_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 304,
+            "frame": 0,
+            "block_sha256": "205f559af998f538003f9201980026c233fe50e202a1b4dfa5949322944ea09d",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 4,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_6_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 305,
+            "frame": 0,
+            "block_sha256": "489abbf3c19f71ff08dcafd0938bbadcb9843db04e007e52dc874da8802105d5",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 5,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_6_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 306,
+            "frame": 0,
+            "block_sha256": "3943f3b736821153978247325752fe14aa5e43de7e908b466fcdd87872b5e2eb",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 6,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_6_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 307,
+            "frame": 0,
+            "block_sha256": "fb03e5c68c77d9b810b9f50df98cfd51b40b82c71de2e22e08317f97180f575d",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 7,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_7_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 350,
+            "frame": 0,
+            "block_sha256": "7bbba938bf6b2e8351ff63e0535ec85cb99f140db915ff1846f732f7d376c34e",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 0,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_7_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 351,
+            "frame": 0,
+            "block_sha256": "dc937c909df497821f66d2ed87e68c3bfe82e0f4db9f5319bca5dd9ebde67e9b",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 1,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_7_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 352,
+            "frame": 0,
+            "block_sha256": "3099cacefed7c2f7bdbdbcb1a35a7e7b251f20823fe05dfa2c6028aa51f75778",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 2,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_7_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 353,
+            "frame": 0,
+            "block_sha256": "40b92f54b0513825a2f8f8c1f6bd59f196a26008329104754f9957d85dfe2469",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 3,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_7_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 354,
+            "frame": 0,
+            "block_sha256": "0efaa1730164275060adb8e7926441f93a3ff90d5f7d90bd08cd1d65607214d5",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 4,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_7_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 355,
+            "frame": 0,
+            "block_sha256": "7dd21ee72d39dc12aa248dd197b5d7ceb6fff386faefcd6ff13c14b8d58df94a",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 5,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_7_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 356,
+            "frame": 0,
+            "block_sha256": "4bcbe05f273631086ca63fc5655e0ca0915210d1aeb184ae37c013304e1acf26",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 6,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_7_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 357,
+            "frame": 0,
+            "block_sha256": "2b884f68b0787afcf2b257becdeafe20c6c221e9538e5537f04fc67f1e925043",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 7,
+            "style_index": 7
+          }
+        }
+      ]
+    },
+    {
+      "key": "ship_hull.destroyer.strategic",
+      "kind": "ship_hull_strategic_set",
+      "status": "confirmed",
+      "verification": "original-executable-player-color-50-slot-picture-formula",
+      "variants": [
+        {
+          "id": "color_0_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 8,
+            "frame": 0,
+            "block_sha256": "c3a8f750e7e292fa48f08c9e717e57bae46652bf604b7ccf0d6fba4d72151e60",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 8,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_0_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 9,
+            "frame": 0,
+            "block_sha256": "c0f7b3176eeeb3d94a52c659ea93d0e75244451e8a00bc3dc1ab3da9f3274a2f",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 9,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_0_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 10,
+            "frame": 0,
+            "block_sha256": "2189c8e6be09501e69355d89c1729c29e57b171b6b8a986f28aba9c7cafb1eb8",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 10,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_0_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 11,
+            "frame": 0,
+            "block_sha256": "c45e18b6192385d0e2eb27a2f49bfe3a5022e950a8217e98c8daa8b49e5c4a1f",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 11,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_0_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 12,
+            "frame": 0,
+            "block_sha256": "9f666d83d70f4b6d5fec5164eb1473bafa850d2c73337fe941124603ecfd3043",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 12,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_0_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 13,
+            "frame": 0,
+            "block_sha256": "6df54b5ad7755e9be2b649e62ba7bcb281b88692ff4eb2d80d4c9ddeecc353b9",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 13,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_0_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 14,
+            "frame": 0,
+            "block_sha256": "2e4393c09bc17f84c21033f891ce2c0c016aedb56b9bc65c4f7cf3e327e6e6c4",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 14,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_0_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 15,
+            "frame": 0,
+            "block_sha256": "5c2bb7499ffed26c2bf1fca5195d5b36e7e9cfb5d435dc84f713059df5f7f964",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 15,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_1_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 58,
+            "frame": 0,
+            "block_sha256": "3b0d849a61c5f92007112f424c82de1799303e933e7abccd9463b02ca3aa032c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 8,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_1_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 59,
+            "frame": 0,
+            "block_sha256": "a0c471394b4a28d73e076fc2f94efc27cbcbcce1e79ccd7d9634bd64269c13dd",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 9,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_1_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 60,
+            "frame": 0,
+            "block_sha256": "0123094aba1500cfb26d38b5f7d92427f9159b04802ac8f9de69ea926cbe5799",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 10,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_1_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 61,
+            "frame": 0,
+            "block_sha256": "20a2b8017076ef05023744854218b6ba0f16cd77cf63e393fc60684f1163041f",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 11,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_1_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 62,
+            "frame": 0,
+            "block_sha256": "ce7936d6b32538f6b9e75ba425ba32acc81f5a0e7261d6d70a705169db072abc",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 12,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_1_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 63,
+            "frame": 0,
+            "block_sha256": "8f2449d4dc6f157144d99e12f80fdc62ed3f3fd70a729738ed20241b6e477513",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 13,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_1_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 64,
+            "frame": 0,
+            "block_sha256": "c32f47091bab5638c2656d1a6111c1ede493c06f3f182c553b1069eedc94184b",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 14,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_1_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 65,
+            "frame": 0,
+            "block_sha256": "021048751b607afafe48d49276fb812cdeb8a4f07c6359f715ee93156835b01c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 15,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_2_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 108,
+            "frame": 0,
+            "block_sha256": "89c39c497e561b072124304d313d8f9346be68e3b1de60fd81f4de531aaac050",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 8,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_2_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 109,
+            "frame": 0,
+            "block_sha256": "e1c374d8982b0eaaa56ecc8e47cc2ea8df171dde1df804cd2cf67ad61aacfe01",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 9,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_2_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 110,
+            "frame": 0,
+            "block_sha256": "b34510cfb8cc037fd9bd60ec95ac5c7fa1764c95b5d32240f36eaa521d3e65e9",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 10,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_2_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 111,
+            "frame": 0,
+            "block_sha256": "499946241449d5db0dd8e1e9aa9173291a3c4d29390ee1df01da5a04f3ef3c1c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 11,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_2_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 112,
+            "frame": 0,
+            "block_sha256": "6e726d87b10bc296939e671457b988dbdd5c7b48bd13f00d83d77120cd95e47a",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 12,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_2_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 113,
+            "frame": 0,
+            "block_sha256": "9a36304e4b920545a7c1cc93e1d6639c7ffa25413d21e246edb72ddac352d956",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 13,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_2_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 114,
+            "frame": 0,
+            "block_sha256": "3110cae2483928d622e702eb7a37390d5a7cacf70f9ca71c372775a733f1e327",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 14,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_2_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 115,
+            "frame": 0,
+            "block_sha256": "ead002333e6ec2bc8a2e75cf2044421799e38f2867d31a46635b578ce801a776",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 15,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_3_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 158,
+            "frame": 0,
+            "block_sha256": "8a8afceed8dd92acb7b8fa14c3d9d2a5db34ab9e3637ab6ce44b76b361601acf",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 8,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_3_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 159,
+            "frame": 0,
+            "block_sha256": "4f77e8d5fbfdadc84bab730355df567c92e344048ae40a7224feb421314b182b",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 9,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_3_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 160,
+            "frame": 0,
+            "block_sha256": "25436e9646f9726dd97dd1e4ccfbcda28e69eb6af9341deebb124bb54bc4fc97",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 10,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_3_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 161,
+            "frame": 0,
+            "block_sha256": "38d1f6770074fc1782e47532ce20e81d09f0b49076beb34e99ba97944ece0e48",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 11,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_3_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 162,
+            "frame": 0,
+            "block_sha256": "5595c7ca5906a76dbd0fcd0ab8ca68b15c71bb81ae7db636f728582056341bc6",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 12,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_3_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 163,
+            "frame": 0,
+            "block_sha256": "36aff659a50a27004138fe97d4076a9038cfbd20fab04c683e70f620b101e485",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 13,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_3_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 164,
+            "frame": 0,
+            "block_sha256": "121c879608930f2fa681d22f9e43e14b3b0937e5c727116f6a7188efa14c4e7b",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 14,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_3_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 165,
+            "frame": 0,
+            "block_sha256": "0ca5f461b3b933744b9455fb4b272d3c1e32f64f7af0cdd109a527326005693f",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 15,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_4_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 208,
+            "frame": 0,
+            "block_sha256": "6457d431973ccc20f6313080c611ab3dd9396b59e4ff6de68550631b3e90847c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 8,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_4_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 209,
+            "frame": 0,
+            "block_sha256": "22302243498034963a91e5c43e51530efe58381f020be44fa947a654614e8f86",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 9,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_4_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 210,
+            "frame": 0,
+            "block_sha256": "ef1178b068f129153f4c11f9c0f5c69b324ce3e392d4994763e1ca3f01c54783",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 10,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_4_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 211,
+            "frame": 0,
+            "block_sha256": "18daef34b70ef093f69bf2d6914b9c30571749454bf18d478ae5ea0389b41504",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 11,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_4_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 212,
+            "frame": 0,
+            "block_sha256": "92565ba44c05755533620cdcb2fc2d00c72e524070717a5fe2c03cdbae9c6ef4",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 12,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_4_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 213,
+            "frame": 0,
+            "block_sha256": "92612b76dadb1aabd1a98d6a67d1dad9f22df6b19f2d0cad9a759e3b154085d1",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 13,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_4_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 214,
+            "frame": 0,
+            "block_sha256": "0c65922859c0d23975f825082e26cf195ca88c29f4acab4a988e58b28b18133d",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 14,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_4_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 215,
+            "frame": 0,
+            "block_sha256": "2d260d9d72e694e2307a0d7d0987729c0ae19360b2365a45c0ff4f963e2da9f6",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 15,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_5_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 258,
+            "frame": 0,
+            "block_sha256": "c89734f6916f8d3d07b4bdb9734488f014fd08c239fddad91b10d44c7b76671d",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 8,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_5_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 259,
+            "frame": 0,
+            "block_sha256": "7f57d073ca5cc39cd3e297c4cb16c87580f25bf14bc20ea61eac9c18747786be",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 9,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_5_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 260,
+            "frame": 0,
+            "block_sha256": "639c4b7bcb726df772abb51f731458a4ab1253dc1dd396b629111eabaa142775",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 10,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_5_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 261,
+            "frame": 0,
+            "block_sha256": "f3d58e2a4610bbc514f69cff45d3059d2c8d3157ad7872d6a8831446a92ec557",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 11,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_5_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 262,
+            "frame": 0,
+            "block_sha256": "5befb47899b0dc60835015f043f813aa6c6619ad69bf789ddf0259f661fb5054",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 12,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_5_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 263,
+            "frame": 0,
+            "block_sha256": "dd04d907f35431b3e4cad25d0837e36f544ed08b1b1c45963fe5de4824c11e9e",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 13,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_5_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 264,
+            "frame": 0,
+            "block_sha256": "021b9627b65688eda0c4dc0e483de5d1829945e13b14c02d8804659b7dc7faff",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 14,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_5_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 265,
+            "frame": 0,
+            "block_sha256": "68ffa4995442d5b925dc28232ecb8ab7523fba94848bf6b4ae0d982d617af077",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 15,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_6_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 308,
+            "frame": 0,
+            "block_sha256": "6bddf0ecfae5787693b1a13018bc6a7b0ba7f4e516992a4594c7aa71c65d868c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 8,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_6_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 309,
+            "frame": 0,
+            "block_sha256": "9fe61856fa82b15493da6b4660fb5e33da809b005b2c05392edaf58c4e9e36ce",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 9,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_6_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 310,
+            "frame": 0,
+            "block_sha256": "134760ed91763ca49ab7d829c1e4771230f53535c78eb010dc3f0bb3b714bc67",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 10,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_6_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 311,
+            "frame": 0,
+            "block_sha256": "44816ff4ac271e681859cde1c519055230ae59d488c2953c081ced2b72bf6aad",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 11,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_6_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 312,
+            "frame": 0,
+            "block_sha256": "194498ecf06ac6e0152148e4ab64a9998cf8bc3f876748d9c8627ac40d998833",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 12,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_6_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 313,
+            "frame": 0,
+            "block_sha256": "34e652738bca152d98533aebe4ec6c87bb61bb0e1e18f478c496592e6b4714e3",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 13,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_6_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 314,
+            "frame": 0,
+            "block_sha256": "c4a8c7c960718d4be22368d45aa8586af264539588b71031158e5209152f4890",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 14,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_6_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 315,
+            "frame": 0,
+            "block_sha256": "a9e4eecd021930d59d611484f069408aa75672ec36dab3adce6b7adb424f228f",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 15,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_7_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 358,
+            "frame": 0,
+            "block_sha256": "cd945d6cb6ed5d3ec469169e60dacc51bd4e0b2e82aaa837cdc136888bd45ebd",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 8,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_7_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 359,
+            "frame": 0,
+            "block_sha256": "bb96d0e7d67e730467e381886ffaa28c8aa746cf1695789ba496919e7ee163e7",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 9,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_7_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 360,
+            "frame": 0,
+            "block_sha256": "f917bd8ddf4cfd61874b71421caca11fdebf48d74672b984b0d8b521ee931d5b",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 10,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_7_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 361,
+            "frame": 0,
+            "block_sha256": "9ab11dd22ffb83b28732bce20d996feb80ed0e7eef13f1dd10ca328e1c2cdaa9",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 11,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_7_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 362,
+            "frame": 0,
+            "block_sha256": "e5fe27bc60a5a13fd2f4a4dfabc8c3d398efd4aebcef7525646f4f8416cfcc3d",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 12,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_7_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 363,
+            "frame": 0,
+            "block_sha256": "6ddf8dc84fb63d7a44ac71a2bb9db2f6060d024d15419671c9a9b0437bbdca3e",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 13,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_7_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 364,
+            "frame": 0,
+            "block_sha256": "9ef1067190a0d9fc9e79705b1cb3304dbaf9114d7e70c067d0082d467606cc1a",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 14,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_7_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 365,
+            "frame": 0,
+            "block_sha256": "8e526a3589e76f05f136e458f9e56f3f1838978cd0385d4e2fd0cdf48753255c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 15,
+            "style_index": 7
+          }
+        }
+      ]
+    },
+    {
+      "key": "ship_hull.cruiser.strategic",
+      "kind": "ship_hull_strategic_set",
+      "status": "confirmed",
+      "verification": "original-executable-player-color-50-slot-picture-formula",
+      "variants": [
+        {
+          "id": "color_0_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 16,
+            "frame": 0,
+            "block_sha256": "e9d1b58bbb95d470551fafad419268c7e7c13f8b941b8c421fbadadd3da75edc",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 16,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_0_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 17,
+            "frame": 0,
+            "block_sha256": "fe6ea0a9bf0e7c549bba683b85b9d59d6efeff7ebf099b04c672f65e992e5023",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 17,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_0_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 18,
+            "frame": 0,
+            "block_sha256": "455ae3bb0e6bd84e1c23434a8629d2b10a4be1ad4ae7bb0e38c09fb72eb41fe5",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 18,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_0_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 19,
+            "frame": 0,
+            "block_sha256": "61ed2417018836830c9be05fe7cc82692a8efea51fb5d3def57f5e9a882a9383",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 19,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_0_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 20,
+            "frame": 0,
+            "block_sha256": "aedb644ed735b7d5675a8d9d8e78e0fe6b55446d13808b2cf8266eea006c8166",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 20,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_0_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 21,
+            "frame": 0,
+            "block_sha256": "a83559be0de1df5acbf6b3f86865a736bdf95c4755eab53289475161ff4e0927",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 21,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_0_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 22,
+            "frame": 0,
+            "block_sha256": "5959197251c653f832826456f7c4c23f5a3124a45b36275e523b83e9492b4be1",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 22,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_0_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 23,
+            "frame": 0,
+            "block_sha256": "9dc4e18e13b32ec9bfacd46b99dd50b7165f350792c749908ad34dfe03980842",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 23,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_1_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 66,
+            "frame": 0,
+            "block_sha256": "155e8fb612fa36bd1e33763b35c6c30d9de795d573aeba5a4ca355ee3ce1e47d",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 16,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_1_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 67,
+            "frame": 0,
+            "block_sha256": "33dfc36c8a0e1329de77a3b84ff683c69fe2ea5979200033c0e5e245e8c510a7",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 17,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_1_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 68,
+            "frame": 0,
+            "block_sha256": "96721d3c7665cbc601c1973c26312da4e507f4f905feffbdeb4bcbfa9bd1d62a",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 18,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_1_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 69,
+            "frame": 0,
+            "block_sha256": "65ccc60d31188fcbc1b6e6fe9f00a4553676454e6121ccb6e25c2d6a7f091dac",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 19,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_1_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 70,
+            "frame": 0,
+            "block_sha256": "611aa38e3e7e3c81e9f3734e5f792db442e4f73669ebb1686274b95c84d6f41e",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 20,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_1_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 71,
+            "frame": 0,
+            "block_sha256": "561169fcd9c6c755e160ccf8dbdfe09a552d0e22529e94e0eb6c70e50957af82",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 21,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_1_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 72,
+            "frame": 0,
+            "block_sha256": "c5f8c952db090d549ba397852bdd8a1caf1db926ce38650b85cce020a2090907",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 22,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_1_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 73,
+            "frame": 0,
+            "block_sha256": "dabe52685c8cb186dd975f270d0d89a27090372e03e2035a464d6ee4a911e3a6",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 23,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_2_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 116,
+            "frame": 0,
+            "block_sha256": "cd6be5343ff5a52e651d5e6fda91ce42242d5bf232d39b0ed3f03e27df8729c6",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 16,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_2_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 117,
+            "frame": 0,
+            "block_sha256": "a6f77b0da07391afc6907351f44c72a8f3f3dade42dfa72f224962b8877d97bb",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 17,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_2_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 118,
+            "frame": 0,
+            "block_sha256": "e30ae72b114fccb47c2f7a79a4234c6a798dde59811633719585f09b33828d65",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 18,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_2_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 119,
+            "frame": 0,
+            "block_sha256": "b276cce72befdff4882afa04dc83920fd86225f716da0aa9b4a27a02f0f18ce4",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 19,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_2_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 120,
+            "frame": 0,
+            "block_sha256": "b83abbb22f58656b7ee33a9133f253366714f70f3e7151180f4675b5c277ff57",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 20,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_2_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 121,
+            "frame": 0,
+            "block_sha256": "f66750f41a412f87fb3a05f7f1f938929d2ce066b7b90d9b75b1e1f274865f79",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 21,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_2_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 122,
+            "frame": 0,
+            "block_sha256": "fc6ede0f87a96bd87d8a0626c1d3259c4af6d4c3812af3bb25aa28388393cefa",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 22,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_2_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 123,
+            "frame": 0,
+            "block_sha256": "f9988d36bd08855d6a47623d7632e960d585a781dc110da5f39d47593da0c501",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 23,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_3_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 166,
+            "frame": 0,
+            "block_sha256": "91a7e747c8a59ae8df6ae1a9cda75137203a6c738fe8b91c21fb8a70df135875",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 16,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_3_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 167,
+            "frame": 0,
+            "block_sha256": "556e55dcc0ddad84ee6e875831159815027061b10ab9642adcddd54aae392037",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 17,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_3_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 168,
+            "frame": 0,
+            "block_sha256": "ba4dbd041ccabcd20ae166e2ab732621f4cb421a43742b5af8228bae2aa60bc0",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 18,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_3_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 169,
+            "frame": 0,
+            "block_sha256": "00c68a3e40479f5c86d8d7e4980c5d5800a6a04f2be90fcacb5fb3cf665a43fa",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 19,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_3_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 170,
+            "frame": 0,
+            "block_sha256": "166e4a2199072c825693cabe7097e9581b7ad6fb4728c464c5acb6ae417c9a2f",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 20,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_3_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 171,
+            "frame": 0,
+            "block_sha256": "ef41c7f9c7d6de58e2b33b5f7de93481c2bd1caef42167cf64b81f80976f44ee",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 21,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_3_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 172,
+            "frame": 0,
+            "block_sha256": "a343463f63224b0bd6ff01853197c1d9c5c77e3687f80fa415152d49394a8a2c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 22,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_3_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 173,
+            "frame": 0,
+            "block_sha256": "2beb03b996de747c44fc099aa715ef03d80b09b3dafbf6cd29fc0c3ef06b2177",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 23,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_4_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 216,
+            "frame": 0,
+            "block_sha256": "045e12e76c1efcb7b9e6d370791f92a011292cf999670874bd5741bf32a5b898",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 16,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_4_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 217,
+            "frame": 0,
+            "block_sha256": "d0af01503a402e8b9d8e7516320cca7320e1a175815881b902112ae6761ce67f",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 17,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_4_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 218,
+            "frame": 0,
+            "block_sha256": "08e550da2c38204f9e9676fe93e95aadd83b93c47273cec926a1461bdb97a9a4",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 18,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_4_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 219,
+            "frame": 0,
+            "block_sha256": "68c48165c55614b8e5b3d6c16ee699693366f66b52c93d7c7c409bfd0d8f463c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 19,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_4_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 220,
+            "frame": 0,
+            "block_sha256": "34ef9226d679f40d59de52517f67e8d1f32d5d03f2cbb4fae868f19407f8a248",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 20,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_4_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 221,
+            "frame": 0,
+            "block_sha256": "8a1664c1cbc34a15ace2b39aa1589b2ee759bd1dc9d5b3a4e0c71d0bf81f8923",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 21,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_4_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 222,
+            "frame": 0,
+            "block_sha256": "aa04eb8ee22276ea7d6de2bd0a6b5ebd7fc92b9d2c328ceeb4ed4d41750ce06a",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 22,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_4_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 223,
+            "frame": 0,
+            "block_sha256": "84b5877009ee42761cecbb8bc922385c0ddb3efee68229b74ce4d66d2271255a",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 23,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_5_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 266,
+            "frame": 0,
+            "block_sha256": "994770ef39343faa5d408d5554d075741d754d476254e0ca9dba254cf7af7931",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 16,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_5_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 267,
+            "frame": 0,
+            "block_sha256": "9912f61826224b29875d2260bf09c4f8c26f598fbe545e9bd86868ec6eed68a4",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 17,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_5_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 268,
+            "frame": 0,
+            "block_sha256": "1bbb10f9c42cc49db17cd4d999dc129249d37dbdee32c2a4f7dec5a20a6de37e",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 18,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_5_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 269,
+            "frame": 0,
+            "block_sha256": "5e1e16cb08a1d1d2bf24a978e311cf8d4009563a8a8d1066462eebd840c6aa8b",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 19,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_5_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 270,
+            "frame": 0,
+            "block_sha256": "9047d4aa0c0b939d28b296373f2b6df45b5fd232a9c7316c1f542892fcfe0ca8",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 20,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_5_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 271,
+            "frame": 0,
+            "block_sha256": "1d1f4fcdb701e750df2263a5157363512707d5f5baaa9b71145c432f1ccd6b12",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 21,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_5_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 272,
+            "frame": 0,
+            "block_sha256": "077b215b8e756deff7630201beee084cf8bff19edc71c488fcea69277b0d53ac",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 22,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_5_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 273,
+            "frame": 0,
+            "block_sha256": "ec683f4725f2e38fea306588eddb018bdaa7511c2eafbb4a048ba6a48198afa4",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 23,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_6_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 316,
+            "frame": 0,
+            "block_sha256": "9768184c0ec064d6b5ed6e30716dcd2f0eb1077d88df3cdb7bad51d3ee3b9d57",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 16,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_6_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 317,
+            "frame": 0,
+            "block_sha256": "11908fe9d986f181dbe889024111e4d0ea100c9f479b2044504361f29eec7836",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 17,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_6_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 318,
+            "frame": 0,
+            "block_sha256": "13b15f9e1f4c25f41a80e33b6b48c6d3375ef12289e0395f8b9133ef6f2b353f",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 18,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_6_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 319,
+            "frame": 0,
+            "block_sha256": "1502f1b33765048befd5b7e856a0b7032e8af6307ff6cdf4337b927086bf02e2",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 19,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_6_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 320,
+            "frame": 0,
+            "block_sha256": "18492bbc1da62cb046f4886cd805902d22d445057d09d3f00048ee01a5c2d91b",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 20,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_6_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 321,
+            "frame": 0,
+            "block_sha256": "92de203c07d34872c5407a6d7672aa09dc040dc7b0d33f16e01ef94b76cb2970",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 21,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_6_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 322,
+            "frame": 0,
+            "block_sha256": "d5a7bca2fbc1cce73dbe357774a04b1b63f6f4dfe6c51bdb6b5790c27e7a1b01",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 22,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_6_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 323,
+            "frame": 0,
+            "block_sha256": "cc6525b9a428cd9ccf9d61f94f806e76a2c1af67e6e274a4714656a3ac5a2ad6",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 23,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_7_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 366,
+            "frame": 0,
+            "block_sha256": "134ceb532c56fe5d7f59a943311d6aa25acd42da519ad90eb96e1d512cc674c0",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 16,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_7_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 367,
+            "frame": 0,
+            "block_sha256": "a9ae3471af7fcb66dacfd969b4853d2b40d3b66c5f94396357c7a8fa99cc54ff",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 17,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_7_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 368,
+            "frame": 0,
+            "block_sha256": "99992211dac0c1c8d367ab27c9ca813ac3860b4f4b55eea5a4bcc644b3b998bd",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 18,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_7_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 369,
+            "frame": 0,
+            "block_sha256": "1b41bec44f0c5e554e17005da8e383ddda528b04229bb003736a7dca509ff0f4",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 19,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_7_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 370,
+            "frame": 0,
+            "block_sha256": "c55921b4fc24c0520449877909a898e39261d545b317086f85f1fdb500b7de1a",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 20,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_7_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 371,
+            "frame": 0,
+            "block_sha256": "07677b35d3da762f5cd7fc024d8ae8b73f2bc17bfc5d5f30518badfaa9ce17cb",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 21,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_7_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 372,
+            "frame": 0,
+            "block_sha256": "89343063fef058366917bc4950641d64bb9177fa1d5237ce4da1e626a62dd6d1",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 22,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_7_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 373,
+            "frame": 0,
+            "block_sha256": "a36e18cdb361d5a848f8e782a0c443edcf12d122d65e0210a47e5cb5700d71b5",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 23,
+            "style_index": 7
+          }
+        }
+      ]
+    },
+    {
+      "key": "ship_hull.battleship.strategic",
+      "kind": "ship_hull_strategic_set",
+      "status": "confirmed",
+      "verification": "original-executable-player-color-50-slot-picture-formula",
+      "variants": [
+        {
+          "id": "color_0_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 24,
+            "frame": 0,
+            "block_sha256": "0df878cff4dc8bf6d7ef707f20b4bd63e31854f1b32a3c42596bf508946b06e5",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 24,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_0_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 25,
+            "frame": 0,
+            "block_sha256": "9be69ae297473691b156c5ef0af7232b7bcf937c642efc5f60ec8ba6a222d336",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 25,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_0_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 26,
+            "frame": 0,
+            "block_sha256": "a9dfa04555f43dcdb1562cdaf01f7a95e598cb84b796b470fd124d297698190c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 26,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_0_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 27,
+            "frame": 0,
+            "block_sha256": "460dcf6f487049c7329b55112a45817ef0693cd835756b5989ff5cc8db4217cd",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 27,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_0_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 28,
+            "frame": 0,
+            "block_sha256": "6e3202551c0ea83154325eabdba6205dac100a9073ebb61f645044b1daae0a99",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 28,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_0_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 29,
+            "frame": 0,
+            "block_sha256": "4568fcfa99cfc893d31c260e1ccfa76d0acef5ec3c4ddc47c95486ba5be72982",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 29,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_0_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 30,
+            "frame": 0,
+            "block_sha256": "c32e65452926181352dca09fbf2e22e54acbaefb620f1ba245438271ef47798f",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 30,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_0_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 31,
+            "frame": 0,
+            "block_sha256": "5f53736bb2fa18b71f5c87d2c2a8e4e6428000038a6dd4dab5ac19d819ae2bb0",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 31,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_1_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 74,
+            "frame": 0,
+            "block_sha256": "243fd7ef1c3753544d2b13a0841ece85e6ce48058ac84df0f7abd7441a1fdee2",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 24,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_1_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 75,
+            "frame": 0,
+            "block_sha256": "53d96536397498ea60b2e877bc7a26a1203fe009c4ddb324edeef9988dfe4fef",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 25,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_1_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 76,
+            "frame": 0,
+            "block_sha256": "9d21dcee9f05c2ebe01c2e982b23bf2a981b90d7c5958d31eae9ae7950680ac1",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 26,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_1_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 77,
+            "frame": 0,
+            "block_sha256": "90698cbf238d8f70342d7bfe81e8ae5417adeb3c96506ceddb07b1965303fde9",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 27,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_1_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 78,
+            "frame": 0,
+            "block_sha256": "efb8a06a0b0f544e1d1acecb179b3b51d4654c65786f271d58aab3315c76a6ac",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 28,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_1_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 79,
+            "frame": 0,
+            "block_sha256": "0100a439081bb5f40f7b1a8f5e08c1c99bec72088526ac9602f09f95ada5654f",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 29,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_1_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 80,
+            "frame": 0,
+            "block_sha256": "ad479c70559c7b9713f34546e17d6581a5615fda954c1c85460eb8ad6650a7ad",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 30,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_1_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 81,
+            "frame": 0,
+            "block_sha256": "27db5f6eb09cd42e1a3267f9c922b7b3c2ba2438f9cadaf905d99fa765c47f55",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 31,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_2_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 124,
+            "frame": 0,
+            "block_sha256": "7d450aac83d00354be47ffc6c2ccc98898e8d494ef0b62d5e7cd4a738facc3fb",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 24,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_2_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 125,
+            "frame": 0,
+            "block_sha256": "b98e2cf6875bf484ad594510a61664ce59d3a8f7568c98d67a0ff21a091f2173",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 25,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_2_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 126,
+            "frame": 0,
+            "block_sha256": "084669f21847c1466757fd80392e7c95e140e98bd6a4a07cecaa92cda6b3c79c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 26,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_2_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 127,
+            "frame": 0,
+            "block_sha256": "a7d93b43a2c0c67e7dd33643c099569205b1f96f5d2e45bd6d64b8eaa43276c8",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 27,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_2_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 128,
+            "frame": 0,
+            "block_sha256": "1c54e89b3d16ac1ee3bd4fb4efce1f97c9d1783cc2cbac09352c7bb49a9c29ef",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 28,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_2_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 129,
+            "frame": 0,
+            "block_sha256": "18521bd1419a51c17cbe23a68ed6519f02ed0bec5aa694c3545624ca4fa53ebc",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 29,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_2_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 130,
+            "frame": 0,
+            "block_sha256": "f9ee4d7ccacefa6672859b2f56a65416ead34544b7075a935a77330ece8d4bf1",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 30,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_2_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 131,
+            "frame": 0,
+            "block_sha256": "e9947f7a3d63257083333b448a45660eba55207493f58ab5c9f1af2053c1954d",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 31,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_3_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 174,
+            "frame": 0,
+            "block_sha256": "e2a6db921e0cd650891e070f2dba90a31efca442999b3faaa97011fdbb9eccd0",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 24,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_3_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 175,
+            "frame": 0,
+            "block_sha256": "eb84d5809f48c06ca99cfd98811b8d3bfb762a2754be7a37e1723f2429a46bc3",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 25,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_3_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 176,
+            "frame": 0,
+            "block_sha256": "2cc0157ec13ddbc85172b767c881c09be74e259d182b200d5947bb87bed7a84c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 26,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_3_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 177,
+            "frame": 0,
+            "block_sha256": "92ca5393fdd0bd7e808eeb6af8f4dd039507f6046ae999b75647990d591b7fbc",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 27,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_3_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 178,
+            "frame": 0,
+            "block_sha256": "e30eb85e55b4a2befd22d5e63303a23ef99230cbe91ca9b1649b41df2c13be96",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 28,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_3_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 179,
+            "frame": 0,
+            "block_sha256": "1f8078baa0f93c5b6c6965771b7cfc1546976e64aee762f1ab5f52003be08fcb",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 29,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_3_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 180,
+            "frame": 0,
+            "block_sha256": "8cffc893d99892e2e8425b3069f2bd42d4e81ae35bfe55877cc3bfe9757dfe57",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 30,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_3_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 181,
+            "frame": 0,
+            "block_sha256": "07fa501c87758d8f693743b4b0d20d50ee2c627e132fdf97e123252e58f1205d",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 31,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_4_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 224,
+            "frame": 0,
+            "block_sha256": "9e3a0cba9a7352cbdaf5340b7680add5d05db78fbcf538fff931df16497d245d",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 24,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_4_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 225,
+            "frame": 0,
+            "block_sha256": "6eb250eea69613385ca287d83ea6b412b9b721a422c54bed0bbc27eef76c7ce3",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 25,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_4_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 226,
+            "frame": 0,
+            "block_sha256": "a28903298dbecfa45f7114bfa9892f1690a32c4e0bdff1793fd3a65c456ed87d",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 26,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_4_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 227,
+            "frame": 0,
+            "block_sha256": "ac8b8219c0f8389253de400defb37d2848b65c3dccd15a3c9c78facfcf5c4f80",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 27,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_4_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 228,
+            "frame": 0,
+            "block_sha256": "0f4345b4e2179ce207be1c4a6409660003d250afe41cd2ada060287d2635eeae",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 28,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_4_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 229,
+            "frame": 0,
+            "block_sha256": "e6028c29084856b646f1b5ccd30e88fca2597bc0ef12e2d43fca47fa9a37ef7c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 29,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_4_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 230,
+            "frame": 0,
+            "block_sha256": "e10999107f1df3b8f153df97d3c58866f3e6a6436a5f015ea8bc663a9514e95a",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 30,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_4_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 231,
+            "frame": 0,
+            "block_sha256": "47dd60571bbd1676027793d4a35afbdd47f0a9fa785878eddc3011aaa086f739",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 31,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_5_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 274,
+            "frame": 0,
+            "block_sha256": "739358bc9afc71f5cd2d39d595bd46c96107ca3221ea714733f729606c92e8f1",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 24,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_5_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 275,
+            "frame": 0,
+            "block_sha256": "c774fb807714cb23247dcd2c7de12d1001b004c6015903fea9fd38f149d449f5",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 25,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_5_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 276,
+            "frame": 0,
+            "block_sha256": "8dc92c293245cb75481784216d5c4bd06cb72dfbd4acf75289adf1cbf43772c4",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 26,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_5_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 277,
+            "frame": 0,
+            "block_sha256": "055039569fdb83b1421a768ede6d3414c7ced88092cef7d6d6faedaf21665569",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 27,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_5_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 278,
+            "frame": 0,
+            "block_sha256": "7960a8a25230fac244436a4cf66ccdba79e8d37cdd19b50a9cdb53d1d5e2ecc1",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 28,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_5_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 279,
+            "frame": 0,
+            "block_sha256": "461a0015d840b4696f894292751c09c78517996f840a0ed55ab100ac0388b4a2",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 29,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_5_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 280,
+            "frame": 0,
+            "block_sha256": "12cdb63b711d86f73f83bffbcddb6acefff39283c08ca752653a6b80b2975ec8",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 30,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_5_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 281,
+            "frame": 0,
+            "block_sha256": "d8b97efc3f769a42c223b599dd31ce130eaa7a2aa1c4c92f5ed9936145d361ed",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 31,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_6_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 324,
+            "frame": 0,
+            "block_sha256": "91c6e3e99d6c87820da5cf389af02ffdb813657e97cbcb416b79170aa8058c88",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 24,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_6_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 325,
+            "frame": 0,
+            "block_sha256": "fa24fdbb87d7724244dc04fe4ed064065cc4fad1fa55d0407ac6f2b69b3f7be7",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 25,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_6_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 326,
+            "frame": 0,
+            "block_sha256": "40a267ce9779c9181ba199a70b1033e10f5b89fb0cfba3528a89b71f6ff2a7d2",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 26,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_6_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 327,
+            "frame": 0,
+            "block_sha256": "1c648996f3df864d27cc017ad59cb18532da5a06ec78c83b679621fa648ca96c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 27,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_6_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 328,
+            "frame": 0,
+            "block_sha256": "b1e49c056281f4cf09ff17a48416320bb540b19df671fcb973e3bcc972223fe2",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 28,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_6_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 329,
+            "frame": 0,
+            "block_sha256": "20b30621001988370ced01d7e3ae59d0d5d169d641b66c3e3f81fbdbc442a6f2",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 29,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_6_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 330,
+            "frame": 0,
+            "block_sha256": "2773192862af8d4191a7e33777664c795109c9ab778dfe35407310f7d5b50cd4",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 30,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_6_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 331,
+            "frame": 0,
+            "block_sha256": "728fc3cf8083ff3be525f07e4a197f691f6b1f51dc9ff6a54bb813b8dda433c9",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 31,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_7_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 374,
+            "frame": 0,
+            "block_sha256": "cc6b365f568b2f0654cb4845e4f3c0ee3716e7ba08dccc0a1d99ee25f803f51e",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 24,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_7_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 375,
+            "frame": 0,
+            "block_sha256": "c5aa0ec863b91b44bcb47e55b29880e62334f1a7da73a3d553eeccd093d7e763",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 25,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_7_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 376,
+            "frame": 0,
+            "block_sha256": "660c7ec3d2045afb5e3fa2b69df74bc244e80435ebbccfb414c5da3033918271",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 26,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_7_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 377,
+            "frame": 0,
+            "block_sha256": "cd8edb81a8862b2b5509f791a0ba622aeb04fb63627cdbf24058c205a6ba4b1e",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 27,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_7_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 378,
+            "frame": 0,
+            "block_sha256": "64f95f19bba0df08ec1bd85025714c0dcf5fa3e52c66a9f29b1fff6501ee4436",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 28,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_7_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 379,
+            "frame": 0,
+            "block_sha256": "1351bfc60342c9dd622c50919465eb7a744a163138501b44f4538740f154445e",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 29,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_7_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 380,
+            "frame": 0,
+            "block_sha256": "06326ff87c519628addef2f7dfc3acc0d22d7ff519daf37d22f589d88a7e74e9",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 30,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_7_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 381,
+            "frame": 0,
+            "block_sha256": "08770b656539a1d18250efc0c5c6bb13ca3fadbed61af09e7ffecee7b7b39c3a",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 31,
+            "style_index": 7
+          }
+        }
+      ]
+    },
+    {
+      "key": "ship_hull.titan.strategic",
+      "kind": "ship_hull_strategic_set",
+      "status": "confirmed",
+      "verification": "original-executable-player-color-50-slot-picture-formula",
+      "variants": [
+        {
+          "id": "color_0_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 32,
+            "frame": 0,
+            "block_sha256": "110928fa9486bc0aef34f8830bc42012309a129b466b4ec63a08aa282cdbf17e",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 32,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_0_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 33,
+            "frame": 0,
+            "block_sha256": "a713fb2ac34478d0350b37cc09d9547e2135a42c0a14ce33017725725e7409d7",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 33,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_0_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 34,
+            "frame": 0,
+            "block_sha256": "5dfed616da48161d092898287c21839f9a208532cf86b97ceacd6ff100e436c3",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 34,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_0_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 35,
+            "frame": 0,
+            "block_sha256": "5ed3d326d89ca373a848dac59dad5b73ebf0ba08a6507a8143b3d7c77d9ea306",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 35,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_0_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 36,
+            "frame": 0,
+            "block_sha256": "7bd091d8120c16ad87d231f9951e881e7294b2df00f8d6d8902a5b6c27087029",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 36,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_0_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 37,
+            "frame": 0,
+            "block_sha256": "b4d52cac13b49cd08e441a1c6c81bce700be392c4966c8b4dd0f97f6e3a93cd3",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 37,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_0_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 38,
+            "frame": 0,
+            "block_sha256": "efc78182176cbddf64ab54076a40a1b77634f364168aff13b77beaaf38c6083f",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 38,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_0_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 39,
+            "frame": 0,
+            "block_sha256": "b64a99350605edadc2c836ab65187501fd2a38fabf52eef96e9fa771a33367c2",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 39,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_1_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 82,
+            "frame": 0,
+            "block_sha256": "50fcae7124b940dfc564fc6fad27333bc70b36c4ae4f8263d7e40a45a026ae13",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 32,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_1_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 83,
+            "frame": 0,
+            "block_sha256": "24c7d663013f581125ed9140ffbd178ee8bea83142cc4019589d1abb9d135147",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 33,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_1_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 84,
+            "frame": 0,
+            "block_sha256": "d1c9abbf8ef1e124ba25d1fefe279902251a9204c48a8ccd91b009944ad670ce",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 34,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_1_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 85,
+            "frame": 0,
+            "block_sha256": "7e1308ab36b294ff9d65d4c240154283bc38e892a36447b0946c2c14d9c66316",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 35,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_1_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 86,
+            "frame": 0,
+            "block_sha256": "e0c4d087f3d0492d508a01324e6b68b10608aec3b1206fbfc49b04e44705516b",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 36,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_1_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 87,
+            "frame": 0,
+            "block_sha256": "3e9d32eeb1aff636b005da4e7449dce23b595cb82e7b5d30036be89272244081",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 37,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_1_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 88,
+            "frame": 0,
+            "block_sha256": "7f2f47e2903994bf757d03ad50ac9d235f446b542a97301816248472b94df9a6",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 38,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_1_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 89,
+            "frame": 0,
+            "block_sha256": "339ae2b7027d93c366d7132694a440e8f7733b555aa29222313a52795626003e",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 39,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_2_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 132,
+            "frame": 0,
+            "block_sha256": "4b9a1ac4a16456e80f5ce4cf2736ea72fba00b95bc72f08576fce66ff01f04d3",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 32,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_2_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 133,
+            "frame": 0,
+            "block_sha256": "68775ce99b19b795e979d6f9ec075c06ed09d0bd899d8034a595329a2faae441",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 33,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_2_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 134,
+            "frame": 0,
+            "block_sha256": "74e70f7cf660bdc13c730757ec2531094b739a6710f65dd767bf723bdd9b059e",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 34,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_2_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 135,
+            "frame": 0,
+            "block_sha256": "831ba010f08b2cd90dbfc37b53898fad2da23fb23d1ea8dc056bb9094c6d286f",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 35,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_2_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 136,
+            "frame": 0,
+            "block_sha256": "f30df0db766bd81b4963aa8c0a411cf177ce107cc4282884508d22f3a2e25b58",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 36,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_2_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 137,
+            "frame": 0,
+            "block_sha256": "b5966fafe52c2373be35f13b59c464f38bf7575f21e4761f0cbf4f4140bcd4fd",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 37,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_2_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 138,
+            "frame": 0,
+            "block_sha256": "34d7cc7ea8bf4e3b662e859b6e0d06bd0252b1561abdcb1dd0d9c9f55c8e0242",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 38,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_2_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 139,
+            "frame": 0,
+            "block_sha256": "c264497fc91853900cac804c95a78e1cd0fb34f4cf58e3f3a9e05389ae7371e6",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 39,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_3_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 182,
+            "frame": 0,
+            "block_sha256": "2008085ea160624f7a01569708bfa6001619886b3d2623fe1b0a9e8fb4da172f",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 32,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_3_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 183,
+            "frame": 0,
+            "block_sha256": "432081021df765e82596fa5c5568f8d6025b6a873a22bd6e784b51328ec00fdf",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 33,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_3_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 184,
+            "frame": 0,
+            "block_sha256": "185fc22b20161c5e4d1fc5b51c3fc49fa1cde9506a6d382af0d3c0928a91dac7",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 34,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_3_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 185,
+            "frame": 0,
+            "block_sha256": "65f44a1920403d90c12a26d1e4ad9fbe368e5c1a3b3b12aad51d3f763c498c4c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 35,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_3_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 186,
+            "frame": 0,
+            "block_sha256": "9c9782efc07e7b4a4f65b09132298ec75c487e3ef08a4f68bf599266b493cf54",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 36,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_3_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 187,
+            "frame": 0,
+            "block_sha256": "4159db4ecd7097d259892a30aa5e8c3caa6d049a2890ad8b143bc245362fe63a",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 37,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_3_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 188,
+            "frame": 0,
+            "block_sha256": "a6d293d20fe31de94135e39cf0f601ca97fd0ef70b2568153cf307f470a6ab99",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 38,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_3_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 189,
+            "frame": 0,
+            "block_sha256": "6658fef3e469b4052a3dd26608da68bcc1262d2b795e9fba9ca2f3403e1b0010",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 39,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_4_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 232,
+            "frame": 0,
+            "block_sha256": "00c5bdb861fb6727f5408196292f43c9a0c34eff0aeae7a751d42ed061ba33c6",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 32,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_4_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 233,
+            "frame": 0,
+            "block_sha256": "de8f254420b57d38b4e88f26072621a1612274547d9ff46d65028be7eb1a982c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 33,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_4_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 234,
+            "frame": 0,
+            "block_sha256": "e531a2df80c2346d227633e31f4dd9daf55101f71d29203c58f205c61b3528b9",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 34,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_4_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 235,
+            "frame": 0,
+            "block_sha256": "9cd2928a6dcf5a25391f9944dc8ffe5c1f1155f76b08b43097d5fd524aa8a75f",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 35,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_4_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 236,
+            "frame": 0,
+            "block_sha256": "d645f36977edc1603be5af54d4ac184fae9767a55d51670922ce013c3de9aed4",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 36,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_4_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 237,
+            "frame": 0,
+            "block_sha256": "3073f9680d58f29a78700efb386e1fd7c0c760c88bc6649e654e0a5d7ff02d0a",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 37,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_4_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 238,
+            "frame": 0,
+            "block_sha256": "330d7fb87721924bdab389cece7d51d060cf324bb5726ba12bd5433ba69fa734",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 38,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_4_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 239,
+            "frame": 0,
+            "block_sha256": "5d55820b053e14f3eda16486bdecdc08d24cc16799db7220808225e6c7a088cc",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 39,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_5_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 282,
+            "frame": 0,
+            "block_sha256": "f015617d04a93688e063d0b40ea0d0d5f49e9442526cfe46eda6c705b908cce5",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 32,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_5_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 283,
+            "frame": 0,
+            "block_sha256": "2ffb10087a12d1121868441d1435f75d471d6943683fe039a76cea28c623a2e7",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 33,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_5_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 284,
+            "frame": 0,
+            "block_sha256": "bbea35885c9328aef54ec4111bd8e8dac322ba375fd88f77da5639ebb2ae23f6",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 34,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_5_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 285,
+            "frame": 0,
+            "block_sha256": "de2cdbf311970648682f3d0187d5eb4d54df4a4423a85fefd07bcbef0181e2f2",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 35,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_5_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 286,
+            "frame": 0,
+            "block_sha256": "ccec620d96363dc4fac175b92dc736fc4a726818157a606de8a1c6120a306da0",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 36,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_5_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 287,
+            "frame": 0,
+            "block_sha256": "9e3585ceaadcf41e931cc424cbe87e20e9a20861c33398eb783cf0c4ea3cf7f8",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 37,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_5_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 288,
+            "frame": 0,
+            "block_sha256": "86a2b54590e3b2d90a7ba3d0c2190fe8cdb0d47e51640e2b66e2033efdab4fa4",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 38,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_5_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 289,
+            "frame": 0,
+            "block_sha256": "b7241363840d77864815dd002293ef27b4a9ab175a49d380c68321a6d9bbb344",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 39,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_6_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 332,
+            "frame": 0,
+            "block_sha256": "e062a2ae776d317b6c54490f4f87addca5f02def05342fb41f850d2ff87a0a44",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 32,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_6_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 333,
+            "frame": 0,
+            "block_sha256": "bfc9439785f0557722608190669ed2ecb679129caf236195afb7a475e5efaa4c",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 33,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_6_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 334,
+            "frame": 0,
+            "block_sha256": "1a17b85b61c6c7092b37c52b6fe9511390af9aca89f90aff9190c9c112c29551",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 34,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_6_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 335,
+            "frame": 0,
+            "block_sha256": "34bd6c88022101393c6278b5fcc9fd31654a4a8d0b28854259b49082621029e2",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 35,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_6_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 336,
+            "frame": 0,
+            "block_sha256": "d718815d240a47efebaf813e1fe4891001b692fa77af47cb3a04344e8178b7ae",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 36,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_6_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 337,
+            "frame": 0,
+            "block_sha256": "a83084ec2c2652643a83a6969d02cdf6ca721088a5e1c8599ccf649b3b735a5e",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 37,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_6_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 338,
+            "frame": 0,
+            "block_sha256": "224b059e6f044dde0a97b7bc9f740bf8ad4f408eb7cb6a18c09625365bf62c43",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 38,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_6_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 339,
+            "frame": 0,
+            "block_sha256": "2ae619824301400e2d101547d466f457d25f9517e1060b9966e8c2e229f7d430",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 39,
+            "style_index": 7
+          }
+        },
+        {
+          "id": "color_7_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 382,
+            "frame": 0,
+            "block_sha256": "b31a8400e40aac93499897a318065eeef6043f187bbecc7f9176a80f84e38a0a",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 32,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_7_style_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 383,
+            "frame": 0,
+            "block_sha256": "e03d37efb458d3e66fdcd93ca306e899d6e2cafd9037fca2d2ffbf496bc614e7",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 33,
+            "style_index": 1
+          }
+        },
+        {
+          "id": "color_7_style_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 384,
+            "frame": 0,
+            "block_sha256": "a5666c6cbb393352f5bf882e93ad00174620a1faf2fc0b89b2534e7e55406bcf",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 34,
+            "style_index": 2
+          }
+        },
+        {
+          "id": "color_7_style_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 385,
+            "frame": 0,
+            "block_sha256": "88e2f4a10cea6eb3e36b37df5a39c5b7fbbd728ede3451cffa008b5507159f3a",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 35,
+            "style_index": 3
+          }
+        },
+        {
+          "id": "color_7_style_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 386,
+            "frame": 0,
+            "block_sha256": "1b9041c4244c80da24c02aa95ff98e1ac9f1efaabcabeb1c8149d29edb359b99",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 36,
+            "style_index": 4
+          }
+        },
+        {
+          "id": "color_7_style_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 387,
+            "frame": 0,
+            "block_sha256": "a7e72fbad718bef6f83f4979e3054859224c15ebc666afb999e22bd69fc154c2",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 37,
+            "style_index": 5
+          }
+        },
+        {
+          "id": "color_7_style_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 388,
+            "frame": 0,
+            "block_sha256": "58571646d1a82afc80d0c9caf270ab9f9cdae521027544718a62ca1e2bf4c806",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 38,
+            "style_index": 6
+          }
+        },
+        {
+          "id": "color_7_style_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 389,
+            "frame": 0,
+            "block_sha256": "6e343c181143e6d479bdc6bb2b070c329faf589661a6869d8ad72f5be1be4c01",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 39,
+            "style_index": 7
+          }
+        }
+      ]
+    },
+    {
+      "key": "ship_hull.doom_star.strategic",
+      "kind": "ship_hull_strategic_set",
+      "status": "confirmed",
+      "verification": "original-executable-player-color-50-slot-picture-formula",
+      "variants": [
+        {
+          "id": "color_0_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 43,
+            "frame": 0,
+            "block_sha256": "21a2d8964647d6a05501ae9222f13286d1457dfe61c773fe823a020573103fec",
+            "width": 52,
+            "height": 52
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 43,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_1_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 93,
+            "frame": 0,
+            "block_sha256": "1b3e6ff4a708b55c891cd0e388965fbd6dba7d3ed1c8bd52d0092fa2c5fa60d6",
+            "width": 52,
+            "height": 52
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 43,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_2_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 143,
+            "frame": 0,
+            "block_sha256": "b47a934e282b1eeafc83b6ed0d4b3326b07d4611beb8b1c6deddb56e0d823145",
+            "width": 52,
+            "height": 52
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 43,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_3_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 193,
+            "frame": 0,
+            "block_sha256": "a359e739d09858b916a0edf36f53b291568ebf06764d98b53ac2d14191eab412",
+            "width": 52,
+            "height": 52
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 43,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_4_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 243,
+            "frame": 0,
+            "block_sha256": "9642acc95ad17256686246452fd826008831062428d845e7e0eb19bde44d6753",
+            "width": 52,
+            "height": 52
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 43,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_5_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 293,
+            "frame": 0,
+            "block_sha256": "749822f59b9e8b89f0c4c9e14ecba9aea64d7fd9192431ed88803cfbc8233a5c",
+            "width": 52,
+            "height": 52
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 43,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_6_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 343,
+            "frame": 0,
+            "block_sha256": "9e2672ce5bc725401702807a78bee63c4a5ce055296fd1186313eae22e90cbcb",
+            "width": 52,
+            "height": 52
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 43,
+            "style_index": 0
+          }
+        },
+        {
+          "id": "color_7_style_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 393,
+            "frame": 0,
+            "block_sha256": "9cb95c712cc9c1336be1c53677cd69aabbb29d83f8ab8be8aa562615f0727d7a",
+            "width": 52,
+            "height": 52
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 43,
+            "style_index": 0
+          }
+        }
+      ]
+    },
+    {
+      "key": "ship.colony.strategic",
+      "kind": "ship_civilian_strategic_set",
+      "status": "confirmed",
+      "verification": "original-executable-civilian-picture-id-plus-player-color-50-slot-formula",
+      "variants": [
+        {
+          "id": "color_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 45,
+            "frame": 0,
+            "block_sha256": "46aac5f06ce5772072f711153c883477fd616e30918fb86bd7132330126d88a1",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 45
+          }
+        },
+        {
+          "id": "color_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 95,
+            "frame": 0,
+            "block_sha256": "e3413b3801986a9d552c9dc04b7a684369371acbb8ca134533e98f27b219c919",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 45
+          }
+        },
+        {
+          "id": "color_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 145,
+            "frame": 0,
+            "block_sha256": "a0441ae2ce12b55ceaf900ac3034f73791e55c2dc418afae123b52e6671d6dd3",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 45
+          }
+        },
+        {
+          "id": "color_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 195,
+            "frame": 0,
+            "block_sha256": "8d1ab40241894e17d4f4c71b97b9cc37c1506dc02c47205603305023ec8bb290",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 45
+          }
+        },
+        {
+          "id": "color_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 245,
+            "frame": 0,
+            "block_sha256": "0d21c13114b67f10fcaef5717eee36ceee48f586ddff3f352a23ddddad22370b",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 45
+          }
+        },
+        {
+          "id": "color_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 295,
+            "frame": 0,
+            "block_sha256": "2473e28e6faa65d4c4c3515319bf19ab9db314e367aa8cee3417ec21f18bbde6",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 45
+          }
+        },
+        {
+          "id": "color_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 345,
+            "frame": 0,
+            "block_sha256": "9af6dc172ccb355fb370032e413bde7f74281eacfe342d86a80f87833b085802",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 45
+          }
+        },
+        {
+          "id": "color_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 395,
+            "frame": 0,
+            "block_sha256": "98519cfce84226cfb18e65a8a198fde24d116a53b2f4e35ab1661e463d12fb6f",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 45
+          }
+        }
+      ]
+    },
+    {
+      "key": "ship.outpost.strategic",
+      "kind": "ship_civilian_strategic_set",
+      "status": "confirmed",
+      "verification": "original-executable-civilian-picture-id-plus-player-color-50-slot-formula",
+      "variants": [
+        {
+          "id": "color_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 46,
+            "frame": 0,
+            "block_sha256": "ca99a630f3cd558f1f1586e46155236a38f772180a983de9c7574b395981c9b9",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 46
+          }
+        },
+        {
+          "id": "color_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 96,
+            "frame": 0,
+            "block_sha256": "32dc1af68a9057020a55674c706c6494be30b1e7bdb48f2864ae82ff3320d176",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 46
+          }
+        },
+        {
+          "id": "color_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 146,
+            "frame": 0,
+            "block_sha256": "e746de62a9ad236a02b09e8d8ba668e994d533858d47b7d17c95cc91791ec22e",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 46
+          }
+        },
+        {
+          "id": "color_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 196,
+            "frame": 0,
+            "block_sha256": "77c57b6d9e24d0b7e77714230762e8f3626377832c3dda3b9b0a19c7f8cc7fec",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 46
+          }
+        },
+        {
+          "id": "color_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 246,
+            "frame": 0,
+            "block_sha256": "9a96065bffecbac2dfd97bc8d4774eb9a88536690be6bef9ad37452a0d16d3a1",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 46
+          }
+        },
+        {
+          "id": "color_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 296,
+            "frame": 0,
+            "block_sha256": "3fb7061c7431340e624aaa44e9fa3f9e6e379d4ba5ee746608d2cc85be1d907e",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 46
+          }
+        },
+        {
+          "id": "color_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 346,
+            "frame": 0,
+            "block_sha256": "a5b417d4e8f121ed590eb8c95f483769415e1f86817d955320fee820075876ef",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 46
+          }
+        },
+        {
+          "id": "color_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 396,
+            "frame": 0,
+            "block_sha256": "fe4271f32c4ea23a1e586e1dba17ea9f3cfb5f25c0420d8ea3ae33387f7a62ab",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 46
+          }
+        }
+      ]
+    },
+    {
+      "key": "ship.transport.strategic",
+      "kind": "ship_civilian_strategic_set",
+      "status": "confirmed",
+      "verification": "original-executable-civilian-picture-id-plus-player-color-50-slot-formula",
+      "variants": [
+        {
+          "id": "color_0",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 47,
+            "frame": 0,
+            "block_sha256": "c27bac0076b1386db10fd07ee8a00a6c86248b062f70fe5345ea522f5d523cb2",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 0,
+            "picture_id": 47
+          }
+        },
+        {
+          "id": "color_1",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 97,
+            "frame": 0,
+            "block_sha256": "dba2539d677e22dbf190ab300d69d1099862fc6bd86471fd4559be338db3ea4b",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 1,
+            "picture_id": 47
+          }
+        },
+        {
+          "id": "color_2",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 147,
+            "frame": 0,
+            "block_sha256": "4cda16663f7b304c14c2009c0ce40ca4b527bcc7070e53cdcd26570bc58b48b3",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 2,
+            "picture_id": 47
+          }
+        },
+        {
+          "id": "color_3",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 197,
+            "frame": 0,
+            "block_sha256": "c14febee99890324db71d4967c168ec6c31b87c4789e7d4157d01c1989e7c241",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 3,
+            "picture_id": 47
+          }
+        },
+        {
+          "id": "color_4",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 247,
+            "frame": 0,
+            "block_sha256": "cb5be32233dd1d4129b96d1e2a358500cc1da9c72eb89a94978eeae930bd2aad",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 4,
+            "picture_id": 47
+          }
+        },
+        {
+          "id": "color_5",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 297,
+            "frame": 0,
+            "block_sha256": "03cc1d20f9ef9b00c94c4ccb4aaae706bf6f0e074e1c30d925c5aba249473168",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 5,
+            "picture_id": 47
+          }
+        },
+        {
+          "id": "color_6",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 347,
+            "frame": 0,
+            "block_sha256": "d4940d63f54ecc283624f2048ead555548efa0381f3bb373e3789b29bc8910b1",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 6,
+            "picture_id": 47
+          }
+        },
+        {
+          "id": "color_7",
+          "reference": {
+            "archive": "SHIPS.LBX",
+            "block": 397,
+            "frame": 0,
+            "block_sha256": "627c05c3e069187e656529653ebfa0b828bffbb1ec90fb8069d018df8b0ed1c7",
+            "width": 52,
+            "height": 48
+          },
+          "metadata": {
+            "color_index": 7,
+            "picture_id": 47
           }
         }
       ]

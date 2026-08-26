@@ -151,10 +151,12 @@ Generate tracked semantic asset metadata from the private original reference and
 out\moox-analyze-windows-amd64.exe normalize assets `
   -out data\rulesets\moo2-1.31\assets.json `
   -races data\rulesets\moo2-1.31\races.json `
+  -buildings data\rulesets\moo2-1.31\buildings.json `
+  -ship-hulls data\rulesets\moo2-1.31\ship_hulls.json `
   C:\ASH\Temp\mastori2
 ```
 
-The semantic catalog validates the `RACESEL` portrait sequence and 13x13 `RACEICON` matrix, selected UI/production mappings, and all 48 standard building colony sets. Building graphics are generated only after `Orion2.exe` function hashes confirm the original `(building_id-1)/10`, `%10*36`, and 6x6 serpentine-frame formulas; every one of the 1,728 building variants is then revalidated against the local BLDG block dimensions and hash. Generic `race.<id>.icon` keys remain `pending` rather than arbitrarily selecting one of the 13 role/context variants.
+The semantic catalog validates the `RACESEL` portrait sequence and 13x13 `RACEICON` matrix, selected UI/production mappings, and all 48 standard building colony sets. Building graphics are generated only after `Orion2.exe` function hashes confirm the original `(building_id-1)/10`, `%10*36`, and 6x6 serpentine-frame formulas; every one of the 1,728 building variants is then revalidated against the local BLDG block dimensions and hash. Generic `race.<id>.icon` keys remain `pending` rather than arbitrarily selecting one of the 13 role/context variants. The catalog also contains six military hull strategic sets and Colony/Outpost/Transport sets: 352 `SHIPS.LBX` references generated from hash-verified original color/picture-ID logic and revalidated as one-frame 52-pixel strategic graphics.
 
 The generated `assets.json` is distributable metadata only; original graphics remain below ignored `reference/original/` paths.
 ## Decode graphics

@@ -15,7 +15,7 @@ import (
 	"moox/internal/textscan"
 )
 
-const version = "0.19.0"
+const version = "0.20.0"
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
@@ -75,7 +75,7 @@ Usage:
   moox-analyze inventory [options] <installation-directory>
   moox-analyze normalize race-traits -out <file.json> [-language-out <en.json>] [-languages-dir <dir>] <installation-directory>
   moox-analyze normalize races -out <races.json> -race-traits <race_traits.json> [-languages-dir <dir>] <installation-directory>
-  moox-analyze normalize assets -out <assets.json> -races <races.json> -buildings <buildings.json> <installation-directory>
+  moox-analyze normalize assets -out <assets.json> -races <races.json> -buildings <buildings.json> -ship-hulls <ship_hulls.json> <installation-directory>
   moox-analyze normalize buildings -out <buildings.json> [-languages-dir <dir>] <installation-directory>
   moox-analyze normalize technologies -out <technologies.json> [-languages-dir <dir>] <installation-directory>
   moox-analyze normalize ship-hulls -out <ship_hulls.json> [-languages-dir <dir>] <installation-directory>

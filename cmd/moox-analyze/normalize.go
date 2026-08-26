@@ -196,14 +196,15 @@ func normalizeAssetsCmd(args []string) error {
 	out := fs.String("out", "", "semantic assets JSON output path (required)")
 	racesPath := fs.String("races", "", "normalized races.json path (required)")
 	buildingsPath := fs.String("buildings", "", "normalized buildings.json path (required)")
+	shipHullsPath := fs.String("ship-hulls", "", "normalized ship_hulls.json path (required)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	if fs.NArg() != 1 {
 		return errors.New("normalize assets requires exactly one MOO2 installation directory")
 	}
-	if *out == "" || *racesPath == "" || *buildingsPath == "" {
-		return errors.New("normalize assets requires -out <path>, -races <races.json> and -buildings <buildings.json>")
+	if *out == "" || *racesPath == "" || *buildingsPath == "" || *shipHullsPath == "" {
+		return errors.New("normalize assets requires -out <path>, -races <races.json>, -buildings <buildings.json> and -ship-hulls <ship_hulls.json>")
 	}
 
 	races, err := ruleset.LoadRaces(*racesPath)
@@ -214,7 +215,11 @@ func normalizeAssetsCmd(args []string) error {
 	if err != nil {
 		return fmt.Errorf("load buildings: %w", err)
 	}
-	assets, err := moo2data.DecodeAssets(fs.Arg(0), races, buildings)
+	shipHulls, err := ruleset.LoadShipHulls(*shipHullsPath)
+	if err != nil {
+		return fmt.Errorf("load ship hulls: %w", err)
+	}
+	assets, err := moo2data.DecodeAssets(fs.Arg(0), races, buildings, shipHulls)
 	if err != nil {
 		return err
 	}

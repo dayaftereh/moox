@@ -23,6 +23,13 @@ const (
 	buildingArchiveFormatSourceID      = "moo2-1.31-estrings-building-archive-format"
 	cacheLoadBldgCodeSHA256            = "c3f6d4f657563a83c6f9b2643dbd5baa711f1019eaef66576de1fcc8296e7162"
 	bldgCoordsEffectiveFrameCodeSHA256 = "4a3023201766b2797af90d45149739dc912498cee72f7ba929e05ce7b724c678"
+	shipStrategicGraphicsSourceID      = "moo2-1.31-orion2-strategic-ship-graphics"
+	shipStrategicArchiveSourceID       = "moo2-1.31-ships-strategic-graphics"
+	shipGetPictureCodeSHA256           = "af7430b189af870cec1848fea4649c27dfb00d8af6c7f737a5c611f6c54075ef"
+	shipPaletteCodeSHA256              = "a78aa3af973e4f20a1bbc4c844dc094d24b8cfc75a711e845cc9d34215b3c1bb"
+	colonyShipDesignCodeSHA256         = "3e468fc441a98fccc8214b88c60daf661ab01b31431d988155f5d785d3ee56cc"
+	outpostShipDesignCodeSHA256        = "b5a6c0dbe3e1a8aa471bc3ba71d07f05631ebfc67fb9974b1e17812878156c9d"
+	transportShipDesignCodeSHA256      = "bddf60805ca545e5ee0580426fcb34c76a840d3c14279be4780c03ebb6a0e17b"
 )
 
 type raceIconRoleSpec struct {
@@ -43,15 +50,24 @@ type buildingGraphicsEvidence struct {
 	EStringsBlockSHA string
 }
 
-func DecodeAssets(installationRoot string, races *ruleset.RacesFile, buildings *ruleset.BuildingsFile) (*ruleset.AssetsFile, error) {
-	evidence, err := verifyOriginalBuildingGraphicsFormula(installationRoot)
+type shipStrategicGraphicsEvidence struct {
+	ExecutableSHA256 string
+	ShipsSHA256      string
+}
+
+func DecodeAssets(installationRoot string, races *ruleset.RacesFile, buildings *ruleset.BuildingsFile, shipHulls *ruleset.ShipHullsFile) (*ruleset.AssetsFile, error) {
+	buildingEvidence, err := verifyOriginalBuildingGraphicsFormula(installationRoot)
 	if err != nil {
 		return nil, err
 	}
-	return decodeAssetsWithEvidence(installationRoot, races, buildings, evidence)
+	shipEvidence, err := verifyOriginalShipStrategicGraphics(installationRoot)
+	if err != nil {
+		return nil, err
+	}
+	return decodeAssetsWithEvidence(installationRoot, races, buildings, shipHulls, buildingEvidence, shipEvidence)
 }
 
-func decodeAssetsWithEvidence(installationRoot string, races *ruleset.RacesFile, buildings *ruleset.BuildingsFile, buildingEvidence buildingGraphicsEvidence) (*ruleset.AssetsFile, error) {
+func decodeAssetsWithEvidence(installationRoot string, races *ruleset.RacesFile, buildings *ruleset.BuildingsFile, shipHulls *ruleset.ShipHullsFile, buildingEvidence buildingGraphicsEvidence, shipEvidence shipStrategicGraphicsEvidence) (*ruleset.AssetsFile, error) {
 	if races == nil {
 		return nil, fmt.Errorf("races are required")
 	}
@@ -60,6 +76,12 @@ func decodeAssetsWithEvidence(installationRoot string, races *ruleset.RacesFile,
 	}
 	if err := buildings.Validate(); err != nil {
 		return nil, fmt.Errorf("validate buildings: %w", err)
+	}
+	if shipHulls == nil {
+		return nil, fmt.Errorf("ship hulls are required")
+	}
+	if err := shipHulls.Validate(); err != nil {
+		return nil, fmt.Errorf("validate ship hulls: %w", err)
 	}
 	if len(races.Races) != 13 {
 		return nil, fmt.Errorf("expected 13 preset races, got %d", len(races.Races))
@@ -156,6 +178,23 @@ func decodeAssetsWithEvidence(installationRoot string, races *ruleset.RacesFile,
 		},
 	}
 
+	out.Sources = append(out.Sources,
+		ruleset.Source{
+			ID:          shipStrategicGraphicsSourceID,
+			Type:        "original-observed",
+			Description: "Orion2.exe 1.31 Get_Ship_Picture_Seg_ selects SHIPS.LBX block color_index*50+picture_id and Load_Player_Ship_Palette_ selects color_index*50+49. Colony, Outpost and Transport design functions assign strategic picture IDs 45, 46 and 47. All referenced function ranges are hash-validated before generation.",
+			Archive:     "Orion2.exe",
+			SHA256:      shipEvidence.ExecutableSHA256,
+		},
+		ruleset.Source{
+			ID:          shipStrategicArchiveSourceID,
+			Type:        "original-observed",
+			Description: "SHIPS.LBX strategic ship graphics; player colors 0..7 occupy 50-slot groups. Standard strategic picture blocks are one-frame graphics; slot 49 is the per-color palette selected by the original executable.",
+			Archive:     "SHIPS.LBX",
+			SHA256:      shipEvidence.ShipsSHA256,
+		},
+	)
+
 	for _, race := range ordered {
 		portraitBlock := 15 + race.Order
 		portraitRef, err := assetGraphicReference(raceSel, "RACESEL.LBX", portraitBlock, 0, 290, 322)
@@ -212,13 +251,145 @@ func decodeAssetsWithEvidence(installationRoot string, races *ruleset.RacesFile,
 	if err := appendBuildingColonyAssets(installationRoot, out, buildings); err != nil {
 		return nil, err
 	}
+	if err := appendShipStrategicAssets(installationRoot, out, shipHulls); err != nil {
+		return nil, err
+	}
 	if err := out.ValidateAgainstRaces(races); err != nil {
 		return nil, err
 	}
 	if err := out.ValidateAgainstBuildings(buildings); err != nil {
 		return nil, err
 	}
+	if err := out.ValidateAgainstShipHulls(shipHulls); err != nil {
+		return nil, err
+	}
 	return out, nil
+}
+
+func verifyOriginalShipStrategicGraphics(installationRoot string) (shipStrategicGraphicsEvidence, error) {
+	var evidence shipStrategicGraphicsEvidence
+	exe, err := moo2exe.Open(filepath.Join(installationRoot, "Orion2.exe"))
+	if err != nil {
+		return evidence, fmt.Errorf("open Orion2.exe for strategic ship graphics: %w", err)
+	}
+	checks := []struct {
+		Name   string
+		Offset int
+		Size   int
+		SHA256 string
+	}{
+		{Name: "Get_Ship_Picture_Seg_", Offset: 0x48697, Size: 0x3C, SHA256: shipGetPictureCodeSHA256},
+		{Name: "Load_Player_Ship_Palette_", Offset: 0x485E0, Size: 0x98, SHA256: shipPaletteCodeSHA256},
+		{Name: "Load_Colony_Ship_Design_", Offset: 0x464CD, Size: 0xB9, SHA256: colonyShipDesignCodeSHA256},
+		{Name: "Load_Outpost_Ship_Design_", Offset: 0x46586, Size: 0xB8, SHA256: outpostShipDesignCodeSHA256},
+		{Name: "Load_Transport_Ship_Design_", Offset: 0x4663E, Size: 0xE8, SHA256: transportShipDesignCodeSHA256},
+	}
+	for _, check := range checks {
+		code, err := exe.ReadObject(1, check.Offset, check.Size)
+		if err != nil {
+			return evidence, fmt.Errorf("read Orion2.exe %s: %w", check.Name, err)
+		}
+		sum := sha256.Sum256(code)
+		got := hex.EncodeToString(sum[:])
+		if got != check.SHA256 {
+			return evidence, fmt.Errorf("Orion2.exe %s code hash=%s, expected %s for 1.31 strategic ship graphics", check.Name, got, check.SHA256)
+		}
+	}
+	evidence.ExecutableSHA256 = exe.SHA256()
+
+	shipsPath := filepath.Join(installationRoot, "SHIPS.LBX")
+	ships, err := lbx.Open(shipsPath)
+	if err != nil {
+		return evidence, fmt.Errorf("open SHIPS.LBX: %w", err)
+	}
+	if len(ships.Entries) != 449 {
+		return evidence, fmt.Errorf("SHIPS.LBX has %d entries, expected 449 for 1.31", len(ships.Entries))
+	}
+	evidence.ShipsSHA256, err = sha256File(shipsPath)
+	if err != nil {
+		return evidence, err
+	}
+	return evidence, nil
+}
+
+func assetGraphicReferenceAnySize(archive *lbx.File, archiveName string, blockIndex, frameIndex int) (*ruleset.AssetReference, int, error) {
+	if blockIndex < 0 || blockIndex >= len(archive.Entries) {
+		return nil, 0, fmt.Errorf("block %d outside archive", blockIndex)
+	}
+	block, err := archive.ReadEntry(blockIndex)
+	if err != nil {
+		return nil, 0, fmt.Errorf("read block %d: %w", blockIndex, err)
+	}
+	graphic, err := moo2gfx.Parse(block)
+	if err != nil {
+		return nil, 0, fmt.Errorf("parse graphic block %d: %w", blockIndex, err)
+	}
+	if frameIndex < 0 || frameIndex >= graphic.FrameCount {
+		return nil, 0, fmt.Errorf("frame %d outside [0,%d) for block %d", frameIndex, graphic.FrameCount, blockIndex)
+	}
+	sum := sha256.Sum256(block)
+	return &ruleset.AssetReference{
+		Archive:     archiveName,
+		Block:       blockIndex,
+		Frame:       frameIndex,
+		BlockSHA256: hex.EncodeToString(sum[:]),
+		Width:       graphic.Width,
+		Height:      graphic.Height,
+	}, graphic.FrameCount, nil
+}
+
+func appendShipStrategicAssets(installationRoot string, out *ruleset.AssetsFile, hulls *ruleset.ShipHullsFile) error {
+	ships, err := lbx.Open(filepath.Join(installationRoot, "SHIPS.LBX"))
+	if err != nil {
+		return fmt.Errorf("open SHIPS.LBX for strategic ship assets: %w", err)
+	}
+	if len(ships.Entries) != 449 {
+		return fmt.Errorf("SHIPS.LBX has %d entries, expected 449", len(ships.Entries))
+	}
+	for _, hull := range hulls.Hulls {
+		asset := ruleset.Asset{Key: hull.StrategicAssetKey, Kind: "ship_hull_strategic_set", Status: "confirmed", Verification: "original-executable-player-color-50-slot-picture-formula", Variants: make([]ruleset.AssetVariant, 0, len(hull.StrategicPictureIDs)*8)}
+		for colorIndex := 0; colorIndex < 8; colorIndex++ {
+			for styleIndex, pictureID := range hull.StrategicPictureIDs {
+				blockIndex := colorIndex*50 + pictureID
+				ref, frameCount, err := assetGraphicReferenceAnySize(ships, "SHIPS.LBX", blockIndex, 0)
+				if err != nil {
+					return fmt.Errorf("ship hull %s color %d picture %d: %w", hull.ID, colorIndex, pictureID, err)
+				}
+				if frameCount != 1 {
+					return fmt.Errorf("ship hull %s color %d picture %d has %d frames, expected 1 strategic frame", hull.ID, colorIndex, pictureID, frameCount)
+				}
+				wantHeight := 48
+				if pictureID == 43 {
+					wantHeight = 52
+				}
+				if ref.Width != 52 || ref.Height != wantHeight {
+					return fmt.Errorf("ship hull %s color %d picture %d is %dx%d, expected 52x%d", hull.ID, colorIndex, pictureID, ref.Width, ref.Height, wantHeight)
+				}
+				asset.Variants = append(asset.Variants, ruleset.AssetVariant{ID: fmt.Sprintf("color_%d_style_%d", colorIndex, styleIndex), Reference: *ref, Metadata: map[string]int{"color_index": colorIndex, "style_index": styleIndex, "picture_id": pictureID}})
+			}
+		}
+		out.Assets = append(out.Assets, asset)
+	}
+	civilian := []struct {
+		Key       string
+		PictureID int
+	}{{"ship.colony.strategic", 45}, {"ship.outpost.strategic", 46}, {"ship.transport.strategic", 47}}
+	for _, spec := range civilian {
+		asset := ruleset.Asset{Key: spec.Key, Kind: "ship_civilian_strategic_set", Status: "confirmed", Verification: "original-executable-civilian-picture-id-plus-player-color-50-slot-formula", Variants: make([]ruleset.AssetVariant, 0, 8)}
+		for colorIndex := 0; colorIndex < 8; colorIndex++ {
+			blockIndex := colorIndex*50 + spec.PictureID
+			ref, frameCount, err := assetGraphicReferenceAnySize(ships, "SHIPS.LBX", blockIndex, 0)
+			if err != nil {
+				return fmt.Errorf("civilian ship %s color %d: %w", spec.Key, colorIndex, err)
+			}
+			if frameCount != 1 || ref.Width != 52 || ref.Height != 48 {
+				return fmt.Errorf("civilian ship %s color %d graphic is %dx%d frames=%d, expected 52x48 frames=1", spec.Key, colorIndex, ref.Width, ref.Height, frameCount)
+			}
+			asset.Variants = append(asset.Variants, ruleset.AssetVariant{ID: fmt.Sprintf("color_%d", colorIndex), Reference: *ref, Metadata: map[string]int{"color_index": colorIndex, "picture_id": spec.PictureID}})
+		}
+		out.Assets = append(out.Assets, asset)
+	}
+	return nil
 }
 
 func verifyOriginalBuildingGraphicsFormula(installationRoot string) (buildingGraphicsEvidence, error) {

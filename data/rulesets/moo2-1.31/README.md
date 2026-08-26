@@ -65,7 +65,7 @@ out\moox-analyze-windows-amd64.exe normalize races `
 ```
 ## `assets.json`
 
-The semantic asset catalog is tracked separately from original artwork. It currently contains 141 records: a verified race mapping layer, a small evidence-backed UI slice, and 48 original-executable-derived building colony sets:
+The semantic asset catalog is tracked separately from original artwork. It currently contains 150 records: a verified race mapping layer, a small evidence-backed UI slice, 48 original-executable-derived building colony sets, and nine strategic ship sets:
 
 - 13 preset-race portraits,
 - 1 custom-race portrait,
@@ -74,6 +74,7 @@ The semantic asset catalog is tracked separately from original artwork. It curre
 - 13 selected UI/production references from independently revalidated render mappings,
 - 1 directly documented building anchor: Alien Management Center -> `BLDG0.LBX` block 0,
 - 48 confirmed `building.<id>.colony` sets with 36 original-position variants each (1,728 references total).
+- 6 confirmed ship_hull.<id>.strategic sets plus Colony/Outpost/Transport strategic sets, totaling 352 player-color/style references.
 
 Confirmed references include the original archive, block, frame, dimensions and block SHA-256. No original image bytes are stored in this directory.
 
@@ -83,10 +84,12 @@ Generate it with:
 out\moox-analyze-windows-amd64.exe normalize assets `
   -out data\rulesets\moo2-1.31\assets.json `
   -races data\rulesets\moo2-1.31\races.json `
+  -buildings data\rulesets\moo2-1.31\buildings.json `
+  -ship-hulls data\rulesets\moo2-1.31\ship_hulls.json `
   C:\ASH\Temp\mastori2
 ```
 
-`go test ./...` loads the committed catalog and validates its portrait/icon keys against `races.json`.
+`go test ./...` loads the committed catalog and cross-validates race, building and ship-hull semantic keys against their normalized rulesets.
 ## `buildings.json`
 
 The 48 standard colony buildings are normalized into stable IDs and translation keys.

@@ -198,3 +198,49 @@ func (f *AssetsFile) ValidateAgainstBuildings(buildings *BuildingsFile) error {
 	}
 	return nil
 }
+
+func (f *AssetsFile) ValidateAgainstShipHulls(hulls *ShipHullsFile) error {
+	if err := f.Validate(); err != nil {
+		return err
+	}
+	if hulls == nil {
+		return fmt.Errorf("ship hulls are required")
+	}
+	if err := hulls.Validate(); err != nil {
+		return fmt.Errorf("validate ship hulls: %w", err)
+	}
+	byKey := f.assetByKey()
+	for _, hull := range hulls.Hulls {
+		asset, ok := byKey[hull.StrategicAssetKey]
+		if !ok {
+			return fmt.Errorf("ship hull %q strategic asset %q is missing", hull.ID, hull.StrategicAssetKey)
+		}
+		wantVariants := len(hull.StrategicPictureIDs) * 8
+		if asset.Status != "confirmed" || asset.Kind != "ship_hull_strategic_set" || len(asset.Variants) != wantVariants {
+			return fmt.Errorf("ship hull %q strategic asset %q is not a confirmed %d-variant ship_hull_strategic_set", hull.ID, hull.StrategicAssetKey, wantVariants)
+		}
+		allowed := make(map[int]int, len(hull.StrategicPictureIDs))
+		for styleIndex, pictureID := range hull.StrategicPictureIDs {
+			allowed[pictureID] = styleIndex
+		}
+		seen := make(map[string]struct{}, wantVariants)
+		for _, variant := range asset.Variants {
+			colorIndex, okColor := variant.Metadata["color_index"]
+			pictureID, okPicture := variant.Metadata["picture_id"]
+			styleIndex, okStyle := variant.Metadata["style_index"]
+			if !okColor || !okPicture || !okStyle || colorIndex < 0 || colorIndex >= 8 {
+				return fmt.Errorf("ship hull %q variant %q has invalid strategic metadata", hull.ID, variant.ID)
+			}
+			wantStyle, ok := allowed[pictureID]
+			if !ok || styleIndex != wantStyle {
+				return fmt.Errorf("ship hull %q variant %q has picture/style %d/%d outside hull mapping", hull.ID, variant.ID, pictureID, styleIndex)
+			}
+			key := fmt.Sprintf("%d/%d", colorIndex, pictureID)
+			if _, exists := seen[key]; exists {
+				return fmt.Errorf("ship hull %q repeats color/picture %s", hull.ID, key)
+			}
+			seen[key] = struct{}{}
+		}
+	}
+	return nil
+}

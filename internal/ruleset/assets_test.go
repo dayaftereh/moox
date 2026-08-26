@@ -98,6 +98,10 @@ func TestCommittedAssetsLoadAndValidate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	shipHulls, err := LoadShipHulls(filepath.Join(root, "data", "rulesets", "moo2-1.31", "ship_hulls.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
 	assets, err := LoadAssets(filepath.Join(root, "data", "rulesets", "moo2-1.31", "assets.json"))
 	if err != nil {
 		t.Fatal(err)
@@ -108,13 +112,18 @@ func TestCommittedAssetsLoadAndValidate(t *testing.T) {
 	if err := assets.ValidateAgainstBuildings(buildings); err != nil {
 		t.Fatal(err)
 	}
-	if len(assets.Assets) != 141 {
-		t.Fatalf("assets=%d want=141", len(assets.Assets))
+	if err := assets.ValidateAgainstShipHulls(shipHulls); err != nil {
+		t.Fatal(err)
+	}
+	if len(assets.Assets) != 150 {
+		t.Fatalf("assets=%d want=150", len(assets.Assets))
 	}
 	confirmed := 0
 	pending := 0
 	buildingSets := 0
 	buildingVariants := 0
+	shipStrategicSets := 0
+	shipStrategicVariants := 0
 	for _, asset := range assets.Assets {
 		switch asset.Status {
 		case "confirmed":
@@ -126,12 +135,19 @@ func TestCommittedAssetsLoadAndValidate(t *testing.T) {
 			buildingSets++
 			buildingVariants += len(asset.Variants)
 		}
+		if asset.Kind == "ship_hull_strategic_set" || asset.Kind == "ship_civilian_strategic_set" {
+			shipStrategicSets++
+			shipStrategicVariants += len(asset.Variants)
+		}
 	}
-	if confirmed != 128 || pending != 13 {
-		t.Fatalf("confirmed=%d pending=%d want=128/13", confirmed, pending)
+	if confirmed != 137 || pending != 13 {
+		t.Fatalf("confirmed=%d pending=%d want=137/13", confirmed, pending)
 	}
 	if buildingSets != 48 || buildingVariants != 1728 {
 		t.Fatalf("building sets=%d variants=%d want=48/1728", buildingSets, buildingVariants)
+	}
+	if shipStrategicSets != 9 || shipStrategicVariants != 352 {
+		t.Fatalf("ship strategic sets=%d variants=%d want=9/352", shipStrategicSets, shipStrategicVariants)
 	}
 }
 
