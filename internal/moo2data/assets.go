@@ -30,6 +30,13 @@ const (
 	colonyShipDesignCodeSHA256         = "3e468fc441a98fccc8214b88c60daf661ab01b31431d988155f5d785d3ee56cc"
 	outpostShipDesignCodeSHA256        = "b5a6c0dbe3e1a8aa471bc3ba71d07f05631ebfc67fb9974b1e17812878156c9d"
 	transportShipDesignCodeSHA256      = "bddf60805ca545e5ee0580426fcb34c76a840d3c14279be4780c03ebb6a0e17b"
+	shipTacticalGraphicsSourceID       = "moo2-1.31-orion2-tactical-ship-graphics"
+	shipTacticalArchiveSourceID        = "moo2-1.31-cmbtshp-tactical-graphics"
+	loadCombatShipCodeSHA256           = "27ca9b7efcbc52930d68c4de81fc42d4f7b27aaf6942e4f096ff1a143bd20a3d"
+	drawShipCodeSHA256                 = "d7ac88d365eba8857bf93fb1e7c7b4bab587828502343346ac878ee0c87bce0e"
+	drawShipToBitmapCodeSHA256         = "61ea32e4db51f981e77f30b73cc412e8e83ac933d0fecc3ac5f3e031603511ff"
+	combatShipPaletteCodeSHA256        = "5676f51a6b7233a14a6d1efed4d10d9158fa30cab740c042039e8fb4083ccc64"
+	loadIndividualShipPicturesSHA256   = "73532630ee0c7225343a07ec2c061f690f6a94b0f3f068612980ca28fbaf3784"
 )
 
 type raceIconRoleSpec struct {
@@ -51,8 +58,9 @@ type buildingGraphicsEvidence struct {
 }
 
 type shipStrategicGraphicsEvidence struct {
-	ExecutableSHA256 string
-	ShipsSHA256      string
+	ExecutableSHA256  string
+	ShipsSHA256       string
+	CombatShipsSHA256 string
 }
 
 func DecodeAssets(installationRoot string, races *ruleset.RacesFile, buildings *ruleset.BuildingsFile, shipHulls *ruleset.ShipHullsFile) (*ruleset.AssetsFile, error) {
@@ -195,6 +203,23 @@ func decodeAssetsWithEvidence(installationRoot string, races *ruleset.RacesFile,
 		},
 	)
 
+	out.Sources = append(out.Sources,
+		ruleset.Source{
+			ID:          shipTacticalGraphicsSourceID,
+			Type:        "original-observed",
+			Description: "Orion2.exe 1.31 copies the design picture ID into the combat-ship picture field (Doom Star hard-coded to 43), selects CMBTSHP as color_index*45+picture_id, and draws the 20 frames as five folded orientation indices times four animation phases. All relevant code ranges are hash-validated before generation.",
+			Archive:     "Orion2.exe",
+			SHA256:      shipEvidence.ExecutableSHA256,
+		},
+		ruleset.Source{
+			ID:          shipTacticalArchiveSourceID,
+			Type:        "original-observed",
+			Description: "CMBTSHP.LBX contains 8 player-color groups of 45 entries; picture slots 0..43 are 59x60 graphics with 20 frames and slot 44 is the per-color combat palette.",
+			Archive:     "CMBTSHP.LBX",
+			SHA256:      shipEvidence.CombatShipsSHA256,
+		},
+	)
+
 	for _, race := range ordered {
 		portraitBlock := 15 + race.Order
 		portraitRef, err := assetGraphicReference(raceSel, "RACESEL.LBX", portraitBlock, 0, 290, 322)
@@ -254,6 +279,9 @@ func decodeAssetsWithEvidence(installationRoot string, races *ruleset.RacesFile,
 	if err := appendShipStrategicAssets(installationRoot, out, shipHulls); err != nil {
 		return nil, err
 	}
+	if err := appendShipTacticalAssets(installationRoot, out, shipHulls); err != nil {
+		return nil, err
+	}
 	if err := out.ValidateAgainstRaces(races); err != nil {
 		return nil, err
 	}
@@ -270,7 +298,7 @@ func verifyOriginalShipStrategicGraphics(installationRoot string) (shipStrategic
 	var evidence shipStrategicGraphicsEvidence
 	exe, err := moo2exe.Open(filepath.Join(installationRoot, "Orion2.exe"))
 	if err != nil {
-		return evidence, fmt.Errorf("open Orion2.exe for strategic ship graphics: %w", err)
+		return evidence, fmt.Errorf("open Orion2.exe for ship graphics: %w", err)
 	}
 	checks := []struct {
 		Name   string
@@ -283,6 +311,11 @@ func verifyOriginalShipStrategicGraphics(installationRoot string) (shipStrategic
 		{Name: "Load_Colony_Ship_Design_", Offset: 0x464CD, Size: 0xB9, SHA256: colonyShipDesignCodeSHA256},
 		{Name: "Load_Outpost_Ship_Design_", Offset: 0x46586, Size: 0xB8, SHA256: outpostShipDesignCodeSHA256},
 		{Name: "Load_Transport_Ship_Design_", Offset: 0x4663E, Size: 0xE8, SHA256: transportShipDesignCodeSHA256},
+		{Name: "Load_Combat_Ship_", Offset: 0x3954A, Size: 0x4F7, SHA256: loadCombatShipCodeSHA256},
+		{Name: "Draw_Ship_", Offset: 0x20062, Size: 0x5CF, SHA256: drawShipCodeSHA256},
+		{Name: "Draw_Ship_To_Bitmap_", Offset: 0x22B26, Size: 0x26E, SHA256: drawShipToBitmapCodeSHA256},
+		{Name: "Load_Combat_Ship_Palette_", Offset: 0x39F99, Size: 0x191, SHA256: combatShipPaletteCodeSHA256},
+		{Name: "Load_Individual_Ship_Pictures_", Offset: 0x3A12A, Size: 0x3BA, SHA256: loadIndividualShipPicturesSHA256},
 	}
 	for _, check := range checks {
 		code, err := exe.ReadObject(1, check.Offset, check.Size)
@@ -292,7 +325,7 @@ func verifyOriginalShipStrategicGraphics(installationRoot string) (shipStrategic
 		sum := sha256.Sum256(code)
 		got := hex.EncodeToString(sum[:])
 		if got != check.SHA256 {
-			return evidence, fmt.Errorf("Orion2.exe %s code hash=%s, expected %s for 1.31 strategic ship graphics", check.Name, got, check.SHA256)
+			return evidence, fmt.Errorf("Orion2.exe %s code hash=%s, expected %s for 1.31 ship graphics", check.Name, got, check.SHA256)
 		}
 	}
 	evidence.ExecutableSHA256 = exe.SHA256()
@@ -306,6 +339,19 @@ func verifyOriginalShipStrategicGraphics(installationRoot string) (shipStrategic
 		return evidence, fmt.Errorf("SHIPS.LBX has %d entries, expected 449 for 1.31", len(ships.Entries))
 	}
 	evidence.ShipsSHA256, err = sha256File(shipsPath)
+	if err != nil {
+		return evidence, err
+	}
+
+	combatPath := filepath.Join(installationRoot, "CMBTSHP.LBX")
+	combat, err := lbx.Open(combatPath)
+	if err != nil {
+		return evidence, fmt.Errorf("open CMBTSHP.LBX: %w", err)
+	}
+	if len(combat.Entries) != 360 {
+		return evidence, fmt.Errorf("CMBTSHP.LBX has %d entries, expected 360 for 1.31", len(combat.Entries))
+	}
+	evidence.CombatShipsSHA256, err = sha256File(combatPath)
 	if err != nil {
 		return evidence, err
 	}
@@ -386,6 +432,52 @@ func appendShipStrategicAssets(installationRoot string, out *ruleset.AssetsFile,
 				return fmt.Errorf("civilian ship %s color %d graphic is %dx%d frames=%d, expected 52x48 frames=1", spec.Key, colorIndex, ref.Width, ref.Height, frameCount)
 			}
 			asset.Variants = append(asset.Variants, ruleset.AssetVariant{ID: fmt.Sprintf("color_%d", colorIndex), Reference: *ref, Metadata: map[string]int{"color_index": colorIndex, "picture_id": spec.PictureID}})
+		}
+		out.Assets = append(out.Assets, asset)
+	}
+	return nil
+}
+
+func appendShipTacticalAssets(installationRoot string, out *ruleset.AssetsFile, hulls *ruleset.ShipHullsFile) error {
+	combat, err := lbx.Open(filepath.Join(installationRoot, "CMBTSHP.LBX"))
+	if err != nil {
+		return fmt.Errorf("open CMBTSHP.LBX for tactical ship assets: %w", err)
+	}
+	if len(combat.Entries) != 360 {
+		return fmt.Errorf("CMBTSHP.LBX has %d entries, expected 360", len(combat.Entries))
+	}
+	for _, hull := range hulls.Hulls {
+		asset := ruleset.Asset{Key: hull.TacticalAssetKey, Kind: "ship_hull_tactical_set", Status: "confirmed", Verification: "original-executable-combat-picture-link-plus-45-slot-color-and-5x4-frame-formula", Variants: make([]ruleset.AssetVariant, 0, len(hull.StrategicPictureIDs)*8*20)}
+		for colorIndex := 0; colorIndex < 8; colorIndex++ {
+			for styleIndex, pictureID := range hull.StrategicPictureIDs {
+				if pictureID < 0 || pictureID > 43 {
+					return fmt.Errorf("ship hull %s tactical picture id %d outside CMBTSHP picture range [0,43]", hull.ID, pictureID)
+				}
+				blockIndex := colorIndex*45 + pictureID
+				block, err := combat.ReadEntry(blockIndex)
+				if err != nil {
+					return fmt.Errorf("ship hull %s tactical block %d: %w", hull.ID, blockIndex, err)
+				}
+				graphic, err := moo2gfx.Parse(block)
+				if err != nil {
+					return fmt.Errorf("ship hull %s tactical block %d parse: %w", hull.ID, blockIndex, err)
+				}
+				if graphic.Width != 59 || graphic.Height != 60 || graphic.FrameCount != 20 {
+					return fmt.Errorf("ship hull %s tactical block %d is %dx%d frames=%d, expected 59x60 frames=20", hull.ID, blockIndex, graphic.Width, graphic.Height, graphic.FrameCount)
+				}
+				sum := sha256.Sum256(block)
+				blockSHA := hex.EncodeToString(sum[:])
+				for orientationIndex := 0; orientationIndex < 5; orientationIndex++ {
+					for phase := 0; phase < 4; phase++ {
+						frame := orientationIndex*4 + phase
+						asset.Variants = append(asset.Variants, ruleset.AssetVariant{
+							ID:        fmt.Sprintf("color_%d_style_%d_orientation_%d_phase_%d", colorIndex, styleIndex, orientationIndex, phase),
+							Reference: ruleset.AssetReference{Archive: "CMBTSHP.LBX", Block: blockIndex, Frame: frame, BlockSHA256: blockSHA, Width: graphic.Width, Height: graphic.Height},
+							Metadata:  map[string]int{"color_index": colorIndex, "style_index": styleIndex, "picture_id": pictureID, "orientation_index": orientationIndex, "animation_phase": phase},
+						})
+					}
+				}
+			}
 		}
 		out.Assets = append(out.Assets, asset)
 	}

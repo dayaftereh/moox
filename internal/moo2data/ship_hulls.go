@@ -136,6 +136,7 @@ func DecodeShipHulls(installationRoot string) (*ShipHullsBundle, error) {
 			PictureLogicVerification: "original-techname-sequence-plus-hash-verified-auto-design-picture-logic",
 			PictureLogicSource:       ruleset.FieldProvenance{SourceID: shipHullPictureLogicSourceID},
 			StrategicAssetKey:        "ship_hull." + spec.ID + ".strategic",
+			TacticalAssetKey:         "ship_hull." + spec.ID + ".tactical",
 		})
 		english.Strings[nameKey] = spec.Name
 	}

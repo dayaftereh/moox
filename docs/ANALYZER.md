@@ -122,7 +122,7 @@ out\moox-analyze-windows-amd64.exe normalize ship-hulls `
   C:\ASH\Temp\mastori2
 ```
 
-The decoder combines the original six-name `TECHNAME.LBX` hull sequence with a SHA-256-verified `Auto_Design_Ship_` code range from `Orion2.exe`. Sizes 0..4 use eight picture IDs each (`size*8 + style`); size 5 uses picture ID 43. This identity layer is deliberately separate from tactical multi-frame sprite semantics.
+The decoder combines the original six-name `TECHNAME.LBX` hull sequence with a SHA-256-verified `Auto_Design_Ship_` code range from `Orion2.exe`. Sizes 0..4 use eight picture IDs each (`size*8 + style`); size 5 uses picture ID 43. The ruleset now exposes separate strategic and tactical semantic asset keys. Tactical frame semantics are validated separately from the hull-name/picture-ID identity layer.
 ## Normalize technologies
 
 ```powershell
@@ -156,7 +156,7 @@ out\moox-analyze-windows-amd64.exe normalize assets `
   C:\ASH\Temp\mastori2
 ```
 
-The semantic catalog validates the `RACESEL` portrait sequence and 13x13 `RACEICON` matrix, selected UI/production mappings, and all 48 standard building colony sets. Building graphics are generated only after `Orion2.exe` function hashes confirm the original `(building_id-1)/10`, `%10*36`, and 6x6 serpentine-frame formulas; every one of the 1,728 building variants is then revalidated against the local BLDG block dimensions and hash. Generic `race.<id>.icon` keys remain `pending` rather than arbitrarily selecting one of the 13 role/context variants. The catalog also contains six military hull strategic sets and Colony/Outpost/Transport sets: 352 `SHIPS.LBX` references generated from hash-verified original color/picture-ID logic and revalidated as one-frame 52-pixel strategic graphics.
+The semantic catalog validates the `RACESEL` portrait sequence and 13x13 `RACEICON` matrix, selected UI/production mappings, and all 48 standard building colony sets. Building graphics are generated only after `Orion2.exe` function hashes confirm the original `(building_id-1)/10`, `%10*36`, and 6x6 serpentine-frame formulas; every one of the 1,728 building variants is then revalidated against the local BLDG block dimensions and hash. Generic `race.<id>.icon` keys remain `pending` rather than arbitrarily selecting one of the 13 role/context variants. The catalog also contains six military hull strategic sets and Colony/Outpost/Transport sets: 352 `SHIPS.LBX` references generated from hash-verified original color/picture-ID logic and revalidated as one-frame 52-pixel strategic graphics. It additionally contains six tactical hull sets: `Load_Combat_Ship_` proves the shared picture ID, `CMBTSHP.LBX` uses `color*45+picture`, and the hash-verified draw paths establish 20 frames as 5 folded orientations x 4 animation phases, yielding 6,560 tactical references.
 
 The generated `assets.json` is distributable metadata only; original graphics remain below ignored `reference/original/` paths.
 ## Decode graphics

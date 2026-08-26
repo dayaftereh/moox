@@ -65,7 +65,7 @@ out\moox-analyze-windows-amd64.exe normalize races `
 ```
 ## `assets.json`
 
-The semantic asset catalog is tracked separately from original artwork. It currently contains 150 records: a verified race mapping layer, a small evidence-backed UI slice, 48 original-executable-derived building colony sets, and nine strategic ship sets:
+The semantic asset catalog is tracked separately from original artwork. It currently contains 156 records: a verified race mapping layer, a small evidence-backed UI slice, 48 original-executable-derived building colony sets, nine strategic ship sets, and six tactical hull sets:
 
 - 13 preset-race portraits,
 - 1 custom-race portrait,
@@ -74,7 +74,8 @@ The semantic asset catalog is tracked separately from original artwork. It curre
 - 13 selected UI/production references from independently revalidated render mappings,
 - 1 directly documented building anchor: Alien Management Center -> `BLDG0.LBX` block 0,
 - 48 confirmed `building.<id>.colony` sets with 36 original-position variants each (1,728 references total).
-- 6 confirmed ship_hull.<id>.strategic sets plus Colony/Outpost/Transport strategic sets, totaling 352 player-color/style references.
+- 6 confirmed `ship_hull.<id>.strategic` sets plus Colony/Outpost/Transport strategic sets, totaling 352 player-color/style references.
+- 6 confirmed `ship_hull.<id>.tactical` sets with 5 folded orientations x 4 animation phases across all player colors/styles, totaling 6,560 frame references.
 
 Confirmed references include the original archive, block, frame, dimensions and block SHA-256. No original image bytes are stored in this directory.
 
@@ -142,7 +143,7 @@ The six player ship hull identities are normalized directly from the original 1.
 - the hash-verified `Auto_Design_Ship_` picture-selection code assigns eight picture IDs to size indices 0..4 (`size_index*8 + style`) and hard-codes size index 5 to picture ID 43,
 - this yields picture-ID ranges 0..7, 8..15, 16..23, 24..31, 32..39, and 43 for the six hulls.
 
-The ruleset records stable hull IDs, size indices, original name offsets, strategic picture IDs and a semantic strategic asset key. Tactical multi-frame graphics are intentionally handled as a separate next step rather than pretending frame 0 represents the entire combat sprite set.
+The ruleset records stable hull IDs, size indices, original name offsets, strategic picture IDs, and both strategic and tactical semantic asset keys. Tactical combat blocks use the same military picture IDs, 8 player-color groups of 45 slots, and 20 frames modeled as 5 folded orientations x 4 animation phases.
 
 Generate it with:
 

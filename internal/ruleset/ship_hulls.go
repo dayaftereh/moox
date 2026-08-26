@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const ShipHullsSchemaVersion = 1
+const ShipHullsSchemaVersion = 2
 
 type ShipHullsFile struct {
 	SchemaVersion int        `json:"schema_version"`
@@ -24,6 +24,7 @@ type ShipHull struct {
 	PictureLogicVerification string          `json:"picture_logic_verification"`
 	PictureLogicSource       FieldProvenance `json:"picture_logic_source"`
 	StrategicAssetKey        string          `json:"strategic_asset_key"`
+	TacticalAssetKey         string          `json:"tactical_asset_key"`
 }
 
 func LoadShipHulls(path string) (*ShipHullsFile, error) {
@@ -52,7 +53,7 @@ func (f *ShipHullsFile) Validate() error {
 	keys := make(map[string]struct{}, len(f.Hulls))
 	pictureIDs := make(map[int]string)
 	for index, hull := range f.Hulls {
-		if hull.ID == "" || hull.NameKey == "" || hull.StrategicAssetKey == "" || hull.PictureLogicVerification == "" {
+		if hull.ID == "" || hull.NameKey == "" || hull.StrategicAssetKey == "" || hull.TacticalAssetKey == "" || hull.PictureLogicVerification == "" {
 			return fmt.Errorf("ship hull %d has incomplete identity fields", index)
 		}
 		if hull.SizeIndex != index {

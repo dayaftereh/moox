@@ -22,7 +22,7 @@ func TestCommittedShipHullsLoadAndValidate(t *testing.T) {
 	if file.Hulls[0].ID != "frigate" || file.Hulls[0].StrategicPictureIDs[0] != 0 || file.Hulls[0].StrategicPictureIDs[7] != 7 {
 		t.Fatalf("unexpected frigate: %+v", file.Hulls[0])
 	}
-	if file.Hulls[5].ID != "doom_star" || len(file.Hulls[5].StrategicPictureIDs) != 1 || file.Hulls[5].StrategicPictureIDs[0] != 43 {
+	if file.Hulls[5].ID != "doom_star" || len(file.Hulls[5].StrategicPictureIDs) != 1 || file.Hulls[5].StrategicPictureIDs[0] != 43 || file.Hulls[5].TacticalAssetKey != "ship_hull.doom_star.tactical" {
 		t.Fatalf("unexpected doom star: %+v", file.Hulls[5])
 	}
 }

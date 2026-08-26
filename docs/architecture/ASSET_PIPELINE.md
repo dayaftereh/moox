@@ -92,7 +92,7 @@ The 2026-08-26 canonical clean export materializes 30,395 PNGs (~581.03 MiB) fro
 
 `data/rulesets/moo2-1.31/assets.json` is now the first tracked semantic asset catalog. It contains factual source coordinates and hashes only; no original artwork bytes are committed.
 
-The catalog now contains 93 semantic asset records. The race slice contributes 79 records:
+The catalog now contains 156 semantic asset records. The race slice contributes 79 records:
 
 - 13 confirmed preset-race portraits from `RACESEL.LBX` blocks 15..27,
 - the confirmed custom-race portrait at `RACESEL.LBX` block 28,
@@ -116,4 +116,4 @@ out\moox-analyze-windows-amd64.exe normalize assets `
   C:\ASH\Temp\mastori2
 ```
 
-The next semantic mapping work should decode tactical multi-frame ship semantics, planet classes, technology artwork and additional high-value UI assets, always preserving a verification/confidence boundary.
+The next semantic mapping work should target planet classes, technology artwork and additional high-value UI assets, always preserving a verification/confidence boundary.

@@ -50,8 +50,8 @@ func TestDecodeAssetsBuildsRaceBuildingAndShipSemantics(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(assets.Assets) != 150 {
-		t.Fatalf("assets=%d, want 150", len(assets.Assets))
+	if len(assets.Assets) != 156 {
+		t.Fatalf("assets=%d, want 156", len(assets.Assets))
 	}
 	if err := assets.ValidateAgainstRaces(races); err != nil {
 		t.Fatal(err)
@@ -191,18 +191,25 @@ func assertBuildingVariant(t *testing.T, asset ruleset.Asset, id, archive string
 }
 
 func syntheticAssetGraphic(width, height int) []byte {
-	frame := []byte{1, 0, 0, 0, 0, 0, 0, 0, 0xE8, 0x03}
-	const headerEnd = 20
-	data := make([]byte, headerEnd+len(frame))
-	binary.LittleEndian.PutUint16(data[0:2], uint16(width))
-	binary.LittleEndian.PutUint16(data[2:4], uint16(height))
-	binary.LittleEndian.PutUint16(data[6:8], 1)
-	binary.LittleEndian.PutUint32(data[12:16], headerEnd)
-	binary.LittleEndian.PutUint32(data[16:20], uint32(len(data)))
-	copy(data[headerEnd:], frame)
-	return data
+	return syntheticAssetGraphicFrames(width, height, 1)
 }
 
+func syntheticAssetGraphicFrames(width, height, frameCount int) []byte {
+	frame := []byte{1, 0, 0, 0, 0, 0, 0, 0, 0xE8, 0x03}
+	headerEnd := 12 + (frameCount+1)*4
+	data := make([]byte, headerEnd+frameCount*len(frame))
+	binary.LittleEndian.PutUint16(data[0:2], uint16(width))
+	binary.LittleEndian.PutUint16(data[2:4], uint16(height))
+	binary.LittleEndian.PutUint16(data[6:8], uint16(frameCount))
+	for i := 0; i <= frameCount; i++ {
+		offset := headerEnd + i*len(frame)
+		binary.LittleEndian.PutUint32(data[12+i*4:16+i*4], uint32(offset))
+		if i < frameCount {
+			copy(data[offset:], frame)
+		}
+	}
+	return data
+}
 func buildAssetTestLBX(blocks [][]byte) []byte {
 	count := len(blocks)
 	headerEnd := 8 + (count+1)*4
@@ -286,6 +293,15 @@ func writeKnownAssetTestArchives(t *testing.T, root string) {
 		ships[i] = syntheticAssetGraphic(52, 48)
 	}
 	write("SHIPS.LBX", ships)
+
+	combatShips := make([][]byte, 360)
+	for colorIndex := 0; colorIndex < 8; colorIndex++ {
+		for pictureID := 0; pictureID < 44; pictureID++ {
+			combatShips[colorIndex*45+pictureID] = syntheticAssetGraphicFrames(59, 60, 20)
+		}
+		combatShips[colorIndex*45+44] = syntheticAssetGraphic(2, 1)
+	}
+	write("CMBTSHP.LBX", combatShips)
 }
 
 func syntheticAssetShipHulls() *ruleset.ShipHullsFile {
@@ -311,6 +327,7 @@ func syntheticAssetShipHulls() *ruleset.ShipHullsFile {
 			PictureLogicVerification: "test",
 			PictureLogicSource:       ruleset.FieldProvenance{SourceID: "test-picture-logic"},
 			StrategicAssetKey:        "ship_hull." + spec.id + ".strategic",
+			TacticalAssetKey:         "ship_hull." + spec.id + ".tactical",
 		})
 	}
 	return file

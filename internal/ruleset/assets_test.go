@@ -115,8 +115,8 @@ func TestCommittedAssetsLoadAndValidate(t *testing.T) {
 	if err := assets.ValidateAgainstShipHulls(shipHulls); err != nil {
 		t.Fatal(err)
 	}
-	if len(assets.Assets) != 150 {
-		t.Fatalf("assets=%d want=150", len(assets.Assets))
+	if len(assets.Assets) != 156 {
+		t.Fatalf("assets=%d want=156", len(assets.Assets))
 	}
 	confirmed := 0
 	pending := 0
@@ -124,6 +124,8 @@ func TestCommittedAssetsLoadAndValidate(t *testing.T) {
 	buildingVariants := 0
 	shipStrategicSets := 0
 	shipStrategicVariants := 0
+	shipTacticalSets := 0
+	shipTacticalVariants := 0
 	for _, asset := range assets.Assets {
 		switch asset.Status {
 		case "confirmed":
@@ -139,15 +141,22 @@ func TestCommittedAssetsLoadAndValidate(t *testing.T) {
 			shipStrategicSets++
 			shipStrategicVariants += len(asset.Variants)
 		}
+		if asset.Kind == "ship_hull_tactical_set" {
+			shipTacticalSets++
+			shipTacticalVariants += len(asset.Variants)
+		}
 	}
-	if confirmed != 137 || pending != 13 {
-		t.Fatalf("confirmed=%d pending=%d want=137/13", confirmed, pending)
+	if confirmed != 143 || pending != 13 {
+		t.Fatalf("confirmed=%d pending=%d want=143/13", confirmed, pending)
 	}
 	if buildingSets != 48 || buildingVariants != 1728 {
 		t.Fatalf("building sets=%d variants=%d want=48/1728", buildingSets, buildingVariants)
 	}
 	if shipStrategicSets != 9 || shipStrategicVariants != 352 {
 		t.Fatalf("ship strategic sets=%d variants=%d want=9/352", shipStrategicSets, shipStrategicVariants)
+	}
+	if shipTacticalSets != 6 || shipTacticalVariants != 6560 {
+		t.Fatalf("ship tactical sets=%d variants=%d want=6/6560", shipTacticalSets, shipTacticalVariants)
 	}
 }
 

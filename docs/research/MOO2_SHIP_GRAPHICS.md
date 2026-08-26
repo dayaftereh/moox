@@ -107,7 +107,7 @@ Counts:
 
 Picture IDs 40, 41, 42, 44 and 48 are not assigned a hull/civilian meaning by this evidence and remain deliberately unlabelled.
 
-## Tactical CMBTSHP.LBX layout
+## Tactical CMBTSHP.LBX layout and frame semantics
 
 `CMBTSHP.LBX` contains exactly 360 entries, matching 8 player colors x 45 slots.
 
@@ -118,11 +118,72 @@ tactical_block = color_index * 45 + combat_picture_id
 palette_block  = color_index * 45 + 44
 ```
 
-Evidence:
+Every combat picture slot 0..43 in all eight player-color groups is a 59x60 graphic with exactly 20 frames. Slot 44 is the per-color palette.
+
+Archive-layout evidence:
 
 - `Load_Combat_Ship_Palette_`: object 1 offset `0x39F99`, length `0x191`, SHA-256 `5676f51a6b7233a14a6d1efed4d10d9158fa30cab740c042039e8fb4083ccc64`,
 - `Load_Individual_Ship_Pictures_`: object 1 offset `0x3A12A`, length `0x3BA`, SHA-256 `73532630ee0c7225343a07ec2c061f690f6a94b0f3f068612980ca28fbaf3784`.
 
-Unlike strategic SHIPS pictures, CMBTSHP blocks are multi-frame graphics with varying frame counts. Therefore MOOX does **not** currently create tactical assets by arbitrarily selecting frame 0. The next reverse-engineering step is to identify frame meaning/orientation/damage or animation usage from the original combat drawing code and then represent the whole tactical sprite set semantically.
+### Strategic picture ID -> tactical picture ID
 
-This separation is intentional: archive/block layout is confirmed, but tactical frame semantics are not yet claimed.
+`Load_Combat_Ship_` proves that normal player designs copy their design picture byte into the combat-ship picture field. For size index 5 with a player owner, the function hard-codes picture ID 43, matching the normalized Doom Star strategic picture ID.
+
+- `Load_Combat_Ship_`: object 1 offset `0x3954A`, length `0x4F7`, SHA-256 `27ca9b7efcbc52930d68c4de81fc42d4f7b27aaf6942e4f096ff1a143bd20a3d`.
+
+Therefore the six normalized military hulls use the same picture IDs for strategic `SHIPS.LBX` and tactical `CMBTSHP.LBX` lookup. Civilian strategic picture IDs 45..47 are outside the CMBTSHP picture range 0..43 and are not assigned tactical assets by this evidence.
+
+### Twenty frames = five folded orientations x four animation phases
+
+The original drawing paths establish the meaning of all 20 frames.
+
+`Draw_Ship_To_Bitmap_` uses static base frames 0, 4, 8, 12 and 16. It folds the 16 combat facings into five stored orientation indices and relies on draw mirroring for the opposite quadrants.
+
+`Draw_Ship_` uses the same folded orientation calculation and adds an animation phase 0..3:
+
+```text
+frame = orientation_index * 4 + animation_phase
+orientation_index = 0..4
+animation_phase   = 0..3
+```
+
+Evidence:
+
+- `Draw_Ship_`: object 1 offset `0x20062`, length `0x5CF`, SHA-256 `d7ac88d365eba8857bf93fb1e7c7b4bab587828502343346ac878ee0c87bce0e`,
+- `Draw_Ship_To_Bitmap_`: object 1 offset `0x22B26`, length `0x26E`, SHA-256 `61ea32e4db51f981e77f30b73cc412e8e83ac933d0fecc3ac5f3e031603511ff`.
+
+The term `animation_phase` is intentionally neutral. The code proves a four-phase frame cycle but this layer does not rename it to engine/thrust/damage animation without additional evidence.
+
+### Tactical semantic assets
+
+Each military hull has one tactical semantic set:
+
+```text
+ship_hull.<hull-id>.tactical
+```
+
+Each variant records:
+
+- `color_index` 0..7,
+- `style_index`,
+- original `picture_id`,
+- `orientation_index` 0..4,
+- `animation_phase` 0..3,
+- source `CMBTSHP.LBX` block,
+- exact frame `orientation_index*4 + animation_phase`,
+- block SHA-256,
+- decoded 59x60 dimensions.
+
+Variant counts:
+
+- Frigate: 8 colors x 8 styles x 20 frames = 1,280,
+- Destroyer: 1,280,
+- Cruiser: 1,280,
+- Battleship: 1,280,
+- Titan: 1,280,
+- Doom Star: 8 colors x 1 picture x 20 frames = 160,
+- total tactical hull frame references: **6,560**.
+
+Picture slots 40, 41 and 42 remain deliberately unlabelled. Slot 44 is the palette. No tactical meaning is assigned to strategic-only picture IDs 45..47.
+
+The semantic layer therefore now covers the complete standard player military hull graphics in both strategic and tactical contexts without selecting arbitrary tactical frames.

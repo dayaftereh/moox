@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "ruleset": "moo2-1.31",
   "sources": [
     {
@@ -42,7 +42,8 @@
       "picture_logic_source": {
         "source_id": "moo2-1.31-orion2-player-ship-picture-logic"
       },
-      "strategic_asset_key": "ship_hull.frigate.strategic"
+      "strategic_asset_key": "ship_hull.frigate.strategic",
+      "tactical_asset_key": "ship_hull.frigate.tactical"
     },
     {
       "id": "destroyer",
@@ -66,7 +67,8 @@
       "picture_logic_source": {
         "source_id": "moo2-1.31-orion2-player-ship-picture-logic"
       },
-      "strategic_asset_key": "ship_hull.destroyer.strategic"
+      "strategic_asset_key": "ship_hull.destroyer.strategic",
+      "tactical_asset_key": "ship_hull.destroyer.tactical"
     },
     {
       "id": "cruiser",
@@ -90,7 +92,8 @@
       "picture_logic_source": {
         "source_id": "moo2-1.31-orion2-player-ship-picture-logic"
       },
-      "strategic_asset_key": "ship_hull.cruiser.strategic"
+      "strategic_asset_key": "ship_hull.cruiser.strategic",
+      "tactical_asset_key": "ship_hull.cruiser.tactical"
     },
     {
       "id": "battleship",
@@ -114,7 +117,8 @@
       "picture_logic_source": {
         "source_id": "moo2-1.31-orion2-player-ship-picture-logic"
       },
-      "strategic_asset_key": "ship_hull.battleship.strategic"
+      "strategic_asset_key": "ship_hull.battleship.strategic",
+      "tactical_asset_key": "ship_hull.battleship.tactical"
     },
     {
       "id": "titan",
@@ -138,7 +142,8 @@
       "picture_logic_source": {
         "source_id": "moo2-1.31-orion2-player-ship-picture-logic"
       },
-      "strategic_asset_key": "ship_hull.titan.strategic"
+      "strategic_asset_key": "ship_hull.titan.strategic",
+      "tactical_asset_key": "ship_hull.titan.tactical"
     },
     {
       "id": "doom_star",
@@ -155,7 +160,8 @@
       "picture_logic_source": {
         "source_id": "moo2-1.31-orion2-player-ship-picture-logic"
       },
-      "strategic_asset_key": "ship_hull.doom_star.strategic"
+      "strategic_asset_key": "ship_hull.doom_star.strategic",
+      "tactical_asset_key": "ship_hull.doom_star.tactical"
     }
   ]
 }

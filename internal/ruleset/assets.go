@@ -211,20 +211,20 @@ func (f *AssetsFile) ValidateAgainstShipHulls(hulls *ShipHullsFile) error {
 	}
 	byKey := f.assetByKey()
 	for _, hull := range hulls.Hulls {
-		asset, ok := byKey[hull.StrategicAssetKey]
+		strategic, ok := byKey[hull.StrategicAssetKey]
 		if !ok {
 			return fmt.Errorf("ship hull %q strategic asset %q is missing", hull.ID, hull.StrategicAssetKey)
 		}
-		wantVariants := len(hull.StrategicPictureIDs) * 8
-		if asset.Status != "confirmed" || asset.Kind != "ship_hull_strategic_set" || len(asset.Variants) != wantVariants {
-			return fmt.Errorf("ship hull %q strategic asset %q is not a confirmed %d-variant ship_hull_strategic_set", hull.ID, hull.StrategicAssetKey, wantVariants)
+		wantStrategic := len(hull.StrategicPictureIDs) * 8
+		if strategic.Status != "confirmed" || strategic.Kind != "ship_hull_strategic_set" || len(strategic.Variants) != wantStrategic {
+			return fmt.Errorf("ship hull %q strategic asset %q is not a confirmed %d-variant ship_hull_strategic_set", hull.ID, hull.StrategicAssetKey, wantStrategic)
 		}
 		allowed := make(map[int]int, len(hull.StrategicPictureIDs))
 		for styleIndex, pictureID := range hull.StrategicPictureIDs {
 			allowed[pictureID] = styleIndex
 		}
-		seen := make(map[string]struct{}, wantVariants)
-		for _, variant := range asset.Variants {
+		seenStrategic := make(map[string]struct{}, wantStrategic)
+		for _, variant := range strategic.Variants {
 			colorIndex, okColor := variant.Metadata["color_index"]
 			pictureID, okPicture := variant.Metadata["picture_id"]
 			styleIndex, okStyle := variant.Metadata["style_index"]
@@ -236,10 +236,43 @@ func (f *AssetsFile) ValidateAgainstShipHulls(hulls *ShipHullsFile) error {
 				return fmt.Errorf("ship hull %q variant %q has picture/style %d/%d outside hull mapping", hull.ID, variant.ID, pictureID, styleIndex)
 			}
 			key := fmt.Sprintf("%d/%d", colorIndex, pictureID)
-			if _, exists := seen[key]; exists {
-				return fmt.Errorf("ship hull %q repeats color/picture %s", hull.ID, key)
+			if _, exists := seenStrategic[key]; exists {
+				return fmt.Errorf("ship hull %q repeats strategic color/picture %s", hull.ID, key)
 			}
-			seen[key] = struct{}{}
+			seenStrategic[key] = struct{}{}
+		}
+
+		tactical, ok := byKey[hull.TacticalAssetKey]
+		if !ok {
+			return fmt.Errorf("ship hull %q tactical asset %q is missing", hull.ID, hull.TacticalAssetKey)
+		}
+		wantTactical := len(hull.StrategicPictureIDs) * 8 * 20
+		if tactical.Status != "confirmed" || tactical.Kind != "ship_hull_tactical_set" || len(tactical.Variants) != wantTactical {
+			return fmt.Errorf("ship hull %q tactical asset %q is not a confirmed %d-variant ship_hull_tactical_set", hull.ID, hull.TacticalAssetKey, wantTactical)
+		}
+		seenTactical := make(map[string]struct{}, wantTactical)
+		for _, variant := range tactical.Variants {
+			colorIndex, okColor := variant.Metadata["color_index"]
+			pictureID, okPicture := variant.Metadata["picture_id"]
+			styleIndex, okStyle := variant.Metadata["style_index"]
+			orientation, okOrientation := variant.Metadata["orientation_index"]
+			phase, okPhase := variant.Metadata["animation_phase"]
+			if !okColor || !okPicture || !okStyle || !okOrientation || !okPhase || colorIndex < 0 || colorIndex >= 8 || orientation < 0 || orientation >= 5 || phase < 0 || phase >= 4 {
+				return fmt.Errorf("ship hull %q variant %q has invalid tactical metadata", hull.ID, variant.ID)
+			}
+			wantStyle, ok := allowed[pictureID]
+			if !ok || styleIndex != wantStyle {
+				return fmt.Errorf("ship hull %q tactical variant %q has picture/style %d/%d outside hull mapping", hull.ID, variant.ID, pictureID, styleIndex)
+			}
+			wantFrame := orientation*4 + phase
+			if variant.Reference.Frame != wantFrame {
+				return fmt.Errorf("ship hull %q tactical variant %q frame=%d, expected %d", hull.ID, variant.ID, variant.Reference.Frame, wantFrame)
+			}
+			key := fmt.Sprintf("%d/%d/%d", colorIndex, pictureID, wantFrame)
+			if _, exists := seenTactical[key]; exists {
+				return fmt.Errorf("ship hull %q repeats tactical color/picture/frame %s", hull.ID, key)
+			}
+			seenTactical[key] = struct{}{}
 		}
 	}
 	return nil

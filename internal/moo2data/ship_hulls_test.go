@@ -35,7 +35,7 @@ func TestDecodeShipHullsFindsOriginalSequenceAndPictureIDs(t *testing.T) {
 		t.Fatalf("titan=%+v", titan)
 	}
 	doom := bundle.Rules.Hulls[5]
-	if doom.ID != "doom_star" || doom.SizeIndex != 5 || len(doom.StrategicPictureIDs) != 1 || doom.StrategicPictureIDs[0] != 43 {
+	if doom.ID != "doom_star" || doom.SizeIndex != 5 || len(doom.StrategicPictureIDs) != 1 || doom.StrategicPictureIDs[0] != 43 || doom.TacticalAssetKey != "ship_hull.doom_star.tactical" {
 		t.Fatalf("doom star=%+v", doom)
 	}
 	if got := bundle.English.Strings["ship_hull.doom_star.name"]; got != "Doom Star" {
