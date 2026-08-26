@@ -24,3 +24,13 @@ func TestPalettesCommandIsRegistered(t *testing.T) {
 		t.Fatalf("palettes command is not registered: %v", err)
 	}
 }
+
+func TestUnpackCommandIsRegistered(t *testing.T) {
+	err := run([]string{"unpack"})
+	if err == nil {
+		t.Fatal("unpack without arguments should fail")
+	}
+	if strings.Contains(err.Error(), "unknown command") {
+		t.Fatalf("unpack command is not registered: %v", err)
+	}
+}
