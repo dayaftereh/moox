@@ -25,7 +25,8 @@ func normalizeCmd(args []string) error {
 
 func normalizeRaceTraitsCmd(args []string) error {
 	fs := flag.NewFlagSet("normalize race-traits", flag.ContinueOnError)
-	out := fs.String("out", "", "output JSON path (required)")
+	out := fs.String("out", "", "ruleset JSON output path (required)")
+	languageOut := fs.String("language-out", "", "English language JSON output path (optional)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -36,54 +37,70 @@ func normalizeRaceTraitsCmd(args []string) error {
 		return errors.New("normalize race-traits requires -out <path>")
 	}
 
-	data, err := moo2data.DecodeRaceTraits(fs.Arg(0))
+	bundle, err := moo2data.DecodeRaceTraitsBundle(fs.Arg(0))
 	if err != nil {
 		return err
 	}
-	abs, err := filepath.Abs(*out)
+	rulesPath, err := writeJSONAtomic(*out, bundle.Rules)
 	if err != nil {
 		return err
 	}
-	if err := os.MkdirAll(filepath.Dir(abs), 0o755); err != nil {
-		return err
+	languagePath := ""
+	if *languageOut != "" {
+		languagePath, err = writeJSONAtomic(*languageOut, bundle.English)
+		if err != nil {
+			return err
+		}
 	}
 
-	tmp, err := os.CreateTemp(filepath.Dir(abs), ".race-traits-*.json")
+	options := 0
+	for _, group := range bundle.Rules.Groups {
+		options += len(group.Options)
+	}
+	fmt.Printf("normalized %d race-design groups / %d options -> %s\n", len(bundle.Rules.Groups), options, rulesPath)
+	if languagePath != "" {
+		fmt.Printf("wrote %d English language keys -> %s\n", len(bundle.English.Strings), languagePath)
+	}
+	return nil
+}
+
+func writeJSONAtomic(path string, value any) (string, error) {
+	abs, err := filepath.Abs(path)
 	if err != nil {
-		return err
+		return "", err
+	}
+	if err := os.MkdirAll(filepath.Dir(abs), 0o755); err != nil {
+		return "", err
+	}
+	tmp, err := os.CreateTemp(filepath.Dir(abs), ".moox-json-*.tmp")
+	if err != nil {
+		return "", err
 	}
 	tmpPath := tmp.Name()
 	committed := false
 	defer func() {
-		tmp.Close()
+		_ = tmp.Close()
 		if !committed {
 			_ = os.Remove(tmpPath)
 		}
 	}()
-
 	enc := json.NewEncoder(tmp)
 	enc.SetIndent("", "  ")
-	if err := enc.Encode(data); err != nil {
-		return err
+	if err := enc.Encode(value); err != nil {
+		return "", err
 	}
 	if err := tmp.Sync(); err != nil {
-		return err
+		return "", err
 	}
 	if err := tmp.Close(); err != nil {
-		return err
+		return "", err
 	}
 	if err := os.Rename(tmpPath, abs); err != nil {
 		_ = os.Remove(abs)
 		if err := os.Rename(tmpPath, abs); err != nil {
-			return err
+			return "", err
 		}
 	}
 	committed = true
-
-	options := 0
-	for _, group := range data.Groups {
-		options += len(group.Options)
-	}
-	fmt.Printf("normalized %d race-design groups / %d options -> %s\n", len(data.Groups), options, abs)
-	return nil
+	return abs, nil
 }

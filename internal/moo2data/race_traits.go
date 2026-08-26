@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"moox/internal/i18n"
 	"moox/internal/lbx"
 	"moox/internal/ruleset"
 	"moox/internal/textscan"
@@ -44,7 +45,20 @@ type raceGroupSpec struct {
 // RACESTUF.LBX into stable MOOX rule IDs. Pick costs are cross-referenced against
 // the standard-game table documented by StrategyWiki and are deliberately
 // marked separately from values directly observed in the original archive.
+type RaceTraitsBundle struct {
+	Rules   *ruleset.RaceTraitsFile
+	English *i18n.File
+}
+
 func DecodeRaceTraits(installationRoot string) (*ruleset.RaceTraitsFile, error) {
+	bundle, err := DecodeRaceTraitsBundle(installationRoot)
+	if err != nil {
+		return nil, err
+	}
+	return bundle.Rules, nil
+}
+
+func DecodeRaceTraitsBundle(installationRoot string) (*RaceTraitsBundle, error) {
 	archivePath := filepath.Join(installationRoot, "RACESTUF.LBX")
 	archive, err := lbx.Open(archivePath)
 	if err != nil {
@@ -111,12 +125,12 @@ func DecodeRaceTraits(installationRoot string) (*ruleset.RaceTraitsFile, error) 
 		groupOffset := groupLabel.Offset
 		group := ruleset.RaceTraitGroup{
 			ID:              groupSpec.ID,
-			Label:           groupLabel.Value,
+			NameKey:         groupNameKey(groupSpec.ID),
 			Scope:           groupSpec.Scope,
 			SelectionMode:   groupSpec.SelectionMode,
 			Required:        groupSpec.Required,
 			DefaultOptionID: groupSpec.DefaultOptionID,
-			Source:          ruleset.FieldProvenance{SourceID: raceStuffSourceID, Offset: &groupOffset},
+			NameSource:      ruleset.FieldProvenance{SourceID: raceStuffSourceID, Offset: &groupOffset},
 			Options:         make([]ruleset.RaceTraitOption, 0, len(groupSpec.Options)),
 		}
 		for _, optionSpec := range groupSpec.Options {
@@ -128,15 +142,15 @@ func DecodeRaceTraits(installationRoot string) (*ruleset.RaceTraitsFile, error) 
 			offset := item.Offset
 			group.Options = append(group.Options, ruleset.RaceTraitOption{
 				ID:           optionSpec.ID,
-				Label:        item.Value,
+				NameKey:      optionNameKey(optionSpec.ID),
 				PickCost:     optionSpec.PickCost,
 				Scope:        optionSpec.Scope,
 				Value:        optionSpec.Value,
 				ValueKind:    optionSpec.ValueKind,
 				Ability:      optionSpec.Ability,
 				MutexWith:    optionSpec.MutexWith,
-				Source:       ruleset.FieldProvenance{SourceID: raceStuffSourceID, Offset: &offset},
-				Verification: ruleset.VerificationInfo{Label: "original-observed", PickCost: "secondary-reference", Effects: optionSpec.Effects},
+				NameSource:   ruleset.FieldProvenance{SourceID: raceStuffSourceID, Offset: &offset},
+				Verification: ruleset.VerificationInfo{Name: "original-observed", PickCost: "secondary-reference", Effects: optionSpec.Effects},
 			})
 		}
 		out.Groups = append(out.Groups, group)
@@ -145,8 +159,38 @@ func DecodeRaceTraits(installationRoot string) (*ruleset.RaceTraitsFile, error) 
 	if err := out.Validate(); err != nil {
 		return nil, err
 	}
-	return out, nil
+
+	language := &i18n.File{
+		SchemaVersion: i18n.SchemaVersion,
+		Locale:        "en",
+		Sources: []i18n.Source{{
+			ID:          raceStuffSourceID,
+			Type:        "original-observed",
+			Description: "English Race Design names observed in Master of Orion II 1.31 RACESTUF.LBX",
+			Archive:     "RACESTUF.LBX",
+			Block:       &blockIndex,
+			SHA256:      fileHash,
+			BlockSHA256: hex.EncodeToString(blockSum[:]),
+		}},
+		Strings: make(map[string]string, expectedStrings),
+	}
+	cursor = 0
+	for _, groupSpec := range specs {
+		language.Strings[groupNameKey(groupSpec.ID)] = observed[cursor].Value
+		cursor++
+		for _, optionSpec := range groupSpec.Options {
+			language.Strings[optionNameKey(optionSpec.ID)] = observed[cursor].Value
+			cursor++
+		}
+	}
+	if err := language.Validate(); err != nil {
+		return nil, err
+	}
+	return &RaceTraitsBundle{Rules: out, English: language}, nil
 }
+
+func groupNameKey(id string) string  { return "race_traits.group." + id + ".name" }
+func optionNameKey(id string) string { return "race_traits.option." + id + ".name" }
 
 func raceTraitSpecs() []raceGroupSpec {
 	return []raceGroupSpec{

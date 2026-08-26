@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const RaceTraitsSchemaVersion = 1
+const RaceTraitsSchemaVersion = 2
 
 type RaceTraitsFile struct {
 	SchemaVersion int              `json:"schema_version"`
@@ -36,26 +36,28 @@ type Source struct {
 
 type RaceTraitGroup struct {
 	ID              string            `json:"id"`
-	Label           string            `json:"label"`
+	NameKey         string            `json:"name_key"`
+	DescriptionKey  string            `json:"description_key,omitempty"`
 	Scope           string            `json:"scope"`
 	SelectionMode   string            `json:"selection_mode"`
 	Required        bool              `json:"required"`
 	DefaultOptionID string            `json:"default_option_id,omitempty"`
-	Source          FieldProvenance   `json:"source"`
+	NameSource      FieldProvenance   `json:"name_source"`
 	Options         []RaceTraitOption `json:"options"`
 }
 
 type RaceTraitOption struct {
-	ID           string           `json:"id"`
-	Label        string           `json:"label"`
-	PickCost     int              `json:"pick_cost"`
-	Scope        string           `json:"scope,omitempty"`
-	Value        *float64         `json:"value,omitempty"`
-	ValueKind    string           `json:"value_kind,omitempty"`
-	Ability      string           `json:"ability,omitempty"`
-	MutexWith    []string         `json:"mutex_with,omitempty"`
-	Source       FieldProvenance  `json:"source"`
-	Verification VerificationInfo `json:"verification"`
+	ID             string           `json:"id"`
+	NameKey        string           `json:"name_key"`
+	DescriptionKey string           `json:"description_key,omitempty"`
+	PickCost       int              `json:"pick_cost"`
+	Scope          string           `json:"scope,omitempty"`
+	Value          *float64         `json:"value,omitempty"`
+	ValueKind      string           `json:"value_kind,omitempty"`
+	Ability        string           `json:"ability,omitempty"`
+	MutexWith      []string         `json:"mutex_with,omitempty"`
+	NameSource     FieldProvenance  `json:"name_source"`
+	Verification   VerificationInfo `json:"verification"`
 }
 
 type FieldProvenance struct {
@@ -64,7 +66,7 @@ type FieldProvenance struct {
 }
 
 type VerificationInfo struct {
-	Label    string `json:"label"`
+	Name     string `json:"name"`
 	PickCost string `json:"pick_cost"`
 	Effects  string `json:"effects"`
 }
@@ -97,14 +99,19 @@ func (f *RaceTraitsFile) Validate() error {
 
 	groupIDs := make(map[string]struct{}, len(f.Groups))
 	optionIDs := make(map[string]struct{})
+	keys := make(map[string]struct{})
 	for _, group := range f.Groups {
-		if group.ID == "" || group.Label == "" {
-			return fmt.Errorf("trait group id and label are required")
+		if group.ID == "" || group.NameKey == "" {
+			return fmt.Errorf("trait group id and name_key are required")
 		}
 		if _, exists := groupIDs[group.ID]; exists {
 			return fmt.Errorf("duplicate trait group id %q", group.ID)
 		}
 		groupIDs[group.ID] = struct{}{}
+		if _, exists := keys[group.NameKey]; exists {
+			return fmt.Errorf("duplicate language key %q", group.NameKey)
+		}
+		keys[group.NameKey] = struct{}{}
 		if group.SelectionMode != "single" && group.SelectionMode != "multi" {
 			return fmt.Errorf("trait group %q has invalid selection mode %q", group.ID, group.SelectionMode)
 		}
@@ -116,13 +123,17 @@ func (f *RaceTraitsFile) Validate() error {
 		}
 		foundDefault := group.DefaultOptionID == ""
 		for _, option := range group.Options {
-			if option.ID == "" || option.Label == "" {
-				return fmt.Errorf("trait option id and label are required in group %q", group.ID)
+			if option.ID == "" || option.NameKey == "" {
+				return fmt.Errorf("trait option id and name_key are required in group %q", group.ID)
 			}
 			if _, exists := optionIDs[option.ID]; exists {
 				return fmt.Errorf("duplicate trait option id %q", option.ID)
 			}
 			optionIDs[option.ID] = struct{}{}
+			if _, exists := keys[option.NameKey]; exists {
+				return fmt.Errorf("duplicate language key %q", option.NameKey)
+			}
+			keys[option.NameKey] = struct{}{}
 			if option.ID == group.DefaultOptionID {
 				foundDefault = true
 			}

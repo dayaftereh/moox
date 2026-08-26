@@ -1,0 +1,65 @@
+﻿# MOO2 graphics research
+
+Baseline: 2026-08-26
+
+## Format
+
+MOO2 graphic payloads stored inside normal LBX blocks use a compact indexed-color format. Public reverse-engineering notes describe:
+
+- little-endian width/height,
+- frame count and frame delay,
+- bit flags,
+- `(frame_count + 1)` frame offsets,
+- optional internal/mixed palettes,
+- 8-bit palette-index pixel runs with relative X/Y indents,
+- transparent areas represented by omitted pixels,
+- a special Y indent of 1000 marking end-of-frame.
+
+Reference: https://masteroforion2.blogspot.com/2008/04/moo2-graphics.html
+
+The internal palette uses DAC RGB values (0..63) that are scaled to 8-bit RGB by multiplying by four. Internal palettes can replace only part of the 256-entry palette, using a shift + color-count header.
+
+## Pure-Go decoder
+
+MOOX now contains `internal/moo2gfx`, a pure-Go decoder for this format. The first supported path deliberately focuses on blocks with an embedded/internal palette so colors can be reconstructed without guessing which external palette the original executable selected.
+
+CLI example:
+
+```powershell
+out\moox-analyze-windows-amd64.exe image `
+  -out reference\extracted\images\racesel\block_015.png `
+  C:\ASH\Temp\mastori2\RACESEL.LBX 15
+```
+
+The command writes only outside the source installation. Private extracted PNGs remain below the ignored `reference/extracted/` tree and are not committed.
+
+## Local 1.31 observations
+
+### RACESEL.LBX
+
+Blocks 15 through 28 are 14 single-frame 290x322 graphics with internal palettes (`flags=0x1000`). All 14 currently decode to PNG with zero missing palette pixels.
+
+These are excellent private references for race-selection presentation. Their exact semantic mapping to preset races/custom selection will be established before we give the exported files semantic names; for now filenames retain their source block index.
+
+### PLANETS.LBX
+
+Blocks 0 through 29 are 30 single-frame 640x480 graphics with internal palettes (`flags=0x1000`). All 30 currently decode to PNG with zero missing palette pixels.
+
+### Current private export set
+
+The analyzer generated:
+
+- 14 `RACESEL` PNGs under `reference/extracted/images/racesel/`,
+- 30 `PLANETS` PNGs under `reference/extracted/images/planets/`.
+
+Total: 44 current reference PNGs. These are deliberately ignored by Git because they are original copyrighted game artwork used only for local development comparison.
+
+## External palettes
+
+Many useful graphics, including `RACEICON.LBX`, do not embed a full palette. Public format notes state that MOO2 also uses external palettes, including palette blocks in `FONTS.LBX` / `IFONTS.LBX`, and that the correct external palette choice can be context-dependent/hard-coded by the original engine.
+
+The CLI therefore currently refuses normal PNG export for graphics without an internal palette rather than silently producing incorrect colors. External/mixed palette context resolution is the next graphics-decoder task.
+
+## Future asset strategy
+
+The extracted original artwork is a reference for fidelity, not distributable MOOX content. The eventual product should either use independently created artwork or have an explicit licensed compatibility/content strategy.

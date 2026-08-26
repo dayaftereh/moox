@@ -15,7 +15,7 @@ import (
 	"moox/internal/textscan"
 )
 
-const version = "0.2.0"
+const version = "0.3.0"
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
@@ -43,6 +43,8 @@ func run(args []string) error {
 		return normalizeCmd(args[1:])
 	case "inspect":
 		return inspectCmd(args[1:])
+	case "image":
+		return imageCmd(args[1:])
 	case "extract":
 		return extractCmd(args[1:])
 	case "strings":
@@ -57,16 +59,18 @@ func usage(w io.Writer) {
 
 Usage:
   moox-analyze inventory [options] <installation-directory>
-  moox-analyze normalize race-traits -out <file.json> <installation-directory>
+  moox-analyze normalize race-traits -out <file.json> [-language-out <en.json>] <installation-directory>
   moox-analyze inspect [options] <file.lbx>
+  moox-analyze image -out <file.png> <file.lbx> <block-index>
   moox-analyze extract [options] <file.lbx> <block-index>
   moox-analyze strings [options] <file.lbx>
   moox-analyze version
 
 Commands:
   inventory  Catalog files, hashes, LBX metadata and Smacker files as JSON.
-  normalize  Convert verified MOO2 source data into loadable MOOX ruleset JSON.
+  normalize  Convert verified MOO2 source data into loadable MOOX ruleset/language JSON.
   inspect    Validate one LBX and show its block table.
+  image      Decode a MOO2 graphic block with an embedded palette to PNG.
   extract    Copy one raw LBX block to a file.
   strings    Show printable ASCII strings from one or all LBX blocks.
 

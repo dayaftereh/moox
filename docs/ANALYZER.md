@@ -107,4 +107,16 @@ out\moox-analyze-windows-amd64.exe normalize race-traits `
 
 This command validates the expected English `RACESTUF.LBX` block layout before generating data. A mismatched archive/string order fails instead of silently producing a wrong ruleset.
 
-The generated file is runtime-oriented: stable IDs and numeric values are authoritative, while original labels are carried as source-verified metadata/display defaults. Provenance deliberately distinguishes direct 1.31 observations from secondary-reference Pick costs and still-unverified behavioral formulas.
+The generated ruleset is runtime-oriented: stable IDs and numeric values are authoritative, while user-visible text is referenced by language keys. `-language-out` generates a separate language JSON (currently English from the original 1.31 block). Provenance deliberately distinguishes direct 1.31 observations from secondary-reference Pick costs and still-unverified behavioral formulas.
+
+## Decode graphics
+
+Graphics with embedded/internal palettes can now be exported directly to PNG:
+
+```powershell
+out\moox-analyze-windows-amd64.exe image `
+  -out reference\extracted\images\racesel\block_015.png `
+  C:\ASH\Temp\mastori2\RACESEL.LBX 15
+```
+
+The pure-Go decoder handles image headers, internal palette shift/count, frame offsets and sparse pixel sequences. Graphics that rely only on external palettes are rejected for now so the analyzer does not emit knowingly wrong colors. See `docs/research/MOO2_GRAPHICS.md`.
