@@ -1,4 +1,4 @@
-﻿# MOOX asset pipeline
+# MOOX asset pipeline
 
 ## Goal
 
@@ -89,4 +89,4 @@ As of 2026-08-26:
   - 14 from `RACESEL.LBX`,
   - 30 from `PLANETS.LBX`.
 
-The next graphics tooling improvement should be a batch catalog/export command and external-palette resolution. That will let us build the complete private reference library before creating final MOOX art.
+A batch catalog/export command now inventories all recognized graphics and exports internal-palette frames. The next graphics tooling improvement is external-palette resolution, followed by semantic mapping of the resulting private reference library.

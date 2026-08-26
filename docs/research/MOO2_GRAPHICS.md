@@ -60,6 +60,11 @@ A structural scan of all standard LBX containers in the local 1.31 installation 
 
 The 44 currently promoted PNGs are only the first verified subset, not the limit of available reference artwork.
 
+
+## Batch extraction
+
+`moox-analyze graphics` scans all LBX archives, records every structurally recognized graphic block, and exports every frame for blocks that provide an internal palette. The manifest keeps external-palette graphics visible as pending work rather than dropping them from the reference inventory.
+
 ## External palettes
 
 Many useful graphics, including `RACEICON.LBX`, do not embed a full palette. Public format notes state that MOO2 also uses external palettes, including palette blocks in `FONTS.LBX` / `IFONTS.LBX`, and that the correct external palette choice can be context-dependent/hard-coded by the original engine.

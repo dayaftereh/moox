@@ -120,3 +120,15 @@ out\moox-analyze-windows-amd64.exe image `
 ```
 
 The pure-Go decoder handles image headers, internal palette shift/count, frame offsets and sparse pixel sequences. Graphics that rely only on external palettes are rejected for now so the analyzer does not emit knowingly wrong colors. See `docs/research/MOO2_GRAPHICS.md`.
+## Batch graphics catalog/export
+
+Catalog every structurally recognized MOO2 graphic block and export every frame whose block carries an internal palette:
+
+```powershell
+out\moox-analyze-windows-amd64.exe graphics `
+  -clean `
+  -out reference\original\images `
+  C:\ASH\Temp\mastori2
+```
+
+Use `-manifest-only` to inventory graphics without writing PNGs. The generated private `manifest.json` records archive/block/frame provenance, dimensions, flags, palette mode, hashes and per-frame decode status. Graphics that require an external palette are cataloged as `external_palette_pending` rather than being color-guessed.
