@@ -1,6 +1,6 @@
 ﻿# LBX block classification - checkpoint 2026-08-26
 
-The pure-Go block classifier analyzes every block from the official local MOO2 1.31 reference using structural evidence only. Archive names are not used to assign semantic meaning except for the already documented external palette block positions in `FONTS.LBX` / `IFONTS.LBX`.
+The pure-Go block classifier analyzes all 10,498 blocks from the official local MOO2 1.31 reference using structural evidence. Semantic names are used only where the source position/format is independently established; heuristic classes carry a `_candidate` suffix.
 
 Private catalog:
 
@@ -8,96 +8,82 @@ Private catalog:
 reference/catalogs/block-classification.json
 ```
 
-## Current classification
-
-10,498 LBX blocks total:
+## Current classification - complete first pass
 
 - 6,532 `graphic`
 - 3,746 `fixed_record_v1`
 - 96 `riff_wave`
-- 24 `string_table_candidate`
-- 17 `external_palette`
 - 38 `empty`
-- 45 `unknown`
+- 36 `fixed_array_v1`
+- 28 `ascii_blob_candidate`
+- 17 `external_palette`
+- 2 `font_data`
+- 2 `signed_byte_table_candidate`
+- 1 `fixed_ascii_slots_candidate`
+- 0 unclassified/unknown blocks
 
-The private JSON catalog is approximately 5.38 MiB and records block hashes, first bytes, printable-ASCII metrics and classification evidence.
+Every block now has a structural class, but candidate classes are explicitly not semantic guarantees.
 
 ## `fixed_record_v1`
 
-This class is structural, not semantic. A block qualifies when:
+A block qualifies when:
 
 ```text
 uint16 little-endian type == 1
 uint16 little-endian body_size == block_size - 4
 ```
 
-The body is therefore a fixed-size record following a four-byte header. Printable text metrics are recorded independently.
+There are 3,746 such records, concentrated in message/dialog archives. The body may contain text, control bytes, placeholders or be empty; the class itself asserts only the binary structure.
 
-The class is heavily concentrated in these archives:
+## `fixed_array_v1`
 
-- `JIMTEXT.LBX`: 498
-- `KENTEXT.LBX`: 480
-- `JIMTEXT2.LBX`: 480
-- `BILLTEXT.LBX`: 468
-- `DIPLOMSG/S/E/F.LBX`: 180 each
-- `KENTEXT1.LBX`: 174
-- `BILLTEX2.LBX`: 168
-- `EVENTMSG/S/E/F.LBX`: 152 each
-- `COUNCMSG.LBX`: 84
-- `ANTARMSG.LBX`: 48
-
-A representative record:
+A second common structure is:
 
 ```text
-JIMTEXT.LBX block 0
-header: 01 00 64 00
-body_size: 100
-block_size: 104
-body begins: "Type ORION2 to run the game!"
+uint16 little-endian count
+uint16 little-endian record_size
+record[count] where total size == 4 + count * record_size
 ```
 
-Another example:
+There are 36 such blocks. Examples discovered directly from the data:
 
-```text
-EVENTMSE.LBX block 0
-header: 01 00 2C 01
-body_size: 300
-block_size: 304
-body begins with a GNN message
-```
+- `HELP.LBX#0`: 707 records x 1,403 bytes
+- `HELP.LBX#1`: 9 x 84
+- `HERODATA.LBX#0`: 67 x 59
+- `RACENAME.LBX#0`: 104 x 20
+- `SHIPNAME.LBX#0`: 672 x 16
+- `STARNAME.LBX#0`: 13 x 15
+- `STARNAME.LBX#1`: 829 x 15
+- `SKILDESC.LBX`: fixed arrays for skill names/descriptions
+- `TECHDESC.LBX`: fixed arrays for tech/special/weapon names and descriptions
+- `ENGMSG.LBX` / `MSGENG.LBX`: fixed arrays with 1,063-byte records
 
-The four large header families observed earlier are therefore not arbitrary headers: the second 16-bit value is exactly the fixed body size (100, 5202, 300, 200 bytes respectively).
+This record-boundary information is particularly useful for later localization and semantic-data decoders.
 
-## RIFF/WAVE
+## Known format classes
 
-All 96 blocks starting with `RIFF` were independently verified to have `WAVE` as the RIFF form type. No non-WAVE RIFF block was found.
+- `riff_wave`: verified `RIFF` plus `WAVE` form signature (96 blocks)
+- `external_palette`: documented `FONTS.LBX` blocks 1..13 and `IFONTS.LBX` blocks 1..4
+- `font_data`: documented block 0 of `FONTS.LBX` / `IFONTS.LBX`
+- `graphic`: structurally valid MOO2 graphic header/frame table
 
-They occur in:
+## Candidate classes
 
-- `SOUND.LBX`: blocks 1..68 (68 WAV records)
-- `STREAM.LBX`: 8 WAV records
-- `STREAMHD.LBX`: blocks 1..20 (20 WAV records)
+### `ascii_blob_candidate`
 
-These can be copied losslessly to `.wav`; no audio transcoding is required.
+At least 85% printable ASCII with at least one printable run. This includes strong text tables such as `TECHNAME` / `RACESTUF`, but the classifier deliberately does not assign their gameplay semantics.
 
-## Remaining unknowns
+### `signed_byte_table_candidate`
 
-Only 45 blocks remain `unknown`. The largest groups by archive currently include:
+Small, non-text binary tables whose bytes overwhelmingly fit a small signed-int8 range. There are two:
 
-- `HELP.LBX`: 17
-- `TECHDESC.LBX`: 4
-- `STREAM.LBX`: 3
-- `RACESTUF.LBX`: 2
-- `SKILDESC.LBX`: 2
-- `PLAYSPEC.LBX`: 2
-- `STARNAME.LBX`: 2
-- several single-block cases.
+- `RACESTUF.LBX#6` - separately proven by the Race Designer decoder to be the 53 Pick costs + four zero bytes
+- `CUSTMSTR.LBX#3` - related variant, preserved but not yet assigned the same runtime role
 
-`unknown` is intentional: the classifier does not infer a type merely from a suggestive filename.
+### `fixed_ascii_slots_candidate`
 
-## Next passes
+`SOUND.LBX#0` is the sole current example. It is 30,720 bytes and fits 20-byte slots; 137 slots are non-empty. 137 of 138 printable string runs start on a 20-byte boundary, and the longest run is 17 bytes, making 20 the smallest compatible slot size among tested divisors. Its exact relationship to the WAV blocks will be established separately.
 
-1. Copy the 96 verified RIFF/WAVE blocks into a private audio reference tree.
-2. Decode/export `fixed_record_v1` bodies into a private language/message corpus while preserving block provenance and raw bytes.
-3. Investigate the 24 string-table candidates separately.
-4. Work the 45 unknown blocks down with explicit format evidence.
+## Why candidates matter
+
+The goal of this layer is completeness without false certainty. `candidate` means the binary organization is strongly evidenced, while semantic meaning still needs a decoder, cross-reference or runtime observation.
