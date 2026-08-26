@@ -299,3 +299,77 @@ func TestBeamsPaletteMapping(t *testing.T) {
 		}
 	}
 }
+
+func TestBuffer0PaletteMapping(t *testing.T) {
+	for _, block := range []int{1, 12, 15, 91, 112, 121, 132, 136, 142, 287} {
+		if !buffer0UsesFonts1(block) {
+			t.Fatalf("block %d should use FONTS#1", block)
+		}
+	}
+	for _, block := range []int{0, 13, 14, 92, 111, 122, 131, 137, 141, 288} {
+		if buffer0UsesFonts1(block) {
+			t.Fatalf("block %d should remain unresolved", block)
+		}
+	}
+}
+
+func TestOfficerPaletteMapping(t *testing.T) {
+	tests := map[int]int{0: 1, 209: 1, 210: 2, 276: 2, 277: 4, 343: 4}
+	for block, want := range tests {
+		if got := officerPaletteBlock(block); got != want {
+			t.Fatalf("block %d palette=%d, want %d", block, got, want)
+		}
+	}
+	for _, block := range []int{-1, 344} {
+		if got := officerPaletteBlock(block); got != -1 {
+			t.Fatalf("block %d palette=%d, want unresolved", block, got)
+		}
+	}
+}
+
+func TestFleetPaletteMapping(t *testing.T) {
+	tests := []struct {
+		block   int
+		palette int
+		carrier bool
+	}{
+		{0, 1, false}, {44, 1, false},
+		{45, 1, true}, {81, 1, true},
+		{83, 1, true}, {110, 1, true},
+	}
+	for _, tt := range tests {
+		palette, carrier := fleetPaletteRule(tt.block)
+		if palette != tt.palette || carrier != tt.carrier {
+			t.Fatalf("block %d rule=(%d,%v), want (%d,%v)", tt.block, palette, carrier, tt.palette, tt.carrier)
+		}
+	}
+	for _, block := range []int{82, 111, 112} {
+		palette, carrier := fleetPaletteRule(block)
+		if palette != -1 || carrier {
+			t.Fatalf("block %d rule=(%d,%v), want unresolved", block, palette, carrier)
+		}
+	}
+}
+
+func TestMonsterPaletteMapping(t *testing.T) {
+	tests := []struct {
+		block   int
+		palette int
+		carrier int
+	}{
+		{7, 1, 14}, {8, 1, -1}, {9, 1, 14}, {12, 1, -1},
+		{20, 1, -1}, {21, 1, -1}, {24, 1, -1}, {25, 1, 13},
+	}
+	for _, tt := range tests {
+		palette, carrier, ok := monsterPaletteRule(tt.block)
+		if !ok || palette != tt.palette || carrier != tt.carrier {
+			t.Fatalf("block %d rule=(%d,%d,%v), want (%d,%d,true)", tt.block, palette, carrier, ok, tt.palette, tt.carrier)
+		}
+	}
+	for _, block := range []int{0, 1, 2, 3, 4, 5, 6, 10, 11, 13, 14, 15, 16, 17, 18, 19, 22, 23, 26} {
+		_, _, ok := monsterPaletteRule(block)
+		if ok {
+			t.Fatalf("block %d should remain self/carrier/unresolved", block)
+		}
+	}
+}

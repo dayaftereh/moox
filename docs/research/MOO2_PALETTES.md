@@ -190,6 +190,57 @@ Confirmed rules are:
 Block 0 has its own complete 256-color internal palette. Block 130 is intentionally left pending: Workshop records only `BEAMS#67` there and does not identify the base palette, so MOOX does not infer one from neighboring blocks. The confirmed rules cover 151 blocks / 945 frames.
 
 An isolated `FONTS + CMBTSFX + BEAMS` export produced 2,178 PNG frames with zero decode failures; 2,154 had complete palette coverage and 24 remained partial due only to the explicitly unresolved internal-palette special blocks.
+
+## BUFFER0.LBX verified ranges
+
+MoO2 Workshop assigns `FONTS#1` to five explicit ranges: blocks 1..12, 15..91, 112..121, 132..136 and 142..287. MOOX applies the base palette while preserving any embedded target entries.
+
+This resolves 250 blocks / 2,107 frames. An isolated `FONTS + BUFFER0` export after the aligned NoCompression fix produced 3,473 PNGs with complete palette coverage and zero decode failures. The remaining 38 context records are kept pending because Workshop gives no palette dependency for them.
+
+## OFFICER.LBX verified ranges
+
+Workshop divides the complete officer archive into three palette regions:
+
+- blocks 0..209 -> `FONTS#1`,
+- blocks 210..276 -> `FONTS#2`,
+- blocks 277..343 -> `FONTS#4`.
+
+All 344 graphic blocks / 498 frames are therefore resolved.
+
+## DIPLOMAT.LBX local full-palette carriers
+
+`DIPLOMAT.LBX` blocks 0..12 each contain a complete 256-entry internal palette. Workshop pairs every following two diplomat graphics with one of those local palette sources: blocks 13..14 use block 0, 15..16 use block 1, continuing through blocks 37..38 using block 12.
+
+MOOX derives that pairing as `(block - 13) / 2`. All 26 externally paletted diplomat blocks / 910 frames resolve from local full palettes without any FONTS guess. End-to-end checks of the first and last pairs produced complete palette coverage.
+
+## FLEET.LBX conservative mixed-palette ranges
+
+Workshop describes:
+
+- blocks 0..44 -> `FONTS#1`,
+- blocks 45..81 -> `FONTS#1 + FLEET#111`,
+- block 82 -> `FLEET#111` only,
+- blocks 83..110 -> `FONTS#1 + FLEET#111`.
+
+Local block 111 is an internal carrier with 176 colors beginning at palette index 0. The combined FONTS+carrier ranges render with complete palette coverage, so MOOX resolves blocks 0..81 and 83..110 (110 blocks / 291 frames).
+
+Block 82 is deliberately left pending: using only `FLEET#111` leaves 409 actually used pixels without a defined palette entry. Workshop identifies the local dependency, but that carrier alone is not a complete rendering context.
+
+## MONSTER.LBX conservative mixed-palette ranges
+
+Workshop contains both FONTS-backed and carrier-only dependencies. Local carrier blocks 13, 14, 15 and 18 each hold 32 colors at palette shift 32.
+
+MOOX enables only rules whose rendered target has complete coverage:
+
+- block 7 -> `FONTS#1 + MONSTER#14`,
+- block 8 -> `FONTS#1`,
+- block 9 -> `FONTS#1 + MONSTER#14`,
+- block 12 -> `FONTS#1`,
+- blocks 20..21 -> `FONTS#1`,
+- block 24 -> `FONTS#1`,
+- block 25 -> `FONTS#1 + MONSTER#13`.
+
+Carrier-only Workshop dependencies remain pending. Empirical decoding showed missing used palette indices for blocks 0, 10 and 11, confirming that the named 32-color carrier by itself is insufficient. This conservative rule keeps those contexts explicit instead of fabricating a base palette.
 ## Junction and functional colors
 
 Palette context is independent from frame reconstruction:
@@ -214,15 +265,17 @@ Unknown contexts stay `external_palette_pending`; they must never be rendered wi
 
 ## Implemented resolver checkpoint - 2026-08-26
 
-The graphics manifest schema records palette-context status, source, evidence and confidence per graphic block. Automatic extraction enables only rules for which MOOX has sufficiently specific evidence.
+The graphics manifest records palette-context status, source, evidence and confidence per graphic block. Automatic extraction enables only rules for which MOOX has sufficiently specific evidence and complete target coverage.
 
 The current full local 1.31 manifest-only validation reports:
 
-- 2,793 palette contexts resolved automatically,
-- 4,490 frames covered by those resolved contexts,
-- 3,697 palette contexts still explicitly pending,
+- 4,108 palette contexts resolved automatically,
+- 17,630 frames covered by those resolved contexts,
+- 2,382 palette contexts still explicitly pending,
 - 0 structural/frame decode failures.
 
-Resolved contexts currently cover `BLDG0..4`, `COUNCIL`, `CMBTMISL`, `SHIPS`, `RACEICON`, `DESIGN`, and the externally paletted `MAINMENU` blocks. Mixed archives with block-dependent palettes remain pending until their exact ranges are promoted from research evidence into authored resolver rules.
+The resolved set now includes verified archive-wide palettes, mixed ship/combat palettes, local full-palette carriers, and conservative range rules for `BUFFER0`, `OFFICER`, `FLEET`, `DIPLOMAT`, and `MONSTER`.
 
-The pending count includes completely external-palette graphics plus partial/internal palette carriers whose intended display context is not yet modeled. It is therefore a conservative unresolved-context metric, not a count of corrupt or undecodable images.
+Carrier-only dependencies that do not cover every palette index actually used by their targets remain pending even when Workshop names the carrier. This is intentional: `pending` means the exact rendering context is incomplete, not that the underlying graphic data is corrupt.
+
+The canonical private PNG tree under `reference/original/images/` has not yet been regenerated for every rule in this checkpoint; manifest-only validation is used while palette research is still advancing, and a later full export will materialize the accumulated verified contexts in one pass.

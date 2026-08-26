@@ -48,6 +48,7 @@ type paletteResolver struct {
 	shipCarriers       map[int]*moo2gfx.Graphic
 	combatShipCarriers map[int]*moo2gfx.Graphic
 	beamsCarrier       *moo2gfx.Graphic
+	localCarriers      map[string]*moo2gfx.Graphic
 }
 
 func newPaletteResolver(sourceRoot string) *paletteResolver {
@@ -56,6 +57,7 @@ func newPaletteResolver(sourceRoot string) *paletteResolver {
 		externalPalettes:   make(map[string]*moo2gfx.ExternalPalette),
 		shipCarriers:       make(map[int]*moo2gfx.Graphic),
 		combatShipCarriers: make(map[int]*moo2gfx.Graphic),
+		localCarriers:      make(map[string]*moo2gfx.Graphic),
 	}
 }
 
@@ -106,10 +108,199 @@ func (r *paletteResolver) Resolve(archiveRel string, blockIndex int, archive *lb
 
 	case "BEAMS.LBX":
 		return r.resolveBeams(blockIndex, archive, graphic)
+
+	case "BUFFER0.LBX":
+		return r.resolveBuffer0(blockIndex, graphic)
+
+	case "OFFICER.LBX":
+		return r.resolveOfficer(blockIndex, graphic)
+
+	case "FLEET.LBX":
+		return r.resolveFleet(blockIndex, archive, graphic)
+
+	case "DIPLOMAT.LBX":
+		return r.resolveDiplomat(blockIndex, archive, graphic)
+
+	case "MONSTER.LBX":
+		return r.resolveMonster(blockIndex, archive, graphic)
 	}
 	return paletteResolution{}, nil
 }
 
+func (r *paletteResolver) resolveBuffer0(blockIndex int, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	if !buffer0UsesFonts1(blockIndex) {
+		return paletteResolution{}, nil
+	}
+	return r.applyExternalPalette(graphic, 1)
+}
+
+func buffer0UsesFonts1(block int) bool {
+	return (block >= 1 && block <= 12) ||
+		(block >= 15 && block <= 91) ||
+		(block >= 112 && block <= 121) ||
+		(block >= 132 && block <= 136) ||
+		(block >= 142 && block <= 287)
+}
+
+func (r *paletteResolver) resolveOfficer(blockIndex int, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	paletteBlock := officerPaletteBlock(blockIndex)
+	if paletteBlock < 0 {
+		return paletteResolution{}, nil
+	}
+	return r.applyExternalPalette(graphic, paletteBlock)
+}
+
+func officerPaletteBlock(block int) int {
+	switch {
+	case block >= 0 && block <= 209:
+		return 1
+	case block >= 210 && block <= 276:
+		return 2
+	case block >= 277 && block <= 343:
+		return 4
+	default:
+		return -1
+	}
+}
+
+func (r *paletteResolver) resolveFleet(blockIndex int, archive *lbx.File, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	paletteBlock, useCarrier := fleetPaletteRule(blockIndex)
+	if paletteBlock < 0 && !useCarrier {
+		return paletteResolution{}, nil
+	}
+	sources := make([]string, 0, 2)
+	if useCarrier {
+		carrier, err := r.loadLocalCarrier("FLEET.LBX", archive, 111, 0, 176)
+		if err != nil {
+			return paletteResolution{}, err
+		}
+		moo2gfx.ApplyPaletteFromGraphic(carrier, graphic)
+		sources = append(sources, "FLEET.LBX#111")
+	}
+	if paletteBlock >= 0 {
+		palette, err := r.loadExternalPalette("FONTS.LBX", paletteBlock)
+		if err != nil {
+			return paletteResolution{}, err
+		}
+		palette.Apply(graphic)
+		sources = append([]string{fmt.Sprintf("FONTS.LBX#%d", paletteBlock)}, sources...)
+	}
+	return paletteResolution{Resolved: true, Source: strings.Join(sources, " + "), Evidence: moo2WorkshopEvidence, Confidence: "confirmed"}, nil
+}
+
+func fleetPaletteRule(block int) (paletteBlock int, useCarrier bool) {
+	switch {
+	case block >= 0 && block <= 44:
+		return 1, false
+	case block >= 45 && block <= 81:
+		return 1, true
+	case block >= 83 && block <= 110:
+		return 1, true
+	default:
+		return -1, false
+	}
+}
+
+func (r *paletteResolver) resolveDiplomat(blockIndex int, archive *lbx.File, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	if blockIndex < 13 || blockIndex > 38 {
+		return paletteResolution{}, nil
+	}
+	carrierBlock := (blockIndex - 13) / 2
+	carrier, err := r.loadLocalCarrier("DIPLOMAT.LBX", archive, carrierBlock, 0, 256)
+	if err != nil {
+		return paletteResolution{}, err
+	}
+	moo2gfx.ApplyPaletteFromGraphic(carrier, graphic)
+	return paletteResolution{
+		Resolved:   true,
+		Source:     fmt.Sprintf("DIPLOMAT.LBX#%d", carrierBlock),
+		Evidence:   moo2WorkshopEvidence,
+		Confidence: "confirmed",
+	}, nil
+}
+
+func (r *paletteResolver) resolveMonster(blockIndex int, archive *lbx.File, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	paletteBlock, carrierBlock, ok := monsterPaletteRule(blockIndex)
+	if !ok {
+		return paletteResolution{}, nil
+	}
+	sources := make([]string, 0, 2)
+	if carrierBlock >= 0 {
+		carrier, err := r.loadLocalCarrier("MONSTER.LBX", archive, carrierBlock, 32, 32)
+		if err != nil {
+			return paletteResolution{}, err
+		}
+		moo2gfx.ApplyPaletteFromGraphic(carrier, graphic)
+		sources = append(sources, fmt.Sprintf("MONSTER.LBX#%d", carrierBlock))
+	}
+	if paletteBlock >= 0 {
+		palette, err := r.loadExternalPalette("FONTS.LBX", paletteBlock)
+		if err != nil {
+			return paletteResolution{}, err
+		}
+		palette.Apply(graphic)
+		sources = append([]string{fmt.Sprintf("FONTS.LBX#%d", paletteBlock)}, sources...)
+	}
+	return paletteResolution{Resolved: true, Source: strings.Join(sources, " + "), Evidence: moo2WorkshopEvidence, Confidence: "confirmed"}, nil
+}
+
+func monsterPaletteRule(block int) (paletteBlock, carrierBlock int, ok bool) {
+	switch {
+	case block == 7:
+		return 1, 14, true
+	case block == 8:
+		return 1, -1, true
+	case block == 9:
+		return 1, 14, true
+	case block == 12:
+		return 1, -1, true
+	case block >= 20 && block <= 21:
+		return 1, -1, true
+	case block == 24:
+		return 1, -1, true
+	case block == 25:
+		return 1, 13, true
+	default:
+		return -1, -1, false
+	}
+}
+
+func (r *paletteResolver) applyExternalPalette(graphic *moo2gfx.Graphic, paletteBlock int) (paletteResolution, error) {
+	palette, err := r.loadExternalPalette("FONTS.LBX", paletteBlock)
+	if err != nil {
+		return paletteResolution{}, err
+	}
+	palette.Apply(graphic)
+	return paletteResolution{
+		Resolved:   true,
+		Source:     fmt.Sprintf("FONTS.LBX#%d", paletteBlock),
+		Evidence:   moo2WorkshopEvidence,
+		Confidence: "confirmed",
+	}, nil
+}
+
+func (r *paletteResolver) loadLocalCarrier(archiveName string, archive *lbx.File, block, expectedShift, expectedEntries int) (*moo2gfx.Graphic, error) {
+	key := fmt.Sprintf("%s#%d", archiveName, block)
+	if graphic := r.localCarriers[key]; graphic != nil {
+		return graphic, nil
+	}
+	if block < 0 || block >= len(archive.Entries) {
+		return nil, fmt.Errorf("%s does not contain palette carrier block %d", archiveName, block)
+	}
+	data, err := archive.ReadEntry(block)
+	if err != nil {
+		return nil, fmt.Errorf("read %s palette carrier block %d: %w", archiveName, block, err)
+	}
+	graphic, err := moo2gfx.Parse(data)
+	if err != nil {
+		return nil, fmt.Errorf("parse %s palette carrier block %d: %w", archiveName, block, err)
+	}
+	if graphic.Flags&moo2gfx.FlagInternalPalette == 0 || paletteEntries(graphic) != expectedEntries || graphic.PaletteShift != expectedShift {
+		return nil, fmt.Errorf("%s block %d is not the expected palette carrier shift=%d entries=%d", archiveName, block, expectedShift, expectedEntries)
+	}
+	r.localCarriers[key] = graphic
+	return graphic, nil
+}
 func (r *paletteResolver) resolveCombatSFX(blockIndex int, graphic *moo2gfx.Graphic) (paletteResolution, error) {
 	paletteBlock := combatSFXPaletteBlock(blockIndex)
 	if paletteBlock < 0 {
@@ -157,7 +348,7 @@ func combatSFXPaletteBlock(block int) int {
 
 func (r *paletteResolver) resolveBeams(blockIndex int, archive *lbx.File, graphic *moo2gfx.Graphic) (paletteResolution, error) {
 	paletteBlock, useCarrier := beamsPaletteRule(blockIndex)
-	if paletteBlock < 0 {
+	if paletteBlock < 0 && !useCarrier {
 		return paletteResolution{}, nil
 	}
 	if useCarrier {
@@ -167,14 +358,20 @@ func (r *paletteResolver) resolveBeams(blockIndex int, archive *lbx.File, graphi
 		}
 		moo2gfx.ApplyPaletteFromGraphic(carrier, graphic)
 	}
-	palette, err := r.loadExternalPalette("FONTS.LBX", paletteBlock)
-	if err != nil {
-		return paletteResolution{}, err
+	source := ""
+	if paletteBlock >= 0 {
+		palette, err := r.loadExternalPalette("FONTS.LBX", paletteBlock)
+		if err != nil {
+			return paletteResolution{}, err
+		}
+		palette.Apply(graphic)
+		source = fmt.Sprintf("FONTS.LBX#%d", paletteBlock)
 	}
-	palette.Apply(graphic)
-	source := fmt.Sprintf("FONTS.LBX#%d", paletteBlock)
 	if useCarrier {
-		source += " + BEAMS.LBX#67"
+		if source != "" {
+			source += " + "
+		}
+		source += "BEAMS.LBX#67"
 	}
 	return paletteResolution{
 		Resolved:   true,
