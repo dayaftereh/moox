@@ -15,7 +15,7 @@ import (
 	"moox/internal/textscan"
 )
 
-const version = "0.8.0"
+const version = "0.9.0"
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
@@ -55,6 +55,8 @@ func run(args []string) error {
 		return classifyCmd(args[1:])
 	case "audio":
 		return audioCmd(args[1:])
+	case "text":
+		return textCmd(args[1:])
 	case "extract":
 		return extractCmd(args[1:])
 	case "strings":
@@ -77,6 +79,7 @@ Usage:
   moox-analyze unpack -out <directory> [options] <installation-directory>
   moox-analyze classify -out <file.json> <installation-directory>
   moox-analyze audio -out <directory> [options] <installation-directory>
+  moox-analyze text -out <directory> [options] <installation-directory>
   moox-analyze extract [options] <file.lbx> <block-index>
   moox-analyze strings [options] <file.lbx>
   moox-analyze version
@@ -91,6 +94,7 @@ Commands:
   unpack     Extract every LBX block and copy renamed Smacker files with hashes.
   classify   Evidence-based classification of every LBX block.
   audio      Losslessly export verified RIFF/WAVE blocks and audio metadata.
+  text       Catalog fixed text records/string tables with ASCII-only previews.
   extract    Copy one raw LBX block to a file.
   strings    Show printable ASCII strings from one or all LBX blocks.
 
