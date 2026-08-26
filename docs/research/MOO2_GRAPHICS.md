@@ -94,9 +94,9 @@ Observed inventory:
 
 ### NoCompression
 
-Local 1.31 data resolves the previously unknown `0x0100` flag. `FlagNoCompression` frames are raw row-major 8-bit palette-index buffers: the frame payload is exactly `width * height` bytes and has no compressed-frame start indicator or run headers.
+Local 1.31 data resolves the previously unknown `0x0100` flag. `FlagNoCompression` frames are raw row-major 8-bit palette-index buffers with no compressed-frame start indicator or run headers. The pixel payload is `width * height` bytes and the stored frame length is padded with zero bytes to a 4-byte boundary: `align4(width * height)`.
 
-This is confirmed by all 43 no-compression graphic blocks found locally, including the former nine failures in `CMBTSFX.LBX` and `RACEOPT.LBX`. After adding this path the complete internal-palette batch reports zero decode failures.
+A complete audit of all 43 local NoCompression blocks / 213 frames confirms this alignment rule: every stored frame length equals `align4(width * height)` and every alignment byte observed is zero. This includes 31x31 `BUFFER0` frames stored as 961 pixel bytes plus 3 zero padding bytes, as well as the former failures in `CMBTSFX.LBX` and `RACEOPT.LBX`. The decoder validates both the aligned length and zero padding.
 
 ### Junction
 

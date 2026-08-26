@@ -226,12 +226,18 @@ func (g *Graphic) DecodeFrame(frame int) (*image.NRGBA, DecodeInfo, error) {
 func (g *Graphic) decodeUncompressedFrame(frame, start, end int) (*image.NRGBA, DecodeInfo, error) {
 	var info DecodeInfo
 	expected := g.Width * g.Height
-	if end-start != expected {
-		return nil, info, fmt.Errorf("uncompressed frame %d size mismatch: got %d, want %d", frame, end-start, expected)
+	aligned := (expected + 3) &^ 3
+	if end-start != aligned {
+		return nil, info, fmt.Errorf("uncompressed frame %d size mismatch: got %d, want %d-byte aligned payload for %d pixels", frame, end-start, aligned, expected)
+	}
+	for _, padding := range g.Data[start+expected : end] {
+		if padding != 0 {
+			return nil, info, fmt.Errorf("uncompressed frame %d has non-zero alignment padding", frame)
+		}
 	}
 
 	img := image.NewNRGBA(image.Rect(0, 0, g.Width, g.Height))
-	for i, raw := range g.Data[start:end] {
+	for i, raw := range g.Data[start : start+expected] {
 		idx := int(raw)
 		if !g.PaletteValid[idx] {
 			info.MissingPalettePixels++
