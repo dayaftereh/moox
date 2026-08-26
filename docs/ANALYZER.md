@@ -203,3 +203,6 @@ out\moox-analyze-windows-amd64.exe support `
 ```
 
 This captures executables, audio drivers/configuration, README and the private save-game fixture without duplicating the LBX files handled by the other analyzers.
+## Race Designer locales
+
+`normalize race-traits -languages-dir data\languages` now writes EN/DE/FR/ES/IT language files with identical stable keys. The locale-specific MOO2 glyph substitutions are decoded to Unicode only where the byte-to-glyph mapping is evidenced by parallel source words. See `docs/research/LOCALIZATION_LAYOUT_2026-08-26.md`.

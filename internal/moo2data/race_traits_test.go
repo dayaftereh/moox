@@ -25,6 +25,9 @@ func TestDecodeRaceTraits(t *testing.T) {
 
 	blocks := make([][]byte, 7)
 	blocks[0] = labels
+	for i := 1; i <= 5; i++ {
+		blocks[i] = append([]byte(nil), labels...)
+	}
 	blocks[6] = costs
 	file := buildTestLBX(blocks)
 	if err := os.WriteFile(path, file, 0o644); err != nil {
@@ -98,4 +101,28 @@ func buildTestLBX(blocks [][]byte) []byte {
 		cursor += len(block)
 	}
 	return file
+}
+
+func TestDecodeLocaleGlyphs(t *testing.T) {
+	cases := []struct {
+		locale string
+		input  string
+		want   string
+	}{
+		{"de", "Bev}lkerung K#nstlich Au|enposten", "Bevölkerung Künstlich Außenposten"},
+		{"fr", "D#mocratie Plan>te commer<ants", "Démocratie Planète commerçants"},
+		{"es", "Poblaci}n Biolog{a Ense|anza", "Población Biología Enseñanza"},
+		{"it", "Abilit&", "Abilità"},
+	}
+	for _, tc := range cases {
+		var glyphs map[byte]rune
+		for _, spec := range raceLocaleSpecs {
+			if spec.Locale == tc.locale {
+				glyphs = spec.Glyphs
+			}
+		}
+		if got := decodeLocaleGlyphs(tc.input, glyphs); got != tc.want {
+			t.Errorf("%s: got %q want %q", tc.locale, got, tc.want)
+		}
+	}
 }

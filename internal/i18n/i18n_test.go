@@ -6,24 +6,36 @@ import (
 	"testing"
 )
 
-func TestCommittedEnglishLanguageLoads(t *testing.T) {
+func TestCommittedRaceTraitLanguagesLoad(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	if !ok {
 		t.Fatal("cannot determine test source path")
 	}
-	path := filepath.Join(filepath.Dir(currentFile), "..", "..", "data", "languages", "en.json")
-	file, err := Load(path)
-	if err != nil {
-		t.Fatal(err)
+	root := filepath.Join(filepath.Dir(currentFile), "..", "..", "data", "languages")
+	cases := map[string]struct {
+		key  string
+		want string
+	}{
+		"en": {"race_traits.option.creative.name", "Creative"},
+		"de": {"race_traits.group.population_growth.name", "Bevölkerung"},
+		"fr": {"race_traits.option.government_democracy.name", "Démocratie"},
+		"es": {"race_traits.group.population_growth.name", "Población"},
+		"it": {"race_traits.group.special_abilities.name", "Abilità speciali"},
 	}
-	if file.Locale != "en" {
-		t.Fatalf("locale=%q", file.Locale)
-	}
-	if len(file.Strings) != 64 {
-		t.Fatalf("strings=%d want=64", len(file.Strings))
-	}
-	got, ok := file.Text("race_traits.option.creative.name")
-	if !ok || got != "Creative" {
-		t.Fatalf("creative name=%q ok=%v", got, ok)
+	for locale, tc := range cases {
+		file, err := Load(filepath.Join(root, locale+".json"))
+		if err != nil {
+			t.Fatalf("%s: %v", locale, err)
+		}
+		if file.Locale != locale {
+			t.Fatalf("%s: locale=%q", locale, file.Locale)
+		}
+		if len(file.Strings) != 64 {
+			t.Fatalf("%s: strings=%d want=64", locale, len(file.Strings))
+		}
+		got, ok := file.Text(tc.key)
+		if !ok || got != tc.want {
+			t.Fatalf("%s %s=%q ok=%v want=%q", locale, tc.key, got, ok, tc.want)
+		}
 	}
 }

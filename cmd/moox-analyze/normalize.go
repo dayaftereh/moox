@@ -27,6 +27,7 @@ func normalizeRaceTraitsCmd(args []string) error {
 	fs := flag.NewFlagSet("normalize race-traits", flag.ContinueOnError)
 	out := fs.String("out", "", "ruleset JSON output path (required)")
 	languageOut := fs.String("language-out", "", "English language JSON output path (optional)")
+	languagesDir := fs.String("languages-dir", "", "write all extracted race-trait locales as <locale>.json into this directory (optional)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -52,6 +53,20 @@ func normalizeRaceTraitsCmd(args []string) error {
 			return err
 		}
 	}
+	languagePaths := make(map[string]string)
+	if *languagesDir != "" {
+		for _, locale := range []string{"en", "de", "fr", "es", "it"} {
+			language := bundle.Languages[locale]
+			if language == nil {
+				return fmt.Errorf("missing extracted locale %q", locale)
+			}
+			path, err := writeJSONAtomic(filepath.Join(*languagesDir, locale+".json"), language)
+			if err != nil {
+				return err
+			}
+			languagePaths[locale] = path
+		}
+	}
 
 	options := 0
 	for _, group := range bundle.Rules.Groups {
@@ -60,6 +75,9 @@ func normalizeRaceTraitsCmd(args []string) error {
 	fmt.Printf("normalized %d race-design groups / %d options -> %s\n", len(bundle.Rules.Groups), options, rulesPath)
 	if languagePath != "" {
 		fmt.Printf("wrote %d English language keys -> %s\n", len(bundle.English.Strings), languagePath)
+	}
+	if len(languagePaths) > 0 {
+		fmt.Printf("wrote %d race-trait locales with %d keys each -> %s\n", len(languagePaths), len(bundle.English.Strings), *languagesDir)
 	}
 	return nil
 }

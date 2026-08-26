@@ -1,12 +1,14 @@
 package moo2data
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"moox/internal/i18n"
 	"moox/internal/lbx"
@@ -42,13 +44,13 @@ type raceGroupSpec struct {
 	Options         []raceOptionSpec
 }
 
-// DecodeRaceTraits turns the English Race Design labels from the original 1.31
-// RACESTUF.LBX into stable MOOX rule IDs. Pick costs are cross-referenced against
-// the standard-game table documented by StrategyWiki and are deliberately
-// marked separately from values directly observed in the original archive.
+// DecodeRaceTraits maps the original 1.31 RACESTUF data to stable MOOX rule IDs.
+// English labels come from block 0, localized labels from blocks 1..4, and the
+// 53 signed-byte Pick costs come directly from block 6.
 type RaceTraitsBundle struct {
-	Rules   *ruleset.RaceTraitsFile
-	English *i18n.File
+	Rules     *ruleset.RaceTraitsFile
+	English   *i18n.File
+	Languages map[string]*i18n.File
 }
 
 func DecodeRaceTraits(installationRoot string) (*ruleset.RaceTraitsFile, error) {
@@ -195,33 +197,104 @@ func DecodeRaceTraitsBundle(installationRoot string) (*RaceTraitsBundle, error) 
 		return nil, err
 	}
 
-	language := &i18n.File{
-		SchemaVersion: i18n.SchemaVersion,
-		Locale:        "en",
-		Sources: []i18n.Source{{
-			ID:          raceStuffSourceID,
-			Type:        "original-observed",
-			Description: "English Race Design names observed in Master of Orion II 1.31 RACESTUF.LBX",
-			Archive:     "RACESTUF.LBX",
-			Block:       &blockIndex,
-			SHA256:      fileHash,
-			BlockSHA256: hex.EncodeToString(blockSum[:]),
-		}},
-		Strings: make(map[string]string, expectedStrings),
-	}
-	cursor = 0
-	for _, groupSpec := range specs {
-		language.Strings[groupNameKey(groupSpec.ID)] = observed[cursor].Value
-		cursor++
-		for _, optionSpec := range groupSpec.Options {
-			language.Strings[optionNameKey(optionSpec.ID)] = observed[cursor].Value
-			cursor++
-		}
-	}
-	if err := language.Validate(); err != nil {
+	languages, err := decodeRaceTraitLanguages(archive, fileHash, specs, expectedStrings)
+	if err != nil {
 		return nil, err
 	}
-	return &RaceTraitsBundle{Rules: out, English: language}, nil
+	english := languages["en"]
+	return &RaceTraitsBundle{Rules: out, English: english, Languages: languages}, nil
+}
+
+type raceLocaleSpec struct {
+	Locale string
+	Block  int
+	Glyphs map[byte]rune
+}
+
+var raceLocaleSpecs = []raceLocaleSpec{
+	{Locale: "en", Block: 0},
+	{Locale: "de", Block: 1, Glyphs: map[byte]rune{'$': rune(0x00DC), ']': rune(0x00C4), '{': rune(0x00D6), '[': rune(0x00E4), '}': rune(0x00F6), '#': rune(0x00FC), '|': rune(0x00DF)}},
+	{Locale: "fr", Block: 2, Glyphs: map[byte]rune{'#': rune(0x00E9), '>': rune(0x00E8), '$': rune(0x00E2), '{': rune(0x00F4), '<': rune(0x00E7), '[': rune(0x00EF)}},
+	{Locale: "es", Block: 3, Glyphs: map[byte]rune{'{': rune(0x00ED), '}': rune(0x00F3), ']': rune(0x00E9), 0x60: rune(0x00FA), '<': rune(0x00E1), '|': rune(0x00F1)}},
+	{Locale: "it", Block: 4, Glyphs: map[byte]rune{'&': rune(0x00E0)}},
+}
+
+func decodeRaceTraitLanguages(archive *lbx.File, fileHash string, specs []raceGroupSpec, expectedStrings int) (map[string]*i18n.File, error) {
+	englishBlock, err := archive.ReadEntry(0)
+	if err != nil {
+		return nil, err
+	}
+	duplicateEnglish, err := archive.ReadEntry(5)
+	if err != nil {
+		return nil, fmt.Errorf("read RACESTUF.LBX block 5: %w", err)
+	}
+	if !bytes.Equal(englishBlock, duplicateEnglish) {
+		return nil, fmt.Errorf("RACESTUF.LBX block 5 no longer matches duplicate English block 0")
+	}
+
+	languages := make(map[string]*i18n.File, len(raceLocaleSpecs))
+	for _, localeSpec := range raceLocaleSpecs {
+		block, err := archive.ReadEntry(localeSpec.Block)
+		if err != nil {
+			return nil, fmt.Errorf("read RACESTUF.LBX language block %d: %w", localeSpec.Block, err)
+		}
+		observed := textscan.ASCII(block, 2)
+		if len(observed) != expectedStrings {
+			return nil, fmt.Errorf("RACESTUF.LBX block %d yielded %d strings, expected %d", localeSpec.Block, len(observed), expectedStrings)
+		}
+		blockIndex := localeSpec.Block
+		blockSum := sha256.Sum256(block)
+		sourceID := fmt.Sprintf("moo2-1.31-racestuf-block%d-%s", localeSpec.Block, localeSpec.Locale)
+		if localeSpec.Locale == "en" {
+			sourceID = raceStuffSourceID
+		}
+		language := &i18n.File{
+			SchemaVersion: i18n.SchemaVersion,
+			Locale:        localeSpec.Locale,
+			Sources: []i18n.Source{{
+				ID:          sourceID,
+				Type:        "original-observed",
+				Description: fmt.Sprintf("%s Race Design names observed in Master of Orion II 1.31 RACESTUF.LBX block %d", strings.ToUpper(localeSpec.Locale), localeSpec.Block),
+				Archive:     "RACESTUF.LBX",
+				Block:       &blockIndex,
+				SHA256:      fileHash,
+				BlockSHA256: hex.EncodeToString(blockSum[:]),
+			}},
+			Strings: make(map[string]string, expectedStrings),
+		}
+		if localeSpec.Locale != "en" {
+			language.Fallback = "en"
+		}
+		cursor := 0
+		for _, groupSpec := range specs {
+			language.Strings[groupNameKey(groupSpec.ID)] = decodeLocaleGlyphs(observed[cursor].Value, localeSpec.Glyphs)
+			cursor++
+			for _, optionSpec := range groupSpec.Options {
+				language.Strings[optionNameKey(optionSpec.ID)] = decodeLocaleGlyphs(observed[cursor].Value, localeSpec.Glyphs)
+				cursor++
+			}
+		}
+		if err := language.Validate(); err != nil {
+			return nil, err
+		}
+		languages[localeSpec.Locale] = language
+	}
+	return languages, nil
+}
+
+func decodeLocaleGlyphs(value string, glyphs map[byte]rune) string {
+	if len(glyphs) == 0 {
+		return value
+	}
+	var b strings.Builder
+	for i := 0; i < len(value); i++ {
+		if replacement, ok := glyphs[value[i]]; ok {
+			b.WriteRune(replacement)
+		} else {
+			b.WriteByte(value[i])
+		}
+	}
+	return b.String()
 }
 
 func groupNameKey(id string) string  { return "race_traits.group." + id + ".name" }
