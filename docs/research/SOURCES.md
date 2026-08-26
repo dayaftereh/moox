@@ -72,6 +72,14 @@ Use: historical notes about the variety of content stored in MOO2 LBX archives a
 
 ## Open-source code references
 
+
+### MoO2 Workshop archive/history
+
+https://moo2mod.com/doc/history/moo2_workshop.html
+
+https://moo2mod.com/
+
+Use: independent historical per-block LBX dependency descriptions for the official 1.31 data set, especially exact external/mixed palette relationships. The archived package is inspected only as an external research source; its executable and description files are not copied into MOOX.
 ### OpenMOO2
 
 https://github.com/mimi1vx/openmoo2

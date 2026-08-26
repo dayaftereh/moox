@@ -131,7 +131,7 @@ out\moox-analyze-windows-amd64.exe graphics `
   C:\ASH\Temp\mastori2
 ```
 
-Use `-manifest-only` to inventory graphics without writing PNGs. Manifest schema v2 records archive/block/frame provenance, dimensions, flags, palette mode, hashes, per-frame decode status and palette-context status/source/evidence/confidence. The first confirmed automatic rules are `BLDG0.LBX -> FONTS.LBX#2` and `COUNCIL.LBX -> COUNCIL.LBX#0`; all other unresolved external/mixed contexts remain `external_palette_pending` rather than being color-guessed. See `docs/research/MOO2_PALETTES.md`.
+Use `-manifest-only` to inventory graphics without writing PNGs. Manifest schema v2 records archive/block/frame provenance, dimensions, flags, palette mode, hashes, per-frame decode status and palette-context status/source/evidence/confidence. The evidence-gated resolver now covers verified archive-wide and mixed contexts including `BLDG0..4`, `COUNCIL`, `CMBTMISL`, `SHIPS`, `RACEICON`, `DESIGN`, and `MAINMENU`. Each resolved block records its palette source, evidence and confidence; all other unresolved external/mixed contexts remain `external_palette_pending` rather than being color-guessed. See `docs/research/MOO2_PALETTES.md`.
 ## External palette extraction
 
 Export the 13 `FONTS.LBX` and 4 `IFONTS.LBX` external palettes:

@@ -191,3 +191,32 @@ func findArchiveRecord(t *testing.T, manifest *Manifest, path string) ArchiveRec
 	t.Fatalf("archive %s not found", path)
 	return ArchiveRecord{}
 }
+
+func TestShipPaletteCarrierMapping(t *testing.T) {
+	tests := map[int]int{
+		0: 49, 48: 49,
+		50: 99, 98: 99,
+		100: 149, 148: 149,
+		150: 199, 198: 199,
+		200: 249, 248: 249,
+		250: 299, 298: 299,
+		300: 349, 348: 349,
+		350: 399, 398: 399,
+		400: 413, 404: 413,
+		407: 419,
+		408: 414, 412: 414, 420: 414, 424: 414,
+		409: 416, 421: 416,
+		410: 418, 422: 418,
+		411: 415, 423: 415,
+	}
+	for block, want := range tests {
+		if got := shipPaletteCarrier(block); got != want {
+			t.Fatalf("block %d carrier=%d, want %d", block, got, want)
+		}
+	}
+	for _, block := range []int{49, 99, 149, 199, 249, 299, 349, 399, 405, 406, 413, 414, 415, 416, 417, 418, 419, 425, 448} {
+		if got := shipPaletteCarrier(block); got != -1 {
+			t.Fatalf("block %d carrier=%d, want unresolved", block, got)
+		}
+	}
+}

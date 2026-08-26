@@ -29,6 +29,6 @@ reference/original/images/
     ...
 ```
 
-`manifest.json` records source archive, block, frame, dimensions, palette/decode status and SHA-256 so a later MOOX asset can always be traced back to its visual reference. The current batch contains 12,273 PNG frames (~434.99 MiB), including 1,618 frames whose confirmed external palette context is resolved automatically. It has zero frame decode failures. This private tree is intentionally not versioned.
+`manifest.json` records source archive, block, frame, dimensions, palette/decode status and SHA-256 so a later MOOX asset can always be traced back to its visual reference. The current batch contains 15,145 PNG frames (~447.28 MiB), including 4,490 frames whose confirmed external or mixed palette context is resolved automatically. It has zero frame decode failures. This private tree is intentionally not versioned.
 
 MOOX-owned observations and normalized factual rule data belong in `docs/` and `data/rulesets/`. New independently created artwork belongs under `assets/`, never under `reference/original/`.

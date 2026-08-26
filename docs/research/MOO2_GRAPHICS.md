@@ -127,14 +127,21 @@ The first confirmed rules add:
 
 A complete local 1.31 export now reports:
 
-- 12,273 PNG frames exported,
-- 11,415 frames with complete palette coverage,
+- 15,145 PNG frames exported,
+- 14,287 frames with complete palette coverage,
 - 858 frames with partial/mixed palette coverage,
-- 556 palette contexts resolved automatically,
-- 5,934 palette contexts still pending,
+- 2,793 palette contexts resolved automatically,
+- 3,697 palette contexts still pending,
 - 0 frame decode failures,
-- approximately 434.99 MiB of private PNG references.
+- approximately 447.28 MiB of private PNG references.
 
 An independent end-to-end check of `BLDG0.LBX` block 0 through the explicit `image -palette-file FONTS.LBX -palette-block 2` path produced the same SHA-256 PNG as the automatic batch resolver (`895A3C64102716349E0FA388C381280A12C5C2F691C7D8EC5CE4E8C85A852629`).
 
 Community-derived palette mappings are documented in `MOO2_PALETTES.md`, but they remain disabled by default until promoted with stronger evidence.
+### Expanded verified palette contexts
+
+MoO2 Workshop dependency descriptions provide a second independent per-block source for the official 1.31 data set. After cross-checking its block numbering against the already independently confirmed `BLDG0 -> FONTS#2` and `COUNCIL -> COUNCIL#0` cases, MOOX now also resolves `BLDG1..4`, `RACEICON`, `DESIGN`, `MAINMENU`, `CMBTMISL`, and the mixed `SHIPS` palette groups.
+
+`SHIPS` is especially important: Workshop identifies `FONTS#1` as the base and the local blocks 49/99/149/199/249/299/349/399 as the color-specific high-palette carriers for the preceding 49-image groups. Local carrier RGB ramps and rendered spot checks agree with the eight player colors. This supersedes the older OpenMOO2 `IFONTS#3` assumption.
+
+See `MOO2_PALETTES.md` for exact ranges, provenance and unresolved cases.

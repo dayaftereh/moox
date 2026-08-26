@@ -67,28 +67,67 @@ Reference implementation:
 
 - https://github.com/mimi1vx/openmoo2/blob/2cd3c344aed24380390caaaa819bf7a010b8f4a2/oldmess/gui/gui_client.py
 
-Status: **community implementation evidence**. These mappings should be validated against the local 1.31 data and visual/original-game behavior before being promoted to `confirmed` in the extractor.
+Status: **community implementation evidence only**. Several entries agree with later independent evidence, but the `SHIPS -> IFONTS#3` entry does not: MoO2 Workshop explicitly describes `FONTS#1` plus per-group `SHIPS` palette carriers. MOOX therefore does not treat the OpenMOO2 table as authoritative.
 
+## MoO2 Workshop independent evidence
+
+The archived MoO2 Workshop package contains per-block `.lbx.dsc` description files for the official 1.31 data set. The package is used only as an external factual reverse-engineering reference; its executable and description files are not copied into MOOX.
+
+Source/history:
+
+- https://moo2mod.com/doc/history/moo2_workshop.html
+- https://moo2mod.com/
+
+Workshop uses the same zero-based LBX block numbering as MOOX. This can be cross-checked against the already independently confirmed `BLDG0.LBX -> FONTS.LBX#2` relationship: Workshop records exactly the same dependency for `BLDG0` block 0 and every other building frame in that archive.
+
+Workshop independently confirms the following archive-wide relationships now enabled in the resolver:
+
+| Graphic archive | Confirmed palette context |
+| --- | --- |
+| BLDG0 | FONTS block 2 |
+| BLDG1 | FONTS block 2 |
+| BLDG2 | FONTS block 2 |
+| BLDG3 | FONTS block 2 |
+| BLDG4 | FONTS block 2 |
+| RACEICON | FONTS block 2 |
+| DESIGN | FONTS block 5 |
+| MAINMENU external-palette blocks | FONTS block 6 |
+| CMBTMISL | FONTS block 4 |
+
+Mixed archives such as `CMBTSHP`, `CMBTSFX`, `BEAMS`, `OFFICER`, `BUFFER0`, `GAME`, and `FLEET` contain block-level dependency changes. Their Workshop descriptions are being reduced to independently authored rules/ranges rather than copied wholesale.
 ## SHIPS.LBX mixed palettes
 
-Local 1.31 structure strongly matches historical descriptions of ship-color palette carriers:
+Local 1.31 structure and MoO2 Workshop's per-block dependency descriptions now resolve the ship palette layout exactly for the standard color groups.
 
-- ship graphics are grouped in blocks of 50,
-- blocks 49, 99, 149, 199, 249, 299, 349 and 399 are tiny 2x1 internal-palette graphics,
-- each of those carries 48 colors starting at palette index 192,
-- blocks 413..419 are also tiny 2x1 carriers with 64 colors starting at index 192,
-- normal ship graphics around them have no internal palette.
+The base palette is `FONTS.LBX` block 1. Each 49-image empire-color group then overrides the high palette range with a tiny internal-palette carrier stored at the end of that group:
 
-Historical notes describe these tiny graphics as partial palette holders that modify a base palette for the following ship group. The OpenMOO2 implementation used `IFONTS.LBX` block 3 as the SHIPS base palette.
+| Ship blocks | Palette carrier | Observed color ramp |
+| --- | --- | --- |
+| 0..48 | SHIPS block 49 | red |
+| 50..98 | SHIPS block 99 | yellow/gold |
+| 100..148 | SHIPS block 149 | green |
+| 150..198 | SHIPS block 199 | gray/white |
+| 200..248 | SHIPS block 249 | blue |
+| 250..298 | SHIPS block 299 | brown |
+| 300..348 | SHIPS block 349 | violet |
+| 350..398 | SHIPS block 399 | orange |
 
-This gives a strong candidate algorithm:
+The carriers contain 48 colors starting at palette index 192. Their locally observed RGB ramps match the eight expected player banner colors. This also fixes an important directionality detail: holder 49 belongs to blocks 0..48, holder 99 to blocks 50..98, and so on. The carriers do **not** apply to the following group.
 
-1. load the verified base palette,
-2. process `SHIPS.LBX` in block order,
-3. when a palette-carrier block is encountered, merge its internal palette range into the current base palette,
-4. apply that current mixed palette to following ship graphics until the next carrier.
+Workshop also explicitly describes these special dependencies:
 
-The first ship group (blocks 0..48) has no preceding local carrier, so its exact initial mixed context must still be validated before automatic bulk export is enabled.
+- blocks 400..404 -> `FONTS#1 + SHIPS#413`,
+- block 407 -> `FONTS#1 + SHIPS#419`,
+- blocks 408, 412, 420, 424 -> `FONTS#1 + SHIPS#414`,
+- blocks 409, 421 -> `FONTS#1 + SHIPS#416`,
+- blocks 410, 422 -> `FONTS#1 + SHIPS#418`,
+- blocks 411, 423 -> `FONTS#1 + SHIPS#415`.
+
+Blocks 405, 406 and blocks without an explicit Workshop dependency remain unresolved. Palette-carrier blocks themselves remain source/reference records rather than being assigned an invented display context.
+
+An isolated end-to-end MOOX scan of only `FONTS.LBX` + `SHIPS.LBX` resolves 408 of 434 external ship graphics and exports 423 frames total when the 15 internal carrier frames are included, with zero decode failures. Visual spot checks confirm that block 50 is rendered with the yellow/gold holder 99 rather than the red holder 49.
+
+The earlier OpenMOO2 `SHIPS -> IFONTS#3` mapping is therefore superseded for MOOX by the more specific Workshop dependency evidence plus local structural/color validation.
 
 ## Junction and functional colors
 
@@ -114,14 +153,15 @@ Unknown contexts stay `external_palette_pending`; they must never be rendered wi
 
 ## Implemented resolver checkpoint - 2026-08-26
 
-The graphics manifest schema now records palette-context status, source, evidence and confidence per graphic block. Automatic extraction currently enables only the two `confirmed` rules above.
+The graphics manifest schema records palette-context status, source, evidence and confidence per graphic block. Automatic extraction enables only rules for which MOOX has sufficiently specific evidence.
 
-A full local 1.31 manifest-only validation reports:
+The current full local 1.31 manifest-only validation reports:
 
-- 556 palette contexts resolved automatically,
-- 1,618 frames covered by those resolved contexts,
-- 360 `BLDG0.LBX` blocks / 360 frames from `FONTS.LBX#2`,
-- 196 `COUNCIL.LBX` blocks / 1,258 frames from `COUNCIL.LBX#0`,
-- 5,934 palette contexts still explicitly pending.
+- 2,793 palette contexts resolved automatically,
+- 4,490 frames covered by those resolved contexts,
+- 3,697 palette contexts still explicitly pending,
+- 0 structural/frame decode failures.
 
-The pending count includes both completely external-palette graphics and internally mixed/partial-palette graphics whose base context is not yet confirmed. Community-evidence mappings listed above are intentionally not enabled by default yet.
+Resolved contexts currently cover `BLDG0..4`, `COUNCIL`, `CMBTMISL`, `SHIPS`, `RACEICON`, `DESIGN`, and the externally paletted `MAINMENU` blocks. Mixed archives with block-dependent palettes remain pending until their exact ranges are promoted from research evidence into authored resolver rules.
+
+The pending count includes completely external-palette graphics plus partial/internal palette carriers whose intended display context is not yet modeled. It is therefore a conservative unresolved-context metric, not a count of corrupt or undecodable images.
