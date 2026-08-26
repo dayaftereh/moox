@@ -13,9 +13,11 @@ import (
 )
 
 const (
-	racePortraitsSourceID = "moo2-1.31-racesel-portraits"
-	raceIconsSourceID     = "moo2-1.31-raceicon-matrix"
-	raceIconUsageSourceID = "openmoo2-race-role-usage"
+	racePortraitsSourceID      = "moo2-1.31-racesel-portraits"
+	raceIconsSourceID          = "moo2-1.31-raceicon-matrix"
+	raceIconUsageSourceID      = "openmoo2-race-role-usage"
+	openMOO2GraphicMapSourceID = "openmoo2-graphic-map"
+	moo2BuildingAnchorSourceID = "moo2-graphics-building-anchor"
 )
 
 type raceIconRoleSpec struct {
@@ -97,6 +99,20 @@ func DecodeAssets(installationRoot string, races *ruleset.RacesFile) (*ruleset.A
 				URL:          "https://github.com/mimi1vx/openmoo2/blob/2cd3c344aed24380390caaaa819bf7a010b8f4a2/oldmess/gui/colony_screen.py",
 				AccessedDate: "2026-08-26",
 			},
+			{
+				ID:           openMOO2GraphicMapSourceID,
+				Type:         "secondary-community",
+				Description:  "OpenMOO2 graphic.ini semantic-to-LBX mappings; selected mappings are independently revalidated against the local 1.31 archive structure and block hashes",
+				URL:          "https://github.com/mimi1vx/openmoo2/blob/2cd3c344aed24380390caaaa819bf7a010b8f4a2/data/graphic.ini",
+				AccessedDate: "2026-08-26",
+			},
+			{
+				ID:           moo2BuildingAnchorSourceID,
+				Type:         "secondary-reference",
+				Description:  "Published MOO2 graphics-format notes identify BLDG0.LBX block 0 as the Alien Management Center on the colony screen",
+				URL:          "https://masteroforion2.blogspot.com/2008/04/moo2-graphics.html",
+				AccessedDate: "2026-08-26",
+			},
 		},
 	}
 
@@ -150,10 +166,61 @@ func DecodeAssets(installationRoot string, races *ruleset.RacesFile) (*ruleset.A
 		Reference:    customRef,
 	})
 
+	if err := appendKnownSemanticReferences(installationRoot, out); err != nil {
+		return nil, err
+	}
 	if err := out.ValidateAgainstRaces(races); err != nil {
 		return nil, err
 	}
 	return out, nil
+}
+
+func appendKnownSemanticReferences(installationRoot string, out *ruleset.AssetsFile) error {
+	type knownAsset struct {
+		Key     string
+		Kind    string
+		Archive string
+		Block   int
+		Frame   int
+		Width   int
+		Height  int
+		Verify  string
+	}
+	known := []knownAsset{
+		{Key: "ui.main_menu.splash", Kind: "ui_reference", Archive: "MAINMENU.LBX", Block: 0, Frame: 0, Width: 640, Height: 480, Verify: "secondary-render-map-local-structure-confirmed"},
+		{Key: "ui.main_screen.panel", Kind: "ui_panel", Archive: "BUFFER0.LBX", Block: 0, Frame: 0, Width: 640, Height: 480, Verify: "secondary-render-map-local-structure-confirmed"},
+		{Key: "ui.colonies.panel", Kind: "ui_panel", Archive: "COLSUM.LBX", Block: 0, Frame: 0, Width: 640, Height: 480, Verify: "secondary-render-map-local-structure-confirmed"},
+		{Key: "ui.colony.panel", Kind: "ui_panel", Archive: "COLPUPS.LBX", Block: 5, Frame: 0, Width: 640, Height: 480, Verify: "secondary-render-map-local-structure-confirmed"},
+		{Key: "ui.background.starfield", Kind: "ui_background", Archive: "COLONY2.LBX", Block: 49, Frame: 0, Width: 640, Height: 480, Verify: "secondary-render-map-local-structure-confirmed"},
+		{Key: "production.food.1", Kind: "production_icon", Archive: "COLONY2.LBX", Block: 0, Frame: 0, Width: 16, Height: 23, Verify: "secondary-render-map-local-structure-confirmed"},
+		{Key: "production.industry.1", Kind: "production_icon", Archive: "COLONY2.LBX", Block: 1, Frame: 0, Width: 16, Height: 23, Verify: "secondary-render-map-local-structure-confirmed"},
+		{Key: "production.research.1", Kind: "production_icon", Archive: "COLONY2.LBX", Block: 2, Frame: 0, Width: 16, Height: 23, Verify: "secondary-render-map-local-structure-confirmed"},
+		{Key: "production.money.1", Kind: "production_icon", Archive: "COLONY2.LBX", Block: 3, Frame: 0, Width: 16, Height: 23, Verify: "secondary-render-map-local-structure-confirmed"},
+		{Key: "production.food.10", Kind: "production_icon", Archive: "COLONY2.LBX", Block: 4, Frame: 0, Width: 16, Height: 23, Verify: "secondary-render-map-local-structure-confirmed"},
+		{Key: "production.industry.10", Kind: "production_icon", Archive: "COLONY2.LBX", Block: 5, Frame: 0, Width: 16, Height: 23, Verify: "secondary-render-map-local-structure-confirmed"},
+		{Key: "production.research.10", Kind: "production_icon", Archive: "COLONY2.LBX", Block: 6, Frame: 0, Width: 16, Height: 23, Verify: "secondary-render-map-local-structure-confirmed"},
+		{Key: "production.money.10", Kind: "production_icon", Archive: "COLONY2.LBX", Block: 3, Frame: 0, Width: 16, Height: 23, Verify: "secondary-render-map-local-structure-confirmed"},
+		{Key: "building.alien_management_center.colony_reference", Kind: "building_colony_reference", Archive: "BLDG0.LBX", Block: 0, Frame: 0, Width: 640, Height: 480, Verify: "published-building-anchor-local-structure-confirmed"},
+	}
+
+	archives := make(map[string]*lbx.File)
+	for _, spec := range known {
+		archive := archives[spec.Archive]
+		if archive == nil {
+			opened, err := lbx.Open(filepath.Join(installationRoot, spec.Archive))
+			if err != nil {
+				return fmt.Errorf("open %s for semantic asset %s: %w", spec.Archive, spec.Key, err)
+			}
+			archive = opened
+			archives[spec.Archive] = archive
+		}
+		ref, err := assetGraphicReference(archive, spec.Archive, spec.Block, spec.Frame, spec.Width, spec.Height)
+		if err != nil {
+			return fmt.Errorf("semantic asset %s: %w", spec.Key, err)
+		}
+		out.Assets = append(out.Assets, ruleset.Asset{Key: spec.Key, Kind: spec.Kind, Status: "confirmed", Verification: spec.Verify, Reference: ref})
+	}
+	return nil
 }
 
 func assetGraphicReference(archive *lbx.File, archiveName string, blockIndex, frameIndex, expectedWidth, expectedHeight int) (*ruleset.AssetReference, error) {

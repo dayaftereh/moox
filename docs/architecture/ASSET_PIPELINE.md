@@ -92,12 +92,14 @@ The 2026-08-26 canonical clean export materializes 30,395 PNGs (~581.03 MiB) fro
 
 `data/rulesets/moo2-1.31/assets.json` is now the first tracked semantic asset catalog. It contains factual source coordinates and hashes only; no original artwork bytes are committed.
 
-The first slice contains 79 race-related asset records:
+The catalog now contains 93 semantic asset records. The race slice contributes 79 records:
 
 - 13 confirmed preset-race portraits from `RACESEL.LBX` blocks 15..27,
 - the confirmed custom-race portrait at `RACESEL.LBX` block 28,
 - 52 confirmed role icons from the 13x13 `RACEICON.LBX` matrix: farmer, worker, scientist and marine for each preset race,
 - 13 deliberately pending generic `race.<id>.icon` keys because the original data exposes 13 role/context variants and no verified source yet identifies one as a universal generic icon.
+
+The second confirmed slice adds 14 references: the main-menu splash, main/colonies/colony panels, starfield background, eight production-value icon keys (with the original money-10 alias sharing the money block), and the published BLDG0#0 Alien Management Center colony-screen anchor.
 
 The portrait sequence is tied to the same canonical race order already normalized in `races.json`. The role-icon block formula is `race_order * 13 + variant`, with variants 1/3/5/7 verified as farmer/worker/scientist/marine by observed community implementation usage and cross-checked against the local matrix. Every confirmed record stores archive, block, frame, dimensions and original block SHA-256.
 

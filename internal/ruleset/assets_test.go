@@ -56,8 +56,8 @@ func TestCommittedAssetsLoadAndValidate(t *testing.T) {
 	if err := assets.ValidateAgainstRaces(races); err != nil {
 		t.Fatal(err)
 	}
-	if len(assets.Assets) != 79 {
-		t.Fatalf("assets=%d want=79", len(assets.Assets))
+	if len(assets.Assets) != 93 {
+		t.Fatalf("assets=%d want=93", len(assets.Assets))
 	}
 	confirmed := 0
 	pending := 0
@@ -69,8 +69,8 @@ func TestCommittedAssetsLoadAndValidate(t *testing.T) {
 			pending++
 		}
 	}
-	if confirmed != 66 || pending != 13 {
-		t.Fatalf("confirmed=%d pending=%d want=66/13", confirmed, pending)
+	if confirmed != 80 || pending != 13 {
+		t.Fatalf("confirmed=%d pending=%d want=80/13", confirmed, pending)
 	}
 }
 

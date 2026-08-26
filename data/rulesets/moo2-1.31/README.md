@@ -65,12 +65,14 @@ out\moox-analyze-windows-amd64.exe normalize races `
 ```
 ## `assets.json`
 
-The semantic asset catalog is tracked separately from original artwork. It currently contains the first verified race mapping layer:
+The semantic asset catalog is tracked separately from original artwork. It currently contains 93 records: a verified race mapping layer plus a small evidence-backed UI/building reference slice:
 
 - 13 preset-race portraits,
 - 1 custom-race portrait,
 - 52 farmer/worker/scientist/marine role icons,
 - 13 generic race-icon keys kept explicitly pending until a universal source variant is proven.
+- 13 selected UI/production references from independently revalidated render mappings,
+- 1 directly documented building anchor: Alien Management Center -> BLDG0.LBX block 0.
 
 Confirmed references include the original archive, block, frame, dimensions and block SHA-256. No original image bytes are stored in this directory.
 

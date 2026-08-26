@@ -36,6 +36,8 @@ func TestDecodeAssetsBuildsRacePortraitsAndRoleIcons(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	writeKnownAssetTestArchives(t, root)
+
 	races := &ruleset.RacesFile{Ruleset: "moo2-1.31"}
 	ids := []string{"alkari", "bulrathi", "darlok", "elerian", "gnolam", "human", "klackon", "meklar", "mrrshan", "psilon", "sakkra", "silicoid", "trilarian"}
 	for order, id := range ids {
@@ -51,8 +53,8 @@ func TestDecodeAssetsBuildsRacePortraitsAndRoleIcons(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(assets.Assets) != 79 {
-		t.Fatalf("assets=%d, want 79", len(assets.Assets))
+	if len(assets.Assets) != 93 {
+		t.Fatalf("assets=%d, want 93", len(assets.Assets))
 	}
 
 	byKey := make(map[string]ruleset.Asset, len(assets.Assets))
@@ -112,4 +114,33 @@ func buildAssetTestLBX(blocks [][]byte) []byte {
 		cursor += len(block)
 	}
 	return data
+}
+
+func writeKnownAssetTestArchives(t *testing.T, root string) {
+	t.Helper()
+	write := func(name string, blocks [][]byte) {
+		t.Helper()
+		if err := os.WriteFile(filepath.Join(root, name), buildAssetTestLBX(blocks), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("MAINMENU.LBX", [][]byte{syntheticAssetGraphic(640, 480)})
+	write("BUFFER0.LBX", [][]byte{syntheticAssetGraphic(640, 480)})
+	write("COLSUM.LBX", [][]byte{syntheticAssetGraphic(640, 480)})
+	colpups := make([][]byte, 6)
+	for i := range colpups {
+		colpups[i] = []byte{0}
+	}
+	colpups[5] = syntheticAssetGraphic(640, 480)
+	write("COLPUPS.LBX", colpups)
+	colony2 := make([][]byte, 50)
+	for i := range colony2 {
+		colony2[i] = []byte{0}
+	}
+	for i := 0; i <= 6; i++ {
+		colony2[i] = syntheticAssetGraphic(16, 23)
+	}
+	colony2[49] = syntheticAssetGraphic(640, 480)
+	write("COLONY2.LBX", colony2)
+	write("BLDG0.LBX", [][]byte{syntheticAssetGraphic(640, 480)})
 }
