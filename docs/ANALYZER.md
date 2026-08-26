@@ -190,4 +190,4 @@ out\moox-analyze-windows-amd64.exe text `
   C:\ASH\Temp\mastori2
 ```
 
-ASCII previews are research aids only; raw bytes remain authoritative. See `docs/research/TEXT_EXTRACTION_2026-08-26.md`.
+ASCII previews are research aids only; raw bytes remain authoritative. Schema v2 additionally preserves fixed-array record index/offset/size/hash boundaries for HELP, TECHDESC, leader/name tables and related data. See `docs/research/TEXT_EXTRACTION_2026-08-26.md`.
