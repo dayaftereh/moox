@@ -23,9 +23,16 @@
     {
       "id": "openmoo2-building-id-order",
       "type": "secondary-community",
-      "description": "OpenMOO2 building table provides the standard production IDs 1..48 and their order, plus the Artificial Planet -\u003e Planet Construction relationship fallback; all display names and referenced technology identities are independently verified against local original data",
+      "description": "OpenMOO2 building table originally supplied the 48-name ordering; MOOX now cross-checks that ordering against the original Orion2.exe building table and retains this source only where the display-name identity is not independently encoded by the technology name",
       "url": "https://github.com/mimi1vx/openmoo2/blob/2cd3c344aed24380390caaaa819bf7a010b8f4a2/oldmess/_buildings.py",
       "accessed_date": "2026-08-26"
+    },
+    {
+      "id": "moo2-1.31-orion2-building-table",
+      "type": "original-observed",
+      "description": "Orion2.exe 1.31 _buildings table in LE object 2 at offset 0x6B3D: 49 records x 19 bytes; records 1..48 contain their original building ID at +4 and technology ID at +6. N_Bldgs_ iterates IDs 1..48.",
+      "archive": "Orion2.exe",
+      "sha256": "7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5"
     }
   ],
   "buildings": [
@@ -33,16 +40,15 @@
       "id": "alien_management_center",
       "order": 0,
       "production_id": 1,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 5,
       "technology_key": "alien_management_center",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 1506
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.alien_management_center.name",
       "name_verification": "original-help-heading",
@@ -56,16 +62,15 @@
       "id": "armor_barracks",
       "order": 1,
       "production_id": 2,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 14,
       "technology_key": "armor_barracks",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 1677
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.armor_barracks.name",
       "name_verification": "original-help-heading",
@@ -78,16 +83,15 @@
       "id": "artemis_system_net",
       "order": 2,
       "production_id": 3,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 15,
       "technology_key": "artemis_system_net",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 1692
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.artemis_system_net.name",
       "name_verification": "original-help-heading",
@@ -100,16 +104,15 @@
       "id": "astro_university",
       "order": 3,
       "production_id": 4,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 18,
       "technology_key": "astro_university",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 1748
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.astro_university.name",
       "name_verification": "original-help-heading",
@@ -122,16 +125,15 @@
       "id": "atmospheric_renewer",
       "order": 4,
       "production_id": 5,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 19,
       "technology_key": "atmospheric_renewer",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 1765
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.atmospheric_renewer.name",
       "name_verification": "original-help-heading",
@@ -144,16 +146,15 @@
       "id": "autolab",
       "order": 5,
       "production_id": 6,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 21,
       "technology_key": "autolab",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 1803
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.autolab.name",
       "name_verification": "original-help-heading",
@@ -166,16 +167,15 @@
       "id": "automated_factories",
       "order": 6,
       "production_id": 7,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 22,
       "technology_key": "automated_factories",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 1811
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.automated_factories.name",
       "name_verification": "original-help-heading",
@@ -188,16 +188,15 @@
       "id": "battlestation",
       "order": 7,
       "production_id": 8,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 27,
       "technology_key": "battlestation",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 1891
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.battlestation.name",
       "name_verification": "original-help-heading",
@@ -210,16 +209,15 @@
       "id": "capitol",
       "order": 8,
       "production_id": 9,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 32,
       "technology_key": "capitol",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 1970
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.capitol.name",
       "name_verification": "original-help-heading",
@@ -232,16 +230,15 @@
       "id": "cloning_center",
       "order": 9,
       "production_id": 10,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 39,
       "technology_key": "cloning_center",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 2073
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.cloning_center.name",
       "name_verification": "original-help-heading",
@@ -254,16 +251,15 @@
       "id": "colony_base",
       "order": 10,
       "production_id": 11,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 40,
       "technology_key": "colony_base",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 2088
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.colony_base.name",
       "name_verification": "original-help-heading",
@@ -276,16 +272,15 @@
       "id": "deep_core_mining",
       "order": 11,
       "production_id": 12,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 49,
       "technology_key": "deep_core_mining",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 2229
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.deep_core_mining.name",
       "name_verification": "original-help-heading",
@@ -298,16 +293,15 @@
       "id": "core_waste_dumps",
       "order": 12,
       "production_id": 13,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 50,
       "technology_key": "core_waste_dumps",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 2246
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.core_waste_dumps.name",
       "name_verification": "original-help-heading",
@@ -320,16 +314,15 @@
       "id": "dimensional_portal",
       "order": 13,
       "production_id": 14,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 52,
       "technology_key": "dimensional_portal",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 2284
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.dimensional_portal.name",
       "name_verification": "original-help-heading",
@@ -342,16 +335,15 @@
       "id": "biospheres",
       "order": 14,
       "production_id": 15,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 61,
       "technology_key": "biospheres",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 2452
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.biospheres.name",
       "name_verification": "original-help-heading",
@@ -364,16 +356,15 @@
       "id": "food_replicators",
       "order": 15,
       "production_id": 16,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 68,
       "technology_key": "food_replicators",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 2565
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.food_replicators.name",
       "name_verification": "original-help-heading",
@@ -386,16 +377,15 @@
       "id": "gaia_transformation",
       "order": 16,
       "production_id": 17,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 74,
       "technology_key": "gaia_transformation",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 2643
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.gaia_transformation.name",
       "name_verification": "original-help-heading",
@@ -408,16 +398,15 @@
       "id": "galactic_currency_exchange",
       "order": 17,
       "production_id": 18,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 75,
       "technology_key": "galactic_currency_exchange",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 2663
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.galactic_currency_exchange.name",
       "name_verification": "original-help-heading",
@@ -430,16 +419,15 @@
       "id": "galactic_cybernet",
       "order": 18,
       "production_id": 19,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 76,
       "technology_key": "galactic_cybernet",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 2690
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.galactic_cybernet.name",
       "name_verification": "original-help-heading",
@@ -452,16 +440,15 @@
       "id": "holo_simulator",
       "order": 19,
       "production_id": 20,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 86,
       "technology_key": "holo_simulator",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 2860
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.holo_simulator.name",
       "name_verification": "original-help-heading",
@@ -474,16 +461,15 @@
       "id": "hydroponic_farms",
       "order": 20,
       "production_id": 21,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-singular-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 87,
       "technology_key": "hydroponic_farm",
-      "technology_link_verification": "original-techname-singular-alias",
+      "technology_link_verification": "original-exe-table-tech-id-and-singular-techname-alias",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 2875
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.hydroponic_farms.name",
       "name_verification": "original-help-heading",
@@ -496,16 +482,15 @@
       "id": "marine_barracks",
       "order": 21,
       "production_id": 22,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 103,
       "technology_key": "marine_barracks",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 3123
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.marine_barracks.name",
       "name_verification": "original-help-heading",
@@ -518,16 +503,15 @@
       "id": "planetary_barrier_shield",
       "order": 22,
       "production_id": 23,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 129,
       "technology_key": "planetary_barrier_shield",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 3538
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.planetary_barrier_shield.name",
       "name_verification": "original-help-heading",
@@ -540,16 +524,15 @@
       "id": "planetary_flux_shield",
       "order": 23,
       "production_id": 24,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 130,
       "technology_key": "planetary_flux_shield",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 3563
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.planetary_flux_shield.name",
       "name_verification": "original-help-heading",
@@ -562,16 +545,15 @@
       "id": "planetary_gravity_generator",
       "order": 24,
       "production_id": 25,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 131,
       "technology_key": "planetary_gravity_generator",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 3585
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.planetary_gravity_generator.name",
       "name_verification": "original-help-heading",
@@ -584,16 +566,15 @@
       "id": "planetary_missile_base",
       "order": 25,
       "production_id": 26,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 132,
       "technology_key": "planetary_missile_base",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 3613
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.planetary_missile_base.name",
       "name_verification": "original-help-heading",
@@ -606,16 +587,15 @@
       "id": "ground_batteries",
       "order": 26,
       "production_id": 27,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 133,
       "technology_key": "ground_batteries",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 3636
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.ground_batteries.name",
       "name_verification": "original-help-heading",
@@ -628,16 +608,15 @@
       "id": "planetary_radiation_shield",
       "order": 27,
       "production_id": 28,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 134,
       "technology_key": "planetary_radiation_shield",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 3653
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.planetary_radiation_shield.name",
       "name_verification": "original-help-heading",
@@ -650,16 +629,15 @@
       "id": "planetary_stock_exchange",
       "order": 28,
       "production_id": 29,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 135,
       "technology_key": "planetary_stock_exchange",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 3680
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.planetary_stock_exchange.name",
       "name_verification": "original-help-heading",
@@ -672,16 +650,15 @@
       "id": "planetary_supercomputer",
       "order": 29,
       "production_id": 30,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 136,
       "technology_key": "planetary_supercomputer",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 3705
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.planetary_supercomputer.name",
       "name_verification": "original-help-heading",
@@ -694,16 +671,15 @@
       "id": "pleasure_dome",
       "order": 30,
       "production_id": 31,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 141,
       "technology_key": "pleasure_dome",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 3784
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.pleasure_dome.name",
       "name_verification": "original-help-heading",
@@ -716,16 +692,15 @@
       "id": "pollution_processor",
       "order": 31,
       "production_id": 32,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 142,
       "technology_key": "pollution_processor",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 3798
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.pollution_processor.name",
       "name_verification": "original-techname-string-2-occurrences",
@@ -738,16 +713,15 @@
       "id": "recyclotron",
       "order": 32,
       "production_id": 33,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 152,
       "technology_key": "recyclotron",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 3947
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.recyclotron.name",
       "name_verification": "original-help-heading",
@@ -760,16 +734,15 @@
       "id": "robotic_factory",
       "order": 33,
       "production_id": 34,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 154,
       "technology_key": "robotic_factory",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 3976
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.robotic_factory.name",
       "name_verification": "original-help-heading",
@@ -782,16 +755,15 @@
       "id": "research_laboratory",
       "order": 34,
       "production_id": 35,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 155,
       "technology_key": "research_laboratory",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 3992
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.research_laboratory.name",
       "name_verification": "original-help-heading",
@@ -804,16 +776,15 @@
       "id": "robo_miners",
       "order": 35,
       "production_id": 36,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 156,
       "technology_key": "robo_miners",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 4012
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.robo_miners.name",
       "name_verification": "original-help-heading",
@@ -826,16 +797,15 @@
       "id": "soil_enrichment",
       "order": 36,
       "production_id": 37,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 162,
       "technology_key": "soil_enrichment",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 4092
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.soil_enrichment.name",
       "name_verification": "original-help-heading",
@@ -848,16 +818,15 @@
       "id": "space_academy",
       "order": 37,
       "production_id": 38,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 163,
       "technology_key": "space_academy",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 4108
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.space_academy.name",
       "name_verification": "original-help-heading",
@@ -870,16 +839,15 @@
       "id": "spaceport",
       "order": 38,
       "production_id": 39,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 164,
       "technology_key": "spaceport",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 4122
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.spaceport.name",
       "name_verification": "original-help-heading",
@@ -892,16 +860,15 @@
       "id": "star_base",
       "order": 39,
       "production_id": 40,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 168,
       "technology_key": "star_base",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 4183
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.star_base.name",
       "name_verification": "original-help-heading",
@@ -914,16 +881,15 @@
       "id": "star_fortress",
       "order": 40,
       "production_id": 41,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 169,
       "technology_key": "star_fortress",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 4193
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.star_fortress.name",
       "name_verification": "original-help-heading",
@@ -936,16 +902,15 @@
       "id": "stellar_converter",
       "order": 41,
       "production_id": 42,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 174,
       "technology_key": "stellar_converter",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 4257
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.stellar_converter.name",
       "name_verification": "original-help-heading",
@@ -958,16 +923,15 @@
       "id": "subterranean_farms",
       "order": 42,
       "production_id": 43,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 178,
       "technology_key": "subterranean_farms",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 4341
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.subterranean_farms.name",
       "name_verification": "original-help-heading",
@@ -980,16 +944,15 @@
       "id": "terraforming",
       "order": 43,
       "production_id": 44,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 183,
       "technology_key": "terraforming",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 4433
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.terraforming.name",
       "name_verification": "original-help-heading",
@@ -1002,16 +965,15 @@
       "id": "warp_interdictor",
       "order": 44,
       "production_id": 45,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 197,
       "technology_key": "warp_interdictor",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 4663
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.warp_interdictor.name",
       "name_verification": "original-help-heading",
@@ -1024,16 +986,15 @@
       "id": "weather_control_system",
       "order": 45,
       "production_id": 46,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 198,
       "technology_key": "weather_control_system",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 4680
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.weather_control_system.name",
       "name_verification": "original-help-heading",
@@ -1046,16 +1007,15 @@
       "id": "fighter_garrison",
       "order": 46,
       "production_id": 47,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 67,
       "technology_key": "fighter_garrison",
-      "technology_link_verification": "original-techname-exact",
+      "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
       "technology_source": {
-        "source_id": "moo2-1.31-techname-block0-technologies",
-        "offset": 2548
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.fighter_garrison.name",
       "name_verification": "original-help-heading",
@@ -1068,15 +1028,15 @@
       "id": "artificial_planet",
       "order": 47,
       "production_id": 48,
-      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_verification": "original-exe-table-id-secondary-display-name-link",
       "production_id_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "technology_id": 16,
       "technology_key": "planet_construction",
-      "technology_link_verification": "secondary-building-tech-link-original-tech-id-confirmed",
+      "technology_link_verification": "original-exe-table-tech-id-planet-construction",
       "technology_source": {
-        "source_id": "openmoo2-building-id-order"
+        "source_id": "moo2-1.31-orion2-building-table"
       },
       "name_key": "building.artificial_planet.name",
       "name_verification": "original-techname-string",

@@ -15,7 +15,7 @@ import (
 	"moox/internal/textscan"
 )
 
-const version = "0.16.0"
+const version = "0.17.0"
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {

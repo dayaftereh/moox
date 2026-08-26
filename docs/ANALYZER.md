@@ -131,7 +131,7 @@ out\moox-analyze-windows-amd64.exe normalize buildings `
   C:\ASH\Temp\mastori2
 ```
 
-This dataset contains 48 stable building IDs. Names are verified against original `HELP.LBX` / `TECHNAME.LBX`; production-ID ordering remains explicitly secondary-verified until its original binary table is located. The normalizer fails on missing/ambiguous original names instead of silently substituting community text. It also links each building to the normalized original technology catalog: 46 exact-name links, one original singular alias (`Hydroponic Farms` -> `Hydroponic Farm`), and one deliberately secondary relationship (`Artificial Planet` -> `Planet Construction`, tech 16).
+This dataset contains 48 stable building IDs. Names are verified against original `HELP.LBX` / `TECHNAME.LBX`. Building IDs and technology IDs are read directly from the original `Orion2.exe` `_buildings` table through the pure-Go bound MZ/LE reader; the normalizer cross-checks each table technology ID against the normalized 203-entry original technology catalog. `Hydroponic Farms` is the original singular-name alias to tech 87 `Hydroponic Farm`; building ID 48 directly references tech 16 `Planet Construction`, while its display-name identity `Artificial Planet` remains explicitly distinguished.
 ## Normalize semantic assets
 
 Generate tracked semantic asset metadata from the private original reference and normalized race order:

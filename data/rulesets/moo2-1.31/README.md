@@ -96,13 +96,13 @@ Name provenance is original 1.31 data:
 - `Pollution Processor` and `Artificial Planet` are sourced from English `TECHNAME.LBX` block 0 because they are not present as HELP headings,
 - `Pollution Processor` occurs twice in that TECHNAME block; this is recorded explicitly in `name_verification` rather than hidden.
 
-Production IDs 1..48 and their order are currently marked `secondary-id-order-original-name-confirmed`: the ordering comes from a secondary implementation, while every display name is independently verified against the local original data. This field should be promoted only after the ID table is located/measured directly in the original executable/data.
+Production IDs 1..48 and their technology IDs are now read directly from the original `Orion2.exe` 1.31 `_buildings` table (LE object 2, offset `0x6B3D`, 49 records x 19 bytes with record 0 as the dummy entry). `N_Bldgs_` independently confirms that normal gameplay iterates building IDs 1 through 48.
 
 Technology links are now cross-checked against the original 203-entry TECHNAME.LBX technology sequence:
 
-- 46 buildings map by exact original technology name and therefore carry direct original technology IDs,
-- Hydroponic Farms maps to original technology 87 Hydroponic Farm and is marked as a singular-name alias,
-- Artificial Planet maps to original technology 16 Planet Construction; the technology identity is original, but that building-to-tech relationship remains explicitly secondary-verified.
+- 46 original building-table records reference technologies whose original names exactly match the building names,
+- `Hydroponic Farms` is original building ID 21 -> original technology 87 `Hydroponic Farm` and is marked as a singular-name alias,
+- original building ID 48 points directly to original technology 16 `Planet Construction`; the table relation is original-observed, while the display-name interpretation `Artificial Planet` remains the one identity link not encoded directly in the technology name.
 
 Only Alien Management Center currently carries a confirmed colony-screen semantic asset key. The remaining BLDG graphic groups are intentionally not named yet because the complete building-ID-to-graphic-group formula has not been independently proven.
 
