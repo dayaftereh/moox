@@ -44,3 +44,13 @@ func TestClassifyCommandIsRegistered(t *testing.T) {
 		t.Fatalf("classify command is not registered: %v", err)
 	}
 }
+
+func TestAudioCommandIsRegistered(t *testing.T) {
+	err := run([]string{"audio"})
+	if err == nil {
+		t.Fatal("audio without arguments should fail")
+	}
+	if strings.Contains(err.Error(), "unknown command") {
+		t.Fatalf("audio command is not registered: %v", err)
+	}
+}
