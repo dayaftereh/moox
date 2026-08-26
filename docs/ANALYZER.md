@@ -115,7 +115,7 @@ Graphics with embedded/internal palettes can now be exported directly to PNG:
 
 ```powershell
 out\moox-analyze-windows-amd64.exe image `
-  -out reference\extracted\images\racesel\block_015.png `
+  -out reference\original\images\racesel\block_015.png `
   C:\ASH\Temp\mastori2\RACESEL.LBX 15
 ```
 

@@ -1,4 +1,4 @@
-﻿# MOO2 graphics research
+# MOO2 graphics research
 
 Baseline: 2026-08-26
 
@@ -27,11 +27,11 @@ CLI example:
 
 ```powershell
 out\moox-analyze-windows-amd64.exe image `
-  -out reference\extracted\images\racesel\block_015.png `
+  -out reference\original\images\racesel\block_015.png `
   C:\ASH\Temp\mastori2\RACESEL.LBX 15
 ```
 
-The command writes only outside the source installation. Private extracted PNGs remain below the ignored `reference/extracted/` tree and are not committed.
+The command writes only outside the source installation. Canonical original-reference PNGs remain below the ignored `reference/original/` tree and are not committed. Temporary decoder output may still use `reference/extracted/`.
 
 ## Local 1.31 observations
 
@@ -49,10 +49,16 @@ Blocks 0 through 29 are 30 single-frame 640x480 graphics with internal palettes 
 
 The analyzer generated:
 
-- 14 `RACESEL` PNGs under `reference/extracted/images/racesel/`,
-- 30 `PLANETS` PNGs under `reference/extracted/images/planets/`.
+- 14 `RACESEL` PNGs under `reference/original/images/racesel/`,
+- 30 `PLANETS` PNGs under `reference/original/images/planets/`.
 
 Total: 44 current reference PNGs. These are deliberately ignored by Git because they are original copyrighted game artwork used only for local development comparison.
+
+## Broader local scan
+
+A structural scan of all standard LBX containers in the local 1.31 installation found 6,532 plausible MOO2 graphic blocks. 713 advertise an internal palette and are candidates for color-correct decoding without first resolving an external palette context.
+
+The 44 currently promoted PNGs are only the first verified subset, not the limit of available reference artwork.
 
 ## External palettes
 
