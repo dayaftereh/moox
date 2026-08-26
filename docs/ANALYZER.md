@@ -156,3 +156,14 @@ out\moox-analyze-windows-amd64.exe unpack `
 ```
 
 The private manifest keeps archive/block offsets, sizes and SHA-256 hashes so every later decoder can work from a stable raw block path while the source installation remains untouched.
+## Evidence-based block classification
+
+Classify every normal LBX block without assigning unsupported semantics:
+
+```powershell
+out\moox-analyze-windows-amd64.exe classify `
+  -out reference\catalogs\block-classification.json `
+  C:\ASH\Temp\mastori2
+```
+
+Current classes include graphics, known external palettes, RIFF/WAVE, structurally exact `fixed_record_v1` records, conservative string-table candidates, empty blocks and unknowns. See `docs/research/BLOCK_CLASSIFICATION_2026-08-26.md`.

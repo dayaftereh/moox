@@ -15,7 +15,7 @@ import (
 	"moox/internal/textscan"
 )
 
-const version = "0.6.0"
+const version = "0.7.0"
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
@@ -51,6 +51,8 @@ func run(args []string) error {
 		return palettesCmd(args[1:])
 	case "unpack":
 		return unpackCmd(args[1:])
+	case "classify":
+		return classifyCmd(args[1:])
 	case "extract":
 		return extractCmd(args[1:])
 	case "strings":
@@ -71,6 +73,7 @@ Usage:
   moox-analyze graphics -out <directory> [options] <installation-directory>
   moox-analyze palettes -out <directory> [options] <installation-directory>
   moox-analyze unpack -out <directory> [options] <installation-directory>
+  moox-analyze classify -out <file.json> <installation-directory>
   moox-analyze extract [options] <file.lbx> <block-index>
   moox-analyze strings [options] <file.lbx>
   moox-analyze version
@@ -83,6 +86,7 @@ Commands:
   graphics   Catalog all MOO2 graphics and batch-export internally paletted frames.
   palettes   Export known FONTS/IFONTS external palettes as JSON and swatches.
   unpack     Extract every LBX block and copy renamed Smacker files with hashes.
+  classify   Evidence-based classification of every LBX block.
   extract    Copy one raw LBX block to a file.
   strings    Show printable ASCII strings from one or all LBX blocks.
 
