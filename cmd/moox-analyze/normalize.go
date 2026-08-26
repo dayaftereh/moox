@@ -15,7 +15,7 @@ import (
 
 func normalizeCmd(args []string) error {
 	if len(args) == 0 {
-		return errors.New("normalize requires a dataset name; currently supported: race-traits, races, assets")
+		return errors.New("normalize requires a dataset name; currently supported: race-traits, races, assets, buildings")
 	}
 	switch args[0] {
 	case "race-traits":
@@ -24,8 +24,10 @@ func normalizeCmd(args []string) error {
 		return normalizeRacesCmd(args[1:])
 	case "assets":
 		return normalizeAssetsCmd(args[1:])
+	case "buildings":
+		return normalizeBuildingsCmd(args[1:])
 	default:
-		return fmt.Errorf("unknown normalize dataset %q; currently supported: race-traits, races, assets", args[0])
+		return fmt.Errorf("unknown normalize dataset %q; currently supported: race-traits, races, assets, buildings", args[0])
 	}
 }
 
@@ -223,5 +225,51 @@ func normalizeAssetsCmd(args []string) error {
 		}
 	}
 	fmt.Printf("normalized %d semantic assets (%d confirmed, %d pending) -> %s\n", len(assets.Assets), confirmed, pending, path)
+	return nil
+}
+
+func normalizeBuildingsCmd(args []string) error {
+	fs := flag.NewFlagSet("normalize buildings", flag.ContinueOnError)
+	out := fs.String("out", "", "buildings ruleset JSON output path (required)")
+	languagesDir := fs.String("languages-dir", "", "merge canonical English building names into en.json in this directory (optional)")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if fs.NArg() != 1 {
+		return errors.New("normalize buildings requires exactly one MOO2 installation directory")
+	}
+	if *out == "" {
+		return errors.New("normalize buildings requires -out <path>")
+	}
+
+	bundle, err := moo2data.DecodeBuildings(fs.Arg(0))
+	if err != nil {
+		return err
+	}
+	path, err := writeJSONAtomic(*out, bundle.Rules)
+	if err != nil {
+		return err
+	}
+	if *languagesDir != "" {
+		enPath := filepath.Join(*languagesDir, "en.json")
+		var english *i18n.File
+		if _, statErr := os.Stat(enPath); statErr == nil {
+			english, err = i18n.Load(enPath)
+			if err != nil {
+				return fmt.Errorf("load English language file: %w", err)
+			}
+		} else if os.IsNotExist(statErr) {
+			english = &i18n.File{SchemaVersion: i18n.SchemaVersion, Locale: "en", Strings: map[string]string{}}
+		} else {
+			return statErr
+		}
+		if err := english.Merge(bundle.English); err != nil {
+			return err
+		}
+		if _, err := writeJSONAtomic(enPath, english); err != nil {
+			return err
+		}
+	}
+	fmt.Printf("normalized %d colony buildings -> %s\n", len(bundle.Rules.Buildings), path)
 	return nil
 }

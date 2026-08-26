@@ -110,6 +110,17 @@ This command validates the expected English `RACESTUF.LBX` block layout before g
 The generated ruleset is runtime-oriented: stable IDs and numeric values are authoritative, while user-visible text is referenced by language keys. `-language-out` generates a separate language JSON (currently English from the original 1.31 block). Provenance deliberately distinguishes direct 1.31 observations from secondary-reference Pick costs and still-unverified behavioral formulas.
 
 
+
+## Normalize colony buildings
+
+```powershell
+out\moox-analyze-windows-amd64.exe normalize buildings `
+  -out data\rulesets\moo2-1.31\buildings.json `
+  -languages-dir data\languages `
+  C:\ASH\Temp\mastori2
+```
+
+This dataset contains 48 stable building IDs. Names are verified against original `HELP.LBX` / `TECHNAME.LBX`; production-ID ordering remains explicitly secondary-verified until its original binary table is located. The normalizer fails on missing/ambiguous original names instead of silently substituting community text.
 ## Normalize semantic assets
 
 Generate tracked semantic asset metadata from the private original reference and normalized race order:

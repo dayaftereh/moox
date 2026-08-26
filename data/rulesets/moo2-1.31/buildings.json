@@ -1,0 +1,754 @@
+{
+  "schema_version": 1,
+  "ruleset": "moo2-1.31",
+  "sources": [
+    {
+      "id": "moo2-1.31-help-building-names",
+      "type": "original-observed",
+      "description": "Canonical colony-building names observed as HELP.LBX block 0 record headings in Master of Orion II 1.31",
+      "archive": "HELP.LBX",
+      "block": 0,
+      "sha256": "78f8f0b6b6d05426de5b36116fbc8d1e4863305ad3fb659ae0ad3d3bbe83d7dd",
+      "block_sha256": "6fa9a4c1b844a4688c3fc01ad66c8b364c0291525a7c7098f6a918b7132399c9"
+    },
+    {
+      "id": "moo2-1.31-techname-building-names",
+      "type": "original-observed",
+      "description": "Exact original building/technology names in English TECHNAME.LBX block 0, used for names not present as HELP headings",
+      "archive": "TECHNAME.LBX",
+      "block": 0,
+      "sha256": "917653c6d4b767166c2223bb72e3e8608b2eb8415cef0a4436ed9a7391d10a4e",
+      "block_sha256": "3079adf60539bd200d0b55b750f52c1e5cd1d2b59bdf4e2243f1c17d6d3978e9"
+    },
+    {
+      "id": "openmoo2-building-id-order",
+      "type": "secondary-community",
+      "description": "OpenMOO2 building table provides the standard production IDs 1..48 and their order; MOOX independently verifies every displayed name against local original data",
+      "url": "https://github.com/mimi1vx/openmoo2/blob/2cd3c344aed24380390caaaa819bf7a010b8f4a2/oldmess/_buildings.py",
+      "accessed_date": "2026-08-26"
+    }
+  ],
+  "buildings": [
+    {
+      "id": "alien_management_center",
+      "order": 0,
+      "production_id": 1,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.alien_management_center.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 7019
+      },
+      "colony_reference_asset_key": "building.alien_management_center.colony_reference"
+    },
+    {
+      "id": "armor_barracks",
+      "order": 1,
+      "production_id": 2,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.armor_barracks.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 19646
+      }
+    },
+    {
+      "id": "artemis_system_net",
+      "order": 2,
+      "production_id": 3,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.artemis_system_net.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 21049
+      }
+    },
+    {
+      "id": "astro_university",
+      "order": 3,
+      "production_id": 4,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.astro_university.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 25258
+      }
+    },
+    {
+      "id": "atmospheric_renewer",
+      "order": 4,
+      "production_id": 5,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.atmospheric_renewer.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 26661
+      }
+    },
+    {
+      "id": "autolab",
+      "order": 5,
+      "production_id": 6,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.autolab.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 29467
+      }
+    },
+    {
+      "id": "automated_factories",
+      "order": 6,
+      "production_id": 7,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.automated_factories.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 30870
+      }
+    },
+    {
+      "id": "battlestation",
+      "order": 7,
+      "production_id": 8,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.battlestation.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 37885
+      }
+    },
+    {
+      "id": "capitol",
+      "order": 8,
+      "production_id": 9,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.capitol.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 44900
+      }
+    },
+    {
+      "id": "cloning_center",
+      "order": 9,
+      "production_id": 10,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.cloning_center.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 54721
+      }
+    },
+    {
+      "id": "colony_base",
+      "order": 10,
+      "production_id": 11,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.colony_base.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 56124
+      }
+    },
+    {
+      "id": "deep_core_mining",
+      "order": 11,
+      "production_id": 12,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.deep_core_mining.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 68751
+      }
+    },
+    {
+      "id": "core_waste_dumps",
+      "order": 12,
+      "production_id": 13,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.core_waste_dumps.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 70154
+      }
+    },
+    {
+      "id": "dimensional_portal",
+      "order": 13,
+      "production_id": 14,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.dimensional_portal.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 72960
+      }
+    },
+    {
+      "id": "biospheres",
+      "order": 14,
+      "production_id": 15,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.biospheres.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 85587
+      }
+    },
+    {
+      "id": "food_replicators",
+      "order": 15,
+      "production_id": 16,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.food_replicators.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 95408
+      }
+    },
+    {
+      "id": "gaia_transformation",
+      "order": 16,
+      "production_id": 17,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.gaia_transformation.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 103826
+      }
+    },
+    {
+      "id": "galactic_currency_exchange",
+      "order": 17,
+      "production_id": 18,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.galactic_currency_exchange.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 105229
+      }
+    },
+    {
+      "id": "galactic_cybernet",
+      "order": 18,
+      "production_id": 19,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.galactic_cybernet.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 106632
+      }
+    },
+    {
+      "id": "holo_simulator",
+      "order": 19,
+      "production_id": 20,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.holo_simulator.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 120662
+      }
+    },
+    {
+      "id": "hydroponic_farms",
+      "order": 20,
+      "production_id": 21,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.hydroponic_farms.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 122065
+      }
+    },
+    {
+      "id": "marine_barracks",
+      "order": 21,
+      "production_id": 22,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.marine_barracks.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 144513
+      }
+    },
+    {
+      "id": "planetary_barrier_shield",
+      "order": 22,
+      "production_id": 23,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.planetary_barrier_shield.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 180991
+      }
+    },
+    {
+      "id": "planetary_flux_shield",
+      "order": 23,
+      "production_id": 24,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.planetary_flux_shield.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 182394
+      }
+    },
+    {
+      "id": "planetary_gravity_generator",
+      "order": 24,
+      "production_id": 25,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.planetary_gravity_generator.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 183797
+      }
+    },
+    {
+      "id": "planetary_missile_base",
+      "order": 25,
+      "production_id": 26,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.planetary_missile_base.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 185200
+      }
+    },
+    {
+      "id": "ground_batteries",
+      "order": 26,
+      "production_id": 27,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.ground_batteries.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 186603
+      }
+    },
+    {
+      "id": "planetary_radiation_shield",
+      "order": 27,
+      "production_id": 28,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.planetary_radiation_shield.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 188006
+      }
+    },
+    {
+      "id": "planetary_stock_exchange",
+      "order": 28,
+      "production_id": 29,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.planetary_stock_exchange.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 189409
+      }
+    },
+    {
+      "id": "planetary_supercomputer",
+      "order": 29,
+      "production_id": 30,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.planetary_supercomputer.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 190812
+      }
+    },
+    {
+      "id": "pleasure_dome",
+      "order": 30,
+      "production_id": 31,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.pleasure_dome.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 197827
+      }
+    },
+    {
+      "id": "pollution_processor",
+      "order": 31,
+      "production_id": 32,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.pollution_processor.name",
+      "name_verification": "original-techname-string-2-occurrences",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-building-names",
+        "offset": 3798
+      }
+    },
+    {
+      "id": "recyclotron",
+      "order": 32,
+      "production_id": 33,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.recyclotron.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 213260
+      }
+    },
+    {
+      "id": "robotic_factory",
+      "order": 33,
+      "production_id": 34,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.robotic_factory.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 216066
+      }
+    },
+    {
+      "id": "research_laboratory",
+      "order": 34,
+      "production_id": 35,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.research_laboratory.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 217469
+      }
+    },
+    {
+      "id": "robo_miners",
+      "order": 35,
+      "production_id": 36,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.robo_miners.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 218872
+      }
+    },
+    {
+      "id": "soil_enrichment",
+      "order": 36,
+      "production_id": 37,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.soil_enrichment.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 227290
+      }
+    },
+    {
+      "id": "space_academy",
+      "order": 37,
+      "production_id": 38,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.space_academy.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 228693
+      }
+    },
+    {
+      "id": "spaceport",
+      "order": 38,
+      "production_id": 39,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.spaceport.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 230096
+      }
+    },
+    {
+      "id": "star_base",
+      "order": 39,
+      "production_id": 40,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.star_base.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 235708
+      }
+    },
+    {
+      "id": "star_fortress",
+      "order": 40,
+      "production_id": 41,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.star_fortress.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 237111
+      }
+    },
+    {
+      "id": "stellar_converter",
+      "order": 41,
+      "production_id": 42,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.stellar_converter.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 244126
+      }
+    },
+    {
+      "id": "subterranean_farms",
+      "order": 42,
+      "production_id": 43,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.subterranean_farms.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 249738
+      }
+    },
+    {
+      "id": "terraforming",
+      "order": 43,
+      "production_id": 44,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.terraforming.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 256753
+      }
+    },
+    {
+      "id": "warp_interdictor",
+      "order": 44,
+      "production_id": 45,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.warp_interdictor.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 276395
+      }
+    },
+    {
+      "id": "weather_control_system",
+      "order": 45,
+      "production_id": 46,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.weather_control_system.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 277798
+      }
+    },
+    {
+      "id": "fighter_garrison",
+      "order": 46,
+      "production_id": 47,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.fighter_garrison.name",
+      "name_verification": "original-help-heading",
+      "name_source": {
+        "source_id": "moo2-1.31-help-building-names",
+        "offset": 94005
+      }
+    },
+    {
+      "id": "artificial_planet",
+      "order": 47,
+      "production_id": 48,
+      "production_id_verification": "secondary-id-order-original-name-confirmed",
+      "production_id_source": {
+        "source_id": "openmoo2-building-id-order"
+      },
+      "name_key": "building.artificial_planet.name",
+      "name_verification": "original-techname-string",
+      "name_source": {
+        "source_id": "moo2-1.31-techname-building-names",
+        "offset": 5592
+      }
+    }
+  ]
+}

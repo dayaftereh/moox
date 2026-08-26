@@ -86,3 +86,25 @@ out\moox-analyze-windows-amd64.exe normalize assets `
 ```
 
 `go test ./...` loads the committed catalog and validates its portrait/icon keys against `races.json`.
+## `buildings.json`
+
+The 48 standard colony buildings are normalized into stable IDs and translation keys.
+
+Name provenance is original 1.31 data:
+
+- 46 names are exact `HELP.LBX` block 0 record headings,
+- `Pollution Processor` and `Artificial Planet` are sourced from English `TECHNAME.LBX` block 0 because they are not present as HELP headings,
+- `Pollution Processor` occurs twice in that TECHNAME block; this is recorded explicitly in `name_verification` rather than hidden.
+
+Production IDs 1..48 and their order are currently marked `secondary-id-order-original-name-confirmed`: the ordering comes from a secondary implementation, while every display name is independently verified against the local original data. This field should be promoted only after the ID table is located/measured directly in the original executable/data.
+
+Only Alien Management Center currently carries a confirmed colony-screen semantic asset key. The remaining BLDG graphic groups are intentionally not named yet because the complete building-ID-to-graphic-group formula has not been independently proven.
+
+Generate it with:
+
+```powershell
+out\moox-analyze-windows-amd64.exe normalize buildings `
+  -out data\rulesets\moo2-1.31\buildings.json `
+  -languages-dir data\languages `
+  C:\ASH\Temp\mastori2
+```
