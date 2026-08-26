@@ -179,3 +179,15 @@ out\moox-analyze-windows-amd64.exe audio `
 ```
 
 The private manifest records WAVE/PCM metadata and hashes. See `docs/research/AUDIO_EXTRACTION_2026-08-26.md`.
+## Private text catalog
+
+Catalog fixed-size text/message records and strong string-table candidates while keeping high bytes undecoded:
+
+```powershell
+out\moox-analyze-windows-amd64.exe text `
+  -clean `
+  -out reference\original\text `
+  C:\ASH\Temp\mastori2
+```
+
+ASCII previews are research aids only; raw bytes remain authoritative. See `docs/research/TEXT_EXTRACTION_2026-08-26.md`.
