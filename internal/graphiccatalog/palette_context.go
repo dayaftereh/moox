@@ -42,17 +42,19 @@ var confirmedExternalPaletteRules = map[string]externalPaletteRule{
 }
 
 type paletteResolver struct {
-	sourceRoot       string
-	externalPalettes map[string]*moo2gfx.ExternalPalette
-	councilPalette   *moo2gfx.Graphic
-	shipCarriers     map[int]*moo2gfx.Graphic
+	sourceRoot         string
+	externalPalettes   map[string]*moo2gfx.ExternalPalette
+	councilPalette     *moo2gfx.Graphic
+	shipCarriers       map[int]*moo2gfx.Graphic
+	combatShipCarriers map[int]*moo2gfx.Graphic
 }
 
 func newPaletteResolver(sourceRoot string) *paletteResolver {
 	return &paletteResolver{
-		sourceRoot:       sourceRoot,
-		externalPalettes: make(map[string]*moo2gfx.ExternalPalette),
-		shipCarriers:     make(map[int]*moo2gfx.Graphic),
+		sourceRoot:         sourceRoot,
+		externalPalettes:   make(map[string]*moo2gfx.ExternalPalette),
+		shipCarriers:       make(map[int]*moo2gfx.Graphic),
+		combatShipCarriers: make(map[int]*moo2gfx.Graphic),
 	}
 }
 
@@ -94,10 +96,50 @@ func (r *paletteResolver) Resolve(archiveRel string, blockIndex int, archive *lb
 
 	case "SHIPS.LBX":
 		return r.resolveShips(blockIndex, archive, graphic)
+
+	case "CMBTSHP.LBX":
+		return r.resolveCombatShips(blockIndex, archive, graphic)
 	}
 	return paletteResolution{}, nil
 }
 
+func (r *paletteResolver) resolveCombatShips(blockIndex int, archive *lbx.File, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	if graphic.Flags&moo2gfx.FlagInternalPalette != 0 {
+		return paletteResolution{}, nil
+	}
+	carrier := combatShipPaletteCarrier(blockIndex)
+	if carrier < 0 {
+		return paletteResolution{}, nil
+	}
+	carrierGraphic, err := r.loadCombatShipCarrier(archive, carrier)
+	if err != nil {
+		return paletteResolution{}, err
+	}
+	moo2gfx.ApplyPaletteFromGraphic(carrierGraphic, graphic)
+	base, err := r.loadExternalPalette("FONTS.LBX", 4)
+	if err != nil {
+		return paletteResolution{}, err
+	}
+	base.Apply(graphic)
+	return paletteResolution{
+		Resolved:   true,
+		Source:     fmt.Sprintf("FONTS.LBX#4 + CMBTSHP.LBX#%d", carrier),
+		Evidence:   moo2WorkshopEvidence,
+		Confidence: "confirmed",
+	}, nil
+}
+
+func combatShipPaletteCarrier(block int) int {
+	if block < 0 || block >= 360 {
+		return -1
+	}
+	group := block / 45
+	within := block % 45
+	if group >= 8 || within >= 44 {
+		return -1
+	}
+	return group*45 + 44
+}
 func (r *paletteResolver) resolveShips(blockIndex int, archive *lbx.File, graphic *moo2gfx.Graphic) (paletteResolution, error) {
 	// Internal 2x1 graphics in SHIPS are the palette carriers themselves.
 	// They are useful as sources but do not need another display context here.
@@ -188,6 +230,27 @@ func (r *paletteResolver) loadExternalPalette(archiveName string, block int) (*m
 	return palette, nil
 }
 
+func (r *paletteResolver) loadCombatShipCarrier(archive *lbx.File, block int) (*moo2gfx.Graphic, error) {
+	if graphic := r.combatShipCarriers[block]; graphic != nil {
+		return graphic, nil
+	}
+	if block < 0 || block >= len(archive.Entries) {
+		return nil, fmt.Errorf("CMBTSHP.LBX does not contain palette carrier block %d", block)
+	}
+	data, err := archive.ReadEntry(block)
+	if err != nil {
+		return nil, fmt.Errorf("read CMBTSHP.LBX palette carrier block %d: %w", block, err)
+	}
+	graphic, err := moo2gfx.Parse(data)
+	if err != nil {
+		return nil, fmt.Errorf("parse CMBTSHP.LBX palette carrier block %d: %w", block, err)
+	}
+	if graphic.Flags&moo2gfx.FlagInternalPalette == 0 || paletteEntries(graphic) != 32 || graphic.PaletteShift != 32 {
+		return nil, fmt.Errorf("CMBTSHP.LBX block %d is not the expected 32-color palette carrier at shift 32", block)
+	}
+	r.combatShipCarriers[block] = graphic
+	return graphic, nil
+}
 func (r *paletteResolver) loadShipCarrier(archive *lbx.File, block int) (*moo2gfx.Graphic, error) {
 	if graphic := r.shipCarriers[block]; graphic != nil {
 		return graphic, nil

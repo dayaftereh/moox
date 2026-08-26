@@ -220,3 +220,26 @@ func TestShipPaletteCarrierMapping(t *testing.T) {
 		}
 	}
 }
+
+func TestCombatShipPaletteCarrierMapping(t *testing.T) {
+	tests := map[int]int{
+		0: 44, 43: 44,
+		45: 89, 88: 89,
+		90: 134, 133: 134,
+		135: 179, 178: 179,
+		180: 224, 223: 224,
+		225: 269, 268: 269,
+		270: 314, 313: 314,
+		315: 359, 358: 359,
+	}
+	for block, want := range tests {
+		if got := combatShipPaletteCarrier(block); got != want {
+			t.Fatalf("block %d carrier=%d, want %d", block, got, want)
+		}
+	}
+	for _, block := range []int{44, 89, 134, 179, 224, 269, 314, 359, 360} {
+		if got := combatShipPaletteCarrier(block); got != -1 {
+			t.Fatalf("block %d carrier=%d, want unresolved/carrier", block, got)
+		}
+	}
+}

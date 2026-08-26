@@ -129,6 +129,27 @@ An isolated end-to-end MOOX scan of only `FONTS.LBX` + `SHIPS.LBX` resolves 408 
 
 The earlier OpenMOO2 `SHIPS -> IFONTS#3` mapping is therefore superseded for MOOX by the more specific Workshop dependency evidence plus local structural/color validation.
 
+
+## CMBTSHP.LBX mixed combat-ship palettes
+
+MoO2 Workshop describes `CMBTSHP.LBX` as eight regular 45-block groups. In each group the first 44 blocks are combat-ship graphics and the final block is a 32-color internal palette carrier. Local 1.31 headers confirm every carrier uses palette shift 32 with 32 entries.
+
+The exact ranges are:
+
+| Combat-ship blocks | Palette context |
+| --- | --- |
+| 0..43 | FONTS#4 + CMBTSHP#44 |
+| 45..88 | FONTS#4 + CMBTSHP#89 |
+| 90..133 | FONTS#4 + CMBTSHP#134 |
+| 135..178 | FONTS#4 + CMBTSHP#179 |
+| 180..223 | FONTS#4 + CMBTSHP#224 |
+| 225..268 | FONTS#4 + CMBTSHP#269 |
+| 270..313 | FONTS#4 + CMBTSHP#314 |
+| 315..358 | FONTS#4 + CMBTSHP#359 |
+
+This resolves all 352 externally paletted combat-ship blocks, covering 7,040 display frames. The eight carrier blocks contain 20 frames each and remain identifiable as palette-source records.
+
+An isolated `FONTS.LBX + CMBTSHP.LBX` MOOX export produced all 7,200 frames with complete palette coverage and zero decode failures. Visual spot checks of blocks 0, 45 and 90 also show the expected successive player-color groups.
 ## Junction and functional colors
 
 Palette context is independent from frame reconstruction:
