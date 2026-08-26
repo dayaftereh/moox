@@ -191,3 +191,15 @@ out\moox-analyze-windows-amd64.exe text `
 ```
 
 ASCII previews are research aids only; raw bytes remain authoritative. Schema v2 additionally preserves fixed-array record index/offset/size/hash boundaries for HELP, TECHDESC, leader/name tables and related data. See `docs/research/TEXT_EXTRACTION_2026-08-26.md`.
+## Non-LBX support snapshot
+
+Copy and hash every non-LBX file while preserving relative paths:
+
+```powershell
+out\moox-analyze-windows-amd64.exe support `
+  -clean `
+  -out reference\original\support `
+  C:\ASH\Temp\mastori2
+```
+
+This captures executables, audio drivers/configuration, README and the private save-game fixture without duplicating the LBX files handled by the other analyzers.
