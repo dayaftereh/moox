@@ -1,4 +1,4 @@
-﻿# Local reference material
+# Local reference material
 
 This directory is for **private development references** from a legally owned Master of Orion II installation.
 
@@ -24,6 +24,6 @@ reference/original/images/
     ...
 ```
 
-`manifest.json` records source archive, block, frame, dimensions and SHA-256 so a later MOOX asset can always be traced back to its visual reference.
+`manifest.json` records source archive, block, frame, dimensions, palette/decode status and SHA-256 so a later MOOX asset can always be traced back to its visual reference. The current batch contains 10,646 PNG frames; this private tree is intentionally not versioned.
 
 MOOX-owned observations and normalized factual rule data belong in `docs/` and `data/rulesets/`. New independently created artwork belongs under `assets/`, never under `reference/original/`.
