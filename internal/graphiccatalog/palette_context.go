@@ -182,10 +182,85 @@ func (r *paletteResolver) Resolve(archiveRel string, blockIndex int, archive *lb
 
 	case "NEWGAME.LBX":
 		return r.resolveNewGame(blockIndex, archive, graphic)
+
+	case "CMBTPLNT.LBX":
+		return r.resolveCombatPlanet(blockIndex, archive, graphic)
+
+	case "EVENTS.LBX":
+		return r.resolveLocalFullPaletteRange("EVENTS.LBX", blockIndex, 1, 1, 0, archive, graphic)
+
+	case "ANTAROOM.LBX":
+		return r.resolveLocalFullPaletteRange("ANTAROOM.LBX", blockIndex, 1, 1, 0, archive, graphic)
 	}
 	return paletteResolution{}, nil
 }
 
+func (r *paletteResolver) resolveCombatPlanet(blockIndex int, archive *lbx.File, graphic *moo2gfx.Graphic) (paletteResolution, error) {
+	carrierBlock := combatPlanetPaletteCarrier(blockIndex)
+	if carrierBlock < 0 {
+		return paletteResolution{}, nil
+	}
+	carrier, err := r.loadLocalCarrier("CMBTPLNT.LBX", archive, carrierBlock, 224, 32)
+	if err != nil {
+		return paletteResolution{}, err
+	}
+	moo2gfx.ApplyPaletteFromGraphic(carrier, graphic)
+	return paletteResolution{
+		Resolved:   true,
+		Source:     fmt.Sprintf("CMBTPLNT.LBX#%d", carrierBlock),
+		Evidence:   moo2WorkshopEvidence,
+		Confidence: "confirmed",
+	}, nil
+}
+
+func combatPlanetPaletteCarrier(block int) int {
+	switch {
+	case block >= 0 && block <= 5:
+		return 5
+	case block >= 6 && block <= 10:
+		return 11
+	case block == 11:
+		return 5
+	case block >= 12 && block <= 16:
+		return 17
+	case block == 17:
+		return 5
+	case block >= 18 && block <= 22:
+		return 23
+	case block == 23:
+		return 5
+	case block >= 24 && block <= 28:
+		return 29
+	case block == 29:
+		return 5
+	case block >= 30 && block <= 34:
+		return 35
+	case block == 35:
+		return 5
+	case block >= 36 && block <= 40:
+		return 41
+	case block == 41:
+		return 5
+	case block >= 42 && block <= 46:
+		return 47
+	case block == 47:
+		return 5
+	case block >= 48 && block <= 52:
+		return 53
+	case block == 53:
+		return 5
+	case block >= 54 && block <= 58:
+		return 59
+	case block == 59:
+		return 5
+	case block == 61:
+		return 62
+	case block == 62:
+		return 5
+	default:
+		return -1
+	}
+}
 func (r *paletteResolver) resolveLocalFullPaletteRange(archiveName string, blockIndex, first, last, carrierBlock int, archive *lbx.File, graphic *moo2gfx.Graphic) (paletteResolution, error) {
 	if blockIndex < first || blockIndex > last {
 		return paletteResolution{}, nil

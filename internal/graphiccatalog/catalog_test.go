@@ -411,3 +411,29 @@ func TestWorkshopArchiveWidePaletteRules(t *testing.T) {
 		}
 	}
 }
+
+func TestCombatPlanetPaletteCarrierMapping(t *testing.T) {
+	tests := map[int]int{
+		0: 5, 5: 5,
+		6: 11, 10: 11, 11: 5,
+		12: 17, 16: 17, 17: 5,
+		18: 23, 22: 23, 23: 5,
+		24: 29, 28: 29, 29: 5,
+		30: 35, 34: 35, 35: 5,
+		36: 41, 40: 41, 41: 5,
+		42: 47, 46: 47, 47: 5,
+		48: 53, 52: 53, 53: 5,
+		54: 59, 58: 59, 59: 5,
+		61: 62, 62: 5,
+	}
+	for block, want := range tests {
+		if got := combatPlanetPaletteCarrier(block); got != want {
+			t.Fatalf("block %d carrier=%d, want %d", block, got, want)
+		}
+	}
+	for _, block := range []int{60, 63} {
+		if got := combatPlanetPaletteCarrier(block); got != -1 {
+			t.Fatalf("block %d carrier=%d, want unresolved", block, got)
+		}
+	}
+}

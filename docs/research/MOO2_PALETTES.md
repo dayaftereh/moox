@@ -296,6 +296,18 @@ Mixed partial-palette contexts are reconstructed only where Workshop explicitly 
 - `NEWGAME` block 0 and blocks 4..22 use local carrier `NEWGAME#1`; blocks 23..29 use `FONTS#10 + NEWGAME#1`. The carrier-only targets were retained only after end-to-end coverage validation.
 
 An isolated export across these 19 archives produced 2,436 PNGs with zero decode failures. All resolved-context frames had complete palette coverage; the 11 partial frames belonged exclusively to blocks still marked `pending` (`COLONY2#50` and undocumented `RACESEL` special blocks).
+
+## CMBTPLNT.LBX carrier validation
+
+Workshop maps the 63 combat-planet graphics to eleven local 32-color palette holders at shift 224 (`#5`, `#11`, `#17`, `#23`, `#29`, `#35`, `#41`, `#47`, `#53`, `#59`, `#62`). Local headers confirm every holder has exactly 32 entries at palette index 224.
+
+An isolated target-coverage export found that Workshop's carrier is sufficient for 62 of the 63 blocks. All 62 retained contexts render completely with zero decode failures. Block 60 is the sole exception: `CMBTPLNT#62` leaves 20 actually used pixels without a defined palette entry, so block 60 remains pending even though Workshop names that carrier. Block 61, which uses the same carrier, is complete and remains resolved.
+
+## EVENTS and ANTAROOM full local palettes
+
+`EVENTS#0` and `ANTAROOM#0` are both complete 256-entry internal palettes. Workshop explicitly assigns their large animation block 1 to those local sources. MOOX therefore resolves `EVENTS#1` (31 frames) from `EVENTS#0` and `ANTAROOM#1` (55 frames) from `ANTAROOM#0`.
+
+Workshop lists no static dependency for the single-block `SR_R*_SC/SP/TR` race animation archives; those remain pending rather than inheriting a guessed global palette.
 ## Junction and functional colors
 
 Palette context is independent from frame reconstruction:
@@ -324,13 +336,13 @@ The graphics manifest records palette-context status, source, evidence and confi
 
 The current full local 1.31 manifest-only validation reports:
 
-- 5,582 palette contexts resolved automatically,
-- 20,327 frames covered by those resolved contexts,
-- 908 palette contexts still explicitly pending,
+- 5,646 palette contexts resolved automatically,
+- 20,475 frames covered by those resolved contexts,
+- 844 palette contexts still explicitly pending,
 - 0 structural/frame decode failures.
 
-The resolved set now includes verified archive-wide palettes, mixed ship/combat palettes, full archive-local palettes, tested partial-palette carriers, and deterministic UI/colony/diplomacy range rules.
+The resolved set now covers nearly all contexts for which MoO2 Workshop or independently corroborated format research supplies a deterministic palette chain. Explicit coverage tests additionally guard partial-carrier relationships: a named dependency is not promoted if actually used target indices remain undefined.
 
-No frame belonging to a `resolved` context is currently known to have incomplete palette coverage in the isolated validation sets. Carrier-only or undocumented contexts that leave actually used palette indices undefined remain `pending` even when a neighboring/source palette looks visually plausible.
+The remaining pending set is dominated by Workshop `none`/runtime-context graphics, internal partial palettes with no documented base, and known source/carrier records. These need a different research method (runtime/original-engine context or deeper executable analysis), not palette guessing.
 
-The canonical private PNG tree under `reference/original/images/` has not yet been regenerated for every rule in this checkpoint; manifest-only and focused export validation are used while palette research is still advancing, and a later full export will materialize the accumulated verified contexts in one pass.
+The canonical private PNG tree under `reference/original/images/` is regenerated after this checkpoint so the on-disk reference library matches the accumulated verified resolver rules.
