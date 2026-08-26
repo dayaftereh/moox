@@ -13,14 +13,15 @@ func TestCommittedRaceTraitLanguagesLoad(t *testing.T) {
 	}
 	root := filepath.Join(filepath.Dir(currentFile), "..", "..", "data", "languages")
 	cases := map[string]struct {
-		key  string
-		want string
+		key       string
+		want      string
+		wantCount int
 	}{
-		"en": {"race_traits.option.creative.name", "Creative"},
-		"de": {"race_traits.group.population_growth.name", "Bevölkerung"},
-		"fr": {"race_traits.option.government_democracy.name", "Démocratie"},
-		"es": {"race_traits.group.population_growth.name", "Población"},
-		"it": {"race_traits.group.special_abilities.name", "Abilità speciali"},
+		"en": {"race_traits.option.creative.name", "Creative", 77},
+		"de": {"race_traits.group.population_growth.name", "Bev\u00f6lkerung", 64},
+		"fr": {"race_traits.option.government_democracy.name", "D\u00e9mocratie", 64},
+		"es": {"race_traits.group.population_growth.name", "Poblaci\u00f3n", 64},
+		"it": {"race_traits.group.special_abilities.name", "Abilit\u00e0 speciali", 64},
 	}
 	for locale, tc := range cases {
 		file, err := Load(filepath.Join(root, locale+".json"))
@@ -30,12 +31,27 @@ func TestCommittedRaceTraitLanguagesLoad(t *testing.T) {
 		if file.Locale != locale {
 			t.Fatalf("%s: locale=%q", locale, file.Locale)
 		}
-		if len(file.Strings) != 64 {
-			t.Fatalf("%s: strings=%d want=64", locale, len(file.Strings))
+		if len(file.Strings) != tc.wantCount {
+			t.Fatalf("%s: strings=%d want=%d", locale, len(file.Strings), tc.wantCount)
 		}
 		got, ok := file.Text(tc.key)
 		if !ok || got != tc.want {
 			t.Fatalf("%s %s=%q ok=%v want=%q", locale, tc.key, got, ok, tc.want)
 		}
+	}
+}
+
+func TestMerge(t *testing.T) {
+	base := &File{SchemaVersion: SchemaVersion, Locale: "en", Strings: map[string]string{"a": "A"}, Sources: []Source{{ID: "one"}}}
+	fragment := &File{SchemaVersion: SchemaVersion, Locale: "en", Strings: map[string]string{"b": "B"}, Sources: []Source{{ID: "two"}}}
+	if err := base.Merge(fragment); err != nil {
+		t.Fatal(err)
+	}
+	if base.Strings["b"] != "B" || len(base.Sources) != 2 {
+		t.Fatalf("merged=%+v", base)
+	}
+	conflict := &File{SchemaVersion: SchemaVersion, Locale: "en", Strings: map[string]string{"a": "other"}}
+	if err := base.Merge(conflict); err == nil {
+		t.Fatal("expected conflicting key to fail")
 	}
 }

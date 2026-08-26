@@ -74,3 +74,13 @@ func TestSupportCommandIsRegistered(t *testing.T) {
 		t.Fatalf("support command is not registered: %v", err)
 	}
 }
+
+func TestNormalizeRacesCommandIsRegistered(t *testing.T) {
+	err := run([]string{"normalize", "races"})
+	if err == nil {
+		t.Fatal("normalize races without arguments should fail")
+	}
+	if strings.Contains(err.Error(), "unknown normalize dataset") {
+		t.Fatalf("normalize races is not registered: %v", err)
+	}
+}

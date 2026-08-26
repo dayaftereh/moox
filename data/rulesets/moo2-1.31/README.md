@@ -47,3 +47,17 @@ The Go loaders in `internal/ruleset` and `internal/i18n` validate the committed 
 3. Decode preset race definitions into `races.json`.
 4. Add government behavior parameters as a separate normalized dataset.
 5. Continue with technologies and colony buildings using the same provenance model.
+
+## `races.json`
+
+The 13 standard races are normalized separately from the Race Designer option definitions. Each record references existing trait IDs, includes a derived Pick total, and carries exact HELP record provenance. `go test ./...` validates all race references against `race_traits.json` and verifies that the English `name_key` exists.
+
+Generate it with:
+
+```powershell
+out\moox-analyze-windows-amd64.exe normalize races `
+  -out data\rulesets\moo2-1.31\races.json `
+  -race-traits data\rulesets\moo2-1.31\race_traits.json `
+  -languages-dir data\languages `
+  C:\ASH\Temp\mastori2
+```

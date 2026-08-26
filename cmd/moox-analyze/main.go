@@ -15,7 +15,7 @@ import (
 	"moox/internal/textscan"
 )
 
-const version = "0.11.0"
+const version = "0.12.0"
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
@@ -74,6 +74,7 @@ func usage(w io.Writer) {
 Usage:
   moox-analyze inventory [options] <installation-directory>
   moox-analyze normalize race-traits -out <file.json> [-language-out <en.json>] [-languages-dir <dir>] <installation-directory>
+  moox-analyze normalize races -out <races.json> -race-traits <race_traits.json> [-languages-dir <dir>] <installation-directory>
   moox-analyze inspect [options] <file.lbx>
   moox-analyze image -out <file.png> <file.lbx> <block-index>
   moox-analyze graphics -out <directory> [options] <installation-directory>

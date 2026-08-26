@@ -1,0 +1,511 @@
+{
+  "schema_version": 1,
+  "ruleset": "moo2-1.31",
+  "sources": [
+    {
+      "id": "moo2-1.31-estrings-block0-race-names",
+      "type": "original-observed",
+      "description": "Canonical singular race names observed in Master of Orion II 1.31 ESTRINGS.LBX block 0",
+      "archive": "ESTRINGS.LBX",
+      "block": 0,
+      "sha256": "46add2b2b1c6758b66e780341ed5138ffe4e4f3587b4e1b2bf117b8512a520cd",
+      "block_sha256": "dd6c3c368e280b609facc54e73cdc8cd3eb644c65af7b8b99383f7086e9075c5"
+    },
+    {
+      "id": "moo2-1.31-help-block0-race-records",
+      "type": "original-observed",
+      "description": "Preset race help records in Master of Orion II 1.31 HELP.LBX block 0; trait mappings are derived from the behavior stated by those records",
+      "archive": "HELP.LBX",
+      "block": 0,
+      "sha256": "78f8f0b6b6d05426de5b36116fbc8d1e4863305ad3fb659ae0ad3d3bbe83d7dd",
+      "block_sha256": "6fa9a4c1b844a4688c3fc01ad66c8b364c0291525a7c7098f6a918b7132399c9"
+    }
+  ],
+  "races": [
+    {
+      "id": "alkari",
+      "order": 0,
+      "name_key": "race.alkari.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-block0-race-names",
+        "offset": 14215
+      },
+      "trait_selections": [
+        {
+          "trait_id": "ship_defense_plus_50",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "artifacts_world",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "government_dictatorship",
+          "verification": "help-description-derived"
+        }
+      ],
+      "derived_pick_total": 10,
+      "portrait_asset_key": "race.alkari.portrait",
+      "icon_asset_key": "race.alkari.icon",
+      "source": {
+        "source_id": "moo2-1.31-help-block0-race-records",
+        "record_index": 630,
+        "record_offset": 883894,
+        "record_size": 1403,
+        "record_sha256": "bed6797fe5a0b50a0b391c0f7bd4a1116d98c2af4e40a6ee5bf416390848c048"
+      }
+    },
+    {
+      "id": "bulrathi",
+      "order": 1,
+      "name_key": "race.bulrathi.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-block0-race-names",
+        "offset": 14222
+      },
+      "trait_selections": [
+        {
+          "trait_id": "high_g_world",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "ship_attack_plus_20",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "ground_combat_plus_10",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "government_dictatorship",
+          "verification": "help-description-derived"
+        }
+      ],
+      "derived_pick_total": 10,
+      "portrait_asset_key": "race.bulrathi.portrait",
+      "icon_asset_key": "race.bulrathi.icon",
+      "source": {
+        "source_id": "moo2-1.31-help-block0-race-records",
+        "record_index": 631,
+        "record_offset": 885297,
+        "record_size": 1403,
+        "record_sha256": "88440426c91719ed003ebcff6e5b1fff2d682298c2c367f67cd9d072b79762a8"
+      }
+    },
+    {
+      "id": "darlok",
+      "order": 2,
+      "name_key": "race.darlok.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-block0-race-names",
+        "offset": 14231
+      },
+      "trait_selections": [
+        {
+          "trait_id": "spying_plus_20",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "stealthy_ships",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "government_dictatorship",
+          "verification": "help-description-derived"
+        }
+      ],
+      "derived_pick_total": 10,
+      "portrait_asset_key": "race.darlok.portrait",
+      "icon_asset_key": "race.darlok.icon",
+      "source": {
+        "source_id": "moo2-1.31-help-block0-race-records",
+        "record_index": 632,
+        "record_offset": 886700,
+        "record_size": 1403,
+        "record_sha256": "5432e500826398aefbb0b389fa41503f6fba6baeaf9319b70f1d64ad9c398539"
+      }
+    },
+    {
+      "id": "elerian",
+      "order": 3,
+      "name_key": "race.elerian.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-block0-race-names",
+        "offset": 14238
+      },
+      "trait_selections": [
+        {
+          "trait_id": "omniscient",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "ship_attack_plus_20",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "ship_defense_plus_25",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "telepathic",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "government_feudal",
+          "verification": "help-description-derived"
+        }
+      ],
+      "derived_pick_total": 10,
+      "portrait_asset_key": "race.elerian.portrait",
+      "icon_asset_key": "race.elerian.icon",
+      "source": {
+        "source_id": "moo2-1.31-help-block0-race-records",
+        "record_index": 633,
+        "record_offset": 888103,
+        "record_size": 1403,
+        "record_sha256": "f98747e9b041863f182fc7e51360d61f887b20b19da1fb16a56eb3b2321c7d6c"
+      }
+    },
+    {
+      "id": "gnolam",
+      "order": 4,
+      "name_key": "race.gnolam.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-block0-race-names",
+        "offset": 14246
+      },
+      "trait_selections": [
+        {
+          "trait_id": "fantastic_traders",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "money_plus_1_0",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "lucky",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "low_g_world",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "ground_combat_minus_10",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "government_dictatorship",
+          "verification": "help-description-derived"
+        }
+      ],
+      "derived_pick_total": 8,
+      "portrait_asset_key": "race.gnolam.portrait",
+      "icon_asset_key": "race.gnolam.icon",
+      "source": {
+        "source_id": "moo2-1.31-help-block0-race-records",
+        "record_index": 634,
+        "record_offset": 889506,
+        "record_size": 1403,
+        "record_sha256": "4985885bed65bb788d2ad1fdf83bb14fbacc3b37e8137d2fdd7d4d48ff1316f3"
+      }
+    },
+    {
+      "id": "human",
+      "order": 5,
+      "name_key": "race.human.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-block0-race-names",
+        "offset": 14253
+      },
+      "trait_selections": [
+        {
+          "trait_id": "charismatic",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "government_democracy",
+          "verification": "help-description-derived"
+        }
+      ],
+      "derived_pick_total": 10,
+      "portrait_asset_key": "race.human.portrait",
+      "icon_asset_key": "race.human.icon",
+      "source": {
+        "source_id": "moo2-1.31-help-block0-race-records",
+        "record_index": 635,
+        "record_offset": 890909,
+        "record_size": 1403,
+        "record_sha256": "ecba58d8308ee39cfbe8d9d3e3593604e47df7d7181b801ea0c2eda7475da56a"
+      }
+    },
+    {
+      "id": "klackon",
+      "order": 6,
+      "name_key": "race.klackon.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-block0-race-names",
+        "offset": 14259
+      },
+      "trait_selections": [
+        {
+          "trait_id": "government_unification",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "farming_plus_1",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "industry_plus_1",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "uncreative",
+          "verification": "help-description-derived"
+        }
+      ],
+      "derived_pick_total": 9,
+      "portrait_asset_key": "race.klackon.portrait",
+      "icon_asset_key": "race.klackon.icon",
+      "source": {
+        "source_id": "moo2-1.31-help-block0-race-records",
+        "record_index": 636,
+        "record_offset": 892312,
+        "record_size": 1403,
+        "record_sha256": "4c605cf8b3b51b669692c0190bbf88c6360aa92b0437cbbbf0fbddffd90fcffd"
+      }
+    },
+    {
+      "id": "meklar",
+      "order": 7,
+      "name_key": "race.meklar.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-block0-race-names",
+        "offset": 14267
+      },
+      "trait_selections": [
+        {
+          "trait_id": "cybernetic",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "industry_plus_2",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "government_dictatorship",
+          "verification": "help-description-derived"
+        }
+      ],
+      "derived_pick_total": 10,
+      "portrait_asset_key": "race.meklar.portrait",
+      "icon_asset_key": "race.meklar.icon",
+      "source": {
+        "source_id": "moo2-1.31-help-block0-race-records",
+        "record_index": 637,
+        "record_offset": 893715,
+        "record_size": 1403,
+        "record_sha256": "8c72a8db87c108a09e870855041ded0ac43dedb5bad3f393b13629da6903bf19"
+      }
+    },
+    {
+      "id": "mrrshan",
+      "order": 8,
+      "name_key": "race.mrrshan.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-block0-race-names",
+        "offset": 14274
+      },
+      "trait_selections": [
+        {
+          "trait_id": "ship_attack_plus_50",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "warlord",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "rich_home_world",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "government_dictatorship",
+          "verification": "help-description-derived"
+        }
+      ],
+      "derived_pick_total": 10,
+      "portrait_asset_key": "race.mrrshan.portrait",
+      "icon_asset_key": "race.mrrshan.icon",
+      "source": {
+        "source_id": "moo2-1.31-help-block0-race-records",
+        "record_index": 638,
+        "record_offset": 895118,
+        "record_size": 1403,
+        "record_sha256": "cbdbce1e1d8f3bf3b289e6155c03da22548825622f34dc63803cffcff6b7c587"
+      }
+    },
+    {
+      "id": "psilon",
+      "order": 9,
+      "name_key": "race.psilon.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-block0-race-names",
+        "offset": 14282
+      },
+      "trait_selections": [
+        {
+          "trait_id": "science_plus_2",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "creative",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "low_g_world",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "large_home_world",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "government_dictatorship",
+          "verification": "help-description-derived"
+        }
+      ],
+      "derived_pick_total": 10,
+      "portrait_asset_key": "race.psilon.portrait",
+      "icon_asset_key": "race.psilon.icon",
+      "source": {
+        "source_id": "moo2-1.31-help-block0-race-records",
+        "record_index": 639,
+        "record_offset": 896521,
+        "record_size": 1403,
+        "record_sha256": "83ed040e0f108727157484d00bd4f4e2917e07d83bb939274236d83908cb0733"
+      }
+    },
+    {
+      "id": "sakkra",
+      "order": 10,
+      "name_key": "race.sakkra.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-block0-race-names",
+        "offset": 14289
+      },
+      "trait_selections": [
+        {
+          "trait_id": "population_growth_plus_100",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "subterranean",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "farming_plus_1",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "spying_minus_10",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "large_home_world",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "government_feudal",
+          "verification": "help-description-derived"
+        }
+      ],
+      "derived_pick_total": 10,
+      "portrait_asset_key": "race.sakkra.portrait",
+      "icon_asset_key": "race.sakkra.icon",
+      "source": {
+        "source_id": "moo2-1.31-help-block0-race-records",
+        "record_index": 640,
+        "record_offset": 897924,
+        "record_size": 1403,
+        "record_sha256": "145caca47f908c7df869316bffd9c60e3f20ae66c52f620c707242cb5979f148"
+      }
+    },
+    {
+      "id": "silicoid",
+      "order": 11,
+      "name_key": "race.silicoid.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-block0-race-names",
+        "offset": 14296
+      },
+      "trait_selections": [
+        {
+          "trait_id": "lithovore",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "tolerant",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "population_growth_minus_50",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "repulsive",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "government_dictatorship",
+          "verification": "help-description-derived"
+        }
+      ],
+      "derived_pick_total": 10,
+      "portrait_asset_key": "race.silicoid.portrait",
+      "icon_asset_key": "race.silicoid.icon",
+      "source": {
+        "source_id": "moo2-1.31-help-block0-race-records",
+        "record_index": 641,
+        "record_offset": 899327,
+        "record_size": 1403,
+        "record_sha256": "3dc5c69772e8aa4c095b24d8ae4082eef7836d6bccdd96baef4bde2c56ba9b5c"
+      }
+    },
+    {
+      "id": "trilarian",
+      "order": 12,
+      "name_key": "race.trilarian.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-block0-race-names",
+        "offset": 14305
+      },
+      "trait_selections": [
+        {
+          "trait_id": "aquatic",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "trans_dimensional",
+          "verification": "help-description-derived"
+        },
+        {
+          "trait_id": "government_dictatorship",
+          "verification": "help-description-derived"
+        }
+      ],
+      "derived_pick_total": 10,
+      "portrait_asset_key": "race.trilarian.portrait",
+      "icon_asset_key": "race.trilarian.icon",
+      "source": {
+        "source_id": "moo2-1.31-help-block0-race-records",
+        "record_index": 642,
+        "record_offset": 900730,
+        "record_size": 1403,
+        "record_sha256": "96402d02bb473434587e5ae13109bf25ce16af53c28e5ae61d8e5a1c052fbac5"
+      }
+    }
+  ]
+}

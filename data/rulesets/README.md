@@ -38,3 +38,7 @@ Contains the Master of Orion II 1.31 custom-race design model:
 - per-field verification/provenance metadata.
 
 The game core should consume this file through the Go `internal/ruleset` loader. UI code resolves names/descriptions through `internal/i18n` and the selected file in `data/languages/`.
+
+### `moo2-1.31/races.json`
+
+Contains the 13 standard MOO2 presets as stable race IDs and trait selections. Canonical singular names are sourced from `ESTRINGS.LBX`; trait mappings point to hash-verified HELP records; Pick totals are derived from the directly extracted Race Designer costs. Long original HELP prose is not copied into the runtime ruleset.

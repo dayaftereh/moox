@@ -67,3 +67,36 @@ func (f *File) Text(key string) (string, bool) {
 	value, ok := f.Strings[key]
 	return value, ok
 }
+
+// Merge adds another fragment for the same locale without silently replacing
+// existing translations. It is used by independent normalizers that contribute
+// stable key namespaces to the same runtime language file.
+func (f *File) Merge(other *File) error {
+	if other == nil {
+		return fmt.Errorf("cannot merge nil language file")
+	}
+	if f.Locale != other.Locale {
+		return fmt.Errorf("cannot merge locale %q into %q", other.Locale, f.Locale)
+	}
+	if f.Strings == nil {
+		f.Strings = make(map[string]string)
+	}
+	for key, value := range other.Strings {
+		if existing, ok := f.Strings[key]; ok && existing != value {
+			return fmt.Errorf("language key %q conflicts: %q != %q", key, existing, value)
+		}
+		f.Strings[key] = value
+	}
+	seenSources := make(map[string]struct{}, len(f.Sources))
+	for _, source := range f.Sources {
+		seenSources[source.ID] = struct{}{}
+	}
+	for _, source := range other.Sources {
+		if _, exists := seenSources[source.ID]; exists {
+			continue
+		}
+		f.Sources = append(f.Sources, source)
+		seenSources[source.ID] = struct{}{}
+	}
+	return f.Validate()
+}

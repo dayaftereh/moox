@@ -1,4 +1,4 @@
-﻿# MOOX language data
+# MOOX language data
 
 Runtime rulesets do not contain user-visible names or descriptions. They reference stable translation keys such as:
 
@@ -28,3 +28,7 @@ Each file currently contains the same 64 Race Designer keys. Source archive/bloc
 MOO2's localized source bytes use language/font-specific glyph substitutions in ASCII punctuation positions. The analyzer converts only mappings that have been established from unambiguous parallel source words. See `docs/research/LOCALIZATION_LAYOUT_2026-08-26.md`.
 
 Descriptions will use their own keys (`...description`) when their source structures are decoded. Original long-form source text remains private reference material; MOOX runtime localization should be built from stable semantic keys rather than source offsets.
+
+## Race proper names
+
+The English catalog additionally contains the 13 canonical singular standard-race names from `ESTRINGS.LBX` (`race.<id>.name`). The other locale files currently rely on their `en` fallback for these proper names; no translation is duplicated until a localized original source is identified.

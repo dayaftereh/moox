@@ -10,9 +10,31 @@
       "block": 0,
       "sha256": "a7942f4f13ca081c6d8d4f53266a3ee79198f92c786402bd41c33abbeecbb5b4",
       "block_sha256": "5583d8d5744e3a075b2e925282ab7f98f0c40418e3c029e82718136ffd665970"
+    },
+    {
+      "id": "moo2-1.31-estrings-block0-race-names",
+      "type": "original-observed",
+      "description": "Canonical singular race names observed in Master of Orion II 1.31 ESTRINGS.LBX block 0",
+      "archive": "ESTRINGS.LBX",
+      "block": 0,
+      "sha256": "46add2b2b1c6758b66e780341ed5138ffe4e4f3587b4e1b2bf117b8512a520cd",
+      "block_sha256": "dd6c3c368e280b609facc54e73cdc8cd3eb644c65af7b8b99383f7086e9075c5"
     }
   ],
   "strings": {
+    "race.alkari.name": "Alkari",
+    "race.bulrathi.name": "Bulrathi",
+    "race.darlok.name": "Darlok",
+    "race.elerian.name": "Elerian",
+    "race.gnolam.name": "Gnolam",
+    "race.human.name": "Human",
+    "race.klackon.name": "Klackon",
+    "race.meklar.name": "Meklar",
+    "race.mrrshan.name": "Mrrshan",
+    "race.psilon.name": "Psilon",
+    "race.sakkra.name": "Sakkra",
+    "race.silicoid.name": "Silicoid",
+    "race.trilarian.name": "Trilarian",
     "race_traits.group.farming.name": "Farming",
     "race_traits.group.government.name": "Governments",
     "race_traits.group.ground_combat.name": "Ground Combat",

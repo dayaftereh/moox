@@ -206,3 +206,16 @@ This captures executables, audio drivers/configuration, README and the private s
 ## Race Designer locales
 
 `normalize race-traits -languages-dir data\languages` now writes EN/DE/FR/ES/IT language files with identical stable keys. The locale-specific MOO2 glyph substitutions are decoded to Unicode only where the byte-to-glyph mapping is evidenced by parallel source words. See `docs/research/LOCALIZATION_LAYOUT_2026-08-26.md`.
+## Normalize preset races
+
+Build the 13 standard-race definitions after `race_traits.json` exists:
+
+```powershell
+out\moox-analyze-windows-amd64.exe normalize races `
+  -out data\rulesets\moo2-1.31\races.json `
+  -race-traits data\rulesets\moo2-1.31\race_traits.json `
+  -languages-dir data\languages `
+  C:\ASH\Temp\mastori2
+```
+
+This verifies HELP record hashes, maps the documented preset characteristics to stable Race Designer trait IDs, calculates Pick totals from original-observed costs, and merges the canonical singular race names from `ESTRINGS.LBX` into English localization. It deliberately does not assign race artwork yet.
