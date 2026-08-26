@@ -143,7 +143,7 @@ out\moox-analyze-windows-amd64.exe normalize assets `
   C:\ASH\Temp\mastori2
 ```
 
-The first semantic slice validates the `RACESEL` portrait sequence and the 13x13 `RACEICON` matrix against the actual 1.31 archives. Confirmed asset references store archive/block/frame, dimensions and block SHA-256. Known colony-role variants map farmer/worker/scientist/marine to RACEICON variants 1/3/5/7. Generic `race.<id>.icon` keys remain `pending` rather than arbitrarily selecting one of the 13 variants. The same catalog now also includes a selected set of independently revalidated UI/production mappings and the directly documented `BLDG0#0` Alien Management Center reference.
+The semantic catalog validates the `RACESEL` portrait sequence and 13x13 `RACEICON` matrix, selected UI/production mappings, and all 48 standard building colony sets. Building graphics are generated only after `Orion2.exe` function hashes confirm the original `(building_id-1)/10`, `%10*36`, and 6x6 serpentine-frame formulas; every one of the 1,728 building variants is then revalidated against the local BLDG block dimensions and hash. Generic `race.<id>.icon` keys remain `pending` rather than arbitrarily selecting one of the 13 role/context variants.
 
 The generated `assets.json` is distributable metadata only; original graphics remain below ignored `reference/original/` paths.
 ## Decode graphics

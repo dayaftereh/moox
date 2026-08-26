@@ -184,9 +184,7 @@ func DecodeBuildings(installationRoot string) (*BuildingsBundle, error) {
 			NameVerification:           nameVerification,
 			NameSource:                 ruleset.FieldProvenance{SourceID: nameSourceID, Offset: &nameOffset},
 		}
-		if spec.ID == "alien_management_center" {
-			building.ColonyReferenceAssetKey = "building.alien_management_center.colony_reference"
-		}
+		building.ColonyReferenceAssetKey = "building." + spec.ID + ".colony"
 		out.Buildings = append(out.Buildings, building)
 		english.Strings[nameKey] = spec.Name
 	}

@@ -56,7 +56,7 @@
         "source_id": "moo2-1.31-help-building-names",
         "offset": 7019
       },
-      "colony_reference_asset_key": "building.alien_management_center.colony_reference"
+      "colony_reference_asset_key": "building.alien_management_center.colony"
     },
     {
       "id": "armor_barracks",
@@ -77,7 +77,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 19646
-      }
+      },
+      "colony_reference_asset_key": "building.armor_barracks.colony"
     },
     {
       "id": "artemis_system_net",
@@ -98,7 +99,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 21049
-      }
+      },
+      "colony_reference_asset_key": "building.artemis_system_net.colony"
     },
     {
       "id": "astro_university",
@@ -119,7 +121,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 25258
-      }
+      },
+      "colony_reference_asset_key": "building.astro_university.colony"
     },
     {
       "id": "atmospheric_renewer",
@@ -140,7 +143,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 26661
-      }
+      },
+      "colony_reference_asset_key": "building.atmospheric_renewer.colony"
     },
     {
       "id": "autolab",
@@ -161,7 +165,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 29467
-      }
+      },
+      "colony_reference_asset_key": "building.autolab.colony"
     },
     {
       "id": "automated_factories",
@@ -182,7 +187,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 30870
-      }
+      },
+      "colony_reference_asset_key": "building.automated_factories.colony"
     },
     {
       "id": "battlestation",
@@ -203,7 +209,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 37885
-      }
+      },
+      "colony_reference_asset_key": "building.battlestation.colony"
     },
     {
       "id": "capitol",
@@ -224,7 +231,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 44900
-      }
+      },
+      "colony_reference_asset_key": "building.capitol.colony"
     },
     {
       "id": "cloning_center",
@@ -245,7 +253,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 54721
-      }
+      },
+      "colony_reference_asset_key": "building.cloning_center.colony"
     },
     {
       "id": "colony_base",
@@ -266,7 +275,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 56124
-      }
+      },
+      "colony_reference_asset_key": "building.colony_base.colony"
     },
     {
       "id": "deep_core_mining",
@@ -287,7 +297,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 68751
-      }
+      },
+      "colony_reference_asset_key": "building.deep_core_mining.colony"
     },
     {
       "id": "core_waste_dumps",
@@ -308,7 +319,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 70154
-      }
+      },
+      "colony_reference_asset_key": "building.core_waste_dumps.colony"
     },
     {
       "id": "dimensional_portal",
@@ -329,7 +341,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 72960
-      }
+      },
+      "colony_reference_asset_key": "building.dimensional_portal.colony"
     },
     {
       "id": "biospheres",
@@ -350,7 +363,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 85587
-      }
+      },
+      "colony_reference_asset_key": "building.biospheres.colony"
     },
     {
       "id": "food_replicators",
@@ -371,7 +385,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 95408
-      }
+      },
+      "colony_reference_asset_key": "building.food_replicators.colony"
     },
     {
       "id": "gaia_transformation",
@@ -392,7 +407,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 103826
-      }
+      },
+      "colony_reference_asset_key": "building.gaia_transformation.colony"
     },
     {
       "id": "galactic_currency_exchange",
@@ -413,7 +429,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 105229
-      }
+      },
+      "colony_reference_asset_key": "building.galactic_currency_exchange.colony"
     },
     {
       "id": "galactic_cybernet",
@@ -434,7 +451,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 106632
-      }
+      },
+      "colony_reference_asset_key": "building.galactic_cybernet.colony"
     },
     {
       "id": "holo_simulator",
@@ -455,7 +473,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 120662
-      }
+      },
+      "colony_reference_asset_key": "building.holo_simulator.colony"
     },
     {
       "id": "hydroponic_farms",
@@ -476,7 +495,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 122065
-      }
+      },
+      "colony_reference_asset_key": "building.hydroponic_farms.colony"
     },
     {
       "id": "marine_barracks",
@@ -497,7 +517,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 144513
-      }
+      },
+      "colony_reference_asset_key": "building.marine_barracks.colony"
     },
     {
       "id": "planetary_barrier_shield",
@@ -518,7 +539,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 180991
-      }
+      },
+      "colony_reference_asset_key": "building.planetary_barrier_shield.colony"
     },
     {
       "id": "planetary_flux_shield",
@@ -539,7 +561,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 182394
-      }
+      },
+      "colony_reference_asset_key": "building.planetary_flux_shield.colony"
     },
     {
       "id": "planetary_gravity_generator",
@@ -560,7 +583,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 183797
-      }
+      },
+      "colony_reference_asset_key": "building.planetary_gravity_generator.colony"
     },
     {
       "id": "planetary_missile_base",
@@ -581,7 +605,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 185200
-      }
+      },
+      "colony_reference_asset_key": "building.planetary_missile_base.colony"
     },
     {
       "id": "ground_batteries",
@@ -602,7 +627,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 186603
-      }
+      },
+      "colony_reference_asset_key": "building.ground_batteries.colony"
     },
     {
       "id": "planetary_radiation_shield",
@@ -623,7 +649,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 188006
-      }
+      },
+      "colony_reference_asset_key": "building.planetary_radiation_shield.colony"
     },
     {
       "id": "planetary_stock_exchange",
@@ -644,7 +671,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 189409
-      }
+      },
+      "colony_reference_asset_key": "building.planetary_stock_exchange.colony"
     },
     {
       "id": "planetary_supercomputer",
@@ -665,7 +693,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 190812
-      }
+      },
+      "colony_reference_asset_key": "building.planetary_supercomputer.colony"
     },
     {
       "id": "pleasure_dome",
@@ -686,7 +715,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 197827
-      }
+      },
+      "colony_reference_asset_key": "building.pleasure_dome.colony"
     },
     {
       "id": "pollution_processor",
@@ -707,7 +737,8 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-building-names",
         "offset": 3798
-      }
+      },
+      "colony_reference_asset_key": "building.pollution_processor.colony"
     },
     {
       "id": "recyclotron",
@@ -728,7 +759,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 213260
-      }
+      },
+      "colony_reference_asset_key": "building.recyclotron.colony"
     },
     {
       "id": "robotic_factory",
@@ -749,7 +781,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 216066
-      }
+      },
+      "colony_reference_asset_key": "building.robotic_factory.colony"
     },
     {
       "id": "research_laboratory",
@@ -770,7 +803,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 217469
-      }
+      },
+      "colony_reference_asset_key": "building.research_laboratory.colony"
     },
     {
       "id": "robo_miners",
@@ -791,7 +825,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 218872
-      }
+      },
+      "colony_reference_asset_key": "building.robo_miners.colony"
     },
     {
       "id": "soil_enrichment",
@@ -812,7 +847,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 227290
-      }
+      },
+      "colony_reference_asset_key": "building.soil_enrichment.colony"
     },
     {
       "id": "space_academy",
@@ -833,7 +869,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 228693
-      }
+      },
+      "colony_reference_asset_key": "building.space_academy.colony"
     },
     {
       "id": "spaceport",
@@ -854,7 +891,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 230096
-      }
+      },
+      "colony_reference_asset_key": "building.spaceport.colony"
     },
     {
       "id": "star_base",
@@ -875,7 +913,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 235708
-      }
+      },
+      "colony_reference_asset_key": "building.star_base.colony"
     },
     {
       "id": "star_fortress",
@@ -896,7 +935,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 237111
-      }
+      },
+      "colony_reference_asset_key": "building.star_fortress.colony"
     },
     {
       "id": "stellar_converter",
@@ -917,7 +957,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 244126
-      }
+      },
+      "colony_reference_asset_key": "building.stellar_converter.colony"
     },
     {
       "id": "subterranean_farms",
@@ -938,7 +979,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 249738
-      }
+      },
+      "colony_reference_asset_key": "building.subterranean_farms.colony"
     },
     {
       "id": "terraforming",
@@ -959,7 +1001,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 256753
-      }
+      },
+      "colony_reference_asset_key": "building.terraforming.colony"
     },
     {
       "id": "warp_interdictor",
@@ -980,7 +1023,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 276395
-      }
+      },
+      "colony_reference_asset_key": "building.warp_interdictor.colony"
     },
     {
       "id": "weather_control_system",
@@ -1001,7 +1045,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 277798
-      }
+      },
+      "colony_reference_asset_key": "building.weather_control_system.colony"
     },
     {
       "id": "fighter_garrison",
@@ -1022,7 +1067,8 @@
       "name_source": {
         "source_id": "moo2-1.31-help-building-names",
         "offset": 94005
-      }
+      },
+      "colony_reference_asset_key": "building.fighter_garrison.colony"
     },
     {
       "id": "artificial_planet",
@@ -1043,7 +1089,8 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-building-names",
         "offset": 5592
-      }
+      },
+      "colony_reference_asset_key": "building.artificial_planet.colony"
     }
   ]
 }

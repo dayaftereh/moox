@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const AssetsSchemaVersion = 1
+const AssetsSchemaVersion = 2
 
 type AssetsFile struct {
 	SchemaVersion int      `json:"schema_version"`
@@ -21,7 +21,14 @@ type Asset struct {
 	Status           string          `json:"status"`
 	Verification     string          `json:"verification"`
 	Reference        *AssetReference `json:"reference,omitempty"`
+	Variants         []AssetVariant  `json:"variants,omitempty"`
 	UnresolvedReason string          `json:"unresolved_reason,omitempty"`
+}
+
+type AssetVariant struct {
+	ID        string         `json:"id"`
+	Reference AssetReference `json:"reference"`
+	Metadata  map[string]int `json:"metadata,omitempty"`
 }
 
 type AssetReference struct {
@@ -43,6 +50,13 @@ func LoadAssets(path string) (*AssetsFile, error) {
 		return nil, err
 	}
 	return &file, nil
+}
+
+func validateAssetReference(key string, ref AssetReference) error {
+	if ref.Archive == "" || ref.Block < 0 || ref.Frame < 0 || ref.BlockSHA256 == "" || ref.Width <= 0 || ref.Height <= 0 {
+		return fmt.Errorf("asset %q has incomplete reference", key)
+	}
+	return nil
 }
 
 func (f *AssetsFile) Validate() error {
@@ -67,18 +81,36 @@ func (f *AssetsFile) Validate() error {
 			return fmt.Errorf("asset %q has unsupported status %q", asset.Key, asset.Status)
 		}
 		if asset.Status == "confirmed" {
-			if asset.Reference == nil {
-				return fmt.Errorf("confirmed asset %q requires a reference", asset.Key)
+			if asset.Reference == nil && len(asset.Variants) == 0 {
+				return fmt.Errorf("confirmed asset %q requires a reference or variants", asset.Key)
 			}
-			if asset.Reference.Archive == "" || asset.Reference.Block < 0 || asset.Reference.Frame < 0 || asset.Reference.BlockSHA256 == "" || asset.Reference.Width <= 0 || asset.Reference.Height <= 0 {
-				return fmt.Errorf("confirmed asset %q has incomplete reference", asset.Key)
+			if asset.Reference != nil && len(asset.Variants) != 0 {
+				return fmt.Errorf("confirmed asset %q cannot mix a direct reference and variants", asset.Key)
+			}
+			if asset.Reference != nil {
+				if err := validateAssetReference(asset.Key, *asset.Reference); err != nil {
+					return err
+				}
+			}
+			variantIDs := make(map[string]struct{}, len(asset.Variants))
+			for _, variant := range asset.Variants {
+				if variant.ID == "" {
+					return fmt.Errorf("asset %q has a variant without an id", asset.Key)
+				}
+				if _, exists := variantIDs[variant.ID]; exists {
+					return fmt.Errorf("asset %q has duplicate variant id %q", asset.Key, variant.ID)
+				}
+				variantIDs[variant.ID] = struct{}{}
+				if err := validateAssetReference(asset.Key+"/"+variant.ID, variant.Reference); err != nil {
+					return err
+				}
 			}
 			if asset.UnresolvedReason != "" {
 				return fmt.Errorf("confirmed asset %q cannot have unresolved_reason", asset.Key)
 			}
 		} else {
-			if asset.Reference != nil {
-				return fmt.Errorf("pending asset %q must not pretend to have a resolved reference", asset.Key)
+			if asset.Reference != nil || len(asset.Variants) != 0 {
+				return fmt.Errorf("pending asset %q must not pretend to have resolved references", asset.Key)
 			}
 			if asset.UnresolvedReason == "" {
 				return fmt.Errorf("pending asset %q requires unresolved_reason", asset.Key)
@@ -88,6 +120,14 @@ func (f *AssetsFile) Validate() error {
 	return nil
 }
 
+func (f *AssetsFile) assetByKey() map[string]Asset {
+	byKey := make(map[string]Asset, len(f.Assets))
+	for _, asset := range f.Assets {
+		byKey[asset.Key] = asset
+	}
+	return byKey
+}
+
 func (f *AssetsFile) ValidateAgainstRaces(races *RacesFile) error {
 	if err := f.Validate(); err != nil {
 		return err
@@ -95,17 +135,14 @@ func (f *AssetsFile) ValidateAgainstRaces(races *RacesFile) error {
 	if races == nil {
 		return fmt.Errorf("races are required")
 	}
-	byKey := make(map[string]Asset, len(f.Assets))
-	for _, asset := range f.Assets {
-		byKey[asset.Key] = asset
-	}
+	byKey := f.assetByKey()
 	for _, race := range races.Races {
 		portrait, ok := byKey[race.PortraitAssetKey]
 		if !ok {
 			return fmt.Errorf("race %q portrait asset %q is missing", race.ID, race.PortraitAssetKey)
 		}
-		if portrait.Status != "confirmed" || portrait.Kind != "race_portrait" {
-			return fmt.Errorf("race %q portrait asset %q is not a confirmed race_portrait", race.ID, race.PortraitAssetKey)
+		if portrait.Status != "confirmed" || portrait.Kind != "race_portrait" || portrait.Reference == nil {
+			return fmt.Errorf("race %q portrait asset %q is not a confirmed direct race_portrait", race.ID, race.PortraitAssetKey)
 		}
 		icon, ok := byKey[race.IconAssetKey]
 		if !ok {
@@ -117,9 +154,46 @@ func (f *AssetsFile) ValidateAgainstRaces(races *RacesFile) error {
 		for _, role := range []string{"farmer", "worker", "scientist", "marine"} {
 			key := race.IconAssetKey + "." + role
 			asset, ok := byKey[key]
-			if !ok || asset.Status != "confirmed" || asset.Kind != "race_role_icon" {
-				return fmt.Errorf("race %q requires confirmed role icon %q", race.ID, key)
+			if !ok || asset.Status != "confirmed" || asset.Kind != "race_role_icon" || asset.Reference == nil {
+				return fmt.Errorf("race %q requires confirmed direct role icon %q", race.ID, key)
 			}
+		}
+	}
+	return nil
+}
+
+func (f *AssetsFile) ValidateAgainstBuildings(buildings *BuildingsFile) error {
+	if err := f.Validate(); err != nil {
+		return err
+	}
+	if buildings == nil {
+		return fmt.Errorf("buildings are required")
+	}
+	if err := buildings.Validate(); err != nil {
+		return fmt.Errorf("validate buildings: %w", err)
+	}
+	byKey := f.assetByKey()
+	for _, building := range buildings.Buildings {
+		if building.ColonyReferenceAssetKey == "" {
+			return fmt.Errorf("building %q has no colony reference asset key", building.ID)
+		}
+		asset, ok := byKey[building.ColonyReferenceAssetKey]
+		if !ok {
+			return fmt.Errorf("building %q colony asset %q is missing", building.ID, building.ColonyReferenceAssetKey)
+		}
+		if asset.Status != "confirmed" || asset.Kind != "building_colony_set" || len(asset.Variants) != 36 {
+			return fmt.Errorf("building %q colony asset %q is not a confirmed 36-variant building_colony_set", building.ID, building.ColonyReferenceAssetKey)
+		}
+		seenFrames := make(map[int]struct{}, 36)
+		for _, variant := range asset.Variants {
+			effectiveFrame, ok := variant.Metadata["effective_frame"]
+			if !ok || effectiveFrame < 0 || effectiveFrame >= 36 {
+				return fmt.Errorf("building %q variant %q has invalid effective_frame metadata", building.ID, variant.ID)
+			}
+			if _, exists := seenFrames[effectiveFrame]; exists {
+				return fmt.Errorf("building %q repeats effective frame %d", building.ID, effectiveFrame)
+			}
+			seenFrames[effectiveFrame] = struct{}{}
 		}
 	}
 	return nil

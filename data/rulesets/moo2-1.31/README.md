@@ -46,7 +46,7 @@ The Go loaders in `internal/ruleset` and `internal/i18n` validate the committed 
 
 1. Verify Pick costs directly against executable/UI behavior where practical.
 2. Add complete incompatibility/availability rules from controlled Race Designer tests.
-3. Extend semantic `assets.json` beyond races into buildings, ships, planets and technologies.
+3. Extend semantic `assets.json` beyond races/buildings/UI into ships, planets and technology artwork.
 4. Add government behavior parameters as a separate normalized dataset.
 5. Continue with technologies and colony buildings using the same provenance model.
 
@@ -65,14 +65,14 @@ out\moox-analyze-windows-amd64.exe normalize races `
 ```
 ## `assets.json`
 
-The semantic asset catalog is tracked separately from original artwork. It currently contains 93 records: a verified race mapping layer plus a small evidence-backed UI/building reference slice:
+The semantic asset catalog is tracked separately from original artwork. It currently contains 141 records: a verified race mapping layer, a small evidence-backed UI slice, and 48 original-executable-derived building colony sets:
 
 - 13 preset-race portraits,
 - 1 custom-race portrait,
 - 52 farmer/worker/scientist/marine role icons,
 - 13 generic race-icon keys kept explicitly pending until a universal source variant is proven.
 - 13 selected UI/production references from independently revalidated render mappings,
-- 1 directly documented building anchor: Alien Management Center -> BLDG0.LBX block 0.
+- 1 directly documented building anchor: Alien Management Center -> BLDG0.LBX block 0,`r`n- 48 confirmed `building.<id>.colony` sets with 36 original-position variants each (1,728 references total).
 
 Confirmed references include the original archive, block, frame, dimensions and block SHA-256. No original image bytes are stored in this directory.
 
@@ -104,7 +104,7 @@ Technology links are now cross-checked against the original 203-entry TECHNAME.L
 - `Hydroponic Farms` is original building ID 21 -> original technology 87 `Hydroponic Farm` and is marked as a singular-name alias,
 - original building ID 48 points directly to original technology 16 `Planet Construction`; the table relation is original-observed, while the display-name interpretation `Artificial Planet` remains the one identity link not encoded directly in the technology name.
 
-Only Alien Management Center currently carries a confirmed colony-screen semantic asset key. The remaining BLDG graphic groups are intentionally not named yet because the complete building-ID-to-graphic-group formula has not been independently proven.
+All 48 standard buildings now carry a confirmed `building.<id>.colony` semantic asset key. The mapping is derived directly from the original 1.31 executable: `(building_id-1)/10` selects `BLDG0..4`, the remainder selects a 36-block building group, and the original 6x6 serpentine coordinate function selects the effective frame. The extra `BLDG4` group at blocks 288..323 remains deliberately unassigned because standard IDs 1..48 never reach it.
 
 Generate it with:
 

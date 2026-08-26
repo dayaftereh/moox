@@ -193,21 +193,26 @@ func normalizeAssetsCmd(args []string) error {
 	fs := flag.NewFlagSet("normalize assets", flag.ContinueOnError)
 	out := fs.String("out", "", "semantic assets JSON output path (required)")
 	racesPath := fs.String("races", "", "normalized races.json path (required)")
+	buildingsPath := fs.String("buildings", "", "normalized buildings.json path (required)")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
 	if fs.NArg() != 1 {
 		return errors.New("normalize assets requires exactly one MOO2 installation directory")
 	}
-	if *out == "" || *racesPath == "" {
-		return errors.New("normalize assets requires -out <path> and -races <races.json>")
+	if *out == "" || *racesPath == "" || *buildingsPath == "" {
+		return errors.New("normalize assets requires -out <path>, -races <races.json> and -buildings <buildings.json>")
 	}
 
 	races, err := ruleset.LoadRaces(*racesPath)
 	if err != nil {
 		return fmt.Errorf("load races: %w", err)
 	}
-	assets, err := moo2data.DecodeAssets(fs.Arg(0), races)
+	buildings, err := ruleset.LoadBuildings(*buildingsPath)
+	if err != nil {
+		return fmt.Errorf("load buildings: %w", err)
+	}
+	assets, err := moo2data.DecodeAssets(fs.Arg(0), races, buildings)
 	if err != nil {
 		return err
 	}
@@ -229,7 +234,6 @@ func normalizeAssetsCmd(args []string) error {
 	fmt.Printf("normalized %d semantic assets (%d confirmed, %d pending) -> %s\n", len(assets.Assets), confirmed, pending, path)
 	return nil
 }
-
 func normalizeBuildingsCmd(args []string) error {
 	fs := flag.NewFlagSet("normalize buildings", flag.ContinueOnError)
 	out := fs.String("out", "", "buildings ruleset JSON output path (required)")

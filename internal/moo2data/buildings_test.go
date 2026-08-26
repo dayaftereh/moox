@@ -30,7 +30,7 @@ func TestDecodeBuildingsFindsOriginalNamesAndTechnologyLinks(t *testing.T) {
 	}
 
 	first := bundle.Rules.Buildings[0]
-	if first.ID != "alien_management_center" || first.ProductionID != 1 || first.Order != 0 || first.TechnologyID != 5 || first.TechnologyKey != "alien_management_center" || first.ColonyReferenceAssetKey != "building.alien_management_center.colony_reference" {
+	if first.ID != "alien_management_center" || first.ProductionID != 1 || first.Order != 0 || first.TechnologyID != 5 || first.TechnologyKey != "alien_management_center" || first.ColonyReferenceAssetKey != "building.alien_management_center.colony" {
 		t.Fatalf("first=%+v", first)
 	}
 	if first.ProductionIDVerification != "original-exe-table-id-techname-crosschecked" || first.ProductionIDSource.SourceID != buildingTableSourceID {

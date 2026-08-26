@@ -30,6 +30,51 @@ func TestAssetsValidateAgainstRaces(t *testing.T) {
 	}
 }
 
+func TestAssetsValidateBuildingVariants(t *testing.T) {
+	building := Building{
+		ID:                         "alien_management_center",
+		Order:                      0,
+		ProductionID:               1,
+		ProductionIDVerification:   "test",
+		ProductionIDSource:         FieldProvenance{SourceID: "test"},
+		TechnologyID:               5,
+		TechnologyKey:              "alien_management_center",
+		TechnologyLinkVerification: "test",
+		TechnologySource:           FieldProvenance{SourceID: "test"},
+		NameKey:                    "building.alien_management_center.name",
+		NameVerification:           "test",
+		NameSource:                 FieldProvenance{SourceID: "test"},
+		ColonyReferenceAssetKey:    "building.alien_management_center.colony",
+	}
+	buildings := &BuildingsFile{SchemaVersion: BuildingsSchemaVersion, Ruleset: "moo2-1.31", Buildings: make([]Building, 48)}
+	for i := 0; i < 48; i++ {
+		b := building
+		b.ID = "building_" + string(rune('a'+i%26)) + string(rune('A'+i/26))
+		b.Order = i
+		b.ProductionID = i + 1
+		b.TechnologyID = i + 1
+		b.TechnologyKey = "tech_" + b.ID
+		b.NameKey = "name." + b.ID
+		b.ColonyReferenceAssetKey = "asset." + b.ID
+		buildings.Buildings[i] = b
+	}
+	assets := &AssetsFile{SchemaVersion: AssetsSchemaVersion, Ruleset: "moo2-1.31"}
+	for _, b := range buildings.Buildings {
+		asset := Asset{Key: b.ColonyReferenceAssetKey, Kind: "building_colony_set", Status: "confirmed", Verification: "test"}
+		for frame := 0; frame < 36; frame++ {
+			asset.Variants = append(asset.Variants, AssetVariant{
+				ID:        "v" + string(rune('a'+frame)),
+				Reference: AssetReference{Archive: "BLDG0.LBX", Block: frame, Frame: 0, BlockSHA256: "deadbeef", Width: 640, Height: 480},
+				Metadata:  map[string]int{"effective_frame": frame},
+			})
+		}
+		assets.Assets = append(assets.Assets, asset)
+	}
+	if err := assets.ValidateAgainstBuildings(buildings); err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestAssetsRejectConfirmedWithoutReference(t *testing.T) {
 	assets := &AssetsFile{SchemaVersion: AssetsSchemaVersion, Ruleset: "moo2-1.31", Assets: []Asset{{
 		Key: "race.alkari.portrait", Kind: "race_portrait", Status: "confirmed", Verification: "test",
@@ -49,6 +94,10 @@ func TestCommittedAssetsLoadAndValidate(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	buildings, err := LoadBuildings(filepath.Join(root, "data", "rulesets", "moo2-1.31", "buildings.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
 	assets, err := LoadAssets(filepath.Join(root, "data", "rulesets", "moo2-1.31", "assets.json"))
 	if err != nil {
 		t.Fatal(err)
@@ -56,11 +105,16 @@ func TestCommittedAssetsLoadAndValidate(t *testing.T) {
 	if err := assets.ValidateAgainstRaces(races); err != nil {
 		t.Fatal(err)
 	}
-	if len(assets.Assets) != 93 {
-		t.Fatalf("assets=%d want=93", len(assets.Assets))
+	if err := assets.ValidateAgainstBuildings(buildings); err != nil {
+		t.Fatal(err)
+	}
+	if len(assets.Assets) != 141 {
+		t.Fatalf("assets=%d want=141", len(assets.Assets))
 	}
 	confirmed := 0
 	pending := 0
+	buildingSets := 0
+	buildingVariants := 0
 	for _, asset := range assets.Assets {
 		switch asset.Status {
 		case "confirmed":
@@ -68,9 +122,16 @@ func TestCommittedAssetsLoadAndValidate(t *testing.T) {
 		case "pending":
 			pending++
 		}
+		if asset.Kind == "building_colony_set" {
+			buildingSets++
+			buildingVariants += len(asset.Variants)
+		}
 	}
-	if confirmed != 80 || pending != 13 {
-		t.Fatalf("confirmed=%d pending=%d want=80/13", confirmed, pending)
+	if confirmed != 128 || pending != 13 {
+		t.Fatalf("confirmed=%d pending=%d want=128/13", confirmed, pending)
+	}
+	if buildingSets != 48 || buildingVariants != 1728 {
+		t.Fatalf("building sets=%d variants=%d want=48/1728", buildingSets, buildingVariants)
 	}
 }
 

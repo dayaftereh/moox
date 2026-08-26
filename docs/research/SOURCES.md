@@ -143,3 +143,11 @@ When we begin building exact data tables, mark every field with one of:
 - `modded` - known to come from 1.50/ICE/community rules, not baseline 1.31.
 
 The exact-fidelity database should eventually prefer `original-observed` over secondary documentation.
+
+### Open Watcom V2 LE executable format sources
+
+https://github.com/open-watcom/open-watcom-v2/blob/master/bld/watcom/h/exeflat.h
+
+https://github.com/open-watcom/open-watcom-v2/blob/master/bld/wl/c/loadflat.c
+
+Use: factual interpretation of the bound MZ/LE object/page-map format while reading the original DOS 1.31 `Orion2.exe`. No Open Watcom source code is copied into MOOX.
