@@ -32,8 +32,9 @@ See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/r
 
 - `56b0096` - deterministic single-project colony construction using original MOO2 1.31 building PP costs and BC maintenance data.
 - `17fc2c2` - persistent technology ownership, technology-gated building construction and authority-filtered building legal actions shared by Human UI and AI callers.
+- `17791c1` - original technology-field/RP-cost normalization, deterministic Pre-Warp/Average new-game ownership and authoritative research-completion ownership transition.
 
-The active implementation sequence is now: original new-game technology ownership -> deterministic research completion -> `KnownTechnologyIDs` acquisition event/state transition.
+The active implementation sequence is now: verify the original breakthrough/2x-cost behavior -> establish classic overflow semantics -> accumulate per-turn empire research -> connect automatic breakthrough resolution to the already implemented ownership transition.
 ## Research documents
 
 - `docs/research/MOO2_GAME_REFERENCE.md` - gameplay/system reference and fidelity checklist.

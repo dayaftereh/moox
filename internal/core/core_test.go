@@ -268,3 +268,19 @@ func TestKnownTechnologyFieldIDsValidation(t *testing.T) {
 		t.Fatal("expected out-of-range known technology field to fail validation")
 	}
 }
+
+func TestResearchStateRejectsAlreadyKnownTechnologyState(t *testing.T) {
+	state := NewSmallFixture(510)
+	state.Empires[0].KnownTechnologyIDs = []int{155}
+	state.Empires[0].Research = &ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}}
+	if err := state.Validate(); err == nil {
+		t.Fatal("expected active research of an already-known technology to fail validation")
+	}
+
+	state = NewSmallFixture(511)
+	state.Empires[0].KnownTechnologyFieldIDs = []int{56}
+	state.Empires[0].Research = &ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}}
+	if err := state.Validate(); err == nil {
+		t.Fatal("expected active research of an already-known technology field to fail validation")
+	}
+}

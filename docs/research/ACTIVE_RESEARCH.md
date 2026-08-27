@@ -122,13 +122,13 @@ Technology schema v2 now normalizes the original 203 technology-to-field mapping
 
 Concretely, next:
 
-1. isolate and verify the original research breakthrough probability once base field RP cost has been reached,
-2. establish the original guaranteed-completion threshold and RP overflow/carry behavior,
-3. identify where per-turn empire research output is accumulated into the active `ResearchState`,
-4. only then connect automatic per-turn research resolution to the existing `CompleteResearchField` ownership transition,
-5. separately research the Advanced-start randomized/race-aware field grant rather than deriving it from the deterministic Pre-Warp/Average path.
+1. isolate and verify the exact original research breakthrough probability and integer rounding between 1x and 2x base field cost,
+2. verify the exact per-turn order of empire RP accumulation versus the breakthrough roll; the 2x guaranteed threshold and classic discard-on-breakthrough behavior are now established,
+3. connect per-turn empire research output into active `ResearchState` only after that ordering is proven,
+4. then drive the existing `CompleteResearchField` ownership transition automatically from the deterministic core RNG,
+5. separately research Creative/Uncreative selection and the Advanced-start randomized/race-aware grant rather than deriving either from the deterministic Pre-Warp/Average path.
 
-Do not add Wails/network/MCP transport code yet; those remain adapters over the established protocol/session boundary. Do not guess breakthrough chance, overflow, Advanced-start grants, or Creative/Uncreative selection behavior.
+Do not add Wails/network/MCP transport code yet; those remain adapters over the established protocol/session boundary. Do not guess the breakthrough chance/rounding, Advanced-start grants, or Creative/Uncreative selection behavior.
 ## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.

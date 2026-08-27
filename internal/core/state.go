@@ -233,6 +233,9 @@ func (s *GameState) Validate() error {
 			if empire.Research.TechFieldID < 1 || empire.Research.TechFieldID > 82 {
 				return fmt.Errorf("empire[%d] research tech_field_id %d outside [1,82]", i, empire.Research.TechFieldID)
 			}
+			if _, known := seenField[empire.Research.TechFieldID]; known {
+				return fmt.Errorf("empire[%d] researches already-known technology field %d", i, empire.Research.TechFieldID)
+			}
 			if empire.Research.ProgressMilli < 0 {
 				return fmt.Errorf("empire[%d] research progress must be non-negative", i)
 			}
@@ -243,6 +246,9 @@ func (s *GameState) Validate() error {
 			for ri, technologyID := range empire.Research.TechnologyIDs {
 				if technologyID < 1 || technologyID > 203 {
 					return fmt.Errorf("empire[%d] research technology id %d outside [1,203]", i, technologyID)
+				}
+				if _, known := seenTech[technologyID]; known {
+					return fmt.Errorf("empire[%d] researches already-known technology id %d", i, technologyID)
 				}
 				if ri > 0 && technologyID <= lastResearchTech {
 					return fmt.Errorf("empire[%d] research technology ids must be strictly ascending", i)

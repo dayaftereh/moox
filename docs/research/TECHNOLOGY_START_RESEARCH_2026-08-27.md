@@ -1,6 +1,6 @@
 # New-game technology ownership and research acquisition - 2026-08-27
 
-Status: first deterministic technology-ownership slice implemented. Original MOO2 1.31 technology/tech-field tables and the staged new-game field list are normalized from the private reference executable. Research breakthrough probability/overflow remains deliberately deferred.
+Status: first deterministic technology-ownership slice implemented. Original MOO2 1.31 technology/tech-field tables and the staged new-game field list are normalized from the private reference executable. Exact research breakthrough probability/rounding and automatic per-turn integration remain deliberately deferred.
 
 ## Original 1.31 technology application table
 
@@ -10,6 +10,7 @@ The clean-room decoder now reads the concrete technology table directly from `Or
 - records: 203
 - record size: 13 bytes
 - byte `+0`: technology field ID (`0xFF` is normalized as `-1` for the exceptional non-field technology)
+- byte `+5`: Strategic Combat availability flag
 
 The first records reproduce the known MOO2 technology-field sequence exactly, and each normalized technology now stores `tech_field_id` with file-offset provenance. The existing TECHNAME.LBX source remains authoritative for the 203 technology names.
 
@@ -77,6 +78,28 @@ Derived normalized Technology IDs:
 
 `InitializeEmpireTechnologies` materializes both `KnownTechnologyFieldIDs` and sorted `KnownTechnologyIDs`. Strategic-combat filtering is kept explicit in the new-game options so the same original technology table can support that game option without client-side filtering.
 
+## Original SAVE10.GAM new-game cross-check
+
+The private reference installation also contains an original auto-save at stardate 3500.0:
+
+- file: `SAVE10.GAM`
+- SHA-256: `ECE2EB06D782078DD0A6F746020A05691355303CEB02BBFBBE2233E987272BE1`
+- player array start: `0x1AA0F`
+- player record stride: `0xEA9`
+- 203 technology-status bytes: player `+0x117`
+- research progress: player `+0x1EA`
+- research area/item: player `+0x320/+0x321`
+
+All five active player records have zero research progress and no selected research item. Their status-3 technology set is identical:
+
+```text
+32, 40, 41, 58, 69, 100, 101, 103, 109, 119,
+120, 121, 145, 157, 166, 167, 168, 187, 189
+```
+
+This is exactly the normalized Average start above except Technology 63 (Extended Fuel Tanks). The original `Orion2.exe` technology record for ID 63 belongs to Chemistry field 22 but has Strategic Combat availability byte `+5 = 0`. Across all 203 technologies in this save, every technology whose original Strategic flag is 0 also has save status 0. Therefore the 19-ID save observation is consistent with an Average **Strategic Combat** start, while the unfiltered Average start contains 20 IDs.
+
+This is used as an independent original-save regression check; the save itself is not committed.
 ### Advanced
 
 Advanced start is intentionally rejected for now. Its extra field selection is randomized/race-aware and has not yet been normalized sufficiently from the original generator. No deterministic-looking substitute is invented.
@@ -120,6 +143,15 @@ A regression test confirms that completing the field containing Technology 155 m
 
 This keeps future Wails, network and AI adapters away from direct `GameState` mutation.
 
+## Breakthrough boundary established
+
+The original/manual behavior and classic 1.50 documentation establish three boundaries that the runtime can rely on without yet implementing the random roll:
+
+1. RP accumulates against the selected field's base cost.
+2. Once the base cost has been exceeded, a per-turn breakthrough chance applies; the exact timing remains random.
+3. At twice the base cost the breakthrough is guaranteed. Classic behavior spends the accumulated RP on breakthrough rather than carrying excess into the next project.
+
+`CompleteResearchField` therefore remains a post-breakthrough ownership operation. It does not decide the random success roll. The exact probability/rounding rule between 1x and 2x cost remains the active reverse-engineering target.
 ## Deliberately deferred
 
 This checkpoint does not yet claim or implement the original:
