@@ -6,11 +6,11 @@ Read this file before broad exploration. Update it whenever the active objective
 
 ## Status
 
-**ACTIVE**
+**COMPLETED - 2026-08-27**
 
 ## Current objective
 
-Complete the **planet-class normalization** already started in the working tree and turn it into a tested, documented checkpoint.
+Planet-class normalization has been completed as a tested, documented checkpoint. The next project objective is engineering Phase 1: the deterministic simulation skeleton.
 
 The current code indicates the intended slice is limited to original-observed planet classification/economic primitives:
 
@@ -61,7 +61,7 @@ These files are assumed to belong to the active planet-class investigation. They
 
 go test ./... currently fails at the repository root because 	mp_estring_probe.go and 	mp_planet_probe.go are both package main programs and both define main. This failure predates the working-rules checkpoint and is quarantined with the planet-class work. Package tests under cmd/... and internal/... remain the appropriate unaffected validation until the probe findings are materialized and the probes are deliberately removed or relocated as part of the active planet ticket.
 
-## Proven closed milestones — do not rediscover without contradictory evidence
+## Proven closed milestones ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â do not rediscover without contradictory evidence
 
 ### Race design / races
 
@@ -116,19 +116,17 @@ The code includes hash constants for the relevant original function ranges. Thes
 
 ## Next exact action
 
-**Review and run the existing planet-class draft without expanding scope.**
+**Transition to Phase 1 - deterministic simulation skeleton.**
 
 Concretely:
 
-1. inspect the remainder of `internal/moo2data/planet_classes.go` and `internal/ruleset/planet_classes.go`,
-2. inspect both `tmp_*` probes and extract any findings that are not yet represented in the real decoder/tests,
-3. run focused compile/tests for the planet-class packages,
-4. fix only defects that prevent this narrow dataset from normalizing against the local 1.31 reference,
-5. generate/validate the normalized artifact,
-6. run `go test ./...` and `git diff --check`,
-7. document the evidence and checkpoint the completed planet-class slice.
+1. create a deterministic `internal/core` simulation layer,
+2. add seeded RNG and stable game-state IDs/types,
+3. add minimal galaxy/star/planet/empire/colony state,
+4. add a turn clock and deterministic serialization,
+5. prove an exact save/load round trip before expanding gameplay scope.
 
-Do not start planet graphics or another subsystem before this ticket is completed or explicitly marked blocked.
+Do not reopen planet graphics or another research subsystem unless a concrete simulation requirement demands it.
 
 ## Exploration budget
 

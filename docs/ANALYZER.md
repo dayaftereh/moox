@@ -5,7 +5,7 @@
 It is deliberately independent of Wails and must remain buildable with `CGO_ENABLED=0`.
 ## Current status
 
-Current analyzer version: **0.21.0**.
+Current analyzer version: **0.22.0**.
 
 The tool has grown from the original LBX inspector into the main read-only 1.31 research/normalization pipeline. It now covers installation inventory, LBX inspection/extraction, graphics/palette extraction, audio/text/support catalogs, evidence-based block classification, original DOS bound-MZ/LE reads, and normalized race/building/technology/ship-hull/semantic-asset generation.
 
@@ -142,6 +142,15 @@ The generated ruleset is runtime-oriented: stable IDs and numeric values are aut
 
 
 
+## Normalize planet classes
+
+Normalize verified planet size, mineral, gravity and climate primitives from `ESTRINGS.LBX` and `Orion2.exe`:
+
+```text
+moox-analyze normalize planet-classes -out data/rulesets/moo2-1.31/planet_classes.json -languages-dir data/languages <installation-directory>
+```
+
+The decoder SHA-256 verifies the relevant original 1.31 executable code ranges before accepting size-generation, mineral-extraction and food-per-farmer values. See `docs/research/PLANET_CLASSES_2026-08-27.md`.
 ## Normalize ship hulls
 
 ```powershell

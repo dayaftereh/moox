@@ -8,9 +8,9 @@ The initial goal is a high-fidelity reimplementation of the systems that make MO
 
 Current snapshot: **2026-08-27**.
 
-MOOX is in an **advanced research/data-normalization phase**. The repository now contains a pure-Go MOO2 1.31 analyzer (`moox-analyze 0.21.0`), verified LBX/graphics/palette/audio/text tooling, a bound MZ/LE reader for the original DOS executable, normalized race/building/technology/ship-hull datasets, localization keys and a substantial semantic asset catalog.
+MOOX is in an **advanced research/data-normalization phase**. The repository now contains a pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), verified LBX/graphics/palette/audio/text tooling, a bound MZ/LE reader for the original DOS executable, normalized race/building/technology/ship-hull datasets, localization keys and a substantial semantic asset catalog.
 
-The playable simulation core is **not implemented yet**. The next major engineering transition is the deterministic headless simulation skeleton after the currently active planet-class normalization ticket.
+The playable simulation core is **not implemented yet**. The next major engineering transition is the deterministic headless simulation skeleton with the planet-class normalization checkpoint now completed.
 
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the one active research objective.
 ## Research documents
@@ -64,7 +64,7 @@ These projects are references, not dependencies at this stage. If code is reused
 
 ## Next milestone
 
-The immediate research checkpoint is to finish the narrow planet-class normalization tracked in `docs/research/ACTIVE_RESEARCH.md`.
+The planet-class normalization checkpoint is complete. The immediate next milestone is **Phase 1 - deterministic simulation skeleton**.
 
 After that, begin **Phase 1 - deterministic simulation skeleton** rather than more open-ended archive exploration:
 
@@ -89,8 +89,9 @@ Current committed coverage includes:
 - 203 technology identities,
 - 48 building identities and original technology links,
 - 6 military ship hull identities,
+- planet-class primitives: 5 sizes, 5 mineral classes, 3 gravity classes and 10 climates,
 - 156 semantic asset records (143 confirmed / 13 intentionally pending), including 1,728 building-position variants, 352 strategic ship variants and 6,560 tactical ship-frame variants.
 
-English currently contains 334 runtime keys. German/French/Spanish/Italian each contain the 64 verified Race Designer keys and fall back to English for other normalized names.
+English currently contains 357 runtime keys. German/French/Spanish/Italian each contain the 64 verified Race Designer keys and fall back to English for other normalized names.
 
 See `data/rulesets/moo2-1.31/README.md` for field-level provenance and `docs/PROJECT_STATUS.md` for the current completeness/gap table.

@@ -1,0 +1,358 @@
+{
+  "schema_version": 1,
+  "ruleset": "moo2-1.31",
+  "sources": [
+    {
+      "id": "moo2-1.31-estrings-planet-class-names",
+      "type": "original-observed",
+      "description": "Canonical planet size, mineral, gravity and climate names resolved from the packed English ESTRINGS.LBX block 0 string indices used by the original runtime arrays",
+      "archive": "ESTRINGS.LBX",
+      "block": 0,
+      "sha256": "46add2b2b1c6758b66e780341ed5138ffe4e4f3587b4e1b2bf117b8512a520cd",
+      "block_sha256": "dd6c3c368e280b609facc54e73cdc8cd3eb644c65af7b8b99383f7086e9075c5"
+    },
+    {
+      "id": "moo2-1.31-orion2-planet-class-string-map",
+      "type": "original-observed",
+      "description": "Orion2.exe 1.31 Load_H_And_Pro_File_Strings_ assigns explicit E_Strings_ indices to _planet_size_string, _mineral_class_string, _planet_gravity_string and _planet_climate_string; assignment code ranges are SHA-256 verified",
+      "archive": "Orion2.exe",
+      "sha256": "7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5"
+    },
+    {
+      "id": "moo2-1.31-orion2-planet-size-generation",
+      "type": "original-observed",
+      "description": "Orion2.exe 1.31 Generate_Size_ rolls Random_(10) and selects the first size whose _planet_size_table threshold is \u003e= the roll; object 2 offset 0x57F7 begins 1,3,7,9,10",
+      "archive": "Orion2.exe",
+      "sha256": "7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5"
+    },
+    {
+      "id": "moo2-1.31-orion2-mineral-extraction",
+      "type": "original-observed",
+      "description": "Orion2.exe 1.31 Get_Minerals_Extracted_ returns mineral_class+1 for classes 0..4; object 2 _minerals_extracted_table at 0x5812 also contains 1,2,3,4,5",
+      "archive": "Orion2.exe",
+      "sha256": "7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5"
+    },
+    {
+      "id": "moo2-1.31-orion2-food-per-farmer",
+      "type": "original-observed",
+      "description": "Orion2.exe 1.31 Generate_Food_Per_Farmer_ indexes _food_per_farmer_table at object 2 offset 0x581C by climate; values are 0,0,0,1,1,2,2,1,2,3",
+      "archive": "Orion2.exe",
+      "sha256": "7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5"
+    }
+  ],
+  "sizes": [
+    {
+      "id": "tiny",
+      "index": 0,
+      "name_key": "planet_size.tiny.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 14585
+      },
+      "generation_roll_upper_threshold": 1,
+      "generation_source": {
+        "source_id": "moo2-1.31-orion2-planet-size-generation",
+        "offset": 22519
+      }
+    },
+    {
+      "id": "small",
+      "index": 1,
+      "name_key": "planet_size.small.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 8341
+      },
+      "generation_roll_upper_threshold": 3,
+      "generation_source": {
+        "source_id": "moo2-1.31-orion2-planet-size-generation",
+        "offset": 22520
+      }
+    },
+    {
+      "id": "medium",
+      "index": 2,
+      "name_key": "planet_size.medium.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 6260
+      },
+      "generation_roll_upper_threshold": 7,
+      "generation_source": {
+        "source_id": "moo2-1.31-orion2-planet-size-generation",
+        "offset": 22521
+      }
+    },
+    {
+      "id": "large",
+      "index": 3,
+      "name_key": "planet_size.large.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 6137
+      },
+      "generation_roll_upper_threshold": 9,
+      "generation_source": {
+        "source_id": "moo2-1.31-orion2-planet-size-generation",
+        "offset": 22522
+      }
+    },
+    {
+      "id": "huge",
+      "index": 4,
+      "name_key": "planet_size.huge.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 5619
+      },
+      "generation_roll_upper_threshold": 10,
+      "generation_source": {
+        "source_id": "moo2-1.31-orion2-planet-size-generation",
+        "offset": 22523
+      }
+    }
+  ],
+  "mineral_classes": [
+    {
+      "id": "ultra_poor",
+      "index": 0,
+      "name_key": "mineral_class.ultra_poor.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 14590
+      },
+      "base_extraction": 1,
+      "extraction_source": {
+        "source_id": "moo2-1.31-orion2-mineral-extraction",
+        "offset": 22546
+      }
+    },
+    {
+      "id": "poor",
+      "index": 1,
+      "name_key": "mineral_class.poor.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 7144
+      },
+      "base_extraction": 2,
+      "extraction_source": {
+        "source_id": "moo2-1.31-orion2-mineral-extraction",
+        "offset": 22547
+      }
+    },
+    {
+      "id": "abundant",
+      "index": 2,
+      "name_key": "mineral_class.abundant.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 14601
+      },
+      "base_extraction": 3,
+      "extraction_source": {
+        "source_id": "moo2-1.31-orion2-mineral-extraction",
+        "offset": 22548
+      }
+    },
+    {
+      "id": "rich",
+      "index": 3,
+      "name_key": "mineral_class.rich.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 7536
+      },
+      "base_extraction": 4,
+      "extraction_source": {
+        "source_id": "moo2-1.31-orion2-mineral-extraction",
+        "offset": 22549
+      }
+    },
+    {
+      "id": "ultra_rich",
+      "index": 4,
+      "name_key": "mineral_class.ultra_rich.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 14610
+      },
+      "base_extraction": 5,
+      "extraction_source": {
+        "source_id": "moo2-1.31-orion2-mineral-extraction",
+        "offset": 22550
+      }
+    }
+  ],
+  "gravity_classes": [
+    {
+      "id": "low_g",
+      "index": 0,
+      "name_key": "gravity_class.low_g.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 14621
+      }
+    },
+    {
+      "id": "normal_g",
+      "index": 1,
+      "name_key": "gravity_class.normal_g.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 14627
+      }
+    },
+    {
+      "id": "heavy_g",
+      "index": 2,
+      "name_key": "gravity_class.heavy_g.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 14636
+      }
+    }
+  ],
+  "climates": [
+    {
+      "id": "toxic",
+      "index": 0,
+      "name_key": "planet_climate.toxic.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 10790
+      },
+      "base_food_per_farmer": 0,
+      "food_source": {
+        "source_id": "moo2-1.31-orion2-food-per-farmer",
+        "offset": 22556
+      }
+    },
+    {
+      "id": "radiated",
+      "index": 1,
+      "name_key": "planet_climate.radiated.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 14978
+      },
+      "base_food_per_farmer": 0,
+      "food_source": {
+        "source_id": "moo2-1.31-orion2-food-per-farmer",
+        "offset": 22557
+      }
+    },
+    {
+      "id": "barren",
+      "index": 2,
+      "name_key": "planet_climate.barren.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 14987
+      },
+      "base_food_per_farmer": 0,
+      "food_source": {
+        "source_id": "moo2-1.31-orion2-food-per-farmer",
+        "offset": 22558
+      }
+    },
+    {
+      "id": "desert",
+      "index": 3,
+      "name_key": "planet_climate.desert.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 14994
+      },
+      "base_food_per_farmer": 1,
+      "food_source": {
+        "source_id": "moo2-1.31-orion2-food-per-farmer",
+        "offset": 22559
+      }
+    },
+    {
+      "id": "tundra",
+      "index": 4,
+      "name_key": "planet_climate.tundra.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 15001
+      },
+      "base_food_per_farmer": 1,
+      "food_source": {
+        "source_id": "moo2-1.31-orion2-food-per-farmer",
+        "offset": 22560
+      }
+    },
+    {
+      "id": "ocean",
+      "index": 5,
+      "name_key": "planet_climate.ocean.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 6800
+      },
+      "base_food_per_farmer": 2,
+      "food_source": {
+        "source_id": "moo2-1.31-orion2-food-per-farmer",
+        "offset": 22561
+      }
+    },
+    {
+      "id": "swamp",
+      "index": 6,
+      "name_key": "planet_climate.swamp.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 8658
+      },
+      "base_food_per_farmer": 2,
+      "food_source": {
+        "source_id": "moo2-1.31-orion2-food-per-farmer",
+        "offset": 22562
+      }
+    },
+    {
+      "id": "arid",
+      "index": 7,
+      "name_key": "planet_climate.arid.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 3391
+      },
+      "base_food_per_farmer": 1,
+      "food_source": {
+        "source_id": "moo2-1.31-orion2-food-per-farmer",
+        "offset": 22563
+      }
+    },
+    {
+      "id": "terran",
+      "index": 8,
+      "name_key": "planet_climate.terran.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 15008
+      },
+      "base_food_per_farmer": 2,
+      "food_source": {
+        "source_id": "moo2-1.31-orion2-food-per-farmer",
+        "offset": 22564
+      }
+    },
+    {
+      "id": "gaia",
+      "index": 9,
+      "name_key": "planet_climate.gaia.name",
+      "name_source": {
+        "source_id": "moo2-1.31-estrings-planet-class-names",
+        "offset": 5363
+      },
+      "base_food_per_farmer": 3,
+      "food_source": {
+        "source_id": "moo2-1.31-orion2-food-per-farmer",
+        "offset": 22565
+      }
+    }
+  ]
+}

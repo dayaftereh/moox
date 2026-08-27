@@ -15,7 +15,7 @@ import (
 	"moox/internal/textscan"
 )
 
-const version = "0.21.0"
+const version = "0.22.0"
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
@@ -79,6 +79,7 @@ Usage:
   moox-analyze normalize buildings -out <buildings.json> [-languages-dir <dir>] <installation-directory>
   moox-analyze normalize technologies -out <technologies.json> [-languages-dir <dir>] <installation-directory>
   moox-analyze normalize ship-hulls -out <ship_hulls.json> [-languages-dir <dir>] <installation-directory>
+  moox-analyze normalize planet-classes -out <planet_classes.json> [-languages-dir <dir>] <installation-directory>
   moox-analyze inspect [options] <file.lbx>
   moox-analyze image -out <file.png> <file.lbx> <block-index>
   moox-analyze graphics -out <directory> [options] <installation-directory>

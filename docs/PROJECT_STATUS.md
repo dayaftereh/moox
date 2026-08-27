@@ -18,7 +18,7 @@ The actual game simulation core is **not implemented yet**. There is no playable
 | --- | --- |
 | Branch | `main` |
 | Go module | `moox`, Go `1.26` |
-| Analyzer | `moox-analyze 0.21.0` |
+| Analyzer | `moox-analyze 0.22.0` |
 | Core architecture | Go-first, deterministic/headless core; Wails v3 planned only as application shell |
 | CGO policy | core/analyzer/tooling kept pure Go / `CGO_ENABLED=0` where possible |
 | Original gameplay baseline | Master of Orion II 1.31 |
@@ -71,7 +71,7 @@ Tracked normalized data lives under `data/rulesets/moo2-1.31/`.
 | `buildings.json` | 48 original building IDs + original technology links | identities/links proven; costs, maintenance and gameplay effects remain |
 | `ship_hulls.json` | 6 military hull identities | picture identities/mappings proven; full hull stats/components/design rules remain |
 | `assets.json` | 156 semantic records | 143 confirmed, 13 deliberately pending generic race icons |
-| planet classes | active uncommitted work | current research ticket; not yet a committed normalized dataset |
+| `planet_classes.json` | 5 sizes, 5 mineral classes, 3 gravity classes, 10 climates | size thresholds, mineral extraction and base food/farmer proven; broader galaxy generation intentionally deferred |
 
 ### Semantic asset coverage
 
@@ -95,7 +95,7 @@ Current committed language files:
 
 | Locale | Keys | Current coverage |
 | --- | ---: | --- |
-| English (`en`) | 334 | Race Designer + race names + buildings + technologies + ship hull names |
+| English (`en`) | 357 | Race Designer + race names + buildings + technologies + ship hull names |
 | German (`de`) | 64 | Race Designer; English fallback for other current keys |
 | French (`fr`) | 64 | Race Designer; English fallback for other current keys |
 | Spanish (`es`) | 64 | Race Designer; English fallback for other current keys |
@@ -124,27 +124,9 @@ See `docs/research/ACTIVE_RESEARCH.md` for the explicit closed-milestone list an
 
 ## Active work
 
-The single active research ticket is **planet-class normalization**.
+The planet-class normalization checkpoint is complete. The temporary probe programs have been removed, the normalized artifact is committed-ready, and the full Go test/vet baseline is green.
 
-The current uncommitted draft is intentionally limited to:
-
-- planet sizes,
-- mineral classes,
-- gravity classes,
-- climate classes,
-- size-generation thresholds,
-- mineral-extraction values,
-- food-per-farmer values,
-- English localization/provenance for those values.
-
-Existing uncommitted files are quarantined as part of that ticket:
-
-- `internal/moo2data/planet_classes.go`
-- `internal/ruleset/planet_classes.go`
-- `tmp_estring_probe.go`
-- `tmp_planet_probe.go`
-
-The two root probe programs currently both define `main`, so `go test ./...` fails only at the repository root while they coexist. `go test ./cmd/... ./internal/...` is green. This is a known temporary active-ticket condition, not a committed baseline failure.
+The next active engineering objective is **Phase 1 - deterministic simulation skeleton**: seeded RNG, stable state IDs, minimal galaxy/star/planet/empire/colony state, turn clock and deterministic save/load.
 
 ## What is not implemented yet
 
@@ -169,7 +151,7 @@ The research/data tooling should not be confused with a playable engine. Major m
 
 ### Immediate research checkpoint
 
-Finish the narrow planet-class ticket from `ACTIVE_RESEARCH.md`, remove/relocate the temporary probes only after their evidence has been materialized, generate the normalized planet-class artifact, run validation and commit the slice.
+Planet-class normalization is complete. Preserve `docs/research/PLANET_CLASSES_2026-08-27.md` as the checkpoint and do not expand back into planet graphics or broad galaxy-generation research without a concrete simulation requirement.
 
 ### Engineering transition
 

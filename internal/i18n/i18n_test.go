@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestCommittedRaceTraitLanguagesLoad(t *testing.T) {
+func TestCommittedLanguagesLoad(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	if !ok {
 		t.Fatal("cannot determine test source path")
@@ -17,7 +17,7 @@ func TestCommittedRaceTraitLanguagesLoad(t *testing.T) {
 		want      string
 		wantCount int
 	}{
-		"en": {"ship_hull.doom_star.name", "Doom Star", 334},
+		"en": {"planet_climate.terran.name", "Terran", 357},
 		"de": {"race_traits.group.population_growth.name", "Bev\u00f6lkerung", 64},
 		"fr": {"race_traits.option.government_democracy.name", "D\u00e9mocratie", 64},
 		"es": {"race_traits.group.population_growth.name", "Poblaci\u00f3n", 64},

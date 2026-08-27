@@ -15,7 +15,7 @@ import (
 
 func normalizeCmd(args []string) error {
 	if len(args) == 0 {
-		return errors.New("normalize requires a dataset name; currently supported: race-traits, races, assets, buildings, technologies, ship-hulls")
+		return errors.New("normalize requires a dataset name; currently supported: race-traits, races, assets, buildings, technologies, ship-hulls, planet-classes")
 	}
 	switch args[0] {
 	case "race-traits":
@@ -30,8 +30,10 @@ func normalizeCmd(args []string) error {
 		return normalizeTechnologiesCmd(args[1:])
 	case "ship-hulls":
 		return normalizeShipHullsCmd(args[1:])
+	case "planet-classes":
+		return normalizePlanetClassesCmd(args[1:])
 	default:
-		return fmt.Errorf("unknown normalize dataset %q; currently supported: race-traits, races, assets, buildings, technologies, ship-hulls", args[0])
+		return fmt.Errorf("unknown normalize dataset %q; currently supported: race-traits, races, assets, buildings, technologies, ship-hulls, planet-classes", args[0])
 	}
 }
 
@@ -332,6 +334,51 @@ func normalizeTechnologiesCmd(args []string) error {
 	return nil
 }
 
+func normalizePlanetClassesCmd(args []string) error {
+	fs := flag.NewFlagSet("normalize planet-classes", flag.ContinueOnError)
+	out := fs.String("out", "", "planet classes ruleset JSON output path (required)")
+	languagesDir := fs.String("languages-dir", "", "merge canonical English planet class names into en.json in this directory (optional)")
+	if err := fs.Parse(args); err != nil {
+		return err
+	}
+	if fs.NArg() != 1 {
+		return errors.New("normalize planet-classes requires exactly one MOO2 installation directory")
+	}
+	if *out == "" {
+		return errors.New("normalize planet-classes requires -out <path>")
+	}
+
+	bundle, err := moo2data.DecodePlanetClasses(fs.Arg(0))
+	if err != nil {
+		return err
+	}
+	path, err := writeJSONAtomic(*out, bundle.Rules)
+	if err != nil {
+		return err
+	}
+	if *languagesDir != "" {
+		enPath := filepath.Join(*languagesDir, "en.json")
+		var english *i18n.File
+		if _, statErr := os.Stat(enPath); statErr == nil {
+			english, err = i18n.Load(enPath)
+			if err != nil {
+				return fmt.Errorf("load English language file: %w", err)
+			}
+		} else if os.IsNotExist(statErr) {
+			english = &i18n.File{SchemaVersion: i18n.SchemaVersion, Locale: "en", Strings: map[string]string{}}
+		} else {
+			return statErr
+		}
+		if err := english.Merge(bundle.English); err != nil {
+			return err
+		}
+		if _, err := writeJSONAtomic(enPath, english); err != nil {
+			return err
+		}
+	}
+	fmt.Printf("normalized %d planet sizes / %d mineral classes / %d gravity classes / %d climates -> %s\n", len(bundle.Rules.Sizes), len(bundle.Rules.MineralClasses), len(bundle.Rules.GravityClasses), len(bundle.Rules.Climates), path)
+	return nil
+}
 func normalizeShipHullsCmd(args []string) error {
 	fs := flag.NewFlagSet("normalize ship-hulls", flag.ContinueOnError)
 	out := fs.String("out", "", "ship hulls ruleset JSON output path (required)")

@@ -7,7 +7,7 @@ MOOX is still **before Phase 1 runtime implementation**, but Phase 0 has advance
 Completed/established research baseline:
 
 - Go-first architecture and Wails v3 shell decision are already made (`ADR-0001`),
-- pure-Go analyzer/tooling exists at version `0.21.0`,
+- pure-Go analyzer/tooling exists at version `0.22.0`,
 - a private official MOO2 1.31 reference is inventoried and read-only tooling is established,
 - generic LBX, graphics, palette, audio, text and bound MZ/LE executable readers exist,
 - normalized datasets already cover 11/53 Race Designer groups/options, 13 races, 203 technologies, 48 buildings and 6 military hulls,
