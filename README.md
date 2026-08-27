@@ -25,9 +25,15 @@ Current snapshot: **2026-08-27**.
 
 Master of Orion X is transitioning from the advanced research/data-normalization phase into the deterministic headless runtime. The repository contains the pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), normalized runtime datasets and the first simulation/session infrastructure.
 
-The game is **not playable yet**, but the first strategic economy path now includes server-authorized population commands, fixed-point base output, Gravity, starting-government and local Morale context. Feudal/Dictatorship Barracks penalties and Holo/Pleasure morale are normalized from original HELP data, and Player/Observer views expose the base, context and adjusted result. The next runtime slice is deterministic building construction/progress using adjusted production.
+The game is **not playable yet**, but the first strategic economy/construction path now runs through the authoritative session boundary. It includes server-authorized population commands, fixed-point base output, Gravity, starting-government and local Morale context, single-project deterministic building construction, original building PP cost/BC maintenance data, persistent technology ownership and technology-gated legal building choices. The same server-derived building-choice projection is available to future Human UI and AI controllers; starting technologies are deliberately not guessed and are the active research target.
 
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the one active research objective.
+### Latest runtime checkpoints
+
+- `56b0096` - deterministic single-project colony construction using original MOO2 1.31 building PP costs and BC maintenance data.
+- `17fc2c2` - persistent technology ownership, technology-gated building construction and authority-filtered building legal actions shared by Human UI and AI callers.
+
+The active implementation sequence is now: original new-game technology ownership -> deterministic research completion -> `KnownTechnologyIDs` acquisition event/state transition.
 ## Research documents
 
 - `docs/research/MOO2_GAME_REFERENCE.md` - gameplay/system reference and fidelity checklist.
@@ -38,6 +44,7 @@ See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/r
 - `docs/research/ECONOMY_BASELINE_2026-08-27.md` - first population-command and base colony-economy fidelity checkpoint.
 - `docs/research/ECONOMY_CONTEXT_2026-08-27.md` - Gravity/Government contextual economy checkpoint and current model limitations.
 - `docs/research/ECONOMY_MORALE_2026-08-27.md` - local Morale/Barracks/building checkpoint and deferred empire-wide morale systems.
+- `docs/research/BUILDING_CONSTRUCTION_2026-08-27.md` - original building costs/maintenance, deterministic construction and technology-gated buildability checkpoint.
 - `docs/IMPLEMENTATION_PLAN.md` - proposed clean-room development phases.
 - docs/ANALYZER.md - pure-Go MOO2 console analyzer usage and architecture.
 - docs/architecture/README.md - runtime architecture overview for parallel turns, authoritative sessions, battles, observer and AI.
@@ -95,11 +102,14 @@ These projects are references, not dependencies at this stage. If code is reused
 - the first real `colony.assign_population` strategic command,
 - fixed-point base food/production/research/tax colony output from normalized ruleset data,
 - explicit Gravity/Government/local-Morale economy context and adjusted output,
-- minimal validated colony building inventory for currently proven local morale effects,
+- original building PP costs and BC/turn maintenance normalized from the MOO2 1.31 `_buildings` table,
+- single-project deterministic colony construction driven by adjusted production,
+- persistent `Empire.KnownTechnologyIDs` and technology-gated `colony.queue_building`,
+- authority-filtered `GameSession.BuildingChoices` as the shared legal-action surface for future UI and AI,
 - server-owned Seat -> Empire authorization,
-- deterministic domain events and tactical BattleSession boundaries.
+- deterministic construction/domain events and tactical BattleSession boundaries.
 
-The first headless playable slice still needs deterministic construction/research progression, broader building effects, pollution/logistics, fleet movement/colonization and end-to-end turn advancement through those systems.
+The next headless progression slice is research ownership: establish the original new-game technology grant, then model the deterministic research-completion transition into `KnownTechnologyIDs`. Broader building replacement rules/effects, pollution/logistics, fleet movement/colonization and end-to-end turn advancement remain later work.
 
 Wails v3 is already the planned application shell; rendering/UI framework selection is no longer an open prerequisite.
 ## Runtime ruleset data
@@ -111,7 +121,7 @@ Current committed coverage includes:
 - 11 Race Designer groups / 53 options,
 - 13 preset races,
 - 203 technology identities,
-- 48 building identities and original technology links,
+- 48 building identities with original technology links, PP costs and BC/turn maintenance,
 - 6 military ship hull identities,
 - planet-class primitives: 5 sizes, 5 mineral classes, 3 gravity classes and 10 climates,
 - 156 semantic asset records (143 confirmed / 13 intentionally pending), including 1,728 building-position variants, 352 strategic ship variants and 6,560 tactical ship-frame variants.
