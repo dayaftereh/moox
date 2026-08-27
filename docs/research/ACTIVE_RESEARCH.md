@@ -61,7 +61,7 @@ These files are assumed to belong to the active planet-class investigation. They
 
 go test ./... currently fails at the repository root because 	mp_estring_probe.go and 	mp_planet_probe.go are both package main programs and both define main. This failure predates the working-rules checkpoint and is quarantined with the planet-class work. Package tests under cmd/... and internal/... remain the appropriate unaffected validation until the probe findings are materialized and the probes are deliberately removed or relocated as part of the active planet ticket.
 
-## Proven closed milestones ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â do not rediscover without contradictory evidence
+## Proven closed milestones ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â do not rediscover without contradictory evidence
 
 ### Race design / races
 
@@ -116,15 +116,17 @@ The code includes hash constants for the relevant original function ranges. Thes
 
 ## Next exact action
 
-**Transition to Phase 1 - deterministic simulation skeleton.**
+**Continue Phase 1 - deterministic simulation skeleton.**
 
-Concretely:
+The initial `internal/core` foundation is complete: deterministic RNG, stable IDs, minimal galaxy/system/planet/empire/colony state, turn clock, event log, validation and exact atomic save/load.
 
-1. create a deterministic `internal/core` simulation layer,
-2. add seeded RNG and stable game-state IDs/types,
-3. add minimal galaxy/star/planet/empire/colony state,
-4. add a turn clock and deterministic serialization,
-5. prove an exact save/load round trip before expanding gameplay scope.
+Concretely, next:
+
+1. keep `internal/core` as the deterministic headless boundary,
+2. add minimal colony population assignment state,
+3. implement deterministic food/production/research/money turn processing,
+4. load only normalized ruleset fields required by those tests,
+5. preserve exact save/load and RNG replay behavior while expanding the state.
 
 Do not reopen planet graphics or another research subsystem unless a concrete simulation requirement demands it.
 

@@ -126,7 +126,7 @@ See `docs/research/ACTIVE_RESEARCH.md` for the explicit closed-milestone list an
 
 The planet-class normalization checkpoint is complete. The temporary probe programs have been removed, the normalized artifact is committed-ready, and the full Go test/vet baseline is green.
 
-The next active engineering objective is **Phase 1 - deterministic simulation skeleton**: seeded RNG, stable state IDs, minimal galaxy/star/planet/empire/colony state, turn clock and deterministic save/load.
+**Phase 1 - deterministic simulation skeleton is active.** The first core foundation now provides seeded RNG, stable IDs, minimal galaxy/star/planet/empire/colony state, turn clock, event log, cross-reference validation and deterministic atomic save/load. The next runtime slice is colony population/economy turn processing.
 
 ## What is not implemented yet
 

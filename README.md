@@ -23,6 +23,7 @@ See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/r
 - `docs/IMPLEMENTATION_PLAN.md` - proposed clean-room development phases.
 - docs/ANALYZER.md - pure-Go MOO2 console analyzer usage and architecture.
 - docs/architecture/ADR-0001-go-wails-v3.md - Go/Wails v3 portability decision and layer boundary.
+- docs/architecture/CORE.md - deterministic headless simulation state, RNG and save/load contract.
 - `reference/README.md` - policy for locally supplied original-game files.
 
 ## Fidelity target
@@ -66,15 +67,15 @@ These projects are references, not dependencies at this stage. If code is reused
 
 The planet-class normalization checkpoint is complete. The immediate next milestone is **Phase 1 - deterministic simulation skeleton**.
 
-After that, begin **Phase 1 - deterministic simulation skeleton** rather than more open-ended archive exploration:
+**Phase 1 - deterministic simulation skeleton is now underway.** The first core foundation covers:
 
-- seeded deterministic RNG,
+- simulation-owned deterministic RNG with serializable state,
 - stable game-state IDs/types,
 - minimal galaxy/star/planet/empire/colony model,
-- turn clock,
-- serialization/save-load round trip,
-- regression fixtures using the normalized 1.31 ruleset.
-
+- turn clock and event log,
+- strict state/cross-reference validation,
+- atomic serialization/save-load with exact round-trip regression,
+- a fixed headless regression fixture.
 The first headless playable slice remains: generate a small galaxy, create an empire/homeworld, assign population roles, process the economy/research, build and move a colony ship, colonize a second world, and save/reload the exact state.
 
 Wails v3 is already the planned application shell; rendering/UI framework selection is no longer an open prerequisite.
