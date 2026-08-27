@@ -116,7 +116,7 @@ Advanced start is intentionally rejected for now. Its extra field selection is r
 
 - active `tech_field_id`
 - the selected technology IDs belonging to that field
-- fixed-point RP progress
+- RP-native `float64` progress (`progress_rp`)
 
 `EconomyResolver.CompleteResearchField` is the authoritative ownership transition after a breakthrough has already been established. It:
 

@@ -474,7 +474,7 @@ func TestGameSessionCompletesResearchThroughAuthoritativeBoundary(t *testing.T) 
 	if err := rules.InitializeEmpireTechnologies(&state.Empires[0], game.NewGameTechnologyOptions{Level: game.NewGameTechnologyPreWarp}); err != nil {
 		t.Fatal(err)
 	}
-	state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressMilli: 150 * core.EconomyScale}
+	state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressRP: 150}
 	s, err := NewGameSession("game-research", state, seats)
 	if err != nil {
 		t.Fatal(err)
@@ -545,7 +545,7 @@ func TestGameSessionAutomaticallyResolvesGuaranteedResearchBreakthrough(t *testi
 	state.Empires[0].Research = &core.ResearchState{
 		TechFieldID:   56,
 		TechnologyIDs: []int{155},
-		ProgressMilli: 299 * core.EconomyScale,
+		ProgressRP:    299,
 	}
 	s, err := NewGameSession("game-auto-research", state, seats)
 	if err != nil {
@@ -605,5 +605,93 @@ func TestGameSessionAutomaticallyResolvesGuaranteedResearchBreakthrough(t *testi
 	}
 	if completed == nil || len(completed.TechnologyKeys) != 1 || completed.TechnologyKeys[0] != "research_laboratory" {
 		t.Fatalf("observer completion lacks Technology 155 (research_laboratory): %+v", completed)
+	}
+}
+
+func TestGameSessionResearchChoicesAndSelectResearchShareAuthority(t *testing.T) {
+	state, seats := twoSeatFixture(t)
+	rules, err := game.LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := rules.InitializeEmpireTechnologies(&state.Empires[0], game.NewGameTechnologyOptions{Level: game.NewGameTechnologyPreWarp}); err != nil {
+		t.Fatal(err)
+	}
+	s, err := NewGameSession("game-research-choice", state, seats)
+	if err != nil {
+		t.Fatal(err)
+	}
+	choices, err := s.ResearchChoices(1, rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var field4 *game.ResearchChoice
+	for i := range choices {
+		if choices[i].TechFieldID == 4 {
+			field4 = &choices[i]
+			break
+		}
+	}
+	if field4 == nil || field4.BaseCostRP != 80 || len(field4.TechnologyKeys) != 3 {
+		t.Fatalf("authoritative ResearchChoices missing TechField 4: %+v", choices)
+	}
+	command, err := game.NewSelectResearchCommand(1, game.SelectResearchPayload{TechFieldID: 4})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.SubmitTurn(protocol.CommandBatch{
+		SchemaVersion: protocol.CommandSchemaVersion,
+		GameID:        "game-research-choice",
+		SeatID:        1,
+		Turn:          1,
+		BaseRevision:  1,
+		Commands:      []protocol.Command{command},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.SubmitTurn(protocol.CommandBatch{
+		SchemaVersion: protocol.CommandSchemaVersion,
+		GameID:        "game-research-choice",
+		SeatID:        2,
+		Turn:          1,
+		BaseRevision:  1,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	resolver, err := game.NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.ResolveStrategic(resolver); err != nil {
+		t.Fatal(err)
+	}
+	observer, err := s.ObserverView()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if observer.State.Empires[0].Research == nil || observer.State.Empires[0].Research.TechFieldID != 4 {
+		t.Fatalf("authoritative select_research not materialized: %+v", observer.State.Empires[0].Research)
+	}
+	if !reflect.DeepEqual(observer.State.Empires[0].Research.TechnologyIDs, field4.TechnologyIDs) {
+		t.Fatalf("server-selected Technology IDs=%v want=%v", observer.State.Empires[0].Research.TechnologyIDs, field4.TechnologyIDs)
+	}
+	found := false
+	for _, event := range observer.Events {
+		if event.Kind != "empire.research_selected" {
+			continue
+		}
+		var selected game.ResearchSelectedEvent
+		if err := json.Unmarshal(event.Data, &selected); err != nil {
+			t.Fatal(err)
+		}
+		if selected.TechFieldID == 4 && reflect.DeepEqual(selected.TechnologyKeys, field4.TechnologyKeys) {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("Observer did not receive speaking empire.research_selected event")
+	}
+	if choices, err := s.ResearchChoices(1, rules); err != nil || len(choices) != 0 {
+		t.Fatalf("active research should leave no new ResearchChoices: choices=%+v err=%v", choices, err)
 	}
 }

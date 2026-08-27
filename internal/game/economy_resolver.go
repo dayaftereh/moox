@@ -84,6 +84,12 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
 				}
 				events = append(events, event)
+			case CommandSelectResearch:
+				event, err := r.selectResearch(state, empireID, batch.SeatID, command)
+				if err != nil {
+					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
+				}
+				events = append(events, event)
 			default:
 				return Resolution{}, fmt.Errorf("seat %d command %d has unsupported strategic command kind %q", batch.SeatID, command.Sequence, command.Kind)
 			}

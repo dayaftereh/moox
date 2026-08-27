@@ -11,8 +11,8 @@ import (
 func TestResearchBreakthroughChancePercentOriginalIntegerCurve(t *testing.T) {
 	cases := []struct {
 		name      string
-		base      int64
-		projected int64
+		base      float64
+		projected float64
 		want      int
 	}{
 		{"invalid base", 0, 100, 0},
@@ -27,7 +27,7 @@ func TestResearchBreakthroughChancePercentOriginalIntegerCurve(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			if got := ResearchBreakthroughChancePercent(tc.base, tc.projected); got != tc.want {
-				t.Fatalf("chance(base=%d projected=%d)=%d want=%d", tc.base, tc.projected, got, tc.want)
+				t.Fatalf("chance(base=%g projected=%g)=%d want=%d", tc.base, tc.projected, got, tc.want)
 			}
 		})
 	}
@@ -86,7 +86,7 @@ func TestNoActiveResearchDoesNotConsumeRNG(t *testing.T) {
 	}
 }
 
-func TestEmpireResearchQuantizesEachColonyBeforeSumming(t *testing.T) {
+func TestEmpireResearchPreservesFractionalColonyOutput(t *testing.T) {
 	state := core.NewSmallFixture(603)
 	empireID := state.Empires[0].ID
 	state.Colonies[0].AdjustedEconomy.ResearchMilli = 1900
@@ -94,8 +94,8 @@ func TestEmpireResearchQuantizesEachColonyBeforeSumming(t *testing.T) {
 	second.ID = state.NextID + 100
 	second.AdjustedEconomy.ResearchMilli = 1900
 	state.Colonies = append(state.Colonies, second)
-	if got := implementedEmpireResearchRP(state, empireID); got != 2 {
-		t.Fatalf("integer empire research=%d want=2; summing millis before truncation would incorrectly yield 3", got)
+	if got := implementedEmpireResearchRP(state, empireID); got != 3.8 {
+		t.Fatalf("fractional empire research=%v want=3.8", got)
 	}
 }
 
@@ -112,7 +112,7 @@ func TestGuaranteedBreakthroughAcquiresSpeakingTechnologyAndUnlocksBuilding(t *t
 	state.Empires[0].Research = &core.ResearchState{
 		TechFieldID:   56,
 		TechnologyIDs: []int{155},
-		ProgressMilli: 299 * core.EconomyScale,
+		ProgressRP:    299,
 	}
 	state.Colonies[0].AdjustedEconomy.ResearchMilli = 1000
 
@@ -164,7 +164,7 @@ func TestResearchResolutionIsReplayDeterministic(t *testing.T) {
 	}
 	makeState := func() *core.GameState {
 		state := core.NewSmallFixture(605)
-		state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressMilli: 159 * core.EconomyScale}
+		state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressRP: 159}
 		state.Colonies[0].AdjustedEconomy.ResearchMilli = 1000
 		return state
 	}

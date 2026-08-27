@@ -116,19 +116,21 @@ The code includes hash constants for the relevant original function ranges. Thes
 
 ## Next exact action
 
-**Continue Phase 1 from the verified automatic research breakthrough runtime.**
+**Continue Phase 1 from the authoritative ResearchChoices/select_research slice.**
 
-The standard-field MOO2 1.31 breakthrough mechanic is now implemented end to end: per-Colony whole-RP aggregation, current-turn-inclusive integer chance, minimum 1% after positive rounded excess, 100% at double base cost, a deterministic 1..100 roll per active research project even at 0%, discarded overflow, ownership acquisition, speaking Technology keys in Observer events, and authoritative GameSession resolution.
+Research progress now uses RP-native `float64`, preserving fractional output until an explicit gameplay rounding boundary. `GameSession.ResearchChoices` exposes a stable server-authoritative TechField frontier, and `empire.select_research` accepts only `tech_field_id`; Technology IDs/keys are materialized by the resolver for both Human UI and AI.
 
 Concretely, next:
 
-1. identify and normalize the original legal research-target / TechField-selection rules,
-2. expose those choices as an authority-filtered `ResearchChoices` projection for both Human UI and AI,
-3. define an authoritative `select_research` command that creates a valid `ResearchState` without trusting client-supplied arbitrary field/technology combinations,
-4. research Creative/Uncreative selection semantics before expanding multi-technology field choices,
-5. separately model hyper-advanced repeated-field cost state and Advanced-start randomized/race-aware grants.
+1. research and decide Creative/Uncreative acquisition semantics for multi-Technology TechFields,
+2. represent that policy explicitly in `ResearchChoice` rather than trusting client-selected Technology IDs,
+3. investigate whether changing/cancelling an active research project should be supported and how progress behaves,
+4. model hyper-advanced repeated-field level/cost state separately,
+5. return to Advanced-start randomized/race-aware technology grants after those runtime semantics exist.
 
-Do not add Wails/network/MCP-specific gameplay logic; transports remain adapters over the same session/legal-action surface. Do not infer Creative/Uncreative behavior, hyper-advanced level costs, or Advanced-start grants.
+Architecture constraint: legacy MOO2 integer storage widths are evidence, not a MOOX storage requirement. Research uses `float64` RP per `ADR-0002-research-float64.md`; rounding must occur only at named gameplay-rule boundaries.
+
+Do not add Wails/network/MCP-specific gameplay logic; transports remain adapters over the same session/legal-action surface.
 ## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.

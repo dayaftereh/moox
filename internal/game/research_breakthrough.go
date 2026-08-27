@@ -2,23 +2,24 @@ package game
 
 import (
 	"fmt"
+	"math"
 	"sort"
 
 	"moox/internal/core"
 )
 
-// ResearchBreakthroughChancePercent reproduces the original MOO2 1.31 integer
-// chance calculation at code VA 0xE1EC6. Inputs are whole RP, matching the
-// original empire research fields rather than the engine's milli-RP economy.
-func ResearchBreakthroughChancePercent(baseCostRP, projectedRP int64) int {
-	if baseCostRP <= 0 || projectedRP <= baseCostRP {
+// ResearchBreakthroughChancePercent keeps the proven MOO2 1.31 breakthrough
+// curve while allowing MOOX to accumulate research in fractional RP. The
+// floating-point percentage is floored only at the final 1..100 roll boundary.
+func ResearchBreakthroughChancePercent(baseCostRP, projectedRP float64) int {
+	if math.IsNaN(baseCostRP) || math.IsNaN(projectedRP) || math.IsInf(baseCostRP, 0) || math.IsInf(projectedRP, 0) || baseCostRP <= 0 || projectedRP <= baseCostRP {
 		return 0
 	}
-	chance := ((projectedRP - baseCostRP) * 100) / baseCostRP
+	chance := math.Floor(((projectedRP - baseCostRP) * 100) / baseCostRP)
 	if chance > 100 {
 		return 100
 	}
-	if chance == 0 {
+	if chance < 1 {
 		return 1
 	}
 	return int(chance)
@@ -51,24 +52,20 @@ func (r *EconomyResolver) advanceResearch(state *core.GameState) ([]DomainEvent,
 		if research.TechFieldID >= 75 {
 			return nil, fmt.Errorf("empire %d research TechField %d uses hyper-advanced cost scaling that is not modeled yet", empireID, research.TechFieldID)
 		}
-		fieldCostMilli, ok := r.Rules.TechnologyFieldCostsMilli[research.TechFieldID]
-		if !ok || fieldCostMilli <= 0 || fieldCostMilli%core.EconomyScale != 0 {
+		baseCostRP, ok := r.Rules.TechnologyFieldCostsRP[research.TechFieldID]
+		if !ok || baseCostRP <= 0 || math.IsNaN(baseCostRP) || math.IsInf(baseCostRP, 0) {
 			return nil, fmt.Errorf("invalid base cost for research TechField %d", research.TechFieldID)
 		}
-		if research.ProgressMilli%core.EconomyScale != 0 {
-			return nil, fmt.Errorf("empire %d research progress must use whole RP", empireID)
-		}
 
-		baseCostRP := fieldCostMilli / core.EconomyScale
-		previousRP := research.ProgressMilli / core.EconomyScale
+		previousRP := research.ProgressRP
 		turnResearchRP := implementedEmpireResearchRP(state, empireID)
 		projectedRP := previousRP + turnResearchRP
 		chance := ResearchBreakthroughChancePercent(baseCostRP, projectedRP)
 
-		// MOO2 1.31 computes chance from accumulated + current research, then
-		// adds current research and rolls random(100). Even a 0% chance consumes
-		// one RNG draw for every active research project.
-		research.ProgressMilli += turnResearchRP * core.EconomyScale
+		// MOOX deliberately keeps fractional RP instead of reproducing the old
+		// integer storage constraint. Rounding happens only where the rule needs
+		// a discrete 1..100 breakthrough comparison.
+		research.ProgressRP = projectedRP
 		rollZeroBased, err := rng.Intn(100)
 		if err != nil {
 			return nil, err
@@ -111,23 +108,19 @@ func (r *EconomyResolver) advanceResearch(state *core.GameState) ([]DomainEvent,
 	return events, nil
 }
 
-// implementedEmpireResearchRP mirrors the proven integer boundary of the MOO2
-// 1.31 empire research accumulator: each colony contributes a whole-RP value,
-// those integers are summed, and the empire turn value is capped to int16 max.
-// Leader/global research sources are intentionally excluded until implemented.
-func implementedEmpireResearchRP(state *core.GameState, empireID core.ID) int64 {
-	var total int64
+// implementedEmpireResearchRP bridges the fixed-point colony economy into the
+// research domain without per-colony truncation. Research therefore preserves
+// fractional RP all the way until a rule explicitly requires rounding.
+func implementedEmpireResearchRP(state *core.GameState, empireID core.ID) float64 {
+	var totalMilli int64
 	for i := range state.Colonies {
 		colony := &state.Colonies[i]
 		if colony.EmpireID != empireID {
 			continue
 		}
-		total += colony.AdjustedEconomy.ResearchMilli / core.EconomyScale
-		if total >= 32767 {
-			return 32767
-		}
+		totalMilli += colony.AdjustedEconomy.ResearchMilli
 	}
-	return total
+	return float64(totalMilli) / float64(core.EconomyScale)
 }
 
 func (r *EconomyResolver) technologyKeys(ids []int) ([]string, error) {

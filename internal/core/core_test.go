@@ -225,13 +225,19 @@ func TestKnownTechnologyIDsValidateAndRoundTrip(t *testing.T) {
 func TestResearchStateRoundTripsExactly(t *testing.T) {
 	state := NewSmallFixture(505)
 	state.Empires[0].KnownTechnologyIDs = []int{32, 40, 103, 145, 166, 168}
-	state.Empires[0].Research = &ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressMilli: 42000}
+	state.Empires[0].Research = &ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressRP: 42.125}
 	if err := state.Validate(); err != nil {
 		t.Fatal(err)
 	}
 	encoded, err := MarshalState(state)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if !bytes.Contains(encoded, []byte(`"progress_rp": 42.125`)) && !bytes.Contains(encoded, []byte(`"progress_rp":42.125`)) {
+		t.Fatalf("schema-2 research JSON does not expose progress_rp: %s", encoded)
+	}
+	if bytes.Contains(encoded, []byte("progress_milli")) {
+		t.Fatalf("legacy research progress_milli leaked into schema-2 JSON: %s", encoded)
 	}
 	loaded, err := UnmarshalState(encoded)
 	if err != nil {

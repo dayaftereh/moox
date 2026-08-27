@@ -1,11 +1,24 @@
 package core
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
-func TestResearchProgressRequiresWholeRP(t *testing.T) {
+func TestResearchProgressAllowsFractionalRP(t *testing.T) {
 	state := NewSmallFixture(607)
-	state.Empires[0].Research = &ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressMilli: 150001}
-	if err := state.Validate(); err == nil {
-		t.Fatal("expected fractional milli-RP research progress to fail validation")
+	state.Empires[0].Research = &ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressRP: 150.001}
+	if err := state.Validate(); err != nil {
+		t.Fatalf("fractional research RP should be valid: %v", err)
+	}
+}
+
+func TestResearchProgressRejectsInvalidFloatValues(t *testing.T) {
+	for _, progress := range []float64{-0.001, math.NaN(), math.Inf(1), math.Inf(-1)} {
+		state := NewSmallFixture(608)
+		state.Empires[0].Research = &ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressRP: progress}
+		if err := state.Validate(); err == nil {
+			t.Fatalf("expected progress %v to fail validation", progress)
+		}
 	}
 }

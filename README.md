@@ -33,8 +33,9 @@ See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/r
 - `56b0096` - deterministic single-project colony construction using original MOO2 1.31 building PP costs and BC maintenance data.
 - `17fc2c2` - persistent technology ownership, technology-gated building construction and authority-filtered building legal actions shared by Human UI and AI callers.
 - `17791c1` - original technology-field/RP-cost normalization, deterministic Pre-Warp/Average new-game ownership and authoritative research-completion ownership transition.
+- `30ee47b` - verified original standard-field breakthrough curve/RNG/overflow behavior and automatic strategic research resolution.
 
-The active implementation sequence is now: verify the original breakthrough/2x-cost behavior -> establish classic overflow semantics -> accumulate per-turn empire research -> connect automatic breakthrough resolution to the already implemented ownership transition.
+The active implementation sequence has moved past breakthrough research: RP-native `float64` progress is now the MOOX architecture, `ResearchChoices` exposes the server-authoritative frontier, and `empire.select_research` lets Human UI and AI submit only a TechField while the server materializes its Technology set.
 ## Research documents
 
 - `docs/research/MOO2_GAME_REFERENCE.md` - gameplay/system reference and fidelity checklist.
@@ -47,7 +48,9 @@ The active implementation sequence is now: verify the original breakthrough/2x-c
 - `docs/research/ECONOMY_MORALE_2026-08-27.md` - local Morale/Barracks/building checkpoint and deferred empire-wide morale systems.
 - `docs/research/BUILDING_CONSTRUCTION_2026-08-27.md` - original building costs/maintenance, deterministic construction and technology-gated buildability checkpoint.
 - `docs/research/TECHNOLOGY_START_RESEARCH_2026-08-27.md` - original technology/tech-field tables, Pre-Warp/Average ownership initialization and research-completion ownership transition.
-- `docs/research/RESEARCH_BREAKTHROUGH_2026-08-27.md` - exact original breakthrough chance/RNG/overflow behavior and automatic deterministic research-turn resolution.
+- `docs/research/RESEARCH_BREAKTHROUGH_2026-08-27.md` - original breakthrough evidence plus the documented MOOX float-RP divergence.
+- `docs/research/RESEARCH_SELECTION_2026-08-27.md` - authority-filtered ResearchChoices and `empire.select_research`.
+- `docs/architecture/ADR-0002-research-float64.md` - accepted RP-native `float64` architecture and explicit rounding policy.
 - `docs/IMPLEMENTATION_PLAN.md` - proposed clean-room development phases.
 - docs/ANALYZER.md - pure-Go MOO2 console analyzer usage and architecture.
 - docs/architecture/README.md - runtime architecture overview for parallel turns, authoritative sessions, battles, observer and AI.
@@ -112,7 +115,7 @@ These projects are references, not dependencies at this stage. If code is reused
 - server-owned Seat -> Empire authorization,
 - deterministic construction/domain events and tactical BattleSession boundaries.
 
-The research runtime now normalizes original technology fields/costs, materializes deterministic Pre-Warp/Average starting ownership, and automatically resolves standard-field research each strategic turn using the verified original MOO2 1.31 breakthrough formula: whole-RP accumulation, 1..100 roll, 0..100% integer chance, guaranteed breakthrough at double base cost, and no RP overflow. Research/Observer events carry both original numeric IDs and speaking keys such as `Technology 155 (research_laboratory)`. The next narrow progression target is the authoritative research-target/legal-action surface shared by Human UI and AI. Broader building replacement rules/effects, pollution/logistics, fleet movement/colonization and end-to-end turn advancement remain later work.
+The research runtime now uses RP-native `float64` progress (`progress_rp`) rather than reproducing 1996 integer storage constraints. Fractional Colony research is preserved through Empire aggregation; rounding happens only at explicit rule boundaries such as the discrete breakthrough-percent roll. `GameSession.ResearchChoices` exposes the authority-filtered research frontier, while `empire.select_research` accepts only a TechField ID and materializes Technology IDs/keys on the server. Research/Observer events carry both original numeric IDs and speaking keys such as `Technology 155 (research_laboratory)`. Creative/Uncreative acquisition semantics, active-project switching and hyper-advanced repeated-field costs remain later research slices.
 
 Wails v3 is already the planned application shell; rendering/UI framework selection is no longer an open prerequisite.
 ## Runtime ruleset data

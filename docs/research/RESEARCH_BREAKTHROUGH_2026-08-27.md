@@ -84,29 +84,27 @@ A subtle but important replay rule is proven by the original turn resolver: ever
 
 The runtime mirrors this. Empires with no active `ResearchState` consume no research RNG. Multiple active empires are processed in stable ascending Empire ID order, keeping multiplayer/replay results independent from slice/network timing.
 
-## Current-turn and accumulated RP
+## MOOX numeric architecture
 
-The original player structure uses:
+The original executable uses integer Colony and Empire research storage. That fact remains part of the clean-room evidence above, but it is no longer copied as a MOOX storage constraint.
+
+Per `docs/architecture/ADR-0002-research-float64.md`, MOOX stores active research as RP-native `float64`:
 
 ```text
-+0x321  active TechField ID
-+0x00AC current-turn empire research (signed 16-bit integer)
-+0x01EB accumulated research (32-bit integer)
+ResearchState.ProgressRP = 153.75
 ```
 
-The original empire-economy calculation builds the current-turn research value by summing already-materialized integer colony research values (`colony +0xEB`) plus other original sources and caps the resulting player turn value at `32767`.
+The Colony economy may still be fixed-point milli-units. At the research boundary MOOX sums the deterministic Colony milli-RP outputs and converts the total to `float64` RP without per-Colony truncation:
 
-Master of Orion X therefore keeps the general economy internally in milli-units but bridges into research breakthrough logic as whole RP:
+```text
+1.9 RP + 1.9 RP = 3.8 RP
+```
 
-1. each owned Colony's current `AdjustedEconomy.ResearchMilli` is converted to whole RP independently,
-2. those integer Colony values are summed,
-3. the currently implemented sum is capped at 32767,
-4. only then is it added to `ResearchState` and used for breakthrough.
+This intentionally diverges from the old integer storage behavior. It avoids losing fractional bonuses merely because the 1996 executable used narrow integer fields.
 
-Leader/global research sources that exist in the original game are not invented here; they will enter this aggregation when their own systems are implemented.
+The verified breakthrough curve remains useful as a gameplay rule. MOOX computes it from the full floating-point projected RP and floors only the final percentage used by the discrete 1..100 roll. Therefore rounding occurs at the named probability boundary, not during RP accumulation.
 
-`ResearchState.ProgressMilli` is now validated to be an exact whole-RP multiple of `core.EconomyScale`, preventing fractional accumulated research from entering the original integer breakthrough formula.
-
+`GameState.Validate` rejects negative, NaN and infinite research progress. Persistent state schema 2 serializes the value as numeric `progress_rp`.
 ## Turn resolution and overflow
 
 The original turn resolver at VA `0xE44E0` performs this order:
@@ -161,7 +159,7 @@ The checkpoint verifies:
 - guaranteed 100% at double base cost,
 - one RNG draw at active 0% chance,
 - no RNG draw without active research,
-- per-Colony integer quantization before empire summation,
+- fractional Colony RP preservation through deterministic Empire aggregation,
 - speaking Technology key propagation,
 - Technology 155 -> Building research_laboratory unlock,
 - identical state/event/RNG result from identical seed + state,
@@ -178,4 +176,4 @@ This checkpoint does not yet implement or claim:
 - hyper-advanced repeated-field cost state/scaling,
 - Advanced-start randomized/race-aware extra fields.
 
-The next narrow progression slice should establish the legal research-target projection and authoritative `select_research` command so Human UI and AI choose from the same server-derived research actions.
+That legal-action slice is now implemented in `docs/research/RESEARCH_SELECTION_2026-08-27.md`: Human UI and AI consume the same `ResearchChoices`, and `empire.select_research` sends only the selected TechField ID.

@@ -1,8 +1,11 @@
 package core
 
-import "fmt"
+import (
+	"fmt"
+	"math"
+)
 
-const StateSchemaVersion = 1
+const StateSchemaVersion = 2
 
 type ID uint64
 
@@ -53,9 +56,9 @@ type Empire struct {
 }
 
 type ResearchState struct {
-	TechFieldID   int   `json:"tech_field_id"`
-	TechnologyIDs []int `json:"technology_ids"`
-	ProgressMilli int64 `json:"progress_milli"`
+	TechFieldID   int     `json:"tech_field_id"`
+	TechnologyIDs []int   `json:"technology_ids"`
+	ProgressRP    float64 `json:"progress_rp"`
 }
 type Colony struct {
 	ID              ID                   `json:"id"`
@@ -236,11 +239,8 @@ func (s *GameState) Validate() error {
 			if _, known := seenField[empire.Research.TechFieldID]; known {
 				return fmt.Errorf("empire[%d] researches already-known technology field %d", i, empire.Research.TechFieldID)
 			}
-			if empire.Research.ProgressMilli < 0 {
-				return fmt.Errorf("empire[%d] research progress must be non-negative", i)
-			}
-			if empire.Research.ProgressMilli%EconomyScale != 0 {
-				return fmt.Errorf("empire[%d] research progress must use whole RP (%d milli-RP)", i, empire.Research.ProgressMilli)
+			if math.IsNaN(empire.Research.ProgressRP) || math.IsInf(empire.Research.ProgressRP, 0) || empire.Research.ProgressRP < 0 {
+				return fmt.Errorf("empire[%d] research progress_rp must be a finite non-negative number", i)
 			}
 			if len(empire.Research.TechnologyIDs) == 0 {
 				return fmt.Errorf("empire[%d] research technology_ids are required", i)

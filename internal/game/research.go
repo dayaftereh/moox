@@ -32,10 +32,10 @@ type ResearchProgressedEvent struct {
 	TechFieldID    int      `json:"tech_field_id"`
 	TechnologyIDs  []int    `json:"technology_ids"`
 	TechnologyKeys []string `json:"technology_keys"`
-	BaseCostRP     int64    `json:"base_cost_rp"`
-	PreviousRP     int64    `json:"previous_rp"`
-	TurnResearchRP int64    `json:"turn_research_rp"`
-	ProjectedRP    int64    `json:"projected_rp"`
+	BaseCostRP     float64  `json:"base_cost_rp"`
+	PreviousRP     float64  `json:"previous_rp"`
+	TurnResearchRP float64  `json:"turn_research_rp"`
+	ProjectedRP    float64  `json:"projected_rp"`
 	ChancePercent  int      `json:"chance_percent"`
 	Roll           int      `json:"roll"`
 	Breakthrough   bool     `json:"breakthrough"`
@@ -116,15 +116,15 @@ func (r *EconomyResolver) CompleteResearchField(state *core.GameState, empireID 
 		return DomainEvent{}, fmt.Errorf("empire %d has no active research", empireID)
 	}
 	fieldID := empire.Research.TechFieldID
-	fieldCost, ok := r.Rules.TechnologyFieldCostsMilli[fieldID]
+	fieldCost, ok := r.Rules.TechnologyFieldCostsRP[fieldID]
 	if !ok {
 		return DomainEvent{}, fmt.Errorf("unknown research tech field %d", fieldID)
 	}
 	if containsInt(empire.KnownTechnologyFieldIDs, fieldID) {
 		return DomainEvent{}, fmt.Errorf("empire %d already completed technology field %d", empireID, fieldID)
 	}
-	if empire.Research.ProgressMilli < fieldCost {
-		return DomainEvent{}, fmt.Errorf("empire %d research field %d has progress %d below base cost %d", empireID, fieldID, empire.Research.ProgressMilli, fieldCost)
+	if empire.Research.ProgressRP < fieldCost {
+		return DomainEvent{}, fmt.Errorf("empire %d research field %d has progress %.6f RP below base cost %.6f RP", empireID, fieldID, empire.Research.ProgressRP, fieldCost)
 	}
 	if len(empire.Research.TechnologyIDs) == 0 {
 		return DomainEvent{}, fmt.Errorf("empire %d research has no selected technology ids", empireID)

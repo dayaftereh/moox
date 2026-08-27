@@ -445,7 +445,7 @@ The command/session boundary is now implemented across `internal/protocol`, `int
 - detached/copying views so callers cannot mutate authoritative session state through returned DTOs;
 - server-owned Seat -> Empire resolver authority, preventing a command from claiming another empire;
 - first real `colony.assign_population` command with ownership/assignment validation;
-- fixed-point base colony food/production/research/tax snapshots driven by normalized ruleset data;
+- fixed-point base colony food/production/research/tax snapshots driven by normalized ruleset data, with active Empire research converted to RP-native `float64` per ADR-0002;
 - explicit Gravity/Government/local-Morale economy context and adjusted output, kept separate from base output for later additive leader/technology layers;
 - minimal colony building inventory with ruleset validation for Barracks/Holo/Pleasure morale behavior.
 
@@ -461,6 +461,7 @@ Network transports, Wails services and MCP remain adapters to this boundary and 
 ## Related architecture documents
 
 - `ADR-0001-go-wails-v3.md` - Go/Wails v3 portability and layer-boundary decision.
+- `ADR-0002-research-float64.md` - RP-native `float64` research state and explicit rounding-boundary decision.
 - `CORE.md` - deterministic core-state, RNG and save/load contract.
 - `SESSION_PROTOCOL.md` - concrete implemented session/command/observer contract.
 - `ASSET_PIPELINE.md` - normalized asset pipeline.
