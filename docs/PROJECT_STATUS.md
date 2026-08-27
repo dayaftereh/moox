@@ -1,16 +1,16 @@
-# MOOX project status
+# Master of Orion X project status
 
 Snapshot: **2026-08-27**
 
-This document is the high-level status page for MOOX. Detailed reverse-engineering evidence remains in `docs/research/`; the single active investigation is tracked in `docs/research/ACTIVE_RESEARCH.md`.
+This document is the high-level status page for Master of Orion X. Detailed reverse-engineering evidence remains in `docs/research/`; the single active investigation is tracked in `docs/research/ACTIVE_RESEARCH.md`.
 
 ## Executive summary
 
-MOOX is currently in an **advanced research/data-normalization phase**.
+Master of Orion X is now in **Phase 1 deterministic runtime development**, building on the advanced research/data-normalization baseline.
 
 The project is no longer an empty bootstrap repository: it has a pure-Go Master of Orion II 1.31 analyzer, verified original-file parsers, normalized runtime datasets, localization keys, a private reference-extraction pipeline and substantial semantic graphics mapping derived from original 1.31 data/executable behavior.
 
-The actual game simulation core is **not implemented yet**. There is no playable galaxy, turn loop, save-game system, AI or application UI at this point. The next major engineering transition after the active planet-data ticket is to start the deterministic headless simulation skeleton described in `docs/IMPLEMENTATION_PLAN.md`.
+The game is **not playable yet**, but the deterministic core and multiplayer/session boundary now exist. The repository has deterministic state/RNG/save-load plus versioned command batches, an atomic transport-independent strategic resolver contract, authoritative session phases, parallel seat submissions, player/observer projections, observer-only draft telemetry and minimal parallel tactical battle sessions. Gameplay command resolution, economy, fleets/combat rules, AI behavior and application UI remain to be implemented.
 
 ## Current repository / tool baseline
 
@@ -126,7 +126,7 @@ See `docs/research/ACTIVE_RESEARCH.md` for the explicit closed-milestone list an
 
 The planet-class normalization checkpoint is complete. The temporary probe programs have been removed, the normalized artifact is committed-ready, and the full Go test/vet baseline is green.
 
-**Phase 1 - deterministic simulation skeleton is active.** The first core foundation now provides seeded RNG, stable IDs, minimal galaxy/star/planet/empire/colony state, turn clock, event log, cross-reference validation and deterministic atomic save/load. The next runtime slice is colony population/economy turn processing.
+**Phase 1 - deterministic simulation skeleton is active.** The core foundation now provides seeded RNG, stable IDs, minimal galaxy/star/planet/empire/colony state, validation and deterministic atomic save/load. The session foundation now adds command batches, parallel planning/submission, deterministic replay ordering, PlayerView/ObserverView, AI draft telemetry, a transactional strategic resolver boundary and parallel BattleSession boundaries. The next runtime slice is the first real population/economy command set and resolver implementation.
 
 ## What is not implemented yet
 

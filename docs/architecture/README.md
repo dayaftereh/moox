@@ -415,31 +415,49 @@ Stable game/turn/encounter IDs and deterministic RNG streams/seeds are used so t
 
 ## Current implementation relationship
 
-`internal/core` already provides the first foundation:
+The architecture now has two implemented runtime foundations.
+
+`internal/core` provides:
 
 - stable IDs;
 - simulation-owned SplitMix64 RNG with serializable state;
 - minimal galaxy/empire/colony state;
-- turn and event-log primitives;
+- turn and legacy core event primitives;
 - validation;
 - deterministic JSON serialization;
 - atomic save/load;
 - a fixed deterministic regression fixture.
 
-The next implementation step should establish the command/session boundary before deeper economy/gameplay logic is added:
+The command/session boundary is now implemented across `internal/protocol`, `internal/game`, `internal/session` and `internal/battle`:
 
-1. `GameSession` and `Seat`;
-2. `SessionPhase` and submission/waiting state;
-3. versioned strategic `Command` and `CommandBatch` types;
-4. `PlayerView` and privileged `ObserverView`;
-5. first-class `DomainEvent` records;
-6. encounter identity and a minimal `BattleSession` boundary;
-7. observer/event stream;
-8. only then expand the deterministic strategic resolver with population/economy/research.
+- versioned `Command` and `CommandBatch` envelopes with ordered command sequences;
+- transport-independent `game.Resolver` input/output contract for resolved state, strategic domain events and encounter requests;
+- transactional `ResolveStrategic`: resolver output is fully validated/prepared before any authoritative state/revision/event commit;
+- authoritative `GameSession` with `planning`, `strategic_resolution`, `encounters` and `post_resolution` phases;
+- stable `Seat` ordering with local-human, remote-human, built-in-AI, external-AI and MCP-AI controller identities;
+- parallel turn submission against `turn` + `base_revision` guards;
+- deterministic authoritative submission logging in seat order, independent of network arrival order;
+- minimal `PlayerView` that exposes only the requesting empire/colonies plus public seat readiness;
+- privileged `ObserverView` with full state, submissions, events, battles and optional draft telemetry;
+- observer-only non-authoritative draft/AI telemetry kept outside the replay event stream;
+- deterministic encounter IDs/seeds and minimal tactical `BattleSession` lifecycle;
+- parallel battle completion with authoritative result logging in battle-ID order rather than wall-clock completion order;
+- detached/copying views so callers cannot mutate authoritative session state through returned DTOs.
 
+The generic strategic resolver boundary is now implemented. The next implementation slice is the first real strategic command set and resolver logic. It should:
+
+1. define the first real domain command types for colony population assignment;
+2. validate commands against the submitting seat's legal `PlayerView`/authoritative state;
+3. resolve submitted batches in explicit deterministic order;
+4. emit strategic domain events;
+5. apply the first verified food/production/research/money rules using normalized MOO2 data;
+6. preserve the current session/replay/observer determinism tests while state grows.
+
+Network transports, Wails services and MCP remain adapters to this boundary and should not be introduced into the deterministic core.
 ## Related architecture documents
 
 - `ADR-0001-go-wails-v3.md` - Go/Wails v3 portability and layer-boundary decision.
 - `CORE.md` - deterministic core-state, RNG and save/load contract.
+- `SESSION_PROTOCOL.md` - concrete implemented session/command/observer contract.
 - `ASSET_PIPELINE.md` - normalized asset pipeline.
 - `../IMPLEMENTATION_PLAN.md` - staged clean-room implementation plan.

@@ -23,9 +23,9 @@ The short identifier `moox` is reserved for internal technical names where a com
 
 Current snapshot: **2026-08-27**.
 
-Master of Orion X is in an **advanced research/data-normalization phase**. The repository now contains a pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), verified LBX/graphics/palette/audio/text tooling, a bound MZ/LE reader for the original DOS executable, normalized race/building/technology/ship-hull datasets, localization keys and a substantial semantic asset catalog.
+Master of Orion X is transitioning from the advanced research/data-normalization phase into the deterministic headless runtime. The repository contains the pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), normalized runtime datasets and the first simulation/session infrastructure.
 
-The playable simulation core is **not implemented yet**. The next major engineering transition is the deterministic headless simulation skeleton with the planet-class normalization checkpoint now completed.
+The game is **not playable yet**, but the runtime foundation is implemented: deterministic core state/RNG/save-load plus versioned command batches, an atomic strategic `game.Resolver` boundary, authoritative `GameSession` phases, parallel player submissions, Player/Observer projections, observer-only draft telemetry and deterministic tactical `BattleSession` boundaries. The next runtime slice is the first concrete strategic command set and resolver behavior, beginning with colony population/economy rules.
 
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the one active research objective.
 ## Research documents
@@ -40,6 +40,7 @@ See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/r
 - docs/architecture/README.md - runtime architecture overview for parallel turns, authoritative sessions, battles, observer and AI.
 - docs/architecture/ADR-0001-go-wails-v3.md - Go/Wails v3 portability decision and layer boundary.
 - docs/architecture/CORE.md - deterministic headless simulation state, RNG and save/load contract.
+- docs/architecture/SESSION_PROTOCOL.md - implemented session, command, observer and battle-boundary contract.
 - `reference/README.md` - policy for locally supplied original-game files.
 
 ## Fidelity target

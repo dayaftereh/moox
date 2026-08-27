@@ -116,20 +116,20 @@ The code includes hash constants for the relevant original function ranges. Thes
 
 ## Next exact action
 
-**Continue Phase 1 - deterministic simulation skeleton.**
+**Continue Phase 1 with the first real strategic command resolver.**
 
-The initial `internal/core` foundation is complete: deterministic RNG, stable IDs, minimal galaxy/system/planet/empire/colony state, turn clock, event log, validation and exact atomic save/load.
+The deterministic core plus the multiplayer/session command boundary are now implemented. `internal/protocol`, `internal/game`, `internal/session` and `internal/battle` provide versioned command batches, an atomic strategic resolver seam, parallel turn submission, deterministic event ordering, Player/Observer projections, draft telemetry and the minimal parallel battle-session lifecycle.
 
 Concretely, next:
 
-1. keep `internal/core` as the deterministic headless boundary,
-2. add minimal colony population assignment state,
-3. implement deterministic food/production/research/money turn processing,
-4. load only normalized ruleset fields required by those tests,
-5. preserve exact save/load and RNG replay behavior while expanding the state.
+1. define the first real population-assignment command(s),
+2. add domain validation so a seat can affect only its legal colony/population state,
+3. inspect only the normalized/original evidence needed for food/production/research/money formulas,
+4. implement deterministic strategic resolution and domain events for that narrow economy slice,
+5. feed resolved state/events back through the existing `GameSession` lifecycle,
+6. preserve exact save/load, RNG replay and arrival-order-independent multiplayer tests.
 
-Do not reopen planet graphics or another research subsystem unless a concrete simulation requirement demands it.
-
+Do not add Wails/network/MCP transport code yet; those remain adapters over the now-established session/protocol boundary. Do not reopen unrelated research unless a concrete economy rule requires it.
 ## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.
