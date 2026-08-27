@@ -128,7 +128,7 @@ Concretely, next:
 4. model hyper-advanced repeated-field level/cost state separately,
 5. return to Advanced-start randomized/race-aware technology grants after those runtime semantics exist.
 
-Architecture constraint: legacy MOO2 integer storage widths are evidence, not a MOOX storage requirement. Research uses `float64` RP per `ADR-0002-research-float64.md`; rounding must occur only at named gameplay-rule boundaries.
+Architecture constraint: legacy MOO2 integer storage widths are evidence, not a MOOX storage requirement. All continuous strategic quantities use domain-native `float64` per `ADR-0003-domain-native-float64.md`; genuinely discrete IDs/counts remain discrete, and rounding must occur only at named gameplay-rule boundaries.
 
 Do not add Wails/network/MCP-specific gameplay logic; transports remain adapters over the same session/legal-action surface.
 ## Exploration budget

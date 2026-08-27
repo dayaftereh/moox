@@ -13,7 +13,7 @@ func TestRNGIsDeterministic(t *testing.T) {
 	b := NewRNG(42)
 	for i := 0; i < 32; i++ {
 		if av, bv := a.Uint64(), b.Uint64(); av != bv {
-			t.Fatalf("step %d: %d != %d", i, av, bv)
+			t.Fatalf("step %v: %v != %v", i, av, bv)
 		}
 	}
 	if a.State() == 42 {
@@ -30,10 +30,10 @@ func TestStateRNGCanBeCheckpointed(t *testing.T) {
 	second := resumed.Uint64()
 	fresh := NewRNG(7)
 	if want := fresh.Uint64(); first != want {
-		t.Fatalf("first=%d want=%d", first, want)
+		t.Fatalf("first=%v want=%v", first, want)
 	}
 	if want := fresh.Uint64(); second != want {
-		t.Fatalf("second=%d want=%d", second, want)
+		t.Fatalf("second=%v want=%v", second, want)
 	}
 }
 
@@ -71,7 +71,7 @@ func TestAdvanceTurnAndEventLog(t *testing.T) {
 	state.AdvanceTurn()
 	state.AddEvent("turn_started", "turn advanced")
 	if state.Turn != 2 || state.Events[len(state.Events)-1].Turn != 2 {
-		t.Fatalf("turn=%d events=%+v", state.Turn, state.Events)
+		t.Fatalf("turn=%v events=%+v", state.Turn, state.Events)
 	}
 }
 
@@ -120,7 +120,7 @@ func TestIntnRangeAndValidation(t *testing.T) {
 			t.Fatal(err)
 		}
 		if value < 0 || value >= 7 {
-			t.Fatalf("Intn returned %d outside [0,7)", value)
+			t.Fatalf("Intn returned %v outside [0,7)", value)
 		}
 	}
 	if _, err := rng.Intn(0); err == nil {
@@ -144,7 +144,7 @@ func TestValidateRejectsInvalidEconomyContext(t *testing.T) {
 	}
 
 	state = NewSmallFixture(21)
-	state.Colonies[0].AdjustedEconomy.ProductionMilli = -1
+	state.Colonies[0].AdjustedEconomy.Production = -1
 	if err := state.Validate(); err == nil {
 		t.Fatal("expected negative adjusted economy to fail validation")
 	}
@@ -166,7 +166,7 @@ func TestValidateRejectsInvalidBuildingList(t *testing.T) {
 
 func TestConstructionStateRoundTripsExactly(t *testing.T) {
 	state := NewSmallFixture(301)
-	state.Colonies[0].Construction = &ConstructionState{BuildingID: "holo_simulator", ProgressMilli: 42000}
+	state.Colonies[0].Construction = &ConstructionState{BuildingID: "holo_simulator", ProgressPP: 42.5}
 	if err := state.Validate(); err != nil {
 		t.Fatal(err)
 	}
@@ -234,10 +234,10 @@ func TestResearchStateRoundTripsExactly(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !bytes.Contains(encoded, []byte(`"progress_rp": 42.125`)) && !bytes.Contains(encoded, []byte(`"progress_rp":42.125`)) {
-		t.Fatalf("schema-2 research JSON does not expose progress_rp: %s", encoded)
+		t.Fatalf("schema-3 research JSON does not expose progress_rp: %s", encoded)
 	}
 	if bytes.Contains(encoded, []byte("progress_milli")) {
-		t.Fatalf("legacy research progress_milli leaked into schema-2 JSON: %s", encoded)
+		t.Fatalf("legacy research progress_milli leaked into schema-3 JSON: %s", encoded)
 	}
 	loaded, err := UnmarshalState(encoded)
 	if err != nil {

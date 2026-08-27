@@ -124,7 +124,7 @@ func TestStrategicResolverSelectsResearchAndAppliesFractionalTurnRP(t *testing.T
 	if err := rules.InitializeEmpireTechnologies(&state.Empires[0], NewGameTechnologyOptions{Level: NewGameTechnologyPreWarp}); err != nil {
 		t.Fatal(err)
 	}
-	state.Colonies[0].AdjustedEconomy.ResearchMilli = 3750
+	state.Colonies[0].Population = core.PopulationState{Total: 4, Farmers: 1.25, Workers: 1.5, Scientists: 1.25}
 	command, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4})
 	if err != nil {
 		t.Fatal(err)
@@ -147,11 +147,8 @@ func TestStrategicResolverSelectsResearchAndAppliesFractionalTurnRP(t *testing.T
 	// Resolve recalculates the colony before advancing research; use the actual
 	// materialized value to prove that fractional RP is retained rather than
 	// requiring an integer ResearchState representation.
-	want := float64(result.State.Colonies[0].AdjustedEconomy.ResearchMilli) / float64(core.EconomyScale)
+	want := result.State.Colonies[0].AdjustedEconomy.Research
 	if result.State.Empires[0].Research.ProgressRP != want {
 		t.Fatalf("progress_rp=%v want=%v", result.State.Empires[0].Research.ProgressRP, want)
-	}
-	if result.State.Empires[0].Research.ProgressRP == float64(int64(result.State.Empires[0].Research.ProgressRP)) && result.State.Colonies[0].AdjustedEconomy.ResearchMilli%core.EconomyScale != 0 {
-		t.Fatalf("fractional RP was unexpectedly rounded: %+v", result.State.Empires[0].Research)
 	}
 }

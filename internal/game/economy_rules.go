@@ -19,48 +19,48 @@ type GovernmentEconomyModifier struct {
 }
 
 type RaceEconomyModifiers struct {
-	FoodPerFarmerMilli        int64
-	ProductionPerWorkerMilli  int64
-	ResearchPerScientistMilli int64
-	TaxBCPerPopulationMilli   int64
-	Aquatic                   bool
-	GravityID                 string
-	GovernmentTraitID         string
+	FoodPerFarmer        float64
+	ProductionPerWorker  float64
+	ResearchPerScientist float64
+	TaxBCPerPopulation   float64
+	Aquatic              bool
+	GravityID            string
+	GovernmentTraitID    string
 }
 
 type BuildingDefinition struct {
-	BuildingID          string
-	ProductionID        int
-	TechnologyID        int
-	ProductionCostMilli int64
-	MaintenanceBC       int
+	BuildingID       string
+	ProductionID     int
+	TechnologyID     int
+	ProductionCostPP float64
+	MaintenanceBC    int
 }
 type EconomyRules struct {
-	ClimateFoodPerFarmerMilli     map[string]int64
-	MineralIndustryPerWorkerMilli map[string]int64
-	RaceModifiers                 map[string]RaceEconomyModifiers
-	AquaticFoodBonusMilli         int64
-	AquaticFoodClimateIDs         map[string]struct{}
-	BaseResearchPerScientistMilli int64
-	BaseTaxBCPerPopulationMilli   int64
-	GravityPenaltyPercent         map[string]int
-	GovernmentModifiers           map[string]GovernmentEconomyModifier
-	MoraleBarracksPenaltyPercent  int
-	MoraleBarracksGovernments     map[string]struct{}
-	MoraleBarracksBuildingIDs     map[string]struct{}
-	MoraleBuildingBonusPercent    map[string]int
-	KnownBuildingIDs              map[string]struct{}
-	BuildingDefinitions           map[string]BuildingDefinition
-	TechnologyFieldCostsRP        map[int]float64
-	TechnologyFieldPreviousID     map[int]int
-	TechnologyFieldNextID         map[int]int
-	TechnologyIDsByField          map[int][]int
-	TechnologyFieldByID           map[int]int
-	TechnologyKeyByID             map[int]string
-	TechnologyNameKeyByID         map[int]string
-	TechnologyStrategicAvailable  map[int]bool
-	NewGameAlwaysKnownFieldID     int
-	NewGameStagedKnownFieldIDs    []int
+	ClimateFoodPerFarmer         map[string]float64
+	MineralIndustryPerWorker     map[string]float64
+	RaceModifiers                map[string]RaceEconomyModifiers
+	AquaticFoodBonus             float64
+	AquaticFoodClimateIDs        map[string]struct{}
+	BaseResearchPerScientist     float64
+	BaseTaxBCPerPopulation       float64
+	GravityPenaltyPercent        map[string]int
+	GovernmentModifiers          map[string]GovernmentEconomyModifier
+	MoraleBarracksPenaltyPercent int
+	MoraleBarracksGovernments    map[string]struct{}
+	MoraleBarracksBuildingIDs    map[string]struct{}
+	MoraleBuildingBonusPercent   map[string]int
+	KnownBuildingIDs             map[string]struct{}
+	BuildingDefinitions          map[string]BuildingDefinition
+	TechnologyFieldCostsRP       map[int]float64
+	TechnologyFieldPreviousID    map[int]int
+	TechnologyFieldNextID        map[int]int
+	TechnologyIDsByField         map[int][]int
+	TechnologyFieldByID          map[int]int
+	TechnologyKeyByID            map[int]string
+	TechnologyNameKeyByID        map[int]string
+	TechnologyStrategicAvailable map[int]bool
+	NewGameAlwaysKnownFieldID    int
+	NewGameStagedKnownFieldIDs   []int
 }
 
 func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
@@ -172,7 +172,7 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	buildingDefinitions := make(map[string]BuildingDefinition, len(buildings.Buildings))
 	for _, building := range buildings.Buildings {
 		buildingIDs[building.ID] = struct{}{}
-		buildingDefinitions[building.ID] = BuildingDefinition{BuildingID: building.ID, ProductionID: building.ProductionID, TechnologyID: building.TechnologyID, ProductionCostMilli: int64(building.ProductionCostPP) * core.EconomyScale, MaintenanceBC: building.MaintenanceBC}
+		buildingDefinitions[building.ID] = BuildingDefinition{BuildingID: building.ID, ProductionID: building.ProductionID, TechnologyID: building.TechnologyID, ProductionCostPP: float64(building.ProductionCostPP), MaintenanceBC: building.MaintenanceBC}
 	}
 	moraleBarracksGovernments := make(map[string]struct{}, len(economy.Morale.BarracksGovernmentTraitIDs))
 	for _, traitID := range economy.Morale.BarracksGovernmentTraitIDs {
@@ -194,41 +194,41 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	}
 
 	rules := &EconomyRules{
-		ClimateFoodPerFarmerMilli:     make(map[string]int64, len(planetClasses.Climates)),
-		MineralIndustryPerWorkerMilli: make(map[string]int64, len(planetClasses.MineralClasses)),
-		RaceModifiers:                 make(map[string]RaceEconomyModifiers, len(races.Races)),
-		AquaticFoodBonusMilli:         int64(economy.AquaticFoodBonus.Value) * core.EconomyScale,
-		AquaticFoodClimateIDs:         aquaticClimates,
-		BaseResearchPerScientistMilli: int64(economy.BaseResearchPerScientist.Value) * core.EconomyScale,
-		BaseTaxBCPerPopulationMilli:   int64(economy.BaseTaxBCPerPopulation.Value) * core.EconomyScale,
-		GravityPenaltyPercent:         gravityPenalties,
-		GovernmentModifiers:           governmentModifiers,
-		MoraleBarracksPenaltyPercent:  economy.Morale.BarracksPenaltyPercent,
-		MoraleBarracksGovernments:     moraleBarracksGovernments,
-		MoraleBarracksBuildingIDs:     moraleBarracksBuildingIDs,
-		MoraleBuildingBonusPercent:    moraleBuildingBonusPercent,
-		KnownBuildingIDs:              buildingIDs,
-		BuildingDefinitions:           buildingDefinitions,
-		TechnologyFieldCostsRP:        technologyFieldCosts,
-		TechnologyFieldPreviousID:     technologyFieldPreviousID,
-		TechnologyFieldNextID:         technologyFieldNextID,
-		TechnologyIDsByField:          technologyIDsByField,
-		TechnologyFieldByID:           technologyFieldByID,
-		TechnologyKeyByID:             technologyKeyByID,
-		TechnologyNameKeyByID:         technologyNameKeyByID,
-		TechnologyStrategicAvailable:  technologyStrategicAvailable,
-		NewGameAlwaysKnownFieldID:     technologies.NewGameStart.AlwaysKnownTechFieldID,
-		NewGameStagedKnownFieldIDs:    append([]int(nil), technologies.NewGameStart.StagedKnownTechFieldIDs...),
+		ClimateFoodPerFarmer:         make(map[string]float64, len(planetClasses.Climates)),
+		MineralIndustryPerWorker:     make(map[string]float64, len(planetClasses.MineralClasses)),
+		RaceModifiers:                make(map[string]RaceEconomyModifiers, len(races.Races)),
+		AquaticFoodBonus:             float64(economy.AquaticFoodBonus.Value),
+		AquaticFoodClimateIDs:        aquaticClimates,
+		BaseResearchPerScientist:     float64(economy.BaseResearchPerScientist.Value),
+		BaseTaxBCPerPopulation:       float64(economy.BaseTaxBCPerPopulation.Value),
+		GravityPenaltyPercent:        gravityPenalties,
+		GovernmentModifiers:          governmentModifiers,
+		MoraleBarracksPenaltyPercent: economy.Morale.BarracksPenaltyPercent,
+		MoraleBarracksGovernments:    moraleBarracksGovernments,
+		MoraleBarracksBuildingIDs:    moraleBarracksBuildingIDs,
+		MoraleBuildingBonusPercent:   moraleBuildingBonusPercent,
+		KnownBuildingIDs:             buildingIDs,
+		BuildingDefinitions:          buildingDefinitions,
+		TechnologyFieldCostsRP:       technologyFieldCosts,
+		TechnologyFieldPreviousID:    technologyFieldPreviousID,
+		TechnologyFieldNextID:        technologyFieldNextID,
+		TechnologyIDsByField:         technologyIDsByField,
+		TechnologyFieldByID:          technologyFieldByID,
+		TechnologyKeyByID:            technologyKeyByID,
+		TechnologyNameKeyByID:        technologyNameKeyByID,
+		TechnologyStrategicAvailable: technologyStrategicAvailable,
+		NewGameAlwaysKnownFieldID:    technologies.NewGameStart.AlwaysKnownTechFieldID,
+		NewGameStagedKnownFieldIDs:   append([]int(nil), technologies.NewGameStart.StagedKnownTechFieldIDs...),
 	}
 	for _, climate := range planetClasses.Climates {
-		rules.ClimateFoodPerFarmerMilli[climate.ID] = int64(climate.BaseFoodPerFarmer) * core.EconomyScale
+		rules.ClimateFoodPerFarmer[climate.ID] = float64(climate.BaseFoodPerFarmer)
 	}
 	for _, mineral := range planetClasses.MineralClasses {
 		value, ok := industryByMineral[mineral.ID]
 		if !ok {
 			return nil, fmt.Errorf("economy rules missing mineral class %q", mineral.ID)
 		}
-		rules.MineralIndustryPerWorkerMilli[mineral.ID] = int64(value) * core.EconomyScale
+		rules.MineralIndustryPerWorker[mineral.ID] = float64(value)
 	}
 
 	options := make(map[string]ruleset.RaceTraitOption)
@@ -264,16 +264,16 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 			if option.Value == nil {
 				continue
 			}
-			delta := int64(math.Round(*option.Value * float64(core.EconomyScale)))
+			delta := *option.Value
 			switch option.ValueKind {
 			case "food_per_farmer_delta":
-				modifiers.FoodPerFarmerMilli += delta
+				modifiers.FoodPerFarmer += delta
 			case "production_per_worker_delta":
-				modifiers.ProductionPerWorkerMilli += delta
+				modifiers.ProductionPerWorker += delta
 			case "research_per_scientist_delta":
-				modifiers.ResearchPerScientistMilli += delta
+				modifiers.ResearchPerScientist += delta
 			case "tax_bc_per_population_delta":
-				modifiers.TaxBCPerPopulationMilli += delta
+				modifiers.TaxBCPerPopulation += delta
 			}
 		}
 		if modifiers.GovernmentTraitID == "" {
@@ -291,11 +291,11 @@ func (r *EconomyRules) CalculateBaseEconomy(colony core.Colony, planet core.Plan
 	if r == nil {
 		return core.ColonyEconomy{}, fmt.Errorf("economy rules must not be nil")
 	}
-	foodBase, ok := r.ClimateFoodPerFarmerMilli[planet.ClimateID]
+	foodBase, ok := r.ClimateFoodPerFarmer[planet.ClimateID]
 	if !ok {
 		return core.ColonyEconomy{}, fmt.Errorf("unknown climate %q", planet.ClimateID)
 	}
-	industryBase, ok := r.MineralIndustryPerWorkerMilli[planet.MineralID]
+	industryBase, ok := r.MineralIndustryPerWorker[planet.MineralID]
 	if !ok {
 		return core.ColonyEconomy{}, fmt.Errorf("unknown mineral class %q", planet.MineralID)
 	}
@@ -303,30 +303,24 @@ func (r *EconomyRules) CalculateBaseEconomy(colony core.Colony, planet core.Plan
 	if !ok {
 		return core.ColonyEconomy{}, fmt.Errorf("unknown race %q", raceID)
 	}
-
-	// Farming racial bonuses do not make a no-farming climate farmable. Aquatic
-	// modifies only the explicitly normalized wet-climate coefficients.
 	if modifiers.Aquatic {
 		if _, ok := r.AquaticFoodClimateIDs[planet.ClimateID]; ok {
-			foodBase += r.AquaticFoodBonusMilli
+			foodBase += r.AquaticFoodBonus
 		}
 	}
-	foodPerFarmer := int64(0)
+	foodPerFarmer := 0.0
 	if foodBase > 0 {
-		foodPerFarmer = max64(core.EconomyScale, foodBase+modifiers.FoodPerFarmerMilli)
+		foodPerFarmer = math.Max(1, foodBase+modifiers.FoodPerFarmer)
 	}
-	productionPerWorker := max64(core.EconomyScale, industryBase+modifiers.ProductionPerWorkerMilli)
-	researchPerScientist := max64(core.EconomyScale, r.BaseResearchPerScientistMilli+modifiers.ResearchPerScientistMilli)
-	taxPerPopulation := max64(0, r.BaseTaxBCPerPopulationMilli+modifiers.TaxBCPerPopulationMilli)
-
+	productionPerWorker := math.Max(1, industryBase+modifiers.ProductionPerWorker)
+	researchPerScientist := math.Max(1, r.BaseResearchPerScientist+modifiers.ResearchPerScientist)
+	taxPerPopulation := math.Max(0, r.BaseTaxBCPerPopulation+modifiers.TaxBCPerPopulation)
 	population := colony.Population
-	rawTaxMilli := int64(population.Units) * taxPerPopulation
-	roundedTaxMilli := roundMilliToWhole(rawTaxMilli)
 	return core.ColonyEconomy{
-		FoodMilli:       int64(population.Farmers) * foodPerFarmer,
-		ProductionMilli: int64(population.Workers) * productionPerWorker,
-		ResearchMilli:   int64(population.Scientists) * researchPerScientist,
-		TaxBCMilli:      roundedTaxMilli,
+		Food:       population.Farmers * foodPerFarmer,
+		Production: population.Workers * productionPerWorker,
+		Research:   population.Scientists * researchPerScientist,
+		TaxBC:      population.Total * taxPerPopulation,
 	}, nil
 }
 
@@ -366,10 +360,10 @@ func (r *EconomyRules) CalculateContextualEconomy(base core.ColonyEconomy, colon
 		MoralePercent:                moralePercent,
 	}
 	adjusted := core.ColonyEconomy{
-		FoodMilli:       adjustedRoleOutput(base.FoodMilli, government.FoodPercent, moralePercent, gravityPenalty),
-		ProductionMilli: adjustedRoleOutput(base.ProductionMilli, government.ProductionPercent, moralePercent, gravityPenalty),
-		ResearchMilli:   adjustedRoleOutput(base.ResearchMilli, government.ResearchPercent, moralePercent, gravityPenalty),
-		TaxBCMilli:      adjustedTaxIncome(base.TaxBCMilli, government, moralePercent),
+		Food:       adjustedRoleOutput(base.Food, government.FoodPercent, moralePercent, gravityPenalty),
+		Production: adjustedRoleOutput(base.Production, government.ProductionPercent, moralePercent, gravityPenalty),
+		Research:   adjustedRoleOutput(base.Research, government.ResearchPercent, moralePercent, gravityPenalty),
+		TaxBC:      adjustedTaxIncome(base.TaxBC, government, moralePercent),
 	}
 	return context, adjusted, nil
 }
@@ -396,61 +390,34 @@ func (r *EconomyRules) calculateMorale(colony core.Colony, governmentTraitID str
 	}
 	return barracksPenalty, buildingBonus, rawMorale, nil
 }
-func adjustedRoleOutput(baseMilli int64, governmentPercent, moralePercent, gravityPenaltyPercent int) int64 {
-	if baseMilli <= 0 {
+func adjustedRoleOutput(base float64, governmentPercent, moralePercent, gravityPenaltyPercent int) float64 {
+	if base <= 0 {
 		return 0
 	}
 	percent := 100 + governmentPercent + moralePercent - gravityPenaltyPercent
 	if percent <= 0 {
 		return 0
 	}
-	return roundMilliToWhole(baseMilli * int64(percent) / 100)
+	return base * float64(percent) / 100
 }
 
-func adjustedTaxIncome(baseMilli int64, government GovernmentEconomyModifier, moralePercent int) int64 {
-	if baseMilli <= 0 {
+func adjustedTaxIncome(base float64, government GovernmentEconomyModifier, moralePercent int) float64 {
+	if base <= 0 {
 		return 0
 	}
-	governmentBonusMilli := int64(0)
+	governmentBonus := base * float64(government.TaxPercent) / 100
 	if government.TaxPercent != 0 {
-		governmentBonusMilli = baseMilli * int64(government.TaxPercent) / 100
 		switch government.TaxBonusRounding {
 		case "down":
-			governmentBonusMilli = floorMilliToWhole(governmentBonusMilli)
-		default:
-			governmentBonusMilli = roundSignedMilliToWhole(governmentBonusMilli)
+			governmentBonus = math.Floor(governmentBonus)
+		case "nearest":
+			governmentBonus = math.Round(governmentBonus)
 		}
 	}
-	moraleBonusMilli := roundSignedMilliToWhole(baseMilli * int64(moralePercent) / 100)
-	return max64(0, baseMilli+governmentBonusMilli+moraleBonusMilli)
+	moraleBonus := base * float64(moralePercent) / 100
+	return math.Max(0, base+governmentBonus+moraleBonus)
 }
+
 func gravityKey(raceGravityID, planetGravityID string) string {
 	return raceGravityID + "/" + planetGravityID
-}
-
-func roundSignedMilliToWhole(value int64) int64 {
-	if value < 0 {
-		return -roundMilliToWhole(-value)
-	}
-	return roundMilliToWhole(value)
-}
-func roundMilliToWhole(value int64) int64 {
-	if value <= 0 {
-		return 0
-	}
-	return ((value + core.EconomyScale/2) / core.EconomyScale) * core.EconomyScale
-}
-
-func floorMilliToWhole(value int64) int64 {
-	if value <= 0 {
-		return 0
-	}
-	return (value / core.EconomyScale) * core.EconomyScale
-}
-
-func max64(a, b int64) int64 {
-	if a > b {
-		return a
-	}
-	return b
 }

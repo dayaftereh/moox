@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"math"
 
 	"moox/internal/core"
 	"moox/internal/protocol"
@@ -56,8 +57,8 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 					return Resolution{}, fmt.Errorf("seat %d cannot assign population on colony %d owned by empire %d", batch.SeatID, colony.ID, colony.EmpireID)
 				}
 				assigned := payload.Farmers + payload.Workers + payload.Scientists
-				if assigned != colony.Population.Units {
-					return Resolution{}, fmt.Errorf("colony %d assignment total %d does not equal population units %d", colony.ID, assigned, colony.Population.Units)
+				if math.Abs(assigned-colony.Population.Total) > 1e-9*math.Max(1, math.Max(math.Abs(assigned), math.Abs(colony.Population.Total))) {
+					return Resolution{}, fmt.Errorf("colony %d assignment total %g does not equal population total %g", colony.ID, assigned, colony.Population.Total)
 				}
 				previous := colony.Population
 				colony.Population.Farmers = payload.Farmers

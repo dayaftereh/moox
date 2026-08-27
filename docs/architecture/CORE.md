@@ -8,7 +8,7 @@ MOOX keeps the gameplay simulation independent from UI and platform code. The Ph
 - simulation-owned SplitMix64 RNG with explicit serializable state,
 - minimal galaxy, star-system, planet, empire and colony state,
 - discrete colony job assignment (`PopulationState`) for farmers/workers/scientists,
-- fixed-point base colony economy snapshots (`ColonyEconomy`, 1000 milli-units per displayed resource),
+- domain-native `float64` Colony economy snapshots (`Food`, `Production`, `Research`, `TaxBC`) plus continuous Population allocation and PP construction progress,
 - explicit `ColonyEconomyContext` plus `AdjustedEconomy` for currently implemented Gravity/Government/local-Morale layers,
 - minimal validated colony building IDs used by the first proven local morale effects,
 - turn clock and event log,

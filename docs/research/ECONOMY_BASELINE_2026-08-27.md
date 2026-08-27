@@ -1,18 +1,18 @@
 # Colony economy baseline - 2026-08-27
 
-Status: implemented first deterministic strategic gameplay slice.
+Status: historical economy-evidence checkpoint; runtime numeric representation updated by `docs/architecture/ADR-0003-domain-native-float64.md`.
 
 This checkpoint establishes only the base population-job economy needed to exercise the command/session/observer architecture. It is deliberately smaller than the complete MOO2 colony economy.
 
 ## Implemented population model
 
-A colony currently stores discrete assignable population units with exactly three jobs:
+A colony stores continuous Population allocation with exactly three current jobs:
 
 - farmers,
 - workers,
 - scientists.
 
-For this Phase 1 slice, every assignable unit must be assigned to exactly one of those jobs. The visible/discrete `PopulationState.Units` is not yet the final high-precision population-growth representation; finer internal population precision remains later work.
+`PopulationState.Total`, `Farmers`, `Workers` and `Scientists` are now `float64`. The role allocations must sum to `Total` within deterministic tolerance, so fractional allocations such as 1.25 farmers or 1.5 workers are legal.
 
 The first real strategic command is:
 
@@ -20,7 +20,7 @@ The first real strategic command is:
 colony.assign_population
 ```
 
-Its payload contains colony ID plus farmer/worker/scientist counts. The server validates that:
+Its payload contains colony ID plus farmer/worker/scientist allocation values. The server validates that:
 
 - assignments are non-negative,
 - the assigned total equals the colony's assignable population,
@@ -31,7 +31,7 @@ Seat -> empire authority comes from `GameSession`, not from the client payload.
 
 ## Base output values
 
-The runtime uses fixed-point milli-units (`1000 == 1 displayed resource unit`) so deterministic save/replay behavior does not depend on floating-point arithmetic.
+The current runtime uses domain-native `float64` values directly in Food, PP, RP and BC. Determinism is maintained through stable evaluation order, finite-value validation and explicit tolerance/rounding boundaries rather than global fixed-point scaling.
 
 ### Food per farmer
 
@@ -78,7 +78,7 @@ The local original `HELP.LBX` also provides useful consistency evidence: Android
 
 ### Tax BC per population
 
-The neutral base taxable income is 1 BC/population and is stored in `economy.json`. The Race Designer money deltas (-0.5/+0.5/+1 BC) are read from `race_traits.json`. Population income is rounded to whole BC at this stage, matching the documented MOO2 population-income formula; the result is then stored in milli-units for state consistency.
+The neutral base taxable income is 1 BC/population and is stored in `economy.json`. The Race Designer money deltas (-0.5/+0.5/+1 BC) are read from `race_traits.json`. MOOX now preserves fractional base BC (for example 1.5 BC) instead of rounding merely because the original runtime used integer storage. Explicit tax-bonus rounding remains a separate named rule where normalized.
 
 This is base population income only. The game's player-controlled tax rate converts production into cash and is a distinct mechanic not implemented in this slice.
 
@@ -87,10 +87,10 @@ This is base population income only. The game's player-controlled tax rate conve
 For each colony the current materialized `ColonyEconomy` snapshot contains:
 
 ```text
-FoodMilli       = farmers    * effective food/farmer
-ProductionMilli = workers    * effective industry/worker
-ResearchMilli   = scientists * effective research/scientist
-TaxBCMilli      = population * effective base BC/population
+Food       = farmers    * effective food/farmer
+Production = workers    * effective industry/worker
+Research   = scientists * effective research/scientist
+TaxBC      = population * effective base BC/population
 ```
 
 The result is recalculated during strategic resolution and is visible through both the owning `PlayerView` and privileged `ObserverView`.

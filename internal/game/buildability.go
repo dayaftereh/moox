@@ -8,11 +8,11 @@ import (
 )
 
 type BuildingChoice struct {
-	BuildingID          string `json:"building_id"`
-	ProductionID        int    `json:"production_id"`
-	TechnologyID        int    `json:"technology_id"`
-	ProductionCostMilli int64  `json:"production_cost_milli"`
-	MaintenanceBC       int    `json:"maintenance_bc"`
+	BuildingID       string  `json:"building_id"`
+	ProductionID     int     `json:"production_id"`
+	TechnologyID     int     `json:"technology_id"`
+	ProductionCostPP float64 `json:"production_cost_pp"`
+	MaintenanceBC    int     `json:"maintenance_bc"`
 }
 
 // AvailableBuildingChoices projects the currently legal normalized building
@@ -58,11 +58,11 @@ func (r *EconomyRules) AvailableBuildingChoices(state *core.GameState, empireID,
 			continue
 		}
 		choices = append(choices, BuildingChoice{
-			BuildingID:          definition.BuildingID,
-			ProductionID:        definition.ProductionID,
-			TechnologyID:        definition.TechnologyID,
-			ProductionCostMilli: definition.ProductionCostMilli,
-			MaintenanceBC:       definition.MaintenanceBC,
+			BuildingID:       definition.BuildingID,
+			ProductionID:     definition.ProductionID,
+			TechnologyID:     definition.TechnologyID,
+			ProductionCostPP: definition.ProductionCostPP,
+			MaintenanceBC:    definition.MaintenanceBC,
 		})
 	}
 	sort.Slice(choices, func(i, j int) bool {

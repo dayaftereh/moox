@@ -8,17 +8,17 @@ import (
 )
 
 type ConstructionQueuedEvent struct {
-	ColonyID            core.ID `json:"colony_id"`
-	BuildingID          string  `json:"building_id"`
-	ProductionCostMilli int64   `json:"production_cost_milli"`
+	ColonyID         core.ID `json:"colony_id"`
+	BuildingID       string  `json:"building_id"`
+	ProductionCostPP float64 `json:"production_cost_pp"`
 }
 
 type ConstructionProgressedEvent struct {
-	ColonyID       core.ID `json:"colony_id"`
-	BuildingID     string  `json:"building_id"`
-	AppliedMilli   int64   `json:"applied_milli"`
-	ProgressMilli  int64   `json:"progress_milli"`
-	RemainingMilli int64   `json:"remaining_milli"`
+	ColonyID    core.ID `json:"colony_id"`
+	BuildingID  string  `json:"building_id"`
+	AppliedPP   float64 `json:"applied_pp"`
+	ProgressPP  float64 `json:"progress_pp"`
+	RemainingPP float64 `json:"remaining_pp"`
 }
 
 type BuildingCompletedEvent struct {
@@ -59,9 +59,9 @@ func (r *EconomyResolver) queueBuilding(state *core.GameState, empireID core.ID,
 	}
 	colony.Construction = &core.ConstructionState{BuildingID: payload.BuildingID}
 	return NewDomainEvent("colony.construction_queued", seatID, command.Sequence, ConstructionQueuedEvent{
-		ColonyID:            colony.ID,
-		BuildingID:          payload.BuildingID,
-		ProductionCostMilli: definition.ProductionCostMilli,
+		ColonyID:         colony.ID,
+		BuildingID:       payload.BuildingID,
+		ProductionCostPP: definition.ProductionCostPP,
 	})
 }
 
@@ -76,31 +76,31 @@ func (r *EconomyResolver) advanceConstruction(state *core.GameState) ([]DomainEv
 		if !ok {
 			return nil, fmt.Errorf("colony %d constructs unknown building %q", colony.ID, colony.Construction.BuildingID)
 		}
-		remaining := definition.ProductionCostMilli - colony.Construction.ProgressMilli
-		if remaining <= 0 {
-			return nil, fmt.Errorf("colony %d construction %q has invalid completed progress %d", colony.ID, colony.Construction.BuildingID, colony.Construction.ProgressMilli)
+		remaining := definition.ProductionCostPP - colony.Construction.ProgressPP
+		if remaining <= 1e-9 {
+			return nil, fmt.Errorf("colony %d construction %q has invalid completed progress %g", colony.ID, colony.Construction.BuildingID, colony.Construction.ProgressPP)
 		}
-		applied := colony.AdjustedEconomy.ProductionMilli
+		applied := colony.AdjustedEconomy.Production
 		if applied < 0 {
-			return nil, fmt.Errorf("colony %d has negative adjusted production %d", colony.ID, applied)
+			return nil, fmt.Errorf("colony %d has negative adjusted production %g", colony.ID, applied)
 		}
 		if applied > remaining {
 			applied = remaining
 		}
-		colony.Construction.ProgressMilli += applied
+		colony.Construction.ProgressPP += applied
 		remaining -= applied
 		progress, err := NewDomainEvent("colony.construction_progressed", 0, 0, ConstructionProgressedEvent{
-			ColonyID:       colony.ID,
-			BuildingID:     colony.Construction.BuildingID,
-			AppliedMilli:   applied,
-			ProgressMilli:  colony.Construction.ProgressMilli,
-			RemainingMilli: remaining,
+			ColonyID:    colony.ID,
+			BuildingID:  colony.Construction.BuildingID,
+			AppliedPP:   applied,
+			ProgressPP:  colony.Construction.ProgressPP,
+			RemainingPP: remaining,
 		})
 		if err != nil {
 			return nil, err
 		}
 		events = append(events, progress)
-		if remaining != 0 {
+		if remaining > 1e-9 {
 			continue
 		}
 		buildingID := colony.Construction.BuildingID

@@ -25,7 +25,7 @@ Current snapshot: **2026-08-27**.
 
 Master of Orion X is transitioning from the advanced research/data-normalization phase into the deterministic headless runtime. The repository contains the pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), normalized runtime datasets and the first simulation/session infrastructure.
 
-The game is **not playable yet**, but the first strategic economy/construction path now runs through the authoritative session boundary. It includes server-authorized population commands, fixed-point base output, Gravity, starting-government and local Morale context, single-project deterministic building construction, original building PP cost/BC maintenance data, persistent technology ownership and technology-gated legal building choices. The same server-derived building-choice projection is available to future Human UI and AI controllers; starting technologies are deliberately not guessed and are the active research target.
+The game is **not playable yet**, but the first strategic economy/construction/research path now runs through the authoritative session boundary. Population allocation, Food, Production, Research, BC and Construction progress use domain-native `float64` values; Gravity, starting-government and local Morale context layer on top without implicit intermediate rounding. Technology ownership/buildability plus server-derived BuildingChoices and ResearchChoices are shared by future Human UI and AI controllers.
 
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the one active research objective.
 ### Latest runtime checkpoints
@@ -35,7 +35,7 @@ See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/r
 - `17791c1` - original technology-field/RP-cost normalization, deterministic Pre-Warp/Average new-game ownership and authoritative research-completion ownership transition.
 - `30ee47b` - verified original standard-field breakthrough curve/RNG/overflow behavior and automatic strategic research resolution.
 
-The active implementation sequence has moved past breakthrough research: RP-native `float64` progress is now the MOOX architecture, `ResearchChoices` exposes the server-authoritative frontier, and `empire.select_research` lets Human UI and AI submit only a TechField while the server materializes its Technology set.
+The active runtime now follows a broader numeric architecture: continuous quantities use domain-native `float64` (`PopulationState.Total/Farmers/Workers/Scientists`, Food, PP, RP, BC and Construction progress), while genuinely discrete IDs/counts remain discrete. Rounding occurs only at explicit gameplay-rule boundaries. `ResearchChoices` exposes the server-authoritative frontier, and `empire.select_research` lets Human UI and AI submit only a TechField while the server materializes its Technology set.
 ## Research documents
 
 - `docs/research/MOO2_GAME_REFERENCE.md` - gameplay/system reference and fidelity checklist.
@@ -50,7 +50,8 @@ The active implementation sequence has moved past breakthrough research: RP-nati
 - `docs/research/TECHNOLOGY_START_RESEARCH_2026-08-27.md` - original technology/tech-field tables, Pre-Warp/Average ownership initialization and research-completion ownership transition.
 - `docs/research/RESEARCH_BREAKTHROUGH_2026-08-27.md` - original breakthrough evidence plus the documented MOOX float-RP divergence.
 - `docs/research/RESEARCH_SELECTION_2026-08-27.md` - authority-filtered ResearchChoices and `empire.select_research`.
-- `docs/architecture/ADR-0002-research-float64.md` - accepted RP-native `float64` architecture and explicit rounding policy.
+- `docs/architecture/ADR-0002-research-float64.md` - historical first RP-native `float64` decision.
+- `docs/architecture/ADR-0003-domain-native-float64.md` - canonical continuous-quantity `float64` and explicit rounding-boundary architecture.
 - `docs/IMPLEMENTATION_PLAN.md` - proposed clean-room development phases.
 - docs/ANALYZER.md - pure-Go MOO2 console analyzer usage and architecture.
 - docs/architecture/README.md - runtime architecture overview for parallel turns, authoritative sessions, battles, observer and AI.
@@ -106,7 +107,7 @@ These projects are references, not dependencies at this stage. If code is reused
 - parallel seat submissions plus Player/Observer projections,
 - discrete farmer/worker/scientist assignment,
 - the first real `colony.assign_population` strategic command,
-- fixed-point base food/production/research/tax colony output from normalized ruleset data,
+- domain-native `float64` Population/Food/Production/Research/BC output from normalized ruleset data,
 - explicit Gravity/Government/local-Morale economy context and adjusted output,
 - original building PP costs and BC/turn maintenance normalized from the MOO2 1.31 `_buildings` table,
 - single-project deterministic colony construction driven by adjusted production,

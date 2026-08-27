@@ -95,7 +95,7 @@ server validates/materializes ResearchState
 
 Research selection uses the RP-native float architecture from `ADR-0002-research-float64.md`.
 
-`ResearchState.ProgressRP` is `float64`; current Colony research milli-units are summed and then converted to RP without per-Colony integer truncation. The breakthrough percentage rounds only at its explicit percent/RNG boundary.
+`ResearchState.ProgressRP` and Colony `AdjustedEconomy.Research` are both domain-native `float64`. Empire research sums RP directly. The breakthrough percentage rounds only at its explicit percent/RNG boundary.
 
 ## Deferred
 

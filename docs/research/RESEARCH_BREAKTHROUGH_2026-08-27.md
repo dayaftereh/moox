@@ -94,7 +94,7 @@ Per `docs/architecture/ADR-0002-research-float64.md`, MOOX stores active researc
 ResearchState.ProgressRP = 153.75
 ```
 
-The Colony economy may still be fixed-point milli-units. At the research boundary MOOX sums the deterministic Colony milli-RP outputs and converts the total to `float64` RP without per-Colony truncation:
+The Colony economy now also uses domain-native `float64` values under ADR-0003. Empire research therefore sums Colony RP directly without any milli-unit conversion or per-Colony truncation:
 
 ```text
 1.9 RP + 1.9 RP = 3.8 RP
@@ -104,7 +104,7 @@ This intentionally diverges from the old integer storage behavior. It avoids los
 
 The verified breakthrough curve remains useful as a gameplay rule. MOOX computes it from the full floating-point projected RP and floors only the final percentage used by the discrete 1..100 roll. Therefore rounding occurs at the named probability boundary, not during RP accumulation.
 
-`GameState.Validate` rejects negative, NaN and infinite research progress. Persistent state schema 2 serializes the value as numeric `progress_rp`.
+`GameState.Validate` rejects negative, NaN and infinite research progress. Persistent state schema 3 serializes the value as numeric `progress_rp`; the wider Population/Economy/Construction state moved to the same domain-native numeric policy.
 ## Turn resolution and overflow
 
 The original turn resolver at VA `0xE44E0` performs this order:

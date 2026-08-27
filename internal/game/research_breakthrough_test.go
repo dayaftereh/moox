@@ -89,10 +89,10 @@ func TestNoActiveResearchDoesNotConsumeRNG(t *testing.T) {
 func TestEmpireResearchPreservesFractionalColonyOutput(t *testing.T) {
 	state := core.NewSmallFixture(603)
 	empireID := state.Empires[0].ID
-	state.Colonies[0].AdjustedEconomy.ResearchMilli = 1900
+	state.Colonies[0].AdjustedEconomy.Research = 1.9
 	second := state.Colonies[0]
 	second.ID = state.NextID + 100
-	second.AdjustedEconomy.ResearchMilli = 1900
+	second.AdjustedEconomy.Research = 1.9
 	state.Colonies = append(state.Colonies, second)
 	if got := implementedEmpireResearchRP(state, empireID); got != 3.8 {
 		t.Fatalf("fractional empire research=%v want=3.8", got)
@@ -114,7 +114,7 @@ func TestGuaranteedBreakthroughAcquiresSpeakingTechnologyAndUnlocksBuilding(t *t
 		TechnologyIDs: []int{155},
 		ProgressRP:    299,
 	}
-	state.Colonies[0].AdjustedEconomy.ResearchMilli = 1000
+	state.Colonies[0].AdjustedEconomy.Research = 1
 
 	events, err := resolver.advanceResearch(state)
 	if err != nil {
@@ -165,7 +165,7 @@ func TestResearchResolutionIsReplayDeterministic(t *testing.T) {
 	makeState := func() *core.GameState {
 		state := core.NewSmallFixture(605)
 		state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressRP: 159}
-		state.Colonies[0].AdjustedEconomy.ResearchMilli = 1000
+		state.Colonies[0].AdjustedEconomy.Research = 1
 		return state
 	}
 	first := makeState()

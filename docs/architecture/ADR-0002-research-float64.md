@@ -1,6 +1,7 @@
 # ADR-0002: Use float64 research points in the MOOX runtime
 
-- Status: Accepted
+- Status: Superseded
+- Superseded by: `ADR-0003-domain-native-float64.md`
 - Date: 2026-08-27
 - Scope: deterministic strategic research runtime and protocol/state serialization
 
@@ -22,7 +23,7 @@ ResearchState{
 
 Technology-field base costs are also exposed to the game layer as `float64` RP.
 
-The wider economy may continue to use deterministic fixed-point milli-units where that is already useful. The research boundary converts Colony research output to RP without per-Colony truncation:
+At the time of this ADR the wider economy still used fixed-point milli-units. That broader numeric policy is now superseded by ADR-0003: Colony economy, Population allocation and Construction progress also use domain-native `float64`. The research examples below remain valid as the first step in that direction:
 
 ```text
 Colony A = 1.9 RP

@@ -108,19 +108,17 @@ func (r *EconomyResolver) advanceResearch(state *core.GameState) ([]DomainEvent,
 	return events, nil
 }
 
-// implementedEmpireResearchRP bridges the fixed-point colony economy into the
-// research domain without per-colony truncation. Research therefore preserves
-// fractional RP all the way until a rule explicitly requires rounding.
+// implementedEmpireResearchRP aggregates domain-native Colony RP directly.
 func implementedEmpireResearchRP(state *core.GameState, empireID core.ID) float64 {
-	var totalMilli int64
+	var total float64
 	for i := range state.Colonies {
 		colony := &state.Colonies[i]
 		if colony.EmpireID != empireID {
 			continue
 		}
-		totalMilli += colony.AdjustedEconomy.ResearchMilli
+		total += colony.AdjustedEconomy.Research
 	}
-	return float64(totalMilli) / float64(core.EconomyScale)
+	return total
 }
 
 func (r *EconomyResolver) technologyKeys(ids []int) ([]string, error) {

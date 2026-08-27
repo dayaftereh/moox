@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 2
+const StateSchemaVersion = 3
 
 type ID uint64
 
@@ -73,32 +73,30 @@ type Colony struct {
 }
 
 type ConstructionState struct {
-	BuildingID    string `json:"building_id"`
-	ProgressMilli int64  `json:"progress_milli"`
+	BuildingID string  `json:"building_id"`
+	ProgressPP float64 `json:"progress_pp"`
 }
+
 type PopulationState struct {
-	Units      int `json:"units"`
-	Farmers    int `json:"farmers"`
-	Workers    int `json:"workers"`
-	Scientists int `json:"scientists"`
+	Total      float64 `json:"total"`
+	Farmers    float64 `json:"farmers"`
+	Workers    float64 `json:"workers"`
+	Scientists float64 `json:"scientists"`
 }
 
-// ColonyEconomy stores deterministic fixed-point base role output. Values use
-// EconomyScale units per displayed MOO2 resource point. This first slice is
-// intentionally pre-government/morale/gravity/building/pollution/logistics.
+// ColonyEconomy stores domain-native continuous resource output. Values are
+// expressed directly as Food, PP, RP and BC rather than scaled integer units.
 type ColonyEconomy struct {
-	FoodMilli       int64 `json:"food_milli"`
-	ProductionMilli int64 `json:"production_milli"`
-	ResearchMilli   int64 `json:"research_milli"`
-	TaxBCMilli      int64 `json:"tax_bc_milli"`
+	Food       float64 `json:"food"`
+	Production float64 `json:"production"`
+	Research   float64 `json:"research"`
+	TaxBC      float64 `json:"tax_bc"`
 }
-
-const EconomyScale int64 = 1000
 
 // ColonyEconomyContext records the currently implemented percentage layers used
 // to recompute AdjustedEconomy from Economy. Future morale/leader modifiers must
 // be added to this context and recalculated from the base snapshot, never
-// multiplied sequentially onto already rounded adjusted output.
+// multiplied sequentially onto already-adjusted output.
 type ColonyEconomyContext struct {
 	RaceGravityID                string `json:"race_gravity_id,omitempty"`
 	PlanetGravityID              string `json:"planet_gravity_id,omitempty"`
@@ -270,22 +268,43 @@ func (s *GameState) Validate() error {
 			if colony.Construction.BuildingID == "" {
 				return fmt.Errorf("colony[%d] construction building_id is required", i)
 			}
-			if colony.Construction.ProgressMilli < 0 {
-				return fmt.Errorf("colony[%d] construction progress must be non-negative", i)
+			if !finiteNonNegative(colony.Construction.ProgressPP) {
+				return fmt.Errorf("colony[%d] construction progress_pp must be finite and non-negative", i)
 			}
 		}
 		population := colony.Population
-		if population.Units < 0 || population.Farmers < 0 || population.Workers < 0 || population.Scientists < 0 {
-			return fmt.Errorf("colony[%d] population assignments must be non-negative", i)
+		for _, item := range []struct {
+			label string
+			value float64
+		}{
+			{"total", population.Total},
+			{"farmers", population.Farmers},
+			{"workers", population.Workers},
+			{"scientists", population.Scientists},
+		} {
+			if !finiteNonNegative(item.value) {
+				return fmt.Errorf("colony[%d] population %s must be finite and non-negative", i, item.label)
+			}
 		}
-		if assigned := population.Farmers + population.Workers + population.Scientists; assigned != population.Units {
-			return fmt.Errorf("colony[%d] assigned population=%d does not equal units=%d", i, assigned, population.Units)
+		if assigned := population.Farmers + population.Workers + population.Scientists; !nearlyEqual(assigned, population.Total) {
+			return fmt.Errorf("colony[%d] assigned population=%g does not equal total=%g", i, assigned, population.Total)
 		}
-		if colony.Economy.FoodMilli < 0 || colony.Economy.ProductionMilli < 0 || colony.Economy.ResearchMilli < 0 || colony.Economy.TaxBCMilli < 0 {
-			return fmt.Errorf("colony[%d] economy outputs must be non-negative", i)
-		}
-		if colony.AdjustedEconomy.FoodMilli < 0 || colony.AdjustedEconomy.ProductionMilli < 0 || colony.AdjustedEconomy.ResearchMilli < 0 || colony.AdjustedEconomy.TaxBCMilli < 0 {
-			return fmt.Errorf("colony[%d] adjusted economy outputs must be non-negative", i)
+		for _, item := range []struct {
+			label string
+			value float64
+		}{
+			{"food", colony.Economy.Food},
+			{"production", colony.Economy.Production},
+			{"research", colony.Economy.Research},
+			{"tax_bc", colony.Economy.TaxBC},
+			{"adjusted_food", colony.AdjustedEconomy.Food},
+			{"adjusted_production", colony.AdjustedEconomy.Production},
+			{"adjusted_research", colony.AdjustedEconomy.Research},
+			{"adjusted_tax_bc", colony.AdjustedEconomy.TaxBC},
+		} {
+			if !finiteNonNegative(item.value) {
+				return fmt.Errorf("colony[%d] economy %s must be finite and non-negative", i, item.label)
+			}
 		}
 		seenBuildings := make(map[string]struct{}, len(colony.Buildings))
 		for bi, buildingID := range colony.Buildings {
@@ -339,4 +358,13 @@ func (s *GameState) Validate() error {
 		}
 	}
 	return nil
+}
+
+func finiteNonNegative(value float64) bool {
+	return !math.IsNaN(value) && !math.IsInf(value, 0) && value >= 0
+}
+
+func nearlyEqual(a, b float64) bool {
+	scale := math.Max(1, math.Max(math.Abs(a), math.Abs(b)))
+	return math.Abs(a-b) <= 1e-9*scale
 }

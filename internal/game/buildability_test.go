@@ -33,7 +33,7 @@ func TestAvailableBuildingChoicesRequireKnownTechnologyAndOwnership(t *testing.T
 	if !reflect.DeepEqual(ids, []string{"holo_simulator", "pleasure_dome"}) {
 		t.Fatalf("known technology choices=%v", ids)
 	}
-	if choices[0].TechnologyID != 86 || choices[0].ProductionCostMilli != 120*core.EconomyScale || choices[0].MaintenanceBC != 1 {
+	if choices[0].TechnologyID != 86 || choices[0].ProductionCostPP != 120 || choices[0].MaintenanceBC != 1 {
 		t.Fatalf("unexpected Holo choice: %+v", choices[0])
 	}
 
@@ -46,7 +46,7 @@ func TestAvailableBuildingChoicesRequireKnownTechnologyAndOwnership(t *testing.T
 		t.Fatalf("owned building not filtered: %+v", choices)
 	}
 
-	colony.Construction = &core.ConstructionState{BuildingID: "pleasure_dome", ProgressMilli: 1000}
+	colony.Construction = &core.ConstructionState{BuildingID: "pleasure_dome", ProgressPP: 1}
 	choices, err = rules.AvailableBuildingChoices(state, empire.ID, colony.ID)
 	if err != nil {
 		t.Fatal(err)

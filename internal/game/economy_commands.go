@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 
 	"moox/internal/core"
 	"moox/internal/protocol"
@@ -14,9 +15,9 @@ const CommandAssignPopulation = "colony.assign_population"
 
 type AssignPopulationPayload struct {
 	ColonyID   core.ID `json:"colony_id"`
-	Farmers    int     `json:"farmers"`
-	Workers    int     `json:"workers"`
-	Scientists int     `json:"scientists"`
+	Farmers    float64 `json:"farmers"`
+	Workers    float64 `json:"workers"`
+	Scientists float64 `json:"scientists"`
 }
 
 func NewAssignPopulationCommand(sequence uint32, payload AssignPopulationPayload) (protocol.Command, error) {
@@ -49,8 +50,10 @@ func validateAssignPopulationPayload(payload AssignPopulationPayload) error {
 	if payload.ColonyID == 0 {
 		return fmt.Errorf("colony_id must be non-zero")
 	}
-	if payload.Farmers < 0 || payload.Workers < 0 || payload.Scientists < 0 {
-		return fmt.Errorf("population assignments must be non-negative")
+	for _, value := range []float64{payload.Farmers, payload.Workers, payload.Scientists} {
+		if math.IsNaN(value) || math.IsInf(value, 0) || value < 0 {
+			return fmt.Errorf("population assignments must be finite and non-negative")
+		}
 	}
 	return nil
 }

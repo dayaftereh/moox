@@ -41,10 +41,10 @@ func TestQueueBuildingAppliesCurrentTurnProduction(t *testing.T) {
 	if colony.Construction == nil || colony.Construction.BuildingID != "holo_simulator" {
 		t.Fatalf("construction not queued: %+v", colony.Construction)
 	}
-	if colony.Construction.ProgressMilli != colony.AdjustedEconomy.ProductionMilli {
-		t.Fatalf("progress=%d adjusted production=%d", colony.Construction.ProgressMilli, colony.AdjustedEconomy.ProductionMilli)
+	if colony.Construction.ProgressPP != colony.AdjustedEconomy.Production {
+		t.Fatalf("progress=%v adjusted production=%v", colony.Construction.ProgressPP, colony.AdjustedEconomy.Production)
 	}
-	if colony.Construction.ProgressMilli <= 0 || colony.Construction.ProgressMilli >= rules.BuildingDefinitions["holo_simulator"].ProductionCostMilli {
+	if colony.Construction.ProgressPP <= 0 || colony.Construction.ProgressPP >= rules.BuildingDefinitions["holo_simulator"].ProductionCostPP {
 		t.Fatalf("unexpected first-turn construction progress: %+v", colony.Construction)
 	}
 	if len(result.Events) != 2 || result.Events[0].Kind != "colony.construction_queued" || result.Events[1].Kind != "colony.construction_progressed" {
@@ -108,7 +108,7 @@ func TestQueueBuildingRejectsForeignUnknownOwnedAndBusy(t *testing.T) {
 	t.Run("busy colony", func(t *testing.T) {
 		state := core.NewSmallFixture(205)
 		state.Empires[0].KnownTechnologyIDs = []int{86}
-		state.Colonies[0].Construction = &core.ConstructionState{BuildingID: "research_lab", ProgressMilli: 1000}
+		state.Colonies[0].Construction = &core.ConstructionState{BuildingID: "research_lab", ProgressPP: 1}
 		command := makeCommand(t, state, "holo_simulator")
 		ctx, batches := constructionBatch(t, state, command)
 		if _, err := resolver.Resolve(ctx, state, batches); err == nil {
@@ -121,7 +121,7 @@ func TestCompletedBuildingAffectsEconomyOnNextRecalculation(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	// Test-only acceleration: the original Holo Simulator still costs 120 PP,
 	// but one abundant-world worker produces enough to finish it this fixture turn.
-	rules.MineralIndustryPerWorkerMilli["abundant"] = 120 * core.EconomyScale
+	rules.MineralIndustryPerWorker["abundant"] = 120
 	resolver, err := NewEconomyResolver(rules)
 	if err != nil {
 		t.Fatal(err)
@@ -147,8 +147,8 @@ func TestCompletedBuildingAffectsEconomyOnNextRecalculation(t *testing.T) {
 	if colony.EconomyContext.MoraleBuildingBonusPercent != 0 {
 		t.Fatalf("newly completed Holo affected same-turn economy: %+v", colony.EconomyContext)
 	}
-	if colony.AdjustedEconomy.ProductionMilli != 120*core.EconomyScale {
-		t.Fatalf("same-turn production=%d", colony.AdjustedEconomy.ProductionMilli)
+	if colony.AdjustedEconomy.Production != 120 {
+		t.Fatalf("same-turn production=%v", colony.AdjustedEconomy.Production)
 	}
 	if len(first.Events) != 3 || first.Events[2].Kind != "colony.building_completed" {
 		t.Fatalf("unexpected completion events: %+v", first.Events)
@@ -162,8 +162,8 @@ func TestCompletedBuildingAffectsEconomyOnNextRecalculation(t *testing.T) {
 	if colony.EconomyContext.MoraleBuildingBonusPercent != 20 || colony.EconomyContext.MoralePercent != 20 {
 		t.Fatalf("completed Holo missing on next recalculation: %+v", colony.EconomyContext)
 	}
-	if colony.AdjustedEconomy.ProductionMilli != 144*core.EconomyScale {
-		t.Fatalf("next-turn morale-adjusted production=%d, want %d", colony.AdjustedEconomy.ProductionMilli, 144*core.EconomyScale)
+	if colony.AdjustedEconomy.Production != 144 {
+		t.Fatalf("next-turn morale-adjusted production=%v, want %v", colony.AdjustedEconomy.Production, 144)
 	}
 }
 
@@ -184,13 +184,13 @@ func TestConstructionProgressIsDeterministicAcrossResolutions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	firstProgress := first.State.Colonies[0].Construction.ProgressMilli
+	firstProgress := first.State.Colonies[0].Construction.ProgressPP
 	second, err := resolver.Resolve(ctx, first.State, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	secondProgress := second.State.Colonies[0].Construction.ProgressMilli
-	if secondProgress != firstProgress+second.State.Colonies[0].AdjustedEconomy.ProductionMilli {
-		t.Fatalf("progress did not advance deterministically: first=%d second=%d production=%d", firstProgress, secondProgress, second.State.Colonies[0].AdjustedEconomy.ProductionMilli)
+	secondProgress := second.State.Colonies[0].Construction.ProgressPP
+	if secondProgress != firstProgress+second.State.Colonies[0].AdjustedEconomy.Production {
+		t.Fatalf("progress did not advance deterministically: first=%v second=%v production=%v", firstProgress, secondProgress, second.State.Colonies[0].AdjustedEconomy.Production)
 	}
 }

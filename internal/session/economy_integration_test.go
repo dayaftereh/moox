@@ -60,19 +60,19 @@ func TestEconomyCommandFlowsThroughAuthoritativeSessionAndObserver(t *testing.T)
 		t.Fatal(err)
 	}
 	if observer.Phase != PhasePostResolution || observer.Revision != 2 {
-		t.Fatalf("unexpected resolved phase/revision: %q/%d", observer.Phase, observer.Revision)
+		t.Fatalf("unexpected resolved phase/revision: %q/%v", observer.Phase, observer.Revision)
 	}
 	colony := observer.State.Colonies[0]
-	if colony.Population != (core.PopulationState{Units: 4, Farmers: 1, Workers: 2, Scientists: 1}) {
+	if colony.Population != (core.PopulationState{Total: 4, Farmers: 1, Workers: 2, Scientists: 1}) {
 		t.Fatalf("observer population = %+v", colony.Population)
 	}
-	if colony.Economy != (core.ColonyEconomy{FoodMilli: 2000, ProductionMilli: 6000, ResearchMilli: 3000, TaxBCMilli: 4000}) {
+	if colony.Economy != (core.ColonyEconomy{Food: 2, Production: 6, Research: 3, TaxBC: 4}) {
 		t.Fatalf("observer base economy = %+v", colony.Economy)
 	}
 	if colony.EconomyContext.GovernmentTraitID != "government_democracy" || colony.EconomyContext.GravityPenaltyPercent != 0 {
 		t.Fatalf("observer economy context = %+v", colony.EconomyContext)
 	}
-	if colony.AdjustedEconomy != (core.ColonyEconomy{FoodMilli: 2000, ProductionMilli: 6000, ResearchMilli: 5000, TaxBCMilli: 6000}) {
+	if colony.AdjustedEconomy != (core.ColonyEconomy{Food: 2, Production: 6, Research: 4.5, TaxBC: 6}) {
 		t.Fatalf("observer adjusted economy = %+v", colony.AdjustedEconomy)
 	}
 	found := false
@@ -176,8 +176,8 @@ func TestObserverReceivesMoraleContext(t *testing.T) {
 	if colony.EconomyContext.MoraleBuildingBonusPercent != 50 || colony.EconomyContext.MoralePercent != 50 {
 		t.Fatalf("observer morale context=%+v", colony.EconomyContext)
 	}
-	if colony.Economy.ResearchMilli != 6000 || colony.AdjustedEconomy.ResearchMilli != 12000 {
-		t.Fatalf("observer morale research base/adjusted=%d/%d", colony.Economy.ResearchMilli, colony.AdjustedEconomy.ResearchMilli)
+	if colony.Economy.Research != 6 || colony.AdjustedEconomy.Research != 12 {
+		t.Fatalf("observer morale research base/adjusted=%v/%v", colony.Economy.Research, colony.AdjustedEconomy.Research)
 	}
 	found := false
 	for _, event := range observer.Events {

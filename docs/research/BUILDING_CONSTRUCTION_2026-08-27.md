@@ -52,20 +52,20 @@ The first deterministic construction slice intentionally remains narrow:
 - `colony.queue_building` is an authoritative strategic command;
 - the server maps `SeatID -> EmpireID` and rejects construction on foreign colonies;
 - unknown buildings, already-owned buildings and a second active construction are rejected;
-- the active project receives that resolution's `AdjustedEconomy.ProductionMilli`;
+- the active project receives that resolution's domain-native `AdjustedEconomy.Production` in PP;
 - applied production is capped at the remaining building cost;
 - zero production does not emit a progress event;
 - completion appends the building to the colony and clears the active construction;
 - a newly completed building does not retroactively alter the economy snapshot that produced it; its already-implemented effect enters the following economy recalculation.
 
-Construction progress uses the engine's existing fixed-point `EconomyScale` (1000 milli-units per displayed PP). The normalized building cost therefore becomes `production_cost_pp * EconomyScale` in runtime rules.
+Construction now uses domain-native `float64` PP. Building definitions expose `production_cost_pp` directly, `ConstructionState.ProgressPP` preserves fractional production, and completion uses a small deterministic tolerance for floating-point residue.
 
 ## Events
 
 The resolver emits:
 
 - `colony.construction_queued` - attributed to the submitting seat and command;
-- `colony.construction_progressed` - system event containing applied/progress/remaining milli-PP;
+- `colony.construction_progressed` - system event containing applied/progress/remaining PP as numeric `float64` values;
 - `colony.building_completed` - system event when the exact cost is reached.
 
 These events flow through the existing deterministic `GameSession` observer/replay stream.
