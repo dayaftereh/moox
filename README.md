@@ -22,6 +22,7 @@ See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/r
 - `docs/research/ACTIVE_RESEARCH.md` - authoritative current objective, next exact action, blockers and closed milestones.
 - `docs/IMPLEMENTATION_PLAN.md` - proposed clean-room development phases.
 - docs/ANALYZER.md - pure-Go MOO2 console analyzer usage and architecture.
+- docs/architecture/README.md - runtime architecture overview for parallel turns, authoritative sessions, battles, observer and AI.
 - docs/architecture/ADR-0001-go-wails-v3.md - Go/Wails v3 portability decision and layer boundary.
 - docs/architecture/CORE.md - deterministic headless simulation state, RNG and save/load contract.
 - `reference/README.md` - policy for locally supplied original-game files.
