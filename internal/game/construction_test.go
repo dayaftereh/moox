@@ -26,6 +26,7 @@ func TestQueueBuildingAppliesCurrentTurnProduction(t *testing.T) {
 		t.Fatal(err)
 	}
 	state := core.NewSmallFixture(201)
+	state.Empires[0].KnownTechnologyIDs = []int{86}
 	colonyID := state.Colonies[0].ID
 	command, err := NewQueueBuildingCommand(1, QueueBuildingPayload{ColonyID: colonyID, BuildingID: "holo_simulator"})
 	if err != nil {
@@ -76,6 +77,14 @@ func TestQueueBuildingRejectsForeignUnknownOwnedAndBusy(t *testing.T) {
 		}
 	})
 
+	t.Run("missing technology", func(t *testing.T) {
+		state := core.NewSmallFixture(208)
+		command := makeCommand(t, state, "holo_simulator")
+		ctx, batches := constructionBatch(t, state, command)
+		if _, err := resolver.Resolve(ctx, state, batches); err == nil {
+			t.Fatal("expected unknown technology to block construction")
+		}
+	})
 	t.Run("unknown building", func(t *testing.T) {
 		state := core.NewSmallFixture(203)
 		command := makeCommand(t, state, "not_a_building")
@@ -87,6 +96,7 @@ func TestQueueBuildingRejectsForeignUnknownOwnedAndBusy(t *testing.T) {
 
 	t.Run("already owned", func(t *testing.T) {
 		state := core.NewSmallFixture(204)
+		state.Empires[0].KnownTechnologyIDs = []int{86}
 		state.Colonies[0].Buildings = []string{"holo_simulator"}
 		command := makeCommand(t, state, "holo_simulator")
 		ctx, batches := constructionBatch(t, state, command)
@@ -97,6 +107,7 @@ func TestQueueBuildingRejectsForeignUnknownOwnedAndBusy(t *testing.T) {
 
 	t.Run("busy colony", func(t *testing.T) {
 		state := core.NewSmallFixture(205)
+		state.Empires[0].KnownTechnologyIDs = []int{86}
 		state.Colonies[0].Construction = &core.ConstructionState{BuildingID: "research_lab", ProgressMilli: 1000}
 		command := makeCommand(t, state, "holo_simulator")
 		ctx, batches := constructionBatch(t, state, command)
@@ -116,6 +127,7 @@ func TestCompletedBuildingAffectsEconomyOnNextRecalculation(t *testing.T) {
 		t.Fatal(err)
 	}
 	state := core.NewSmallFixture(206)
+	state.Empires[0].KnownTechnologyIDs = []int{86}
 	command, err := NewQueueBuildingCommand(1, QueueBuildingPayload{ColonyID: state.Colonies[0].ID, BuildingID: "holo_simulator"})
 	if err != nil {
 		t.Fatal(err)
@@ -162,6 +174,7 @@ func TestConstructionProgressIsDeterministicAcrossResolutions(t *testing.T) {
 		t.Fatal(err)
 	}
 	state := core.NewSmallFixture(207)
+	state.Empires[0].KnownTechnologyIDs = []int{86}
 	command, err := NewQueueBuildingCommand(1, QueueBuildingPayload{ColonyID: state.Colonies[0].ID, BuildingID: "holo_simulator"})
 	if err != nil {
 		t.Fatal(err)

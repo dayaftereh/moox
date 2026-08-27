@@ -43,10 +43,11 @@ type Planet struct {
 }
 
 type Empire struct {
-	ID      ID     `json:"id"`
-	Name    string `json:"name"`
-	RaceID  string `json:"race_id"`
-	Capital ID     `json:"capital_colony_id,omitempty"`
+	ID                 ID     `json:"id"`
+	Name               string `json:"name"`
+	RaceID             string `json:"race_id"`
+	Capital            ID     `json:"capital_colony_id,omitempty"`
+	KnownTechnologyIDs []int  `json:"known_technology_ids,omitempty"`
 }
 
 type Colony struct {
@@ -190,6 +191,21 @@ func (s *GameState) Validate() error {
 		}
 		if err := checkID(empire.ID, fmt.Sprintf("empire[%d]", i)); err != nil {
 			return err
+		}
+		seenTech := make(map[int]struct{}, len(empire.KnownTechnologyIDs))
+		lastTech := 0
+		for ti, technologyID := range empire.KnownTechnologyIDs {
+			if technologyID < 1 || technologyID > 203 {
+				return fmt.Errorf("empire[%d] known technology id %d outside [1,203]", i, technologyID)
+			}
+			if _, exists := seenTech[technologyID]; exists {
+				return fmt.Errorf("empire[%d] duplicate known technology id %d", i, technologyID)
+			}
+			if ti > 0 && technologyID <= lastTech {
+				return fmt.Errorf("empire[%d] known technology ids must be strictly ascending", i)
+			}
+			seenTech[technologyID] = struct{}{}
+			lastTech = technologyID
 		}
 		empireIDs[empire.ID] = struct{}{}
 	}

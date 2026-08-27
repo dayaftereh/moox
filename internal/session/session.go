@@ -480,6 +480,18 @@ func (s *GameSession) PublishDraftTelemetry(seatID protocol.SeatID, kind, summar
 	return nil
 }
 
+func (s *GameSession) BuildingChoices(seatID protocol.SeatID, colonyID core.ID, rules *game.EconomyRules) ([]game.BuildingChoice, error) {
+	if rules == nil {
+		return nil, fmt.Errorf("economy rules must not be nil")
+	}
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	index := s.seatIndexLocked(seatID)
+	if index < 0 {
+		return nil, fmt.Errorf("unknown seat %d", seatID)
+	}
+	return rules.AvailableBuildingChoices(s.state, s.seats[index].seat.EmpireID, colonyID)
+}
 func (s *GameSession) PlayerView(seatID protocol.SeatID) (PlayerView, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()

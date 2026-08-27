@@ -166,7 +166,7 @@ The economy resolver validates the command against the authoritative `SeatID -> 
 
 Construction produces observer/replay domain events for queueing, progress and completion. Queue events retain seat/command attribution; automatic progress/completion are system events. A completed building is installed after the economy snapshot that funded it, so its gameplay effect begins on the next economy recalculation rather than retroactively changing the production that completed it.
 
-The current state is a single active project rather than a full queue. Overflow, buyout, buildability from owned technology and building replacement/exclusion rules remain later work.
+The current state is a single active project rather than a full queue. Technology ownership is now enforced: `Empire.KnownTechnologyIDs` gates `colony.queue_building`, and `GameSession.BuildingChoices(seatID, colonyID, rules)` exposes the same authority-filtered legal building choices to UI or AI callers. Original starting-technology grants are not assumed. Overflow, buyout and building replacement/exclusion rules remain later work.
 ## Current limitations / next slice
 
 This checkpoint intentionally does not yet implement:

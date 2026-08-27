@@ -38,9 +38,16 @@ func (r *EconomyResolver) queueBuilding(state *core.GameState, empireID core.ID,
 	if colony.EmpireID != empireID {
 		return DomainEvent{}, fmt.Errorf("seat %d cannot queue construction on colony %d owned by empire %d", seatID, colony.ID, colony.EmpireID)
 	}
+	empire := empireByID(state, empireID)
+	if empire == nil {
+		return DomainEvent{}, fmt.Errorf("seat %d references unknown empire %d", seatID, empireID)
+	}
 	definition, ok := r.Rules.BuildingDefinitions[payload.BuildingID]
 	if !ok {
 		return DomainEvent{}, fmt.Errorf("unknown building %q", payload.BuildingID)
+	}
+	if !empireKnowsTechnology(empire, definition.TechnologyID) {
+		return DomainEvent{}, fmt.Errorf("empire %d does not know technology %d required for building %q", empireID, definition.TechnologyID, payload.BuildingID)
 	}
 	for _, buildingID := range colony.Buildings {
 		if buildingID == payload.BuildingID {

@@ -372,6 +372,7 @@ func TestResolveStrategicRejectsInvalidEncounterAtomically(t *testing.T) {
 
 func TestGameSessionResolvesConstructionCommand(t *testing.T) {
 	state, seats := twoSeatFixture(t)
+	state.Empires[0].KnownTechnologyIDs = []int{86}
 	s, err := NewGameSession("game-construction", state, seats)
 	if err != nil {
 		t.Fatal(err)
@@ -438,5 +439,28 @@ func TestGameSessionResolvesConstructionCommand(t *testing.T) {
 	}
 	if !queued || !progressed {
 		t.Fatalf("observer missing construction events: queued=%v progressed=%v", queued, progressed)
+	}
+}
+
+func TestGameSessionBuildingChoicesUseSeatAuthority(t *testing.T) {
+	state, seats := twoSeatFixture(t)
+	state.Empires[0].KnownTechnologyIDs = []int{86, 141}
+	s, err := NewGameSession("game-choices", state, seats)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rules, err := game.LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	choices, err := s.BuildingChoices(1, state.Colonies[0].ID, rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(choices) != 2 || choices[0].BuildingID != "holo_simulator" || choices[1].BuildingID != "pleasure_dome" {
+		t.Fatalf("unexpected seat building choices: %+v", choices)
+	}
+	if _, err := s.BuildingChoices(2, state.Colonies[0].ID, rules); err == nil {
+		t.Fatal("expected other seat to be denied production choices for foreign colony")
 	}
 }

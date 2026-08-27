@@ -189,3 +189,35 @@ func TestConstructionStateRoundTripsExactly(t *testing.T) {
 		t.Fatal("construction state bytes changed after exact round-trip")
 	}
 }
+
+func TestKnownTechnologyIDsValidateAndRoundTrip(t *testing.T) {
+	state := NewSmallFixture(403)
+	state.Empires[0].KnownTechnologyIDs = []int{22, 86, 141}
+	if err := state.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	encoded, err := MarshalState(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := UnmarshalState(encoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(loaded.Empires[0].KnownTechnologyIDs, []int{22, 86, 141}) {
+		t.Fatalf("known technologies changed on round-trip: %v", loaded.Empires[0].KnownTechnologyIDs)
+	}
+
+	state.Empires[0].KnownTechnologyIDs = []int{86, 22}
+	if err := state.Validate(); err == nil {
+		t.Fatal("expected unsorted known technologies to fail validation")
+	}
+	state.Empires[0].KnownTechnologyIDs = []int{86, 86}
+	if err := state.Validate(); err == nil {
+		t.Fatal("expected duplicate known technologies to fail validation")
+	}
+	state.Empires[0].KnownTechnologyIDs = []int{204}
+	if err := state.Validate(); err == nil {
+		t.Fatal("expected out-of-range known technology to fail validation")
+	}
+}

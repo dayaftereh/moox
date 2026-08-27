@@ -29,6 +29,9 @@ type RaceEconomyModifiers struct {
 }
 
 type BuildingDefinition struct {
+	BuildingID          string
+	ProductionID        int
+	TechnologyID        int
 	ProductionCostMilli int64
 	MaintenanceBC       int
 }
@@ -132,7 +135,7 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	buildingDefinitions := make(map[string]BuildingDefinition, len(buildings.Buildings))
 	for _, building := range buildings.Buildings {
 		buildingIDs[building.ID] = struct{}{}
-		buildingDefinitions[building.ID] = BuildingDefinition{ProductionCostMilli: int64(building.ProductionCostPP) * core.EconomyScale, MaintenanceBC: building.MaintenanceBC}
+		buildingDefinitions[building.ID] = BuildingDefinition{BuildingID: building.ID, ProductionID: building.ProductionID, TechnologyID: building.TechnologyID, ProductionCostMilli: int64(building.ProductionCostPP) * core.EconomyScale, MaintenanceBC: building.MaintenanceBC}
 	}
 	moraleBarracksGovernments := make(map[string]struct{}, len(economy.Morale.BarracksGovernmentTraitIDs))
 	for _, traitID := range economy.Morale.BarracksGovernmentTraitIDs {

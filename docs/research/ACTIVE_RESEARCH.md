@@ -116,19 +116,19 @@ The code includes hash constants for the relevant original function ranges. Thes
 
 ## Next exact action
 
-**Continue Phase 1 from the completed first colony-construction vertical slice.**
+**Continue Phase 1 from technology-gated colony construction and legal building-choice projection.**
 
-Population assignment, base/contextual economy, Gravity, Government, Morale and a single active building project now run through the deterministic command/session boundary. Building schema v3 normalizes original production cost and maintenance for all 48 colony buildings. `colony.queue_building` validates ownership/catalog state, spends current adjusted production, persists progress through save/load, emits observer events and installs the completed building for the next economy recalculation.
+The first construction vertical slice now includes persistent `KnownTechnologyIDs`, authoritative technology gating on `colony.queue_building`, and `GameSession.BuildingChoices` so Human UI and AI can consume the same server-derived legal building list. No starting technology set is invented by the fixture.
 
 Concretely, next:
 
-1. research and implement the narrow technology/buildability prerequisite needed before exposing arbitrary buildings in a real player production list,
-2. model the player's available production choices as a projected legal-action/view rather than trusting a submitted building ID,
-3. decide from original evidence how building replacement/exclusion and queue changes behave before extending the single project into a multi-item queue,
-4. keep normalized `maintenance_bc` data-only until empire treasury/maintenance timing is proven and implemented,
-5. preserve the current deterministic construction/save-load/observer tests while expanding progression.
+1. narrowly establish the original new-game/starting technology ownership needed to initialize a real empire rather than test-injected technology IDs,
+2. identify the first research acquisition state transition needed to add a newly learned normalized technology to `KnownTechnologyIDs`,
+3. research original building replacement/exclusion behavior before allowing construction choices that supersede another building,
+4. only after those constraints are proven, extend production selection beyond the current single active building project,
+5. keep `maintenance_bc` data-only until empire treasury/maintenance timing is proven.
 
-Do not add Wails/network/MCP transport code yet; those remain adapters over the established protocol/session boundary. Do not implement production overflow, buyout, pollution or empire finance from assumptions.
+Do not add Wails/network/MCP transport code yet; those remain adapters over the established protocol/session/legal-action boundary. Do not infer starting technologies, overflow, buyout, pollution or empire finance.
 ## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.

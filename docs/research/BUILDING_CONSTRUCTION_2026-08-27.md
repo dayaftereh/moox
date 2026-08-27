@@ -70,6 +70,18 @@ The resolver emits:
 
 These events flow through the existing deterministic `GameSession` observer/replay stream.
 
+## Technology buildability boundary
+
+The normalized building table already carries the original `technology_id` for every building. The runtime now uses that proven link as the minimum buildability prerequisite:
+
+- `Empire.KnownTechnologyIDs` is persistent deterministic state;
+- the list is validated as unique, strictly ascending original technology IDs in the normalized 1..203 range;
+- `colony.queue_building` rejects a building whose technology is not known by the owning empire;
+- `AvailableBuildingChoices` projects only buildings whose technology is known, which are not already present on the colony, and only while the colony has no active construction project;
+- choices are returned in stable original production-ID order;
+- `GameSession.BuildingChoices` applies the authoritative seat-to-empire mapping before returning this projection, so human clients and AI agents can consume the same legal-action list.
+
+This checkpoint deliberately does **not** assign starting technologies to the deterministic fixture and does not claim the original new-game technology grant. Tests inject explicit known technology IDs where a buildability scenario requires them. Original starting/research acquisition behavior remains separate evidence work.
 ## Deliberately not claimed yet
 
 This checkpoint does not establish or implement:
@@ -78,7 +90,7 @@ This checkpoint does not establish or implement:
 - a multi-item construction queue;
 - buyout/rush-production rules;
 - maintenance deductions from empire treasury;
-- technology ownership/unlock gating for buildability;
+- original starting technology grants and research acquisition timing;
 - replacement/exclusion relationships between buildings;
 - ship construction;
 - pollution interaction with construction output.
