@@ -119,9 +119,7 @@ Using `float64` does not permit nondeterministic aggregation.
 
 ## Persistent state schema
 
-This change bumps `StateSchemaVersion` from 2 to 3.
-
-Canonical schema-3 changes include:
+The original Float migration bumped `StateSchemaVersion` from 2 to 3 with these canonical changes:
 
 ```text
 population.units        -> population.total
@@ -132,9 +130,11 @@ tax_bc_milli            -> tax_bc
 construction.progress_milli -> construction.progress_pp
 ```
 
-All affected values are now JSON numbers backed by `float64` in Go.
+All affected values are JSON numbers backed by `float64` in Go.
 
-The project is still pre-release, so no schema-2 migration shim is retained in the runtime. Schema 3 is the canonical development state going forward.
+The Population Growth/Sustenance slice subsequently bumps the development state to schema 4 by adding materialized `population_dynamics` (`capacity`, sustenance, available Production and projected Growth). This is an extension of the same Float policy, not a return to scaled integers.
+
+The project is still pre-release, so no schema-2/schema-3 migration shim is retained in the runtime. Schema 4 is the canonical development state going forward.
 
 ## Relationship to original MOO2 behavior
 
@@ -159,5 +159,5 @@ Trade-offs:
 
 - some results intentionally diverge from original intermediate rounding,
 - exact float comparisons must be avoided after nontrivial arithmetic,
-- schema 2 saves are no longer accepted,
+- older development schemas are no longer accepted without an explicit future migration layer,
 - tests must state the intended rule boundary rather than assume whole-number output.

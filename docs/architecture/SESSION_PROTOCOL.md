@@ -131,7 +131,7 @@ colony.assign_population
 
 A command specifies a colony ID and complete farmer/worker/scientist assignment. The strategic economy resolver validates the command against trusted Seat -> Empire authority supplied by `GameSession`; the client cannot claim an empire in the command payload.
 
-A successful command updates continuous `PopulationState` (`total`, farmers, workers, scientists as `float64`), recalculates domain-native `ColonyEconomy`, derives `ColonyEconomyContext` for gravity/starting-government rules, computes `AdjustedEconomy`, and emits `colony.population_assigned` with previous/current allocations plus all three economy views. Invalid ownership, non-finite values or assignment totals outside numeric tolerance cause the complete `ResolveStrategic` transaction to fail without changing authoritative state.
+A successful command updates continuous `PopulationState` (`total`, farmers, workers, scientists as `float64`), recalculates domain-native `ColonyEconomy`, derives `ColonyEconomyContext`, computes `AdjustedEconomy` and `ColonyPopulationDynamics`, and emits `colony.population_assigned` with the materialized views. Invalid ownership, non-finite values or assignment totals outside numeric tolerance cause the complete `ResolveStrategic` transaction to fail without changing authoritative state.
 
 Economy values are loaded from normalized ruleset data (`planet_classes.json`, `race_traits.json`, `races.json`, `buildings.json`, `economy.json`). `Economy` is the pre-context base snapshot; `AdjustedEconomy` currently adds gravity + starting-government + local Morale effects. The event/Observer context records Barracks penalty and morale-building bonus separately. It is still pre-empire-wide-tech/broader-building/pollution/logistics and must not be interpreted as final net colony production.
 ## Tactical BattleSession boundary
@@ -190,4 +190,4 @@ This checkpoint intentionally does not yet implement:
 - MCP tools/resources;
 - authentication/reconnect persistence.
 
-Construction is implemented with domain-native `AdjustedEconomy.Production` and `ConstructionState.ProgressPP` as `float64`. Fractional PP is preserved and completion uses a small deterministic tolerance; building effects still enter the following economy recalculation.
+Construction is implemented with domain-native PP and `ConstructionState.ProgressPP` as `float64`. It consumes `PopulationDynamics.ProductionAvailable`, so Cybernetic sustenance is deducted before building progress. Research consumes the current-turn adjusted RP next. Positive Population Growth resolves only afterwards, emits `colony.population_grew`, and the final post-turn Economy/Dynamics snapshot is recalculated from the larger Population. Newly grown Population therefore never contributes PP/RP retroactively to the same turn.

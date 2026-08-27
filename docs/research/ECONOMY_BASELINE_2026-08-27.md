@@ -115,14 +115,14 @@ The current snapshot is a base/gross role output. It does not yet apply:
 - pollution and pollution-control rules,
 - blockade effects,
 - colony leader bonuses,
-- food consumption,
+- starvation loss, Freighter/imported-Food logistics and surplus-Food handling,
 - freighter import/export logistics,
 - surplus-food sale,
 - tax-rate production conversion,
 - maintenance/expenses,
 - treaties/trade income,
 - specials such as Lithovore/Cybernetic/Fantastic Traders,
-- population growth and maximum-population rules.
+- Housing/Cloning/medicine growth layers, capacity buildings, terraforming and multi-race Population cohorts.
 
 Those effects must be added as separately proven layers rather than folded into an unexplained formula.
 
@@ -135,3 +135,5 @@ This is covered by both resolver-level and full GameSession integration tests.
 ## Next fidelity slice
 
 The next economy work should normalize and test the contextual modifiers needed to turn base output into effective output. The likely first dependency chain is gravity compatibility and government effects, followed by morale/buildings/pollution. Exact ordering and rounding should be proven before implementation.
+
+Population capacity, base sustenance and turn-end Growth are now implemented in docs/research/POPULATION_GROWTH_SUSTENANCE_2026-08-27.md; the deferred list above refers to the remaining logistics/special-case layers.

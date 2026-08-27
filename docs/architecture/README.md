@@ -446,16 +446,13 @@ The command/session boundary is now implemented across `internal/protocol`, `int
 - server-owned Seat -> Empire resolver authority, preventing a command from claiming another empire;
 - first real `colony.assign_population` command with ownership/assignment validation;
 - domain-native `float64` Population, Food, Production, Research, BC and Construction progress driven by normalized ruleset data per ADR-0003;
+- materialized Population capacity, Food/Production sustenance, available Construction PP and direct-float turn-end Growth;
 - explicit Gravity/Government/local-Morale economy context and adjusted output, kept separate from base output for later additive leader/technology layers;
 - minimal colony building inventory with ruleset validation for Barracks/Holo/Pleasure morale behavior.
 
-The first strategic gameplay command plus Gravity/Government/local-Morale context are now implemented. The next implementation slice should add the first deterministic colony progression loop without weakening the established command/session boundary:
+The strategic runtime has progressed beyond the first command into an explicit colony progression order. Current-turn Economy/Dynamics are materialized first; Construction consumes available PP, Research consumes RP, Population Growth resolves afterwards, and the post-turn snapshot is recalculated. This ordering is covered by regression tests so newly grown Population cannot produce PP/RP retroactively.
 
-1. normalize gravity compatibility/penalty behavior needed by colony production;
-2. normalize government effects needed by production/research/income;
-3. add those as explicit deterministic layers over `ColonyEconomy` base output;
-4. keep morale/buildings/pollution/logistics separate until their ordering and rounding are evidenced;
-5. preserve arrival-order-independent replay, transactional failure and exact save/load behavior.
+The next Economy slices are starvation and Food/Freighter logistics, followed by isolated Housing/Cloning/medicine and capacity-building layers. In parallel, the next Research-specific slice remains Creative/Uncreative behavior for multi-Technology TechFields and its server-authoritative `ResearchChoice` representation.
 
 Network transports, Wails services and MCP remain adapters to this boundary and should not be introduced into the deterministic core.
 ## Related architecture documents

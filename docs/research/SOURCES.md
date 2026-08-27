@@ -167,3 +167,22 @@ https://github.com/open-watcom/open-watcom-v2/blob/master/bld/watcom/h/exeflat.h
 https://github.com/open-watcom/open-watcom-v2/blob/master/bld/wl/c/loadflat.c
 
 Use: factual interpretation of the bound MZ/LE object/page-map format while reading the original DOS 1.31 `Orion2.exe`. No Open Watcom source code is copied into MOOX.
+## Population growth / capacity / sustenance references
+
+### MOO2 1.50 technical manual - population growth
+
+https://moo2mod.com/manual/MANUAL_150.html
+
+Use: secondary technical evidence for the classic square-root Population growth equation, its `FACTOR1 = 2000` / k-pop growth-result formulation, race growth modifiers, and documented Housing/Cloning hooks. MOOX does not copy the old integer growth intermediate and does not treat mod-specific behavior as official 1.31 without additional evidence.
+
+### Maximum Population formula reference
+
+https://masteroforion2.blogspot.com/2005/10/maximum-population.html
+
+Use: secondary cross-check for classic size capacities, climate habitability, Aquatic/Tolerant changes and Subterranean capacity bonuses. The normalized values are tagged as secondary evidence pending stronger original-observed confirmation.
+
+### StrategyWiki race-design sustenance reference
+
+https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Race_design_options
+
+Use: secondary cross-check for normal Food consumption plus Cybernetic and Lithovore sustenance behavior. Runtime data keeps these source IDs explicit so stronger original evidence can replace them later without changing the game-layer API.

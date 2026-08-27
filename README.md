@@ -25,7 +25,7 @@ Current snapshot: **2026-08-27**.
 
 Master of Orion X is transitioning from the advanced research/data-normalization phase into the deterministic headless runtime. The repository contains the pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), normalized runtime datasets and the first simulation/session infrastructure.
 
-The game is **not playable yet**, but the first strategic economy/construction/research path now runs through the authoritative session boundary. Population allocation, Food, Production, Research, BC and Construction progress use domain-native `float64` values; Gravity, starting-government and local Morale context layer on top without implicit intermediate rounding. Technology ownership/buildability plus server-derived BuildingChoices and ResearchChoices are shared by future Human UI and AI controllers.
+The game is **not playable yet**, but the first strategic economy/construction/research path now runs through the authoritative session boundary. Population allocation, Food, Production, Research, BC and Construction progress use domain-native `float64` values; Population capacity, Food/Cybernetic sustenance and turn-end Population Growth are now materialized as well. Gravity, starting-government and local Morale context layer on top without implicit intermediate rounding. Technology ownership/buildability plus server-derived BuildingChoices and ResearchChoices are shared by future Human UI and AI controllers.
 
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the one active research objective.
 ### Latest runtime checkpoints
@@ -35,7 +35,7 @@ See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/r
 - `17791c1` - original technology-field/RP-cost normalization, deterministic Pre-Warp/Average new-game ownership and authoritative research-completion ownership transition.
 - `30ee47b` - verified original standard-field breakthrough curve/RNG/overflow behavior and automatic strategic research resolution.
 
-The active runtime now follows a broader numeric architecture: continuous quantities use domain-native `float64` (`PopulationState.Total/Farmers/Workers/Scientists`, Food, PP, RP, BC and Construction progress), while genuinely discrete IDs/counts remain discrete. Rounding occurs only at explicit gameplay-rule boundaries. `ResearchChoices` exposes the server-authoritative frontier, and `empire.select_research` lets Human UI and AI submit only a TechField while the server materializes its Technology set.
+The active runtime follows a domain-native numeric architecture: continuous quantities use `float64` (`PopulationState.Total/Farmers/Workers/Scientists`, Food, PP, RP, BC and Construction progress), while genuinely discrete IDs/counts remain discrete. Population Growth now uses the classic curve directly in Population units, and freshly grown Population cannot retroactively contribute PP/RP to the turn that produced it. Rounding occurs only at explicit gameplay-rule boundaries. The Research lane remains active in parallel: `ResearchChoices` exposes the server-authoritative TechField frontier, while Creative/Uncreative multi-Technology selection semantics are the next Research-specific slice.
 ## Research documents
 
 - `docs/research/MOO2_GAME_REFERENCE.md` - gameplay/system reference and fidelity checklist.
@@ -46,6 +46,7 @@ The active runtime now follows a broader numeric architecture: continuous quanti
 - `docs/research/ECONOMY_BASELINE_2026-08-27.md` - first population-command and base colony-economy fidelity checkpoint.
 - `docs/research/ECONOMY_CONTEXT_2026-08-27.md` - Gravity/Government contextual economy checkpoint and current model limitations.
 - `docs/research/ECONOMY_MORALE_2026-08-27.md` - local Morale/Barracks/building checkpoint and deferred empire-wide morale systems.
+- `docs/research/POPULATION_GROWTH_SUSTENANCE_2026-08-27.md` - float-native Population capacity, sustenance, growth and turn-order checkpoint.
 - `docs/research/BUILDING_CONSTRUCTION_2026-08-27.md` - original building costs/maintenance, deterministic construction and technology-gated buildability checkpoint.
 - `docs/research/TECHNOLOGY_START_RESEARCH_2026-08-27.md` - original technology/tech-field tables, Pre-Warp/Average ownership initialization and research-completion ownership transition.
 - `docs/research/RESEARCH_BREAKTHROUGH_2026-08-27.md` - original breakthrough evidence plus the documented MOOX float-RP divergence.

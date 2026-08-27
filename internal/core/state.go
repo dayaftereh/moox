@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 3
+const StateSchemaVersion = 4
 
 type ID uint64
 
@@ -61,15 +61,16 @@ type ResearchState struct {
 	ProgressRP    float64 `json:"progress_rp"`
 }
 type Colony struct {
-	ID              ID                   `json:"id"`
-	EmpireID        ID                   `json:"empire_id"`
-	PlanetID        ID                   `json:"planet_id"`
-	Population      PopulationState      `json:"population"`
-	Buildings       []string             `json:"buildings,omitempty"`
-	Economy         ColonyEconomy        `json:"economy"`
-	EconomyContext  ColonyEconomyContext `json:"economy_context"`
-	AdjustedEconomy ColonyEconomy        `json:"adjusted_economy"`
-	Construction    *ConstructionState   `json:"construction,omitempty"`
+	ID                 ID                       `json:"id"`
+	EmpireID           ID                       `json:"empire_id"`
+	PlanetID           ID                       `json:"planet_id"`
+	Population         PopulationState          `json:"population"`
+	Buildings          []string                 `json:"buildings,omitempty"`
+	Economy            ColonyEconomy            `json:"economy"`
+	EconomyContext     ColonyEconomyContext     `json:"economy_context"`
+	AdjustedEconomy    ColonyEconomy            `json:"adjusted_economy"`
+	PopulationDynamics ColonyPopulationDynamics `json:"population_dynamics"`
+	Construction       *ConstructionState       `json:"construction,omitempty"`
 }
 
 type ConstructionState struct {
@@ -91,6 +92,22 @@ type ColonyEconomy struct {
 	Production float64 `json:"production"`
 	Research   float64 `json:"research"`
 	TaxBC      float64 `json:"tax_bc"`
+}
+
+// ColonyPopulationDynamics stores the materialized per-turn capacity,
+// sustenance, available-production and projected-growth values derived from
+// authoritative Colony, Planet and Race state.
+type ColonyPopulationDynamics struct {
+	Capacity            float64 `json:"capacity"`
+	FoodRequired        float64 `json:"food_required"`
+	FoodSurplus         float64 `json:"food_surplus"`
+	FoodShortage        float64 `json:"food_shortage"`
+	ProductionRequired  float64 `json:"production_required"`
+	ProductionShortage  float64 `json:"production_shortage"`
+	ProductionAvailable float64 `json:"production_available"`
+	BaseGrowth          float64 `json:"base_growth"`
+	GrowthMultiplier    float64 `json:"growth_multiplier"`
+	ProjectedGrowth     float64 `json:"projected_growth"`
 }
 
 // ColonyEconomyContext records the currently implemented percentage layers used
@@ -304,6 +321,37 @@ func (s *GameState) Validate() error {
 		} {
 			if !finiteNonNegative(item.value) {
 				return fmt.Errorf("colony[%d] economy %s must be finite and non-negative", i, item.label)
+			}
+		}
+		for _, item := range []struct {
+			label string
+			value float64
+		}{
+			{"population_capacity", colony.PopulationDynamics.Capacity},
+			{"food_required", colony.PopulationDynamics.FoodRequired},
+			{"food_surplus", colony.PopulationDynamics.FoodSurplus},
+			{"food_shortage", colony.PopulationDynamics.FoodShortage},
+			{"production_required", colony.PopulationDynamics.ProductionRequired},
+			{"production_shortage", colony.PopulationDynamics.ProductionShortage},
+			{"production_available", colony.PopulationDynamics.ProductionAvailable},
+			{"base_growth", colony.PopulationDynamics.BaseGrowth},
+			{"growth_multiplier", colony.PopulationDynamics.GrowthMultiplier},
+			{"projected_growth", colony.PopulationDynamics.ProjectedGrowth},
+		} {
+			if !finiteNonNegative(item.value) {
+				return fmt.Errorf("colony[%d] %s must be finite and non-negative", i, item.label)
+			}
+		}
+		if colony.PopulationDynamics.FoodSurplus > 1e-9 && colony.PopulationDynamics.FoodShortage > 1e-9 {
+			return fmt.Errorf("colony[%d] cannot have food surplus and shortage simultaneously", i)
+		}
+		if colony.PopulationDynamics.ProductionAvailable > 1e-9 && colony.PopulationDynamics.ProductionShortage > 1e-9 {
+			return fmt.Errorf("colony[%d] cannot have production available and shortage simultaneously", i)
+		}
+		if colony.PopulationDynamics.Capacity > 0 && colony.Population.Total <= colony.PopulationDynamics.Capacity+1e-9 {
+			remaining := math.Max(0, colony.PopulationDynamics.Capacity-colony.Population.Total)
+			if colony.PopulationDynamics.ProjectedGrowth > remaining+1e-9 {
+				return fmt.Errorf("colony[%d] projected growth %g exceeds remaining capacity %g", i, colony.PopulationDynamics.ProjectedGrowth, remaining)
 			}
 		}
 		seenBuildings := make(map[string]struct{}, len(colony.Buildings))

@@ -25,7 +25,20 @@ func TestStateRejectsInvalidContinuousValues(t *testing.T) {
 		{"population infinity", func(s *GameState) { s.Colonies[0].Population.Farmers = math.Inf(1) }},
 		{"economy nan", func(s *GameState) { s.Colonies[0].Economy.Food = math.NaN() }},
 		{"adjusted economy infinity", func(s *GameState) { s.Colonies[0].AdjustedEconomy.Research = math.Inf(1) }},
-		{"construction nan", func(s *GameState) {
+		{"population dynamics nan", func(s *GameState) { s.Colonies[0].PopulationDynamics.ProjectedGrowth = math.NaN() }},
+		{"population dynamics infinity", func(s *GameState) { s.Colonies[0].PopulationDynamics.FoodRequired = math.Inf(1) }},
+		{"population dynamics conflicting food", func(s *GameState) {
+			s.Colonies[0].PopulationDynamics.FoodSurplus = 1
+			s.Colonies[0].PopulationDynamics.FoodShortage = 1
+		}},
+		{"population dynamics conflicting production", func(s *GameState) {
+			s.Colonies[0].PopulationDynamics.ProductionAvailable = 1
+			s.Colonies[0].PopulationDynamics.ProductionShortage = 1
+		}},
+		{"population dynamics growth beyond capacity", func(s *GameState) {
+			s.Colonies[0].PopulationDynamics.Capacity = 4
+			s.Colonies[0].PopulationDynamics.ProjectedGrowth = 0.1
+		}}, {"construction nan", func(s *GameState) {
 			s.Colonies[0].Construction = &ConstructionState{BuildingID: "holo_simulator", ProgressPP: math.NaN()}
 		}},
 	}

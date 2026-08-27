@@ -101,3 +101,20 @@ func TestCommittedMoraleRules(t *testing.T) {
 		t.Fatalf("unexpected morale building bonuses: %v", bonuses)
 	}
 }
+
+func TestCommittedPopulationEconomyRules(t *testing.T) {
+	file, err := LoadEconomy(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31", "economy.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	population := file.Population
+	if population.FoodPerPopulation != 1 || population.CyberneticFoodPerPopulation != 0.5 || population.CyberneticProductionPerPopulation != 0.5 {
+		t.Fatalf("unexpected sustenance rules: %+v", population)
+	}
+	if population.GrowthCurveFactor != 0.002 || population.TolerantHabitabilityBonus != 0.25 || population.SubterraneanCapacityPerSizeClass != 2 {
+		t.Fatalf("unexpected population growth/capacity rules: %+v", population)
+	}
+	if len(population.SizeCapacity) != 5 || len(population.ClimateHabitability) != 10 || len(population.SourceIDs) < 3 {
+		t.Fatalf("population rule coverage incomplete: %+v", population)
+	}
+}

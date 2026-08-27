@@ -116,21 +116,36 @@ The code includes hash constants for the relevant original function ranges. Thes
 
 ## Next exact action
 
-**Continue Phase 1 from the authoritative ResearchChoices/select_research slice.**
+The implementation now has **two explicit active lanes**. The Economy lane is the immediate coding focus; the Research lane must remain visible and is next when the current Economy slice is closed.
 
-Research progress now uses RP-native `float64`, preserving fractional output until an explicit gameplay rounding boundary. `GameSession.ResearchChoices` exposes a stable server-authoritative TechField frontier, and `empire.select_research` accepts only `tech_field_id`; Technology IDs/keys are materialized by the resolver for both Human UI and AI.
+### Lane A - Economy / Population (current implementation focus)
 
-Concretely, next:
+Population, Food, PP, RP, BC and Construction progress are domain-native `float64`. The first Population Growth/Sustenance slice now materializes capacity, Food/Production requirements, available PP and direct-float turn-end Growth while preserving the rule that Construction and Research consume pre-growth turn output.
 
-1. research and decide Creative/Uncreative acquisition semantics for multi-Technology TechFields,
-2. represent that policy explicitly in `ResearchChoice` rather than trusting client-selected Technology IDs,
-3. investigate whether changing/cancelling an active research project should be supported and how progress behaves,
-4. model hyper-advanced repeated-field level/cost state separately,
-5. return to Advanced-start randomized/race-aware technology grants after those runtime semantics exist.
+Next narrow Economy work:
+
+1. research/implement starvation Population loss without guessing original quirks,
+2. add empire Food logistics / Freighter accounting and determine where imported Food enters `PopulationDynamics`,
+3. decide and implement surplus-Food handling only from verified evidence,
+4. then add Housing / Cloning Center / medicine growth modifiers as separate proven layers,
+5. later add Biospheres/Advanced City Planning/terraforming capacity transitions and race-aware Population cohorts.
+
+### Lane B - Research / multi-Technology TechFields (preserved next Research focus)
+
+`GameSession.ResearchChoices` remains the server-authoritative TechField frontier and `empire.select_research` continues to accept only `tech_field_id`; clients never submit arbitrary Technology IDs.
+
+Research backlog, in order:
+
+1. research and decide Creative/Uncreative acquisition semantics for TechFields containing multiple Technologies,
+2. represent that policy explicitly in `ResearchChoice` / legal actions so Human UI, built-in AI and remote agents see the same choices,
+3. decide whether ordinary races choose one Technology while Creative acquires the full field and how Uncreative is constrained, based on evidence rather than assumption,
+4. investigate changing/cancelling an active research project and progress retention/loss,
+5. model hyper-advanced repeated-field level/cost state separately,
+6. return to Advanced-start randomized/race-aware technology grants after those runtime semantics exist.
 
 Architecture constraint: legacy MOO2 integer storage widths are evidence, not a MOOX storage requirement. All continuous strategic quantities use domain-native `float64` per `ADR-0003-domain-native-float64.md`; genuinely discrete IDs/counts remain discrete, and rounding must occur only at named gameplay-rule boundaries.
 
-Do not add Wails/network/MCP-specific gameplay logic; transports remain adapters over the same session/legal-action surface.
+The Economy lane must not bypass the Research ordering contract: Population Growth is turn-end, after current-turn Research has consumed its RP. A regression test now locks this behavior.
 ## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.

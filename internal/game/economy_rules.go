@@ -19,13 +19,18 @@ type GovernmentEconomyModifier struct {
 }
 
 type RaceEconomyModifiers struct {
-	FoodPerFarmer        float64
-	ProductionPerWorker  float64
-	ResearchPerScientist float64
-	TaxBCPerPopulation   float64
-	Aquatic              bool
-	GravityID            string
-	GovernmentTraitID    string
+	FoodPerFarmer              float64
+	ProductionPerWorker        float64
+	ResearchPerScientist       float64
+	TaxBCPerPopulation         float64
+	PopulationGrowthMultiplier float64
+	Aquatic                    bool
+	Tolerant                   bool
+	Subterranean               bool
+	Cybernetic                 bool
+	Lithovore                  bool
+	GravityID                  string
+	GovernmentTraitID          string
 }
 
 type BuildingDefinition struct {
@@ -36,31 +41,40 @@ type BuildingDefinition struct {
 	MaintenanceBC    int
 }
 type EconomyRules struct {
-	ClimateFoodPerFarmer         map[string]float64
-	MineralIndustryPerWorker     map[string]float64
-	RaceModifiers                map[string]RaceEconomyModifiers
-	AquaticFoodBonus             float64
-	AquaticFoodClimateIDs        map[string]struct{}
-	BaseResearchPerScientist     float64
-	BaseTaxBCPerPopulation       float64
-	GravityPenaltyPercent        map[string]int
-	GovernmentModifiers          map[string]GovernmentEconomyModifier
-	MoraleBarracksPenaltyPercent int
-	MoraleBarracksGovernments    map[string]struct{}
-	MoraleBarracksBuildingIDs    map[string]struct{}
-	MoraleBuildingBonusPercent   map[string]int
-	KnownBuildingIDs             map[string]struct{}
-	BuildingDefinitions          map[string]BuildingDefinition
-	TechnologyFieldCostsRP       map[int]float64
-	TechnologyFieldPreviousID    map[int]int
-	TechnologyFieldNextID        map[int]int
-	TechnologyIDsByField         map[int][]int
-	TechnologyFieldByID          map[int]int
-	TechnologyKeyByID            map[int]string
-	TechnologyNameKeyByID        map[int]string
-	TechnologyStrategicAvailable map[int]bool
-	NewGameAlwaysKnownFieldID    int
-	NewGameStagedKnownFieldIDs   []int
+	ClimateFoodPerFarmer          map[string]float64
+	MineralIndustryPerWorker      map[string]float64
+	RaceModifiers                 map[string]RaceEconomyModifiers
+	AquaticFoodBonus              float64
+	AquaticFoodClimateIDs         map[string]struct{}
+	BaseResearchPerScientist      float64
+	BaseTaxBCPerPopulation        float64
+	PopulationFoodPerUnit         float64
+	CyberneticFoodPerUnit         float64
+	CyberneticProductionPerUnit   float64
+	PopulationGrowthCurveFactor   float64
+	TolerantHabitabilityBonus     float64
+	SubterraneanCapacityPerClass  float64
+	PopulationSizeCapacity        map[string]float64
+	PopulationSizeClass           map[string]int
+	PopulationClimateHabitability map[string]float64
+	GravityPenaltyPercent         map[string]int
+	GovernmentModifiers           map[string]GovernmentEconomyModifier
+	MoraleBarracksPenaltyPercent  int
+	MoraleBarracksGovernments     map[string]struct{}
+	MoraleBarracksBuildingIDs     map[string]struct{}
+	MoraleBuildingBonusPercent    map[string]int
+	KnownBuildingIDs              map[string]struct{}
+	BuildingDefinitions           map[string]BuildingDefinition
+	TechnologyFieldCostsRP        map[int]float64
+	TechnologyFieldPreviousID     map[int]int
+	TechnologyFieldNextID         map[int]int
+	TechnologyIDsByField          map[int][]int
+	TechnologyFieldByID           map[int]int
+	TechnologyKeyByID             map[int]string
+	TechnologyNameKeyByID         map[int]string
+	TechnologyStrategicAvailable  map[int]bool
+	NewGameAlwaysKnownFieldID     int
+	NewGameStagedKnownFieldIDs    []int
 }
 
 func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
@@ -193,32 +207,62 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		moraleBuildingBonusPercent[bonus.BuildingID] = bonus.Percent
 	}
 
+	populationSizeCapacity := make(map[string]float64, len(economy.Population.SizeCapacity))
+	populationSizeClass := make(map[string]int, len(planetClasses.Sizes))
+	for _, size := range economy.Population.SizeCapacity {
+		populationSizeCapacity[size.SizeID] = size.Capacity
+	}
+	for _, size := range planetClasses.Sizes {
+		if _, ok := populationSizeCapacity[size.ID]; !ok {
+			return nil, fmt.Errorf("population rules missing planet size %q", size.ID)
+		}
+		populationSizeClass[size.ID] = size.Index + 1
+	}
+	populationClimateHabitability := make(map[string]float64, len(economy.Population.ClimateHabitability))
+	for _, climate := range economy.Population.ClimateHabitability {
+		populationClimateHabitability[climate.ClimateID] = climate.Fraction
+	}
+	for _, climate := range planetClasses.Climates {
+		if _, ok := populationClimateHabitability[climate.ID]; !ok {
+			return nil, fmt.Errorf("population rules missing planet climate %q", climate.ID)
+		}
+	}
+
 	rules := &EconomyRules{
-		ClimateFoodPerFarmer:         make(map[string]float64, len(planetClasses.Climates)),
-		MineralIndustryPerWorker:     make(map[string]float64, len(planetClasses.MineralClasses)),
-		RaceModifiers:                make(map[string]RaceEconomyModifiers, len(races.Races)),
-		AquaticFoodBonus:             float64(economy.AquaticFoodBonus.Value),
-		AquaticFoodClimateIDs:        aquaticClimates,
-		BaseResearchPerScientist:     float64(economy.BaseResearchPerScientist.Value),
-		BaseTaxBCPerPopulation:       float64(economy.BaseTaxBCPerPopulation.Value),
-		GravityPenaltyPercent:        gravityPenalties,
-		GovernmentModifiers:          governmentModifiers,
-		MoraleBarracksPenaltyPercent: economy.Morale.BarracksPenaltyPercent,
-		MoraleBarracksGovernments:    moraleBarracksGovernments,
-		MoraleBarracksBuildingIDs:    moraleBarracksBuildingIDs,
-		MoraleBuildingBonusPercent:   moraleBuildingBonusPercent,
-		KnownBuildingIDs:             buildingIDs,
-		BuildingDefinitions:          buildingDefinitions,
-		TechnologyFieldCostsRP:       technologyFieldCosts,
-		TechnologyFieldPreviousID:    technologyFieldPreviousID,
-		TechnologyFieldNextID:        technologyFieldNextID,
-		TechnologyIDsByField:         technologyIDsByField,
-		TechnologyFieldByID:          technologyFieldByID,
-		TechnologyKeyByID:            technologyKeyByID,
-		TechnologyNameKeyByID:        technologyNameKeyByID,
-		TechnologyStrategicAvailable: technologyStrategicAvailable,
-		NewGameAlwaysKnownFieldID:    technologies.NewGameStart.AlwaysKnownTechFieldID,
-		NewGameStagedKnownFieldIDs:   append([]int(nil), technologies.NewGameStart.StagedKnownTechFieldIDs...),
+		ClimateFoodPerFarmer:          make(map[string]float64, len(planetClasses.Climates)),
+		MineralIndustryPerWorker:      make(map[string]float64, len(planetClasses.MineralClasses)),
+		RaceModifiers:                 make(map[string]RaceEconomyModifiers, len(races.Races)),
+		AquaticFoodBonus:              float64(economy.AquaticFoodBonus.Value),
+		AquaticFoodClimateIDs:         aquaticClimates,
+		BaseResearchPerScientist:      float64(economy.BaseResearchPerScientist.Value),
+		BaseTaxBCPerPopulation:        float64(economy.BaseTaxBCPerPopulation.Value),
+		PopulationFoodPerUnit:         economy.Population.FoodPerPopulation,
+		CyberneticFoodPerUnit:         economy.Population.CyberneticFoodPerPopulation,
+		CyberneticProductionPerUnit:   economy.Population.CyberneticProductionPerPopulation,
+		PopulationGrowthCurveFactor:   economy.Population.GrowthCurveFactor,
+		TolerantHabitabilityBonus:     economy.Population.TolerantHabitabilityBonus,
+		SubterraneanCapacityPerClass:  economy.Population.SubterraneanCapacityPerSizeClass,
+		PopulationSizeCapacity:        populationSizeCapacity,
+		PopulationSizeClass:           populationSizeClass,
+		PopulationClimateHabitability: populationClimateHabitability,
+		GravityPenaltyPercent:         gravityPenalties,
+		GovernmentModifiers:           governmentModifiers,
+		MoraleBarracksPenaltyPercent:  economy.Morale.BarracksPenaltyPercent,
+		MoraleBarracksGovernments:     moraleBarracksGovernments,
+		MoraleBarracksBuildingIDs:     moraleBarracksBuildingIDs,
+		MoraleBuildingBonusPercent:    moraleBuildingBonusPercent,
+		KnownBuildingIDs:              buildingIDs,
+		BuildingDefinitions:           buildingDefinitions,
+		TechnologyFieldCostsRP:        technologyFieldCosts,
+		TechnologyFieldPreviousID:     technologyFieldPreviousID,
+		TechnologyFieldNextID:         technologyFieldNextID,
+		TechnologyIDsByField:          technologyIDsByField,
+		TechnologyFieldByID:           technologyFieldByID,
+		TechnologyKeyByID:             technologyKeyByID,
+		TechnologyNameKeyByID:         technologyNameKeyByID,
+		TechnologyStrategicAvailable:  technologyStrategicAvailable,
+		NewGameAlwaysKnownFieldID:     technologies.NewGameStart.AlwaysKnownTechFieldID,
+		NewGameStagedKnownFieldIDs:    append([]int(nil), technologies.NewGameStart.StagedKnownTechFieldIDs...),
 	}
 	for _, climate := range planetClasses.Climates {
 		rules.ClimateFoodPerFarmer[climate.ID] = float64(climate.BaseFoodPerFarmer)
@@ -245,7 +289,7 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	}
 
 	for _, race := range races.Races {
-		modifiers := RaceEconomyModifiers{GravityID: "normal_g"}
+		modifiers := RaceEconomyModifiers{GravityID: "normal_g", PopulationGrowthMultiplier: 1}
 		for _, selection := range race.TraitSelections {
 			option, ok := options[selection.TraitID]
 			if !ok {
@@ -254,6 +298,14 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 			switch option.Ability {
 			case "aquatic":
 				modifiers.Aquatic = true
+			case "tolerant":
+				modifiers.Tolerant = true
+			case "subterranean":
+				modifiers.Subterranean = true
+			case "cybernetic":
+				modifiers.Cybernetic = true
+			case "lithovore":
+				modifiers.Lithovore = true
 			case "low_g_world":
 				modifiers.GravityID = "low_g"
 			case "high_g_world":
@@ -274,7 +326,12 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 				modifiers.ResearchPerScientist += delta
 			case "tax_bc_per_population_delta":
 				modifiers.TaxBCPerPopulation += delta
+			case "population_growth_multiplier":
+				modifiers.PopulationGrowthMultiplier = delta
 			}
+		}
+		if modifiers.PopulationGrowthMultiplier <= 0 || math.IsNaN(modifiers.PopulationGrowthMultiplier) || math.IsInf(modifiers.PopulationGrowthMultiplier, 0) {
+			return nil, fmt.Errorf("race %q has invalid population growth multiplier %g", race.ID, modifiers.PopulationGrowthMultiplier)
 		}
 		if modifiers.GovernmentTraitID == "" {
 			return nil, fmt.Errorf("race %q has no normalized starting government", race.ID)

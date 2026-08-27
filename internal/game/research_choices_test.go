@@ -152,3 +152,56 @@ func TestStrategicResolverSelectsResearchAndAppliesFractionalTurnRP(t *testing.T
 		t.Fatalf("progress_rp=%v want=%v", result.State.Empires[0].Research.ProgressRP, want)
 	}
 }
+
+func TestResearchUsesPreGrowthTurnOutput(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	resolver, err := NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := core.NewSmallFixture(706)
+	if err := rules.InitializeEmpireTechnologies(&state.Empires[0], NewGameTechnologyOptions{Level: NewGameTechnologyPreWarp}); err != nil {
+		t.Fatal(err)
+	}
+	// The default Human colony is exactly fed and therefore grows at turn end.
+	// Its one scientist yields 3 RP base / 4.5 RP with Democracy before growth.
+	command, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := ResolveContext{Seats: []SeatAuthority{{SeatID: 1, EmpireID: state.Empires[0].ID}}}
+	result, err := resolver.Resolve(ctx, state, []protocol.CommandBatch{{
+		SchemaVersion: protocol.CommandSchemaVersion,
+		GameID:        "research-before-growth",
+		SeatID:        1,
+		Turn:          1,
+		BaseRevision:  1,
+		Commands:      []protocol.Command{command},
+	}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.State.Empires[0].Research == nil {
+		t.Fatal("research project unexpectedly completed")
+	}
+	if !closePopulationValue(result.State.Empires[0].Research.ProgressRP, 4.5) {
+		t.Fatalf("same-turn research progress=%v want pre-growth 4.5 RP", result.State.Empires[0].Research.ProgressRP)
+	}
+	colony := result.State.Colonies[0]
+	if colony.Population.Total <= 4 {
+		t.Fatalf("expected turn-end population growth, got %+v", colony.Population)
+	}
+	if colony.AdjustedEconomy.Research <= 4.5 {
+		t.Fatalf("post-growth research output=%v should exceed consumed turn RP=4.5", colony.AdjustedEconomy.Research)
+	}
+	foundGrowth := false
+	for _, event := range result.Events {
+		if event.Kind == "colony.population_grew" {
+			foundGrowth = true
+			break
+		}
+	}
+	if !foundGrowth {
+		t.Fatalf("missing population growth event: %+v", result.Events)
+	}
+}

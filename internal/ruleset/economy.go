@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const EconomySchemaVersion = 3
+const EconomySchemaVersion = 4
 
 type EconomyFile struct {
 	SchemaVersion            int                        `json:"schema_version"`
@@ -18,6 +18,7 @@ type EconomyFile struct {
 	AquaticFoodBonus         EconomyClimateBonus        `json:"aquatic_food_bonus"`
 	GravityPenalties         []GravityPenaltyRule       `json:"gravity_penalties"`
 	GovernmentModifiers      []GovernmentEconomyRule    `json:"government_modifiers"`
+	Population               PopulationEconomyRule      `json:"population"`
 	Morale                   MoraleEconomyRule          `json:"morale"`
 }
 
@@ -36,6 +37,28 @@ type EconomyClimateBonus struct {
 	Value      int      `json:"value"`
 	ClimateIDs []string `json:"climate_ids"`
 	SourceID   string   `json:"source_id"`
+}
+
+type PopulationSizeCapacity struct {
+	SizeID   string  `json:"size_id"`
+	Capacity float64 `json:"capacity"`
+}
+
+type PopulationClimateHabitability struct {
+	ClimateID string  `json:"climate_id"`
+	Fraction  float64 `json:"fraction"`
+}
+
+type PopulationEconomyRule struct {
+	FoodPerPopulation                 float64                         `json:"food_per_population"`
+	CyberneticFoodPerPopulation       float64                         `json:"cybernetic_food_per_population"`
+	CyberneticProductionPerPopulation float64                         `json:"cybernetic_production_per_population"`
+	GrowthCurveFactor                 float64                         `json:"growth_curve_factor"`
+	TolerantHabitabilityBonus         float64                         `json:"tolerant_habitability_bonus"`
+	SubterraneanCapacityPerSizeClass  float64                         `json:"subterranean_capacity_per_size_class"`
+	SizeCapacity                      []PopulationSizeCapacity        `json:"size_capacity"`
+	ClimateHabitability               []PopulationClimateHabitability `json:"climate_habitability"`
+	SourceIDs                         []string                        `json:"source_ids"`
 }
 
 type GravityPenaltyRule struct {
@@ -151,6 +174,9 @@ func (f *EconomyFile) Validate() error {
 		}
 		climates[climateID] = struct{}{}
 	}
+	if err := f.validatePopulation(sources); err != nil {
+		return err
+	}
 	if len(f.GravityPenalties) != 9 {
 		return fmt.Errorf("gravity penalty count=%d, expected 9", len(f.GravityPenalties))
 	}
@@ -199,6 +225,45 @@ func (f *EconomyFile) Validate() error {
 	}
 	if err := f.validateMorale(sources, seenGovernments); err != nil {
 		return err
+	}
+	return nil
+}
+
+func (f *EconomyFile) validatePopulation(sources map[string]struct{}) error {
+	p := f.Population
+	if p.FoodPerPopulation <= 0 || p.CyberneticFoodPerPopulation < 0 || p.CyberneticProductionPerPopulation < 0 || p.GrowthCurveFactor <= 0 || p.TolerantHabitabilityBonus < 0 || p.SubterraneanCapacityPerSizeClass < 0 {
+		return fmt.Errorf("population economy scalar values are invalid")
+	}
+	if len(p.SizeCapacity) != 5 || len(p.ClimateHabitability) != 10 {
+		return fmt.Errorf("population size/climate rule counts=%d/%d, expected 5/10", len(p.SizeCapacity), len(p.ClimateHabitability))
+	}
+	seenSizes := make(map[string]struct{}, len(p.SizeCapacity))
+	for i, item := range p.SizeCapacity {
+		if item.SizeID == "" || item.Capacity <= 0 {
+			return fmt.Errorf("population size_capacity[%d] is invalid", i)
+		}
+		if _, exists := seenSizes[item.SizeID]; exists {
+			return fmt.Errorf("duplicate population size capacity %q", item.SizeID)
+		}
+		seenSizes[item.SizeID] = struct{}{}
+	}
+	seenClimates := make(map[string]struct{}, len(p.ClimateHabitability))
+	for i, item := range p.ClimateHabitability {
+		if item.ClimateID == "" || item.Fraction <= 0 || item.Fraction > 1 {
+			return fmt.Errorf("population climate_habitability[%d] is invalid", i)
+		}
+		if _, exists := seenClimates[item.ClimateID]; exists {
+			return fmt.Errorf("duplicate population climate habitability %q", item.ClimateID)
+		}
+		seenClimates[item.ClimateID] = struct{}{}
+	}
+	if len(p.SourceIDs) == 0 {
+		return fmt.Errorf("population economy rule has no sources")
+	}
+	for _, sourceID := range p.SourceIDs {
+		if _, ok := sources[sourceID]; !ok {
+			return fmt.Errorf("population economy rule references unknown source %q", sourceID)
+		}
 	}
 	return nil
 }

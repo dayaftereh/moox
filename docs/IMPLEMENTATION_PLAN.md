@@ -2,29 +2,22 @@
 
 ## Current position - 2026-08-27
 
-MOOX is still **before Phase 1 runtime implementation**, but Phase 0 has advanced far beyond the original bootstrap assumptions.
+MOOX is now actively inside the deterministic headless runtime. Phase 1 infrastructure is established and the first Phase-2/Phase-3 Economy/Research slices already execute through the authoritative `GameSession` boundary.
 
-Completed/established research baseline:
+Implemented/established runtime baseline:
 
-- Go-first architecture and Wails v3 shell decision are already made (`ADR-0001`),
-- pure-Go analyzer/tooling exists at version `0.22.0`,
-- a private official MOO2 1.31 reference is inventoried and read-only tooling is established,
-- generic LBX, graphics, palette, audio, text and bound MZ/LE executable readers exist,
-- normalized datasets already cover 11/53 Race Designer groups/options, 13 races, 203 technologies, 48 buildings and 6 military hulls,
-- semantic graphics already cover race assets, all 48 building colony sets, strategic player hull/civilian ships and standard tactical hull frames,
-- research work is now controlled by `docs/WORKING_RULES.md` and the single-ticket `docs/research/ACTIVE_RESEARCH.md` workflow.
+- deterministic pure-Go core state, seeded serializable RNG, stable IDs and exact JSON round trips,
+- authoritative Session/Command/Event/Observer architecture with Human/AI-shared legal-action projections,
+- domain-native `float64` Population, Food, PP, RP, BC and Construction progress (`ADR-0003`),
+- base/contextual colony Economy with Gravity, starting-government and local Morale layers,
+- technology-gated BuildingChoices plus deterministic single-project Construction,
+- normalized Technology Fields/RP costs, Pre-Warp/Average ownership, breakthrough resolution and authority-filtered `ResearchChoices`,
+- server-side `empire.select_research` materialization of Technology IDs/keys,
+- Population capacity, Food/Cybernetic sustenance and direct-float turn-end Population Growth with explicit pre-growth Construction/Research ordering.
 
-Not yet started as a game engine:
+Still missing major engine systems include strategic movement/colonization, complete Economy logistics/pollution/maintenance, complete Technology effects and Creative/Uncreative semantics, ship design/combat rules, diplomacy and playable UI.
 
-- deterministic game-state/RNG/turn loop,
-- save/load,
-- colony economy simulation,
-- strategic movement/colonization,
-- technology progression/effects,
-- ship design/combat rules,
-- diplomacy/AI/UI.
-
-The active pre-Phase-1 ticket is planet-class normalization. Once the minimum planet baseline needed by the first simulation fixtures is committed, implementation should move into Phase 1 instead of continuing broad reverse engineering by default.
+Current work is deliberately two-lane: Economy/Population is the immediate implementation focus, while Research multi-Technology TechField behavior remains the next Research-specific slice. `docs/research/ACTIVE_RESEARCH.md` is the authoritative handoff for both lanes.
 ## Guiding architecture
 
 Build the game rules as a deterministic, headless simulation core first. UI, rendering, audio and platform integration should depend on that core rather than contain game rules themselves.
@@ -247,12 +240,11 @@ A private developer-only original-asset viewer may exist for comparison, but ori
 
 ## Recommended immediate next work
 
-1. Finish the active **planet-class normalization** ticket without expanding into planet graphics or galaxy generation.
-2. Materialize/remove the temporary planet probe programs so the repository-wide `go test ./...` baseline is green again.
-3. Start **Phase 1 - Simulation skeleton** with a new deterministic `core` layer rather than adding UI code.
-4. Implement seeded RNG, stable state IDs and minimal galaxy/star/planet/empire/colony types.
-5. Implement deterministic serialization and a save/load round-trip regression fixture.
-6. Use the already-normalized race/building/technology/hull data as input; add only the extra normalized fields demanded by the first simulation tests.
-7. Build the first headless vertical slice: homeworld economy -> research -> colony ship -> movement -> second colony -> exact save/load.
+1. Finish the current Population/Sustenance chain with verified starvation behavior and empire Food/Freighter logistics.
+2. Add surplus-Food handling only after its rule boundary is verified.
+3. Layer Housing, Cloning Center and medicine growth bonuses independently; do not fold them into the base growth curve.
+4. Preserve and then resume the Research lane: determine Creative/Uncreative behavior for multi-Technology TechFields and encode it in server-authoritative `ResearchChoice` legal actions.
+5. Follow with active-project switching/progress semantics and hyper-advanced repeated-field costs.
+6. Continue the first headless vertical slice toward colony ship production, movement and a second colony only after the Economy/Research foundations remain deterministic.
 
-Do not reopen closed race/building/ship graphics research unless contradictory evidence or a concrete runtime requirement demands it. Wails v3 remains the planned application shell, but UI implementation should wait until the headless loop is stable.
+Do not reopen closed race/building/ship graphics research unless contradictory evidence or a concrete runtime requirement demands it. Wails v3 remains the planned application shell; transports/UI must continue to consume the same canonical Session/legal-action APIs rather than contain gameplay rules.

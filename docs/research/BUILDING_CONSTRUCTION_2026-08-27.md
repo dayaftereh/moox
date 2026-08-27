@@ -52,11 +52,11 @@ The first deterministic construction slice intentionally remains narrow:
 - `colony.queue_building` is an authoritative strategic command;
 - the server maps `SeatID -> EmpireID` and rejects construction on foreign colonies;
 - unknown buildings, already-owned buildings and a second active construction are rejected;
-- the active project receives that resolution's domain-native `AdjustedEconomy.Production` in PP;
+- the active project receives that resolution's domain-native `PopulationDynamics.ProductionAvailable` in PP, after any Cybernetic Production sustenance;
 - applied production is capped at the remaining building cost;
 - zero production does not emit a progress event;
 - completion appends the building to the colony and clears the active construction;
-- a newly completed building does not retroactively alter the economy snapshot that produced it; its already-implemented effect enters the following economy recalculation.
+- a newly completed building does not retroactively change the PP already consumed for that turn; after turn-end Population Growth, the post-turn snapshot is recalculated and may already show the completed building's next-state effect.
 
 Construction now uses domain-native `float64` PP. Building definitions expose `production_cost_pp` directly, `ConstructionState.ProgressPP` preserves fractional production, and completion uses a small deterministic tolerance for floating-point residue.
 

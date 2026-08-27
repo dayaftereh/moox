@@ -80,7 +80,7 @@ func (r *EconomyResolver) advanceConstruction(state *core.GameState) ([]DomainEv
 		if remaining <= 1e-9 {
 			return nil, fmt.Errorf("colony %d construction %q has invalid completed progress %g", colony.ID, colony.Construction.BuildingID, colony.Construction.ProgressPP)
 		}
-		applied := colony.AdjustedEconomy.Production
+		applied := colony.PopulationDynamics.ProductionAvailable
 		if applied < 0 {
 			return nil, fmt.Errorf("colony %d has negative adjusted production %g", colony.ID, applied)
 		}

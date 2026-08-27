@@ -13,12 +13,13 @@ type EconomyResolver struct {
 }
 
 type PopulationAssignedEvent struct {
-	ColonyID        core.ID                   `json:"colony_id"`
-	Previous        core.PopulationState      `json:"previous"`
-	Current         core.PopulationState      `json:"current"`
-	BaseEconomy     core.ColonyEconomy        `json:"base_economy"`
-	EconomyContext  core.ColonyEconomyContext `json:"economy_context"`
-	AdjustedEconomy core.ColonyEconomy        `json:"adjusted_economy"`
+	ColonyID           core.ID                       `json:"colony_id"`
+	Previous           core.PopulationState          `json:"previous"`
+	Current            core.PopulationState          `json:"current"`
+	BaseEconomy        core.ColonyEconomy            `json:"base_economy"`
+	EconomyContext     core.ColonyEconomyContext     `json:"economy_context"`
+	AdjustedEconomy    core.ColonyEconomy            `json:"adjusted_economy"`
+	PopulationDynamics core.ColonyPopulationDynamics `json:"population_dynamics"`
 }
 
 func NewEconomyResolver(rules *EconomyRules) (*EconomyResolver, error) {
@@ -68,12 +69,13 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
 				}
 				event, err := NewDomainEvent("colony.population_assigned", batch.SeatID, command.Sequence, PopulationAssignedEvent{
-					ColonyID:        colony.ID,
-					Previous:        previous,
-					Current:         colony.Population,
-					BaseEconomy:     colony.Economy,
-					EconomyContext:  colony.EconomyContext,
-					AdjustedEconomy: colony.AdjustedEconomy,
+					ColonyID:           colony.ID,
+					Previous:           previous,
+					Current:            colony.Population,
+					BaseEconomy:        colony.Economy,
+					EconomyContext:     colony.EconomyContext,
+					AdjustedEconomy:    colony.AdjustedEconomy,
+					PopulationDynamics: colony.PopulationDynamics,
 				})
 				if err != nil {
 					return Resolution{}, err
@@ -114,6 +116,18 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 		return Resolution{}, err
 	}
 	events = append(events, researchEvents...)
+	populationEvents, err := r.advancePopulation(state)
+	if err != nil {
+		return Resolution{}, err
+	}
+	events = append(events, populationEvents...)
+	// Growth is a turn-end transition. Recalculate materialized snapshots only
+	// after production/research have consumed the pre-growth turn output.
+	for i := range state.Colonies {
+		if err := r.recalculateColony(state, &state.Colonies[i]); err != nil {
+			return Resolution{}, err
+		}
+	}
 	return Resolution{State: state, Events: events}, nil
 }
 
@@ -134,9 +148,14 @@ func (r *EconomyResolver) recalculateColony(state *core.GameState, colony *core.
 	if err != nil {
 		return fmt.Errorf("calculate colony %d contextual economy: %w", colony.ID, err)
 	}
+	dynamics, err := r.Rules.CalculatePopulationDynamics(*colony, *planet, empire.RaceID, adjusted)
+	if err != nil {
+		return fmt.Errorf("calculate colony %d population dynamics: %w", colony.ID, err)
+	}
 	colony.Economy = base
 	colony.EconomyContext = context
 	colony.AdjustedEconomy = adjusted
+	colony.PopulationDynamics = dynamics
 	return nil
 }
 

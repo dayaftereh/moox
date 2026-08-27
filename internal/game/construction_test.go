@@ -1,6 +1,7 @@
 package game
 
 import (
+	"encoding/json"
 	"testing"
 
 	"moox/internal/core"
@@ -27,8 +28,7 @@ func TestQueueBuildingAppliesCurrentTurnProduction(t *testing.T) {
 	}
 	state := core.NewSmallFixture(201)
 	state.Empires[0].KnownTechnologyIDs = []int{86}
-	colonyID := state.Colonies[0].ID
-	command, err := NewQueueBuildingCommand(1, QueueBuildingPayload{ColonyID: colonyID, BuildingID: "holo_simulator"})
+	command, err := NewQueueBuildingCommand(1, QueueBuildingPayload{ColonyID: state.Colonies[0].ID, BuildingID: "holo_simulator"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -41,14 +41,21 @@ func TestQueueBuildingAppliesCurrentTurnProduction(t *testing.T) {
 	if colony.Construction == nil || colony.Construction.BuildingID != "holo_simulator" {
 		t.Fatalf("construction not queued: %+v", colony.Construction)
 	}
-	if colony.Construction.ProgressPP != colony.AdjustedEconomy.Production {
-		t.Fatalf("progress=%v adjusted production=%v", colony.Construction.ProgressPP, colony.AdjustedEconomy.Production)
+	if colony.Construction.ProgressPP != 3 {
+		t.Fatalf("current-turn progress=%v want=3 PP", colony.Construction.ProgressPP)
 	}
-	if colony.Construction.ProgressPP <= 0 || colony.Construction.ProgressPP >= rules.BuildingDefinitions["holo_simulator"].ProductionCostPP {
-		t.Fatalf("unexpected first-turn construction progress: %+v", colony.Construction)
+	if colony.AdjustedEconomy.Production <= colony.Construction.ProgressPP {
+		t.Fatalf("post-growth production=%v should exceed consumed current-turn PP=%v", colony.AdjustedEconomy.Production, colony.Construction.ProgressPP)
 	}
-	if len(result.Events) != 2 || result.Events[0].Kind != "colony.construction_queued" || result.Events[1].Kind != "colony.construction_progressed" {
-		t.Fatalf("unexpected construction events: %+v", result.Events)
+	if len(result.Events) != 3 || result.Events[0].Kind != "colony.construction_queued" || result.Events[1].Kind != "colony.construction_progressed" || result.Events[2].Kind != "colony.population_grew" {
+		t.Fatalf("unexpected construction/growth events: %+v", result.Events)
+	}
+	var progressed ConstructionProgressedEvent
+	if err := json.Unmarshal(result.Events[1].Data, &progressed); err != nil {
+		t.Fatal(err)
+	}
+	if progressed.AppliedPP != 3 {
+		t.Fatalf("applied current-turn PP=%v want=3", progressed.AppliedPP)
 	}
 }
 
@@ -117,10 +124,8 @@ func TestQueueBuildingRejectsForeignUnknownOwnedAndBusy(t *testing.T) {
 	})
 }
 
-func TestCompletedBuildingAffectsEconomyOnNextRecalculation(t *testing.T) {
+func TestCompletedBuildingAffectsPostTurnSnapshotWithoutRetroactivePP(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
-	// Test-only acceleration: the original Holo Simulator still costs 120 PP,
-	// but one abundant-world worker produces enough to finish it this fixture turn.
 	rules.MineralIndustryPerWorker["abundant"] = 120
 	resolver, err := NewEconomyResolver(rules)
 	if err != nil {
@@ -144,26 +149,29 @@ func TestCompletedBuildingAffectsEconomyOnNextRecalculation(t *testing.T) {
 	if len(colony.Buildings) != 1 || colony.Buildings[0] != "holo_simulator" {
 		t.Fatalf("completed building missing: %+v", colony.Buildings)
 	}
-	if colony.EconomyContext.MoraleBuildingBonusPercent != 0 {
-		t.Fatalf("newly completed Holo affected same-turn economy: %+v", colony.EconomyContext)
+	if colony.EconomyContext.MoraleBuildingBonusPercent != 20 || colony.EconomyContext.MoralePercent != 20 {
+		t.Fatalf("completed Holo missing from post-turn snapshot: %+v", colony.EconomyContext)
 	}
-	if colony.AdjustedEconomy.Production != 120 {
-		t.Fatalf("same-turn production=%v", colony.AdjustedEconomy.Production)
+	if colony.AdjustedEconomy.Production <= 144 {
+		t.Fatalf("post-growth/post-building production=%v should exceed 144", colony.AdjustedEconomy.Production)
 	}
-	if len(first.Events) != 3 || first.Events[2].Kind != "colony.building_completed" {
-		t.Fatalf("unexpected completion events: %+v", first.Events)
+	if len(first.Events) != 4 || first.Events[2].Kind != "colony.building_completed" || first.Events[3].Kind != "colony.population_grew" {
+		t.Fatalf("unexpected completion/growth events: %+v", first.Events)
 	}
-
+	var progress ConstructionProgressedEvent
+	if err := json.Unmarshal(first.Events[1].Data, &progress); err != nil {
+		t.Fatal(err)
+	}
+	if progress.AppliedPP != 120 {
+		t.Fatalf("completed building consumed %v PP, want exactly current-turn 120", progress.AppliedPP)
+	}
 	second, err := resolver.Resolve(ctx, first.State, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	colony = second.State.Colonies[0]
 	if colony.EconomyContext.MoraleBuildingBonusPercent != 20 || colony.EconomyContext.MoralePercent != 20 {
-		t.Fatalf("completed Holo missing on next recalculation: %+v", colony.EconomyContext)
-	}
-	if colony.AdjustedEconomy.Production != 144 {
-		t.Fatalf("next-turn morale-adjusted production=%v, want %v", colony.AdjustedEconomy.Production, 144)
+		t.Fatalf("completed Holo missing on subsequent recalculation: %+v", colony.EconomyContext)
 	}
 }
 
@@ -190,7 +198,50 @@ func TestConstructionProgressIsDeterministicAcrossResolutions(t *testing.T) {
 		t.Fatal(err)
 	}
 	secondProgress := second.State.Colonies[0].Construction.ProgressPP
-	if secondProgress != firstProgress+second.State.Colonies[0].AdjustedEconomy.Production {
-		t.Fatalf("progress did not advance deterministically: first=%v second=%v production=%v", firstProgress, secondProgress, second.State.Colonies[0].AdjustedEconomy.Production)
+	if len(second.Events) == 0 || second.Events[0].Kind != "colony.construction_progressed" {
+		t.Fatalf("second resolution missing construction progress event: %+v", second.Events)
 	}
+	var secondEvent ConstructionProgressedEvent
+	if err := json.Unmarshal(second.Events[0].Data, &secondEvent); err != nil {
+		t.Fatal(err)
+	}
+	if !closePopulationValue(secondProgress, firstProgress+secondEvent.AppliedPP) {
+		t.Fatalf("progress did not advance deterministically: first=%v second=%v applied=%v", firstProgress, secondProgress, secondEvent.AppliedPP)
+	}
+	if second.State.Colonies[0].AdjustedEconomy.Production <= secondEvent.AppliedPP {
+		t.Fatalf("post-growth output=%v should exceed already-consumed turn PP=%v", second.State.Colonies[0].AdjustedEconomy.Production, secondEvent.AppliedPP)
+	}
+}
+
+func TestCyberneticSustenanceReducesConstructionProduction(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	resolver, err := NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := core.NewSmallFixture(721)
+	state.Empires[0].RaceID = "meklar"
+	state.Empires[0].KnownTechnologyIDs = []int{86}
+	command, err := NewQueueBuildingCommand(1, QueueBuildingPayload{ColonyID: state.Colonies[0].ID, BuildingID: "holo_simulator"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, batches := constructionBatch(t, state, command)
+	result, err := resolver.Resolve(ctx, state, batches)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Events) < 2 || result.Events[1].Kind != "colony.construction_progressed" {
+		t.Fatalf("missing construction progress event: %+v", result.Events)
+	}
+	var progress ConstructionProgressedEvent
+	if err := json.Unmarshal(result.Events[1].Data, &progress); err != nil {
+		t.Fatal(err)
+	}
+	// One Meklar worker produces 5 PP base. Missing-Barracks Dictatorship morale
+	// reduces that to 4 PP; Cybernetic sustenance consumes 0.5 PP * 4 pop = 2 PP.
+	if progress.AppliedPP != 2 {
+		t.Fatalf("Cybernetic construction applied_pp=%v want=2", progress.AppliedPP)
+	}
+
 }

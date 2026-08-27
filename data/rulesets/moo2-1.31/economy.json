@@ -1,5 +1,5 @@
 {
-    "schema_version":  3,
+    "schema_version":  4,
     "ruleset":  "moo2-1.31",
     "sources":  [
                     {
@@ -31,6 +31,27 @@
                         "block":  0,
                         "sha256":  "78f8f0b6b6d05426de5b36116fbc8d1e4863305ad3fb659ae0ad3d3bbe83d7dd",
                         "block_sha256":  "6fa9a4c1b844a4688c3fc01ad66c8b364c0291525a7c7098f6a918b7132399c9"
+                    },
+                    {
+                        "id":  "moo2-150-population-growth",
+                        "type":  "secondary-reference",
+                        "description":  "MOO2 1.50 technical manual documents classic population growth inputs, factor 2000, race growth modifiers and max-pop curve semantics.",
+                        "url":  "https://moo2mod.com/manual/MANUAL_150.html",
+                        "accessed_date":  "2026-08-27"
+                    },
+                    {
+                        "id":  "moo2-online-population-capacity",
+                        "type":  "secondary-reference",
+                        "description":  "MOO2 formula reference documents size capacities 5/10/15/20/25, climate habitability fractions, Aquatic/Tolerant reinterpretation and Subterranean +2 per size class.",
+                        "url":  "https://masteroforion2.blogspot.com/2005/10/maximum-population.html",
+                        "accessed_date":  "2026-08-27"
+                    },
+                    {
+                        "id":  "strategywiki-moo2-sustenance",
+                        "type":  "secondary-reference",
+                        "description":  "Cross-check for 1 food per normal population, Cybernetic 0.5 food + 0.5 production consumption, and Lithovore no food requirement.",
+                        "url":  "https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Race_design_options",
+                        "accessed_date":  "2026-08-27"
                     }
                 ],
     "base_research_per_scientist":  {
@@ -41,6 +62,38 @@
                                        "value":  1,
                                        "source_id":  "strategywiki-moo2-economy-calculations"
                                    },
+    "population":  {
+                       "food_per_population":  1.0,
+                       "cybernetic_food_per_population":  0.5,
+                       "cybernetic_production_per_population":  0.5,
+                       "growth_curve_factor":  0.002,
+                       "tolerant_habitability_bonus":  0.25,
+                       "subterranean_capacity_per_size_class":  2.0,
+                       "size_capacity":  [
+                                             { "size_id":  "tiny", "capacity":  5.0 },
+                                             { "size_id":  "small", "capacity":  10.0 },
+                                             { "size_id":  "medium", "capacity":  15.0 },
+                                             { "size_id":  "large", "capacity":  20.0 },
+                                             { "size_id":  "huge", "capacity":  25.0 }
+                                         ],
+                       "climate_habitability":  [
+                                                    { "climate_id":  "toxic", "fraction":  0.25 },
+                                                    { "climate_id":  "radiated", "fraction":  0.25 },
+                                                    { "climate_id":  "barren", "fraction":  0.25 },
+                                                    { "climate_id":  "desert", "fraction":  0.25 },
+                                                    { "climate_id":  "tundra", "fraction":  0.25 },
+                                                    { "climate_id":  "ocean", "fraction":  0.25 },
+                                                    { "climate_id":  "swamp", "fraction":  0.40 },
+                                                    { "climate_id":  "arid", "fraction":  0.60 },
+                                                    { "climate_id":  "terran", "fraction":  0.80 },
+                                                    { "climate_id":  "gaia", "fraction":  1.00 }
+                                                ],
+                       "source_ids":  [
+                                          "moo2-150-population-growth",
+                                          "moo2-online-population-capacity",
+                                          "strategywiki-moo2-sustenance"
+                                      ]
+                   },
     "mineral_industry_per_worker":  [
                                         {
                                             "mineral_id":  "ultra_poor",
