@@ -38,6 +38,11 @@ type EconomyRules struct {
 	BaseTaxBCPerPopulationMilli   int64
 	GravityPenaltyPercent         map[string]int
 	GovernmentModifiers           map[string]GovernmentEconomyModifier
+	MoraleBarracksPenaltyPercent  int
+	MoraleBarracksGovernments     map[string]struct{}
+	MoraleBarracksBuildingIDs     map[string]struct{}
+	MoraleBuildingBonusPercent    map[string]int
+	KnownBuildingIDs              map[string]struct{}
 }
 
 func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
@@ -51,6 +56,13 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	economy, err := ruleset.LoadEconomy(filepath.Join(rulesetDir, "economy.json"))
 	if err != nil {
 		return nil, fmt.Errorf("load economy: %w", err)
+	}
+	buildings, err := ruleset.LoadBuildings(filepath.Join(rulesetDir, "buildings.json"))
+	if err != nil {
+		return nil, fmt.Errorf("load buildings: %w", err)
+	}
+	if err := buildings.Validate(); err != nil {
+		return nil, fmt.Errorf("validate buildings: %w", err)
 	}
 	races, err := ruleset.LoadRaces(filepath.Join(rulesetDir, "races.json"))
 	if err != nil {
@@ -111,6 +123,29 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		}
 	}
 
+	buildingIDs := make(map[string]struct{}, len(buildings.Buildings))
+	for _, building := range buildings.Buildings {
+		buildingIDs[building.ID] = struct{}{}
+	}
+	moraleBarracksGovernments := make(map[string]struct{}, len(economy.Morale.BarracksGovernmentTraitIDs))
+	for _, traitID := range economy.Morale.BarracksGovernmentTraitIDs {
+		moraleBarracksGovernments[traitID] = struct{}{}
+	}
+	moraleBarracksBuildingIDs := make(map[string]struct{}, len(economy.Morale.BarracksBuildingIDs))
+	for _, buildingID := range economy.Morale.BarracksBuildingIDs {
+		if _, ok := buildingIDs[buildingID]; !ok {
+			return nil, fmt.Errorf("morale barracks rule references unknown building %q", buildingID)
+		}
+		moraleBarracksBuildingIDs[buildingID] = struct{}{}
+	}
+	moraleBuildingBonusPercent := make(map[string]int, len(economy.Morale.BuildingBonuses))
+	for _, bonus := range economy.Morale.BuildingBonuses {
+		if _, ok := buildingIDs[bonus.BuildingID]; !ok {
+			return nil, fmt.Errorf("morale bonus references unknown building %q", bonus.BuildingID)
+		}
+		moraleBuildingBonusPercent[bonus.BuildingID] = bonus.Percent
+	}
+
 	rules := &EconomyRules{
 		ClimateFoodPerFarmerMilli:     make(map[string]int64, len(planetClasses.Climates)),
 		MineralIndustryPerWorkerMilli: make(map[string]int64, len(planetClasses.MineralClasses)),
@@ -121,6 +156,11 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		BaseTaxBCPerPopulationMilli:   int64(economy.BaseTaxBCPerPopulation.Value) * core.EconomyScale,
 		GravityPenaltyPercent:         gravityPenalties,
 		GovernmentModifiers:           governmentModifiers,
+		MoraleBarracksPenaltyPercent:  economy.Morale.BarracksPenaltyPercent,
+		MoraleBarracksGovernments:     moraleBarracksGovernments,
+		MoraleBarracksBuildingIDs:     moraleBarracksBuildingIDs,
+		MoraleBuildingBonusPercent:    moraleBuildingBonusPercent,
+		KnownBuildingIDs:              buildingIDs,
 	}
 	for _, climate := range planetClasses.Climates {
 		rules.ClimateFoodPerFarmerMilli[climate.ID] = int64(climate.BaseFoodPerFarmer) * core.EconomyScale
@@ -232,7 +272,7 @@ func (r *EconomyRules) CalculateBaseEconomy(colony core.Colony, planet core.Plan
 	}, nil
 }
 
-func (r *EconomyRules) CalculateContextualEconomy(base core.ColonyEconomy, planet core.Planet, raceID string) (core.ColonyEconomyContext, core.ColonyEconomy, error) {
+func (r *EconomyRules) CalculateContextualEconomy(base core.ColonyEconomy, colony core.Colony, planet core.Planet, raceID string) (core.ColonyEconomyContext, core.ColonyEconomy, error) {
 	if r == nil {
 		return core.ColonyEconomyContext{}, core.ColonyEconomy{}, fmt.Errorf("economy rules must not be nil")
 	}
@@ -248,56 +288,94 @@ func (r *EconomyRules) CalculateContextualEconomy(base core.ColonyEconomy, plane
 	if !ok {
 		return core.ColonyEconomyContext{}, core.ColonyEconomy{}, fmt.Errorf("unknown government %q for race %q", modifiers.GovernmentTraitID, raceID)
 	}
+	barracksPenalty, buildingBonus, moralePercent, err := r.calculateMorale(colony, modifiers.GovernmentTraitID, government.IgnoresMorale)
+	if err != nil {
+		return core.ColonyEconomyContext{}, core.ColonyEconomy{}, err
+	}
 
 	context := core.ColonyEconomyContext{
-		RaceGravityID:               modifiers.GravityID,
-		PlanetGravityID:             planet.GravityID,
-		GravityPenaltyPercent:       gravityPenalty,
-		GovernmentTraitID:           modifiers.GovernmentTraitID,
-		GovernmentFoodPercent:       government.FoodPercent,
-		GovernmentProductionPercent: government.ProductionPercent,
-		GovernmentResearchPercent:   government.ResearchPercent,
-		GovernmentTaxPercent:        government.TaxPercent,
-		GovernmentIgnoresMorale:     government.IgnoresMorale,
+		RaceGravityID:                modifiers.GravityID,
+		PlanetGravityID:              planet.GravityID,
+		GravityPenaltyPercent:        gravityPenalty,
+		GovernmentTraitID:            modifiers.GovernmentTraitID,
+		GovernmentFoodPercent:        government.FoodPercent,
+		GovernmentProductionPercent:  government.ProductionPercent,
+		GovernmentResearchPercent:    government.ResearchPercent,
+		GovernmentTaxPercent:         government.TaxPercent,
+		GovernmentIgnoresMorale:      government.IgnoresMorale,
+		MoraleBarracksPenaltyPercent: barracksPenalty,
+		MoraleBuildingBonusPercent:   buildingBonus,
+		MoralePercent:                moralePercent,
 	}
 	adjusted := core.ColonyEconomy{
-		FoodMilli:       adjustedRoleOutput(base.FoodMilli, government.FoodPercent, gravityPenalty),
-		ProductionMilli: adjustedRoleOutput(base.ProductionMilli, government.ProductionPercent, gravityPenalty),
-		ResearchMilli:   adjustedRoleOutput(base.ResearchMilli, government.ResearchPercent, gravityPenalty),
-		TaxBCMilli:      adjustedTaxIncome(base.TaxBCMilli, government),
+		FoodMilli:       adjustedRoleOutput(base.FoodMilli, government.FoodPercent, moralePercent, gravityPenalty),
+		ProductionMilli: adjustedRoleOutput(base.ProductionMilli, government.ProductionPercent, moralePercent, gravityPenalty),
+		ResearchMilli:   adjustedRoleOutput(base.ResearchMilli, government.ResearchPercent, moralePercent, gravityPenalty),
+		TaxBCMilli:      adjustedTaxIncome(base.TaxBCMilli, government, moralePercent),
 	}
 	return context, adjusted, nil
 }
 
-func adjustedRoleOutput(baseMilli int64, governmentPercent, gravityPenaltyPercent int) int64 {
+func (r *EconomyRules) calculateMorale(colony core.Colony, governmentTraitID string, ignoresMorale bool) (int, int, int, error) {
+	barracksPenalty := 0
+	buildingBonus := 0
+	hasBarracks := false
+	for _, buildingID := range colony.Buildings {
+		if _, ok := r.KnownBuildingIDs[buildingID]; !ok {
+			return 0, 0, 0, fmt.Errorf("colony %d has unknown building %q", colony.ID, buildingID)
+		}
+		if _, ok := r.MoraleBarracksBuildingIDs[buildingID]; ok {
+			hasBarracks = true
+		}
+		buildingBonus += r.MoraleBuildingBonusPercent[buildingID]
+	}
+	if _, needsBarracks := r.MoraleBarracksGovernments[governmentTraitID]; needsBarracks && !hasBarracks {
+		barracksPenalty = r.MoraleBarracksPenaltyPercent
+	}
+	rawMorale := barracksPenalty + buildingBonus
+	if ignoresMorale {
+		return barracksPenalty, buildingBonus, 0, nil
+	}
+	return barracksPenalty, buildingBonus, rawMorale, nil
+}
+func adjustedRoleOutput(baseMilli int64, governmentPercent, moralePercent, gravityPenaltyPercent int) int64 {
 	if baseMilli <= 0 {
 		return 0
 	}
-	percent := 100 + governmentPercent - gravityPenaltyPercent
+	percent := 100 + governmentPercent + moralePercent - gravityPenaltyPercent
 	if percent <= 0 {
 		return 0
 	}
 	return roundMilliToWhole(baseMilli * int64(percent) / 100)
 }
 
-func adjustedTaxIncome(baseMilli int64, government GovernmentEconomyModifier) int64 {
-	if baseMilli <= 0 || government.TaxPercent == 0 {
-		return baseMilli
+func adjustedTaxIncome(baseMilli int64, government GovernmentEconomyModifier, moralePercent int) int64 {
+	if baseMilli <= 0 {
+		return 0
 	}
-	bonusMilli := baseMilli * int64(government.TaxPercent) / 100
-	switch government.TaxBonusRounding {
-	case "down":
-		bonusMilli = floorMilliToWhole(bonusMilli)
-	default:
-		bonusMilli = roundMilliToWhole(bonusMilli)
+	governmentBonusMilli := int64(0)
+	if government.TaxPercent != 0 {
+		governmentBonusMilli = baseMilli * int64(government.TaxPercent) / 100
+		switch government.TaxBonusRounding {
+		case "down":
+			governmentBonusMilli = floorMilliToWhole(governmentBonusMilli)
+		default:
+			governmentBonusMilli = roundSignedMilliToWhole(governmentBonusMilli)
+		}
 	}
-	return max64(0, baseMilli+bonusMilli)
+	moraleBonusMilli := roundSignedMilliToWhole(baseMilli * int64(moralePercent) / 100)
+	return max64(0, baseMilli+governmentBonusMilli+moraleBonusMilli)
 }
-
 func gravityKey(raceGravityID, planetGravityID string) string {
 	return raceGravityID + "/" + planetGravityID
 }
 
+func roundSignedMilliToWhole(value int64) int64 {
+	if value < 0 {
+		return -roundMilliToWhole(-value)
+	}
+	return roundMilliToWhole(value)
+}
 func roundMilliToWhole(value int64) int64 {
 	if value <= 0 {
 		return 0

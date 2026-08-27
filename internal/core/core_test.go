@@ -149,3 +149,17 @@ func TestValidateRejectsInvalidEconomyContext(t *testing.T) {
 		t.Fatal("expected negative adjusted economy to fail validation")
 	}
 }
+
+func TestValidateRejectsInvalidBuildingList(t *testing.T) {
+	state := NewSmallFixture(22)
+	state.Colonies[0].Buildings = []string{"marine_barracks", "marine_barracks"}
+	if err := state.Validate(); err == nil {
+		t.Fatal("expected duplicate colony building to fail validation")
+	}
+
+	state = NewSmallFixture(23)
+	state.Colonies[0].Buildings = []string{""}
+	if err := state.Validate(); err == nil {
+		t.Fatal("expected empty colony building id to fail validation")
+	}
+}

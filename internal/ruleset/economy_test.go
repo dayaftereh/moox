@@ -70,3 +70,34 @@ func TestCommittedEconomyContextRules(t *testing.T) {
 		t.Fatalf("unexpected Dictatorship economy rule: %+v", dictatorship)
 	}
 }
+
+func TestCommittedMoraleRules(t *testing.T) {
+	file, err := LoadEconomy(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31", "economy.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if file.Morale.BarracksPenaltyPercent != -20 {
+		t.Fatalf("barracks morale penalty=%d, want -20", file.Morale.BarracksPenaltyPercent)
+	}
+	wantGovernments := map[string]bool{"government_feudal": true, "government_dictatorship": true}
+	for _, traitID := range file.Morale.BarracksGovernmentTraitIDs {
+		delete(wantGovernments, traitID)
+	}
+	if len(wantGovernments) != 0 {
+		t.Fatalf("missing barracks morale governments: %v", wantGovernments)
+	}
+	wantBarracks := map[string]bool{"marine_barracks": true, "armor_barracks": true}
+	for _, buildingID := range file.Morale.BarracksBuildingIDs {
+		delete(wantBarracks, buildingID)
+	}
+	if len(wantBarracks) != 0 {
+		t.Fatalf("missing barracks building ids: %v", wantBarracks)
+	}
+	bonuses := make(map[string]int)
+	for _, bonus := range file.Morale.BuildingBonuses {
+		bonuses[bonus.BuildingID] = bonus.Percent
+	}
+	if bonuses["holo_simulator"] != 20 || bonuses["pleasure_dome"] != 30 {
+		t.Fatalf("unexpected morale building bonuses: %v", bonuses)
+	}
+}

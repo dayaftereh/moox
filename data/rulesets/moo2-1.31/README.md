@@ -161,15 +161,15 @@ out\moox-analyze-windows-amd64.exe normalize ship-hulls `
 ```
 ## `economy.json`
 
-Schema version: **2**.
+Schema version: **3**.
 
-The first colony-economy ruleset now contains both base constants and the first contextual layers.
+The colony-economy ruleset now contains base constants plus Gravity, starting-government and the first local Morale layers.
 
 Base data:
 
 - base research: 3 RP per scientist,
 - base taxable income: 1 BC per population unit,
-- base industry per worker by mineral class: `1, 2, 3, 5, 8` for Ultra Poor through Ultra Rich,
+- base industry per worker by mineral class: `1, 2, 3, 5, 8`,
 - Aquatic +1 farming coefficient on Tundra/Ocean/Terran.
 
 Context data:
@@ -178,15 +178,20 @@ Context data:
 - Feudal research -50%,
 - Democracy research +50% and tax +50% with down-rounded government tax bonus,
 - Unification food/industry +50% and morale-ignore flag,
-- Dictatorship zero direct percentage modifiers for the currently modeled resources.
+- Dictatorship zero direct food/industry/research/tax percentage,
+- Feudal/Dictatorship local morale -20% without Marine/Armor Barracks,
+- Holo Simulator local morale +20%,
+- Pleasure Dome local morale +30%, cumulative with Holo Simulator.
 
-Government effects are backed directly by original-observed `HELP.LBX` block 0 with file/block hashes recorded in the ruleset. The exact numeric gravity matrix is cross-checked as `secondary-reference`; original HELP establishes the compatibility relationships but not every numeric cell in the text.
+The government and local-morale effects are backed by original-observed `HELP.LBX` block 0 with file/block hashes recorded in the ruleset. The exact numeric gravity matrix remains cross-checked as `secondary-reference`; original HELP establishes the compatibility relationships but not every numeric matrix cell in prose.
+
+Morale building IDs are also cross-validated against `buildings.json` by the runtime rules loader. Empire-wide morale technologies, Capitol-loss effects, leaders and conquered-population morale are intentionally not encoded in this local-colony rule yet.
 
 The file intentionally coexists with `planet_classes.json` `base_extraction=1,2,3,4,5`: that executable extraction table is a separate original rule and must not be relabeled as worker industry.
 
 Climate food/farmer remains in `planet_classes.json`; racial food/industry/science/money and gravity/government trait identities remain in `race_traits.json`; preset selections remain in `races.json`.
 
-See `docs/research/ECONOMY_BASELINE_2026-08-27.md` and `docs/research/ECONOMY_CONTEXT_2026-08-27.md` for the current fidelity boundary and known gaps.
+See `docs/research/ECONOMY_BASELINE_2026-08-27.md`, `ECONOMY_CONTEXT_2026-08-27.md` and `ECONOMY_MORALE_2026-08-27.md` for the current fidelity boundary and known gaps.
 ## Planet classes
 
 `planet_classes.json` contains the original-observed five planet sizes, five mineral classes, three gravity classes and ten climate classes. It also carries the 1.31 size-generation roll thresholds, mineral base-extraction values and climate base-food-per-farmer values with field-level provenance. Canonical names are referenced through stable language keys; the 23 English values are in `data/languages/en.json`.

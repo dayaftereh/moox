@@ -107,7 +107,7 @@ func (r *EconomyResolver) recalculateColony(state *core.GameState, colony *core.
 	if err != nil {
 		return fmt.Errorf("calculate colony %d base economy: %w", colony.ID, err)
 	}
-	context, adjusted, err := r.Rules.CalculateContextualEconomy(base, *planet, empire.RaceID)
+	context, adjusted, err := r.Rules.CalculateContextualEconomy(base, *colony, *planet, empire.RaceID)
 	if err != nil {
 		return fmt.Errorf("calculate colony %d contextual economy: %w", colony.ID, err)
 	}

@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const EconomySchemaVersion = 2
+const EconomySchemaVersion = 3
 
 type EconomyFile struct {
 	SchemaVersion            int                        `json:"schema_version"`
@@ -18,6 +18,7 @@ type EconomyFile struct {
 	AquaticFoodBonus         EconomyClimateBonus        `json:"aquatic_food_bonus"`
 	GravityPenalties         []GravityPenaltyRule       `json:"gravity_penalties"`
 	GovernmentModifiers      []GovernmentEconomyRule    `json:"government_modifiers"`
+	Morale                   MoraleEconomyRule          `json:"morale"`
 }
 
 type EconomyScalar struct {
@@ -53,6 +54,19 @@ type GovernmentEconomyRule struct {
 	TaxBonusRounding  string `json:"tax_bonus_rounding"`
 	IgnoresMorale     bool   `json:"ignores_morale"`
 	SourceID          string `json:"source_id"`
+}
+
+type MoraleEconomyRule struct {
+	BarracksPenaltyPercent     int                   `json:"barracks_penalty_percent"`
+	BarracksGovernmentTraitIDs []string              `json:"barracks_government_trait_ids"`
+	BarracksBuildingIDs        []string              `json:"barracks_building_ids"`
+	BuildingBonuses            []MoraleBuildingBonus `json:"building_bonuses"`
+	SourceID                   string                `json:"source_id"`
+}
+
+type MoraleBuildingBonus struct {
+	BuildingID string `json:"building_id"`
+	Percent    int    `json:"percent"`
 }
 
 func LoadEconomy(path string) (*EconomyFile, error) {
@@ -182,6 +196,51 @@ func (f *EconomyFile) Validate() error {
 		if err := validateSource("government modifier "+rule.TraitID, rule.SourceID); err != nil {
 			return err
 		}
+	}
+	if err := f.validateMorale(sources, seenGovernments); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (f *EconomyFile) validateMorale(sources, governments map[string]struct{}) error {
+	if f.Morale.BarracksPenaltyPercent >= 0 || f.Morale.BarracksPenaltyPercent < -100 {
+		return fmt.Errorf("morale barracks penalty must be negative and >= -100, got %d", f.Morale.BarracksPenaltyPercent)
+	}
+	if _, ok := sources[f.Morale.SourceID]; !ok {
+		return fmt.Errorf("morale references unknown source %q", f.Morale.SourceID)
+	}
+	if len(f.Morale.BarracksGovernmentTraitIDs) == 0 || len(f.Morale.BarracksBuildingIDs) == 0 {
+		return fmt.Errorf("morale barracks rules require governments and building ids")
+	}
+	seenGovernments := make(map[string]struct{}, len(f.Morale.BarracksGovernmentTraitIDs))
+	for _, traitID := range f.Morale.BarracksGovernmentTraitIDs {
+		if _, ok := governments[traitID]; !ok {
+			return fmt.Errorf("morale barracks rule references unknown government %q", traitID)
+		}
+		if _, exists := seenGovernments[traitID]; exists {
+			return fmt.Errorf("duplicate morale barracks government %q", traitID)
+		}
+		seenGovernments[traitID] = struct{}{}
+	}
+	seenBuildings := make(map[string]struct{})
+	for _, buildingID := range f.Morale.BarracksBuildingIDs {
+		if buildingID == "" {
+			return fmt.Errorf("morale barracks building id must not be empty")
+		}
+		if _, exists := seenBuildings[buildingID]; exists {
+			return fmt.Errorf("duplicate morale building %q", buildingID)
+		}
+		seenBuildings[buildingID] = struct{}{}
+	}
+	for _, bonus := range f.Morale.BuildingBonuses {
+		if bonus.BuildingID == "" || bonus.Percent <= 0 || bonus.Percent > 100 {
+			return fmt.Errorf("invalid morale building bonus %+v", bonus)
+		}
+		if _, exists := seenBuildings[bonus.BuildingID]; exists {
+			return fmt.Errorf("duplicate morale building %q", bonus.BuildingID)
+		}
+		seenBuildings[bonus.BuildingID] = struct{}{}
 	}
 	return nil
 }

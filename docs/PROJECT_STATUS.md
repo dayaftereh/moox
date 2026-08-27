@@ -72,7 +72,7 @@ Tracked normalized data lives under `data/rulesets/moo2-1.31/`.
 | `ship_hulls.json` | 6 military hull identities | picture identities/mappings proven; full hull stats/components/design rules remain |
 | `assets.json` | 156 semantic records | 143 confirmed, 13 deliberately pending generic race icons |
 | `planet_classes.json` | 5 sizes, 5 mineral classes, 3 gravity classes, 10 climates | size thresholds, mineral extraction and base food/farmer proven; broader galaxy generation intentionally deferred |
-| `economy.json` | base research/income/industry + Aquatic + 3x3 gravity matrix + four starting-government economy modifiers | base + Gravity/Government layers implemented; morale/buildings/pollution/logistics and advanced-government effects remain |
+| `economy.json` | base research/income/industry + Aquatic + gravity + starting-government + local Morale/Barracks/Holo/Pleasure rules | base + Gravity/Government/local-Morale layers implemented; empire-wide morale tech, broader buildings, pollution/logistics and advanced-government effects remain |
 
 ### Semantic asset coverage
 
@@ -127,7 +127,7 @@ See `docs/research/ACTIVE_RESEARCH.md` for the explicit closed-milestone list an
 
 The planet-class normalization checkpoint is complete. The temporary probe programs have been removed, the normalized artifact is committed-ready, and the full Go test/vet baseline is green.
 
-**Phase 1 - deterministic simulation skeleton is active.** `colony.assign_population` now flows through trusted Seat -> Empire authorization and a transactional `EconomyResolver` that materializes three explicit views: base `Economy`, `EconomyContext`, and `AdjustedEconomy`. Gravity penalties (0/25/50%) and the starting-government food/industry/research/tax effects are normalized and tested, including Unification morale-ignore. The next fidelity slice is morale plus the minimum building/technology coefficients needed to test it.
+**Phase 1 - deterministic simulation skeleton is active.** `colony.assign_population` now materializes base `Economy`, explicit `EconomyContext`, and `AdjustedEconomy` through a transactional resolver. Gravity, starting-government and local Morale are implemented: Feudal/Dictatorship -20% without Barracks, Holo +20%, Pleasure +30% cumulative, with Unification recording but suppressing Morale. The next runtime slice is deterministic building construction/progress using adjusted production.
 
 ## What is not implemented yet
 
@@ -135,7 +135,7 @@ The research/data tooling should not be confused with a playable engine. Major m
 
 - original-faithful galaxy/star/planet generation (the current small galaxy is deterministic test scaffolding),
 - full strategic turn processing beyond the first population/economy resolver,
-- contextual/net colony economy beyond the implemented Gravity/Government layer (morale, buildings, pollution, logistics, maintenance),
+- contextual/net colony economy beyond the implemented Gravity/Government/local-Morale layer (broader buildings, empire-wide morale tech, pollution, logistics, maintenance),
 - race-aware population cohorts for conquered/mixed-race colonies and persisted custom race designs,
 - high-precision population growth/capacity and food consumption,
 - research progression/effects,

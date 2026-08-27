@@ -139,3 +139,60 @@ func TestEconomyCommandCannotCrossSeatEmpireBoundaryThroughSession(t *testing.T)
 		t.Fatalf("failed malicious resolve changed authoritative session")
 	}
 }
+
+func TestObserverReceivesMoraleContext(t *testing.T) {
+	state, seats := twoSeatFixture(t)
+	state.Colonies[0].Buildings = []string{"holo_simulator", "pleasure_dome"}
+	s, err := NewGameSession("game-morale", state, seats)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rules, err := game.LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	resolver, err := game.NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	command, err := game.NewAssignPopulationCommand(1, game.AssignPopulationPayload{ColonyID: state.Colonies[0].ID, Farmers: 1, Workers: 1, Scientists: 2})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.SubmitTurn(protocol.CommandBatch{SchemaVersion: protocol.CommandSchemaVersion, GameID: "game-morale", SeatID: 2, Turn: 1, BaseRevision: 1}); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.SubmitTurn(protocol.CommandBatch{SchemaVersion: protocol.CommandSchemaVersion, GameID: "game-morale", SeatID: 1, Turn: 1, BaseRevision: 1, Commands: []protocol.Command{command}}); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.ResolveStrategic(resolver); err != nil {
+		t.Fatal(err)
+	}
+	observer, err := s.ObserverView()
+	if err != nil {
+		t.Fatal(err)
+	}
+	colony := observer.State.Colonies[0]
+	if colony.EconomyContext.MoraleBuildingBonusPercent != 50 || colony.EconomyContext.MoralePercent != 50 {
+		t.Fatalf("observer morale context=%+v", colony.EconomyContext)
+	}
+	if colony.Economy.ResearchMilli != 6000 || colony.AdjustedEconomy.ResearchMilli != 12000 {
+		t.Fatalf("observer morale research base/adjusted=%d/%d", colony.Economy.ResearchMilli, colony.AdjustedEconomy.ResearchMilli)
+	}
+	found := false
+	for _, event := range observer.Events {
+		if event.Kind != "colony.population_assigned" {
+			continue
+		}
+		var payload game.PopulationAssignedEvent
+		if err := json.Unmarshal(event.Data, &payload); err != nil {
+			t.Fatal(err)
+		}
+		if payload.EconomyContext.MoralePercent == 50 && payload.AdjustedEconomy == colony.AdjustedEconomy {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("observer event history missing resolved morale context")
+	}
+}

@@ -116,19 +116,19 @@ The code includes hash constants for the relevant original function ranges. Thes
 
 ## Next exact action
 
-**Continue Phase 1 with morale as the next explicit colony-economy context layer.**
+**Continue Phase 1 by connecting normalized buildings/technology to actual colony progression.**
 
-The first strategic command, base economy, Gravity matrix and starting-government economy modifiers are now implemented. Every resolved colony keeps `Economy`, `EconomyContext` and `AdjustedEconomy` separately, so the Observer can see why output changed and later modifiers can be recomputed from base rather than chained onto rounded results.
+Population assignment, base economy, Gravity, starting-government and the first local Morale layer are now implemented. Every resolved colony preserves `Economy`, `EconomyContext` and `AdjustedEconomy`; local building morale is explained in the context and Unification explicitly suppresses its application.
 
 Concretely, next:
 
-1. narrowly research/normalize the colony morale calculation and rounding/order required by production/research/food,
-2. normalize only the morale-related building/technology coefficients required for a deterministic fixture,
-3. add morale to `ColonyEconomyContext`, with the existing Unification morale-ignore flag explicitly bypassing it,
-4. preserve Gravity/Government additive composition and exact save/load/session replay behavior,
-5. record the separate model gap for race-aware population cohorts/custom race traits before conquest/assimilation work.
+1. narrowly normalize the first building production cost/maintenance/output fields required for a deterministic construction fixture,
+2. add a minimal colony construction queue/progress state and command boundary,
+3. spend `AdjustedEconomy.ProductionMilli` deterministically into construction progress,
+4. complete a first building and let only its already-proven effect enter the next economy recalculation,
+5. keep empire-wide technology effects, pollution, logistics and conquest outside this construction slice unless a proven dependency requires them.
 
-Do not add Wails/network/MCP transport code yet. Do not mix pollution, logistics or maintenance into the morale slice unless a proven dependency requires it.
+Race-aware population cohorts and persisted custom-race traits remain a separate prerequisite before conquest/assimilation work. Do not add Wails/network/MCP transport code yet.
 ## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.

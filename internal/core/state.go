@@ -54,6 +54,7 @@ type Colony struct {
 	EmpireID        ID                   `json:"empire_id"`
 	PlanetID        ID                   `json:"planet_id"`
 	Population      PopulationState      `json:"population"`
+	Buildings       []string             `json:"buildings,omitempty"`
 	Economy         ColonyEconomy        `json:"economy"`
 	EconomyContext  ColonyEconomyContext `json:"economy_context"`
 	AdjustedEconomy ColonyEconomy        `json:"adjusted_economy"`
@@ -83,15 +84,18 @@ const EconomyScale int64 = 1000
 // be added to this context and recalculated from the base snapshot, never
 // multiplied sequentially onto already rounded adjusted output.
 type ColonyEconomyContext struct {
-	RaceGravityID               string `json:"race_gravity_id,omitempty"`
-	PlanetGravityID             string `json:"planet_gravity_id,omitempty"`
-	GravityPenaltyPercent       int    `json:"gravity_penalty_percent"`
-	GovernmentTraitID           string `json:"government_trait_id,omitempty"`
-	GovernmentFoodPercent       int    `json:"government_food_percent"`
-	GovernmentProductionPercent int    `json:"government_production_percent"`
-	GovernmentResearchPercent   int    `json:"government_research_percent"`
-	GovernmentTaxPercent        int    `json:"government_tax_percent"`
-	GovernmentIgnoresMorale     bool   `json:"government_ignores_morale"`
+	RaceGravityID                string `json:"race_gravity_id,omitempty"`
+	PlanetGravityID              string `json:"planet_gravity_id,omitempty"`
+	GravityPenaltyPercent        int    `json:"gravity_penalty_percent"`
+	GovernmentTraitID            string `json:"government_trait_id,omitempty"`
+	GovernmentFoodPercent        int    `json:"government_food_percent"`
+	GovernmentProductionPercent  int    `json:"government_production_percent"`
+	GovernmentResearchPercent    int    `json:"government_research_percent"`
+	GovernmentTaxPercent         int    `json:"government_tax_percent"`
+	GovernmentIgnoresMorale      bool   `json:"government_ignores_morale"`
+	MoraleBarracksPenaltyPercent int    `json:"morale_barracks_penalty_percent"`
+	MoraleBuildingBonusPercent   int    `json:"morale_building_bonus_percent"`
+	MoralePercent                int    `json:"morale_percent"`
 }
 
 type Event struct {
@@ -202,11 +206,21 @@ func (s *GameState) Validate() error {
 		if colony.AdjustedEconomy.FoodMilli < 0 || colony.AdjustedEconomy.ProductionMilli < 0 || colony.AdjustedEconomy.ResearchMilli < 0 || colony.AdjustedEconomy.TaxBCMilli < 0 {
 			return fmt.Errorf("colony[%d] adjusted economy outputs must be non-negative", i)
 		}
+		seenBuildings := make(map[string]struct{}, len(colony.Buildings))
+		for bi, buildingID := range colony.Buildings {
+			if buildingID == "" {
+				return fmt.Errorf("colony[%d] building[%d] has empty id", i, bi)
+			}
+			if _, exists := seenBuildings[buildingID]; exists {
+				return fmt.Errorf("colony[%d] has duplicate building %q", i, buildingID)
+			}
+			seenBuildings[buildingID] = struct{}{}
+		}
 		context := colony.EconomyContext
 		if context.GravityPenaltyPercent < 0 || context.GravityPenaltyPercent > 100 {
 			return fmt.Errorf("colony[%d] gravity penalty percent %d outside 0..100", i, context.GravityPenaltyPercent)
 		}
-		for _, percent := range []int{context.GovernmentFoodPercent, context.GovernmentProductionPercent, context.GovernmentResearchPercent, context.GovernmentTaxPercent} {
+		for _, percent := range []int{context.GovernmentFoodPercent, context.GovernmentProductionPercent, context.GovernmentResearchPercent, context.GovernmentTaxPercent, context.MoraleBarracksPenaltyPercent, context.MoraleBuildingBonusPercent, context.MoralePercent} {
 			if percent < -100 || percent > 200 {
 				return fmt.Errorf("colony[%d] government economy percent %d outside -100..200", i, percent)
 			}

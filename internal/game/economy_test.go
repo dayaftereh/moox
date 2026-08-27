@@ -221,7 +221,7 @@ func TestContextualEconomyHumanDemocracy(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	context, adjusted, err := rules.CalculateContextualEconomy(base, planet, "human")
+	context, adjusted, err := rules.CalculateContextualEconomy(base, colony, planet, "human")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -242,13 +242,14 @@ func TestContextualEconomyLowGAndHeavyGMatrix(t *testing.T) {
 	state := core.NewSmallFixture(102)
 	colony := state.Colonies[0]
 	colony.Population = core.PopulationState{Units: 1, Scientists: 1}
+	colony.Buildings = []string{"marine_barracks"}
 	planet := state.Galaxy.Systems[0].Planets[0]
 
 	basePsilon, err := rules.CalculateBaseEconomy(colony, planet, "psilon")
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, normalWorld, err := rules.CalculateContextualEconomy(basePsilon, planet, "psilon")
+	_, normalWorld, err := rules.CalculateContextualEconomy(basePsilon, colony, planet, "psilon")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -257,7 +258,7 @@ func TestContextualEconomyLowGAndHeavyGMatrix(t *testing.T) {
 	}
 
 	planet.GravityID = "heavy_g"
-	_, heavyWorld, err := rules.CalculateContextualEconomy(basePsilon, planet, "psilon")
+	_, heavyWorld, err := rules.CalculateContextualEconomy(basePsilon, colony, planet, "psilon")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -270,7 +271,7 @@ func TestContextualEconomyLowGAndHeavyGMatrix(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	context, lowWorld, err := rules.CalculateContextualEconomy(baseBulrathi, planet, "bulrathi")
+	context, lowWorld, err := rules.CalculateContextualEconomy(baseBulrathi, colony, planet, "bulrathi")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -292,7 +293,7 @@ func TestContextualEconomyUnificationAppliesToFoodAndIndustry(t *testing.T) {
 	if base.FoodMilli != 3000 || base.ProductionMilli != 4000 {
 		t.Fatalf("Klackon base economy=%+v", base)
 	}
-	context, adjusted, err := rules.CalculateContextualEconomy(base, planet, "klackon")
+	context, adjusted, err := rules.CalculateContextualEconomy(base, colony, planet, "klackon")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -309,16 +310,116 @@ func TestContextualEconomyFeudalResearchPenalty(t *testing.T) {
 	state := core.NewSmallFixture(104)
 	colony := state.Colonies[0]
 	colony.Population = core.PopulationState{Units: 1, Scientists: 1}
+	colony.Buildings = []string{"marine_barracks"}
 	planet := state.Galaxy.Systems[0].Planets[0]
 	base, err := rules.CalculateBaseEconomy(colony, planet, "sakkra")
 	if err != nil {
 		t.Fatal(err)
 	}
-	context, adjusted, err := rules.CalculateContextualEconomy(base, planet, "sakkra")
+	context, adjusted, err := rules.CalculateContextualEconomy(base, colony, planet, "sakkra")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if context.GovernmentTraitID != "government_feudal" || adjusted.ResearchMilli != 2000 {
 		t.Fatalf("Sakkra Feudal context=%+v adjusted=%+v", context, adjusted)
+	}
+}
+
+func TestMoraleBarracksPenaltyAndRemoval(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	state := core.NewSmallFixture(105)
+	colony := state.Colonies[0]
+	colony.Population = core.PopulationState{Units: 1, Scientists: 1}
+	planet := state.Galaxy.Systems[0].Planets[0]
+	planet.GravityID = "low_g"
+	base, err := rules.CalculateBaseEconomy(colony, planet, "psilon")
+	if err != nil {
+		t.Fatal(err)
+	}
+	context, adjusted, err := rules.CalculateContextualEconomy(base, colony, planet, "psilon")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if context.MoraleBarracksPenaltyPercent != -20 || context.MoralePercent != -20 {
+		t.Fatalf("unexpected missing-barracks morale context: %+v", context)
+	}
+	if adjusted.ResearchMilli != 4000 {
+		t.Fatalf("Dictatorship missing-barracks research=%d, want 4000", adjusted.ResearchMilli)
+	}
+
+	colony.Buildings = []string{"marine_barracks"}
+	context, adjusted, err = rules.CalculateContextualEconomy(base, colony, planet, "psilon")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if context.MoraleBarracksPenaltyPercent != 0 || context.MoralePercent != 0 {
+		t.Fatalf("Marine Barracks did not remove morale penalty: %+v", context)
+	}
+	if adjusted.ResearchMilli != 5000 {
+		t.Fatalf("Dictatorship with barracks research=%d, want 5000", adjusted.ResearchMilli)
+	}
+}
+
+func TestMoraleBuildingsAreCumulativeAndAffectMoneySeparately(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	state := core.NewSmallFixture(106)
+	colony := state.Colonies[0]
+	colony.Population = core.PopulationState{Units: 1, Scientists: 1}
+	colony.Buildings = []string{"holo_simulator", "pleasure_dome"}
+	planet := state.Galaxy.Systems[0].Planets[0]
+	base, err := rules.CalculateBaseEconomy(colony, planet, "human")
+	if err != nil {
+		t.Fatal(err)
+	}
+	context, adjusted, err := rules.CalculateContextualEconomy(base, colony, planet, "human")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if context.MoraleBuildingBonusPercent != 50 || context.MoralePercent != 50 {
+		t.Fatalf("unexpected cumulative morale context: %+v", context)
+	}
+	if adjusted.ResearchMilli != 6000 {
+		t.Fatalf("Democracy + morale research=%d, want 6000", adjusted.ResearchMilli)
+	}
+	if adjusted.TaxBCMilli != 2000 {
+		t.Fatalf("Democracy + morale tax=%d, want 2000", adjusted.TaxBCMilli)
+	}
+}
+
+func TestUnificationRecordsButIgnoresMorale(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	state := core.NewSmallFixture(107)
+	colony := state.Colonies[0]
+	colony.Population = core.PopulationState{Units: 2, Farmers: 1, Workers: 1}
+	colony.Buildings = []string{"holo_simulator", "pleasure_dome"}
+	planet := state.Galaxy.Systems[0].Planets[0]
+	base, err := rules.CalculateBaseEconomy(colony, planet, "klackon")
+	if err != nil {
+		t.Fatal(err)
+	}
+	context, adjusted, err := rules.CalculateContextualEconomy(base, colony, planet, "klackon")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !context.GovernmentIgnoresMorale || context.MoraleBuildingBonusPercent != 50 || context.MoralePercent != 0 {
+		t.Fatalf("Unification morale bypass context=%+v", context)
+	}
+	if adjusted.FoodMilli != 5000 || adjusted.ProductionMilli != 6000 {
+		t.Fatalf("Unification applied ignored morale: %+v", adjusted)
+	}
+}
+
+func TestContextualEconomyRejectsUnknownBuilding(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	state := core.NewSmallFixture(108)
+	colony := state.Colonies[0]
+	colony.Buildings = []string{"not_a_real_building"}
+	planet := state.Galaxy.Systems[0].Planets[0]
+	base, err := rules.CalculateBaseEconomy(colony, planet, "human")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, _, err := rules.CalculateContextualEconomy(base, colony, planet, "human"); err == nil {
+		t.Fatal("expected unknown colony building to fail contextual economy")
 	}
 }
