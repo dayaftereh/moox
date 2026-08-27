@@ -3,6 +3,13 @@
 `moox-analyze` is a read-only, pure-Go console tool for researching a legally owned Master of Orion II installation.
 
 It is deliberately independent of Wails and must remain buildable with `CGO_ENABLED=0`.
+## Current status
+
+Current analyzer version: **0.21.0**.
+
+The tool has grown from the original LBX inspector into the main read-only 1.31 research/normalization pipeline. It now covers installation inventory, LBX inspection/extraction, graphics/palette extraction, audio/text/support catalogs, evidence-based block classification, original DOS bound-MZ/LE reads, and normalized race/building/technology/ship-hull/semantic-asset generation.
+
+Current committed normalized outputs are summarized in `docs/PROJECT_STATUS.md`. The one active decoder ticket is tracked in `docs/research/ACTIVE_RESEARCH.md` rather than in a broad open-ended decoder list.
 
 ## Build
 
@@ -71,30 +78,52 @@ Existing output files are not overwritten unless `-force` is passed.
 ## Package layout
 
 ```text
-cmd/moox-analyze/     CLI only
-internal/lbx/         generic SimTex LBX parsing and block IO
-internal/catalog/     installation inventory/provenance catalog
-internal/textscan/    generic binary string scanning
+cmd/moox-analyze/        CLI
+internal/lbx/            generic SimTex LBX parsing/block IO
+internal/catalog/        installation inventory/provenance
+internal/textscan/       printable binary-string scanning
+internal/i18n/           stable language-file loading/merge/validation
+internal/moo2data/       MOO2 1.31-specific normalization/decoders
+internal/ruleset/        normalized runtime schemas/loaders/validation
+internal/moo2exe/        bound MZ/LE original-executable reader
+internal/moo2gfx/        MOO2 graphics/frame decoder
+internal/graphiccatalog/ graphics inventory/export
+internal/palettecatalog/ external palette catalog/export
+internal/audiocatalog/   lossless RIFF/WAVE discovery/export
+internal/textcatalog/    structured/private text reference catalog
+internal/blockcatalog/   evidence-based LBX block classification
+internal/rawextract/     full private original-data extraction
+internal/supportcatalog/ non-LBX support snapshot
 ```
 
-The next layer will be `internal/moo2data/`, containing archive-specific decoders for MOO2 1.31. The generic LBX parser should not gain game-specific knowledge.
-
+The generic parsers remain game-format focused; MOO2-specific identities/formulas belong in `internal/moo2data` and always carry explicit evidence/provenance boundaries.
 ## Safety / data boundary
 
 The analyzer never modifies the source installation. Raw extracted game data belongs under ignored `reference/` directories and is not committed. Only independently authored parsers, factual normalized data, tests and research notes belong in Git.
 
-## Planned decoder order
+## Current normalized coverage and next decoder work
 
-1. Race-design strings and data (`RACESTUF`, `RACEOPT`, related race archives).
-2. Technologies/research (`SCIENCE` plus relevant structured tables/strings).
-3. Colony buildings and economy data.
-4. Ship hulls, weapons and specials.
-5. Leaders/officers.
-6. Planet/system data.
-7. Events/diplomacy.
-8. Save-game fixtures.
-9. Graphics/palettes/audio only as private development reference tooling.
+Already committed:
 
+1. Race Designer options/localization architecture.
+2. 13 preset races.
+3. 203 technology identities/IDs.
+4. 48 building IDs + original technology links.
+5. Six military ship hull identities.
+6. Semantic race/UI/building/strategic-ship/tactical-ship asset mappings.
+7. Private graphics/palette/audio/text/support/block-classification reference tooling.
+
+Not yet complete as gameplay data:
+
+- planet classes (active ticket),
+- technology research fields/costs/effects,
+- building costs/maintenance/effects,
+- ship components/weapons/specials/full design rules,
+- leaders/officers,
+- diplomacy/events,
+- save-game fixtures and runtime parity scenarios.
+
+Do not treat this list as permission for broad parallel research. `docs/research/ACTIVE_RESEARCH.md` is the authoritative single next decoder/research objective.
 ## Normalize loadable ruleset data
 
 The analyzer now has a normalization layer in addition to raw binary inspection.

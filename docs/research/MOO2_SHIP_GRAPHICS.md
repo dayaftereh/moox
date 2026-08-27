@@ -2,7 +2,7 @@
 
 Baseline: official Master of Orion II 1.31, local reference `C:\ASH\Temp\mastori2`.
 
-This note records the evidence used to map the six player hull classes and the three civilian ship types to strategic `SHIPS.LBX` graphics. It also records the proven container layout of `CMBTSHP.LBX`, while deliberately deferring tactical multi-frame semantics until their frame meanings are independently decoded.
+This note records the evidence used to map the six player hull classes and the three civilian ship types to strategic `SHIPS.LBX` graphics, the standard player tactical `CMBTSHP.LBX` layout, and the independently proven 20-frame tactical structure (five folded orientations x four neutral animation phases).
 
 ## Player hull identities
 

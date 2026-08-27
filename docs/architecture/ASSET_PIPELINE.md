@@ -79,6 +79,17 @@ Do not require pixel-for-pixel reproduction. Preserve useful MOO2 qualities such
 
 A single MOOX art bible should eventually define palette families, framing, lighting, perspective, icon sizes and UI-safe crop zones so generated assets look like one game rather than isolated images.
 
+## Current semantic status - 2026-08-27
+
+Tracked `assets.json` currently contains **156 semantic records: 143 confirmed / 13 pending**.
+
+Confirmed variant coverage includes:
+
+- 1,728 building colony-position references,
+- 352 strategic military/civilian ship references,
+- 6,560 tactical military hull frame references.
+
+The 13 pending records are generic preset-race icon keys; role-specific race icons remain confirmed. Original PNG/audio/reference bytes stay private and are not part of the distributable semantic catalog.
 ## Current local reference state
 
 As of 2026-08-26, the canonical private graphics extraction contains 30,395 PNG frames from 30,929 cataloged frames. Palette resolution and decode provenance are recorded in the private graphics manifest; unresolved contexts remain explicit rather than being color-guessed.
@@ -88,7 +99,7 @@ As of 2026-08-26, the canonical private graphics extraction contains 30,395 PNG 
 The first complete extraction pass now provides 30,395 local PNG frames backed by a manifest covering all 6,532 recognized graphic blocks; internally paletted raw and Junction frames now decode with zero frame failures. Semantic classification can proceed against this library without moving original-derived bytes into the distributable `assets/` tree.
 The graphics catalog now also records explicit palette-context provenance. The first confirmed resolver rules cover 5,646 palette-context blocks / 20,475 frames across verified UI, colony, diplomacy, ship, combat, planet and event contexts; all unverified contexts remain pending rather than being guessed.
 The 2026-08-26 canonical clean export materializes 30,395 PNGs (~581.03 MiB) from 30,929 cataloged frames. 30,225 exported frames have complete palette coverage; all 170 partial exported frames are still explicitly `pending`, and no `resolved` context produces a partial frame. The 534 remaining unexported frames are external-palette `pending` contexts. Frame decode failures are zero.
-### Semantic race-asset checkpoint
+### Semantic asset checkpoint
 
 `data/rulesets/moo2-1.31/assets.json` is now the first tracked semantic asset catalog. It contains factual source coordinates and hashes only; no original artwork bytes are committed.
 
@@ -116,4 +127,4 @@ out\moox-analyze-windows-amd64.exe normalize assets `
   C:\ASH\Temp\mastori2
 ```
 
-The next semantic mapping work should target planet classes, technology artwork and additional high-value UI assets, always preserving a verification/confidence boundary.
+The active semantic/data direction is planet-class normalization, tracked in `docs/research/ACTIVE_RESEARCH.md`. Planet artwork, technology artwork and additional UI semantics remain follow-up work and should only be promoted when their source meaning is independently proven. The current repository-wide status is summarized in `docs/PROJECT_STATUS.md`.

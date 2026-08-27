@@ -44,12 +44,18 @@ The Go loaders in `internal/ruleset` and `internal/i18n` validate the committed 
 
 ## Next exactness work
 
-1. Verify Pick costs directly against executable/UI behavior where practical.
-2. Add complete incompatibility/availability rules from controlled Race Designer tests.
-3. Extend semantic `assets.json` beyond races/buildings/UI into ships, planets and technology artwork.
-4. Add government behavior parameters as a separate normalized dataset.
-5. Continue with technologies and colony buildings using the same provenance model.
+Current status/gaps are summarized globally in `docs/PROJECT_STATUS.md`; only one research ticket should be active at a time via `docs/research/ACTIVE_RESEARCH.md`.
 
+Priority exactness work after the active planet-class ticket:
+
+1. Verify remaining Race Designer Pick costs/behavior directly against original executable/UI behavior where practical.
+2. Add complete Race Designer incompatibility/availability and government behavior parameters.
+3. Extend technologies beyond identity into research field/level/cost/unlock/effect data.
+4. Extend buildings beyond identity/linkage into production cost, maintenance, prerequisites and effects.
+5. Normalize ship components/weapons/specials and full design-space/cost rules.
+6. Extend semantic assets into planet classes, technology artwork and other runtime-useful UI concepts only when their source semantics are proven.
+
+Do not restart closed building/ship/race asset research merely because more original graphics exist; unresolved or unrelated slots stay pending until a concrete runtime/research ticket requires them.
 ## `races.json`
 
 The 13 standard races are normalized separately from the Race Designer option definitions. Each record references existing trait IDs, includes a derived Pick total, and carries exact HELP record provenance. `go test ./...` validates all race references against `race_traits.json` and verifies that the English `name_key` exists.
@@ -90,7 +96,7 @@ out\moox-analyze-windows-amd64.exe normalize assets `
   C:\ASH\Temp\mastori2
 ```
 
-`go test ./...` loads the committed catalog and cross-validates race, building and ship-hull semantic keys against their normalized rulesets.
+At a clean checkpoint, `go test ./...` loads the committed catalog and cross-validates race, building and ship-hull semantic keys against their normalized rulesets. Temporary active-research probe exceptions are documented in `docs/research/ACTIVE_RESEARCH.md`.
 ## `buildings.json`
 
 The 48 standard colony buildings are normalized into stable IDs and translation keys.

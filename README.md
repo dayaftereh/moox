@@ -6,10 +6,13 @@ The initial goal is a high-fidelity reimplementation of the systems that make MO
 
 ## Project status
 
-Research/bootstrap phase started 2026-08-26.
+Current snapshot: **2026-08-27**.
 
-The repository was empty except for `.git` before this baseline. This first commit intentionally contains **research and project structure only**, not an implementation yet.
+MOOX is in an **advanced research/data-normalization phase**. The repository now contains a pure-Go MOO2 1.31 analyzer (`moox-analyze 0.21.0`), verified LBX/graphics/palette/audio/text tooling, a bound MZ/LE reader for the original DOS executable, normalized race/building/technology/ship-hull datasets, localization keys and a substantial semantic asset catalog.
 
+The playable simulation core is **not implemented yet**. The next major engineering transition is the deterministic headless simulation skeleton after the currently active planet-class normalization ticket.
+
+See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the one active research objective.
 ## Research documents
 
 - `docs/research/MOO2_GAME_REFERENCE.md` - gameplay/system reference and fidelity checklist.
@@ -61,22 +64,33 @@ These projects are references, not dependencies at this stage. If code is reused
 
 ## Next milestone
 
-Before picking the rendering/UI technology, build a **deterministic headless simulation specification** and normalize the reference data we need. The first playable vertical slice should be:
+The immediate research checkpoint is to finish the narrow planet-class normalization tracked in `docs/research/ACTIVE_RESEARCH.md`.
 
-- generate a small galaxy,
-- create one empire and homeworld,
-- assign population to farmer/worker/scientist roles,
-- run turns,
-- produce food/industry/research/money,
-- research one technology,
-- build a colony ship,
-- move it to another system,
-- colonize a planet,
-- save and reload the exact game state.
+After that, begin **Phase 1 - deterministic simulation skeleton** rather than more open-ended archive exploration:
 
-After this baseline is stable we can add race design, diplomacy, ship design and tactical combat without coupling game rules to the UI.
+- seeded deterministic RNG,
+- stable game-state IDs/types,
+- minimal galaxy/star/planet/empire/colony model,
+- turn clock,
+- serialization/save-load round trip,
+- regression fixtures using the normalized 1.31 ruleset.
 
+The first headless playable slice remains: generate a small galaxy, create an empire/homeworld, assign population roles, process the economy/research, build and move a colony ship, colonize a second world, and save/reload the exact state.
 
+Wails v3 is already the planned application shell; rendering/UI framework selection is no longer an open prerequisite.
 ## Runtime ruleset data
 
-Normalized rules live under `data/rulesets/`. User-visible text is separate under `data/languages/`; rules reference stable `name_key` / `description_key` values so changing language never changes game logic or save data. The first committed pair is `data/rulesets/moo2-1.31/race_traits.json` plus `data/languages/en.json`, both generated/validated by the pure-Go analyzer and loaders.
+Normalized rules live under `data/rulesets/moo2-1.31/`; user-visible text is separate under `data/languages/` and rules reference stable translation keys.
+
+Current committed coverage includes:
+
+- 11 Race Designer groups / 53 options,
+- 13 preset races,
+- 203 technology identities,
+- 48 building identities and original technology links,
+- 6 military ship hull identities,
+- 156 semantic asset records (143 confirmed / 13 intentionally pending), including 1,728 building-position variants, 352 strategic ship variants and 6,560 tactical ship-frame variants.
+
+English currently contains 334 runtime keys. German/French/Spanish/Italian each contain the 64 verified Race Designer keys and fall back to English for other normalized names.
+
+See `data/rulesets/moo2-1.31/README.md` for field-level provenance and `docs/PROJECT_STATUS.md` for the current completeness/gap table.
