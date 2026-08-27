@@ -21,9 +21,24 @@ type NewGameTechnologyOptions struct {
 }
 
 type ResearchCompletedEvent struct {
-	EmpireID      core.ID `json:"empire_id"`
-	TechFieldID   int     `json:"tech_field_id"`
-	TechnologyIDs []int   `json:"technology_ids"`
+	EmpireID       core.ID  `json:"empire_id"`
+	TechFieldID    int      `json:"tech_field_id"`
+	TechnologyIDs  []int    `json:"technology_ids"`
+	TechnologyKeys []string `json:"technology_keys"`
+}
+
+type ResearchProgressedEvent struct {
+	EmpireID       core.ID  `json:"empire_id"`
+	TechFieldID    int      `json:"tech_field_id"`
+	TechnologyIDs  []int    `json:"technology_ids"`
+	TechnologyKeys []string `json:"technology_keys"`
+	BaseCostRP     int64    `json:"base_cost_rp"`
+	PreviousRP     int64    `json:"previous_rp"`
+	TurnResearchRP int64    `json:"turn_research_rp"`
+	ProjectedRP    int64    `json:"projected_rp"`
+	ChancePercent  int      `json:"chance_percent"`
+	Roll           int      `json:"roll"`
+	Breakthrough   bool     `json:"breakthrough"`
 }
 
 // InitializeEmpireTechnologies applies only new-game starts whose field set is
@@ -147,10 +162,15 @@ func (r *EconomyResolver) CompleteResearchField(state *core.GameState, empireID 
 	empire.KnownTechnologyFieldIDs = append(empire.KnownTechnologyFieldIDs, fieldID)
 	sort.Ints(empire.KnownTechnologyFieldIDs)
 	empire.Research = nil
+	keys, err := r.technologyKeys(acquired)
+	if err != nil {
+		return DomainEvent{}, err
+	}
 	return NewDomainEvent("empire.research_completed", 0, 0, ResearchCompletedEvent{
-		EmpireID:      empireID,
-		TechFieldID:   fieldID,
-		TechnologyIDs: acquired,
+		EmpireID:       empireID,
+		TechFieldID:    fieldID,
+		TechnologyIDs:  acquired,
+		TechnologyKeys: keys,
 	})
 }
 

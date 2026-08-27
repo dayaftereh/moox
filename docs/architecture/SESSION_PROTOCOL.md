@@ -171,9 +171,9 @@ The current state is a single active project rather than a full queue. Technolog
 
 Technology ownership is now represented by both `Empire.KnownTechnologyFieldIDs` and sorted `Empire.KnownTechnologyIDs`. Active research is persistent `ResearchState` with an original tech-field ID, selected technology IDs and fixed-point RP progress.
 
-After the simulation has established a breakthrough, `GameSession.CompleteResearchField` is the authoritative commit boundary. It is allowed only in `post_resolution`, applies the game-layer transition to a cloned state, validates it, increments revision and emits `empire.research_completed` into the strategic event stream. No frontend, network client or AI adapter should mutate technology ownership directly.
+Normal strategic resolution now calculates and rolls research breakthroughs automatically after Colony economy/construction resolution. The verified MOO2 1.31 standard-field formula uses whole RP, includes the current turn before the roll, consumes one 1..100 RNG draw for every active research project even at 0%, and discards accumulated RP on success. `empire.research_progressed` records the chance/roll plus numeric and speaking Technology IDs; `empire.research_completed` performs the ownership transition. `GameSession.CompleteResearchField` remains a lower-level explicit commit seam for tests/admin-controlled transitions, not the normal Human/AI gameplay path. No frontend, network client or AI adapter should mutate technology ownership directly.
 
-Automatic breakthrough chance/overflow is intentionally not part of this method yet; it will be inserted before the ownership transition once the original algorithm is proven.
+Automatic standard-field breakthrough/overflow behavior is implemented. Hyper-advanced repeated-field cost scaling (`TechField >= 75`) remains explicitly unsupported until its per-empire level state is modeled.
 ## Current limitations / next slice
 
 This checkpoint intentionally does not yet implement:

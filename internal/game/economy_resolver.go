@@ -102,6 +102,11 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 		return Resolution{}, err
 	}
 	events = append(events, constructionEvents...)
+	researchEvents, err := r.advanceResearch(state)
+	if err != nil {
+		return Resolution{}, err
+	}
+	events = append(events, researchEvents...)
 	return Resolution{State: state, Events: events}, nil
 }
 

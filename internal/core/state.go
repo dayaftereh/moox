@@ -239,6 +239,9 @@ func (s *GameState) Validate() error {
 			if empire.Research.ProgressMilli < 0 {
 				return fmt.Errorf("empire[%d] research progress must be non-negative", i)
 			}
+			if empire.Research.ProgressMilli%EconomyScale != 0 {
+				return fmt.Errorf("empire[%d] research progress must use whole RP (%d milli-RP)", i, empire.Research.ProgressMilli)
+			}
 			if len(empire.Research.TechnologyIDs) == 0 {
 				return fmt.Errorf("empire[%d] research technology_ids are required", i)
 			}

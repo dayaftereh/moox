@@ -532,3 +532,78 @@ func TestGameSessionCompletesResearchThroughAuthoritativeBoundary(t *testing.T) 
 		t.Fatalf("unexpected research completion event: %+v", last)
 	}
 }
+
+func TestGameSessionAutomaticallyResolvesGuaranteedResearchBreakthrough(t *testing.T) {
+	state, seats := twoSeatFixture(t)
+	rules, err := game.LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := rules.InitializeEmpireTechnologies(&state.Empires[0], game.NewGameTechnologyOptions{Level: game.NewGameTechnologyPreWarp}); err != nil {
+		t.Fatal(err)
+	}
+	state.Empires[0].Research = &core.ResearchState{
+		TechFieldID:   56,
+		TechnologyIDs: []int{155},
+		ProgressMilli: 299 * core.EconomyScale,
+	}
+	s, err := NewGameSession("game-auto-research", state, seats)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resolver, err := game.NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, seatID := range []protocol.SeatID{1, 2} {
+		if err := s.SubmitTurn(protocol.CommandBatch{
+			SchemaVersion: protocol.CommandSchemaVersion,
+			GameID:        "game-auto-research",
+			SeatID:        seatID,
+			Turn:          1,
+			BaseRevision:  1,
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := s.ResolveStrategic(resolver); err != nil {
+		t.Fatal(err)
+	}
+	observer, err := s.ObserverView()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if observer.Phase != PhasePostResolution {
+		t.Fatalf("automatic research left session in phase %q", observer.Phase)
+	}
+	if observer.State.Empires[0].Research != nil {
+		t.Fatalf("guaranteed research still active: %+v", observer.State.Empires[0].Research)
+	}
+	var progressed *game.ResearchProgressedEvent
+	var completed *game.ResearchCompletedEvent
+	for _, event := range observer.Events {
+		switch event.Kind {
+		case "empire.research_progressed":
+			var payload game.ResearchProgressedEvent
+			if err := json.Unmarshal(event.Data, &payload); err != nil {
+				t.Fatal(err)
+			}
+			progressed = &payload
+		case "empire.research_completed":
+			var payload game.ResearchCompletedEvent
+			if err := json.Unmarshal(event.Data, &payload); err != nil {
+				t.Fatal(err)
+			}
+			completed = &payload
+		}
+	}
+	if progressed == nil || !progressed.Breakthrough || progressed.ChancePercent != 100 {
+		t.Fatalf("observer missing guaranteed research progress event: %+v", progressed)
+	}
+	if len(progressed.TechnologyKeys) != 1 || progressed.TechnologyKeys[0] != "research_laboratory" {
+		t.Fatalf("observer progress lacks speaking technology key: %+v", progressed)
+	}
+	if completed == nil || len(completed.TechnologyKeys) != 1 || completed.TechnologyKeys[0] != "research_laboratory" {
+		t.Fatalf("observer completion lacks Technology 155 (research_laboratory): %+v", completed)
+	}
+}

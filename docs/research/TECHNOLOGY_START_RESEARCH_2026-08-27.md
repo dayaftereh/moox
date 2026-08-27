@@ -1,6 +1,6 @@
 # New-game technology ownership and research acquisition - 2026-08-27
 
-Status: first deterministic technology-ownership slice implemented. Original MOO2 1.31 technology/tech-field tables and the staged new-game field list are normalized from the private reference executable. Exact research breakthrough probability/rounding and automatic per-turn integration remain deliberately deferred.
+Status: deterministic technology ownership/start initialization implemented. The follow-up automatic breakthrough probability/RNG/overflow slice is now complete and documented separately.
 
 ## Original 1.31 technology application table
 
@@ -143,15 +143,12 @@ A regression test confirms that completing the field containing Technology 155 m
 
 This keeps future Wails, network and AI adapters away from direct `GameState` mutation.
 
-## Breakthrough boundary established
+## Breakthrough follow-up completed
 
-The original/manual behavior and classic 1.50 documentation establish three boundaries that the runtime can rely on without yet implementing the random roll:
+The original breakthrough formula, current-turn RP inclusion, 1..100 RNG comparison, per-turn RNG consumption and no-overflow behavior have now been verified directly against MOO2 1.31 and integrated into normal strategic resolution. See `docs/research/RESEARCH_BREAKTHROUGH_2026-08-27.md` for the exact code addresses, formula and runtime tests.
 
-1. RP accumulates against the selected field's base cost.
-2. Once the base cost has been exceeded, a per-turn breakthrough chance applies; the exact timing remains random.
-3. At twice the base cost the breakthrough is guaranteed. Classic behavior spends the accumulated RP on breakthrough rather than carrying excess into the next project.
+`CompleteResearchField` remains the lower-level ownership transition, while normal gameplay now reaches it automatically through the strategic research resolver.
 
-`CompleteResearchField` therefore remains a post-breakthrough ownership operation. It does not decide the random success roll. The exact probability/rounding rule between 1x and 2x cost remains the active reverse-engineering target.
 ## Deliberately deferred
 
 This checkpoint does not yet claim or implement the original:
@@ -164,4 +161,8 @@ This checkpoint does not yet claim or implement the original:
 - Creative/Uncreative field-choice semantics beyond the explicit selected IDs already stored in `ResearchState`,
 - Advanced-start randomized/race-aware extra fields.
 
-The next research slice should isolate the original breakthrough/overflow algorithm before automatic per-turn research resolution is connected to `CompleteResearchField`.
+That breakthrough/overflow slice is now complete; the next research slice is legal research-target selection and its shared Human/AI action projection.
+
+## Follow-up breakthrough checkpoint
+
+The original automatic breakthrough chance, RNG comparison, whole-RP turn aggregation and no-overflow behavior are now implemented and documented in docs/research/RESEARCH_BREAKTHROUGH_2026-08-27.md.

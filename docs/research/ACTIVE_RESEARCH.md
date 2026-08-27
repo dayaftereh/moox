@@ -116,19 +116,19 @@ The code includes hash constants for the relevant original function ranges. Thes
 
 ## Next exact action
 
-**Continue Phase 1 from original new-game technology ownership and the deterministic research-acquisition transition.**
+**Continue Phase 1 from the verified automatic research breakthrough runtime.**
 
-Technology schema v2 now normalizes the original 203 technology-to-field mappings, 82 technology fields with base RP costs, and the six staged new-game fields from `Orion2.exe` 1.31. Pre-Warp and Average initialization are deterministic; `KnownTechnologyFieldIDs` / `KnownTechnologyIDs` persist in game state; and a confirmed research completion commits atomically through `GameSession` and emits `empire.research_completed`.
+The standard-field MOO2 1.31 breakthrough mechanic is now implemented end to end: per-Colony whole-RP aggregation, current-turn-inclusive integer chance, minimum 1% after positive rounded excess, 100% at double base cost, a deterministic 1..100 roll per active research project even at 0%, discarded overflow, ownership acquisition, speaking Technology keys in Observer events, and authoritative GameSession resolution.
 
 Concretely, next:
 
-1. isolate and verify the exact original research breakthrough probability and integer rounding between 1x and 2x base field cost,
-2. verify the exact per-turn order of empire RP accumulation versus the breakthrough roll; the 2x guaranteed threshold and classic discard-on-breakthrough behavior are now established,
-3. connect per-turn empire research output into active `ResearchState` only after that ordering is proven,
-4. then drive the existing `CompleteResearchField` ownership transition automatically from the deterministic core RNG,
-5. separately research Creative/Uncreative selection and the Advanced-start randomized/race-aware grant rather than deriving either from the deterministic Pre-Warp/Average path.
+1. identify and normalize the original legal research-target / TechField-selection rules,
+2. expose those choices as an authority-filtered `ResearchChoices` projection for both Human UI and AI,
+3. define an authoritative `select_research` command that creates a valid `ResearchState` without trusting client-supplied arbitrary field/technology combinations,
+4. research Creative/Uncreative selection semantics before expanding multi-technology field choices,
+5. separately model hyper-advanced repeated-field cost state and Advanced-start randomized/race-aware grants.
 
-Do not add Wails/network/MCP transport code yet; those remain adapters over the established protocol/session boundary. Do not guess the breakthrough chance/rounding, Advanced-start grants, or Creative/Uncreative selection behavior.
+Do not add Wails/network/MCP-specific gameplay logic; transports remain adapters over the same session/legal-action surface. Do not infer Creative/Uncreative behavior, hyper-advanced level costs, or Advanced-start grants.
 ## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.

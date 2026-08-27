@@ -54,6 +54,7 @@ type EconomyRules struct {
 	TechnologyFieldCostsMilli     map[int]int64
 	TechnologyIDsByField          map[int][]int
 	TechnologyFieldByID           map[int]int
+	TechnologyKeyByID             map[int]string
 	TechnologyStrategicAvailable  map[int]bool
 	NewGameAlwaysKnownFieldID     int
 	NewGameStagedKnownFieldIDs    []int
@@ -150,9 +151,11 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	}
 	technologyIDsByField := make(map[int][]int)
 	technologyFieldByID := make(map[int]int, len(technologies.Technologies))
+	technologyKeyByID := make(map[int]string, len(technologies.Technologies))
 	technologyStrategicAvailable := make(map[int]bool, len(technologies.Technologies))
 	for _, technology := range technologies.Technologies {
 		technologyFieldByID[technology.TechnologyID] = technology.TechFieldID
+		technologyKeyByID[technology.TechnologyID] = technology.ID
 		technologyStrategicAvailable[technology.TechnologyID] = technology.StrategicCombatAvailable
 		technologyIDsByField[technology.TechFieldID] = append(technologyIDsByField[technology.TechFieldID], technology.TechnologyID)
 	}
@@ -200,6 +203,7 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		TechnologyFieldCostsMilli:     technologyFieldCosts,
 		TechnologyIDsByField:          technologyIDsByField,
 		TechnologyFieldByID:           technologyFieldByID,
+		TechnologyKeyByID:             technologyKeyByID,
 		TechnologyStrategicAvailable:  technologyStrategicAvailable,
 		NewGameAlwaysKnownFieldID:     technologies.NewGameStart.AlwaysKnownTechFieldID,
 		NewGameStagedKnownFieldIDs:    append([]int(nil), technologies.NewGameStart.StagedKnownTechFieldIDs...),

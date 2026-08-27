@@ -47,6 +47,7 @@ The active implementation sequence is now: verify the original breakthrough/2x-c
 - `docs/research/ECONOMY_MORALE_2026-08-27.md` - local Morale/Barracks/building checkpoint and deferred empire-wide morale systems.
 - `docs/research/BUILDING_CONSTRUCTION_2026-08-27.md` - original building costs/maintenance, deterministic construction and technology-gated buildability checkpoint.
 - `docs/research/TECHNOLOGY_START_RESEARCH_2026-08-27.md` - original technology/tech-field tables, Pre-Warp/Average ownership initialization and research-completion ownership transition.
+- `docs/research/RESEARCH_BREAKTHROUGH_2026-08-27.md` - exact original breakthrough chance/RNG/overflow behavior and automatic deterministic research-turn resolution.
 - `docs/IMPLEMENTATION_PLAN.md` - proposed clean-room development phases.
 - docs/ANALYZER.md - pure-Go MOO2 console analyzer usage and architecture.
 - docs/architecture/README.md - runtime architecture overview for parallel turns, authoritative sessions, battles, observer and AI.
@@ -111,7 +112,7 @@ These projects are references, not dependencies at this stage. If code is reused
 - server-owned Seat -> Empire authorization,
 - deterministic construction/domain events and tactical BattleSession boundaries.
 
-The current research-ownership slice now normalizes original technology fields/costs, materializes deterministic Pre-Warp/Average starting ownership, and commits research completion into `KnownTechnologyFieldIDs`/`KnownTechnologyIDs` through the authoritative session boundary. The next narrow fidelity target is the original breakthrough/overflow algorithm before automatic per-turn research resolution is enabled. Broader building replacement rules/effects, pollution/logistics, fleet movement/colonization and end-to-end turn advancement remain later work.
+The research runtime now normalizes original technology fields/costs, materializes deterministic Pre-Warp/Average starting ownership, and automatically resolves standard-field research each strategic turn using the verified original MOO2 1.31 breakthrough formula: whole-RP accumulation, 1..100 roll, 0..100% integer chance, guaranteed breakthrough at double base cost, and no RP overflow. Research/Observer events carry both original numeric IDs and speaking keys such as `Technology 155 (research_laboratory)`. The next narrow progression target is the authoritative research-target/legal-action surface shared by Human UI and AI. Broader building replacement rules/effects, pollution/logistics, fleet movement/colonization and end-to-end turn advancement remain later work.
 
 Wails v3 is already the planned application shell; rendering/UI framework selection is no longer an open prerequisite.
 ## Runtime ruleset data
