@@ -9,12 +9,23 @@ import (
 	"moox/internal/ruleset"
 )
 
+type GovernmentEconomyModifier struct {
+	FoodPercent       int
+	ProductionPercent int
+	ResearchPercent   int
+	TaxPercent        int
+	TaxBonusRounding  string
+	IgnoresMorale     bool
+}
+
 type RaceEconomyModifiers struct {
 	FoodPerFarmerMilli        int64
 	ProductionPerWorkerMilli  int64
 	ResearchPerScientistMilli int64
 	TaxBCPerPopulationMilli   int64
 	Aquatic                   bool
+	GravityID                 string
+	GovernmentTraitID         string
 }
 
 type EconomyRules struct {
@@ -25,6 +36,8 @@ type EconomyRules struct {
 	AquaticFoodClimateIDs         map[string]struct{}
 	BaseResearchPerScientistMilli int64
 	BaseTaxBCPerPopulationMilli   int64
+	GravityPenaltyPercent         map[string]int
+	GovernmentModifiers           map[string]GovernmentEconomyModifier
 }
 
 func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
@@ -71,6 +84,33 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		aquaticClimates[climateID] = struct{}{}
 	}
 
+	gravityIDs := make(map[string]struct{}, len(planetClasses.GravityClasses))
+	for _, gravity := range planetClasses.GravityClasses {
+		gravityIDs[gravity.ID] = struct{}{}
+	}
+	gravityPenalties := make(map[string]int, len(economy.GravityPenalties))
+	for _, rule := range economy.GravityPenalties {
+		if _, ok := gravityIDs[rule.RaceGravityID]; !ok {
+			return nil, fmt.Errorf("gravity rule references unknown race gravity %q", rule.RaceGravityID)
+		}
+		if _, ok := gravityIDs[rule.PlanetGravityID]; !ok {
+			return nil, fmt.Errorf("gravity rule references unknown planet gravity %q", rule.PlanetGravityID)
+		}
+		gravityPenalties[gravityKey(rule.RaceGravityID, rule.PlanetGravityID)] = rule.Percent
+	}
+
+	governmentModifiers := make(map[string]GovernmentEconomyModifier, len(economy.GovernmentModifiers))
+	for _, rule := range economy.GovernmentModifiers {
+		governmentModifiers[rule.TraitID] = GovernmentEconomyModifier{
+			FoodPercent:       rule.FoodPercent,
+			ProductionPercent: rule.ProductionPercent,
+			ResearchPercent:   rule.ResearchPercent,
+			TaxPercent:        rule.TaxPercent,
+			TaxBonusRounding:  rule.TaxBonusRounding,
+			IgnoresMorale:     rule.IgnoresMorale,
+		}
+	}
+
 	rules := &EconomyRules{
 		ClimateFoodPerFarmerMilli:     make(map[string]int64, len(planetClasses.Climates)),
 		MineralIndustryPerWorkerMilli: make(map[string]int64, len(planetClasses.MineralClasses)),
@@ -79,6 +119,8 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		AquaticFoodClimateIDs:         aquaticClimates,
 		BaseResearchPerScientistMilli: int64(economy.BaseResearchPerScientist.Value) * core.EconomyScale,
 		BaseTaxBCPerPopulationMilli:   int64(economy.BaseTaxBCPerPopulation.Value) * core.EconomyScale,
+		GravityPenaltyPercent:         gravityPenalties,
+		GovernmentModifiers:           governmentModifiers,
 	}
 	for _, climate := range planetClasses.Climates {
 		rules.ClimateFoodPerFarmerMilli[climate.ID] = int64(climate.BaseFoodPerFarmer) * core.EconomyScale
@@ -97,15 +139,29 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 			options[option.ID] = option
 		}
 	}
+	for governmentTraitID := range governmentModifiers {
+		option, ok := options[governmentTraitID]
+		if !ok || option.Ability != governmentTraitID {
+			return nil, fmt.Errorf("economy government rule %q does not match normalized race trait ability", governmentTraitID)
+		}
+	}
+
 	for _, race := range races.Races {
-		var modifiers RaceEconomyModifiers
+		modifiers := RaceEconomyModifiers{GravityID: "normal_g"}
 		for _, selection := range race.TraitSelections {
 			option, ok := options[selection.TraitID]
 			if !ok {
 				continue
 			}
-			if option.Ability == "aquatic" {
+			switch option.Ability {
+			case "aquatic":
 				modifiers.Aquatic = true
+			case "low_g_world":
+				modifiers.GravityID = "low_g"
+			case "high_g_world":
+				modifiers.GravityID = "heavy_g"
+			case "government_feudal", "government_dictatorship", "government_democracy", "government_unification":
+				modifiers.GovernmentTraitID = option.Ability
 			}
 			if option.Value == nil {
 				continue
@@ -121,6 +177,12 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 			case "tax_bc_per_population_delta":
 				modifiers.TaxBCPerPopulationMilli += delta
 			}
+		}
+		if modifiers.GovernmentTraitID == "" {
+			return nil, fmt.Errorf("race %q has no normalized starting government", race.ID)
+		}
+		if _, ok := governmentModifiers[modifiers.GovernmentTraitID]; !ok {
+			return nil, fmt.Errorf("race %q uses unsupported government %q", race.ID, modifiers.GovernmentTraitID)
 		}
 		rules.RaceModifiers[race.ID] = modifiers
 	}
@@ -170,11 +232,84 @@ func (r *EconomyRules) CalculateBaseEconomy(colony core.Colony, planet core.Plan
 	}, nil
 }
 
+func (r *EconomyRules) CalculateContextualEconomy(base core.ColonyEconomy, planet core.Planet, raceID string) (core.ColonyEconomyContext, core.ColonyEconomy, error) {
+	if r == nil {
+		return core.ColonyEconomyContext{}, core.ColonyEconomy{}, fmt.Errorf("economy rules must not be nil")
+	}
+	modifiers, ok := r.RaceModifiers[raceID]
+	if !ok {
+		return core.ColonyEconomyContext{}, core.ColonyEconomy{}, fmt.Errorf("unknown race %q", raceID)
+	}
+	gravityPenalty, ok := r.GravityPenaltyPercent[gravityKey(modifiers.GravityID, planet.GravityID)]
+	if !ok {
+		return core.ColonyEconomyContext{}, core.ColonyEconomy{}, fmt.Errorf("no gravity rule for race %q on planet gravity %q", modifiers.GravityID, planet.GravityID)
+	}
+	government, ok := r.GovernmentModifiers[modifiers.GovernmentTraitID]
+	if !ok {
+		return core.ColonyEconomyContext{}, core.ColonyEconomy{}, fmt.Errorf("unknown government %q for race %q", modifiers.GovernmentTraitID, raceID)
+	}
+
+	context := core.ColonyEconomyContext{
+		RaceGravityID:               modifiers.GravityID,
+		PlanetGravityID:             planet.GravityID,
+		GravityPenaltyPercent:       gravityPenalty,
+		GovernmentTraitID:           modifiers.GovernmentTraitID,
+		GovernmentFoodPercent:       government.FoodPercent,
+		GovernmentProductionPercent: government.ProductionPercent,
+		GovernmentResearchPercent:   government.ResearchPercent,
+		GovernmentTaxPercent:        government.TaxPercent,
+		GovernmentIgnoresMorale:     government.IgnoresMorale,
+	}
+	adjusted := core.ColonyEconomy{
+		FoodMilli:       adjustedRoleOutput(base.FoodMilli, government.FoodPercent, gravityPenalty),
+		ProductionMilli: adjustedRoleOutput(base.ProductionMilli, government.ProductionPercent, gravityPenalty),
+		ResearchMilli:   adjustedRoleOutput(base.ResearchMilli, government.ResearchPercent, gravityPenalty),
+		TaxBCMilli:      adjustedTaxIncome(base.TaxBCMilli, government),
+	}
+	return context, adjusted, nil
+}
+
+func adjustedRoleOutput(baseMilli int64, governmentPercent, gravityPenaltyPercent int) int64 {
+	if baseMilli <= 0 {
+		return 0
+	}
+	percent := 100 + governmentPercent - gravityPenaltyPercent
+	if percent <= 0 {
+		return 0
+	}
+	return roundMilliToWhole(baseMilli * int64(percent) / 100)
+}
+
+func adjustedTaxIncome(baseMilli int64, government GovernmentEconomyModifier) int64 {
+	if baseMilli <= 0 || government.TaxPercent == 0 {
+		return baseMilli
+	}
+	bonusMilli := baseMilli * int64(government.TaxPercent) / 100
+	switch government.TaxBonusRounding {
+	case "down":
+		bonusMilli = floorMilliToWhole(bonusMilli)
+	default:
+		bonusMilli = roundMilliToWhole(bonusMilli)
+	}
+	return max64(0, baseMilli+bonusMilli)
+}
+
+func gravityKey(raceGravityID, planetGravityID string) string {
+	return raceGravityID + "/" + planetGravityID
+}
+
 func roundMilliToWhole(value int64) int64 {
 	if value <= 0 {
 		return 0
 	}
 	return ((value + core.EconomyScale/2) / core.EconomyScale) * core.EconomyScale
+}
+
+func floorMilliToWhole(value int64) int64 {
+	if value <= 0 {
+		return 0
+	}
+	return (value / core.EconomyScale) * core.EconomyScale
 }
 
 func max64(a, b int64) int64 {

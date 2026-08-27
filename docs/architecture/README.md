@@ -445,9 +445,10 @@ The command/session boundary is now implemented across `internal/protocol`, `int
 - detached/copying views so callers cannot mutate authoritative session state through returned DTOs;
 - server-owned Seat -> Empire resolver authority, preventing a command from claiming another empire;
 - first real `colony.assign_population` command with ownership/assignment validation;
-- fixed-point base colony food/production/research/tax snapshots driven by normalized ruleset data.
+- fixed-point base colony food/production/research/tax snapshots driven by normalized ruleset data;
+- explicit Gravity/Government economy context and adjusted output, kept separate from base output for later additive morale/leader layers.
 
-The first strategic gameplay command and base economy resolver are now implemented. The next implementation slice should extend effective colony output without weakening the established command/session boundary:
+The first strategic gameplay command plus Gravity/Government context are now implemented. The next implementation slice should extend effective colony output without weakening the established command/session boundary:
 
 1. normalize gravity compatibility/penalty behavior needed by colony production;
 2. normalize government effects needed by production/research/income;

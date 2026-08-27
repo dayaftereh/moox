@@ -12,10 +12,12 @@ type EconomyResolver struct {
 }
 
 type PopulationAssignedEvent struct {
-	ColonyID    core.ID              `json:"colony_id"`
-	Previous    core.PopulationState `json:"previous"`
-	Current     core.PopulationState `json:"current"`
-	BaseEconomy core.ColonyEconomy   `json:"base_economy"`
+	ColonyID        core.ID                   `json:"colony_id"`
+	Previous        core.PopulationState      `json:"previous"`
+	Current         core.PopulationState      `json:"current"`
+	BaseEconomy     core.ColonyEconomy        `json:"base_economy"`
+	EconomyContext  core.ColonyEconomyContext `json:"economy_context"`
+	AdjustedEconomy core.ColonyEconomy        `json:"adjusted_economy"`
 }
 
 func NewEconomyResolver(rules *EconomyRules) (*EconomyResolver, error) {
@@ -65,10 +67,12 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
 				}
 				event, err := NewDomainEvent("colony.population_assigned", batch.SeatID, command.Sequence, PopulationAssignedEvent{
-					ColonyID:    colony.ID,
-					Previous:    previous,
-					Current:     colony.Population,
-					BaseEconomy: colony.Economy,
+					ColonyID:        colony.ID,
+					Previous:        previous,
+					Current:         colony.Population,
+					BaseEconomy:     colony.Economy,
+					EconomyContext:  colony.EconomyContext,
+					AdjustedEconomy: colony.AdjustedEconomy,
 				})
 				if err != nil {
 					return Resolution{}, err
@@ -99,11 +103,17 @@ func (r *EconomyResolver) recalculateColony(state *core.GameState, colony *core.
 	if empire == nil {
 		return fmt.Errorf("colony %d references unknown empire %d", colony.ID, colony.EmpireID)
 	}
-	economy, err := r.Rules.CalculateBaseEconomy(*colony, *planet, empire.RaceID)
+	base, err := r.Rules.CalculateBaseEconomy(*colony, *planet, empire.RaceID)
 	if err != nil {
 		return fmt.Errorf("calculate colony %d base economy: %w", colony.ID, err)
 	}
-	colony.Economy = economy
+	context, adjusted, err := r.Rules.CalculateContextualEconomy(base, *planet, empire.RaceID)
+	if err != nil {
+		return fmt.Errorf("calculate colony %d contextual economy: %w", colony.ID, err)
+	}
+	colony.Economy = base
+	colony.EconomyContext = context
+	colony.AdjustedEconomy = adjusted
 	return nil
 }
 

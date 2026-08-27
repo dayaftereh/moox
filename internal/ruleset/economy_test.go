@@ -23,3 +23,50 @@ func TestCommittedEconomyRulesLoadAndValidate(t *testing.T) {
 		}
 	}
 }
+
+func TestCommittedEconomyContextRules(t *testing.T) {
+	file, err := LoadEconomy(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31", "economy.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	gravity := make(map[string]int, len(file.GravityPenalties))
+	for _, rule := range file.GravityPenalties {
+		gravity[rule.RaceGravityID+"/"+rule.PlanetGravityID] = rule.Percent
+	}
+	wantGravity := map[string]int{
+		"low_g/low_g":       0,
+		"low_g/normal_g":    25,
+		"low_g/heavy_g":     50,
+		"normal_g/low_g":    25,
+		"normal_g/normal_g": 0,
+		"normal_g/heavy_g":  50,
+		"heavy_g/low_g":     25,
+		"heavy_g/normal_g":  0,
+		"heavy_g/heavy_g":   0,
+	}
+	for key, want := range wantGravity {
+		if got := gravity[key]; got != want {
+			t.Fatalf("gravity %s=%d, want %d", key, got, want)
+		}
+	}
+
+	government := make(map[string]GovernmentEconomyRule, len(file.GovernmentModifiers))
+	for _, rule := range file.GovernmentModifiers {
+		government[rule.TraitID] = rule
+	}
+	if got := government["government_feudal"].ResearchPercent; got != -50 {
+		t.Fatalf("Feudal research percent=%d", got)
+	}
+	democracy := government["government_democracy"]
+	if democracy.ResearchPercent != 50 || democracy.TaxPercent != 50 || democracy.TaxBonusRounding != "down" {
+		t.Fatalf("unexpected Democracy economy rule: %+v", democracy)
+	}
+	unification := government["government_unification"]
+	if unification.FoodPercent != 50 || unification.ProductionPercent != 50 || !unification.IgnoresMorale {
+		t.Fatalf("unexpected Unification economy rule: %+v", unification)
+	}
+	dictatorship := government["government_dictatorship"]
+	if dictatorship.FoodPercent != 0 || dictatorship.ProductionPercent != 0 || dictatorship.ResearchPercent != 0 || dictatorship.TaxPercent != 0 {
+		t.Fatalf("unexpected Dictatorship economy rule: %+v", dictatorship)
+	}
+}

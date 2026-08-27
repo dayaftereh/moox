@@ -50,11 +50,13 @@ type Empire struct {
 }
 
 type Colony struct {
-	ID         ID              `json:"id"`
-	EmpireID   ID              `json:"empire_id"`
-	PlanetID   ID              `json:"planet_id"`
-	Population PopulationState `json:"population"`
-	Economy    ColonyEconomy   `json:"economy"`
+	ID              ID                   `json:"id"`
+	EmpireID        ID                   `json:"empire_id"`
+	PlanetID        ID                   `json:"planet_id"`
+	Population      PopulationState      `json:"population"`
+	Economy         ColonyEconomy        `json:"economy"`
+	EconomyContext  ColonyEconomyContext `json:"economy_context"`
+	AdjustedEconomy ColonyEconomy        `json:"adjusted_economy"`
 }
 
 type PopulationState struct {
@@ -75,6 +77,22 @@ type ColonyEconomy struct {
 }
 
 const EconomyScale int64 = 1000
+
+// ColonyEconomyContext records the currently implemented percentage layers used
+// to recompute AdjustedEconomy from Economy. Future morale/leader modifiers must
+// be added to this context and recalculated from the base snapshot, never
+// multiplied sequentially onto already rounded adjusted output.
+type ColonyEconomyContext struct {
+	RaceGravityID               string `json:"race_gravity_id,omitempty"`
+	PlanetGravityID             string `json:"planet_gravity_id,omitempty"`
+	GravityPenaltyPercent       int    `json:"gravity_penalty_percent"`
+	GovernmentTraitID           string `json:"government_trait_id,omitempty"`
+	GovernmentFoodPercent       int    `json:"government_food_percent"`
+	GovernmentProductionPercent int    `json:"government_production_percent"`
+	GovernmentResearchPercent   int    `json:"government_research_percent"`
+	GovernmentTaxPercent        int    `json:"government_tax_percent"`
+	GovernmentIgnoresMorale     bool   `json:"government_ignores_morale"`
+}
 
 type Event struct {
 	Turn    uint64 `json:"turn"`
@@ -180,6 +198,18 @@ func (s *GameState) Validate() error {
 		}
 		if colony.Economy.FoodMilli < 0 || colony.Economy.ProductionMilli < 0 || colony.Economy.ResearchMilli < 0 || colony.Economy.TaxBCMilli < 0 {
 			return fmt.Errorf("colony[%d] economy outputs must be non-negative", i)
+		}
+		if colony.AdjustedEconomy.FoodMilli < 0 || colony.AdjustedEconomy.ProductionMilli < 0 || colony.AdjustedEconomy.ResearchMilli < 0 || colony.AdjustedEconomy.TaxBCMilli < 0 {
+			return fmt.Errorf("colony[%d] adjusted economy outputs must be non-negative", i)
+		}
+		context := colony.EconomyContext
+		if context.GravityPenaltyPercent < 0 || context.GravityPenaltyPercent > 100 {
+			return fmt.Errorf("colony[%d] gravity penalty percent %d outside 0..100", i, context.GravityPenaltyPercent)
+		}
+		for _, percent := range []int{context.GovernmentFoodPercent, context.GovernmentProductionPercent, context.GovernmentResearchPercent, context.GovernmentTaxPercent} {
+			if percent < -100 || percent > 200 {
+				return fmt.Errorf("colony[%d] government economy percent %d outside -100..200", i, percent)
+			}
 		}
 		if _, ok := empireIDs[colony.EmpireID]; !ok {
 			return fmt.Errorf("colony[%d] references unknown empire %d", i, colony.EmpireID)

@@ -9,6 +9,7 @@ MOOX keeps the gameplay simulation independent from UI and platform code. The Ph
 - minimal galaxy, star-system, planet, empire and colony state,
 - discrete colony job assignment (`PopulationState`) for farmers/workers/scientists,
 - fixed-point base colony economy snapshots (`ColonyEconomy`, 1000 milli-units per displayed resource),
+- explicit `ColonyEconomyContext` plus `AdjustedEconomy` for currently implemented Gravity/Government layers,
 - turn clock and event log,
 - strict state validation including cross-reference checks,
 - deterministic JSON serialization,

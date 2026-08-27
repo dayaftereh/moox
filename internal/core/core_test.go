@@ -135,3 +135,17 @@ func TestValidateRejectsPopulationAssignmentMismatch(t *testing.T) {
 		t.Fatal("expected mismatched population assignment to fail validation")
 	}
 }
+
+func TestValidateRejectsInvalidEconomyContext(t *testing.T) {
+	state := NewSmallFixture(20)
+	state.Colonies[0].EconomyContext.GravityPenaltyPercent = 101
+	if err := state.Validate(); err == nil {
+		t.Fatal("expected invalid gravity economy context to fail validation")
+	}
+
+	state = NewSmallFixture(21)
+	state.Colonies[0].AdjustedEconomy.ProductionMilli = -1
+	if err := state.Validate(); err == nil {
+		t.Fatal("expected negative adjusted economy to fail validation")
+	}
+}

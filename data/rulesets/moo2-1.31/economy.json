@@ -1,64 +1,73 @@
 {
-    "schema_version":  1,
-    "ruleset":  "moo2-1.31",
-    "sources":  [
-                    {
-                        "id":  "moo2-manual-base-industry",
-                        "type":  "secondary-reference",
-                        "description":  "Master of Orion II manual mineral descriptions list base industry per population unit as Ultra Poor 1, Poor 2, Abundant 3, Rich 5 and Ultra Rich 8.",
-                        "url":  "https://manuals.plus/m/5622eabc23dba2bd8c537b7dee95fe7a11c82d6d6607ee13b1b091f07e284617.pdf",
-                        "accessed_date":  "2026-08-27"
-                    },
-                    {
-                        "id":  "strategywiki-moo2-economy-calculations",
-                        "type":  "secondary-reference",
-                        "description":  "Cross-check for normal 3 RP per scientist, population income population * (1 + race bonus), and Aquatic +1 farming planet coefficient on Tundra/Ocean/Terran.",
-                        "url":  "https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Calculations",
-                        "accessed_date":  "2026-08-27"
-                    }
-                ],
-    "base_research_per_scientist":  {
-                                        "value":  3,
-                                        "source_id":  "strategywiki-moo2-economy-calculations"
-                                    },
-    "base_tax_bc_per_population":  {
-                                       "value":  1,
-                                       "source_id":  "strategywiki-moo2-economy-calculations"
-                                   },
-    "mineral_industry_per_worker":  [
-                                        {
-                                            "mineral_id":  "ultra_poor",
-                                            "value":  1,
-                                            "source_id":  "moo2-manual-base-industry"
-                                        },
-                                        {
-                                            "mineral_id":  "poor",
-                                            "value":  2,
-                                            "source_id":  "moo2-manual-base-industry"
-                                        },
-                                        {
-                                            "mineral_id":  "abundant",
-                                            "value":  3,
-                                            "source_id":  "moo2-manual-base-industry"
-                                        },
-                                        {
-                                            "mineral_id":  "rich",
-                                            "value":  5,
-                                            "source_id":  "moo2-manual-base-industry"
-                                        },
-                                        {
-                                            "mineral_id":  "ultra_rich",
-                                            "value":  8,
-                                            "source_id":  "moo2-manual-base-industry"
-                                        }
-                                    ],
-    "aquatic_food_bonus":  {
-                               "value":  1,
-                               "climate_ids":  [
-                                                   "tundra",
-                                                   "ocean",
-                                                   "terran"
-                                               ],
-                               "source_id":  "strategywiki-moo2-economy-calculations"
-                           }
+  "schema_version": 2,
+  "ruleset": "moo2-1.31",
+  "sources": [
+    {
+      "id": "moo2-manual-base-industry",
+      "type": "secondary-reference",
+      "description": "Master of Orion II manual mineral descriptions list base industry per population unit as Ultra Poor 1, Poor 2, Abundant 3, Rich 5 and Ultra Rich 8.",
+      "url": "https://manuals.plus/m/5622eabc23dba2bd8c537b7dee95fe7a11c82d6d6607ee13b1b091f07e284617.pdf",
+      "accessed_date": "2026-08-27"
+    },
+    {
+      "id": "strategywiki-moo2-economy-calculations",
+      "type": "secondary-reference",
+      "description": "Cross-check for normal 3 RP per scientist, population income population * (1 + race bonus), Aquatic +1 farming planet coefficient on Tundra/Ocean/Terran, and point rounding/context formulas.",
+      "url": "https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Calculations",
+      "accessed_date": "2026-08-27"
+    },
+    {
+      "id": "strategywiki-moo2-gravity-matrix",
+      "type": "secondary-reference",
+      "description": "Cross-check for the effective 25%/50% farming-production-research gravity penalty matrix, including High-G races receiving only a 25% Low-G penalty.",
+      "url": "https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Race_design_options",
+      "accessed_date": "2026-08-27"
+    },
+    {
+      "id": "moo2-1.31-help-economy-context",
+      "type": "original-observed",
+      "description": "Original HELP.LBX block 0 states Low-G/High-G compatibility and starting-government effects: Feudal research -50%, Democracy research/tax +50%, Unification food/industry +50% and morale ignored.",
+      "archive": "HELP.LBX",
+      "block": 0,
+      "sha256": "78f8f0b6b6d05426de5b36116fbc8d1e4863305ad3fb659ae0ad3d3bbe83d7dd",
+      "block_sha256": "6fa9a4c1b844a4688c3fc01ad66c8b364c0291525a7c7098f6a918b7132399c9"
+    }
+  ],
+  "base_research_per_scientist": {
+    "value": 3,
+    "source_id": "strategywiki-moo2-economy-calculations"
+  },
+  "base_tax_bc_per_population": {
+    "value": 1,
+    "source_id": "strategywiki-moo2-economy-calculations"
+  },
+  "mineral_industry_per_worker": [
+    {"mineral_id": "ultra_poor", "value": 1, "source_id": "moo2-manual-base-industry"},
+    {"mineral_id": "poor", "value": 2, "source_id": "moo2-manual-base-industry"},
+    {"mineral_id": "abundant", "value": 3, "source_id": "moo2-manual-base-industry"},
+    {"mineral_id": "rich", "value": 5, "source_id": "moo2-manual-base-industry"},
+    {"mineral_id": "ultra_rich", "value": 8, "source_id": "moo2-manual-base-industry"}
+  ],
+  "aquatic_food_bonus": {
+    "value": 1,
+    "climate_ids": ["tundra", "ocean", "terran"],
+    "source_id": "strategywiki-moo2-economy-calculations"
+  },
+  "gravity_penalties": [
+    {"race_gravity_id": "low_g", "planet_gravity_id": "low_g", "percent": 0, "source_ids": ["moo2-1.31-help-economy-context", "strategywiki-moo2-gravity-matrix"]},
+    {"race_gravity_id": "low_g", "planet_gravity_id": "normal_g", "percent": 25, "source_ids": ["moo2-1.31-help-economy-context", "strategywiki-moo2-gravity-matrix"]},
+    {"race_gravity_id": "low_g", "planet_gravity_id": "heavy_g", "percent": 50, "source_ids": ["moo2-1.31-help-economy-context", "strategywiki-moo2-gravity-matrix"]},
+    {"race_gravity_id": "normal_g", "planet_gravity_id": "low_g", "percent": 25, "source_ids": ["moo2-1.31-help-economy-context", "strategywiki-moo2-gravity-matrix"]},
+    {"race_gravity_id": "normal_g", "planet_gravity_id": "normal_g", "percent": 0, "source_ids": ["moo2-1.31-help-economy-context", "strategywiki-moo2-gravity-matrix"]},
+    {"race_gravity_id": "normal_g", "planet_gravity_id": "heavy_g", "percent": 50, "source_ids": ["moo2-1.31-help-economy-context", "strategywiki-moo2-gravity-matrix"]},
+    {"race_gravity_id": "heavy_g", "planet_gravity_id": "low_g", "percent": 25, "source_ids": ["moo2-1.31-help-economy-context", "strategywiki-moo2-gravity-matrix"]},
+    {"race_gravity_id": "heavy_g", "planet_gravity_id": "normal_g", "percent": 0, "source_ids": ["moo2-1.31-help-economy-context", "strategywiki-moo2-gravity-matrix"]},
+    {"race_gravity_id": "heavy_g", "planet_gravity_id": "heavy_g", "percent": 0, "source_ids": ["moo2-1.31-help-economy-context", "strategywiki-moo2-gravity-matrix"]}
+  ],
+  "government_modifiers": [
+    {"trait_id": "government_feudal", "food_percent": 0, "production_percent": 0, "research_percent": -50, "tax_percent": 0, "tax_bonus_rounding": "none", "ignores_morale": false, "source_id": "moo2-1.31-help-economy-context"},
+    {"trait_id": "government_dictatorship", "food_percent": 0, "production_percent": 0, "research_percent": 0, "tax_percent": 0, "tax_bonus_rounding": "none", "ignores_morale": false, "source_id": "moo2-1.31-help-economy-context"},
+    {"trait_id": "government_democracy", "food_percent": 0, "production_percent": 0, "research_percent": 50, "tax_percent": 50, "tax_bonus_rounding": "down", "ignores_morale": false, "source_id": "moo2-1.31-help-economy-context"},
+    {"trait_id": "government_unification", "food_percent": 50, "production_percent": 50, "research_percent": 0, "tax_percent": 0, "tax_bonus_rounding": "none", "ignores_morale": true, "source_id": "moo2-1.31-help-economy-context"}
+  ]
 }

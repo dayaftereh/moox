@@ -1,6 +1,7 @@
 package session
 
 import (
+	"encoding/json"
 	"path/filepath"
 	"testing"
 
@@ -68,12 +69,25 @@ func TestEconomyCommandFlowsThroughAuthoritativeSessionAndObserver(t *testing.T)
 	if colony.Economy != (core.ColonyEconomy{FoodMilli: 2000, ProductionMilli: 6000, ResearchMilli: 3000, TaxBCMilli: 4000}) {
 		t.Fatalf("observer base economy = %+v", colony.Economy)
 	}
+	if colony.EconomyContext.GovernmentTraitID != "government_democracy" || colony.EconomyContext.GravityPenaltyPercent != 0 {
+		t.Fatalf("observer economy context = %+v", colony.EconomyContext)
+	}
+	if colony.AdjustedEconomy != (core.ColonyEconomy{FoodMilli: 2000, ProductionMilli: 6000, ResearchMilli: 5000, TaxBCMilli: 6000}) {
+		t.Fatalf("observer adjusted economy = %+v", colony.AdjustedEconomy)
+	}
 	found := false
 	for _, event := range observer.Events {
 		if event.Kind == "colony.population_assigned" {
 			found = true
 			if event.SeatID != 1 || event.CommandSequence != 1 || event.Revision != 2 {
 				t.Fatalf("population event metadata = %+v", event)
+			}
+			var payload game.PopulationAssignedEvent
+			if err := json.Unmarshal(event.Data, &payload); err != nil {
+				t.Fatal(err)
+			}
+			if payload.EconomyContext != colony.EconomyContext || payload.AdjustedEconomy != colony.AdjustedEconomy {
+				t.Fatalf("population event missing contextual economy: %+v", payload)
 			}
 		}
 	}
@@ -85,7 +99,7 @@ func TestEconomyCommandFlowsThroughAuthoritativeSessionAndObserver(t *testing.T)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(player.Colonies) != 1 || player.Colonies[0].Economy != colony.Economy {
+	if len(player.Colonies) != 1 || player.Colonies[0].Economy != colony.Economy || player.Colonies[0].EconomyContext != colony.EconomyContext || player.Colonies[0].AdjustedEconomy != colony.AdjustedEconomy {
 		t.Fatalf("player projection did not receive resolved own-colony economy: %+v", player.Colonies)
 	}
 }

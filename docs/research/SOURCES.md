@@ -11,6 +11,17 @@ This file records useful public sources and what we use them for. It is intentio
 https://manuals.plus/m/5622eabc23dba2bd8c537b7dee95fe7a11c82d6d6607ee13b1b091f07e284617.pdf
 
 Use: primary/manual cross-check for colony-economy terminology and mineral base industry per worker (`1, 2, 3, 5, 8` for Ultra Poor through Ultra Rich). The manual is referenced, not redistributed.
+### StrategyWiki - MOO2 calculations
+
+https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Calculations
+
+Use: secondary cross-check for colony production/research/population-income formulas, additive government/morale/leader composition, gravity colonist penalties, and money rounding. Original HELP/executable evidence remains preferred where available.
+
+### StrategyWiki - MOO2 race design options
+
+https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Race_design_options
+
+Use: secondary cross-check for the effective Low-G/Normal-G/High-G 25/50% economy penalty matrix, including the effective High-G-on-Low-G 25% penalty despite the misleading planet UI display.
 ### StrategyWiki - Master of Orion II: Battle at Antares
 
 - Main gameplay: https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Gameplay

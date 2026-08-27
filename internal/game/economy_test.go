@@ -211,3 +211,114 @@ func TestPopulationIncomeRoundsToWholeBC(t *testing.T) {
 		t.Fatalf("1 population at 1.5 BC/pop rounded income=%d, want 2000", got.TaxBCMilli)
 	}
 }
+
+func TestContextualEconomyHumanDemocracy(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	state := core.NewSmallFixture(101)
+	colony := state.Colonies[0]
+	planet := state.Galaxy.Systems[0].Planets[0]
+	base, err := rules.CalculateBaseEconomy(colony, planet, "human")
+	if err != nil {
+		t.Fatal(err)
+	}
+	context, adjusted, err := rules.CalculateContextualEconomy(base, planet, "human")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if context.RaceGravityID != "normal_g" || context.PlanetGravityID != "normal_g" || context.GravityPenaltyPercent != 0 {
+		t.Fatalf("unexpected Human gravity context: %+v", context)
+	}
+	if context.GovernmentTraitID != "government_democracy" || context.GovernmentResearchPercent != 50 || context.GovernmentTaxPercent != 50 {
+		t.Fatalf("unexpected Human government context: %+v", context)
+	}
+	want := core.ColonyEconomy{FoodMilli: 4000, ProductionMilli: 3000, ResearchMilli: 5000, TaxBCMilli: 6000}
+	if adjusted != want {
+		t.Fatalf("Human adjusted economy=%+v, want %+v", adjusted, want)
+	}
+}
+
+func TestContextualEconomyLowGAndHeavyGMatrix(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	state := core.NewSmallFixture(102)
+	colony := state.Colonies[0]
+	colony.Population = core.PopulationState{Units: 1, Scientists: 1}
+	planet := state.Galaxy.Systems[0].Planets[0]
+
+	basePsilon, err := rules.CalculateBaseEconomy(colony, planet, "psilon")
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, normalWorld, err := rules.CalculateContextualEconomy(basePsilon, planet, "psilon")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if normalWorld.ResearchMilli != 4000 {
+		t.Fatalf("Low-G Psilon on Normal-G research=%d, want 4000", normalWorld.ResearchMilli)
+	}
+
+	planet.GravityID = "heavy_g"
+	_, heavyWorld, err := rules.CalculateContextualEconomy(basePsilon, planet, "psilon")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if heavyWorld.ResearchMilli != 3000 {
+		t.Fatalf("Low-G Psilon on Heavy-G research=%d, want 3000", heavyWorld.ResearchMilli)
+	}
+
+	planet.GravityID = "low_g"
+	baseBulrathi, err := rules.CalculateBaseEconomy(colony, planet, "bulrathi")
+	if err != nil {
+		t.Fatal(err)
+	}
+	context, lowWorld, err := rules.CalculateContextualEconomy(baseBulrathi, planet, "bulrathi")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if context.GravityPenaltyPercent != 25 || lowWorld.ResearchMilli != 2000 {
+		t.Fatalf("High-G Bulrathi on Low-G context=%+v research=%d", context, lowWorld.ResearchMilli)
+	}
+}
+
+func TestContextualEconomyUnificationAppliesToFoodAndIndustry(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	state := core.NewSmallFixture(103)
+	colony := state.Colonies[0]
+	colony.Population = core.PopulationState{Units: 2, Farmers: 1, Workers: 1}
+	planet := state.Galaxy.Systems[0].Planets[0]
+	base, err := rules.CalculateBaseEconomy(colony, planet, "klackon")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if base.FoodMilli != 3000 || base.ProductionMilli != 4000 {
+		t.Fatalf("Klackon base economy=%+v", base)
+	}
+	context, adjusted, err := rules.CalculateContextualEconomy(base, planet, "klackon")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if context.GovernmentTraitID != "government_unification" || !context.GovernmentIgnoresMorale {
+		t.Fatalf("unexpected Unification context: %+v", context)
+	}
+	if adjusted.FoodMilli != 5000 || adjusted.ProductionMilli != 6000 {
+		t.Fatalf("Klackon adjusted economy=%+v", adjusted)
+	}
+}
+
+func TestContextualEconomyFeudalResearchPenalty(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	state := core.NewSmallFixture(104)
+	colony := state.Colonies[0]
+	colony.Population = core.PopulationState{Units: 1, Scientists: 1}
+	planet := state.Galaxy.Systems[0].Planets[0]
+	base, err := rules.CalculateBaseEconomy(colony, planet, "sakkra")
+	if err != nil {
+		t.Fatal(err)
+	}
+	context, adjusted, err := rules.CalculateContextualEconomy(base, planet, "sakkra")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if context.GovernmentTraitID != "government_feudal" || adjusted.ResearchMilli != 2000 {
+		t.Fatalf("Sakkra Feudal context=%+v adjusted=%+v", context, adjusted)
+	}
+}

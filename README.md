@@ -25,7 +25,7 @@ Current snapshot: **2026-08-27**.
 
 Master of Orion X is transitioning from the advanced research/data-normalization phase into the deterministic headless runtime. The repository contains the pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), normalized runtime datasets and the first simulation/session infrastructure.
 
-The game is **not playable yet**, but the first real strategic gameplay command now runs through the deterministic multiplayer runtime: `colony.assign_population` is submitted in a versioned command batch, authorized by server-owned Seat -> Empire mapping, resolved transactionally, materialized into fixed-point base food/production/research/tax output, and exposed through Player/Observer views and domain events. The next fidelity slice is contextual colony economy (gravity/government first, then broader morale/building/pollution/logistics layers).
+The game is **not playable yet**, but the first real strategic gameplay path now runs through the deterministic multiplayer runtime. `colony.assign_population` is server-authorized and transactionally resolved into fixed-point base economy plus explicit Gravity/Government context and adjusted output; Player/Observer views and domain events expose both the base and the reason for the adjustment. The next fidelity slice is morale plus the minimum building/technology coefficients needed to test it, while mixed-race/custom-race population modeling remains an explicit follow-up.
 
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the one active research objective.
 ## Research documents
@@ -36,6 +36,7 @@ See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/r
 - `docs/WORKING_RULES.md` - mandatory convergence/checkpoint rules for long research sessions.
 - `docs/research/ACTIVE_RESEARCH.md` - authoritative current objective, next exact action, blockers and closed milestones.
 - `docs/research/ECONOMY_BASELINE_2026-08-27.md` - first population-command and base colony-economy fidelity checkpoint.
+- `docs/research/ECONOMY_CONTEXT_2026-08-27.md` - Gravity/Government contextual economy checkpoint and current model limitations.
 - `docs/IMPLEMENTATION_PLAN.md` - proposed clean-room development phases.
 - docs/ANALYZER.md - pure-Go MOO2 console analyzer usage and architecture.
 - docs/architecture/README.md - runtime architecture overview for parallel turns, authoritative sessions, battles, observer and AI.
@@ -92,10 +93,11 @@ These projects are references, not dependencies at this stage. If code is reused
 - discrete farmer/worker/scientist assignment,
 - the first real `colony.assign_population` strategic command,
 - fixed-point base food/production/research/tax colony output from normalized ruleset data,
+- explicit Gravity/Government economy context and adjusted output,
 - server-owned Seat -> Empire authorization,
 - deterministic domain events and tactical BattleSession boundaries.
 
-The first headless playable slice still needs contextual/net economy, research progression, construction, fleet movement/colonization and then end-to-end turn advancement through those systems.
+The first headless playable slice still needs morale/building/pollution/logistics and other net-economy layers, research progression, construction, fleet movement/colonization and then end-to-end turn advancement through those systems.
 
 Wails v3 is already the planned application shell; rendering/UI framework selection is no longer an open prerequisite.
 ## Runtime ruleset data

@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const EconomySchemaVersion = 1
+const EconomySchemaVersion = 2
 
 type EconomyFile struct {
 	SchemaVersion            int                        `json:"schema_version"`
@@ -16,6 +16,8 @@ type EconomyFile struct {
 	BaseTaxBCPerPopulation   EconomyScalar              `json:"base_tax_bc_per_population"`
 	MineralIndustryPerWorker []MineralIndustryPerWorker `json:"mineral_industry_per_worker"`
 	AquaticFoodBonus         EconomyClimateBonus        `json:"aquatic_food_bonus"`
+	GravityPenalties         []GravityPenaltyRule       `json:"gravity_penalties"`
+	GovernmentModifiers      []GovernmentEconomyRule    `json:"government_modifiers"`
 }
 
 type EconomyScalar struct {
@@ -33,6 +35,24 @@ type EconomyClimateBonus struct {
 	Value      int      `json:"value"`
 	ClimateIDs []string `json:"climate_ids"`
 	SourceID   string   `json:"source_id"`
+}
+
+type GravityPenaltyRule struct {
+	RaceGravityID   string   `json:"race_gravity_id"`
+	PlanetGravityID string   `json:"planet_gravity_id"`
+	Percent         int      `json:"percent"`
+	SourceIDs       []string `json:"source_ids"`
+}
+
+type GovernmentEconomyRule struct {
+	TraitID           string `json:"trait_id"`
+	FoodPercent       int    `json:"food_percent"`
+	ProductionPercent int    `json:"production_percent"`
+	ResearchPercent   int    `json:"research_percent"`
+	TaxPercent        int    `json:"tax_percent"`
+	TaxBonusRounding  string `json:"tax_bonus_rounding"`
+	IgnoresMorale     bool   `json:"ignores_morale"`
+	SourceID          string `json:"source_id"`
 }
 
 func LoadEconomy(path string) (*EconomyFile, error) {
@@ -67,14 +87,17 @@ func (f *EconomyFile) Validate() error {
 		}
 		sources[source.ID] = struct{}{}
 	}
+	validateSource := func(name, sourceID string) error {
+		if _, ok := sources[sourceID]; !ok {
+			return fmt.Errorf("%s references unknown source %q", name, sourceID)
+		}
+		return nil
+	}
 	validateScalar := func(name string, scalar EconomyScalar, min int) error {
 		if scalar.Value < min {
 			return fmt.Errorf("%s value %d below %d", name, scalar.Value, min)
 		}
-		if _, ok := sources[scalar.SourceID]; !ok {
-			return fmt.Errorf("%s references unknown source %q", name, scalar.SourceID)
-		}
-		return nil
+		return validateSource(name, scalar.SourceID)
 	}
 	if err := validateScalar("base_research_per_scientist", f.BaseResearchPerScientist, 1); err != nil {
 		return err
@@ -85,24 +108,24 @@ func (f *EconomyFile) Validate() error {
 	if len(f.MineralIndustryPerWorker) != 5 {
 		return fmt.Errorf("mineral industry count=%d, expected 5", len(f.MineralIndustryPerWorker))
 	}
-	seen := make(map[string]struct{}, len(f.MineralIndustryPerWorker))
+	seenMinerals := make(map[string]struct{}, len(f.MineralIndustryPerWorker))
 	for i, item := range f.MineralIndustryPerWorker {
 		if item.MineralID == "" || item.Value < 1 {
 			return fmt.Errorf("mineral_industry_per_worker[%d] has invalid id/value", i)
 		}
-		if _, exists := seen[item.MineralID]; exists {
+		if _, exists := seenMinerals[item.MineralID]; exists {
 			return fmt.Errorf("duplicate mineral industry id %q", item.MineralID)
 		}
-		seen[item.MineralID] = struct{}{}
-		if _, ok := sources[item.SourceID]; !ok {
-			return fmt.Errorf("mineral industry %q references unknown source %q", item.MineralID, item.SourceID)
+		seenMinerals[item.MineralID] = struct{}{}
+		if err := validateSource("mineral industry "+item.MineralID, item.SourceID); err != nil {
+			return err
 		}
 	}
 	if f.AquaticFoodBonus.Value <= 0 || len(f.AquaticFoodBonus.ClimateIDs) == 0 {
 		return fmt.Errorf("aquatic_food_bonus requires positive value and climates")
 	}
-	if _, ok := sources[f.AquaticFoodBonus.SourceID]; !ok {
-		return fmt.Errorf("aquatic_food_bonus references unknown source %q", f.AquaticFoodBonus.SourceID)
+	if err := validateSource("aquatic_food_bonus", f.AquaticFoodBonus.SourceID); err != nil {
+		return err
 	}
 	climates := make(map[string]struct{}, len(f.AquaticFoodBonus.ClimateIDs))
 	for _, climateID := range f.AquaticFoodBonus.ClimateIDs {
@@ -113,6 +136,52 @@ func (f *EconomyFile) Validate() error {
 			return fmt.Errorf("aquatic_food_bonus has duplicate climate %q", climateID)
 		}
 		climates[climateID] = struct{}{}
+	}
+	if len(f.GravityPenalties) != 9 {
+		return fmt.Errorf("gravity penalty count=%d, expected 9", len(f.GravityPenalties))
+	}
+	seenGravity := make(map[string]struct{}, len(f.GravityPenalties))
+	for i, rule := range f.GravityPenalties {
+		if rule.RaceGravityID == "" || rule.PlanetGravityID == "" || rule.Percent < 0 || rule.Percent > 100 {
+			return fmt.Errorf("gravity_penalties[%d] has invalid ids/percent", i)
+		}
+		key := rule.RaceGravityID + "/" + rule.PlanetGravityID
+		if _, exists := seenGravity[key]; exists {
+			return fmt.Errorf("duplicate gravity penalty %q", key)
+		}
+		seenGravity[key] = struct{}{}
+		if len(rule.SourceIDs) == 0 {
+			return fmt.Errorf("gravity penalty %q has no sources", key)
+		}
+		for _, sourceID := range rule.SourceIDs {
+			if err := validateSource("gravity penalty "+key, sourceID); err != nil {
+				return err
+			}
+		}
+	}
+	if len(f.GovernmentModifiers) != 4 {
+		return fmt.Errorf("government modifier count=%d, expected 4", len(f.GovernmentModifiers))
+	}
+	seenGovernments := make(map[string]struct{}, len(f.GovernmentModifiers))
+	for i, rule := range f.GovernmentModifiers {
+		if rule.TraitID == "" {
+			return fmt.Errorf("government_modifiers[%d] missing trait_id", i)
+		}
+		if _, exists := seenGovernments[rule.TraitID]; exists {
+			return fmt.Errorf("duplicate government modifier %q", rule.TraitID)
+		}
+		seenGovernments[rule.TraitID] = struct{}{}
+		for _, percent := range []int{rule.FoodPercent, rule.ProductionPercent, rule.ResearchPercent, rule.TaxPercent} {
+			if percent < -100 || percent > 200 {
+				return fmt.Errorf("government modifier %q has out-of-range percent %d", rule.TraitID, percent)
+			}
+		}
+		if rule.TaxBonusRounding != "none" && rule.TaxBonusRounding != "down" {
+			return fmt.Errorf("government modifier %q has unsupported tax rounding %q", rule.TraitID, rule.TaxBonusRounding)
+		}
+		if err := validateSource("government modifier "+rule.TraitID, rule.SourceID); err != nil {
+			return err
+		}
 	}
 	return nil
 }

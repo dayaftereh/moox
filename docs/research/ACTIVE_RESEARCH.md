@@ -116,19 +116,19 @@ The code includes hash constants for the relevant original function ranges. Thes
 
 ## Next exact action
 
-**Continue Phase 1 by turning base colony output into verified contextual/effective output.**
+**Continue Phase 1 with morale as the next explicit colony-economy context layer.**
 
-The first real strategic command is complete: `colony.assign_population` is authorized by server-owned Seat -> Empire mapping, resolved transactionally, stored as farmer/worker/scientist assignment and materialized into fixed-point base food/production/research/tax output. The rules are split across `planet_classes.json`, `race_traits.json`, `races.json` and the new `economy.json` rather than hidden in resolver constants.
+The first strategic command, base economy, Gravity matrix and starting-government economy modifiers are now implemented. Every resolved colony keeps `Economy`, `EconomyContext` and `AdjustedEconomy` separately, so the Observer can see why output changed and later modifiers can be recomputed from base rather than chained onto rounded results.
 
 Concretely, next:
 
-1. narrowly research/normalize gravity compatibility and its production penalty behavior,
-2. narrowly research/normalize government effects required for production/research/income,
-3. add those as explicit layers over the existing base `ColonyEconomy`,
-4. keep morale/buildings/pollution/logistics out until their exact dependencies/order are needed and evidenced,
-5. preserve Seat -> Empire authorization, transactional resolution, exact save/load and multiplayer arrival-order independence.
+1. narrowly research/normalize the colony morale calculation and rounding/order required by production/research/food,
+2. normalize only the morale-related building/technology coefficients required for a deterministic fixture,
+3. add morale to `ColonyEconomyContext`, with the existing Unification morale-ignore flag explicitly bypassing it,
+4. preserve Gravity/Government additive composition and exact save/load/session replay behavior,
+5. record the separate model gap for race-aware population cohorts/custom race traits before conquest/assimilation work.
 
-Do not add Wails/network/MCP transport code yet; those remain adapters over the established session/protocol boundary. Do not reopen unrelated graphics/data research.
+Do not add Wails/network/MCP transport code yet. Do not mix pollution, logistics or maintenance into the morale slice unless a proven dependency requires it.
 ## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.
