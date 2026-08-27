@@ -109,3 +109,15 @@ This slice does not yet define:
 - network/MCP-specific adapters.
 
 Those adapters must consume the same `ResearchChoices` and `empire.select_research` semantics rather than reimplementing legality.
+
+## Superseding multi-Technology checkpoint
+
+The original first selection slice exposed only a TechField and temporarily materialized every Technology in that field. That behavior is superseded by `RESEARCH_MULTI_TECH_2026-08-27.md`.
+
+Current command semantics are race-aware:
+
+- `all`: no `technology_id` is accepted;
+- `choose_one`: `technology_id` is required and server-validated;
+- `fixed_one`: no `technology_id` is accepted and the server uses the persisted Uncreative application.
+
+`ResearchChoice.SelectionMode` is authoritative for Human UI and AI callers.

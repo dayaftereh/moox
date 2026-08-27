@@ -48,7 +48,7 @@ func TestAvailableResearchChoicesReturnsServerAuthoritativeFrontier(t *testing.T
 func TestAvailableResearchChoicesEmptyWhileResearchActive(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	state := core.NewSmallFixture(702)
-	state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressRP: 12.5}
+	state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, SelectionMode: core.ResearchSelectionChooseOne, TechnologyIDs: []int{155}, ProgressRP: 12.5}
 	choices, err := rules.AvailableResearchChoices(state, state.Empires[0].ID)
 	if err != nil {
 		t.Fatal(err)
@@ -68,7 +68,7 @@ func TestSelectResearchCommandMaterializesTechnologySetServerSide(t *testing.T) 
 	if err := rules.InitializeEmpireTechnologies(&state.Empires[0], NewGameTechnologyOptions{Level: NewGameTechnologyPreWarp}); err != nil {
 		t.Fatal(err)
 	}
-	command, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4})
+	command, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4, TechnologyID: 56})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -82,9 +82,9 @@ func TestSelectResearchCommandMaterializesTechnologySetServerSide(t *testing.T) 
 	if state.Empires[0].Research == nil || state.Empires[0].Research.TechFieldID != 4 || state.Empires[0].Research.ProgressRP != 0 {
 		t.Fatalf("research state=%+v", state.Empires[0].Research)
 	}
-	wantIDs := append([]int(nil), rules.TechnologyIDsByField[4]...)
+	wantIDs := []int{56}
 	if !reflect.DeepEqual(state.Empires[0].Research.TechnologyIDs, wantIDs) {
-		t.Fatalf("server materialized ids=%v want=%v", state.Empires[0].Research.TechnologyIDs, wantIDs)
+		t.Fatalf("server selected ids=%v want=%v", state.Empires[0].Research.TechnologyIDs, wantIDs)
 	}
 	var payload ResearchSelectedEvent
 	if err := json.Unmarshal(event.Data, &payload); err != nil {
@@ -125,7 +125,7 @@ func TestStrategicResolverSelectsResearchAndAppliesFractionalTurnRP(t *testing.T
 		t.Fatal(err)
 	}
 	state.Colonies[0].Population = core.PopulationState{Total: 4, Farmers: 1.25, Workers: 1.5, Scientists: 1.25}
-	command, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4})
+	command, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4, TechnologyID: 56})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -163,7 +163,7 @@ func TestResearchUsesPreGrowthTurnOutput(t *testing.T) {
 	}
 	// The default Human colony is exactly fed and therefore grows at turn end.
 	// Its one scientist yields 3 RP base / 4.5 RP with Democracy before growth.
-	command, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4})
+	command, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4, TechnologyID: 56})
 	if err != nil {
 		t.Fatal(err)
 	}

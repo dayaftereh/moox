@@ -116,44 +116,43 @@ The code includes hash constants for the relevant original function ranges. Thes
 
 ## Next exact action
 
-The active implementation/research lane is now **Research / multi-Technology TechFields**. The Food/Freighter/Starvation Economy checkpoint is closed for this pass and documented in `FOOD_FREIGHTER_LOGISTICS_2026-08-27.md`.
+The multi-Technology Research policy is now implemented and checkpoint-ready. The active Research lane moves to **research-project timing/switching and the original 1.31 turn-order conflict** while preserving the new race-aware legal-action model.
 
-### Current lane - Research / multi-Technology TechFields
+### Closed in the current Research slice
 
-`GameSession.ResearchChoices` is the server-authoritative TechField frontier and `empire.select_research` currently accepts only `tech_field_id`. The next correction is to stop treating every Technology inside a researched field as an unconditional acquisition.
+- General/basic fields use `all` for every race.
+- ordinary non-General fields use `choose_one`; the client must choose one server-projected application.
+- Creative non-General fields use `all`.
+- Uncreative non-General fields use `fixed_one`; the client cannot override the server-fixed application.
+- the persisted Uncreative plan is deterministic and ResearchChoices queries are RNG/state side-effect free.
+- `empire.select_research`, active `ResearchState`, progress/completion events and ownership transitions all carry/revalidate the selection mode.
 
-Research tasks, in order:
+See `RESEARCH_MULTI_TECH_2026-08-27.md` for evidence, fidelity boundaries and tests.
 
-1. verify ordinary-race acquisition semantics for TechFields containing multiple Technologies,
-2. verify Creative behavior and whether all Technologies in the field are acquired automatically,
-3. verify Uncreative behavior, including whether the available Technology is preselected/randomized and when that selection becomes visible,
-4. determine whether the Technology choice occurs when research starts, while it progresses or at breakthrough/completion,
-5. represent the proven policy explicitly in server-authoritative `ResearchChoice` / `ResearchState` data rather than trusting client-selected Technology IDs,
-6. keep Human UI, built-in AI and future remote/MCP agents on the exact same legal-action surface,
-7. investigate active-project switching/cancelling and progress retention/loss,
-8. model hyper-advanced repeated-field level/cost state separately,
-9. return to Advanced-start randomized/race-aware technology grants after those runtime semantics exist.
+### Current Research tasks, in order
 
-### Turn-order conflict to resolve while researching Research timing
+1. investigate whether an active research project can be changed/cancelled in original 1.31 and whether accumulated RP is retained, discarded or attached to the field/application,
+2. seek stronger original-observed or independent evidence for the strategic ordering of Population growth/starvation, resource generation, Research progress and breakthrough,
+3. determine the original Uncreative application RNG/initialization timing if save/executable evidence is practical; retain the current deterministic MOOX plan until then,
+4. model hyper-advanced repeated-field level/cost state separately,
+5. implement Advanced-start randomized/race-aware technology ownership using the now-correct `all` / `choose_one` / `fixed_one` semantics,
+6. later handle external acquisition of an Uncreative fixed application before that field is researched.
 
-A secondary StrategyWiki calculations reference explicitly described as checked under MOO2 1.31 gives an original sequence with Population growth/starvation before resource generation and Research completion. The current MOOX runtime intentionally still has Construction/Research consume the pre-Population-transition output.
+### Turn-order conflict
 
-Do not silently change this order from a single secondary source. While researching the timing of multi-Technology choice/completion, seek stronger original-observed or independent evidence for the 1.31 strategic turn sequence. The Food/Freighter phase is isolated so its placement can be corrected later without redesigning the protocol.
+A StrategyWiki calculations reference explicitly described as checked under MOO2 1.31 gives Population growth/starvation before resource generation and Research completion. Current MOOX still has Construction/Research consume the pre-Population-transition output. Do not change this globally from a single secondary source; the next timing investigation should either strengthen or reject that ordering before code is reordered.
 
 ### Parked Economy follow-ups
 
-The following are intentionally parked while Research is active:
-
-- Freighter Fleet acquisition/build legal action (5 Freighters / 50 PP is normalized, but acquisition is not yet wired),
+- Freighter Fleet acquisition/build legal action,
 - Treasury settlement of Freighter operating cost and surplus-Food income,
-- blockade effects on Food/Production and transport eligibility,
-- Population transport and its competition for the Freighter pool,
-- exact original allocation priority when too few Freighters exist,
+- blockade effects and Population transport through the shared Freighter pool,
+- exact original insufficient-Freighter priority,
 - Housing / Cloning Center / medicine growth modifiers,
 - Biospheres / Advanced City Planning / terraforming capacity transitions,
 - race-aware Population cohorts.
 
-Architecture constraint: continuous strategic quantities remain domain-native `float64` per `ADR-0003-domain-native-float64.md`; discrete counts such as Empire Freighters remain discrete. Clients never receive authority to mutate hidden/full GameState or submit arbitrary Technology ownership.
+Architecture constraint: continuous strategic quantities remain domain-native `float64`; Research selection modes and Technology IDs are discrete server-owned semantics. Human UI, built-in AI and remote/MCP agents must consume the same ResearchChoices surface.
 ## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.

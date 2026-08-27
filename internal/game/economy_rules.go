@@ -30,6 +30,8 @@ type RaceEconomyModifiers struct {
 	Cybernetic                 bool
 	Lithovore                  bool
 	FantasticTraders           bool
+	Creative                   bool
+	Uncreative                 bool
 	GravityID                  string
 	GovernmentTraitID          string
 }
@@ -86,6 +88,7 @@ type EconomyRules struct {
 	TechnologyStrategicAvailable                  map[int]bool
 	NewGameAlwaysKnownFieldID                     int
 	NewGameStagedKnownFieldIDs                    []int
+	GeneralResearchFieldIDs                       map[int]struct{}
 }
 
 func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
@@ -239,6 +242,12 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		}
 	}
 
+	generalResearchFieldIDs := make(map[int]struct{}, len(technologies.NewGameStart.StagedKnownTechFieldIDs)+1)
+	generalResearchFieldIDs[technologies.NewGameStart.AlwaysKnownTechFieldID] = struct{}{}
+	for _, fieldID := range technologies.NewGameStart.StagedKnownTechFieldIDs {
+		generalResearchFieldIDs[fieldID] = struct{}{}
+	}
+
 	rules := &EconomyRules{
 		ClimateFoodPerFarmer:                          make(map[string]float64, len(planetClasses.Climates)),
 		MineralIndustryPerWorker:                      make(map[string]float64, len(planetClasses.MineralClasses)),
@@ -284,6 +293,7 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		TechnologyStrategicAvailable:                  technologyStrategicAvailable,
 		NewGameAlwaysKnownFieldID:                     technologies.NewGameStart.AlwaysKnownTechFieldID,
 		NewGameStagedKnownFieldIDs:                    append([]int(nil), technologies.NewGameStart.StagedKnownTechFieldIDs...),
+		GeneralResearchFieldIDs:                       generalResearchFieldIDs,
 	}
 	for _, climate := range planetClasses.Climates {
 		rules.ClimateFoodPerFarmer[climate.ID] = float64(climate.BaseFoodPerFarmer)
@@ -329,6 +339,10 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 				modifiers.Lithovore = true
 			case "fantastic_traders":
 				modifiers.FantasticTraders = true
+			case "creative":
+				modifiers.Creative = true
+			case "uncreative":
+				modifiers.Uncreative = true
 			case "low_g_world":
 				modifiers.GravityID = "low_g"
 			case "high_g_world":
@@ -352,6 +366,9 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 			case "population_growth_multiplier":
 				modifiers.PopulationGrowthMultiplier = delta
 			}
+		}
+		if modifiers.Creative && modifiers.Uncreative {
+			return nil, fmt.Errorf("race %q cannot be both creative and uncreative", race.ID)
 		}
 		if modifiers.PopulationGrowthMultiplier <= 0 || math.IsNaN(modifiers.PopulationGrowthMultiplier) || math.IsInf(modifiers.PopulationGrowthMultiplier, 0) {
 			return nil, fmt.Errorf("race %q has invalid population growth multiplier %g", race.ID, modifiers.PopulationGrowthMultiplier)

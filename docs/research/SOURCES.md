@@ -218,3 +218,24 @@ Use: secondary evidence that classic/default behavior prevents starvation from e
 https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Calculations
 
 Use: the page states its calculations were checked under MOO2 1.31 and documents the Growth/Starvation penalty formulas. It also describes a global strategic turn ordering that conflicts with the current MOOX pre-Population Construction/Research ordering. That ordering is tracked as unresolved evidence and is not silently adopted from this source alone.
+## Multi-Technology Research references
+
+### Original manual - Directing Research
+
+https://www.manualshelf.com/manual/games-pc/master-of-orion-ii-battle-at-antares/user-guide-english/page-67.html
+
+Use: manual evidence that basic/general fields research the entire field, later fields allow only one application unless Creative, and an application/field is selected when directing research.
+
+### Original manual - Creative / Uncreative race picks
+
+https://www.manualshelf.com/manual/games-pc/master-of-orion-ii-battle-at-antares/user-guide-english/page-25.html
+
+Use: manual evidence that Uncreative researchers recognize only one technology associated with a field, while Creative races discover all applications appropriate to a field; the picks are mutually exclusive.
+
+### StrategyWiki - Technologies
+
+https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Technologies
+
+Use: independent secondary cross-check that ordinary races choose one technology, Creative receives all technologies at a level for the same research cost, Uncreative receives one software-randomized technology, and bottom/general levels grant all technologies to every empire.
+
+The exact original Uncreative RNG seed/algorithm/timing is not treated as proven by these sources.

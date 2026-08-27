@@ -175,7 +175,7 @@ Normal strategic resolution now calculates and rolls research breakthroughs auto
 
 Automatic standard-field breakthrough/overflow behavior is implemented. Hyper-advanced repeated-field cost scaling (`TechField >= 75`) remains explicitly unsupported until its per-empire level state is modeled.
 
-Research selection is also authoritative: `GameSession.ResearchChoices` projects the legal TechField frontier for a Seat/Empire, and `empire.select_research` accepts only `tech_field_id`. The strategic resolver recomputes legality and materializes Technology IDs/keys server-side. Human, AI, Wails and remote transports must consume this surface rather than inventing research membership client-side.
+Research selection is authoritative and race-aware: `GameSession.ResearchChoices` projects `all`, `choose_one`, or `fixed_one` per TechField. `empire.select_research` accepts `technology_id` only for `choose_one`; General/Creative and Uncreative-fixed ownership remains server-derived. The strategic resolver revalidates field membership and active selection mode before completion. Human, AI, Wails and remote transports must consume this same legal-action surface.
 ## Current limitations / next slice
 
 This checkpoint intentionally does not yet implement:

@@ -40,7 +40,7 @@ func TestActiveResearchConsumesOneRollEvenAtZeroPercent(t *testing.T) {
 		t.Fatal(err)
 	}
 	state := core.NewSmallFixture(601)
-	state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}}
+	state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, SelectionMode: core.ResearchSelectionChooseOne, TechnologyIDs: []int{155}}
 
 	expected := state.RNG()
 	zeroBased, err := expected.Intn(100)
@@ -111,6 +111,7 @@ func TestGuaranteedBreakthroughAcquiresSpeakingTechnologyAndUnlocksBuilding(t *t
 	}
 	state.Empires[0].Research = &core.ResearchState{
 		TechFieldID:   56,
+		SelectionMode: core.ResearchSelectionChooseOne,
 		TechnologyIDs: []int{155},
 		ProgressRP:    299,
 	}
@@ -164,7 +165,7 @@ func TestResearchResolutionIsReplayDeterministic(t *testing.T) {
 	}
 	makeState := func() *core.GameState {
 		state := core.NewSmallFixture(605)
-		state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressRP: 159}
+		state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, SelectionMode: core.ResearchSelectionChooseOne, TechnologyIDs: []int{155}, ProgressRP: 159}
 		state.Colonies[0].AdjustedEconomy.Research = 1
 		return state
 	}
@@ -201,7 +202,7 @@ func TestAutomaticResearchRejectsUnmodeledHyperAdvancedCostScaling(t *testing.T)
 		t.Fatal(err)
 	}
 	state := core.NewSmallFixture(606)
-	state.Empires[0].Research = &core.ResearchState{TechFieldID: 75, TechnologyIDs: []int{155}}
+	state.Empires[0].Research = &core.ResearchState{TechFieldID: 75, SelectionMode: core.ResearchSelectionChooseOne, TechnologyIDs: []int{155}}
 	if _, err := resolver.advanceResearch(state); err == nil {
 		t.Fatal("expected hyper-advanced dynamic cost scaling to remain explicitly unsupported")
 	}

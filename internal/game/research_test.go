@@ -63,7 +63,7 @@ func TestCompleteResearchFieldTransitionsTechnologyAndFieldOwnership(t *testing.
 		t.Fatal(err)
 	}
 	// Field 56 is Optronics (150 RP), and technology 155 is Research Lab.
-	state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressRP: 150}
+	state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, SelectionMode: core.ResearchSelectionChooseOne, TechnologyIDs: []int{155}, ProgressRP: 150}
 	event, err := resolver.CompleteResearchField(state, state.Empires[0].ID)
 	if err != nil {
 		t.Fatal(err)
@@ -100,7 +100,7 @@ func TestCompleteResearchFieldUnlocksBuildingChoice(t *testing.T) {
 	if buildingChoiceContains(before, "research_laboratory") {
 		t.Fatal("Research Lab was buildable before Optronics completion")
 	}
-	state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressRP: 150}
+	state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, SelectionMode: core.ResearchSelectionChooseOne, TechnologyIDs: []int{155}, ProgressRP: 150}
 	if _, err := resolver.CompleteResearchField(state, state.Empires[0].ID); err != nil {
 		t.Fatal(err)
 	}
@@ -121,13 +121,13 @@ func TestCompleteResearchFieldRejectsPrematureAndCrossFieldCompletion(t *testing
 	}
 
 	premature := core.NewSmallFixture(507)
-	premature.Empires[0].Research = &core.ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressRP: 149}
+	premature.Empires[0].Research = &core.ResearchState{TechFieldID: 56, SelectionMode: core.ResearchSelectionChooseOne, TechnologyIDs: []int{155}, ProgressRP: 149}
 	if _, err := resolver.CompleteResearchField(premature, premature.Empires[0].ID); err == nil {
 		t.Fatal("expected completion below original field base cost to fail")
 	}
 
 	crossField := core.NewSmallFixture(508)
-	crossField.Empires[0].Research = &core.ResearchState{TechFieldID: 56, TechnologyIDs: []int{22}, ProgressRP: 150}
+	crossField.Empires[0].Research = &core.ResearchState{TechFieldID: 56, SelectionMode: core.ResearchSelectionChooseOne, TechnologyIDs: []int{22}, ProgressRP: 150}
 	if _, err := resolver.CompleteResearchField(crossField, crossField.Empires[0].ID); err == nil {
 		t.Fatal("expected cross-field research completion to fail")
 	}

@@ -474,7 +474,7 @@ func TestGameSessionCompletesResearchThroughAuthoritativeBoundary(t *testing.T) 
 	if err := rules.InitializeEmpireTechnologies(&state.Empires[0], game.NewGameTechnologyOptions{Level: game.NewGameTechnologyPreWarp}); err != nil {
 		t.Fatal(err)
 	}
-	state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressRP: 150}
+	state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, SelectionMode: core.ResearchSelectionChooseOne, TechnologyIDs: []int{155}, ProgressRP: 150}
 	s, err := NewGameSession("game-research", state, seats)
 	if err != nil {
 		t.Fatal(err)
@@ -544,6 +544,7 @@ func TestGameSessionAutomaticallyResolvesGuaranteedResearchBreakthrough(t *testi
 	}
 	state.Empires[0].Research = &core.ResearchState{
 		TechFieldID:   56,
+		SelectionMode: core.ResearchSelectionChooseOne,
 		TechnologyIDs: []int{155},
 		ProgressRP:    299,
 	}
@@ -635,7 +636,7 @@ func TestGameSessionResearchChoicesAndSelectResearchShareAuthority(t *testing.T)
 	if field4 == nil || field4.BaseCostRP != 80 || len(field4.TechnologyKeys) != 3 {
 		t.Fatalf("authoritative ResearchChoices missing TechField 4: %+v", choices)
 	}
-	command, err := game.NewSelectResearchCommand(1, game.SelectResearchPayload{TechFieldID: 4})
+	command, err := game.NewSelectResearchCommand(1, game.SelectResearchPayload{TechFieldID: 4, TechnologyID: 56})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -672,8 +673,8 @@ func TestGameSessionResearchChoicesAndSelectResearchShareAuthority(t *testing.T)
 	if observer.State.Empires[0].Research == nil || observer.State.Empires[0].Research.TechFieldID != 4 {
 		t.Fatalf("authoritative select_research not materialized: %+v", observer.State.Empires[0].Research)
 	}
-	if !reflect.DeepEqual(observer.State.Empires[0].Research.TechnologyIDs, field4.TechnologyIDs) {
-		t.Fatalf("server-selected Technology IDs=%v want=%v", observer.State.Empires[0].Research.TechnologyIDs, field4.TechnologyIDs)
+	if !reflect.DeepEqual(observer.State.Empires[0].Research.TechnologyIDs, []int{56}) {
+		t.Fatalf("server-authoritative Technology IDs=%v want=[56]", observer.State.Empires[0].Research.TechnologyIDs)
 	}
 	found := false
 	for _, event := range observer.Events {
@@ -684,7 +685,7 @@ func TestGameSessionResearchChoicesAndSelectResearchShareAuthority(t *testing.T)
 		if err := json.Unmarshal(event.Data, &selected); err != nil {
 			t.Fatal(err)
 		}
-		if selected.TechFieldID == 4 && reflect.DeepEqual(selected.TechnologyKeys, field4.TechnologyKeys) {
+		if selected.TechFieldID == 4 && selected.SelectionMode == core.ResearchSelectionChooseOne && reflect.DeepEqual(selected.TechnologyKeys, []string{"reinforced_hull"}) {
 			found = true
 		}
 	}

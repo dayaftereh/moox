@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 5
+const StateSchemaVersion = 6
 
 type ID uint64
 
@@ -46,15 +46,21 @@ type Planet struct {
 }
 
 type Empire struct {
-	ID                      ID                  `json:"id"`
-	Name                    string              `json:"name"`
-	RaceID                  string              `json:"race_id"`
-	Capital                 ID                  `json:"capital_colony_id,omitempty"`
-	Freighters              int                 `json:"freighters"`
-	FoodLogistics           EmpireFoodLogistics `json:"food_logistics"`
-	KnownTechnologyIDs      []int               `json:"known_technology_ids,omitempty"`
-	KnownTechnologyFieldIDs []int               `json:"known_technology_field_ids,omitempty"`
-	Research                *ResearchState      `json:"research,omitempty"`
+	ID                        ID                    `json:"id"`
+	Name                      string                `json:"name"`
+	RaceID                    string                `json:"race_id"`
+	Capital                   ID                    `json:"capital_colony_id,omitempty"`
+	Freighters                int                   `json:"freighters"`
+	FoodLogistics             EmpireFoodLogistics   `json:"food_logistics"`
+	UncreativeResearchChoices []FixedResearchChoice `json:"uncreative_research_choices,omitempty"`
+	KnownTechnologyIDs        []int                 `json:"known_technology_ids,omitempty"`
+	KnownTechnologyFieldIDs   []int                 `json:"known_technology_field_ids,omitempty"`
+	Research                  *ResearchState        `json:"research,omitempty"`
+}
+
+type FixedResearchChoice struct {
+	TechFieldID  int `json:"tech_field_id"`
+	TechnologyID int `json:"technology_id"`
 }
 
 type EmpireFoodLogistics struct {
@@ -69,10 +75,19 @@ type EmpireFoodLogistics struct {
 	SurplusFoodIncomeBC      float64 `json:"surplus_food_income_bc"`
 }
 
+type ResearchSelectionMode string
+
+const (
+	ResearchSelectionAll       ResearchSelectionMode = "all"
+	ResearchSelectionChooseOne ResearchSelectionMode = "choose_one"
+	ResearchSelectionFixedOne  ResearchSelectionMode = "fixed_one"
+)
+
 type ResearchState struct {
-	TechFieldID   int     `json:"tech_field_id"`
-	TechnologyIDs []int   `json:"technology_ids"`
-	ProgressRP    float64 `json:"progress_rp"`
+	TechFieldID   int                   `json:"tech_field_id"`
+	SelectionMode ResearchSelectionMode `json:"selection_mode"`
+	TechnologyIDs []int                 `json:"technology_ids"`
+	ProgressRP    float64               `json:"progress_rp"`
 }
 type Colony struct {
 	ID                 ID                       `json:"id"`
@@ -288,12 +303,27 @@ func (s *GameState) Validate() error {
 			seenField[fieldID] = struct{}{}
 			lastField = fieldID
 		}
+		lastFixedField := 0
+		for fi, fixed := range empire.UncreativeResearchChoices {
+			if fixed.TechFieldID < 1 || fixed.TechFieldID > 82 || fixed.TechnologyID < 1 || fixed.TechnologyID > 203 {
+				return fmt.Errorf("empire[%d] invalid uncreative research choice field=%d technology=%d", i, fixed.TechFieldID, fixed.TechnologyID)
+			}
+			if fi > 0 && fixed.TechFieldID <= lastFixedField {
+				return fmt.Errorf("empire[%d] uncreative research choices must be strictly ascending by field", i)
+			}
+			lastFixedField = fixed.TechFieldID
+		}
 		if empire.Research != nil {
 			if empire.Research.TechFieldID < 1 || empire.Research.TechFieldID > 82 {
 				return fmt.Errorf("empire[%d] research tech_field_id %d outside [1,82]", i, empire.Research.TechFieldID)
 			}
 			if _, known := seenField[empire.Research.TechFieldID]; known {
 				return fmt.Errorf("empire[%d] researches already-known technology field %d", i, empire.Research.TechFieldID)
+			}
+			switch empire.Research.SelectionMode {
+			case ResearchSelectionAll, ResearchSelectionChooseOne, ResearchSelectionFixedOne:
+			default:
+				return fmt.Errorf("empire[%d] research selection_mode %q is invalid", i, empire.Research.SelectionMode)
 			}
 			if math.IsNaN(empire.Research.ProgressRP) || math.IsInf(empire.Research.ProgressRP, 0) || empire.Research.ProgressRP < 0 {
 				return fmt.Errorf("empire[%d] research progress_rp must be a finite non-negative number", i)

@@ -224,4 +224,4 @@ Human UI, built-in AI and future external agents must continue to use the same a
 
 ## Superseding logistics checkpoint
 
-Starvation, empire Food/Freighter logistics and surplus-Food valuation were implemented in FOOD_FREIGHTER_LOGISTICS_2026-08-27.md, which bumps the current development state/ruleset to schema 5. Schema 4 above remains the historical boundary introduced by this Population Growth checkpoint.
+Starvation, empire Food/Freighter logistics and surplus-Food valuation were implemented in FOOD_FREIGHTER_LOGISTICS_2026-08-27.md, which historically bumped the development state/ruleset to schema 5. Schema 4 above remains the historical boundary introduced by this Population Growth checkpoint; later Research work advances State schema independently.

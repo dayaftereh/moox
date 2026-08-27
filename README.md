@@ -35,7 +35,7 @@ See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/r
 - `17791c1` - original technology-field/RP-cost normalization, deterministic Pre-Warp/Average new-game ownership and authoritative research-completion ownership transition.
 - `30ee47b` - verified original standard-field breakthrough curve/RNG/overflow behavior and automatic strategic research resolution.
 
-The active runtime follows a domain-native numeric architecture: continuous quantities use `float64` (`PopulationState.Total/Farmers/Workers/Scientists`, Food, PP, RP, BC and Construction progress), while genuinely discrete IDs/counts remain discrete. Population Growth now uses the classic curve directly in Population units, and freshly grown Population cannot retroactively contribute PP/RP to the turn that produced it. Rounding occurs only at explicit gameplay-rule boundaries. The Economy checkpoint now includes Food/Freighter balancing and starvation. Active work returns to Research: `ResearchChoices` exposes the server-authoritative TechField frontier, while Creative/Uncreative multi-Technology selection semantics are the next implementation slice.
+The active runtime follows a domain-native numeric architecture: continuous quantities use `float64` (`PopulationState.Total/Farmers/Workers/Scientists`, Food, PP, RP, BC and Construction progress), while genuinely discrete IDs/counts remain discrete. Population Growth now uses the classic curve directly in Population units, and freshly grown Population cannot retroactively contribute PP/RP to the turn that produced it. Rounding occurs only at explicit gameplay-rule boundaries. The Economy checkpoint includes Food/Freighter balancing and starvation. Research now models General `all`, ordinary `choose_one`, Creative `all`, and Uncreative server-fixed `fixed_one` application semantics. The next Research work is active-project switching/timing, the 1.31 turn-order conflict, and hyper-advanced fields.
 ## Research documents
 
 - `docs/research/MOO2_GAME_REFERENCE.md` - gameplay/system reference and fidelity checklist.
@@ -52,6 +52,7 @@ The active runtime follows a domain-native numeric architecture: continuous quan
 - `docs/research/TECHNOLOGY_START_RESEARCH_2026-08-27.md` - original technology/tech-field tables, Pre-Warp/Average ownership initialization and research-completion ownership transition.
 - `docs/research/RESEARCH_BREAKTHROUGH_2026-08-27.md` - original breakthrough evidence plus the documented MOOX float-RP divergence.
 - `docs/research/RESEARCH_SELECTION_2026-08-27.md` - authority-filtered ResearchChoices and `empire.select_research`.
+- `docs/research/RESEARCH_MULTI_TECH_2026-08-27.md` - General/ordinary/Creative/Uncreative multi-application research semantics and deterministic Uncreative choice plan.
 - `docs/architecture/ADR-0002-research-float64.md` - historical first RP-native `float64` decision.
 - `docs/architecture/ADR-0003-domain-native-float64.md` - canonical continuous-quantity `float64` and explicit rounding-boundary architecture.
 - `docs/IMPLEMENTATION_PLAN.md` - proposed clean-room development phases.
@@ -118,7 +119,7 @@ These projects are references, not dependencies at this stage. If code is reused
 - server-owned Seat -> Empire authorization,
 - deterministic construction/domain events and tactical BattleSession boundaries.
 
-The research runtime now uses RP-native `float64` progress (`progress_rp`) rather than reproducing 1996 integer storage constraints. Fractional Colony research is preserved through Empire aggregation; rounding happens only at explicit rule boundaries such as the discrete breakthrough-percent roll. `GameSession.ResearchChoices` exposes the authority-filtered research frontier, while `empire.select_research` accepts only a TechField ID and materializes Technology IDs/keys on the server. Research/Observer events carry both original numeric IDs and speaking keys such as `Technology 155 (research_laboratory)`. Creative/Uncreative acquisition semantics, active-project switching and hyper-advanced repeated-field costs remain later research slices.
+The research runtime uses RP-native `float64` progress. `GameSession.ResearchChoices` exposes race-aware `all` / `choose_one` / `fixed_one` legal actions. `empire.select_research` accepts `technology_id` only when an ordinary race must choose one application; Creative/General and Uncreative-fixed projects remain server-owned. Research/Observer events carry selection mode plus numeric IDs and speaking keys. Active-project switching, exact Uncreative original RNG timing and hyper-advanced repeated-field costs remain later research slices.
 
 Wails v3 is already the planned application shell; rendering/UI framework selection is no longer an open prerequisite.
 ## Runtime ruleset data

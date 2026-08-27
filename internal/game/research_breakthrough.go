@@ -81,6 +81,7 @@ func (r *EconomyResolver) advanceResearch(state *core.GameState) ([]DomainEvent,
 		progressEvent, err := NewDomainEvent("empire.research_progressed", 0, 0, ResearchProgressedEvent{
 			EmpireID:       empireID,
 			TechFieldID:    research.TechFieldID,
+			SelectionMode:  research.SelectionMode,
 			TechnologyIDs:  ids,
 			TechnologyKeys: keys,
 			BaseCostRP:     baseCostRP,

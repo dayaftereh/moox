@@ -104,7 +104,7 @@ This intentionally diverges from the old integer storage behavior. It avoids los
 
 The verified breakthrough curve remains useful as a gameplay rule. MOOX computes it from the full floating-point projected RP and floors only the final percentage used by the discrete 1..100 roll. Therefore rounding occurs at the named probability boundary, not during RP accumulation.
 
-`GameState.Validate` rejects negative, NaN and infinite research progress. Current persistent state schema 5 serializes the value as numeric `progress_rp`; later Population/Food-logistics additions retain the same domain-native numeric policy.
+`GameState.Validate` rejects negative, NaN and infinite research progress. Current persistent state schema 6 serializes the value as numeric `progress_rp`; Population/Food-logistics and multi-Technology Research additions retain the same domain-native numeric policy.
 ## Turn resolution and overflow
 
 The original turn resolver at VA `0xE44E0` performs this order:

@@ -240,11 +240,10 @@ A private developer-only original-asset viewer may exist for comparison, but ori
 
 ## Recommended immediate next work
 
-1. Research and implement ordinary/Creative/Uncreative semantics for multi-Technology TechFields.
-2. Encode the proven choice/acquisition policy in server-authoritative `ResearchChoice` / `ResearchState`; never trust client-selected ownership IDs.
-3. Resolve Research choice/completion timing and use that investigation to strengthen or reject the current secondary evidence about original 1.31 strategic turn ordering.
-4. Follow with active-project switching/progress semantics and hyper-advanced repeated-field costs.
-5. Keep the completed Food/Freighter/Starvation phase stable; return later for Freighter acquisition, Treasury settlement, blockade/population transport and special growth/capacity layers.
-6. Continue the first headless vertical slice toward colony ship production, movement and a second colony only after the Economy/Research foundations remain deterministic.
-
+1. Research original active-project switching/cancellation and RP retention semantics.
+2. Resolve the strategic turn-order evidence around Population, RP generation and breakthrough before moving the current MOOX phase ordering.
+3. Refine exact Uncreative original RNG/timing only if executable/save evidence can support it; keep the deterministic persisted MOOX plan otherwise.
+4. Model hyper-advanced repeated-field level/cost state.
+5. Implement Advanced-start randomized/race-aware technology ownership using the completed General/ordinary/Creative/Uncreative policy.
+6. Then continue the first headless vertical slice toward colony ship production, movement and a second colony.
 Do not reopen closed race/building/ship graphics research unless contradictory evidence or a concrete runtime requirement demands it. Wails v3 remains the planned application shell; transports/UI must continue to consume the same canonical Session/legal-action APIs rather than contain gameplay rules.
