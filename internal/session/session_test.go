@@ -287,7 +287,7 @@ func TestResolveStrategicCommitsDetachedStateAndDomainEvents(t *testing.T) {
 	}
 
 	var resolverState *core.GameState
-	resolver := game.ResolverFunc(func(state *core.GameState, batches []protocol.CommandBatch) (game.Resolution, error) {
+	resolver := game.ResolverFunc(func(ctx game.ResolveContext, state *core.GameState, batches []protocol.CommandBatch) (game.Resolution, error) {
 		if batches[0].SeatID != 1 || batches[1].SeatID != 2 {
 			t.Fatalf("resolver received unstable batch order: %d, %d", batches[0].SeatID, batches[1].SeatID)
 		}
@@ -347,7 +347,7 @@ func TestResolveStrategicRejectsInvalidEncounterAtomically(t *testing.T) {
 	}
 	before, _ := s.ObserverView()
 
-	resolver := game.ResolverFunc(func(state *core.GameState, batches []protocol.CommandBatch) (game.Resolution, error) {
+	resolver := game.ResolverFunc(func(ctx game.ResolveContext, state *core.GameState, batches []protocol.CommandBatch) (game.Resolution, error) {
 		state.Empires[0].Name = "must not commit"
 		return game.Resolution{
 			State:      state,

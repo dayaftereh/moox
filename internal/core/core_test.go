@@ -127,3 +127,11 @@ func TestIntnRangeAndValidation(t *testing.T) {
 		t.Fatal("expected zero bound to fail")
 	}
 }
+
+func TestValidateRejectsPopulationAssignmentMismatch(t *testing.T) {
+	state := NewSmallFixture(19)
+	state.Colonies[0].Population.Workers++
+	if err := state.Validate(); err == nil {
+		t.Fatal("expected mismatched population assignment to fail validation")
+	}
+}

@@ -1,12 +1,14 @@
 # Deterministic simulation core
 
-MOOX keeps the gameplay simulation independent from UI and platform code. The first Phase 1 checkpoint lives in `internal/core` and establishes deterministic state ownership before economy or combat rules are added.
+MOOX keeps the gameplay simulation independent from UI and platform code. The Phase 1 core lives in `internal/core` and establishes deterministic state ownership independently from UI, networking and combat. The first colony-economy state is now layered onto that foundation.
 
 ## Current foundation
 
 - stable monotonic simulation IDs (`core.ID`),
 - simulation-owned SplitMix64 RNG with explicit serializable state,
 - minimal galaxy, star-system, planet, empire and colony state,
+- discrete colony job assignment (`PopulationState`) for farmers/workers/scientists,
+- fixed-point base colony economy snapshots (`ColonyEconomy`, 1000 milli-units per displayed resource),
 - turn clock and event log,
 - strict state validation including cross-reference checks,
 - deterministic JSON serialization,

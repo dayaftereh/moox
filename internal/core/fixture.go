@@ -27,7 +27,7 @@ func NewSmallFixture(seed uint64) *GameState {
 
 	empire := Empire{ID: s.NewID(), Name: "Fixture Empire", RaceID: "human"}
 	homeworld := &s.Galaxy.Systems[0].Planets[0]
-	colony := Colony{ID: s.NewID(), EmpireID: empire.ID, PlanetID: homeworld.ID}
+	colony := Colony{ID: s.NewID(), EmpireID: empire.ID, PlanetID: homeworld.ID, Population: PopulationState{Units: 4, Farmers: 2, Workers: 1, Scientists: 1}}
 	empire.Capital = colony.ID
 	homeworld.ColonyID = colony.ID
 	s.Empires = append(s.Empires, empire)

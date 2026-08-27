@@ -442,16 +442,18 @@ The command/session boundary is now implemented across `internal/protocol`, `int
 - observer-only non-authoritative draft/AI telemetry kept outside the replay event stream;
 - deterministic encounter IDs/seeds and minimal tactical `BattleSession` lifecycle;
 - parallel battle completion with authoritative result logging in battle-ID order rather than wall-clock completion order;
-- detached/copying views so callers cannot mutate authoritative session state through returned DTOs.
+- detached/copying views so callers cannot mutate authoritative session state through returned DTOs;
+- server-owned Seat -> Empire resolver authority, preventing a command from claiming another empire;
+- first real `colony.assign_population` command with ownership/assignment validation;
+- fixed-point base colony food/production/research/tax snapshots driven by normalized ruleset data.
 
-The generic strategic resolver boundary is now implemented. The next implementation slice is the first real strategic command set and resolver logic. It should:
+The first strategic gameplay command and base economy resolver are now implemented. The next implementation slice should extend effective colony output without weakening the established command/session boundary:
 
-1. define the first real domain command types for colony population assignment;
-2. validate commands against the submitting seat's legal `PlayerView`/authoritative state;
-3. resolve submitted batches in explicit deterministic order;
-4. emit strategic domain events;
-5. apply the first verified food/production/research/money rules using normalized MOO2 data;
-6. preserve the current session/replay/observer determinism tests while state grows.
+1. normalize gravity compatibility/penalty behavior needed by colony production;
+2. normalize government effects needed by production/research/income;
+3. add those as explicit deterministic layers over `ColonyEconomy` base output;
+4. keep morale/buildings/pollution/logistics separate until their ordering and rounding are evidenced;
+5. preserve arrival-order-independent replay, transactional failure and exact save/load behavior.
 
 Network transports, Wails services and MCP remain adapters to this boundary and should not be introduced into the deterministic core.
 ## Related architecture documents

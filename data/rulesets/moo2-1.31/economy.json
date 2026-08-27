@@ -1,0 +1,64 @@
+{
+    "schema_version":  1,
+    "ruleset":  "moo2-1.31",
+    "sources":  [
+                    {
+                        "id":  "moo2-manual-base-industry",
+                        "type":  "secondary-reference",
+                        "description":  "Master of Orion II manual mineral descriptions list base industry per population unit as Ultra Poor 1, Poor 2, Abundant 3, Rich 5 and Ultra Rich 8.",
+                        "url":  "https://manuals.plus/m/5622eabc23dba2bd8c537b7dee95fe7a11c82d6d6607ee13b1b091f07e284617.pdf",
+                        "accessed_date":  "2026-08-27"
+                    },
+                    {
+                        "id":  "strategywiki-moo2-economy-calculations",
+                        "type":  "secondary-reference",
+                        "description":  "Cross-check for normal 3 RP per scientist, population income population * (1 + race bonus), and Aquatic +1 farming planet coefficient on Tundra/Ocean/Terran.",
+                        "url":  "https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Calculations",
+                        "accessed_date":  "2026-08-27"
+                    }
+                ],
+    "base_research_per_scientist":  {
+                                        "value":  3,
+                                        "source_id":  "strategywiki-moo2-economy-calculations"
+                                    },
+    "base_tax_bc_per_population":  {
+                                       "value":  1,
+                                       "source_id":  "strategywiki-moo2-economy-calculations"
+                                   },
+    "mineral_industry_per_worker":  [
+                                        {
+                                            "mineral_id":  "ultra_poor",
+                                            "value":  1,
+                                            "source_id":  "moo2-manual-base-industry"
+                                        },
+                                        {
+                                            "mineral_id":  "poor",
+                                            "value":  2,
+                                            "source_id":  "moo2-manual-base-industry"
+                                        },
+                                        {
+                                            "mineral_id":  "abundant",
+                                            "value":  3,
+                                            "source_id":  "moo2-manual-base-industry"
+                                        },
+                                        {
+                                            "mineral_id":  "rich",
+                                            "value":  5,
+                                            "source_id":  "moo2-manual-base-industry"
+                                        },
+                                        {
+                                            "mineral_id":  "ultra_rich",
+                                            "value":  8,
+                                            "source_id":  "moo2-manual-base-industry"
+                                        }
+                                    ],
+    "aquatic_food_bonus":  {
+                               "value":  1,
+                               "climate_ids":  [
+                                                   "tundra",
+                                                   "ocean",
+                                                   "terran"
+                                               ],
+                               "source_id":  "strategywiki-moo2-economy-calculations"
+                           }
+}

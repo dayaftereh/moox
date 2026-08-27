@@ -8,6 +8,24 @@ import (
 	"moox/internal/protocol"
 )
 
+type SeatAuthority struct {
+	SeatID   protocol.SeatID
+	EmpireID core.ID
+}
+
+type ResolveContext struct {
+	Seats []SeatAuthority
+}
+
+func (c ResolveContext) EmpireForSeat(seatID protocol.SeatID) (core.ID, bool) {
+	for _, seat := range c.Seats {
+		if seat.SeatID == seatID {
+			return seat.EmpireID, true
+		}
+	}
+	return 0, false
+}
+
 type DomainEvent struct {
 	Kind            string
 	SeatID          protocol.SeatID
@@ -26,13 +44,13 @@ type Resolution struct {
 }
 
 type Resolver interface {
-	Resolve(state *core.GameState, batches []protocol.CommandBatch) (Resolution, error)
+	Resolve(ctx ResolveContext, state *core.GameState, batches []protocol.CommandBatch) (Resolution, error)
 }
 
-type ResolverFunc func(state *core.GameState, batches []protocol.CommandBatch) (Resolution, error)
+type ResolverFunc func(ctx ResolveContext, state *core.GameState, batches []protocol.CommandBatch) (Resolution, error)
 
-func (f ResolverFunc) Resolve(state *core.GameState, batches []protocol.CommandBatch) (Resolution, error) {
-	return f(state, batches)
+func (f ResolverFunc) Resolve(ctx ResolveContext, state *core.GameState, batches []protocol.CommandBatch) (Resolution, error) {
+	return f(ctx, state, batches)
 }
 
 func NewDomainEvent(kind string, seatID protocol.SeatID, commandSequence uint32, data any) (DomainEvent, error) {

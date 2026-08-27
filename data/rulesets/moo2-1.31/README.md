@@ -159,6 +159,20 @@ out\moox-analyze-windows-amd64.exe normalize ship-hulls `
   -languages-dir data\languages `
   C:\ASH\Temp\mastori2
 ```
+## `economy.json`
+
+Current normalized base-economy constants used by the first strategic resolver:
+
+- base research: 3 RP per scientist,
+- base taxable income: 1 BC per population unit,
+- base industry per worker by mineral class: `1, 2, 3, 5, 8` for Ultra Poor through Ultra Rich,
+- Aquatic +1 farming planet coefficient on Tundra/Ocean/Terran.
+
+The file records source IDs and verification class for these constants. It intentionally coexists with `planet_classes.json` `base_extraction=1,2,3,4,5`: that executable extraction table is a separate original rule and must not be relabeled as worker industry.
+
+Climate food/farmer remains in `planet_classes.json`; racial food/industry/science/money deltas remain in `race_traits.json`; preset selections remain in `races.json`.
+
+The current game resolver combines these datasets only for pre-government/morale/gravity/building/pollution/logistics base role output.
 ## Planet classes
 
 `planet_classes.json` contains the original-observed five planet sizes, five mineral classes, three gravity classes and ten climate classes. It also carries the 1.31 size-generation roll thresholds, mineral base-extraction values and climate base-food-per-farmer values with field-level provenance. Canonical names are referenced through stable language keys; the 23 English values are in `data/languages/en.json`.

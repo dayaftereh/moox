@@ -72,6 +72,7 @@ Tracked normalized data lives under `data/rulesets/moo2-1.31/`.
 | `ship_hulls.json` | 6 military hull identities | picture identities/mappings proven; full hull stats/components/design rules remain |
 | `assets.json` | 156 semantic records | 143 confirmed, 13 deliberately pending generic race icons |
 | `planet_classes.json` | 5 sizes, 5 mineral classes, 3 gravity classes, 10 climates | size thresholds, mineral extraction and base food/farmer proven; broader galaxy generation intentionally deferred |
+| `economy.json` | 3 RP/scientist, 1 BC/pop base income, mineral worker industry `1/2/3/5/8` | first base role-output constants normalized; contextual government/gravity/morale/building/pollution/logistics rules remain |
 
 ### Semantic asset coverage
 
@@ -126,19 +127,19 @@ See `docs/research/ACTIVE_RESEARCH.md` for the explicit closed-milestone list an
 
 The planet-class normalization checkpoint is complete. The temporary probe programs have been removed, the normalized artifact is committed-ready, and the full Go test/vet baseline is green.
 
-**Phase 1 - deterministic simulation skeleton is active.** The core foundation now provides seeded RNG, stable IDs, minimal galaxy/star/planet/empire/colony state, validation and deterministic atomic save/load. The session foundation now adds command batches, parallel planning/submission, deterministic replay ordering, PlayerView/ObserverView, AI draft telemetry, a transactional strategic resolver boundary and parallel BattleSession boundaries. The next runtime slice is the first real population/economy command set and resolver implementation.
+**Phase 1 - deterministic simulation skeleton is active.** The first real strategic gameplay path is now implemented: `colony.assign_population` flows through parallel command submission, trusted Seat -> Empire authorization, transactional `EconomyResolver`, fixed-point base colony output and Player/Observer domain-event projections. Base food uses the original-observed climate table; worker industry, research baseline and base population income are isolated in `economy.json`; preset race deltas come from the existing normalized race data. The next fidelity slice is contextual/net economy, starting with gravity/government dependencies.
 
 ## What is not implemented yet
 
 The research/data tooling should not be confused with a playable engine. Major missing runtime systems include:
 
-- deterministic game-state model and seeded RNG service,
-- galaxy/star/planet generation,
-- turn processing,
-- colony population/economy simulation,
+- original-faithful galaxy/star/planet generation (the current small galaxy is deterministic test scaffolding),
+- full strategic turn processing beyond the first population/economy resolver,
+- contextual/net colony economy (gravity, government, morale, buildings, pollution, logistics, maintenance),
+- high-precision population growth/capacity and food consumption,
 - research progression/effects,
 - strategic fleet movement/colonization,
-- save/load and migrations,
+- save-format versioning/migrations beyond the current exact state round trip,
 - race-government runtime modifiers,
 - ship designer/components/weapons/specials,
 - tactical combat rules,
@@ -155,14 +156,16 @@ Planet-class normalization is complete. Preserve `docs/research/PLANET_CLASSES_2
 
 ### Engineering transition
 
-After the planet baseline needed for early simulation is stable, begin **Phase 1 - Simulation skeleton**:
+The initial Phase 1 foundation and first strategic command are complete. Preserve the current deterministic/session contract while extending effective colony output in independently proven layers:
 
-1. deterministic seeded RNG,
-2. stable game-state IDs/types,
-3. minimal galaxy/star/planet/empire/colony state,
-4. turn clock,
-5. deterministic serialization/save-load round trip,
-6. regression fixtures tied to the normalized 1.31 ruleset.
+1. gravity compatibility and production penalties,
+2. government production/research/income effects,
+3. morale interaction,
+4. building/technology flat and per-population bonuses,
+5. pollution and pollution-control processing,
+6. food consumption, freighters and surplus-food handling.
+
+Do not collapse these into one formula until ordering and rounding behavior are evidenced.
 
 ### First headless vertical slice
 

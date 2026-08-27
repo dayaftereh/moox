@@ -6,6 +6,11 @@ This file records useful public sources and what we use them for. It is intentio
 
 ## Primary gameplay references
 
+### Master of Orion II manual (public mirror)
+
+https://manuals.plus/m/5622eabc23dba2bd8c537b7dee95fe7a11c82d6d6607ee13b1b091f07e284617.pdf
+
+Use: primary/manual cross-check for colony-economy terminology and mineral base industry per worker (`1, 2, 3, 5, 8` for Ultra Poor through Ultra Rich). The manual is referenced, not redistributed.
 ### StrategyWiki - Master of Orion II: Battle at Antares
 
 - Main gameplay: https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Gameplay

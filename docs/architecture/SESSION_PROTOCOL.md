@@ -121,6 +121,19 @@ data: {"goal":"defense"}
 
 Telemetry is deliberately separate from authoritative events and therefore does not affect replay, state resolution or deterministic outcomes. It should contain explicit diagnostic metadata supplied for observation, not hidden model reasoning.
 
+## First strategic gameplay command: population assignment
+
+The first concrete gameplay command is now implemented:
+
+```text
+colony.assign_population
+```
+
+A command specifies a colony ID and complete farmer/worker/scientist assignment. The strategic economy resolver validates the command against trusted Seat -> Empire authority supplied by `GameSession`; the client cannot claim an empire in the command payload.
+
+A successful command updates the colony's `PopulationState`, recalculates its fixed-point base `ColonyEconomy`, and emits `colony.population_assigned` with the previous/current jobs and resulting base-output snapshot. Invalid ownership or assignment totals cause the complete `ResolveStrategic` transaction to fail without changing authoritative state.
+
+Base economy values are loaded from normalized ruleset data (`planet_classes.json`, `race_traits.json`, `races.json`, `economy.json`). The current output is deliberately pre-government/morale/gravity/building/pollution/logistics and must not be interpreted as final net colony production.
 ## Tactical BattleSession boundary
 
 `internal/battle` currently implements only the deterministic session boundary, not tactical MOO2 combat rules.
@@ -159,4 +172,4 @@ This checkpoint intentionally does not yet implement:
 - MCP tools/resources;
 - authentication/reconnect persistence.
 
-The next development slice is the first real strategic resolver: population assignment followed by verified food/production/research/money resolution, expressed as commands and domain events through this session boundary.
+The next development slice should extend the proven base economy with separately verified contextual modifiers, starting with the dependencies required for gravity/government behavior before broader morale/building/pollution/logistics rules.

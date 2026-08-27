@@ -25,7 +25,7 @@ Current snapshot: **2026-08-27**.
 
 Master of Orion X is transitioning from the advanced research/data-normalization phase into the deterministic headless runtime. The repository contains the pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), normalized runtime datasets and the first simulation/session infrastructure.
 
-The game is **not playable yet**, but the runtime foundation is implemented: deterministic core state/RNG/save-load plus versioned command batches, an atomic strategic `game.Resolver` boundary, authoritative `GameSession` phases, parallel player submissions, Player/Observer projections, observer-only draft telemetry and deterministic tactical `BattleSession` boundaries. The next runtime slice is the first concrete strategic command set and resolver behavior, beginning with colony population/economy rules.
+The game is **not playable yet**, but the first real strategic gameplay command now runs through the deterministic multiplayer runtime: `colony.assign_population` is submitted in a versioned command batch, authorized by server-owned Seat -> Empire mapping, resolved transactionally, materialized into fixed-point base food/production/research/tax output, and exposed through Player/Observer views and domain events. The next fidelity slice is contextual colony economy (gravity/government first, then broader morale/building/pollution/logistics layers).
 
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the one active research objective.
 ## Research documents
@@ -35,6 +35,7 @@ See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/r
 - `docs/research/SOURCES.md` - curated source register with links and usage notes.
 - `docs/WORKING_RULES.md` - mandatory convergence/checkpoint rules for long research sessions.
 - `docs/research/ACTIVE_RESEARCH.md` - authoritative current objective, next exact action, blockers and closed milestones.
+- `docs/research/ECONOMY_BASELINE_2026-08-27.md` - first population-command and base colony-economy fidelity checkpoint.
 - `docs/IMPLEMENTATION_PLAN.md` - proposed clean-room development phases.
 - docs/ANALYZER.md - pure-Go MOO2 console analyzer usage and architecture.
 - docs/architecture/README.md - runtime architecture overview for parallel turns, authoritative sessions, battles, observer and AI.
@@ -82,18 +83,19 @@ These projects are references, not dependencies at this stage. If code is reused
 
 ## Next milestone
 
-The planet-class normalization checkpoint is complete. The immediate next milestone is **Phase 1 - deterministic simulation skeleton**.
+**Phase 1 - deterministic simulation skeleton is active.** The implemented runtime now covers:
 
-**Phase 1 - deterministic simulation skeleton is now underway.** The first core foundation covers:
+- simulation-owned deterministic RNG and exact save/load,
+- stable game-state IDs/types and the fixed headless fixture,
+- versioned multiplayer command batches and transactional strategic resolution,
+- parallel seat submissions plus Player/Observer projections,
+- discrete farmer/worker/scientist assignment,
+- the first real `colony.assign_population` strategic command,
+- fixed-point base food/production/research/tax colony output from normalized ruleset data,
+- server-owned Seat -> Empire authorization,
+- deterministic domain events and tactical BattleSession boundaries.
 
-- simulation-owned deterministic RNG with serializable state,
-- stable game-state IDs/types,
-- minimal galaxy/star/planet/empire/colony model,
-- turn clock and event log,
-- strict state/cross-reference validation,
-- atomic serialization/save-load with exact round-trip regression,
-- a fixed headless regression fixture.
-The first headless playable slice remains: generate a small galaxy, create an empire/homeworld, assign population roles, process the economy/research, build and move a colony ship, colonize a second world, and save/reload the exact state.
+The first headless playable slice still needs contextual/net economy, research progression, construction, fleet movement/colonization and then end-to-end turn advancement through those systems.
 
 Wails v3 is already the planned application shell; rendering/UI framework selection is no longer an open prerequisite.
 ## Runtime ruleset data

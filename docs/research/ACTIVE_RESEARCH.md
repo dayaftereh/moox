@@ -116,20 +116,19 @@ The code includes hash constants for the relevant original function ranges. Thes
 
 ## Next exact action
 
-**Continue Phase 1 with the first real strategic command resolver.**
+**Continue Phase 1 by turning base colony output into verified contextual/effective output.**
 
-The deterministic core plus the multiplayer/session command boundary are now implemented. `internal/protocol`, `internal/game`, `internal/session` and `internal/battle` provide versioned command batches, an atomic strategic resolver seam, parallel turn submission, deterministic event ordering, Player/Observer projections, draft telemetry and the minimal parallel battle-session lifecycle.
+The first real strategic command is complete: `colony.assign_population` is authorized by server-owned Seat -> Empire mapping, resolved transactionally, stored as farmer/worker/scientist assignment and materialized into fixed-point base food/production/research/tax output. The rules are split across `planet_classes.json`, `race_traits.json`, `races.json` and the new `economy.json` rather than hidden in resolver constants.
 
 Concretely, next:
 
-1. define the first real population-assignment command(s),
-2. add domain validation so a seat can affect only its legal colony/population state,
-3. inspect only the normalized/original evidence needed for food/production/research/money formulas,
-4. implement deterministic strategic resolution and domain events for that narrow economy slice,
-5. feed resolved state/events back through the existing `GameSession` lifecycle,
-6. preserve exact save/load, RNG replay and arrival-order-independent multiplayer tests.
+1. narrowly research/normalize gravity compatibility and its production penalty behavior,
+2. narrowly research/normalize government effects required for production/research/income,
+3. add those as explicit layers over the existing base `ColonyEconomy`,
+4. keep morale/buildings/pollution/logistics out until their exact dependencies/order are needed and evidenced,
+5. preserve Seat -> Empire authorization, transactional resolution, exact save/load and multiplayer arrival-order independence.
 
-Do not add Wails/network/MCP transport code yet; those remain adapters over the now-established session/protocol boundary. Do not reopen unrelated research unless a concrete economy rule requires it.
+Do not add Wails/network/MCP transport code yet; those remain adapters over the established session/protocol boundary. Do not reopen unrelated graphics/data research.
 ## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.

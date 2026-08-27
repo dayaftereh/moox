@@ -236,7 +236,11 @@ func (s *GameSession) ResolveStrategic(resolver game.Resolver) error {
 		batches[i] = protocol.CloneCommandBatch(*s.seats[i].submission)
 	}
 
-	resolution, err := resolver.Resolve(stateInput, batches)
+	ctx := game.ResolveContext{Seats: make([]game.SeatAuthority, len(s.seats))}
+	for i := range s.seats {
+		ctx.Seats[i] = game.SeatAuthority{SeatID: s.seats[i].seat.ID, EmpireID: s.seats[i].seat.EmpireID}
+	}
+	resolution, err := resolver.Resolve(ctx, stateInput, batches)
 	if err != nil {
 		return fmt.Errorf("resolve strategic turn: %w", err)
 	}

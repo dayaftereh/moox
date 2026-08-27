@@ -50,10 +50,31 @@ type Empire struct {
 }
 
 type Colony struct {
-	ID       ID `json:"id"`
-	EmpireID ID `json:"empire_id"`
-	PlanetID ID `json:"planet_id"`
+	ID         ID              `json:"id"`
+	EmpireID   ID              `json:"empire_id"`
+	PlanetID   ID              `json:"planet_id"`
+	Population PopulationState `json:"population"`
+	Economy    ColonyEconomy   `json:"economy"`
 }
+
+type PopulationState struct {
+	Units      int `json:"units"`
+	Farmers    int `json:"farmers"`
+	Workers    int `json:"workers"`
+	Scientists int `json:"scientists"`
+}
+
+// ColonyEconomy stores deterministic fixed-point base role output. Values use
+// EconomyScale units per displayed MOO2 resource point. This first slice is
+// intentionally pre-government/morale/gravity/building/pollution/logistics.
+type ColonyEconomy struct {
+	FoodMilli       int64 `json:"food_milli"`
+	ProductionMilli int64 `json:"production_milli"`
+	ResearchMilli   int64 `json:"research_milli"`
+	TaxBCMilli      int64 `json:"tax_bc_milli"`
+}
+
+const EconomyScale int64 = 1000
 
 type Event struct {
 	Turn    uint64 `json:"turn"`
@@ -149,6 +170,16 @@ func (s *GameState) Validate() error {
 		colony := &s.Colonies[i]
 		if colony.EmpireID == 0 || colony.PlanetID == 0 {
 			return fmt.Errorf("colony[%d] has incomplete references", i)
+		}
+		population := colony.Population
+		if population.Units < 0 || population.Farmers < 0 || population.Workers < 0 || population.Scientists < 0 {
+			return fmt.Errorf("colony[%d] population assignments must be non-negative", i)
+		}
+		if assigned := population.Farmers + population.Workers + population.Scientists; assigned != population.Units {
+			return fmt.Errorf("colony[%d] assigned population=%d does not equal units=%d", i, assigned, population.Units)
+		}
+		if colony.Economy.FoodMilli < 0 || colony.Economy.ProductionMilli < 0 || colony.Economy.ResearchMilli < 0 || colony.Economy.TaxBCMilli < 0 {
+			return fmt.Errorf("colony[%d] economy outputs must be non-negative", i)
 		}
 		if _, ok := empireIDs[colony.EmpireID]; !ok {
 			return fmt.Errorf("colony[%d] references unknown empire %d", i, colony.EmpireID)
