@@ -101,7 +101,7 @@ func TestPopulationGrowthUsesDirectFloatPopulationUnits(t *testing.T) {
 	}
 }
 
-func TestPopulationGrowthAppliesRaceMultiplierAndStopsOnShortage(t *testing.T) {
+func TestPopulationGrowthAppliesRaceMultiplierAndNetsShortagePenalty(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	planet := core.Planet{SizeID: "medium", ClimateID: "terran"}
 	colony := core.Colony{Population: core.PopulationState{Total: 4, Farmers: 2, Workers: 1, Scientists: 1}}
@@ -115,20 +115,23 @@ func TestPopulationGrowthAppliesRaceMultiplierAndStopsOnShortage(t *testing.T) {
 		t.Fatalf("Sakkra growth=%+v want base=%v projected=%v", sakkra, wantBase, wantBase*2)
 	}
 
-	starved, err := rules.CalculatePopulationDynamics(colony, planet, "human", core.ColonyEconomy{Food: 3.5, Production: 3})
+	human, err := rules.CalculatePopulationDynamics(colony, planet, "human", core.ColonyEconomy{Food: 3.5, Production: 3})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if starved.FoodShortage != 0.5 || starved.ProjectedGrowth != 0 {
-		t.Fatalf("starved population dynamics=%+v", starved)
+	humanBase := math.Sqrt(0.002 * 4 * (12 - 4) / 12)
+	wantHumanGrowth := humanBase - 0.5*rules.StarvationPopulationPerFoodShortage
+	if human.FoodShortage != 0.5 || !closePopulationValue(human.ProjectedGrowth, wantHumanGrowth) || human.ProjectedStarvation != 0 {
+		t.Fatalf("human shortage dynamics=%+v want growth=%v", human, wantHumanGrowth)
 	}
 
 	cyber, err := rules.CalculatePopulationDynamics(colony, planet, "meklar", core.ColonyEconomy{Food: 2, Production: 1.5})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cyber.ProductionShortage != 0.5 || cyber.ProjectedGrowth != 0 {
-		t.Fatalf("production-starved Cybernetic dynamics=%+v", cyber)
+	wantCyberGrowth := humanBase - 0.5*rules.CyberneticStarvationPopulationPerPPShortage
+	if cyber.ProductionShortage != 0.5 || !closePopulationValue(cyber.ProjectedGrowth, wantCyberGrowth) || cyber.ProjectedStarvation != 0 {
+		t.Fatalf("production-short Cybernetic dynamics=%+v want growth=%v", cyber, wantCyberGrowth)
 	}
 }
 

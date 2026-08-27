@@ -116,36 +116,44 @@ The code includes hash constants for the relevant original function ranges. Thes
 
 ## Next exact action
 
-The implementation now has **two explicit active lanes**. The Economy lane is the immediate coding focus; the Research lane must remain visible and is next when the current Economy slice is closed.
+The active implementation/research lane is now **Research / multi-Technology TechFields**. The Food/Freighter/Starvation Economy checkpoint is closed for this pass and documented in `FOOD_FREIGHTER_LOGISTICS_2026-08-27.md`.
 
-### Lane A - Economy / Population (current implementation focus)
+### Current lane - Research / multi-Technology TechFields
 
-Population, Food, PP, RP, BC and Construction progress are domain-native `float64`. The first Population Growth/Sustenance slice now materializes capacity, Food/Production requirements, available PP and direct-float turn-end Growth while preserving the rule that Construction and Research consume pre-growth turn output.
+`GameSession.ResearchChoices` is the server-authoritative TechField frontier and `empire.select_research` currently accepts only `tech_field_id`. The next correction is to stop treating every Technology inside a researched field as an unconditional acquisition.
 
-Next narrow Economy work:
+Research tasks, in order:
 
-1. research/implement starvation Population loss without guessing original quirks,
-2. add empire Food logistics / Freighter accounting and determine where imported Food enters `PopulationDynamics`,
-3. decide and implement surplus-Food handling only from verified evidence,
-4. then add Housing / Cloning Center / medicine growth modifiers as separate proven layers,
-5. later add Biospheres/Advanced City Planning/terraforming capacity transitions and race-aware Population cohorts.
+1. verify ordinary-race acquisition semantics for TechFields containing multiple Technologies,
+2. verify Creative behavior and whether all Technologies in the field are acquired automatically,
+3. verify Uncreative behavior, including whether the available Technology is preselected/randomized and when that selection becomes visible,
+4. determine whether the Technology choice occurs when research starts, while it progresses or at breakthrough/completion,
+5. represent the proven policy explicitly in server-authoritative `ResearchChoice` / `ResearchState` data rather than trusting client-selected Technology IDs,
+6. keep Human UI, built-in AI and future remote/MCP agents on the exact same legal-action surface,
+7. investigate active-project switching/cancelling and progress retention/loss,
+8. model hyper-advanced repeated-field level/cost state separately,
+9. return to Advanced-start randomized/race-aware technology grants after those runtime semantics exist.
 
-### Lane B - Research / multi-Technology TechFields (preserved next Research focus)
+### Turn-order conflict to resolve while researching Research timing
 
-`GameSession.ResearchChoices` remains the server-authoritative TechField frontier and `empire.select_research` continues to accept only `tech_field_id`; clients never submit arbitrary Technology IDs.
+A secondary StrategyWiki calculations reference explicitly described as checked under MOO2 1.31 gives an original sequence with Population growth/starvation before resource generation and Research completion. The current MOOX runtime intentionally still has Construction/Research consume the pre-Population-transition output.
 
-Research backlog, in order:
+Do not silently change this order from a single secondary source. While researching the timing of multi-Technology choice/completion, seek stronger original-observed or independent evidence for the 1.31 strategic turn sequence. The Food/Freighter phase is isolated so its placement can be corrected later without redesigning the protocol.
 
-1. research and decide Creative/Uncreative acquisition semantics for TechFields containing multiple Technologies,
-2. represent that policy explicitly in `ResearchChoice` / legal actions so Human UI, built-in AI and remote agents see the same choices,
-3. decide whether ordinary races choose one Technology while Creative acquires the full field and how Uncreative is constrained, based on evidence rather than assumption,
-4. investigate changing/cancelling an active research project and progress retention/loss,
-5. model hyper-advanced repeated-field level/cost state separately,
-6. return to Advanced-start randomized/race-aware technology grants after those runtime semantics exist.
+### Parked Economy follow-ups
 
-Architecture constraint: legacy MOO2 integer storage widths are evidence, not a MOOX storage requirement. All continuous strategic quantities use domain-native `float64` per `ADR-0003-domain-native-float64.md`; genuinely discrete IDs/counts remain discrete, and rounding must occur only at named gameplay-rule boundaries.
+The following are intentionally parked while Research is active:
 
-The Economy lane must not bypass the Research ordering contract: Population Growth is turn-end, after current-turn Research has consumed its RP. A regression test now locks this behavior.
+- Freighter Fleet acquisition/build legal action (5 Freighters / 50 PP is normalized, but acquisition is not yet wired),
+- Treasury settlement of Freighter operating cost and surplus-Food income,
+- blockade effects on Food/Production and transport eligibility,
+- Population transport and its competition for the Freighter pool,
+- exact original allocation priority when too few Freighters exist,
+- Housing / Cloning Center / medicine growth modifiers,
+- Biospheres / Advanced City Planning / terraforming capacity transitions,
+- race-aware Population cohorts.
+
+Architecture constraint: continuous strategic quantities remain domain-native `float64` per `ADR-0003-domain-native-float64.md`; discrete counts such as Empire Freighters remain discrete. Clients never receive authority to mutate hidden/full GameState or submit arbitrary Technology ownership.
 ## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.

@@ -1,5 +1,5 @@
 {
-    "schema_version":  4,
+    "schema_version":  5,
     "ruleset":  "moo2-1.31",
     "sources":  [
                     {
@@ -52,6 +52,34 @@
                         "description":  "Cross-check for 1 food per normal population, Cybernetic 0.5 food + 0.5 production consumption, and Lithovore no food requirement.",
                         "url":  "https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Race_design_options",
                         "accessed_date":  "2026-08-27"
+                    },
+                    {
+                        "id":  "moo2-manual-freighters",
+                        "type":  "secondary-reference",
+                        "description":  "Original manual transcription states that Freighter Fleets add five freighters, each freighter transports one food automatically, food transfer is automatic, and active freighters cost 0.5 BC while inactive freighters cost nothing.",
+                        "url":  "https://www.manualshelf.com/manual/games-pc/master-of-orion-ii-battle-at-antares/user-guide-english/page-145.html",
+                        "accessed_date":  "2026-08-27"
+                    },
+                    {
+                        "id":  "strategywiki-moo2-food-logistics",
+                        "type":  "secondary-reference",
+                        "description":  "Cross-check for instantaneous automatic Food transport, one Food per Freighter, five Freighters per fleet, 50 PP Freighter Fleet cost and 0.5 BC operating cost per used Freighter.",
+                        "url":  "https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Feeding_your_people",
+                        "accessed_date":  "2026-08-27"
+                    },
+                    {
+                        "id":  "strategywiki-moo2-surplus-food",
+                        "type":  "secondary-reference",
+                        "description":  "Cross-check that remaining surplus Food is sold at 0.5 BC per Food normally; Fantastic Traders yields 1 BC per surplus Food.",
+                        "url":  "https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Money_matters",
+                        "accessed_date":  "2026-08-27"
+                    },
+                    {
+                        "id":  "moo2-150-classic-starvation-floor",
+                        "type":  "secondary-reference",
+                        "description":  "MOO2 1.50 parameter documentation identifies classic/default behavior as preventing starvation from eliminating the final population unit.",
+                        "url":  "https://www.moo2mod.com/doc/150/parameters.html",
+                        "accessed_date":  "2026-08-27"
                     }
                 ],
     "base_research_per_scientist":  {
@@ -94,6 +122,25 @@
                                           "strategywiki-moo2-sustenance"
                                       ]
                    },
+    "food_logistics":  {
+                            "freighter_food_capacity":  1.0,
+                            "freighters_per_fleet":  5,
+                            "freighter_fleet_cost_pp":  50.0,
+                            "freighter_operating_cost_bc":  0.5,
+                            "surplus_food_bc_per_unit":  0.5,
+                            "fantastic_traders_surplus_food_bc_per_unit":  1.0,
+                            "starvation_population_per_food_shortage":  0.05,
+                            "cybernetic_starvation_population_per_food_shortage":  0.025,
+                            "cybernetic_starvation_population_per_pp_shortage":  0.025,
+                            "minimum_population_after_starvation":  1.0,
+                            "source_ids":  [
+                                               "strategywiki-moo2-economy-calculations",
+                                               "moo2-manual-freighters",
+                                               "strategywiki-moo2-food-logistics",
+                                               "strategywiki-moo2-surplus-food",
+                                               "moo2-150-classic-starvation-floor"
+                                           ]
+                        },
     "mineral_industry_per_worker":  [
                                         {
                                             "mineral_id":  "ultra_poor",

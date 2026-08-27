@@ -144,12 +144,10 @@ func TestStrategicResolverSelectsResearchAndAppliesFractionalTurnRP(t *testing.T
 	if result.State.Empires[0].Research == nil {
 		t.Fatal("research selection unexpectedly completed")
 	}
-	// Resolve recalculates the colony before advancing research; use the actual
-	// materialized value to prove that fractional RP is retained rather than
-	// requiring an integer ResearchState representation.
-	want := result.State.Colonies[0].AdjustedEconomy.Research
-	if result.State.Empires[0].Research.ProgressRP != want {
-		t.Fatalf("progress_rp=%v want=%v", result.State.Empires[0].Research.ProgressRP, want)
+	// Research consumes the current-turn pre-Population-transition output. The
+	// post-resolution colony snapshot may differ after growth/starvation.
+	if result.State.Empires[0].Research.ProgressRP != 5.625 {
+		t.Fatalf("progress_rp=%v want pre-transition 5.625", result.State.Empires[0].Research.ProgressRP)
 	}
 }
 

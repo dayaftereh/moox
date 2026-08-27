@@ -134,7 +134,7 @@ All affected values are JSON numbers backed by `float64` in Go.
 
 The Population Growth/Sustenance slice subsequently bumps the development state to schema 4 by adding materialized `population_dynamics` (`capacity`, sustenance, available Production and projected Growth). This is an extension of the same Float policy, not a return to scaled integers.
 
-The project is still pre-release, so no schema-2/schema-3 migration shim is retained in the runtime. Schema 4 is the canonical development state going forward.
+Food/Freighter logistics and Starvation subsequently bump the development state to schema 5 by adding direct-float logistics materialization and projected starvation plus a discrete Freighter count. The project is still pre-release, so older development-schema migration shims are not retained; schema 5 is the canonical development state going forward.
 
 ## Relationship to original MOO2 behavior
 

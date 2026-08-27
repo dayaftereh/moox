@@ -220,3 +220,8 @@ This Economy checkpoint does not replace the active Research backlog. The next R
 4. then address active-project switching and hyper-advanced repeated fields.
 
 Human UI, built-in AI and future external agents must continue to use the same authority-filtered Research action surface.
+
+
+## Superseding logistics checkpoint
+
+Starvation, empire Food/Freighter logistics and surplus-Food valuation were implemented in FOOD_FREIGHTER_LOGISTICS_2026-08-27.md, which bumps the current development state/ruleset to schema 5. Schema 4 above remains the historical boundary introduced by this Population Growth checkpoint.

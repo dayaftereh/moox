@@ -186,3 +186,35 @@ Use: secondary cross-check for classic size capacities, climate habitability, Aq
 https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Race_design_options
 
 Use: secondary cross-check for normal Food consumption plus Cybernetic and Lithovore sustenance behavior. Runtime data keeps these source IDs explicit so stronger original evidence can replace them later without changing the game-layer API.
+
+## Food / Freighter logistics references
+
+### Original manual transcription - Freighter Fleets
+
+https://www.manualshelf.com/manual/games-pc/master-of-orion-ii-battle-at-antares/user-guide-english/page-145.html
+
+Use: secondary/manual-transcription evidence that a Freighter Fleet supplies five Freighters, each used Freighter can carry one Food automatically, used Freighters cost 0.5 BC per turn and idle Freighters have no operating cost.
+
+### StrategyWiki - Feeding your people
+
+https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Feeding_your_people
+
+Use: cross-check for instantaneous automatic Food transfer, one Food per Freighter, five Freighters per fleet, 50 PP Freighter Fleet production cost and 0.5 BC per active Freighter. The exact insufficient-Freighter colony priority is not treated as proven by this source.
+
+### StrategyWiki - Money matters
+
+https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Money_matters
+
+Use: cross-check for end-turn surplus-Food valuation at 0.5 BC/Food and Fantastic Traders doubling that value to 1 BC/Food.
+
+### MOO2 1.50 classic/default starvation parameter note
+
+https://www.moo2mod.com/doc/150/parameters.html
+
+Use: secondary evidence that classic/default behavior prevents starvation from eliminating the final Population unit. This is used only for the starvation floor; mod-specific alternate settings are not imported into the 1.31 ruleset.
+
+### StrategyWiki - Calculations (1.31 turn-order conflict)
+
+https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Calculations
+
+Use: the page states its calculations were checked under MOO2 1.31 and documents the Growth/Starvation penalty formulas. It also describes a global strategic turn ordering that conflicts with the current MOOX pre-Population Construction/Research ordering. That ordering is tracked as unresolved evidence and is not silently adopted from this source alone.

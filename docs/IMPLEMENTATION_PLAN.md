@@ -240,11 +240,11 @@ A private developer-only original-asset viewer may exist for comparison, but ori
 
 ## Recommended immediate next work
 
-1. Finish the current Population/Sustenance chain with verified starvation behavior and empire Food/Freighter logistics.
-2. Add surplus-Food handling only after its rule boundary is verified.
-3. Layer Housing, Cloning Center and medicine growth bonuses independently; do not fold them into the base growth curve.
-4. Preserve and then resume the Research lane: determine Creative/Uncreative behavior for multi-Technology TechFields and encode it in server-authoritative `ResearchChoice` legal actions.
-5. Follow with active-project switching/progress semantics and hyper-advanced repeated-field costs.
+1. Research and implement ordinary/Creative/Uncreative semantics for multi-Technology TechFields.
+2. Encode the proven choice/acquisition policy in server-authoritative `ResearchChoice` / `ResearchState`; never trust client-selected ownership IDs.
+3. Resolve Research choice/completion timing and use that investigation to strengthen or reject the current secondary evidence about original 1.31 strategic turn ordering.
+4. Follow with active-project switching/progress semantics and hyper-advanced repeated-field costs.
+5. Keep the completed Food/Freighter/Starvation phase stable; return later for Freighter acquisition, Treasury settlement, blockade/population transport and special growth/capacity layers.
 6. Continue the first headless vertical slice toward colony ship production, movement and a second colony only after the Economy/Research foundations remain deterministic.
 
 Do not reopen closed race/building/ship graphics research unless contradictory evidence or a concrete runtime requirement demands it. Wails v3 remains the planned application shell; transports/UI must continue to consume the same canonical Session/legal-action APIs rather than contain gameplay rules.

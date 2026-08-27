@@ -29,6 +29,7 @@ type RaceEconomyModifiers struct {
 	Subterranean               bool
 	Cybernetic                 bool
 	Lithovore                  bool
+	FantasticTraders           bool
 	GravityID                  string
 	GovernmentTraitID          string
 }
@@ -41,40 +42,50 @@ type BuildingDefinition struct {
 	MaintenanceBC    int
 }
 type EconomyRules struct {
-	ClimateFoodPerFarmer          map[string]float64
-	MineralIndustryPerWorker      map[string]float64
-	RaceModifiers                 map[string]RaceEconomyModifiers
-	AquaticFoodBonus              float64
-	AquaticFoodClimateIDs         map[string]struct{}
-	BaseResearchPerScientist      float64
-	BaseTaxBCPerPopulation        float64
-	PopulationFoodPerUnit         float64
-	CyberneticFoodPerUnit         float64
-	CyberneticProductionPerUnit   float64
-	PopulationGrowthCurveFactor   float64
-	TolerantHabitabilityBonus     float64
-	SubterraneanCapacityPerClass  float64
-	PopulationSizeCapacity        map[string]float64
-	PopulationSizeClass           map[string]int
-	PopulationClimateHabitability map[string]float64
-	GravityPenaltyPercent         map[string]int
-	GovernmentModifiers           map[string]GovernmentEconomyModifier
-	MoraleBarracksPenaltyPercent  int
-	MoraleBarracksGovernments     map[string]struct{}
-	MoraleBarracksBuildingIDs     map[string]struct{}
-	MoraleBuildingBonusPercent    map[string]int
-	KnownBuildingIDs              map[string]struct{}
-	BuildingDefinitions           map[string]BuildingDefinition
-	TechnologyFieldCostsRP        map[int]float64
-	TechnologyFieldPreviousID     map[int]int
-	TechnologyFieldNextID         map[int]int
-	TechnologyIDsByField          map[int][]int
-	TechnologyFieldByID           map[int]int
-	TechnologyKeyByID             map[int]string
-	TechnologyNameKeyByID         map[int]string
-	TechnologyStrategicAvailable  map[int]bool
-	NewGameAlwaysKnownFieldID     int
-	NewGameStagedKnownFieldIDs    []int
+	ClimateFoodPerFarmer                          map[string]float64
+	MineralIndustryPerWorker                      map[string]float64
+	RaceModifiers                                 map[string]RaceEconomyModifiers
+	AquaticFoodBonus                              float64
+	AquaticFoodClimateIDs                         map[string]struct{}
+	BaseResearchPerScientist                      float64
+	BaseTaxBCPerPopulation                        float64
+	PopulationFoodPerUnit                         float64
+	CyberneticFoodPerUnit                         float64
+	CyberneticProductionPerUnit                   float64
+	PopulationGrowthCurveFactor                   float64
+	TolerantHabitabilityBonus                     float64
+	SubterraneanCapacityPerClass                  float64
+	PopulationSizeCapacity                        map[string]float64
+	PopulationSizeClass                           map[string]int
+	PopulationClimateHabitability                 map[string]float64
+	FreighterFoodCapacity                         float64
+	FreightersPerFleet                            int
+	FreighterFleetCostPP                          float64
+	FreighterOperatingCostBC                      float64
+	SurplusFoodBCPerUnit                          float64
+	FantasticTradersSurplusFoodBCPerUnit          float64
+	StarvationPopulationPerFoodShortage           float64
+	CyberneticStarvationPopulationPerFoodShortage float64
+	CyberneticStarvationPopulationPerPPShortage   float64
+	MinimumPopulationAfterStarvation              float64
+	GravityPenaltyPercent                         map[string]int
+	GovernmentModifiers                           map[string]GovernmentEconomyModifier
+	MoraleBarracksPenaltyPercent                  int
+	MoraleBarracksGovernments                     map[string]struct{}
+	MoraleBarracksBuildingIDs                     map[string]struct{}
+	MoraleBuildingBonusPercent                    map[string]int
+	KnownBuildingIDs                              map[string]struct{}
+	BuildingDefinitions                           map[string]BuildingDefinition
+	TechnologyFieldCostsRP                        map[int]float64
+	TechnologyFieldPreviousID                     map[int]int
+	TechnologyFieldNextID                         map[int]int
+	TechnologyIDsByField                          map[int][]int
+	TechnologyFieldByID                           map[int]int
+	TechnologyKeyByID                             map[int]string
+	TechnologyNameKeyByID                         map[int]string
+	TechnologyStrategicAvailable                  map[int]bool
+	NewGameAlwaysKnownFieldID                     int
+	NewGameStagedKnownFieldIDs                    []int
 }
 
 func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
@@ -229,40 +240,50 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	}
 
 	rules := &EconomyRules{
-		ClimateFoodPerFarmer:          make(map[string]float64, len(planetClasses.Climates)),
-		MineralIndustryPerWorker:      make(map[string]float64, len(planetClasses.MineralClasses)),
-		RaceModifiers:                 make(map[string]RaceEconomyModifiers, len(races.Races)),
-		AquaticFoodBonus:              float64(economy.AquaticFoodBonus.Value),
-		AquaticFoodClimateIDs:         aquaticClimates,
-		BaseResearchPerScientist:      float64(economy.BaseResearchPerScientist.Value),
-		BaseTaxBCPerPopulation:        float64(economy.BaseTaxBCPerPopulation.Value),
-		PopulationFoodPerUnit:         economy.Population.FoodPerPopulation,
-		CyberneticFoodPerUnit:         economy.Population.CyberneticFoodPerPopulation,
-		CyberneticProductionPerUnit:   economy.Population.CyberneticProductionPerPopulation,
-		PopulationGrowthCurveFactor:   economy.Population.GrowthCurveFactor,
-		TolerantHabitabilityBonus:     economy.Population.TolerantHabitabilityBonus,
-		SubterraneanCapacityPerClass:  economy.Population.SubterraneanCapacityPerSizeClass,
-		PopulationSizeCapacity:        populationSizeCapacity,
-		PopulationSizeClass:           populationSizeClass,
-		PopulationClimateHabitability: populationClimateHabitability,
-		GravityPenaltyPercent:         gravityPenalties,
-		GovernmentModifiers:           governmentModifiers,
-		MoraleBarracksPenaltyPercent:  economy.Morale.BarracksPenaltyPercent,
-		MoraleBarracksGovernments:     moraleBarracksGovernments,
-		MoraleBarracksBuildingIDs:     moraleBarracksBuildingIDs,
-		MoraleBuildingBonusPercent:    moraleBuildingBonusPercent,
-		KnownBuildingIDs:              buildingIDs,
-		BuildingDefinitions:           buildingDefinitions,
-		TechnologyFieldCostsRP:        technologyFieldCosts,
-		TechnologyFieldPreviousID:     technologyFieldPreviousID,
-		TechnologyFieldNextID:         technologyFieldNextID,
-		TechnologyIDsByField:          technologyIDsByField,
-		TechnologyFieldByID:           technologyFieldByID,
-		TechnologyKeyByID:             technologyKeyByID,
-		TechnologyNameKeyByID:         technologyNameKeyByID,
-		TechnologyStrategicAvailable:  technologyStrategicAvailable,
-		NewGameAlwaysKnownFieldID:     technologies.NewGameStart.AlwaysKnownTechFieldID,
-		NewGameStagedKnownFieldIDs:    append([]int(nil), technologies.NewGameStart.StagedKnownTechFieldIDs...),
+		ClimateFoodPerFarmer:                          make(map[string]float64, len(planetClasses.Climates)),
+		MineralIndustryPerWorker:                      make(map[string]float64, len(planetClasses.MineralClasses)),
+		RaceModifiers:                                 make(map[string]RaceEconomyModifiers, len(races.Races)),
+		AquaticFoodBonus:                              float64(economy.AquaticFoodBonus.Value),
+		AquaticFoodClimateIDs:                         aquaticClimates,
+		BaseResearchPerScientist:                      float64(economy.BaseResearchPerScientist.Value),
+		BaseTaxBCPerPopulation:                        float64(economy.BaseTaxBCPerPopulation.Value),
+		PopulationFoodPerUnit:                         economy.Population.FoodPerPopulation,
+		CyberneticFoodPerUnit:                         economy.Population.CyberneticFoodPerPopulation,
+		CyberneticProductionPerUnit:                   economy.Population.CyberneticProductionPerPopulation,
+		PopulationGrowthCurveFactor:                   economy.Population.GrowthCurveFactor,
+		TolerantHabitabilityBonus:                     economy.Population.TolerantHabitabilityBonus,
+		SubterraneanCapacityPerClass:                  economy.Population.SubterraneanCapacityPerSizeClass,
+		PopulationSizeCapacity:                        populationSizeCapacity,
+		PopulationSizeClass:                           populationSizeClass,
+		PopulationClimateHabitability:                 populationClimateHabitability,
+		FreighterFoodCapacity:                         economy.FoodLogistics.FreighterFoodCapacity,
+		FreightersPerFleet:                            economy.FoodLogistics.FreightersPerFleet,
+		FreighterFleetCostPP:                          economy.FoodLogistics.FreighterFleetCostPP,
+		FreighterOperatingCostBC:                      economy.FoodLogistics.FreighterOperatingCostBC,
+		SurplusFoodBCPerUnit:                          economy.FoodLogistics.SurplusFoodBCPerUnit,
+		FantasticTradersSurplusFoodBCPerUnit:          economy.FoodLogistics.FantasticTradersSurplusFoodBCPerUnit,
+		StarvationPopulationPerFoodShortage:           economy.FoodLogistics.StarvationPopulationPerFoodShortage,
+		CyberneticStarvationPopulationPerFoodShortage: economy.FoodLogistics.CyberneticStarvationPopulationPerFoodShortage,
+		CyberneticStarvationPopulationPerPPShortage:   economy.FoodLogistics.CyberneticStarvationPopulationPerPPShortage,
+		MinimumPopulationAfterStarvation:              economy.FoodLogistics.MinimumPopulationAfterStarvation,
+		GravityPenaltyPercent:                         gravityPenalties,
+		GovernmentModifiers:                           governmentModifiers,
+		MoraleBarracksPenaltyPercent:                  economy.Morale.BarracksPenaltyPercent,
+		MoraleBarracksGovernments:                     moraleBarracksGovernments,
+		MoraleBarracksBuildingIDs:                     moraleBarracksBuildingIDs,
+		MoraleBuildingBonusPercent:                    moraleBuildingBonusPercent,
+		KnownBuildingIDs:                              buildingIDs,
+		BuildingDefinitions:                           buildingDefinitions,
+		TechnologyFieldCostsRP:                        technologyFieldCosts,
+		TechnologyFieldPreviousID:                     technologyFieldPreviousID,
+		TechnologyFieldNextID:                         technologyFieldNextID,
+		TechnologyIDsByField:                          technologyIDsByField,
+		TechnologyFieldByID:                           technologyFieldByID,
+		TechnologyKeyByID:                             technologyKeyByID,
+		TechnologyNameKeyByID:                         technologyNameKeyByID,
+		TechnologyStrategicAvailable:                  technologyStrategicAvailable,
+		NewGameAlwaysKnownFieldID:                     technologies.NewGameStart.AlwaysKnownTechFieldID,
+		NewGameStagedKnownFieldIDs:                    append([]int(nil), technologies.NewGameStart.StagedKnownTechFieldIDs...),
 	}
 	for _, climate := range planetClasses.Climates {
 		rules.ClimateFoodPerFarmer[climate.ID] = float64(climate.BaseFoodPerFarmer)
@@ -306,6 +327,8 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 				modifiers.Cybernetic = true
 			case "lithovore":
 				modifiers.Lithovore = true
+			case "fantastic_traders":
+				modifiers.FantasticTraders = true
 			case "low_g_world":
 				modifiers.GravityID = "low_g"
 			case "high_g_world":

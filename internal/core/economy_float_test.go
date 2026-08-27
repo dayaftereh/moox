@@ -52,3 +52,26 @@ func TestStateRejectsInvalidContinuousValues(t *testing.T) {
 		})
 	}
 }
+
+func TestStateRejectsInvalidFoodLogistics(t *testing.T) {
+	tests := []struct {
+		name   string
+		mutate func(*GameState)
+	}{
+		{"food logistics nan", func(s *GameState) { s.Empires[0].FoodLogistics.SurplusFoodIncomeBC = math.NaN() }},
+		{"negative freighters", func(s *GameState) { s.Empires[0].Freighters = -1 }},
+		{"food import exceeds local shortage", func(s *GameState) {
+			s.Colonies[0].PopulationDynamics.LocalFoodShortage = 1
+			s.Colonies[0].PopulationDynamics.FoodImported = 2
+		}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			state := NewSmallFixture(735)
+			tc.mutate(state)
+			if err := state.Validate(); err == nil {
+				t.Fatal("expected invalid food logistics state to fail validation")
+			}
+		})
+	}
+}

@@ -1,6 +1,7 @@
 package game
 
 import (
+	"encoding/json"
 	"path/filepath"
 	"testing"
 
@@ -95,30 +96,26 @@ func TestEconomyResolverAssignsOwnedPopulationAndEmitsEvent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	batch := protocol.CommandBatch{
-		SchemaVersion: protocol.CommandSchemaVersion,
-		GameID:        "game-1",
-		SeatID:        1,
-		Turn:          1,
-		BaseRevision:  1,
-		Commands:      []protocol.Command{command},
-	}
-	result, err := resolver.Resolve(
-		ResolveContext{Seats: []SeatAuthority{{SeatID: 1, EmpireID: state.Empires[0].ID}}},
-		state,
-		[]protocol.CommandBatch{batch},
-	)
+	batch := protocol.CommandBatch{SchemaVersion: protocol.CommandSchemaVersion, GameID: "game-1", SeatID: 1, Turn: 1, BaseRevision: 1, Commands: []protocol.Command{command}}
+	result, err := resolver.Resolve(ResolveContext{Seats: []SeatAuthority{{SeatID: 1, EmpireID: state.Empires[0].ID}}}, state, []protocol.CommandBatch{batch})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got := result.State.Colonies[0].Population; got != (core.PopulationState{Total: 4, Farmers: 1, Workers: 2, Scientists: 1}) {
-		t.Fatalf("population assignment = %+v", got)
+	if len(result.Events) == 0 || result.Events[0].Kind != "colony.population_assigned" || result.Events[0].SeatID != 1 || result.Events[0].CommandSequence != 1 {
+		t.Fatalf("unexpected first domain event: %+v", result.Events)
 	}
-	if got := result.State.Colonies[0].Economy; got != (core.ColonyEconomy{Food: 2, Production: 6, Research: 3, TaxBC: 4}) {
-		t.Fatalf("base economy = %+v", got)
+	var assigned PopulationAssignedEvent
+	if err := json.Unmarshal(result.Events[0].Data, &assigned); err != nil {
+		t.Fatal(err)
 	}
-	if len(result.Events) != 1 || result.Events[0].Kind != "colony.population_assigned" || result.Events[0].SeatID != 1 || result.Events[0].CommandSequence != 1 {
-		t.Fatalf("unexpected domain events: %+v", result.Events)
+	if assigned.Current != (core.PopulationState{Total: 4, Farmers: 1, Workers: 2, Scientists: 1}) {
+		t.Fatalf("population assignment event = %+v", assigned.Current)
+	}
+	if assigned.BaseEconomy != (core.ColonyEconomy{Food: 2, Production: 6, Research: 3, TaxBC: 4}) {
+		t.Fatalf("assignment base economy = %+v", assigned.BaseEconomy)
+	}
+	if findDomainEvent(result.Events, "empire.food_logistics_resolved") == nil || findDomainEvent(result.Events, "colony.population_starved") == nil {
+		t.Fatalf("missing logistics/starvation resolution: %+v", result.Events)
 	}
 }
 

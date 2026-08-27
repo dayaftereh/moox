@@ -72,31 +72,22 @@ func (r *EconomyRules) CalculatePopulationDynamics(colony core.Colony, planet co
 		productionRequired = population * r.CyberneticProductionPerUnit
 	}
 	foodDelta := adjusted.Food - foodRequired
-	foodSurplus := math.Max(0, foodDelta)
-	foodShortage := math.Max(0, -foodDelta)
 	productionDelta := adjusted.Production - productionRequired
-	productionAvailable := math.Max(0, productionDelta)
-	productionShortage := math.Max(0, -productionDelta)
-
-	growthMultiplier := modifiers.PopulationGrowthMultiplier
-	baseGrowth := 0.0
-	projectedGrowth := 0.0
-	if population > 0 && population < capacity && foodShortage <= populationEpsilon && productionShortage <= populationEpsilon {
-		baseGrowth = math.Sqrt(r.PopulationGrowthCurveFactor * population * (capacity - population) / capacity)
-		projectedGrowth = math.Min(capacity-population, baseGrowth*growthMultiplier)
-	}
-	return core.ColonyPopulationDynamics{
+	dynamics := core.ColonyPopulationDynamics{
 		Capacity:            capacity,
 		FoodRequired:        foodRequired,
-		FoodSurplus:         foodSurplus,
-		FoodShortage:        foodShortage,
+		LocalFoodSurplus:    math.Max(0, foodDelta),
+		LocalFoodShortage:   math.Max(0, -foodDelta),
+		FoodSurplus:         math.Max(0, foodDelta),
+		FoodShortage:        math.Max(0, -foodDelta),
 		ProductionRequired:  productionRequired,
-		ProductionShortage:  productionShortage,
-		ProductionAvailable: productionAvailable,
-		BaseGrowth:          baseGrowth,
-		GrowthMultiplier:    growthMultiplier,
-		ProjectedGrowth:     projectedGrowth,
-	}, nil
+		ProductionShortage:  math.Max(0, -productionDelta),
+		ProductionAvailable: math.Max(0, productionDelta),
+	}
+	if err := r.refreshPopulationProjection(&dynamics, population, raceID); err != nil {
+		return core.ColonyPopulationDynamics{}, err
+	}
+	return dynamics, nil
 }
 
 type PopulationGrewEvent struct {
@@ -107,39 +98,70 @@ type PopulationGrewEvent struct {
 	Dynamics      core.ColonyPopulationDynamics `json:"dynamics"`
 }
 
+type PopulationStarvedEvent struct {
+	ColonyID    core.ID                       `json:"colony_id"`
+	Previous    core.PopulationState          `json:"previous"`
+	Current     core.PopulationState          `json:"current"`
+	AppliedLoss float64                       `json:"applied_loss"`
+	Dynamics    core.ColonyPopulationDynamics `json:"dynamics"`
+}
+
 func (r *EconomyResolver) advancePopulation(state *core.GameState) ([]DomainEvent, error) {
 	var events []DomainEvent
 	for i := range state.Colonies {
 		colony := &state.Colonies[i]
-		growth := colony.PopulationDynamics.ProjectedGrowth
-		if growth <= populationEpsilon || colony.Population.Total <= populationEpsilon {
+		if colony.Population.Total <= populationEpsilon {
 			continue
 		}
 		previous := colony.Population
-		nextTotal := math.Min(colony.PopulationDynamics.Capacity, previous.Total+growth)
-		applied := nextTotal - previous.Total
-		if applied <= populationEpsilon {
+		if growth := colony.PopulationDynamics.ProjectedGrowth; growth > populationEpsilon {
+			nextTotal := math.Min(colony.PopulationDynamics.Capacity, previous.Total+growth)
+			applied := nextTotal - previous.Total
+			if applied <= populationEpsilon {
+				continue
+			}
+			scalePopulation(&colony.Population, previous, nextTotal)
+			event, err := NewDomainEvent("colony.population_grew", 0, 0, PopulationGrewEvent{
+				ColonyID: colony.ID, Previous: previous, Current: colony.Population,
+				AppliedGrowth: applied, Dynamics: colony.PopulationDynamics,
+			})
+			if err != nil {
+				return nil, err
+			}
+			events = append(events, event)
 			continue
 		}
-		ratio := nextTotal / previous.Total
-		colony.Population.Total = nextTotal
-		colony.Population.Farmers = previous.Farmers * ratio
-		colony.Population.Workers = previous.Workers * ratio
-		colony.Population.Scientists = nextTotal - colony.Population.Farmers - colony.Population.Workers
-		if colony.Population.Scientists < 0 && colony.Population.Scientists > -populationEpsilon {
-			colony.Population.Scientists = 0
+		if loss := colony.PopulationDynamics.ProjectedStarvation; loss > populationEpsilon {
+			nextTotal := math.Max(r.Rules.MinimumPopulationAfterStarvation, previous.Total-loss)
+			applied := previous.Total - nextTotal
+			if applied <= populationEpsilon {
+				continue
+			}
+			scalePopulation(&colony.Population, previous, nextTotal)
+			event, err := NewDomainEvent("colony.population_starved", 0, 0, PopulationStarvedEvent{
+				ColonyID: colony.ID, Previous: previous, Current: colony.Population,
+				AppliedLoss: applied, Dynamics: colony.PopulationDynamics,
+			})
+			if err != nil {
+				return nil, err
+			}
+			events = append(events, event)
 		}
-		event, err := NewDomainEvent("colony.population_grew", 0, 0, PopulationGrewEvent{
-			ColonyID:      colony.ID,
-			Previous:      previous,
-			Current:       colony.Population,
-			AppliedGrowth: applied,
-			Dynamics:      colony.PopulationDynamics,
-		})
-		if err != nil {
-			return nil, err
-		}
-		events = append(events, event)
 	}
 	return events, nil
+}
+
+func scalePopulation(target *core.PopulationState, previous core.PopulationState, nextTotal float64) {
+	if previous.Total <= populationEpsilon {
+		*target = core.PopulationState{Total: nextTotal}
+		return
+	}
+	ratio := nextTotal / previous.Total
+	target.Total = nextTotal
+	target.Farmers = previous.Farmers * ratio
+	target.Workers = previous.Workers * ratio
+	target.Scientists = nextTotal - target.Farmers - target.Workers
+	if target.Scientists < 0 && target.Scientists > -populationEpsilon {
+		target.Scientists = 0
+	}
 }

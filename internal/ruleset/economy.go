@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const EconomySchemaVersion = 4
+const EconomySchemaVersion = 5
 
 type EconomyFile struct {
 	SchemaVersion            int                        `json:"schema_version"`
@@ -19,6 +19,7 @@ type EconomyFile struct {
 	GravityPenalties         []GravityPenaltyRule       `json:"gravity_penalties"`
 	GovernmentModifiers      []GovernmentEconomyRule    `json:"government_modifiers"`
 	Population               PopulationEconomyRule      `json:"population"`
+	FoodLogistics            FoodLogisticsEconomyRule   `json:"food_logistics"`
 	Morale                   MoraleEconomyRule          `json:"morale"`
 }
 
@@ -59,6 +60,20 @@ type PopulationEconomyRule struct {
 	SizeCapacity                      []PopulationSizeCapacity        `json:"size_capacity"`
 	ClimateHabitability               []PopulationClimateHabitability `json:"climate_habitability"`
 	SourceIDs                         []string                        `json:"source_ids"`
+}
+
+type FoodLogisticsEconomyRule struct {
+	FreighterFoodCapacity                         float64  `json:"freighter_food_capacity"`
+	FreightersPerFleet                            int      `json:"freighters_per_fleet"`
+	FreighterFleetCostPP                          float64  `json:"freighter_fleet_cost_pp"`
+	FreighterOperatingCostBC                      float64  `json:"freighter_operating_cost_bc"`
+	SurplusFoodBCPerUnit                          float64  `json:"surplus_food_bc_per_unit"`
+	FantasticTradersSurplusFoodBCPerUnit          float64  `json:"fantastic_traders_surplus_food_bc_per_unit"`
+	StarvationPopulationPerFoodShortage           float64  `json:"starvation_population_per_food_shortage"`
+	CyberneticStarvationPopulationPerFoodShortage float64  `json:"cybernetic_starvation_population_per_food_shortage"`
+	CyberneticStarvationPopulationPerPPShortage   float64  `json:"cybernetic_starvation_population_per_pp_shortage"`
+	MinimumPopulationAfterStarvation              float64  `json:"minimum_population_after_starvation"`
+	SourceIDs                                     []string `json:"source_ids"`
 }
 
 type GravityPenaltyRule struct {
@@ -177,6 +192,9 @@ func (f *EconomyFile) Validate() error {
 	if err := f.validatePopulation(sources); err != nil {
 		return err
 	}
+	if err := f.validateFoodLogistics(sources); err != nil {
+		return err
+	}
 	if len(f.GravityPenalties) != 9 {
 		return fmt.Errorf("gravity penalty count=%d, expected 9", len(f.GravityPenalties))
 	}
@@ -263,6 +281,22 @@ func (f *EconomyFile) validatePopulation(sources map[string]struct{}) error {
 	for _, sourceID := range p.SourceIDs {
 		if _, ok := sources[sourceID]; !ok {
 			return fmt.Errorf("population economy rule references unknown source %q", sourceID)
+		}
+	}
+	return nil
+}
+
+func (f *EconomyFile) validateFoodLogistics(sources map[string]struct{}) error {
+	l := f.FoodLogistics
+	if l.FreighterFoodCapacity <= 0 || l.FreightersPerFleet <= 0 || l.FreighterFleetCostPP <= 0 || l.FreighterOperatingCostBC < 0 || l.SurplusFoodBCPerUnit < 0 || l.FantasticTradersSurplusFoodBCPerUnit < l.SurplusFoodBCPerUnit || l.StarvationPopulationPerFoodShortage <= 0 || l.CyberneticStarvationPopulationPerFoodShortage <= 0 || l.CyberneticStarvationPopulationPerPPShortage <= 0 || l.MinimumPopulationAfterStarvation <= 0 {
+		return fmt.Errorf("food logistics scalar values are invalid")
+	}
+	if len(l.SourceIDs) == 0 {
+		return fmt.Errorf("food logistics rule has no sources")
+	}
+	for _, sourceID := range l.SourceIDs {
+		if _, ok := sources[sourceID]; !ok {
+			return fmt.Errorf("food logistics rule references unknown source %q", sourceID)
 		}
 	}
 	return nil

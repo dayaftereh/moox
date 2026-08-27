@@ -106,6 +106,11 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 			return Resolution{}, err
 		}
 	}
+	foodEvents, err := r.materializeFoodLogistics(state, true)
+	if err != nil {
+		return Resolution{}, err
+	}
+	events = append(events, foodEvents...)
 	constructionEvents, err := r.advanceConstruction(state)
 	if err != nil {
 		return Resolution{}, err
@@ -121,12 +126,17 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 		return Resolution{}, err
 	}
 	events = append(events, populationEvents...)
-	// Growth is a turn-end transition. Recalculate materialized snapshots only
-	// after production/research have consumed the pre-growth turn output.
+	// Current MOOX ordering keeps Population as a turn-end transition until the
+	// conflicting secondary evidence about original 1.31 turn ordering is resolved.
+	// Recalculate the next-state local economy after Population changes, then
+	// rematerialize logistics without emitting a second authoritative turn event.
 	for i := range state.Colonies {
 		if err := r.recalculateColony(state, &state.Colonies[i]); err != nil {
 			return Resolution{}, err
 		}
+	}
+	if _, err := r.materializeFoodLogistics(state, false); err != nil {
+		return Resolution{}, err
 	}
 	return Resolution{State: state, Events: events}, nil
 }

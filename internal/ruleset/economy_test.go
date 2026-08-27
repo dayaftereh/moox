@@ -118,3 +118,23 @@ func TestCommittedPopulationEconomyRules(t *testing.T) {
 		t.Fatalf("population rule coverage incomplete: %+v", population)
 	}
 }
+
+func TestCommittedFoodLogisticsRules(t *testing.T) {
+	file, err := LoadEconomy(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31", "economy.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	l := file.FoodLogistics
+	if l.FreighterFoodCapacity != 1 || l.FreightersPerFleet != 5 || l.FreighterFleetCostPP != 50 || l.FreighterOperatingCostBC != 0.5 {
+		t.Fatalf("unexpected freighter rules: %+v", l)
+	}
+	if l.SurplusFoodBCPerUnit != 0.5 || l.FantasticTradersSurplusFoodBCPerUnit != 1 {
+		t.Fatalf("unexpected surplus-food sale rules: %+v", l)
+	}
+	if l.StarvationPopulationPerFoodShortage != 0.05 || l.CyberneticStarvationPopulationPerFoodShortage != 0.025 || l.CyberneticStarvationPopulationPerPPShortage != 0.025 || l.MinimumPopulationAfterStarvation != 1 {
+		t.Fatalf("unexpected starvation rules: %+v", l)
+	}
+	if len(l.SourceIDs) < 4 {
+		t.Fatalf("food logistics sources incomplete: %+v", l.SourceIDs)
+	}
+}

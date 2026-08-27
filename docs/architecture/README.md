@@ -452,7 +452,7 @@ The command/session boundary is now implemented across `internal/protocol`, `int
 
 The strategic runtime has progressed beyond the first command into an explicit colony progression order. Current-turn Economy/Dynamics are materialized first; Construction consumes available PP, Research consumes RP, Population Growth resolves afterwards, and the post-turn snapshot is recalculated. This ordering is covered by regression tests so newly grown Population cannot produce PP/RP retroactively.
 
-The next Economy slices are starvation and Food/Freighter logistics, followed by isolated Housing/Cloning/medicine and capacity-building layers. In parallel, the next Research-specific slice remains Creative/Uncreative behavior for multi-Technology TechFields and its server-authoritative `ResearchChoice` representation.
+Starvation and Food/Freighter logistics are now implemented as an empire-wide deterministic phase with explicit Observer materialization. Economy pauses at this boundary; the next active slice is Creative/Uncreative behavior for multi-Technology TechFields and its server-authoritative `ResearchChoice` representation.
 
 Network transports, Wails services and MCP remain adapters to this boundary and should not be introduced into the deterministic core.
 ## Related architecture documents

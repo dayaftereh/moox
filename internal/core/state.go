@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 4
+const StateSchemaVersion = 5
 
 type ID uint64
 
@@ -46,13 +46,27 @@ type Planet struct {
 }
 
 type Empire struct {
-	ID                      ID             `json:"id"`
-	Name                    string         `json:"name"`
-	RaceID                  string         `json:"race_id"`
-	Capital                 ID             `json:"capital_colony_id,omitempty"`
-	KnownTechnologyIDs      []int          `json:"known_technology_ids,omitempty"`
-	KnownTechnologyFieldIDs []int          `json:"known_technology_field_ids,omitempty"`
-	Research                *ResearchState `json:"research,omitempty"`
+	ID                      ID                  `json:"id"`
+	Name                    string              `json:"name"`
+	RaceID                  string              `json:"race_id"`
+	Capital                 ID                  `json:"capital_colony_id,omitempty"`
+	Freighters              int                 `json:"freighters"`
+	FoodLogistics           EmpireFoodLogistics `json:"food_logistics"`
+	KnownTechnologyIDs      []int               `json:"known_technology_ids,omitempty"`
+	KnownTechnologyFieldIDs []int               `json:"known_technology_field_ids,omitempty"`
+	Research                *ResearchState      `json:"research,omitempty"`
+}
+
+type EmpireFoodLogistics struct {
+	FreightersRequired       int     `json:"freighters_required"`
+	FreightersUsed           int     `json:"freighters_used"`
+	LocalFoodSurplus         float64 `json:"local_food_surplus"`
+	LocalFoodShortage        float64 `json:"local_food_shortage"`
+	FoodTransferred          float64 `json:"food_transferred"`
+	FoodUnmet                float64 `json:"food_unmet"`
+	SurplusFoodSold          float64 `json:"surplus_food_sold"`
+	FreighterOperatingCostBC float64 `json:"freighter_operating_cost_bc"`
+	SurplusFoodIncomeBC      float64 `json:"surplus_food_income_bc"`
 }
 
 type ResearchState struct {
@@ -100,6 +114,10 @@ type ColonyEconomy struct {
 type ColonyPopulationDynamics struct {
 	Capacity            float64 `json:"capacity"`
 	FoodRequired        float64 `json:"food_required"`
+	LocalFoodSurplus    float64 `json:"local_food_surplus"`
+	LocalFoodShortage   float64 `json:"local_food_shortage"`
+	FoodImported        float64 `json:"food_imported"`
+	FoodExported        float64 `json:"food_exported"`
 	FoodSurplus         float64 `json:"food_surplus"`
 	FoodShortage        float64 `json:"food_shortage"`
 	ProductionRequired  float64 `json:"production_required"`
@@ -108,6 +126,7 @@ type ColonyPopulationDynamics struct {
 	BaseGrowth          float64 `json:"base_growth"`
 	GrowthMultiplier    float64 `json:"growth_multiplier"`
 	ProjectedGrowth     float64 `json:"projected_growth"`
+	ProjectedStarvation float64 `json:"projected_starvation"`
 }
 
 // ColonyEconomyContext records the currently implemented percentage layers used
@@ -216,6 +235,28 @@ func (s *GameState) Validate() error {
 		}
 		if err := checkID(empire.ID, fmt.Sprintf("empire[%d]", i)); err != nil {
 			return err
+		}
+		if empire.Freighters < 0 {
+			return fmt.Errorf("empire[%d] freighters must be non-negative", i)
+		}
+		if empire.FoodLogistics.FreightersRequired < 0 || empire.FoodLogistics.FreightersUsed < 0 || empire.FoodLogistics.FreightersUsed > empire.Freighters {
+			return fmt.Errorf("empire[%d] food logistics freighter counts are invalid", i)
+		}
+		for _, item := range []struct {
+			label string
+			value float64
+		}{
+			{"local_food_surplus", empire.FoodLogistics.LocalFoodSurplus},
+			{"local_food_shortage", empire.FoodLogistics.LocalFoodShortage},
+			{"food_transferred", empire.FoodLogistics.FoodTransferred},
+			{"food_unmet", empire.FoodLogistics.FoodUnmet},
+			{"surplus_food_sold", empire.FoodLogistics.SurplusFoodSold},
+			{"freighter_operating_cost_bc", empire.FoodLogistics.FreighterOperatingCostBC},
+			{"surplus_food_income_bc", empire.FoodLogistics.SurplusFoodIncomeBC},
+		} {
+			if !finiteNonNegative(item.value) {
+				return fmt.Errorf("empire[%d] food logistics %s must be finite and non-negative", i, item.label)
+			}
 		}
 		seenTech := make(map[int]struct{}, len(empire.KnownTechnologyIDs))
 		lastTech := 0
@@ -329,6 +370,10 @@ func (s *GameState) Validate() error {
 		}{
 			{"population_capacity", colony.PopulationDynamics.Capacity},
 			{"food_required", colony.PopulationDynamics.FoodRequired},
+			{"local_food_surplus", colony.PopulationDynamics.LocalFoodSurplus},
+			{"local_food_shortage", colony.PopulationDynamics.LocalFoodShortage},
+			{"food_imported", colony.PopulationDynamics.FoodImported},
+			{"food_exported", colony.PopulationDynamics.FoodExported},
 			{"food_surplus", colony.PopulationDynamics.FoodSurplus},
 			{"food_shortage", colony.PopulationDynamics.FoodShortage},
 			{"production_required", colony.PopulationDynamics.ProductionRequired},
@@ -337,10 +382,20 @@ func (s *GameState) Validate() error {
 			{"base_growth", colony.PopulationDynamics.BaseGrowth},
 			{"growth_multiplier", colony.PopulationDynamics.GrowthMultiplier},
 			{"projected_growth", colony.PopulationDynamics.ProjectedGrowth},
+			{"projected_starvation", colony.PopulationDynamics.ProjectedStarvation},
 		} {
 			if !finiteNonNegative(item.value) {
 				return fmt.Errorf("colony[%d] %s must be finite and non-negative", i, item.label)
 			}
+		}
+		if colony.PopulationDynamics.FoodImported > colony.PopulationDynamics.LocalFoodShortage+1e-9 || colony.PopulationDynamics.FoodExported > colony.PopulationDynamics.LocalFoodSurplus+1e-9 {
+			return fmt.Errorf("colony[%d] food import/export exceeds local shortage/surplus", i)
+		}
+		if !nearlyEqual(colony.PopulationDynamics.FoodShortage, math.Max(0, colony.PopulationDynamics.LocalFoodShortage-colony.PopulationDynamics.FoodImported)) || !nearlyEqual(colony.PopulationDynamics.FoodSurplus, math.Max(0, colony.PopulationDynamics.LocalFoodSurplus-colony.PopulationDynamics.FoodExported)) {
+			return fmt.Errorf("colony[%d] food logistics snapshot is inconsistent", i)
+		}
+		if colony.PopulationDynamics.ProjectedGrowth > 1e-9 && colony.PopulationDynamics.ProjectedStarvation > 1e-9 {
+			return fmt.Errorf("colony[%d] cannot project growth and starvation simultaneously", i)
 		}
 		if colony.PopulationDynamics.FoodSurplus > 1e-9 && colony.PopulationDynamics.FoodShortage > 1e-9 {
 			return fmt.Errorf("colony[%d] cannot have food surplus and shortage simultaneously", i)

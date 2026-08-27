@@ -231,11 +231,12 @@ func TestCyberneticSustenanceReducesConstructionProduction(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(result.Events) < 2 || result.Events[1].Kind != "colony.construction_progressed" {
+	progressEvent := findDomainEvent(result.Events, "colony.construction_progressed")
+	if progressEvent == nil {
 		t.Fatalf("missing construction progress event: %+v", result.Events)
 	}
 	var progress ConstructionProgressedEvent
-	if err := json.Unmarshal(result.Events[1].Data, &progress); err != nil {
+	if err := json.Unmarshal(progressEvent.Data, &progress); err != nil {
 		t.Fatal(err)
 	}
 	// One Meklar worker produces 5 PP base. Missing-Barracks Dictatorship morale
