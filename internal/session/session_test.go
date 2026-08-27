@@ -464,3 +464,71 @@ func TestGameSessionBuildingChoicesUseSeatAuthority(t *testing.T) {
 		t.Fatal("expected other seat to be denied production choices for foreign colony")
 	}
 }
+
+func TestGameSessionCompletesResearchThroughAuthoritativeBoundary(t *testing.T) {
+	state, seats := twoSeatFixture(t)
+	rules, err := game.LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := rules.InitializeEmpireTechnologies(&state.Empires[0], game.NewGameTechnologyOptions{Level: game.NewGameTechnologyPreWarp}); err != nil {
+		t.Fatal(err)
+	}
+	state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressMilli: 150 * core.EconomyScale}
+	s, err := NewGameSession("game-research", state, seats)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resolver, err := game.NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, seatID := range []protocol.SeatID{1, 2} {
+		if err := s.SubmitTurn(protocol.CommandBatch{
+			SchemaVersion: protocol.CommandSchemaVersion,
+			GameID:        "game-research",
+			SeatID:        seatID,
+			Turn:          1,
+			BaseRevision:  1,
+		}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := s.ResolveStrategic(resolver); err != nil {
+		t.Fatal(err)
+	}
+	before, err := s.ObserverView()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if before.Phase != PhasePostResolution {
+		t.Fatalf("phase before research completion=%q", before.Phase)
+	}
+	if err := s.CompleteResearchField(state.Empires[0].ID, resolver); err != nil {
+		t.Fatal(err)
+	}
+	after, err := s.ObserverView()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if after.Revision != before.Revision+1 {
+		t.Fatalf("research completion revision=%d want=%d", after.Revision, before.Revision+1)
+	}
+	if after.State.Empires[0].Research != nil {
+		t.Fatalf("research still active: %+v", after.State.Empires[0].Research)
+	}
+	var known bool
+	for _, technologyID := range after.State.Empires[0].KnownTechnologyIDs {
+		if technologyID == 155 {
+			known = true
+			break
+		}
+	}
+	if !known {
+		t.Fatalf("technology 155 not acquired: %v", after.State.Empires[0].KnownTechnologyIDs)
+	}
+	last := after.Events[len(after.Events)-1]
+	if last.Kind != "empire.research_completed" || last.Scope != protocol.EventScopeStrategic || last.SeatID != 0 || last.CommandSequence != 0 {
+		t.Fatalf("unexpected research completion event: %+v", last)
+	}
+}

@@ -43,13 +43,20 @@ type Planet struct {
 }
 
 type Empire struct {
-	ID                 ID     `json:"id"`
-	Name               string `json:"name"`
-	RaceID             string `json:"race_id"`
-	Capital            ID     `json:"capital_colony_id,omitempty"`
-	KnownTechnologyIDs []int  `json:"known_technology_ids,omitempty"`
+	ID                      ID             `json:"id"`
+	Name                    string         `json:"name"`
+	RaceID                  string         `json:"race_id"`
+	Capital                 ID             `json:"capital_colony_id,omitempty"`
+	KnownTechnologyIDs      []int          `json:"known_technology_ids,omitempty"`
+	KnownTechnologyFieldIDs []int          `json:"known_technology_field_ids,omitempty"`
+	Research                *ResearchState `json:"research,omitempty"`
 }
 
+type ResearchState struct {
+	TechFieldID   int   `json:"tech_field_id"`
+	TechnologyIDs []int `json:"technology_ids"`
+	ProgressMilli int64 `json:"progress_milli"`
+}
 type Colony struct {
 	ID              ID                   `json:"id"`
 	EmpireID        ID                   `json:"empire_id"`
@@ -206,6 +213,42 @@ func (s *GameState) Validate() error {
 			}
 			seenTech[technologyID] = struct{}{}
 			lastTech = technologyID
+		}
+		seenField := make(map[int]struct{}, len(empire.KnownTechnologyFieldIDs))
+		lastField := -1
+		for fi, fieldID := range empire.KnownTechnologyFieldIDs {
+			if fieldID < 0 || fieldID > 82 {
+				return fmt.Errorf("empire[%d] known technology field id %d outside [0,82]", i, fieldID)
+			}
+			if _, exists := seenField[fieldID]; exists {
+				return fmt.Errorf("empire[%d] duplicate known technology field id %d", i, fieldID)
+			}
+			if fi > 0 && fieldID <= lastField {
+				return fmt.Errorf("empire[%d] known technology field ids must be strictly ascending", i)
+			}
+			seenField[fieldID] = struct{}{}
+			lastField = fieldID
+		}
+		if empire.Research != nil {
+			if empire.Research.TechFieldID < 1 || empire.Research.TechFieldID > 82 {
+				return fmt.Errorf("empire[%d] research tech_field_id %d outside [1,82]", i, empire.Research.TechFieldID)
+			}
+			if empire.Research.ProgressMilli < 0 {
+				return fmt.Errorf("empire[%d] research progress must be non-negative", i)
+			}
+			if len(empire.Research.TechnologyIDs) == 0 {
+				return fmt.Errorf("empire[%d] research technology_ids are required", i)
+			}
+			lastResearchTech := 0
+			for ri, technologyID := range empire.Research.TechnologyIDs {
+				if technologyID < 1 || technologyID > 203 {
+					return fmt.Errorf("empire[%d] research technology id %d outside [1,203]", i, technologyID)
+				}
+				if ri > 0 && technologyID <= lastResearchTech {
+					return fmt.Errorf("empire[%d] research technology ids must be strictly ascending", i)
+				}
+				lastResearchTech = technologyID
+			}
 		}
 		empireIDs[empire.ID] = struct{}{}
 	}

@@ -200,3 +200,14 @@ See `docs/research/PLANET_CLASSES_2026-08-27.md` for the evidence boundary and d
 ## Building economy fields
 
 Schema v3 adds original-observed production_cost_pp and maintenance_bc; see docs/research/BUILDING_CONSTRUCTION_2026-08-27.md.
+
+## Technology schema v2
+
+`technologies.json` now combines original names from `TECHNAME.LBX` with original 1.31 executable tables:
+
+- 203 technology records at file offset `0x1FC720`, 13 bytes each, including `tech_field_id` and the strategic-combat availability flag used by runtime start filtering;
+- 82 technology-field records at file offset `0x1FBFB5`, 23 bytes each, including previous/next field, base RP cost and AI group;
+- the six staged new-game field IDs `29,55,22,57,28,23` from the `uint16` table at file offset `0x1FF7B0`;
+- field 0 is retained as the always-known starting field based on the classic runtime invariant cross-checked against the original staged table.
+
+The runtime currently materializes only deterministic Pre-Warp and Average starts. Advanced start and automatic breakthrough/overflow behavior remain deferred; see `docs/research/TECHNOLOGY_START_RESEARCH_2026-08-27.md`.

@@ -167,6 +167,13 @@ The economy resolver validates the command against the authoritative `SeatID -> 
 Construction produces observer/replay domain events for queueing, progress and completion. Queue events retain seat/command attribution; automatic progress/completion are system events. A completed building is installed after the economy snapshot that funded it, so its gameplay effect begins on the next economy recalculation rather than retroactively changing the production that completed it.
 
 The current state is a single active project rather than a full queue. Technology ownership is now enforced: `Empire.KnownTechnologyIDs` gates `colony.queue_building`, and `GameSession.BuildingChoices(seatID, colonyID, rules)` exposes the same authority-filtered legal building choices to UI or AI callers. Original starting-technology grants are not assumed. Overflow, buyout and building replacement/exclusion rules remain later work.
+## Research ownership transition
+
+Technology ownership is now represented by both `Empire.KnownTechnologyFieldIDs` and sorted `Empire.KnownTechnologyIDs`. Active research is persistent `ResearchState` with an original tech-field ID, selected technology IDs and fixed-point RP progress.
+
+After the simulation has established a breakthrough, `GameSession.CompleteResearchField` is the authoritative commit boundary. It is allowed only in `post_resolution`, applies the game-layer transition to a cloned state, validates it, increments revision and emits `empire.research_completed` into the strategic event stream. No frontend, network client or AI adapter should mutate technology ownership directly.
+
+Automatic breakthrough chance/overflow is intentionally not part of this method yet; it will be inserted before the ownership transition once the original algorithm is proven.
 ## Current limitations / next slice
 
 This checkpoint intentionally does not yet implement:

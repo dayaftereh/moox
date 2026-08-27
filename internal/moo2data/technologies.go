@@ -2,8 +2,10 @@ package moo2data
 
 import (
 	"crypto/sha256"
+	"encoding/binary"
 	"encoding/hex"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -14,8 +16,17 @@ import (
 )
 
 const (
-	technologyNamesSourceID = "moo2-1.31-techname-block0-technologies"
-	technologyCount         = 203
+	technologyNamesSourceID  = "moo2-1.31-techname-block0-technologies"
+	technologyTableSourceID  = "moo2-1.31-orion2-technology-table"
+	technologyFieldsSourceID = "moo2-1.31-orion2-technology-fields"
+	newGameFieldsSourceID    = "moo2-1.31-orion2-new-game-techfields"
+	technologyCount          = 203
+	technologyTableOffset    = 0x1FC720
+	technologyRecordSize     = 13
+	technologyFieldOffset    = 0x1FBFB5
+	technologyFieldSize      = 23
+	technologyFieldCount     = 82
+	newGameFieldsOffset      = 0x1FF7B0
 )
 
 type TechnologiesBundle struct {
@@ -40,6 +51,20 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 	blockSum := sha256.Sum256(block)
 	blockIndex := 0
 
+	exePath := filepath.Join(installationRoot, "Orion2.exe")
+	exeData, err := os.ReadFile(exePath)
+	if err != nil {
+		return nil, fmt.Errorf("read Orion2.exe: %w", err)
+	}
+	exeHash, err := sha256File(exePath)
+	if err != nil {
+		return nil, err
+	}
+	technologyFields, stagedStartFields, err := decodeOriginalTechnologyTables(exeData)
+	if err != nil {
+		return nil, err
+	}
+
 	allRuns := textscan.ASCII(block, 3)
 	techRuns, err := concreteTechnologyRuns(allRuns)
 	if err != nil {
@@ -49,15 +74,45 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 	out := &ruleset.TechnologiesFile{
 		SchemaVersion: ruleset.TechnologiesSchemaVersion,
 		Ruleset:       "moo2-1.31",
-		Sources: []ruleset.Source{{
-			ID:          technologyNamesSourceID,
-			Type:        "original-observed",
-			Description: "The 203-entry concrete technology-name section in Master of Orion II 1.31 TECHNAME.LBX block 0, bounded by No Tech and the following Biology section",
-			Archive:     "TECHNAME.LBX",
-			Block:       &blockIndex,
-			SHA256:      fileHash,
-			BlockSHA256: hex.EncodeToString(blockSum[:]),
-		}},
+		Sources: []ruleset.Source{
+			{
+				ID:          technologyNamesSourceID,
+				Type:        "original-observed",
+				Description: "The 203-entry concrete technology-name section in Master of Orion II 1.31 TECHNAME.LBX block 0, bounded by No Tech and the following Biology section",
+				Archive:     "TECHNAME.LBX",
+				Block:       &blockIndex,
+				SHA256:      fileHash,
+				BlockSHA256: hex.EncodeToString(blockSum[:]),
+			},
+			{
+				ID:          technologyTableSourceID,
+				Type:        "original-observed",
+				Description: "Orion2.exe 1.31 packed concrete technology table: 203 records x 13 bytes at file offset 0x1FC720; uint16 +0 is technology field id and byte +5 is the strategic-combat availability flag",
+				Archive:     "Orion2.exe",
+				SHA256:      exeHash,
+			},
+			{
+				ID:          technologyFieldsSourceID,
+				Type:        "original-observed",
+				Description: "Orion2.exe 1.31 technology-field table: fields 1..82, 23-byte records at file offset 0x1FBFB5; previous/next field ids, RP cost and AI group",
+				Archive:     "Orion2.exe",
+				SHA256:      exeHash,
+			},
+			{
+				ID:          newGameFieldsSourceID,
+				Type:        "original-observed",
+				Description: "Orion2.exe 1.31 six-entry uint16 staged new-game tech-field list at file offset 0x1FF7B0: 29,55,22,57,28,23; field-0 always-known behavior is cross-checked against classic reverse-engineering documentation",
+				Archive:     "Orion2.exe",
+				SHA256:      exeHash,
+			},
+		},
+		NewGameStart: ruleset.NewGameTechnologyStart{
+			AlwaysKnownTechFieldID:  0,
+			StagedKnownTechFieldIDs: stagedStartFields,
+			Verification:            "original-exe-staged-list-plus-classic-field0-invariant",
+			Source:                  ruleset.FieldProvenance{SourceID: newGameFieldsSourceID, Offset: intPtr(newGameFieldsOffset)},
+		},
+		Fields: technologyFields,
 	}
 	english := &i18n.File{
 		SchemaVersion: i18n.SchemaVersion,
@@ -81,12 +136,17 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 		}
 		nameKey := "technology." + id + ".name"
 		offset := run.Offset
+		fieldOffset := technologyTableOffset + order*technologyRecordSize
 		out.Technologies = append(out.Technologies, ruleset.Technology{
-			ID:           id,
-			Order:        order,
-			TechnologyID: order + 1,
-			NameKey:      nameKey,
-			NameSource:   ruleset.FieldProvenance{SourceID: technologyNamesSourceID, Offset: &offset},
+			ID:                       id,
+			Order:                    order,
+			TechnologyID:             order + 1,
+			TechFieldID:              decodeTechnologyFieldID(exeData[fieldOffset]),
+			TechFieldSource:          ruleset.FieldProvenance{SourceID: technologyTableSourceID, Offset: intPtr(fieldOffset)},
+			StrategicCombatAvailable: exeData[fieldOffset+5] != 0,
+			StrategicCombatSource:    ruleset.FieldProvenance{SourceID: technologyTableSourceID, Offset: intPtr(fieldOffset + 5)},
+			NameKey:                  nameKey,
+			NameSource:               ruleset.FieldProvenance{SourceID: technologyNamesSourceID, Offset: &offset},
 		})
 		english.Strings[nameKey] = run.Value
 	}
@@ -98,6 +158,46 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 		return nil, err
 	}
 	return &TechnologiesBundle{Rules: out, English: english}, nil
+}
+
+func decodeOriginalTechnologyTables(exeData []byte) ([]ruleset.TechnologyField, []int, error) {
+	techEnd := technologyTableOffset + technologyCount*technologyRecordSize
+	fieldEnd := technologyFieldOffset + technologyFieldCount*technologyFieldSize
+	startEnd := newGameFieldsOffset + 6*2
+	if len(exeData) < techEnd || len(exeData) < fieldEnd || len(exeData) < startEnd {
+		return nil, nil, fmt.Errorf("Orion2.exe is too short for normalized technology tables")
+	}
+
+	fields := make([]ruleset.TechnologyField, 0, technologyFieldCount)
+	for i := 0; i < technologyFieldCount; i++ {
+		offset := technologyFieldOffset + i*technologyFieldSize
+		record := exeData[offset : offset+technologyFieldSize]
+		fieldID := i + 1
+		sequenceMarker := int(binary.LittleEndian.Uint16(record[21:23]))
+		if sequenceMarker != fieldID+1 && fieldID != technologyFieldCount {
+			return nil, nil, fmt.Errorf("technology field record %d carries sequence marker %d", fieldID, sequenceMarker)
+		}
+		fields = append(fields, ruleset.TechnologyField{
+			FieldID:      fieldID,
+			PreviousID:   int(binary.LittleEndian.Uint16(record[0:2])),
+			NextID:       int(binary.LittleEndian.Uint16(record[2:4])),
+			ResearchCost: int(binary.LittleEndian.Uint32(record[12:16])),
+			AIGroup:      int(record[16]),
+			Source:       ruleset.FieldProvenance{SourceID: technologyFieldsSourceID, Offset: intPtr(offset)},
+		})
+	}
+
+	staged := make([]int, 6)
+	for i := range staged {
+		staged[i] = int(binary.LittleEndian.Uint16(exeData[newGameFieldsOffset+i*2 : newGameFieldsOffset+i*2+2]))
+	}
+	want := []int{29, 55, 22, 57, 28, 23}
+	for i := range want {
+		if staged[i] != want[i] {
+			return nil, nil, fmt.Errorf("new-game staged tech field[%d]=%d want=%d", i, staged[i], want[i])
+		}
+	}
+	return fields, staged, nil
 }
 
 func concreteTechnologyRuns(runs []textscan.String) ([]textscan.String, error) {
@@ -136,4 +236,11 @@ func stableTechnologyID(name string) string {
 		}
 	}
 	return strings.Trim(b.String(), "_")
+}
+
+func decodeTechnologyFieldID(value byte) int {
+	if value == 0xFF {
+		return -1
+	}
+	return int(value)
 }

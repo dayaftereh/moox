@@ -45,6 +45,7 @@ The active implementation sequence is now: original new-game technology ownershi
 - `docs/research/ECONOMY_CONTEXT_2026-08-27.md` - Gravity/Government contextual economy checkpoint and current model limitations.
 - `docs/research/ECONOMY_MORALE_2026-08-27.md` - local Morale/Barracks/building checkpoint and deferred empire-wide morale systems.
 - `docs/research/BUILDING_CONSTRUCTION_2026-08-27.md` - original building costs/maintenance, deterministic construction and technology-gated buildability checkpoint.
+- `docs/research/TECHNOLOGY_START_RESEARCH_2026-08-27.md` - original technology/tech-field tables, Pre-Warp/Average ownership initialization and research-completion ownership transition.
 - `docs/IMPLEMENTATION_PLAN.md` - proposed clean-room development phases.
 - docs/ANALYZER.md - pure-Go MOO2 console analyzer usage and architecture.
 - docs/architecture/README.md - runtime architecture overview for parallel turns, authoritative sessions, battles, observer and AI.
@@ -109,7 +110,7 @@ These projects are references, not dependencies at this stage. If code is reused
 - server-owned Seat -> Empire authorization,
 - deterministic construction/domain events and tactical BattleSession boundaries.
 
-The next headless progression slice is research ownership: establish the original new-game technology grant, then model the deterministic research-completion transition into `KnownTechnologyIDs`. Broader building replacement rules/effects, pollution/logistics, fleet movement/colonization and end-to-end turn advancement remain later work.
+The current research-ownership slice now normalizes original technology fields/costs, materializes deterministic Pre-Warp/Average starting ownership, and commits research completion into `KnownTechnologyFieldIDs`/`KnownTechnologyIDs` through the authoritative session boundary. The next narrow fidelity target is the original breakthrough/overflow algorithm before automatic per-turn research resolution is enabled. Broader building replacement rules/effects, pollution/logistics, fleet movement/colonization and end-to-end turn advancement remain later work.
 
 Wails v3 is already the planned application shell; rendering/UI framework selection is no longer an open prerequisite.
 ## Runtime ruleset data

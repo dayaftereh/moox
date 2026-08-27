@@ -116,19 +116,19 @@ The code includes hash constants for the relevant original function ranges. Thes
 
 ## Next exact action
 
-**Continue Phase 1 from technology-gated colony construction and legal building-choice projection.**
+**Continue Phase 1 from original new-game technology ownership and the deterministic research-acquisition transition.**
 
-The first construction vertical slice now includes persistent `KnownTechnologyIDs`, authoritative technology gating on `colony.queue_building`, and `GameSession.BuildingChoices` so Human UI and AI can consume the same server-derived legal building list. No starting technology set is invented by the fixture.
+Technology schema v2 now normalizes the original 203 technology-to-field mappings, 82 technology fields with base RP costs, and the six staged new-game fields from `Orion2.exe` 1.31. Pre-Warp and Average initialization are deterministic; `KnownTechnologyFieldIDs` / `KnownTechnologyIDs` persist in game state; and a confirmed research completion commits atomically through `GameSession` and emits `empire.research_completed`.
 
 Concretely, next:
 
-1. narrowly establish the original new-game/starting technology ownership needed to initialize a real empire rather than test-injected technology IDs,
-2. identify the first research acquisition state transition needed to add a newly learned normalized technology to `KnownTechnologyIDs`,
-3. research original building replacement/exclusion behavior before allowing construction choices that supersede another building,
-4. only after those constraints are proven, extend production selection beyond the current single active building project,
-5. keep `maintenance_bc` data-only until empire treasury/maintenance timing is proven.
+1. isolate and verify the original research breakthrough probability once base field RP cost has been reached,
+2. establish the original guaranteed-completion threshold and RP overflow/carry behavior,
+3. identify where per-turn empire research output is accumulated into the active `ResearchState`,
+4. only then connect automatic per-turn research resolution to the existing `CompleteResearchField` ownership transition,
+5. separately research the Advanced-start randomized/race-aware field grant rather than deriving it from the deterministic Pre-Warp/Average path.
 
-Do not add Wails/network/MCP transport code yet; those remain adapters over the established protocol/session/legal-action boundary. Do not infer starting technologies, overflow, buyout, pollution or empire finance.
+Do not add Wails/network/MCP transport code yet; those remain adapters over the established protocol/session boundary. Do not guess breakthrough chance, overflow, Advanced-start grants, or Creative/Uncreative selection behavior.
 ## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.

@@ -429,6 +429,52 @@ func (s *GameSession) CompleteBattle(battleID uint64, result battle.Result) erro
 	return nil
 }
 
+func (s *GameSession) CompleteResearchField(empireID core.ID, resolver *game.EconomyResolver) error {
+	if resolver == nil {
+		return fmt.Errorf("economy resolver must not be nil")
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.phase != PhasePostResolution {
+		return fmt.Errorf("cannot complete research in phase %q", s.phase)
+	}
+
+	stateInput, err := cloneState(s.state)
+	if err != nil {
+		return err
+	}
+	event, err := resolver.CompleteResearchField(stateInput, empireID)
+	if err != nil {
+		return fmt.Errorf("complete research field: %w", err)
+	}
+	if err := stateInput.Validate(); err != nil {
+		return fmt.Errorf("research completion returned invalid state: %w", err)
+	}
+	if err := s.validateResolvedEventLocked(event); err != nil {
+		return err
+	}
+	committed, err := cloneState(stateInput)
+	if err != nil {
+		return err
+	}
+
+	s.state = committed
+	s.revision++
+	s.events = append(s.events, protocol.DomainEvent{
+		SchemaVersion:   protocol.EventSchemaVersion,
+		Sequence:        s.nextEventSequence,
+		Turn:            s.state.Turn,
+		Revision:        s.revision,
+		Scope:           protocol.EventScopeStrategic,
+		Kind:            event.Kind,
+		SeatID:          event.SeatID,
+		CommandSequence: event.CommandSequence,
+		Data:            append(json.RawMessage(nil), event.Data...),
+	})
+	s.nextEventSequence++
+	return nil
+}
 func (s *GameSession) CompleteTurn() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()

@@ -221,3 +221,50 @@ func TestKnownTechnologyIDsValidateAndRoundTrip(t *testing.T) {
 		t.Fatal("expected out-of-range known technology to fail validation")
 	}
 }
+
+func TestResearchStateRoundTripsExactly(t *testing.T) {
+	state := NewSmallFixture(505)
+	state.Empires[0].KnownTechnologyIDs = []int{32, 40, 103, 145, 166, 168}
+	state.Empires[0].Research = &ResearchState{TechFieldID: 56, TechnologyIDs: []int{155}, ProgressMilli: 42000}
+	if err := state.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	encoded, err := MarshalState(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := UnmarshalState(encoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(state, loaded) {
+		t.Fatalf("research state changed across round-trip: want=%+v got=%+v", state.Empires[0].Research, loaded.Empires[0].Research)
+	}
+	reencoded, err := MarshalState(loaded)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(encoded, reencoded) {
+		t.Fatal("research state bytes changed after exact round-trip")
+	}
+}
+
+func TestKnownTechnologyFieldIDsValidation(t *testing.T) {
+	state := NewSmallFixture(509)
+	state.Empires[0].KnownTechnologyFieldIDs = []int{0, 22, 29}
+	if err := state.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	state.Empires[0].KnownTechnologyFieldIDs = []int{29, 22}
+	if err := state.Validate(); err == nil {
+		t.Fatal("expected unsorted known technology fields to fail validation")
+	}
+	state.Empires[0].KnownTechnologyFieldIDs = []int{22, 22}
+	if err := state.Validate(); err == nil {
+		t.Fatal("expected duplicate known technology fields to fail validation")
+	}
+	state.Empires[0].KnownTechnologyFieldIDs = []int{83}
+	if err := state.Validate(); err == nil {
+		t.Fatal("expected out-of-range known technology field to fail validation")
+	}
+}

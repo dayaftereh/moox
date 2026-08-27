@@ -51,6 +51,12 @@ type EconomyRules struct {
 	MoraleBuildingBonusPercent    map[string]int
 	KnownBuildingIDs              map[string]struct{}
 	BuildingDefinitions           map[string]BuildingDefinition
+	TechnologyFieldCostsMilli     map[int]int64
+	TechnologyIDsByField          map[int][]int
+	TechnologyFieldByID           map[int]int
+	TechnologyStrategicAvailable  map[int]bool
+	NewGameAlwaysKnownFieldID     int
+	NewGameStagedKnownFieldIDs    []int
 }
 
 func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
@@ -71,6 +77,13 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	}
 	if err := buildings.Validate(); err != nil {
 		return nil, fmt.Errorf("validate buildings: %w", err)
+	}
+	technologies, err := ruleset.LoadTechnologies(filepath.Join(rulesetDir, "technologies.json"))
+	if err != nil {
+		return nil, fmt.Errorf("load technologies: %w", err)
+	}
+	if err := technologies.Validate(); err != nil {
+		return nil, fmt.Errorf("validate technologies: %w", err)
 	}
 	races, err := ruleset.LoadRaces(filepath.Join(rulesetDir, "races.json"))
 	if err != nil {
@@ -131,6 +144,18 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		}
 	}
 
+	technologyFieldCosts := make(map[int]int64, len(technologies.Fields))
+	for _, field := range technologies.Fields {
+		technologyFieldCosts[field.FieldID] = int64(field.ResearchCost) * core.EconomyScale
+	}
+	technologyIDsByField := make(map[int][]int)
+	technologyFieldByID := make(map[int]int, len(technologies.Technologies))
+	technologyStrategicAvailable := make(map[int]bool, len(technologies.Technologies))
+	for _, technology := range technologies.Technologies {
+		technologyFieldByID[technology.TechnologyID] = technology.TechFieldID
+		technologyStrategicAvailable[technology.TechnologyID] = technology.StrategicCombatAvailable
+		technologyIDsByField[technology.TechFieldID] = append(technologyIDsByField[technology.TechFieldID], technology.TechnologyID)
+	}
 	buildingIDs := make(map[string]struct{}, len(buildings.Buildings))
 	buildingDefinitions := make(map[string]BuildingDefinition, len(buildings.Buildings))
 	for _, building := range buildings.Buildings {
@@ -172,6 +197,12 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		MoraleBuildingBonusPercent:    moraleBuildingBonusPercent,
 		KnownBuildingIDs:              buildingIDs,
 		BuildingDefinitions:           buildingDefinitions,
+		TechnologyFieldCostsMilli:     technologyFieldCosts,
+		TechnologyIDsByField:          technologyIDsByField,
+		TechnologyFieldByID:           technologyFieldByID,
+		TechnologyStrategicAvailable:  technologyStrategicAvailable,
+		NewGameAlwaysKnownFieldID:     technologies.NewGameStart.AlwaysKnownTechFieldID,
+		NewGameStagedKnownFieldIDs:    append([]int(nil), technologies.NewGameStart.StagedKnownTechFieldIDs...),
 	}
 	for _, climate := range planetClasses.Climates {
 		rules.ClimateFoodPerFarmerMilli[climate.ID] = int64(climate.BaseFoodPerFarmer) * core.EconomyScale

@@ -1,6 +1,7 @@
 package moo2data
 
 import (
+	"encoding/binary"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -18,19 +19,57 @@ func TestDecodeTechnologiesUsesOriginalBoundedSequence(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(root, "TECHNAME.LBX"), buildAssetTestLBX([][]byte{block}), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	writeSyntheticTechnologyExe(t, filepath.Join(root, "Orion2.exe"))
 
 	bundle, err := DecodeTechnologies(root)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(bundle.Rules.Technologies) != 203 || len(bundle.English.Strings) != 203 {
-		t.Fatalf("technologies=%d strings=%d", len(bundle.Rules.Technologies), len(bundle.English.Strings))
+	if len(bundle.Rules.Technologies) != 203 || len(bundle.English.Strings) != 203 || len(bundle.Rules.Fields) != 82 {
+		t.Fatalf("technologies=%d strings=%d fields=%d", len(bundle.Rules.Technologies), len(bundle.English.Strings), len(bundle.Rules.Fields))
 	}
-	if got := bundle.Rules.Technologies[0]; got.TechnologyID != 1 || got.ID != "achilles_targeting_unit" {
+	if got := bundle.Rules.Technologies[0]; got.TechnologyID != 1 || got.ID != "achilles_targeting_unit" || got.TechFieldID != 0 || !got.StrategicCombatAvailable {
 		t.Fatalf("first=%+v", got)
 	}
-	if got := bundle.Rules.Technologies[202]; got.TechnologyID != 203 || got.ID != "zortrium_armor" {
+	if got := bundle.Rules.Technologies[202]; got.TechnologyID != 203 || got.ID != "zortrium_armor" || got.TechFieldID != 36 {
 		t.Fatalf("last=%+v", got)
+	}
+	wantStart := []int{29, 55, 22, 57, 28, 23}
+	for i, want := range wantStart {
+		if got := bundle.Rules.NewGameStart.StagedKnownTechFieldIDs[i]; got != want {
+			t.Fatalf("start field[%d]=%d want=%d", i, got, want)
+		}
+	}
+}
+
+func writeSyntheticTechnologyExe(t *testing.T, path string) {
+	t.Helper()
+	data := make([]byte, newGameFieldsOffset+12)
+	for i := 0; i < technologyFieldCount; i++ {
+		offset := technologyFieldOffset + i*technologyFieldSize
+		fieldID := i + 1
+		if fieldID > 1 {
+			binary.LittleEndian.PutUint16(data[offset:offset+2], uint16(fieldID-1))
+		}
+		if fieldID < technologyFieldCount {
+			binary.LittleEndian.PutUint16(data[offset+2:offset+4], uint16(fieldID+1))
+			binary.LittleEndian.PutUint16(data[offset+21:offset+23], uint16(fieldID+1))
+		}
+		binary.LittleEndian.PutUint32(data[offset+12:offset+16], uint32(50+fieldID))
+		data[offset+16] = byte(fieldID % 23)
+	}
+	for i := 0; i < technologyCount; i++ {
+		offset := technologyTableOffset + i*technologyRecordSize
+		fieldID := i % 83
+		binary.LittleEndian.PutUint16(data[offset:offset+2], uint16(fieldID))
+		data[offset+5] = 1
+	}
+	start := []uint16{29, 55, 22, 57, 28, 23}
+	for i, fieldID := range start {
+		binary.LittleEndian.PutUint16(data[newGameFieldsOffset+i*2:newGameFieldsOffset+i*2+2], fieldID)
+	}
+	if err := os.WriteFile(path, data, 0o644); err != nil {
+		t.Fatal(err)
 	}
 }
 
