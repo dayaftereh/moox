@@ -163,3 +163,29 @@ func TestValidateRejectsInvalidBuildingList(t *testing.T) {
 		t.Fatal("expected empty colony building id to fail validation")
 	}
 }
+
+func TestConstructionStateRoundTripsExactly(t *testing.T) {
+	state := NewSmallFixture(301)
+	state.Colonies[0].Construction = &ConstructionState{BuildingID: "holo_simulator", ProgressMilli: 42000}
+	if err := state.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	encoded, err := MarshalState(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := UnmarshalState(encoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(state, loaded) {
+		t.Fatalf("construction state changed across round-trip:\nwant=%+v\ngot=%+v", state.Colonies[0].Construction, loaded.Colonies[0].Construction)
+	}
+	reencoded, err := MarshalState(loaded)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(encoded, reencoded) {
+		t.Fatal("construction state bytes changed after exact round-trip")
+	}
+}

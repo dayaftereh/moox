@@ -58,8 +58,13 @@ type Colony struct {
 	Economy         ColonyEconomy        `json:"economy"`
 	EconomyContext  ColonyEconomyContext `json:"economy_context"`
 	AdjustedEconomy ColonyEconomy        `json:"adjusted_economy"`
+	Construction    *ConstructionState   `json:"construction,omitempty"`
 }
 
+type ConstructionState struct {
+	BuildingID    string `json:"building_id"`
+	ProgressMilli int64  `json:"progress_milli"`
+}
 type PopulationState struct {
 	Units      int `json:"units"`
 	Farmers    int `json:"farmers"`
@@ -192,6 +197,14 @@ func (s *GameState) Validate() error {
 		colony := &s.Colonies[i]
 		if colony.EmpireID == 0 || colony.PlanetID == 0 {
 			return fmt.Errorf("colony[%d] has incomplete references", i)
+		}
+		if colony.Construction != nil {
+			if colony.Construction.BuildingID == "" {
+				return fmt.Errorf("colony[%d] construction building_id is required", i)
+			}
+			if colony.Construction.ProgressMilli < 0 {
+				return fmt.Errorf("colony[%d] construction progress must be non-negative", i)
+			}
 		}
 		population := colony.Population
 		if population.Units < 0 || population.Farmers < 0 || population.Workers < 0 || population.Scientists < 0 {

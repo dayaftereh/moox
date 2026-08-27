@@ -33,6 +33,9 @@ func TestDecodeBuildingsFindsOriginalNamesAndTechnologyLinks(t *testing.T) {
 	if first.ID != "alien_management_center" || first.ProductionID != 1 || first.Order != 0 || first.TechnologyID != 5 || first.TechnologyKey != "alien_management_center" || first.ColonyReferenceAssetKey != "building.alien_management_center.colony" {
 		t.Fatalf("first=%+v", first)
 	}
+	if first.ProductionCostPP != 60 || first.MaintenanceBC != 1 || first.ProductionCostVerification != "original-exe-table-production-cost" || first.MaintenanceVerification != "original-exe-table-maintenance" {
+		t.Fatalf("first cost/maintenance=%+v", first)
+	}
 	if first.ProductionIDVerification != "original-exe-table-id-techname-crosschecked" || first.ProductionIDSource.SourceID != buildingTableSourceID {
 		t.Fatalf("first production provenance=%+v", first)
 	}
@@ -181,6 +184,8 @@ func writeSyntheticOrion2(t *testing.T, path string) {
 		binary.LittleEndian.PutUint16(data[offset+4:offset+6], uint16(index))
 		if index > 0 {
 			binary.LittleEndian.PutUint16(data[offset+6:offset+8], uint16(technologyIDs[index-1]))
+			binary.LittleEndian.PutUint16(data[offset+8:offset+10], uint16(50+index*10))
+			binary.LittleEndian.PutUint16(data[offset+12:offset+14], uint16(index%5))
 		}
 	}
 	if err := os.WriteFile(path, data, 0o644); err != nil {

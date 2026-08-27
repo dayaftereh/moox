@@ -28,6 +28,10 @@ type RaceEconomyModifiers struct {
 	GovernmentTraitID         string
 }
 
+type BuildingDefinition struct {
+	ProductionCostMilli int64
+	MaintenanceBC       int
+}
 type EconomyRules struct {
 	ClimateFoodPerFarmerMilli     map[string]int64
 	MineralIndustryPerWorkerMilli map[string]int64
@@ -43,6 +47,7 @@ type EconomyRules struct {
 	MoraleBarracksBuildingIDs     map[string]struct{}
 	MoraleBuildingBonusPercent    map[string]int
 	KnownBuildingIDs              map[string]struct{}
+	BuildingDefinitions           map[string]BuildingDefinition
 }
 
 func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
@@ -124,8 +129,10 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	}
 
 	buildingIDs := make(map[string]struct{}, len(buildings.Buildings))
+	buildingDefinitions := make(map[string]BuildingDefinition, len(buildings.Buildings))
 	for _, building := range buildings.Buildings {
 		buildingIDs[building.ID] = struct{}{}
+		buildingDefinitions[building.ID] = BuildingDefinition{ProductionCostMilli: int64(building.ProductionCostPP) * core.EconomyScale, MaintenanceBC: building.MaintenanceBC}
 	}
 	moraleBarracksGovernments := make(map[string]struct{}, len(economy.Morale.BarracksGovernmentTraitIDs))
 	for _, traitID := range economy.Morale.BarracksGovernmentTraitIDs {
@@ -161,6 +168,7 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		MoraleBarracksBuildingIDs:     moraleBarracksBuildingIDs,
 		MoraleBuildingBonusPercent:    moraleBuildingBonusPercent,
 		KnownBuildingIDs:              buildingIDs,
+		BuildingDefinitions:           buildingDefinitions,
 	}
 	for _, climate := range planetClasses.Climates {
 		rules.ClimateFoodPerFarmerMilli[climate.ID] = int64(climate.BaseFoodPerFarmer) * core.EconomyScale

@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const BuildingsSchemaVersion = 2
+const BuildingsSchemaVersion = 3
 
 type BuildingsFile struct {
 	SchemaVersion int        `json:"schema_version"`
@@ -21,6 +21,12 @@ type Building struct {
 	ProductionID               int             `json:"production_id"`
 	ProductionIDVerification   string          `json:"production_id_verification"`
 	ProductionIDSource         FieldProvenance `json:"production_id_source"`
+	ProductionCostPP           int             `json:"production_cost_pp"`
+	ProductionCostVerification string          `json:"production_cost_verification"`
+	ProductionCostSource       FieldProvenance `json:"production_cost_source"`
+	MaintenanceBC              int             `json:"maintenance_bc"`
+	MaintenanceVerification    string          `json:"maintenance_verification"`
+	MaintenanceSource          FieldProvenance `json:"maintenance_source"`
 	TechnologyID               int             `json:"technology_id"`
 	TechnologyKey              string          `json:"technology_key"`
 	TechnologyLinkVerification string          `json:"technology_link_verification"`
@@ -58,11 +64,17 @@ func (f *BuildingsFile) Validate() error {
 	productionIDs := make(map[int]struct{}, len(f.Buildings))
 	orders := make(map[int]struct{}, len(f.Buildings))
 	for _, building := range f.Buildings {
-		if building.ID == "" || building.NameKey == "" || building.NameVerification == "" || building.ProductionIDVerification == "" {
+		if building.ID == "" || building.NameKey == "" || building.NameVerification == "" || building.ProductionIDVerification == "" || building.ProductionCostVerification == "" || building.MaintenanceVerification == "" {
 			return fmt.Errorf("building id, name_key and verification fields are required")
 		}
 		if building.TechnologyKey == "" || building.TechnologyLinkVerification == "" {
 			return fmt.Errorf("building %q technology key and verification are required", building.ID)
+		}
+		if building.ProductionCostPP <= 0 {
+			return fmt.Errorf("building %q production_cost_pp=%d must be positive", building.ID, building.ProductionCostPP)
+		}
+		if building.MaintenanceBC < 0 {
+			return fmt.Errorf("building %q maintenance_bc=%d must be non-negative", building.ID, building.MaintenanceBC)
 		}
 		if building.TechnologyID < 1 || building.TechnologyID > 203 {
 			return fmt.Errorf("building %q technology_id=%d outside [1,203]", building.ID, building.TechnologyID)
@@ -89,7 +101,7 @@ func (f *BuildingsFile) Validate() error {
 		if building.ProductionID != building.Order+1 {
 			return fmt.Errorf("building %q production_id=%d, expected order+1=%d", building.ID, building.ProductionID, building.Order+1)
 		}
-		if building.NameSource.SourceID == "" || building.ProductionIDSource.SourceID == "" || building.TechnologySource.SourceID == "" {
+		if building.NameSource.SourceID == "" || building.ProductionIDSource.SourceID == "" || building.ProductionCostSource.SourceID == "" || building.MaintenanceSource.SourceID == "" || building.TechnologySource.SourceID == "" {
 			return fmt.Errorf("building %q has incomplete field provenance", building.ID)
 		}
 	}

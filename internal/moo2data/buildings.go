@@ -110,7 +110,7 @@ func DecodeBuildings(installationRoot string) (*BuildingsBundle, error) {
 			{
 				ID:          buildingTableSourceID,
 				Type:        "original-observed",
-				Description: "Orion2.exe 1.31 _buildings table in LE object 2 at offset 0x6B3D: 49 records x 19 bytes; records 1..48 contain their original building ID at +4 and technology ID at +6. N_Bldgs_ iterates IDs 1..48.",
+				Description: "Orion2.exe 1.31 _buildings table in LE object 2 at offset 0x6B3D: 49 records x 19 bytes; records 1..48 contain original building ID at +4, technology ID at +6, production cost (PP) at +8 and maintenance (BC/turn) at +12. N_Bldgs_ iterates IDs 1..48.",
 				Archive:     "Orion2.exe",
 				SHA256:      orion2Hash,
 			},
@@ -176,6 +176,12 @@ func DecodeBuildings(installationRoot string) (*BuildingsBundle, error) {
 			ProductionID:               entry.ID,
 			ProductionIDVerification:   productionVerification,
 			ProductionIDSource:         productionSource,
+			ProductionCostPP:           entry.ProductionCostPP,
+			ProductionCostVerification: "original-exe-table-production-cost",
+			ProductionCostSource:       ruleset.FieldProvenance{SourceID: buildingTableSourceID, Offset: intPtr(0x6B3D + (order+1)*0x13 + 8)},
+			MaintenanceBC:              entry.MaintenanceBC,
+			MaintenanceVerification:    "original-exe-table-maintenance",
+			MaintenanceSource:          ruleset.FieldProvenance{SourceID: buildingTableSourceID, Offset: intPtr(0x6B3D + (order+1)*0x13 + 12)},
 			TechnologyID:               technologyID,
 			TechnologyKey:              technologyKey,
 			TechnologyLinkVerification: technologyVerification,
@@ -199,8 +205,10 @@ func DecodeBuildings(installationRoot string) (*BuildingsBundle, error) {
 }
 
 type originalBuildingEntry struct {
-	ID           int
-	TechnologyID int
+	ID               int
+	TechnologyID     int
+	ProductionCostPP int
+	MaintenanceBC    int
 }
 
 func readOriginalBuildingTable(installationRoot string) ([]originalBuildingEntry, string, error) {
@@ -223,8 +231,10 @@ func readOriginalBuildingTable(installationRoot string) ([]originalBuildingEntry
 	for index := 0; index < entryCount; index++ {
 		record := data[index*entrySize : (index+1)*entrySize]
 		entries[index] = originalBuildingEntry{
-			ID:           int(binary.LittleEndian.Uint16(record[4:6])),
-			TechnologyID: int(binary.LittleEndian.Uint16(record[6:8])),
+			ID:               int(binary.LittleEndian.Uint16(record[4:6])),
+			TechnologyID:     int(binary.LittleEndian.Uint16(record[6:8])),
+			ProductionCostPP: int(binary.LittleEndian.Uint16(record[8:10])),
+			MaintenanceBC:    int(binary.LittleEndian.Uint16(record[12:14])),
 		}
 		if entries[index].ID != index {
 			return nil, "", fmt.Errorf("Orion2.exe _buildings record %d carries id %d", index, entries[index].ID)

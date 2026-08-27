@@ -2,6 +2,7 @@ package session
 
 import (
 	"encoding/json"
+	"path/filepath"
 	"reflect"
 	"sync"
 	"testing"
@@ -366,5 +367,76 @@ func TestResolveStrategicRejectsInvalidEncounterAtomically(t *testing.T) {
 	}
 	if len(after.Events) != len(before.Events) {
 		t.Fatalf("failed resolution partially committed events: before=%d after=%d", len(before.Events), len(after.Events))
+	}
+}
+
+func TestGameSessionResolvesConstructionCommand(t *testing.T) {
+	state, seats := twoSeatFixture(t)
+	s, err := NewGameSession("game-construction", state, seats)
+	if err != nil {
+		t.Fatal(err)
+	}
+	rules, err := game.LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	resolver, err := game.NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	command, err := game.NewQueueBuildingCommand(1, game.QueueBuildingPayload{ColonyID: state.Colonies[0].ID, BuildingID: "holo_simulator"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.SubmitTurn(protocol.CommandBatch{
+		SchemaVersion: protocol.CommandSchemaVersion,
+		GameID:        "game-construction",
+		SeatID:        1,
+		Turn:          1,
+		BaseRevision:  1,
+		Commands:      []protocol.Command{command},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.SubmitTurn(protocol.CommandBatch{
+		SchemaVersion: protocol.CommandSchemaVersion,
+		GameID:        "game-construction",
+		SeatID:        2,
+		Turn:          1,
+		BaseRevision:  1,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.ResolveStrategic(resolver); err != nil {
+		t.Fatal(err)
+	}
+	observer, err := s.ObserverView()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if observer.Phase != PhasePostResolution || observer.Revision != 2 {
+		t.Fatalf("unexpected resolved session: phase=%q revision=%d", observer.Phase, observer.Revision)
+	}
+	construction := observer.State.Colonies[0].Construction
+	if construction == nil || construction.BuildingID != "holo_simulator" || construction.ProgressMilli <= 0 {
+		t.Fatalf("construction not materialized through GameSession: %+v", construction)
+	}
+	var queued, progressed bool
+	for _, event := range observer.Events {
+		switch event.Kind {
+		case "colony.construction_queued":
+			queued = true
+			if event.SeatID != 1 || event.CommandSequence != 1 {
+				t.Fatalf("queue event lost command attribution: %+v", event)
+			}
+		case "colony.construction_progressed":
+			progressed = true
+			if event.SeatID != 0 || event.CommandSequence != 0 {
+				t.Fatalf("system progress event has player attribution: %+v", event)
+			}
+		}
+	}
+	if !queued || !progressed {
+		t.Fatalf("observer missing construction events: queued=%v progressed=%v", queued, progressed)
 	}
 }

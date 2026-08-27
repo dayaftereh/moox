@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "ruleset": "moo2-1.31",
   "sources": [
     {
@@ -30,7 +30,7 @@
     {
       "id": "moo2-1.31-orion2-building-table",
       "type": "original-observed",
-      "description": "Orion2.exe 1.31 _buildings table in LE object 2 at offset 0x6B3D: 49 records x 19 bytes; records 1..48 contain their original building ID at +4 and technology ID at +6. N_Bldgs_ iterates IDs 1..48.",
+      "description": "Orion2.exe 1.31 _buildings table in LE object 2 at offset 0x6B3D: 49 records x 19 bytes; records 1..48 contain original building ID at +4, technology ID at +6, production cost (PP) at +8 and maintenance (BC/turn) at +12. N_Bldgs_ iterates IDs 1..48.",
       "archive": "Orion2.exe",
       "sha256": "7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5"
     }
@@ -43,6 +43,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 60,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27480
+      },
+      "maintenance_bc": 1,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27484
       },
       "technology_id": 5,
       "technology_key": "alien_management_center",
@@ -66,6 +78,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 150,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27499
+      },
+      "maintenance_bc": 2,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27503
+      },
       "technology_id": 14,
       "technology_key": "armor_barracks",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -87,6 +111,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 1000,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27518
+      },
+      "maintenance_bc": 5,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27522
       },
       "technology_id": 15,
       "technology_key": "artemis_system_net",
@@ -110,6 +146,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 200,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27537
+      },
+      "maintenance_bc": 4,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27541
+      },
       "technology_id": 18,
       "technology_key": "astro_university",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -131,6 +179,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 150,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27556
+      },
+      "maintenance_bc": 3,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27560
       },
       "technology_id": 19,
       "technology_key": "atmospheric_renewer",
@@ -154,6 +214,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 200,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27575
+      },
+      "maintenance_bc": 3,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27579
+      },
       "technology_id": 21,
       "technology_key": "autolab",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -175,6 +247,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 60,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27594
+      },
+      "maintenance_bc": 1,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27598
       },
       "technology_id": 22,
       "technology_key": "automated_factories",
@@ -198,6 +282,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 1000,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27613
+      },
+      "maintenance_bc": 3,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27617
+      },
       "technology_id": 27,
       "technology_key": "battlestation",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -219,6 +315,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 200,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27632
+      },
+      "maintenance_bc": 0,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27636
       },
       "technology_id": 32,
       "technology_key": "capitol",
@@ -242,6 +350,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 100,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27651
+      },
+      "maintenance_bc": 2,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27655
+      },
       "technology_id": 39,
       "technology_key": "cloning_center",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -263,6 +383,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 200,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27670
+      },
+      "maintenance_bc": 0,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27674
       },
       "technology_id": 40,
       "technology_key": "colony_base",
@@ -286,6 +418,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 250,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27689
+      },
+      "maintenance_bc": 3,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27693
+      },
       "technology_id": 49,
       "technology_key": "deep_core_mining",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -307,6 +451,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 200,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27708
+      },
+      "maintenance_bc": 8,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27712
       },
       "technology_id": 50,
       "technology_key": "core_waste_dumps",
@@ -330,6 +486,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 500,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27727
+      },
+      "maintenance_bc": 2,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27731
+      },
       "technology_id": 52,
       "technology_key": "dimensional_portal",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -351,6 +519,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 60,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27746
+      },
+      "maintenance_bc": 1,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27750
       },
       "technology_id": 61,
       "technology_key": "biospheres",
@@ -374,6 +554,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 200,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27765
+      },
+      "maintenance_bc": 10,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27769
+      },
       "technology_id": 68,
       "technology_key": "food_replicators",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -395,6 +587,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 500,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27784
+      },
+      "maintenance_bc": 0,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27788
       },
       "technology_id": 74,
       "technology_key": "gaia_transformation",
@@ -418,6 +622,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 250,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27803
+      },
+      "maintenance_bc": 3,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27807
+      },
       "technology_id": 75,
       "technology_key": "galactic_currency_exchange",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -439,6 +655,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 250,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27822
+      },
+      "maintenance_bc": 3,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27826
       },
       "technology_id": 76,
       "technology_key": "galactic_cybernet",
@@ -462,6 +690,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 120,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27841
+      },
+      "maintenance_bc": 1,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27845
+      },
       "technology_id": 86,
       "technology_key": "holo_simulator",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -483,6 +723,18 @@
       "production_id_verification": "original-exe-table-id-singular-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 60,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27860
+      },
+      "maintenance_bc": 2,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27864
       },
       "technology_id": 87,
       "technology_key": "hydroponic_farm",
@@ -506,6 +758,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 60,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27879
+      },
+      "maintenance_bc": 1,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27883
+      },
       "technology_id": 103,
       "technology_key": "marine_barracks",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -527,6 +791,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 500,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27898
+      },
+      "maintenance_bc": 5,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27902
       },
       "technology_id": 129,
       "technology_key": "planetary_barrier_shield",
@@ -550,6 +826,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 200,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27917
+      },
+      "maintenance_bc": 3,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27921
+      },
       "technology_id": 130,
       "technology_key": "planetary_flux_shield",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -571,6 +859,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 120,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27936
+      },
+      "maintenance_bc": 2,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27940
       },
       "technology_id": 131,
       "technology_key": "planetary_gravity_generator",
@@ -594,6 +894,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 120,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27955
+      },
+      "maintenance_bc": 2,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27959
+      },
       "technology_id": 132,
       "technology_key": "planetary_missile_base",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -615,6 +927,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 200,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27974
+      },
+      "maintenance_bc": 2,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27978
       },
       "technology_id": 133,
       "technology_key": "ground_batteries",
@@ -638,6 +962,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 80,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27993
+      },
+      "maintenance_bc": 1,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 27997
+      },
       "technology_id": 134,
       "technology_key": "planetary_radiation_shield",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -659,6 +995,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 150,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28012
+      },
+      "maintenance_bc": 2,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28016
       },
       "technology_id": 135,
       "technology_key": "planetary_stock_exchange",
@@ -682,6 +1030,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 150,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28031
+      },
+      "maintenance_bc": 2,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28035
+      },
       "technology_id": 136,
       "technology_key": "planetary_supercomputer",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -703,6 +1063,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 250,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28050
+      },
+      "maintenance_bc": 3,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28054
       },
       "technology_id": 141,
       "technology_key": "pleasure_dome",
@@ -726,6 +1098,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 80,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28069
+      },
+      "maintenance_bc": 1,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28073
+      },
       "technology_id": 142,
       "technology_key": "pollution_processor",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -747,6 +1131,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 200,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28088
+      },
+      "maintenance_bc": 3,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28092
       },
       "technology_id": 152,
       "technology_key": "recyclotron",
@@ -770,6 +1166,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 200,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28107
+      },
+      "maintenance_bc": 3,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28111
+      },
       "technology_id": 154,
       "technology_key": "robotic_factory",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -791,6 +1199,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 60,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28126
+      },
+      "maintenance_bc": 1,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28130
       },
       "technology_id": 155,
       "technology_key": "research_laboratory",
@@ -814,6 +1234,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 150,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28145
+      },
+      "maintenance_bc": 2,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28149
+      },
       "technology_id": 156,
       "technology_key": "robo_miners",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -835,6 +1267,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 120,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28164
+      },
+      "maintenance_bc": 0,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28168
       },
       "technology_id": 162,
       "technology_key": "soil_enrichment",
@@ -858,6 +1302,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 100,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28183
+      },
+      "maintenance_bc": 2,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28187
+      },
       "technology_id": 163,
       "technology_key": "space_academy",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -879,6 +1335,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 80,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28202
+      },
+      "maintenance_bc": 1,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28206
       },
       "technology_id": 164,
       "technology_key": "spaceport",
@@ -902,6 +1370,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 400,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28221
+      },
+      "maintenance_bc": 2,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28225
+      },
       "technology_id": 168,
       "technology_key": "star_base",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -923,6 +1403,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 2500,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28240
+      },
+      "maintenance_bc": 4,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28244
       },
       "technology_id": 169,
       "technology_key": "star_fortress",
@@ -946,6 +1438,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 1000,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28259
+      },
+      "maintenance_bc": 6,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28263
+      },
       "technology_id": 174,
       "technology_key": "stellar_converter",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -967,6 +1471,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 150,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28278
+      },
+      "maintenance_bc": 4,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28282
       },
       "technology_id": 178,
       "technology_key": "subterranean_farms",
@@ -990,6 +1506,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 250,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28297
+      },
+      "maintenance_bc": 0,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28301
+      },
       "technology_id": 183,
       "technology_key": "terraforming",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -1011,6 +1539,18 @@
       "production_id_verification": "original-exe-table-id-techname-crosschecked",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 300,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28316
+      },
+      "maintenance_bc": 3,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28320
       },
       "technology_id": 197,
       "technology_key": "warp_interdictor",
@@ -1034,6 +1574,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 200,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28335
+      },
+      "maintenance_bc": 3,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28339
+      },
       "technology_id": 198,
       "technology_key": "weather_control_system",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -1056,6 +1608,18 @@
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
       },
+      "production_cost_pp": 150,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28354
+      },
+      "maintenance_bc": 2,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28358
+      },
       "technology_id": 67,
       "technology_key": "fighter_garrison",
       "technology_link_verification": "original-exe-table-tech-id-and-techname-exact",
@@ -1077,6 +1641,18 @@
       "production_id_verification": "original-exe-table-id-secondary-display-name-link",
       "production_id_source": {
         "source_id": "moo2-1.31-orion2-building-table"
+      },
+      "production_cost_pp": 800,
+      "production_cost_verification": "original-exe-table-production-cost",
+      "production_cost_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28373
+      },
+      "maintenance_bc": 0,
+      "maintenance_verification": "original-exe-table-maintenance",
+      "maintenance_source": {
+        "source_id": "moo2-1.31-orion2-building-table",
+        "offset": 28377
       },
       "technology_id": 16,
       "technology_key": "planet_construction",

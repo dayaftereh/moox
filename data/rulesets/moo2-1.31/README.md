@@ -197,3 +197,6 @@ See `docs/research/ECONOMY_BASELINE_2026-08-27.md`, `ECONOMY_CONTEXT_2026-08-27.
 `planet_classes.json` contains the original-observed five planet sizes, five mineral classes, three gravity classes and ten climate classes. It also carries the 1.31 size-generation roll thresholds, mineral base-extraction values and climate base-food-per-farmer values with field-level provenance. Canonical names are referenced through stable language keys; the 23 English values are in `data/languages/en.json`.
 
 See `docs/research/PLANET_CLASSES_2026-08-27.md` for the evidence boundary and deliberately deferred nearby planet-generation tables.
+## Building economy fields
+
+Schema v3 adds original-observed production_cost_pp and maintenance_bc; see docs/research/BUILDING_CONSTRUCTION_2026-08-27.md.

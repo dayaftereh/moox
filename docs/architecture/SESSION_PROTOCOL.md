@@ -158,12 +158,21 @@ For example, if battle 2 finishes before battle 1, the observer can see battle 2
 
 This allows independent players to fight concurrently without making process scheduling or network latency part of the simulation result/replay contract.
 
+## Colony construction commands
+
+The first non-population strategic progression command is now `colony.queue_building` with `{colony_id, building_id}`.
+
+The economy resolver validates the command against the authoritative `SeatID -> EmpireID` mapping, the colony owner, the normalized building catalog, existing colony buildings and the single active construction slot. During strategic resolution, all colonies are first recalculated to their current `AdjustedEconomy`; that production is then applied deterministically to active construction.
+
+Construction produces observer/replay domain events for queueing, progress and completion. Queue events retain seat/command attribution; automatic progress/completion are system events. A completed building is installed after the economy snapshot that funded it, so its gameplay effect begins on the next economy recalculation rather than retroactively changing the production that completed it.
+
+The current state is a single active project rather than a full queue. Overflow, buyout, buildability from owned technology and building replacement/exclusion rules remain later work.
 ## Current limitations / next slice
 
 This checkpoint intentionally does not yet implement:
 
-- real strategic command kinds and concrete economy resolver behavior;
-- colony economy resolution;
+- additional strategic command kinds beyond population assignment and building queueing;
+- broader colony economy resolution beyond the implemented base/context/morale/construction slice;
 - movement/conflict detection;
 - application of battle results back into ships/fleets;
 - tactical combat commands/mechanics;

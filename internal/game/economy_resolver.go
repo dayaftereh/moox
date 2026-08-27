@@ -78,6 +78,12 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 					return Resolution{}, err
 				}
 				events = append(events, event)
+			case CommandQueueBuilding:
+				event, err := r.queueBuilding(state, empireID, batch.SeatID, command)
+				if err != nil {
+					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
+				}
+				events = append(events, event)
 			default:
 				return Resolution{}, fmt.Errorf("seat %d command %d has unsupported strategic command kind %q", batch.SeatID, command.Sequence, command.Kind)
 			}
@@ -91,6 +97,11 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 			return Resolution{}, err
 		}
 	}
+	constructionEvents, err := r.advanceConstruction(state)
+	if err != nil {
+		return Resolution{}, err
+	}
+	events = append(events, constructionEvents...)
 	return Resolution{State: state, Events: events}, nil
 }
 
