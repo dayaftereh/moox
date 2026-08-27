@@ -1,14 +1,29 @@
-# MOOX
+# Master of Orion X
 
-MOOX is a new game project whose gameplay reference is **Master of Orion II: Battle at Antares (1996)**.
+**Master of Orion X** is a new game project whose gameplay reference is **Master of Orion II: Battle at Antares (1996)**.
 
 The initial goal is a high-fidelity reimplementation of the systems that make MOO2 work: turn-based 4X galaxy strategy, colony management, custom race design, research, diplomacy/espionage, ship design, tactical combat, leaders, random events, Orion/Antaran end-game content and the original pacing/feedback loops.
+
+## Product naming
+
+The official user-facing project and product name is **Master of Orion X**.
+
+This name must be used consistently for all user-visible branding, including:
+
+- application and game name: **Master of Orion X**;
+- Windows executable: **Master of Orion X.exe**;
+- application/window title: **Master of Orion X**;
+- launcher, splash-screen and main-menu titles: **Master of Orion X**;
+- website/frontend page titles and primary headlines: **Master of Orion X**;
+- release/package/display names: **Master of Orion X**.
+
+The short identifier `moox` is reserved for internal technical names where a compact identifier is useful, such as the Git repository, Go module/package paths, command-line tooling (`moox-analyze`), internal directories and development-only identifiers. It must not replace **Master of Orion X** in user-facing application titles or branding.
 
 ## Project status
 
 Current snapshot: **2026-08-27**.
 
-MOOX is in an **advanced research/data-normalization phase**. The repository now contains a pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), verified LBX/graphics/palette/audio/text tooling, a bound MZ/LE reader for the original DOS executable, normalized race/building/technology/ship-hull datasets, localization keys and a substantial semantic asset catalog.
+Master of Orion X is in an **advanced research/data-normalization phase**. The repository now contains a pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), verified LBX/graphics/palette/audio/text tooling, a bound MZ/LE reader for the original DOS executable, normalized race/building/technology/ship-hull datasets, localization keys and a substantial semantic asset catalog.
 
 The playable simulation core is **not implemented yet**. The next major engineering transition is the deterministic headless simulation skeleton with the planet-class normalization checkpoint now completed.
 
