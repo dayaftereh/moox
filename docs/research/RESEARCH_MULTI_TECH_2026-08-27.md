@@ -247,3 +247,8 @@ The next Research work should remain focused and not reopen settled identity tab
 4. model hyper-advanced repeated-field level/cost state;
 5. implement Advanced-start randomized/race-aware technology ownership using the now-correct Ordinary/Creative/Uncreative policy;
 6. later handle external acquisition of the already-fixed Uncreative application before that field is researched.
+
+
+## Superseding switching checkpoint
+
+Active-project switching and accumulated-RP transfer are now implemented and documented in `RESEARCH_SWITCHING_2026-08-27.md`. The `all` / `choose_one` / `fixed_one` policy defined here remains unchanged during switches.

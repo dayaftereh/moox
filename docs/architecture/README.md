@@ -452,7 +452,7 @@ The command/session boundary is now implemented across `internal/protocol`, `int
 
 The strategic runtime has progressed beyond the first command into an explicit colony progression order. Current-turn Economy/Dynamics are materialized first; Construction consumes available PP, Research consumes RP, Population Growth resolves afterwards, and the post-turn snapshot is recalculated. This ordering is covered by regression tests so newly grown Population cannot produce PP/RP retroactively.
 
-Starvation and Food/Freighter logistics are implemented as an empire-wide deterministic phase. Research now has server-authoritative General/ordinary/Creative/Uncreative multi-application semantics. The next Research slice is project switching/timing plus stronger evidence for original 1.31 turn ordering and Uncreative RNG timing.
+Starvation and Food/Freighter logistics are implemented as an empire-wide deterministic phase. Research now has server-authoritative General/ordinary/Creative/Uncreative multi-application semantics. Research project switching is now implemented with exact RP transfer and Observer/replay history. The next Research slice is stronger evidence for original 1.31 turn ordering, followed by exact Uncreative RNG timing where practical and hyper-advanced fields.
 
 Network transports, Wails services and MCP remain adapters to this boundary and should not be introduced into the deterministic core.
 ## Related architecture documents

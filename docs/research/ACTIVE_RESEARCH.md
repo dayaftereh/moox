@@ -116,31 +116,44 @@ The code includes hash constants for the relevant original function ranges. Thes
 
 ## Next exact action
 
-The multi-Technology Research policy is now implemented and checkpoint-ready. The active Research lane moves to **research-project timing/switching and the original 1.31 turn-order conflict** while preserving the new race-aware legal-action model.
+Research project switching is now implemented and documented in `RESEARCH_SWITCHING_2026-08-27.md`. The active Research investigation moves to the **original 1.31 strategic turn-order conflict**.
 
-### Closed in the current Research slice
+### Closed in the latest Research slices
 
-- General/basic fields use `all` for every race.
-- ordinary non-General fields use `choose_one`; the client must choose one server-projected application.
-- Creative non-General fields use `all`.
-- Uncreative non-General fields use `fixed_one`; the client cannot override the server-fixed application.
-- the persisted Uncreative plan is deterministic and ResearchChoices queries are RNG/state side-effect free.
-- `empire.select_research`, active `ResearchState`, progress/completion events and ownership transitions all carry/revalidate the selection mode.
+- General/basic `all`, ordinary `choose_one`, Creative `all`, and Uncreative `fixed_one` application semantics are implemented.
+- `ResearchChoices()` is race-aware and remains read-only/RNG-side-effect free.
+- a running project can be redirected with the existing `empire.select_research` command.
+- all accumulated `ProgressRP` transfers exactly to the new legal field/application; no scaling or clamping occurs at the switch boundary.
+- an identical active selection is rejected as a no-op without state mutation.
+- `empire.research_switched` records previous/current authoritative project snapshots plus `transferred_rp`.
+- two-turn `GameSession` coverage proves Observer/replay visibility and that the next turn's RP is added only after the transferred pool is installed.
+- no cancel-to-none operation is added because current evidence supports changing direction, not deliberately abandoning all research.
 
-See `RESEARCH_MULTI_TECH_2026-08-27.md` for evidence, fidelity boundaries and tests.
+### Current exact Research question - 1.31 turn order
 
-### Current Research tasks, in order
+A StrategyWiki calculations reference explicitly described as checked under MOO2 1.31 gives:
 
-1. investigate whether an active research project can be changed/cancelled in original 1.31 and whether accumulated RP is retained, discarded or attached to the field/application,
-2. seek stronger original-observed or independent evidence for the strategic ordering of Population growth/starvation, resource generation, Research progress and breakthrough,
-3. determine the original Uncreative application RNG/initialization timing if save/executable evidence is practical; retain the current deterministic MOOX plan until then,
-4. model hyper-advanced repeated-field level/cost state separately,
-5. implement Advanced-start randomized/race-aware technology ownership using the now-correct `all` / `choose_one` / `fixed_one` semantics,
-6. later handle external acquisition of an Uncreative fixed application before that field is researched.
+1. Population increase/decrease,
+2. Food/PP/RP/Money generation,
+3. building construction,
+4. colonist arrival/battles,
+5. research completion.
 
-### Turn-order conflict
+Current MOOX still materializes current-turn Economy/Research before the Population transition. Do not reorder the resolver from this one secondary description alone.
 
-A StrategyWiki calculations reference explicitly described as checked under MOO2 1.31 gives Population growth/starvation before resource generation and Research completion. Current MOOX still has Construction/Research consume the pre-Population-transition output. Do not change this globally from a single secondary source; the next timing investigation should either strengthen or reject that ordering before code is reordered.
+Next evidence work:
+
+1. seek independent descriptions or original-observed behavior that distinguishes whether newly grown/starved Population contributes to same-turn Food/PP/RP/BC,
+2. inspect the existing private 1.31 executable/research probes for call/order evidence if practical,
+3. design a minimal original-game behavioral experiment if static evidence remains ambiguous,
+4. only then decide whether to reorder Population/Food/Construction/Research phases and update the deterministic tests.
+
+### After turn-order resolution
+
+- determine exact original Uncreative application RNG/initialization timing if executable/save evidence is practical,
+- model hyper-advanced repeated-field level/cost state,
+- implement Advanced-start randomized/race-aware technology ownership,
+- later handle external acquisition of an Uncreative fixed application before that field is researched.
 
 ### Parked Economy follow-ups
 
@@ -153,6 +166,7 @@ A StrategyWiki calculations reference explicitly described as checked under MOO2
 - race-aware Population cohorts.
 
 Architecture constraint: continuous strategic quantities remain domain-native `float64`; Research selection modes and Technology IDs are discrete server-owned semantics. Human UI, built-in AI and remote/MCP agents must consume the same ResearchChoices surface.
+
 ## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.

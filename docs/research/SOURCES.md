@@ -239,3 +239,17 @@ https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Technologies
 Use: independent secondary cross-check that ordinary races choose one technology, Creative receives all technologies at a level for the same research cost, Uncreative receives one software-randomized technology, and bottom/general levels grant all technologies to every empire.
 
 The exact original Uncreative RNG seed/algorithm/timing is not treated as proven by these sources.
+
+## Research switching references
+
+### Original manual - switching research direction
+
+https://www.manualshelf.com/manual/games-pc/master-of-orion-ii-battle-at-antares/user-guide-english/page-36.html
+
+Use: strong manual evidence that the Research indicator can change the direction of current research and that all points already spent toward the former goal are applied to the new goal. This is the primary source for exact RP transfer on project switching.
+
+### Original manual PDF cross-check
+
+https://manuals.plus/m/5622eabc23dba2bd8c537b7dee95fe7a11c82d6d6607ee13b1b091f07e284617.pdf
+
+Use: independent hosted copy of the same manual wording for switching research direction and complete accumulated-RP transfer.

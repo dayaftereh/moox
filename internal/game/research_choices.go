@@ -34,9 +34,6 @@ func (r *EconomyRules) AvailableResearchChoices(state *core.GameState, empireID 
 	if empire == nil {
 		return nil, fmt.Errorf("unknown empire %d", empireID)
 	}
-	if empire.Research != nil {
-		return []ResearchChoice{}, nil
-	}
 	modifiers, ok := r.RaceModifiers[empire.RaceID]
 	if !ok {
 		return nil, fmt.Errorf("empire %d has unknown race %q", empireID, empire.RaceID)

@@ -45,16 +45,25 @@ func TestAvailableResearchChoicesReturnsServerAuthoritativeFrontier(t *testing.T
 	}
 }
 
-func TestAvailableResearchChoicesEmptyWhileResearchActive(t *testing.T) {
-	rules := loadCommittedEconomyRules(t)
-	state := core.NewSmallFixture(702)
-	state.Empires[0].Research = &core.ResearchState{TechFieldID: 56, SelectionMode: core.ResearchSelectionChooseOne, TechnologyIDs: []int{155}, ProgressRP: 12.5}
+func TestAvailableResearchChoicesRemainAvailableWhileResearchActive(t *testing.T) {
+	rules, resolver, state := initializedResearchRace(t, 702, "human", 0)
+	command, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4, TechnologyID: 56})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.selectResearch(state, state.Empires[0].ID, 1, command); err != nil {
+		t.Fatal(err)
+	}
+	state.Empires[0].Research.ProgressRP = 12.5
 	choices, err := rules.AvailableResearchChoices(state, state.Empires[0].ID)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(choices) != 0 {
-		t.Fatalf("active research should suppress new choices: %+v", choices)
+	if len(choices) == 0 {
+		t.Fatal("active research must still expose legal switching choices")
+	}
+	if _, ok := researchChoiceByField(choices, 4); !ok {
+		t.Fatalf("active TechField 4 missing from switching choices: %+v", choices)
 	}
 }
 

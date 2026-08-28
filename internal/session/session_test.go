@@ -692,7 +692,7 @@ func TestGameSessionResearchChoicesAndSelectResearchShareAuthority(t *testing.T)
 	if !found {
 		t.Fatal("Observer did not receive speaking empire.research_selected event")
 	}
-	if choices, err := s.ResearchChoices(1, rules); err != nil || len(choices) != 0 {
-		t.Fatalf("active research should leave no new ResearchChoices: choices=%+v err=%v", choices, err)
+	if choices, err := s.ResearchChoices(1, rules); err != nil || len(choices) == 0 {
+		t.Fatalf("active research should expose switching ResearchChoices: choices=%+v err=%v", choices, err)
 	}
 }
