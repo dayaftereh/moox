@@ -300,6 +300,198 @@ func (r *EconomyRules) advancedProfileRaceBaseWeight(empire *core.Empire, techno
 	return weight, nil
 }
 
+func (r *EconomyRules) advancedTechnologyEligible(empire *core.Empire, technologyID int, strategicCombat bool) bool {
+	if empire == nil {
+		return false
+	}
+	fieldID, ok := r.TechnologyFieldByID[technologyID]
+	if !ok || fieldID <= 0 || fieldID >= 75 {
+		return false
+	}
+	modifiers, ok := r.RaceModifiers[empire.RaceID]
+	if !ok {
+		return false
+	}
+	if !r.uncreativeInitialTechnologyEligible(modifiers, NewGameTechnologyOptions{StrategicCombat: strategicCombat}, technologyID) {
+		return false
+	}
+	switch technologyID {
+	case 42: // Confederation.
+		return modifiers.GovernmentTraitID == "government_feudal"
+	case 65: // Federation.
+		return modifiers.GovernmentTraitID == "government_democracy"
+	case 77: // Galactic Unification.
+		return modifiers.GovernmentTraitID == "government_unification"
+	case 92: // Imperium.
+		return modifiers.GovernmentTraitID == "government_dictatorship"
+	}
+	return true
+}
+
+func (r *EconomyRules) maxKnownAIGroup(empire *core.Empire, classID int, technologyLimit int) int {
+	if empire == nil {
+		return 0
+	}
+	maxGroup := 0
+	for _, technologyID := range empire.KnownTechnologyIDs {
+		if technologyLimit > 0 && technologyID > technologyLimit {
+			continue
+		}
+		if r.TechnologyAIClassByID[technologyID] != classID {
+			continue
+		}
+		fieldID := r.TechnologyFieldByID[technologyID]
+		if group := r.TechnologyFieldAIGroup[fieldID]; group > maxGroup {
+			maxGroup = group
+		}
+	}
+	return maxGroup
+}
+
+func (r *EconomyRules) competitionAIGroup(state *core.GameState, empireID core.ID, classID int) int {
+	maxGroup := 0
+	for i := range state.Empires {
+		empire := &state.Empires[i]
+		if empire.ID == empireID {
+			continue
+		}
+		if group := r.maxKnownAIGroup(empire, classID, 75); group > maxGroup {
+			maxGroup = group
+		}
+	}
+	return maxGroup
+}
+
+func advancedProgressionWeight(weight, classID, targetAIGroup, targetProgression, knownAIGroup int, competitionSensitive bool) int {
+	if !competitionSensitive {
+		return weight * targetProgression
+	}
+	if knownAIGroup+3 <= targetAIGroup {
+		return (targetAIGroup - knownAIGroup) * weight * targetProgression / 3
+	}
+	switch classID {
+	case 14, 16, 18, 24, 25, 32, 39:
+		return 0
+	}
+	denominator := knownAIGroup + 3 - targetAIGroup
+	if denominator <= 0 {
+		return 0
+	}
+	return weight * targetProgression * 2 / denominator
+}
+
+func advancedGapMultiplier(weight, targetProgression, competitionAIGroup int) int {
+	if targetProgression >= competitionAIGroup {
+		return weight
+	}
+	return weight * (competitionAIGroup - targetProgression)
+}
+
+func (r *EconomyRules) advancedCompetitionWeight(state *core.GameState, empire *core.Empire, classID, targetProgression, weight int, profile AdvancedResearchPreferenceProfile) int {
+	competition := func(aiClass int) int {
+		return r.competitionAIGroup(state, empire.ID, aiClass)
+	}
+	switch classID {
+	case 25:
+		weight = advancedGapMultiplier(weight, targetProgression, competition(18))
+	case 18:
+		weight = advancedGapMultiplier(weight, targetProgression, competition(25))
+	case 19:
+		weight = advancedGapMultiplier(weight, targetProgression, competition(10))
+	case 10:
+		weight = advancedGapMultiplier(weight, targetProgression, competition(19))
+	case 12:
+		weight = advancedGapMultiplier(weight, targetProgression, competition(12))
+	case 15:
+		weight = advancedGapMultiplier(weight, targetProgression, competition(15))
+	case 8:
+		own := r.maxKnownAIGroup(empire, 15, 75) + r.maxKnownAIGroup(empire, 16, 75)
+		if own < 2*competition(15) {
+			weight *= 2
+		}
+	}
+	if profile.Objective == 2 && classID == 24 {
+		weight = advancedGapMultiplier(weight, targetProgression, competition(28))
+	}
+	switch profile.Objective {
+	case 0:
+		if classID == 19 {
+			weight = advancedGapMultiplier(weight, targetProgression, competition(33))
+		}
+	case 1:
+		if classID == 26 || classID == 19 {
+			weight = advancedGapMultiplier(weight, targetProgression, competition(33))
+		}
+	case 2:
+		if classID == 21 {
+			weight = advancedGapMultiplier(weight, targetProgression, competition(33))
+		}
+	}
+	return weight
+}
+
+func (r *EconomyRules) allOtherFieldTechnologiesKnown(empire *core.Empire, fieldID, technologyID int) bool {
+	for _, otherID := range r.TechnologyIDsByField[fieldID] {
+		if otherID == technologyID {
+			continue
+		}
+		if !containsInt(empire.KnownTechnologyIDs, otherID) {
+			return false
+		}
+	}
+	return true
+}
+
+func (r *EconomyRules) advancedCalcTechnologyWeight(state *core.GameState, empireID core.ID, technologyID int, profile AdvancedResearchPreferenceProfile, strategicCombat bool) (int, error) {
+	empire := empireByID(state, empireID)
+	if empire == nil {
+		return 0, fmt.Errorf("unknown empire %d", empireID)
+	}
+	if !r.advancedTechnologyEligible(empire, technologyID, strategicCombat) || containsInt(empire.KnownTechnologyIDs, technologyID) {
+		return 0, nil
+	}
+	// Calc_Tech_Value_ suppresses Dimensional Portal for every non-sentinel
+	// personality. Init_Player_Tech_ temporarily replaces the Human sentinel
+	// 100 with profile 1, so Advanced start reaches the same zero-weight path.
+	if technologyID == 52 {
+		return 0, nil
+	}
+	weight, err := r.advancedProfileRaceBaseWeight(empire, technologyID, profile)
+	if err != nil {
+		return 0, err
+	}
+	classID := r.TechnologyAIClassByID[technologyID]
+	class, ok := r.TechnologyAIClasses[classID]
+	if !ok {
+		return 0, fmt.Errorf("Technology %d references unknown AI class %d", technologyID, classID)
+	}
+	fieldID := r.TechnologyFieldByID[technologyID]
+	targetAIGroup := r.TechnologyFieldAIGroup[fieldID]
+	if targetAIGroup < 0 {
+		targetAIGroup = 0
+	}
+	if targetAIGroup > 22 {
+		targetAIGroup = 22
+	}
+	if targetAIGroup >= len(r.TechnologyAIFieldGroupValues) {
+		return 0, fmt.Errorf("TechField %d AI group %d has no progression value", fieldID, targetAIGroup)
+	}
+	targetProgression := r.TechnologyAIFieldGroupValues[targetAIGroup]
+	knownAIGroup := r.maxKnownAIGroup(empire, classID, 0)
+	weight = advancedProgressionWeight(weight, classID, targetAIGroup, targetProgression, knownAIGroup, class.CompetitionSensitive)
+	weight = r.advancedCompetitionWeight(state, empire, classID, targetProgression, weight, profile)
+
+	// Advanced starting grants run at game creation and therefore always take
+	// the original early-game (<150 turn-equivalent) class-18 multiplier.
+	if classID == 18 {
+		weight *= 2
+	}
+	if weight == 0 && r.allOtherFieldTechnologiesKnown(empire, fieldID, technologyID) {
+		weight = targetProgression * 10
+	}
+	return weight, nil
+}
+
 type NewGameTechnologyStateOptions struct {
 	Level               NewGameTechnologyLevel
 	StrategicCombat     bool
@@ -451,6 +643,9 @@ func (r *EconomyRules) advancedCandidateTechnologyIDs(state *core.GameState, emp
 			ids = []int{technologyID}
 		}
 		for _, technologyID := range ids {
+			if !r.advancedTechnologyEligible(empire, technologyID, strategicCombat) {
+				continue
+			}
 			if _, known := knownTech[technologyID]; known {
 				continue
 			}

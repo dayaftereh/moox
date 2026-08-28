@@ -286,3 +286,183 @@ func TestAdvancedSpecialTechnologyWeights(t *testing.T) {
 		t.Fatalf("High-G Planetary Gravity Generator weight=%d want=1", got)
 	}
 }
+
+func TestAdvancedTechnologyEligibilityMatchesGovernmentFamilies(t *testing.T) {
+	rules, err := LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct {
+		government string
+		allowed    int
+		rejected   []int
+	}{
+		{"government_feudal", 42, []int{65, 77, 92}},
+		{"government_democracy", 65, []int{42, 77, 92}},
+		{"government_unification", 77, []int{42, 65, 92}},
+		{"government_dictatorship", 92, []int{42, 65, 77}},
+	} {
+		raceID := "probe_" + tc.government
+		rules.RaceModifiers[raceID] = RaceEconomyModifiers{GovernmentTraitID: tc.government}
+		empire := &core.Empire{ID: 1, RaceID: raceID}
+		if !rules.advancedTechnologyEligible(empire, tc.allowed, false) {
+			t.Fatalf("%s should allow Technology %d", tc.government, tc.allowed)
+		}
+		for _, technologyID := range tc.rejected {
+			if rules.advancedTechnologyEligible(empire, technologyID, false) {
+				t.Fatalf("%s unexpectedly allows Technology %d", tc.government, technologyID)
+			}
+		}
+	}
+}
+
+func TestCompetitionAIGroupUsesOriginalFirstSeventyFiveTechnologyLimit(t *testing.T) {
+	rules, err := LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	classID := -1
+	lowID := 0
+	highID := 0
+	lowGroup := -1
+	highGroup := -1
+	for candidateClass := 0; candidateClass < 41 && highID == 0; candidateClass++ {
+		for technologyID := 1; technologyID <= 203; technologyID++ {
+			if rules.TechnologyAIClassByID[technologyID] != candidateClass {
+				continue
+			}
+			group := rules.TechnologyFieldAIGroup[rules.TechnologyFieldByID[technologyID]]
+			if technologyID <= 75 && group > lowGroup {
+				lowID = technologyID
+				lowGroup = group
+			}
+			if technologyID > 75 && group > highGroup {
+				highID = technologyID
+				highGroup = group
+			}
+		}
+		if lowID != 0 && highID != 0 && highGroup > lowGroup {
+			classID = candidateClass
+			break
+		}
+		lowID, highID, lowGroup, highGroup = 0, 0, -1, -1
+	}
+	if classID < 0 {
+		t.Fatal("could not find AI class with a higher >75 Technology group for limit regression")
+	}
+	other := core.Empire{ID: 2, KnownTechnologyIDs: []int{lowID, highID}}
+	if got := rules.maxKnownAIGroup(&other, classID, 75); got != lowGroup {
+		t.Fatalf("first-75 max AI group=%d want=%d (low=%d high=%d)", got, lowGroup, lowID, highID)
+	}
+	if got := rules.maxKnownAIGroup(&other, classID, 0); got != highGroup {
+		t.Fatalf("unlimited max AI group=%d want=%d", got, highGroup)
+	}
+	state := &core.GameState{Empires: []core.Empire{{ID: 1}, other}}
+	if got := rules.competitionAIGroup(state, 1, classID); got != lowGroup {
+		t.Fatalf("competition AI group=%d want original first-75 value %d", got, lowGroup)
+	}
+}
+
+func TestAdvancedProgressionWeightMatchesOriginalIntegerArithmetic(t *testing.T) {
+	for _, tc := range []struct {
+		name                 string
+		weight               int
+		classID              int
+		targetAIGroup        int
+		targetProgression    int
+		knownAIGroup         int
+		competitionSensitive bool
+		want                 int
+	}{
+		{"non-sensitive", 10, 7, 5, 22, 0, false, 220},
+		{"sensitive-far-ahead", 10, 7, 5, 22, 1, true, 293},
+		{"sensitive-near-zero-class", 10, 18, 5, 22, 4, true, 0},
+		{"sensitive-near-ordinary", 10, 7, 5, 22, 4, true, 220},
+	} {
+		got := advancedProgressionWeight(tc.weight, tc.classID, tc.targetAIGroup, tc.targetProgression, tc.knownAIGroup, tc.competitionSensitive)
+		if got != tc.want {
+			t.Fatalf("%s=%d want=%d", tc.name, got, tc.want)
+		}
+	}
+}
+
+func TestAdvancedCompetitionWeightUsesOriginalClassPairing(t *testing.T) {
+	rules := &EconomyRules{
+		TechnologyAIClassByID:  map[int]int{1: 18, 2: 33},
+		TechnologyFieldByID:    map[int]int{1: 1, 2: 2},
+		TechnologyFieldAIGroup: map[int]int{1: 10, 2: 8},
+	}
+	current := core.Empire{ID: 1}
+	other := core.Empire{ID: 2, KnownTechnologyIDs: []int{1, 2}}
+	state := &core.GameState{Empires: []core.Empire{current, other}}
+	if got := rules.advancedCompetitionWeight(state, &state.Empires[0], 25, 3, 2, AdvancedResearchPreferenceProfile{}); got != 14 {
+		t.Fatalf("class25 vs competition class18 weight=%d want=14", got)
+	}
+	if got := rules.advancedCompetitionWeight(state, &state.Empires[0], 21, 3, 2, AdvancedResearchPreferenceProfile{Objective: 2}); got != 10 {
+		t.Fatalf("objective2 class21 vs competition class33 weight=%d want=10", got)
+	}
+	if got := advancedGapMultiplier(7, 12, 8); got != 7 {
+		t.Fatalf("gap multiplier without gap=%d want=7", got)
+	}
+}
+
+func TestAdvancedCalcTechnologyWeightSpecialCases(t *testing.T) {
+	rules, err := LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := &core.GameState{Empires: []core.Empire{{ID: 1, RaceID: "human"}}}
+	profile := AdvancedResearchPreferenceProfile{Personality: 1, Objective: 0, Theme: 0}
+	if got, err := rules.advancedCalcTechnologyWeight(state, 1, 52, profile, false); err != nil || got != 0 {
+		t.Fatalf("Dimensional Portal Calc_Tech_Value weight=%d err=%v want 0,nil", got, err)
+	}
+
+	if err := rules.InitializeEmpireTechnologies(&state.Empires[0], NewGameTechnologyOptions{Level: NewGameTechnologyAverage}); err != nil {
+		t.Fatal(err)
+	}
+	candidates, err := rules.advancedCandidateTechnologyIDs(state, 1, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	class18Tech := 0
+	for _, technologyID := range candidates {
+		if rules.TechnologyAIClassByID[technologyID] == 18 {
+			class18Tech = technologyID
+			break
+		}
+	}
+	if class18Tech == 0 {
+		t.Fatal("no open Advanced candidate with AI class 18")
+	}
+	empire := &state.Empires[0]
+	base, err := rules.advancedProfileRaceBaseWeight(empire, class18Tech, profile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fieldID := rules.TechnologyFieldByID[class18Tech]
+	targetAIGroup := rules.TechnologyFieldAIGroup[fieldID]
+	if targetAIGroup > 22 {
+		targetAIGroup = 22
+	}
+	progression := rules.TechnologyAIFieldGroupValues[targetAIGroup]
+	known := rules.maxKnownAIGroup(empire, 18, 0)
+	class := rules.TechnologyAIClasses[18]
+	preEarly := advancedProgressionWeight(base, 18, targetAIGroup, progression, known, class.CompetitionSensitive)
+	preEarly = rules.advancedCompetitionWeight(state, empire, 18, progression, preEarly, profile)
+	want := preEarly * 2
+	if want == 0 && rules.allOtherFieldTechnologiesKnown(empire, fieldID, class18Tech) {
+		want = progression * 10
+	}
+	got, err := rules.advancedCalcTechnologyWeight(state, 1, class18Tech, profile, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != want {
+		t.Fatalf("class18 Advanced weight=%d want=%d (pre-early=%d)", got, want, preEarly)
+	}
+
+	empire.KnownTechnologyIDs = appendUniqueSortedInt(empire.KnownTechnologyIDs, class18Tech)
+	if got, err := rules.advancedCalcTechnologyWeight(state, 1, class18Tech, profile, false); err != nil || got != 0 {
+		t.Fatalf("known Technology weight=%d err=%v want 0,nil", got, err)
+	}
+}
