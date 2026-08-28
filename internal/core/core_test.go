@@ -342,3 +342,49 @@ func TestResearchStateRejectsAlreadyKnownTechnologyState(t *testing.T) {
 		t.Fatal("expected active research of an already-known technology field to fail validation")
 	}
 }
+
+func TestSystemBlockadeStateRoundTripsAndValidates(t *testing.T) {
+	state := NewSmallFixture(304)
+	empireID := state.Empires[0].ID
+	state.Galaxy.Systems[0].BlockadedEmpireIDs = []ID{empireID}
+	if err := state.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	encoded, err := MarshalState(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := UnmarshalState(encoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(state.Galaxy.Systems[0].BlockadedEmpireIDs, loaded.Galaxy.Systems[0].BlockadedEmpireIDs) {
+		t.Fatalf("blockade state changed across round-trip: want=%v got=%v", state.Galaxy.Systems[0].BlockadedEmpireIDs, loaded.Galaxy.Systems[0].BlockadedEmpireIDs)
+	}
+
+	zero := NewSmallFixture(305)
+	zero.Galaxy.Systems[0].BlockadedEmpireIDs = []ID{0}
+	if err := zero.Validate(); err == nil {
+		t.Fatal("expected zero blockaded empire id to fail validation")
+	}
+
+	duplicate := NewSmallFixture(306)
+	duplicate.Galaxy.Systems[0].BlockadedEmpireIDs = []ID{duplicate.Empires[0].ID, duplicate.Empires[0].ID}
+	if err := duplicate.Validate(); err == nil {
+		t.Fatal("expected duplicate blockaded empire ids to fail validation")
+	}
+
+	unsorted := NewSmallFixture(307)
+	secondEmpireID := unsorted.NewID()
+	unsorted.Empires = append(unsorted.Empires, Empire{ID: secondEmpireID, Name: "Second", RaceID: unsorted.Empires[0].RaceID})
+	unsorted.Galaxy.Systems[0].BlockadedEmpireIDs = []ID{secondEmpireID, unsorted.Empires[0].ID}
+	if err := unsorted.Validate(); err == nil {
+		t.Fatal("expected unsorted blockaded empire ids to fail validation")
+	}
+
+	unknown := NewSmallFixture(308)
+	unknown.Galaxy.Systems[0].BlockadedEmpireIDs = []ID{999999}
+	if err := unknown.Validate(); err == nil {
+		t.Fatal("expected unknown blockaded empire id to fail validation")
+	}
+}

@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 9
+const StateSchemaVersion = 10
 
 type ID uint64
 
@@ -27,11 +27,12 @@ type Galaxy struct {
 }
 
 type StarSystem struct {
-	ID      ID       `json:"id"`
-	Name    string   `json:"name"`
-	X       int      `json:"x"`
-	Y       int      `json:"y"`
-	Planets []Planet `json:"planets"`
+	ID                 ID       `json:"id"`
+	Name               string   `json:"name"`
+	X                  int      `json:"x"`
+	Y                  int      `json:"y"`
+	BlockadedEmpireIDs []ID     `json:"blockaded_empire_ids,omitempty"`
+	Planets            []Planet `json:"planets"`
 }
 
 type Planet struct {
@@ -85,6 +86,8 @@ type EmpireFoodLogistics struct {
 	FreightersUsed           int     `json:"freighters_used"`
 	LocalFoodSurplus         float64 `json:"local_food_surplus"`
 	LocalFoodShortage        float64 `json:"local_food_shortage"`
+	BlockedFoodSurplus       float64 `json:"blocked_food_surplus"`
+	BlockedFoodShortage      float64 `json:"blocked_food_shortage"`
 	FoodTransferred          float64 `json:"food_transferred"`
 	FoodUnmet                float64 `json:"food_unmet"`
 	SurplusFoodSold          float64 `json:"surplus_food_sold"`
@@ -258,6 +261,16 @@ func (s *GameState) Validate() error {
 		if err := checkID(system.ID, fmt.Sprintf("system[%d]", si)); err != nil {
 			return err
 		}
+		lastBlockadedEmpireID := ID(0)
+		for bi, empireID := range system.BlockadedEmpireIDs {
+			if empireID == 0 {
+				return fmt.Errorf("system[%d] blockaded empire id must be non-zero", si)
+			}
+			if bi > 0 && empireID <= lastBlockadedEmpireID {
+				return fmt.Errorf("system[%d] blockaded empire ids must be strictly ascending", si)
+			}
+			lastBlockadedEmpireID = empireID
+		}
 		for pi := range system.Planets {
 			planet := &system.Planets[pi]
 			if planet.Name == "" || planet.SizeID == "" || planet.MineralID == "" || planet.GravityID == "" || planet.ClimateID == "" {
@@ -321,6 +334,8 @@ func (s *GameState) Validate() error {
 		}{
 			{"local_food_surplus", empire.FoodLogistics.LocalFoodSurplus},
 			{"local_food_shortage", empire.FoodLogistics.LocalFoodShortage},
+			{"blocked_food_surplus", empire.FoodLogistics.BlockedFoodSurplus},
+			{"blocked_food_shortage", empire.FoodLogistics.BlockedFoodShortage},
 			{"food_transferred", empire.FoodLogistics.FoodTransferred},
 			{"food_unmet", empire.FoodLogistics.FoodUnmet},
 			{"surplus_food_sold", empire.FoodLogistics.SurplusFoodSold},
@@ -421,6 +436,13 @@ func (s *GameState) Validate() error {
 			}
 		}
 		empireIDs[empire.ID] = struct{}{}
+	}
+	for si := range s.Galaxy.Systems {
+		for _, empireID := range s.Galaxy.Systems[si].BlockadedEmpireIDs {
+			if _, ok := empireIDs[empireID]; !ok {
+				return fmt.Errorf("system[%d] references unknown blockaded empire %d", si, empireID)
+			}
+		}
 	}
 	for i := range s.Colonies {
 		colony := &s.Colonies[i]

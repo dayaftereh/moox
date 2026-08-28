@@ -232,7 +232,7 @@ The authoritative economy now has a semantic Treasury ledger backed by direct or
 - original `+0xAE` gross minus `+0xB4` total Maintenance produces `+0xB2` net BC;
 - `Apply_All_Player_Changes_` adds `+0xB2` to Treasury before the Research-breakthrough path;
 - New Game initializes Treasury to **50 BC** at original VA `0x12C86`, independently cross-checked in all five active `SAVE10.GAM` player records;
-- Core schema 9 stores Treasury as domain-native `float64` with an auditable semantic snapshot;
+- Core schema 10 stores Treasury as domain-native `float64` with an auditable semantic snapshot;
 - current MOOX settlement includes implemented Tax + surplus-Food income and Building + active-Freighter Maintenance only;
 - missing original Maintenance/income categories and `Player_Maintenance_` deficit/scrap policy remain explicit follow-ups rather than guessed values;
 - `empire.treasury_settled` is emitted before Research and appears in Observer/replay history;
@@ -248,21 +248,36 @@ MOOX now implements the proven import order and locks `[3,1,2]` shortage with fo
 
 Detailed evidence: `docs/research/INSUFFICIENT_FREIGHTER_PRIORITY_2026-08-28.md`.
 
-### Current exact project task - blockade effect on Food/Freighter logistics
+### Resolved blockade effect on Food/Freighter logistics
 
-Investigate the **original MOO2 1.31 blockade eligibility/effect on Colony Food import/export** before adding Population transport competition:
+Direct MOO2 1.31 executable analysis now fixes the Food-side blockade rule:
 
-1. identify the original Colony/blockade predicate used by `Pass_Out_Imports_` and its surrounding resource-calculation path;
-2. determine whether blockade prevents imports, exports, both, or changes Food production/maintenance separately;
-3. determine when the blockade state is materialized relative to `Pre_Import_Computing_` / `Pass_Out_Imports_`;
-4. model only the smallest authoritative Colony/System state required for deterministic Food logistics;
-5. add replay/Observer-visible effects without moving blockade policy into UI/network adapters.
+- `+0x2A` of the original Star System record is a target-Empire blockade bitmask;
+- `Colony_Is_Blockaded_` (`0xDF8C1`) resolves blockade from the Colony owner and its Star System;
+- `Pass_Out_Imports_` (`0xDF8F0`) excludes a blockaded Colony from both the deficit/import list and the surplus/export pool;
+- blocked local surplus therefore cannot supply other Colonies and is not sellable Empire surplus Food;
+- blocked shortage remains local/unmet and can produce normal starvation;
+- `Next_Turn_Calc_` runs Colony calculations, then `Compute_Blockades_` (`0xE5097`), then Colony calculations again, so newly materialized blockade state affects Food logistics in the same next-turn sequence.
 
-Do not add Population transport until Food blockade eligibility is independently proven and represented.
+MOOX Core schema 10 now stores semantic `StarSystem.BlockadedEmpireIDs`. Food logistics consumes this authoritative System state and projects per-Colony `blockaded` plus aggregate blocked Food surplus/shortage into Observer/replay data. Full Fleet/Diplomacy-derived blockade computation remains deferred until those strategic state models exist rather than inventing byte-level placeholders.
 
-### After blockade Food/Freighter eligibility
+Detailed evidence: `docs/research/BLOCKADE_FOOD_LOGISTICS_2026-08-28.md`.
 
-- Population transport through the shared Freighter pool;
+### Current exact project task - Population transport through the shared Freighter pool
+
+Investigate the **original MOO2 1.31 Population transport / Freighter interaction** before extending the authoritative logistics state:
+
+1. identify the original commands/state that create, move and resolve Population transports;
+2. determine exactly when transport demand reserves or consumes Freighters relative to Food imports;
+3. determine whether Food and Population share one capacity counter directly, use separate reservations, or settle in a fixed priority order;
+4. map cancellation, arrival, ownership and blocked-route behavior only where executable/save evidence supports it;
+5. add the smallest deterministic transport state and Observer/replay events without moving transport legality into UI/network adapters.
+
+Keep the proven Food blockade rule unchanged while researching transport competition.
+
+### After Population transport
+
+- full Fleet/Diplomacy-derived `Compute_Blockades_` materialization when canonical strategic Fleet/Diplomacy state exists;
 - missing original Treasury categories and deficit/scrap policy when those systems become modeled;
 - Housing / Cloning Center / medicine growth modifiers;
 - Biospheres / Advanced City Planning / terraforming capacity transitions;
@@ -270,11 +285,13 @@ Do not add Population transport until Food blockade eligibility is independently
 
 ### Parked Economy follow-ups
 
-- blockade effects and Population transport through the shared Freighter pool;
+- Population transport through the shared Freighter pool;
+- Fleet/Diplomacy-derived blockade production once canonical strategic state exists;
 - missing original Treasury categories and deficit/scrap policy;
 - Housing / Cloning Center / medicine growth modifiers;
 - Biospheres / Advanced City Planning / terraforming capacity transitions;
 - race-aware Population cohorts.
+
 ## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.

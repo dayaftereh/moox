@@ -10,6 +10,7 @@ import (
 
 type ColonyFoodLogistics struct {
 	ColonyID     core.ID `json:"colony_id"`
+	Blockaded    bool    `json:"blockaded"`
 	FoodImported float64 `json:"food_imported"`
 	FoodExported float64 `json:"food_exported"`
 	FoodSurplus  float64 `json:"food_surplus"`
@@ -67,6 +68,14 @@ func (r *EconomyResolver) materializeFoodLogistics(state *core.GameState, emit b
 	}
 	sort.Slice(empireIndexes, func(i, j int) bool { return state.Empires[empireIndexes[i]].ID < state.Empires[empireIndexes[j]].ID })
 
+	systemByPlanetID := make(map[core.ID]*core.StarSystem)
+	for si := range state.Galaxy.Systems {
+		system := &state.Galaxy.Systems[si]
+		for pi := range system.Planets {
+			systemByPlanetID[system.Planets[pi].ID] = system
+		}
+	}
+
 	var events []DomainEvent
 	for _, empireIndex := range empireIndexes {
 		empire := &state.Empires[empireIndex]
@@ -75,8 +84,14 @@ func (r *EconomyResolver) materializeFoodLogistics(state *core.GameState, emit b
 			return nil, fmt.Errorf("empire %d has unknown race %q", empire.ID, empire.RaceID)
 		}
 		colonies := coloniesForEmpire(state, empire.ID)
+		eligibleColonies := make([]*core.Colony, 0, len(colonies))
+		blockadedByColonyID := make(map[core.ID]bool, len(colonies))
 		totalSurplus := 0.0
 		totalShortage := 0.0
+		eligibleSurplus := 0.0
+		eligibleShortage := 0.0
+		blockedSurplus := 0.0
+		blockedShortage := 0.0
 		for _, colony := range colonies {
 			d := &colony.PopulationDynamics
 			d.FoodImported = 0
@@ -85,14 +100,29 @@ func (r *EconomyResolver) materializeFoodLogistics(state *core.GameState, emit b
 			d.FoodShortage = d.LocalFoodShortage
 			totalSurplus += d.LocalFoodSurplus
 			totalShortage += d.LocalFoodShortage
+
+			system, ok := systemByPlanetID[colony.PlanetID]
+			if !ok {
+				return nil, fmt.Errorf("colony %d planet %d is not attached to a star system", colony.ID, colony.PlanetID)
+			}
+			blockaded := systemBlockadesEmpire(system, empire.ID)
+			blockadedByColonyID[colony.ID] = blockaded
+			if blockaded {
+				blockedSurplus += d.LocalFoodSurplus
+				blockedShortage += d.LocalFoodShortage
+				continue
+			}
+			eligibleColonies = append(eligibleColonies, colony)
+			eligibleSurplus += d.LocalFoodSurplus
+			eligibleShortage += d.LocalFoodShortage
 		}
 
-		transferPossible := math.Min(totalSurplus, totalShortage)
+		transferPossible := math.Min(eligibleSurplus, eligibleShortage)
 		capacity := float64(empire.Freighters) * r.Rules.FreighterFoodCapacity
 		transfer := math.Min(transferPossible, capacity)
 		if transfer > populationEpsilon {
-			allocateFoodImports(colonies, transfer, r.Rules.FreighterFoodCapacity)
-			allocateFoodExports(colonies, transfer, totalSurplus)
+			allocateFoodImports(eligibleColonies, transfer, r.Rules.FreighterFoodCapacity)
+			allocateFoodExports(eligibleColonies, transfer, eligibleSurplus)
 		}
 
 		used := 0
@@ -103,7 +133,7 @@ func (r *EconomyResolver) materializeFoodLogistics(state *core.GameState, emit b
 		if transferPossible > populationEpsilon {
 			required = int(math.Ceil(transferPossible/r.Rules.FreighterFoodCapacity - populationEpsilon))
 		}
-		remainingSurplus := 0.0
+		sellableSurplus := 0.0
 		remainingShortage := 0.0
 		colonyViews := make([]ColonyFoodLogistics, 0, len(colonies))
 		for _, colony := range colonies {
@@ -113,10 +143,12 @@ func (r *EconomyResolver) materializeFoodLogistics(state *core.GameState, emit b
 			if err := r.Rules.refreshPopulationProjection(d, colony.Population.Total, empire.RaceID); err != nil {
 				return nil, fmt.Errorf("colony %d population projection: %w", colony.ID, err)
 			}
-			remainingSurplus += d.FoodSurplus
+			if !blockadedByColonyID[colony.ID] {
+				sellableSurplus += d.FoodSurplus
+			}
 			remainingShortage += d.FoodShortage
 			colonyViews = append(colonyViews, ColonyFoodLogistics{
-				ColonyID: colony.ID, FoodImported: d.FoodImported, FoodExported: d.FoodExported,
+				ColonyID: colony.ID, Blockaded: blockadedByColonyID[colony.ID], FoodImported: d.FoodImported, FoodExported: d.FoodExported,
 				FoodSurplus: d.FoodSurplus, FoodShortage: d.FoodShortage,
 			})
 		}
@@ -129,11 +161,13 @@ func (r *EconomyResolver) materializeFoodLogistics(state *core.GameState, emit b
 			FreightersUsed:           used,
 			LocalFoodSurplus:         totalSurplus,
 			LocalFoodShortage:        totalShortage,
+			BlockedFoodSurplus:       blockedSurplus,
+			BlockedFoodShortage:      blockedShortage,
 			FoodTransferred:          transfer,
 			FoodUnmet:                remainingShortage,
-			SurplusFoodSold:          remainingSurplus,
+			SurplusFoodSold:          sellableSurplus,
 			FreighterOperatingCostBC: float64(used) * r.Rules.FreighterOperatingCostBC,
-			SurplusFoodIncomeBC:      remainingSurplus * saleRate,
+			SurplusFoodIncomeBC:      sellableSurplus * saleRate,
 		}
 		if emit && (totalSurplus > populationEpsilon || totalShortage > populationEpsilon || transfer > populationEpsilon) {
 			event, err := NewDomainEvent("empire.food_logistics_resolved", 0, 0, FoodLogisticsResolvedEvent{EmpireID: empire.ID, Snapshot: empire.FoodLogistics, Colonies: colonyViews})
@@ -144,6 +178,18 @@ func (r *EconomyResolver) materializeFoodLogistics(state *core.GameState, emit b
 		}
 	}
 	return events, nil
+}
+
+func systemBlockadesEmpire(system *core.StarSystem, empireID core.ID) bool {
+	if system == nil || empireID == 0 {
+		return false
+	}
+	for _, blockadedEmpireID := range system.BlockadedEmpireIDs {
+		if blockadedEmpireID == empireID {
+			return true
+		}
+	}
+	return false
 }
 
 func coloniesForEmpire(state *core.GameState, empireID core.ID) []*core.Colony {

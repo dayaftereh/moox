@@ -296,3 +296,84 @@ func TestStarvationPreservesFractionalPopulationLoss(t *testing.T) {
 		t.Fatalf("fractional starvation total=%v want=%v loss=%v", colony.Population.Total, want, dynamics.ProjectedStarvation)
 	}
 }
+
+func TestFoodLogisticsBlockadedExporterCannotSupplyOrSellFood(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	resolver, err := NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state, home, sink := twoColonyFoodFixture(t, 734)
+	state.Empires[0].Freighters = 2
+	state.Galaxy.Systems[0].BlockadedEmpireIDs = []core.ID{state.Empires[0].ID}
+
+	result, err := resolver.Resolve(ResolveContext{}, state, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	event := findDomainEvent(result.Events, "empire.food_logistics_resolved")
+	if event == nil {
+		t.Fatal("missing food logistics event")
+	}
+	var payload FoodLogisticsResolvedEvent
+	if err := json.Unmarshal(event.Data, &payload); err != nil {
+		t.Fatal(err)
+	}
+	if payload.Snapshot.FoodTransferred != 0 || payload.Snapshot.FreightersRequired != 0 || payload.Snapshot.FreightersUsed != 0 {
+		t.Fatalf("blockaded exporter unexpectedly participated in transfer: %+v", payload.Snapshot)
+	}
+	if !closePopulationValue(payload.Snapshot.BlockedFoodSurplus, payload.Snapshot.LocalFoodSurplus) || payload.Snapshot.BlockedFoodSurplus <= 0 {
+		t.Fatalf("blocked surplus not materialized: %+v", payload.Snapshot)
+	}
+	if payload.Snapshot.SurplusFoodSold != 0 || payload.Snapshot.SurplusFoodIncomeBC != 0 {
+		t.Fatalf("blockaded surplus must not be sold: %+v", payload.Snapshot)
+	}
+	if !closePopulationValue(payload.Snapshot.FoodUnmet, payload.Snapshot.LocalFoodShortage) || payload.Snapshot.FoodUnmet <= 0 {
+		t.Fatalf("unserved sink shortage missing: %+v", payload.Snapshot)
+	}
+	if len(payload.Colonies) != 2 || payload.Colonies[0].ColonyID != home.ID || !payload.Colonies[0].Blockaded || payload.Colonies[0].FoodExported != 0 || payload.Colonies[1].ColonyID != sink.ID || payload.Colonies[1].Blockaded || payload.Colonies[1].FoodImported != 0 {
+		t.Fatalf("unexpected colony blockade projection: %+v", payload.Colonies)
+	}
+}
+
+func TestFoodLogisticsBlockadedImporterCannotReceiveFood(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	resolver, err := NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state, home, sink := twoColonyFoodFixture(t, 735)
+	state.Empires[0].Freighters = 2
+	state.Galaxy.Systems[1].BlockadedEmpireIDs = []core.ID{state.Empires[0].ID}
+
+	result, err := resolver.Resolve(ResolveContext{}, state, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	event := findDomainEvent(result.Events, "empire.food_logistics_resolved")
+	if event == nil {
+		t.Fatal("missing food logistics event")
+	}
+	var payload FoodLogisticsResolvedEvent
+	if err := json.Unmarshal(event.Data, &payload); err != nil {
+		t.Fatal(err)
+	}
+	if payload.Snapshot.FoodTransferred != 0 || payload.Snapshot.FreightersRequired != 0 || payload.Snapshot.FreightersUsed != 0 {
+		t.Fatalf("blockaded importer unexpectedly participated in transfer: %+v", payload.Snapshot)
+	}
+	if !closePopulationValue(payload.Snapshot.BlockedFoodShortage, payload.Snapshot.LocalFoodShortage) || payload.Snapshot.BlockedFoodShortage <= 0 {
+		t.Fatalf("blocked shortage not materialized: %+v", payload.Snapshot)
+	}
+	if !closePopulationValue(payload.Snapshot.FoodUnmet, payload.Snapshot.LocalFoodShortage) {
+		t.Fatalf("blockaded shortage should remain unmet: %+v", payload.Snapshot)
+	}
+	if !closePopulationValue(payload.Snapshot.SurplusFoodSold, payload.Snapshot.LocalFoodSurplus) || payload.Snapshot.SurplusFoodSold <= 0 {
+		t.Fatalf("unblockaded surplus should remain sellable: %+v", payload.Snapshot)
+	}
+	if len(payload.Colonies) != 2 || payload.Colonies[0].ColonyID != home.ID || payload.Colonies[0].Blockaded || payload.Colonies[0].FoodExported != 0 || payload.Colonies[1].ColonyID != sink.ID || !payload.Colonies[1].Blockaded || payload.Colonies[1].FoodImported != 0 {
+		t.Fatalf("unexpected colony blockade projection: %+v", payload.Colonies)
+	}
+	if findDomainEvent(result.Events, "colony.population_starved") == nil {
+		t.Fatal("blockaded food shortage should remain eligible for starvation")
+	}
+}
