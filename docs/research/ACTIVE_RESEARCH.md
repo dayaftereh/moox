@@ -116,57 +116,54 @@ The code includes hash constants for the relevant original function ranges. Thes
 
 ## Next exact action
 
-Research project switching is now implemented and documented in `RESEARCH_SWITCHING_2026-08-27.md`. The active Research investigation moves to the **original 1.31 strategic turn-order conflict**.
+The original MOO2 1.31 strategic turn-order question is now **closed** by direct executable evidence and documented in `TURN_ORDER_2026-08-28.md`.
 
-### Closed in the latest Research slices
+### Resolved turn semantics
 
-- General/basic `all`, ordinary `choose_one`, Creative `all`, and Uncreative `fixed_one` application semantics are implemented.
-- `ResearchChoices()` is race-aware and remains read-only/RNG-side-effect free.
-- a running project can be redirected with the existing `empire.select_research` command.
-- all accumulated `ProgressRP` transfers exactly to the new legal field/application; no scaling or clamping occurs at the switch boundary.
-- an identical active selection is rejected as a no-op without state mutation.
-- `empire.research_switched` records previous/current authoritative project snapshots plus `transferred_rp`.
-- two-turn `GameSession` coverage proves Observer/replay visibility and that the next turn's RP is added only after the transferred pool is installed.
-- no cancel-to-none operation is added because current evidence supports changing direction, not deliberately abandoning all research.
+The original uses a materialize/apply pipeline:
 
-### Current exact Research question - 1.31 turn order
+1. current Colony Food/Industry/Research/BC and projected Population dynamics are already materialized;
+2. `Apply_All_Player_Changes_` runs, including `Check_For_Research_Breakthrough_` using the pre-growth `player+0xAC` RP snapshot;
+3. `Apply_All_Colony_Changes_` applies Population Growth/Starvation;
+4. the same colony apply path runs `Apply_Production_`, consuming pre-growth materialized Industry/PP;
+5. `Do_Colony_Calculations_` and related paths materialize the next state.
 
-A StrategyWiki calculations reference explicitly described as checked under MOO2 1.31 gives:
+MOOX now mirrors this as:
 
-1. Population increase/decrease,
-2. Food/PP/RP/Money generation,
-3. building construction,
-4. colonist arrival/battles,
-5. research completion.
+```text
+Economy/Food snapshot
+-> Research
+-> Population Growth/Starvation
+-> Construction
+-> next-state recalculation
+```
 
-Current MOOX still materializes current-turn Economy/Research before the Population transition. Do not reorder the resolver from this one secondary description alone.
+Both RP and PP remain **pre-growth** for the current turn. A combined regression test locks the event order and exact 4.5 RP / 3 PP fixture values.
 
-Next evidence work:
+### Current exact Research task
 
-1. seek independent descriptions or original-observed behavior that distinguishes whether newly grown/starved Population contributes to same-turn Food/PP/RP/BC,
-2. inspect the existing private 1.31 executable/research probes for call/order evidence if practical,
-3. design a minimal original-game behavioral experiment if static evidence remains ambiguous,
-4. only then decide whether to reorder Population/Food/Construction/Research phases and update the deterministic tests.
+Investigate the **original Uncreative application RNG / initialization timing** only as far as executable/save evidence supports it:
 
-### After turn-order resolution
+1. determine whether the complete Uncreative field/application plan is fixed at new-game creation, first field visibility, research selection, or another deterministic point;
+2. inspect original symbols/callers around `Ensure_Uncreative_Field_OK_` and neighboring research functions;
+3. compare original behavior with the current persisted deterministic MOOX plan;
+4. replace only the generator/timing if original evidence is strong, without changing the `fixed_one` protocol/state shape.
 
-- determine exact original Uncreative application RNG/initialization timing if executable/save evidence is practical,
-- model hyper-advanced repeated-field level/cost state,
-- implement Advanced-start randomized/race-aware technology ownership,
-- later handle external acquisition of an Uncreative fixed application before that field is researched.
+### After Uncreative timing
+
+- hyper-advanced repeated-field level/cost state;
+- Advanced-start randomized/race-aware technology ownership;
+- later external acquisition interaction with an Uncreative fixed application.
 
 ### Parked Economy follow-ups
 
-- Freighter Fleet acquisition/build legal action,
-- Treasury settlement of Freighter operating cost and surplus-Food income,
-- blockade effects and Population transport through the shared Freighter pool,
-- exact original insufficient-Freighter priority,
-- Housing / Cloning Center / medicine growth modifiers,
-- Biospheres / Advanced City Planning / terraforming capacity transitions,
+- Freighter Fleet acquisition/build legal action;
+- Treasury settlement of Freighter operating cost and surplus-Food income;
+- blockade effects and Population transport through the shared Freighter pool;
+- exact original insufficient-Freighter priority;
+- Housing / Cloning Center / medicine growth modifiers;
+- Biospheres / Advanced City Planning / terraforming capacity transitions;
 - race-aware Population cohorts.
-
-Architecture constraint: continuous strategic quantities remain domain-native `float64`; Research selection modes and Technology IDs are discrete server-owned semantics. Human UI, built-in AI and remote/MCP agents must consume the same ResearchChoices surface.
-
 ## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.

@@ -213,7 +213,7 @@ https://www.moo2mod.com/doc/150/parameters.html
 
 Use: secondary evidence that classic/default behavior prevents starvation from eliminating the final Population unit. This is used only for the starvation floor; mod-specific alternate settings are not imported into the 1.31 ruleset.
 
-### StrategyWiki - Calculations (1.31 turn-order conflict)
+### StrategyWiki - Calculations (1.31 secondary turn-sequence description)
 
 https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Calculations
 
@@ -253,3 +253,13 @@ Use: strong manual evidence that the Research indicator can change the direction
 https://manuals.plus/m/5622eabc23dba2bd8c537b7dee95fe7a11c82d6d6607ee13b1b091f07e284617.pdf
 
 Use: independent hosted copy of the same manual wording for switching research direction and complete accumulated-RP transfer.
+
+## Direct original turn-order evidence
+
+### Private original MOO2 1.31 executable
+
+`C:\ASH\Temp\mastori2\Orion2.exe`
+
+SHA-256: `7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5`
+
+Use: primary/original-observed control-flow and data-flow evidence for `Next_Turn_Calc_`, `Apply_All_Player_Changes_`, `Check_For_Research_Breakthrough_`, `Apply_All_Colony_Changes_`, `Apply_Colony_Pop_Growth_`, `Apply_Production_`, resource materialization fields and subsequent `Do_Colony_Calculations_` refresh. Detailed addresses are recorded in `TURN_ORDER_2026-08-28.md`. This primary evidence supersedes the simplified secondary sequence when they differ.

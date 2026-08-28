@@ -450,9 +450,9 @@ The command/session boundary is now implemented across `internal/protocol`, `int
 - explicit Gravity/Government/local-Morale economy context and adjusted output, kept separate from base output for later additive leader/technology layers;
 - minimal colony building inventory with ruleset validation for Barracks/Holo/Pleasure morale behavior.
 
-The strategic runtime has progressed beyond the first command into an explicit colony progression order. Current-turn Economy/Dynamics are materialized first; Construction consumes available PP, Research consumes RP, Population Growth resolves afterwards, and the post-turn snapshot is recalculated. This ordering is covered by regression tests so newly grown Population cannot produce PP/RP retroactively.
+The strategic runtime follows the original MOO2 1.31 materialize/apply pipeline. Current-turn Economy/Dynamics and Food logistics are materialized first; Research consumes the pre-growth RP snapshot, Population Growth/Starvation is applied, then Construction consumes the already-materialized pre-growth PP snapshot. The post-turn Economy/Dynamics snapshot is recalculated afterwards. Direct original-executable control/data flow and regression tests lock this ordering.
 
-Starvation and Food/Freighter logistics are implemented as an empire-wide deterministic phase. Research now has server-authoritative General/ordinary/Creative/Uncreative multi-application semantics. Research project switching is now implemented with exact RP transfer and Observer/replay history. The next Research slice is stronger evidence for original 1.31 turn ordering, followed by exact Uncreative RNG timing where practical and hyper-advanced fields.
+Starvation and Food/Freighter logistics are implemented as an empire-wide deterministic phase. Research now has server-authoritative General/ordinary/Creative/Uncreative multi-application semantics. Research project switching is implemented with exact RP transfer and Observer/replay history. Direct original-executable analysis has also resolved the MOO2 1.31 turn-order question. The next Research slice is exact Uncreative RNG/initialization timing where practical, followed by hyper-advanced fields.
 
 Network transports, Wails services and MCP remain adapters to this boundary and should not be introduced into the deterministic core.
 ## Related architecture documents

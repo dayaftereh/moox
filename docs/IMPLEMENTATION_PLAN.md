@@ -240,9 +240,8 @@ A private developer-only original-asset viewer may exist for comparison, but ori
 
 ## Recommended immediate next work
 
-1. Resolve the strategic turn-order evidence around Population, Food/PP/RP generation, Construction and Research completion before moving the current MOOX phase ordering.
-2. Refine exact Uncreative original RNG/timing only if executable/save evidence can support it; keep the deterministic persisted MOOX plan otherwise.
-3. Model hyper-advanced repeated-field level/cost state.
-4. Implement Advanced-start randomized/race-aware technology ownership using the completed General/ordinary/Creative/Uncreative policy.
-5. Then continue the first headless vertical slice toward colony ship production, movement and a second colony.
+1. Refine exact Uncreative original RNG/initialization timing only if executable/save evidence can support it; keep the deterministic persisted MOOX plan otherwise.
+2. Model hyper-advanced repeated-field level/cost state.
+3. Implement Advanced-start randomized/race-aware technology ownership using the completed General/ordinary/Creative/Uncreative policy.
+4. Then continue the first headless vertical slice toward colony ship production, movement and a second colony.
 Do not reopen closed race/building/ship graphics research unless contradictory evidence or a concrete runtime requirement demands it. Wails v3 remains the planned application shell; transports/UI must continue to consume the same canonical Session/legal-action APIs rather than contain gameplay rules.

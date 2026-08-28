@@ -123,21 +123,17 @@ This preserves the authoritative separation between gross/adjusted colony output
 
 ## Turn ordering
 
-The current strategic resolution order is intentionally:
+Direct original-executable analysis supersedes the earlier provisional ordering discussion. MOO2 1.31 separates calculation/materialization from apply:
 
 ```text
-1. Commands / population assignment / research selection / construction selection
-2. Recalculate current-turn Colony economy + PopulationDynamics
-3. Construction consumes current-turn production_available
-4. Research consumes current-turn Research
-5. Population growth uses current-turn sustenance and projected_growth
-6. Recalculate the post-turn snapshot from the new Population
+1. current-turn Economy / PopulationDynamics are already materialized
+2. Research consumes the pre-growth RP snapshot
+3. Population Growth/Starvation is applied
+4. Construction consumes the pre-growth PP snapshot
+5. next-state Economy / PopulationDynamics is recalculated
 ```
 
-This prevents newly grown Population from retroactively producing PP or RP in the same turn.
-
-A dedicated regression test proves that an exactly-fed Human colony can grow at turn end while its selected Research project still receives only the pre-growth `4.5 RP`; the larger scientist output appears only in the post-turn snapshot.
-
+The core invariant remains: newly grown Population does **not** retroactively produce extra RP or PP in the same turn. See `TURN_ORDER_2026-08-28.md` for direct symbol/address/data-flow evidence.
 ## Population job allocation after growth
 
 Population growth is continuous, so new Population is not left as an unassigned whole worker icon. The current aggregate model preserves job shares proportionally:

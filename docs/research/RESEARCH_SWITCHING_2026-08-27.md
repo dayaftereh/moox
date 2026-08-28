@@ -174,18 +174,10 @@ Coverage includes:
 
 ## Next research question
 
-The next active fidelity question is the strategic 1.31 phase order:
+The strategic MOO2 1.31 turn-order question is resolved by direct original-executable control/data-flow analysis; see `TURN_ORDER_2026-08-28.md`. Switching remains unchanged: the transferred RP pool is installed before the normal Research phase consumes the new turn's materialized RP.
 
-- Population growth/starvation,
-- Food/Freighter balancing,
-- Food/PP/RP/BC production,
-- Construction,
-- Research progress/breakthrough.
+Next Research work:
 
-A secondary source described as checked against MOO2 1.31 conflicts with the current MOOX ordering. This remains unresolved and must be strengthened with independent/original-observed evidence before the resolver phases are reordered.
-
-After that:
-
-- exact Uncreative RNG/initialization timing if practical;
-- hyper-advanced repeated-field state/cost;
+- exact original Uncreative application RNG/initialization timing if practical;
+- hyper-advanced repeated-field level/cost state;
 - Advanced-start randomized/race-aware technology ownership.

@@ -111,11 +111,11 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 		return Resolution{}, err
 	}
 	events = append(events, foodEvents...)
-	constructionEvents, err := r.advanceConstruction(state)
-	if err != nil {
-		return Resolution{}, err
-	}
-	events = append(events, constructionEvents...)
+	// Original 1.31 keeps current-turn colony resource values materialized before
+	// Next_Turn_Calc applies state changes. Player research consumes that snapshot
+	// first; Population growth/starvation is then applied; Construction consumes
+	// the already-materialized pre-growth PP snapshot afterwards. None of these
+	// phases retroactively recompute current-turn RP/PP from newly changed Population.
 	researchEvents, err := r.advanceResearch(state)
 	if err != nil {
 		return Resolution{}, err
@@ -126,10 +126,13 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 		return Resolution{}, err
 	}
 	events = append(events, populationEvents...)
-	// Current MOOX ordering keeps Population as a turn-end transition until the
-	// conflicting secondary evidence about original 1.31 turn ordering is resolved.
-	// Recalculate the next-state local economy after Population changes, then
-	// rematerialize logistics without emitting a second authoritative turn event.
+	constructionEvents, err := r.advanceConstruction(state)
+	if err != nil {
+		return Resolution{}, err
+	}
+	events = append(events, constructionEvents...)
+	// Recalculate the next-state local economy only after the original-order
+	// apply phases, then rematerialize logistics without emitting a second turn event.
 	for i := range state.Colonies {
 		if err := r.recalculateColony(state, &state.Colonies[i]); err != nil {
 			return Resolution{}, err

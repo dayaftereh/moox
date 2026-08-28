@@ -243,7 +243,7 @@ The next Research work should remain focused and not reopen settled identity tab
 
 1. determine the original Uncreative application RNG/initialization timing more precisely if executable/save evidence is available;
 2. investigate switching/cancelling an active research project and whether RP progress is retained, lost or field-specific;
-3. resolve the conflicting secondary evidence about the global 1.31 strategic turn order around Population, RP generation and breakthrough;
+3. use the resolved direct MOO2 1.31 turn-order evidence from `TURN_ORDER_2026-08-28.md`;
 4. model hyper-advanced repeated-field level/cost state;
 5. implement Advanced-start randomized/race-aware technology ownership using the now-correct Ordinary/Creative/Uncreative policy;
 6. later handle external acquisition of the already-fixed Uncreative application before that field is researched.

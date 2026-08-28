@@ -47,11 +47,11 @@ func TestQueueBuildingAppliesCurrentTurnProduction(t *testing.T) {
 	if colony.AdjustedEconomy.Production <= colony.Construction.ProgressPP {
 		t.Fatalf("post-growth production=%v should exceed consumed current-turn PP=%v", colony.AdjustedEconomy.Production, colony.Construction.ProgressPP)
 	}
-	if len(result.Events) != 3 || result.Events[0].Kind != "colony.construction_queued" || result.Events[1].Kind != "colony.construction_progressed" || result.Events[2].Kind != "colony.population_grew" {
+	if len(result.Events) != 3 || result.Events[0].Kind != "colony.construction_queued" || result.Events[1].Kind != "colony.population_grew" || result.Events[2].Kind != "colony.construction_progressed" {
 		t.Fatalf("unexpected construction/growth events: %+v", result.Events)
 	}
 	var progressed ConstructionProgressedEvent
-	if err := json.Unmarshal(result.Events[1].Data, &progressed); err != nil {
+	if err := json.Unmarshal(result.Events[2].Data, &progressed); err != nil {
 		t.Fatal(err)
 	}
 	if progressed.AppliedPP != 3 {
@@ -155,11 +155,11 @@ func TestCompletedBuildingAffectsPostTurnSnapshotWithoutRetroactivePP(t *testing
 	if colony.AdjustedEconomy.Production <= 144 {
 		t.Fatalf("post-growth/post-building production=%v should exceed 144", colony.AdjustedEconomy.Production)
 	}
-	if len(first.Events) != 4 || first.Events[2].Kind != "colony.building_completed" || first.Events[3].Kind != "colony.population_grew" {
+	if len(first.Events) != 4 || first.Events[1].Kind != "colony.population_grew" || first.Events[2].Kind != "colony.construction_progressed" || first.Events[3].Kind != "colony.building_completed" {
 		t.Fatalf("unexpected completion/growth events: %+v", first.Events)
 	}
 	var progress ConstructionProgressedEvent
-	if err := json.Unmarshal(first.Events[1].Data, &progress); err != nil {
+	if err := json.Unmarshal(first.Events[2].Data, &progress); err != nil {
 		t.Fatal(err)
 	}
 	if progress.AppliedPP != 120 {
@@ -198,11 +198,12 @@ func TestConstructionProgressIsDeterministicAcrossResolutions(t *testing.T) {
 		t.Fatal(err)
 	}
 	secondProgress := second.State.Colonies[0].Construction.ProgressPP
-	if len(second.Events) == 0 || second.Events[0].Kind != "colony.construction_progressed" {
+	progressEvent := findDomainEvent(second.Events, "colony.construction_progressed")
+	if progressEvent == nil {
 		t.Fatalf("second resolution missing construction progress event: %+v", second.Events)
 	}
 	var secondEvent ConstructionProgressedEvent
-	if err := json.Unmarshal(second.Events[0].Data, &secondEvent); err != nil {
+	if err := json.Unmarshal(progressEvent.Data, &secondEvent); err != nil {
 		t.Fatal(err)
 	}
 	if !closePopulationValue(secondProgress, firstProgress+secondEvent.AppliedPP) {

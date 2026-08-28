@@ -176,25 +176,18 @@ Not implemented in this checkpoint:
 
 Those need strategic movement/blockade state before they can be represented correctly.
 
-## Current MOOX turn order and open 1.31 conflict
+## Resolved MOO2 1.31 materialize/apply order
 
-The currently implemented MOOX order remains:
+The previously open conflict is resolved by direct analysis of the original executable. Food/import calculations belong to the pre-apply materialized colony snapshot. MOOX therefore materializes local Economy and Food/Freighter logistics at the strategic-resolution boundary, then applies:
 
 ```text
-1. strategic commands
-2. current-turn local Economy / PopulationDynamics
-3. Food/Freighter logistics
-4. Construction consumes current-turn available PP
-5. Research consumes current-turn RP
-6. Population growth/starvation
-7. recalculate next-state local Economy
-8. rematerialize next-state Food logistics preview (no second event)
+Research using pre-growth RP
+-> Population Growth/Starvation
+-> Construction using pre-growth PP
+-> next-state Economy/Food-logistics recalculation
 ```
 
-A StrategyWiki calculations page explicitly described as checked under MOO2 1.31 gives a conflicting original turn sequence in which Population increase/decrease is earlier than resource generation and Research completion. This is important evidence, but it is currently a single secondary description and conflicts with the MOOX ordering regression introduced in the previous checkpoint.
-
-This slice does **not** silently change the global turn order. The conflict is now an explicit research item. The Food logistics implementation is phase-isolated so moving it relative to Population/Research later does not require a protocol redesign.
-
+This matches the original control/data-flow semantics even though MOOX does not continuously recalculate UI state between commands. See `TURN_ORDER_2026-08-28.md`.
 ## Ruleset schema
 
 This slice introduces:
@@ -223,10 +216,6 @@ Coverage now includes:
 
 ## Next exact work
 
-Per the current development plan, Economy pauses here and the active implementation/research lane returns to **Research / multi-Technology TechFields**:
+Food/Freighter/Starvation and the strategic turn-order question are closed for this pass. Remaining Economy follow-ups stay parked: Freighter acquisition, Treasury settlement, blockade/population transport, special growth/capacity layers and exact insufficient-Freighter allocation priority.
 
-1. verify ordinary/Creative/Uncreative acquisition semantics for a TechField containing multiple technologies;
-2. identify when the technology choice/randomization occurs relative to field research completion;
-3. represent the policy server-side in `ResearchChoice` / Research state;
-4. keep Human UI, built-in AI and remote agents on the same authority-filtered legal actions;
-5. resolve the newly identified global 1.31 turn-order conflict while touching Research timing.
+Active Research work moves to exact Uncreative application RNG/initialization timing where practical, then hyper-advanced repeated-field state/cost and Advanced-start ownership.
