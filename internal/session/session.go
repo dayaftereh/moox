@@ -475,6 +475,52 @@ func (s *GameSession) CompleteResearchField(empireID core.ID, resolver *game.Eco
 	s.nextEventSequence++
 	return nil
 }
+func (s *GameSession) GrantTechnology(empireID core.ID, technologyID int, resolver *game.EconomyResolver, options game.TechnologyGrantOptions) error {
+	if resolver == nil {
+		return fmt.Errorf("economy resolver must not be nil")
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.phase != PhasePostResolution {
+		return fmt.Errorf("cannot grant technology in phase %q", s.phase)
+	}
+
+	stateInput, err := cloneState(s.state)
+	if err != nil {
+		return err
+	}
+	event, err := resolver.GrantTechnology(stateInput, empireID, technologyID, options)
+	if err != nil {
+		return fmt.Errorf("grant technology: %w", err)
+	}
+	if err := stateInput.Validate(); err != nil {
+		return fmt.Errorf("technology grant returned invalid state: %w", err)
+	}
+	if err := s.validateResolvedEventLocked(event); err != nil {
+		return err
+	}
+	committed, err := cloneState(stateInput)
+	if err != nil {
+		return err
+	}
+
+	s.state = committed
+	s.revision++
+	s.events = append(s.events, protocol.DomainEvent{
+		SchemaVersion:   protocol.EventSchemaVersion,
+		Sequence:        s.nextEventSequence,
+		Turn:            s.state.Turn,
+		Revision:        s.revision,
+		Scope:           protocol.EventScopeStrategic,
+		Kind:            event.Kind,
+		SeatID:          event.SeatID,
+		CommandSequence: event.CommandSequence,
+		Data:            append(json.RawMessage(nil), event.Data...),
+	})
+	s.nextEventSequence++
+	return nil
+}
 func (s *GameSession) CompleteTurn() error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
