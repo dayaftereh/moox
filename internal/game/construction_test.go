@@ -38,7 +38,7 @@ func TestQueueBuildingAppliesCurrentTurnProduction(t *testing.T) {
 		t.Fatal(err)
 	}
 	colony := result.State.Colonies[0]
-	if colony.Construction == nil || colony.Construction.BuildingID != "holo_simulator" {
+	if colony.Construction == nil || colony.Construction.ProjectID != "holo_simulator" {
 		t.Fatalf("construction not queued: %+v", colony.Construction)
 	}
 	if colony.Construction.ProgressPP != 3 {
@@ -115,7 +115,7 @@ func TestQueueBuildingRejectsForeignUnknownOwnedAndBusy(t *testing.T) {
 	t.Run("busy colony", func(t *testing.T) {
 		state := core.NewSmallFixture(205)
 		state.Empires[0].KnownTechnologyIDs = []int{86}
-		state.Colonies[0].Construction = &core.ConstructionState{BuildingID: "research_lab", ProgressPP: 1}
+		state.Colonies[0].Construction = &core.ConstructionState{ProjectKind: core.ConstructionProjectBuilding, ProjectID: "research_lab", ProgressPP: 1}
 		command := makeCommand(t, state, "holo_simulator")
 		ctx, batches := constructionBatch(t, state, command)
 		if _, err := resolver.Resolve(ctx, state, batches); err == nil {

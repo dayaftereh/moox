@@ -166,13 +166,19 @@ func TestValidateRejectsInvalidBuildingList(t *testing.T) {
 
 func TestConstructionStateRoundTripsExactly(t *testing.T) {
 	state := NewSmallFixture(301)
-	state.Colonies[0].Construction = &ConstructionState{BuildingID: "holo_simulator", ProgressPP: 42.5}
+	state.Colonies[0].Construction = &ConstructionState{ProjectKind: ConstructionProjectBuilding, ProjectID: "holo_simulator", ProgressPP: 42.5}
 	if err := state.Validate(); err != nil {
 		t.Fatal(err)
 	}
 	encoded, err := MarshalState(state)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if bytes.Contains(encoded, []byte(`"building_id"`)) {
+		t.Fatal("schema-8 construction leaked legacy building_id")
+	}
+	if !bytes.Contains(encoded, []byte(`"project_kind"`)) || !bytes.Contains(encoded, []byte(`"building"`)) || !bytes.Contains(encoded, []byte(`"project_id"`)) || !bytes.Contains(encoded, []byte(`"holo_simulator"`)) {
+		t.Fatalf("schema-8 construction metadata missing: %s", encoded)
 	}
 	loaded, err := UnmarshalState(encoded)
 	if err != nil {
@@ -200,6 +206,7 @@ func TestKnownTechnologyIDsValidateAndRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	loaded, err := UnmarshalState(encoded)
 	if err != nil {
 		t.Fatal(err)

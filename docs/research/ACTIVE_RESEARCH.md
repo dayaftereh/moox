@@ -176,7 +176,7 @@ MOOX models this as sparse per-Empire `HyperAdvancedResearch` state and a server
 
 The original MOO2 technology-selection screen temporarily promotes Hyper counters by one while building its preview. That makes the first UI preview appear as 25,000 RP while the original strategic resolver evaluates a zero-counter first project at 15,000 RP. MOOX deliberately exposes the authoritative strategic cost and does not reproduce that UI-only off-by-one.
 
-`StateSchemaVersion = 7` and technology ruleset schema 4 now carry the semantic Hyper state/rules plus the original AI/research metadata needed by Advanced start.
+Technology ruleset schema 4 carries the semantic Hyper state/rules plus the original AI/research metadata used by Advanced start. Core `StateSchemaVersion = 8` now additionally generalizes Colony Construction to semantic `project_kind` / `project_id`, with `building` as the first project kind and Freighter Fleet as the next planned one.
 
 ### Resolved Advanced-start randomized/race-aware ownership
 

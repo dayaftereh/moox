@@ -55,7 +55,7 @@ func TestConstructionPreservesFractionalProductionPP(t *testing.T) {
 		t.Fatal(err)
 	}
 	state := core.NewSmallFixture(713)
-	state.Colonies[0].Construction = &core.ConstructionState{BuildingID: "holo_simulator"}
+	state.Colonies[0].Construction = &core.ConstructionState{ProjectKind: core.ConstructionProjectBuilding, ProjectID: "holo_simulator"}
 	state.Colonies[0].AdjustedEconomy.Production = 3.75
 	state.Colonies[0].PopulationDynamics.ProductionAvailable = 3.75
 	events, err := resolver.advanceConstruction(state)

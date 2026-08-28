@@ -46,7 +46,7 @@ func TestAvailableBuildingChoicesRequireKnownTechnologyAndOwnership(t *testing.T
 		t.Fatalf("owned building not filtered: %+v", choices)
 	}
 
-	colony.Construction = &core.ConstructionState{BuildingID: "pleasure_dome", ProgressPP: 1}
+	colony.Construction = &core.ConstructionState{ProjectKind: core.ConstructionProjectBuilding, ProjectID: "pleasure_dome", ProgressPP: 1}
 	choices, err = rules.AvailableBuildingChoices(state, empire.ID, colony.ID)
 	if err != nil {
 		t.Fatal(err)

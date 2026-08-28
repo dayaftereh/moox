@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 7
+const StateSchemaVersion = 8
 
 type ID uint64
 
@@ -109,9 +109,16 @@ type Colony struct {
 	Construction       *ConstructionState       `json:"construction,omitempty"`
 }
 
+type ConstructionProjectKind string
+
+const (
+	ConstructionProjectBuilding ConstructionProjectKind = "building"
+)
+
 type ConstructionState struct {
-	BuildingID string  `json:"building_id"`
-	ProgressPP float64 `json:"progress_pp"`
+	ProjectKind ConstructionProjectKind `json:"project_kind"`
+	ProjectID   string                  `json:"project_id"`
+	ProgressPP  float64                 `json:"progress_pp"`
 }
 
 type PopulationState struct {
@@ -377,8 +384,11 @@ func (s *GameState) Validate() error {
 			return fmt.Errorf("colony[%d] has incomplete references", i)
 		}
 		if colony.Construction != nil {
-			if colony.Construction.BuildingID == "" {
-				return fmt.Errorf("colony[%d] construction building_id is required", i)
+			if colony.Construction.ProjectKind != ConstructionProjectBuilding {
+				return fmt.Errorf("colony[%d] construction project_kind %q is invalid", i, colony.Construction.ProjectKind)
+			}
+			if colony.Construction.ProjectID == "" {
+				return fmt.Errorf("colony[%d] construction project_id is required", i)
 			}
 			if !finiteNonNegative(colony.Construction.ProgressPP) {
 				return fmt.Errorf("colony[%d] construction progress_pp must be finite and non-negative", i)

@@ -55,9 +55,9 @@ func (r *EconomyResolver) queueBuilding(state *core.GameState, empireID core.ID,
 		}
 	}
 	if colony.Construction != nil {
-		return DomainEvent{}, fmt.Errorf("colony %d already constructs %q", colony.ID, colony.Construction.BuildingID)
+		return DomainEvent{}, fmt.Errorf("colony %d already constructs %q", colony.ID, colony.Construction.ProjectID)
 	}
-	colony.Construction = &core.ConstructionState{BuildingID: payload.BuildingID}
+	colony.Construction = &core.ConstructionState{ProjectKind: core.ConstructionProjectBuilding, ProjectID: payload.BuildingID}
 	return NewDomainEvent("colony.construction_queued", seatID, command.Sequence, ConstructionQueuedEvent{
 		ColonyID:         colony.ID,
 		BuildingID:       payload.BuildingID,
@@ -72,13 +72,16 @@ func (r *EconomyResolver) advanceConstruction(state *core.GameState) ([]DomainEv
 		if colony.Construction == nil {
 			continue
 		}
-		definition, ok := r.Rules.BuildingDefinitions[colony.Construction.BuildingID]
+		if colony.Construction.ProjectKind != core.ConstructionProjectBuilding {
+			return nil, fmt.Errorf("colony %d constructs unsupported project kind %q", colony.ID, colony.Construction.ProjectKind)
+		}
+		definition, ok := r.Rules.BuildingDefinitions[colony.Construction.ProjectID]
 		if !ok {
-			return nil, fmt.Errorf("colony %d constructs unknown building %q", colony.ID, colony.Construction.BuildingID)
+			return nil, fmt.Errorf("colony %d constructs unknown building %q", colony.ID, colony.Construction.ProjectID)
 		}
 		remaining := definition.ProductionCostPP - colony.Construction.ProgressPP
 		if remaining <= 1e-9 {
-			return nil, fmt.Errorf("colony %d construction %q has invalid completed progress %g", colony.ID, colony.Construction.BuildingID, colony.Construction.ProgressPP)
+			return nil, fmt.Errorf("colony %d construction %q has invalid completed progress %g", colony.ID, colony.Construction.ProjectID, colony.Construction.ProgressPP)
 		}
 		applied := colony.PopulationDynamics.ProductionAvailable
 		if applied < 0 {
@@ -91,7 +94,7 @@ func (r *EconomyResolver) advanceConstruction(state *core.GameState) ([]DomainEv
 		remaining -= applied
 		progress, err := NewDomainEvent("colony.construction_progressed", 0, 0, ConstructionProgressedEvent{
 			ColonyID:    colony.ID,
-			BuildingID:  colony.Construction.BuildingID,
+			BuildingID:  colony.Construction.ProjectID,
 			AppliedPP:   applied,
 			ProgressPP:  colony.Construction.ProgressPP,
 			RemainingPP: remaining,
@@ -103,7 +106,7 @@ func (r *EconomyResolver) advanceConstruction(state *core.GameState) ([]DomainEv
 		if remaining > 1e-9 {
 			continue
 		}
-		buildingID := colony.Construction.BuildingID
+		buildingID := colony.Construction.ProjectID
 		colony.Buildings = append(colony.Buildings, buildingID)
 		colony.Construction = nil
 		completed, err := NewDomainEvent("colony.building_completed", 0, 0, BuildingCompletedEvent{ColonyID: colony.ID, BuildingID: buildingID})

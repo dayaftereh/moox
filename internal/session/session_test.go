@@ -419,7 +419,7 @@ func TestGameSessionResolvesConstructionCommand(t *testing.T) {
 		t.Fatalf("unexpected resolved session: phase=%q revision=%d", observer.Phase, observer.Revision)
 	}
 	construction := observer.State.Colonies[0].Construction
-	if construction == nil || construction.BuildingID != "holo_simulator" || construction.ProgressPP <= 0 {
+	if construction == nil || construction.ProjectID != "holo_simulator" || construction.ProgressPP <= 0 {
 		t.Fatalf("construction not materialized through GameSession: %+v", construction)
 	}
 	var queued, progressed bool
