@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 4,
   "ruleset": "moo2-1.31",
   "sources": [
     {
@@ -29,6 +29,13 @@
       "id": "moo2-1.31-orion2-new-game-techfields",
       "type": "original-observed",
       "description": "Orion2.exe 1.31 six-entry uint16 staged new-game tech-field list at file offset 0x1FF7B0: 29,55,22,57,28,23; field-0 always-known behavior is cross-checked against classic reverse-engineering documentation",
+      "archive": "Orion2.exe",
+      "sha256": "7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5"
+    },
+    {
+      "id": "moo2-1.31-orion2-technology-ai-research",
+      "type": "original-observed",
+      "description": "Orion2.exe 1.31 technology AI/research metadata: technology record byte +3 is the AI class; class base-weight/competition pairs are at file offset 0x1FB82A and the 23 field-group progression values are at file offset 0x201CA0",
       "archive": "Orion2.exe",
       "sha256": "7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5"
     },
@@ -72,6 +79,245 @@
     "source": {
       "source_id": "moo2-1.31-orion2-hyper-advanced-research",
       "offset": 859798
+    }
+  },
+  "ai_research": {
+    "technology_classes": [
+      {
+        "class_id": 0,
+        "base_weight": 50,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 1,
+        "base_weight": 50,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 2,
+        "base_weight": 50,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 3,
+        "base_weight": 50,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 4,
+        "base_weight": 50,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 5,
+        "base_weight": 20,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 6,
+        "base_weight": 20,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 7,
+        "base_weight": 20,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 8,
+        "base_weight": 10,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 9,
+        "base_weight": 50,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 10,
+        "base_weight": 20,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 11,
+        "base_weight": 5,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 12,
+        "base_weight": 10,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 13,
+        "base_weight": 50,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 14,
+        "base_weight": 50,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 15,
+        "base_weight": 10,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 16,
+        "base_weight": 10,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 17,
+        "base_weight": 50,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 18,
+        "base_weight": 20,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 19,
+        "base_weight": 20,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 20,
+        "base_weight": 5,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 21,
+        "base_weight": 20,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 22,
+        "base_weight": 50,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 23,
+        "base_weight": 10,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 24,
+        "base_weight": 10,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 25,
+        "base_weight": 10,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 26,
+        "base_weight": 20,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 27,
+        "base_weight": 5,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 28,
+        "base_weight": 20,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 29,
+        "base_weight": 5,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 30,
+        "base_weight": 10,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 31,
+        "base_weight": 10,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 32,
+        "base_weight": 50,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 33,
+        "base_weight": 50,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 34,
+        "base_weight": 10,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 35,
+        "base_weight": 5,
+        "competition_sensitive": false
+      },
+      {
+        "class_id": 36,
+        "base_weight": 10,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 37,
+        "base_weight": 5,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 38,
+        "base_weight": 5,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 39,
+        "base_weight": 50,
+        "competition_sensitive": true
+      },
+      {
+        "class_id": 40,
+        "base_weight": 50,
+        "competition_sensitive": false
+      }
+    ],
+    "field_group_values": [
+      0,
+      1,
+      3,
+      6,
+      12,
+      22,
+      36,
+      62,
+      102,
+      172,
+      292,
+      492,
+      812,
+      1372,
+      2372,
+      3972,
+      6372,
+      9972,
+      10400,
+      10800,
+      11200,
+      11600,
+      12000
+    ],
+    "verification": "original-exe-calc-tech-value-and-choose-tech-application",
+    "source": {
+      "source_id": "moo2-1.31-orion2-technology-ai-research",
+      "offset": 2078762
     }
   },
   "technology_fields": [
@@ -984,6 +1230,11 @@
       "order": 0,
       "technology_id": 1,
       "tech_field_id": 49,
+      "ai_class": 27,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082595
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082592
@@ -1004,6 +1255,11 @@
       "order": 1,
       "technology_id": 2,
       "tech_field_id": 48,
+      "ai_class": 32,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082608
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082605
@@ -1024,6 +1280,11 @@
       "order": 2,
       "technology_id": 3,
       "tech_field_id": 42,
+      "ai_class": 7,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082621
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082618
@@ -1044,6 +1305,11 @@
       "order": 3,
       "technology_id": 4,
       "tech_field_id": 63,
+      "ai_class": 17,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082634
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082631
@@ -1064,6 +1330,11 @@
       "order": 4,
       "technology_id": 5,
       "tech_field_id": 73,
+      "ai_class": 5,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082647
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082644
@@ -1084,6 +1355,11 @@
       "order": 5,
       "technology_id": 6,
       "tech_field_id": 24,
+      "ai_class": 0,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082660
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082657
@@ -1104,6 +1380,11 @@
       "order": 6,
       "technology_id": 7,
       "tech_field_id": 24,
+      "ai_class": 2,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082673
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082670
@@ -1124,6 +1405,11 @@
       "order": 7,
       "technology_id": 8,
       "tech_field_id": 24,
+      "ai_class": 1,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082686
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082683
@@ -1144,6 +1430,11 @@
       "order": 8,
       "technology_id": 9,
       "tech_field_id": 36,
+      "ai_class": 15,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082699
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082696
@@ -1164,6 +1455,11 @@
       "order": 9,
       "technology_id": 10,
       "tech_field_id": 13,
+      "ai_class": 19,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082712
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082709
@@ -1184,6 +1480,11 @@
       "order": 10,
       "technology_id": 11,
       "tech_field_id": 13,
+      "ai_class": 18,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082725
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082722
@@ -1204,6 +1505,11 @@
       "order": 11,
       "technology_id": 12,
       "tech_field_id": 13,
+      "ai_class": 21,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082738
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082735
@@ -1224,6 +1530,11 @@
       "order": 12,
       "technology_id": 13,
       "tech_field_id": 4,
+      "ai_class": 28,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082751
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082748
@@ -1244,6 +1555,11 @@
       "order": 13,
       "technology_id": 14,
       "tech_field_id": 20,
+      "ai_class": 8,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082764
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082761
@@ -1264,6 +1580,11 @@
       "order": 14,
       "technology_id": 15,
       "tech_field_id": 58,
+      "ai_class": 9,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082777
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082774
@@ -1284,6 +1605,11 @@
       "order": 15,
       "technology_id": 16,
       "tech_field_id": 8,
+      "ai_class": 11,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082790
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082787
@@ -1304,6 +1630,11 @@
       "order": 16,
       "technology_id": 17,
       "tech_field_id": 63,
+      "ai_class": 35,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082803
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082800
@@ -1324,6 +1655,11 @@
       "order": 17,
       "technology_id": 18,
       "tech_field_id": 12,
+      "ai_class": 5,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082816
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082813
@@ -1344,6 +1680,11 @@
       "order": 18,
       "technology_id": 19,
       "tech_field_id": 47,
+      "ai_class": 4,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082829
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082826
@@ -1364,6 +1705,11 @@
       "order": 19,
       "technology_id": 20,
       "tech_field_id": 5,
+      "ai_class": 23,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082842
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082839
@@ -1384,6 +1730,11 @@
       "order": 20,
       "technology_id": 21,
       "tech_field_id": 25,
+      "ai_class": 2,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082855
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082852
@@ -1404,6 +1755,11 @@
       "order": 21,
       "technology_id": 22,
       "tech_field_id": 3,
+      "ai_class": 1,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082868
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082865
@@ -1424,6 +1780,11 @@
       "order": 22,
       "technology_id": 23,
       "tech_field_id": 8,
+      "ai_class": 31,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082881
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082878
@@ -1444,6 +1805,11 @@
       "order": 23,
       "technology_id": 24,
       "tech_field_id": 19,
+      "ai_class": 15,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082894
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082891
@@ -1464,6 +1830,11 @@
       "order": 24,
       "technology_id": 25,
       "tech_field_id": 21,
+      "ai_class": 17,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082907
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082904
@@ -1484,6 +1855,11 @@
       "order": 25,
       "technology_id": 26,
       "tech_field_id": 66,
+      "ai_class": 27,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082920
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082917
@@ -1504,6 +1880,11 @@
       "order": 26,
       "technology_id": 27,
       "tech_field_id": 62,
+      "ai_class": 9,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082933
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082930
@@ -1524,6 +1905,11 @@
       "order": 27,
       "technology_id": 28,
       "tech_field_id": 17,
+      "ai_class": 20,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082946
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082943
@@ -1544,6 +1930,11 @@
       "order": 28,
       "technology_id": 29,
       "tech_field_id": 70,
+      "ai_class": 0,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082959
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082956
@@ -1564,6 +1955,11 @@
       "order": 29,
       "technology_id": 30,
       "tech_field_id": 74,
+      "ai_class": 38,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082972
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082969
@@ -1584,6 +1980,11 @@
       "order": 30,
       "technology_id": 31,
       "tech_field_id": 11,
+      "ai_class": 30,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082985
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082982
@@ -1604,6 +2005,11 @@
       "order": 31,
       "technology_id": 32,
       "tech_field_id": 0,
+      "ai_class": 5,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2082998
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2082995
@@ -1624,6 +2030,11 @@
       "order": 32,
       "technology_id": 33,
       "tech_field_id": 7,
+      "ai_class": 33,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083011
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083008
@@ -1644,6 +2055,11 @@
       "order": 33,
       "technology_id": 34,
       "tech_field_id": 45,
+      "ai_class": 33,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083024
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083021
@@ -1664,6 +2080,11 @@
       "order": 34,
       "technology_id": 35,
       "tech_field_id": 64,
+      "ai_class": 33,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083037
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083034
@@ -1684,6 +2105,11 @@
       "order": 35,
       "technology_id": 36,
       "tech_field_id": 61,
+      "ai_class": 33,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083050
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083047
@@ -1704,6 +2130,11 @@
       "order": 36,
       "technology_id": 37,
       "tech_field_id": 68,
+      "ai_class": 33,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083063
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083060
@@ -1724,6 +2155,11 @@
       "order": 37,
       "technology_id": 38,
       "tech_field_id": 26,
+      "ai_class": 37,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083076
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083073
@@ -1744,6 +2180,11 @@
       "order": 38,
       "technology_id": 39,
       "tech_field_id": 1,
+      "ai_class": 6,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083089
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083086
@@ -1764,6 +2205,11 @@
       "order": 39,
       "technology_id": 40,
       "tech_field_id": 29,
+      "ai_class": 9,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083102
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083099
@@ -1784,6 +2230,11 @@
       "order": 40,
       "technology_id": 41,
       "tech_field_id": 23,
+      "ai_class": 22,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083115
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083112
@@ -1804,6 +2255,11 @@
       "order": 41,
       "technology_id": 42,
       "tech_field_id": 6,
+      "ai_class": 13,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083128
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083125
@@ -1824,6 +2280,11 @@
       "order": 42,
       "technology_id": 43,
       "tech_field_id": 14,
+      "ai_class": 12,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083141
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083138
@@ -1844,6 +2305,11 @@
       "order": 43,
       "technology_id": 44,
       "tech_field_id": 25,
+      "ai_class": 25,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083154
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083151
@@ -1864,6 +2330,11 @@
       "order": 44,
       "technology_id": 45,
       "tech_field_id": 74,
+      "ai_class": 33,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083167
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083164
@@ -1884,6 +2355,11 @@
       "order": 45,
       "technology_id": 46,
       "tech_field_id": 56,
+      "ai_class": 29,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083180
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083177
@@ -1904,6 +2380,11 @@
       "order": 46,
       "technology_id": 47,
       "tech_field_id": 74,
+      "ai_class": 26,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083193
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083190
@@ -1924,6 +2405,11 @@
       "order": 47,
       "technology_id": 48,
       "tech_field_id": 1,
+      "ai_class": 20,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083206
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083203
@@ -1944,6 +2430,11 @@
       "order": 48,
       "technology_id": 49,
       "tech_field_id": 67,
+      "ai_class": 1,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083219
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083216
@@ -1964,6 +2455,11 @@
       "order": 49,
       "technology_id": 50,
       "tech_field_id": 67,
+      "ai_class": 4,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083232
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083229
@@ -1984,6 +2480,11 @@
       "order": 50,
       "technology_id": 51,
       "tech_field_id": 9,
+      "ai_class": 39,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083245
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083242
@@ -2004,6 +2505,11 @@
       "order": 51,
       "technology_id": 52,
       "tech_field_id": 51,
+      "ai_class": 5,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083258
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083255
@@ -2024,6 +2530,11 @@
       "order": 52,
       "technology_id": 53,
       "tech_field_id": 71,
+      "ai_class": 37,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083271
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083268
@@ -2044,6 +2555,11 @@
       "order": 53,
       "technology_id": 54,
       "tech_field_id": 51,
+      "ai_class": 26,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083284
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083281
@@ -2064,6 +2580,11 @@
       "order": 54,
       "technology_id": 55,
       "tech_field_id": 58,
+      "ai_class": 22,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083297
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083294
@@ -2084,6 +2605,11 @@
       "order": 55,
       "technology_id": 56,
       "tech_field_id": 4,
+      "ai_class": 31,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083310
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083307
@@ -2104,6 +2630,11 @@
       "order": 56,
       "technology_id": 57,
       "tech_field_id": 7,
+      "ai_class": 28,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083323
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083320
@@ -2124,6 +2655,11 @@
       "order": 57,
       "technology_id": 58,
       "tech_field_id": 28,
+      "ai_class": 25,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083336
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083333
@@ -2144,6 +2680,11 @@
       "order": 58,
       "technology_id": 59,
       "tech_field_id": 14,
+      "ai_class": 29,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083349
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083346
@@ -2164,6 +2705,11 @@
       "order": 59,
       "technology_id": 60,
       "tech_field_id": 37,
+      "ai_class": 38,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083362
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083359
@@ -2184,6 +2730,11 @@
       "order": 60,
       "technology_id": 61,
       "tech_field_id": 18,
+      "ai_class": 7,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083375
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083372
@@ -2204,6 +2755,11 @@
       "order": 61,
       "technology_id": 62,
       "tech_field_id": 70,
+      "ai_class": 11,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083388
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083385
@@ -2224,6 +2780,11 @@
       "order": 62,
       "technology_id": 63,
       "tech_field_id": 22,
+      "ai_class": 36,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083401
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083398
@@ -2244,6 +2805,11 @@
       "order": 63,
       "technology_id": 64,
       "tech_field_id": 63,
+      "ai_class": 29,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083414
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083411
@@ -2264,6 +2830,11 @@
       "order": 64,
       "technology_id": 65,
       "tech_field_id": 6,
+      "ai_class": 13,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083427
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083424
@@ -2284,6 +2855,11 @@
       "order": 65,
       "technology_id": 66,
       "tech_field_id": 4,
+      "ai_class": 30,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083440
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083437
@@ -2304,6 +2880,11 @@
       "order": 66,
       "technology_id": 67,
       "tech_field_id": 20,
+      "ai_class": 9,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083453
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083450
@@ -2324,6 +2905,11 @@
       "order": 67,
       "technology_id": 68,
       "tech_field_id": 46,
+      "ai_class": 0,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083466
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083463
@@ -2344,6 +2930,11 @@
       "order": 68,
       "technology_id": 69,
       "tech_field_id": 55,
+      "ai_class": 22,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083479
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083476
@@ -2364,6 +2955,11 @@
       "order": 69,
       "technology_id": 70,
       "tech_field_id": 31,
+      "ai_class": 26,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083492
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083489
@@ -2384,6 +2980,11 @@
       "order": 70,
       "technology_id": 71,
       "tech_field_id": 5,
+      "ai_class": 19,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083505
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083502
@@ -2404,6 +3005,11 @@
       "order": 71,
       "technology_id": 72,
       "tech_field_id": 5,
+      "ai_class": 18,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083518
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083515
@@ -2424,6 +3030,11 @@
       "order": 72,
       "technology_id": 73,
       "tech_field_id": 31,
+      "ai_class": 16,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083531
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083528
@@ -2444,6 +3055,11 @@
       "order": 73,
       "technology_id": 74,
       "tech_field_id": 70,
+      "ai_class": 7,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083544
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083541
@@ -2464,6 +3080,11 @@
       "order": 74,
       "technology_id": 75,
       "tech_field_id": 32,
+      "ai_class": 3,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083557
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083554
@@ -2484,6 +3105,11 @@
       "order": 75,
       "technology_id": 76,
       "tech_field_id": 33,
+      "ai_class": 2,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083570
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083567
@@ -2504,6 +3130,11 @@
       "order": 76,
       "technology_id": 77,
       "tech_field_id": 6,
+      "ai_class": 13,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083583
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083580
@@ -2524,6 +3155,11 @@
       "order": 77,
       "technology_id": 78,
       "tech_field_id": 64,
+      "ai_class": 26,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083596
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083593
@@ -2544,6 +3180,11 @@
       "order": 78,
       "technology_id": 79,
       "tech_field_id": 16,
+      "ai_class": 26,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083609
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083606
@@ -2564,6 +3205,11 @@
       "order": 79,
       "technology_id": 80,
       "tech_field_id": 36,
+      "ai_class": 38,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083622
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083619
@@ -2584,6 +3230,11 @@
       "order": 80,
       "technology_id": 81,
       "tech_field_id": 26,
+      "ai_class": 34,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083635
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083632
@@ -2604,6 +3255,11 @@
       "order": 81,
       "technology_id": 82,
       "tech_field_id": 3,
+      "ai_class": 31,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083648
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083645
@@ -2624,6 +3280,11 @@
       "order": 82,
       "technology_id": 83,
       "tech_field_id": 42,
+      "ai_class": 30,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083661
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083658
@@ -2644,6 +3305,11 @@
       "order": 83,
       "technology_id": 84,
       "tech_field_id": 30,
+      "ai_class": 2,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083674
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083671
@@ -2664,6 +3330,11 @@
       "order": 84,
       "technology_id": 85,
       "tech_field_id": 37,
+      "ai_class": 27,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083687
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083684
@@ -2684,6 +3355,11 @@
       "order": 85,
       "technology_id": 86,
       "tech_field_id": 60,
+      "ai_class": 40,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083700
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083697
@@ -2704,6 +3380,11 @@
       "order": 86,
       "technology_id": 87,
       "tech_field_id": 18,
+      "ai_class": 0,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083713
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083710
@@ -2724,6 +3405,11 @@
       "order": 87,
       "technology_id": 88,
       "tech_field_id": 38,
+      "ai_class": 18,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083726
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083723
@@ -2744,6 +3430,11 @@
       "order": 88,
       "technology_id": 89,
       "tech_field_id": 37,
+      "ai_class": 17,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083739
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083736
@@ -2764,6 +3455,11 @@
       "order": 89,
       "technology_id": 90,
       "tech_field_id": 38,
+      "ai_class": 27,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083752
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083749
@@ -2784,6 +3480,11 @@
       "order": 90,
       "technology_id": 91,
       "tech_field_id": 39,
+      "ai_class": 14,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083765
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083762
@@ -2804,6 +3505,11 @@
       "order": 91,
       "technology_id": 92,
       "tech_field_id": 6,
+      "ai_class": 13,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083778
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083775
@@ -2824,6 +3530,11 @@
       "order": 92,
       "technology_id": 93,
       "tech_field_id": 71,
+      "ai_class": 23,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083791
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083788
@@ -2844,6 +3555,11 @@
       "order": 93,
       "technology_id": 94,
       "tech_field_id": 36,
+      "ai_class": 23,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083804
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083801
@@ -2864,6 +3580,11 @@
       "order": 94,
       "technology_id": 95,
       "tech_field_id": 40,
+      "ai_class": 18,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083817
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083814
@@ -2884,6 +3605,11 @@
       "order": 95,
       "technology_id": 96,
       "tech_field_id": 41,
+      "ai_class": 18,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083830
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083827
@@ -2904,6 +3630,11 @@
       "order": 96,
       "technology_id": 97,
       "tech_field_id": 41,
+      "ai_class": 26,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083843
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083840
@@ -2924,6 +3655,11 @@
       "order": 97,
       "technology_id": 98,
       "tech_field_id": 47,
+      "ai_class": 39,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083856
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083853
@@ -2944,6 +3680,11 @@
       "order": 98,
       "technology_id": 99,
       "tech_field_id": 65,
+      "ai_class": 17,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083869
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083866
@@ -2964,6 +3705,11 @@
       "order": 99,
       "technology_id": 100,
       "tech_field_id": 57,
+      "ai_class": 26,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083882
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083879
@@ -2984,6 +3730,11 @@
       "order": 100,
       "technology_id": 101,
       "tech_field_id": 57,
+      "ai_class": 16,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083895
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083892
@@ -3004,6 +3755,11 @@
       "order": 101,
       "technology_id": 102,
       "tech_field_id": 72,
+      "ai_class": 28,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083908
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083905
@@ -3024,6 +3780,11 @@
       "order": 102,
       "technology_id": 103,
       "tech_field_id": 29,
+      "ai_class": 8,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083921
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083918
@@ -3044,6 +3805,11 @@
       "order": 103,
       "technology_id": 104,
       "tech_field_id": 7,
+      "ai_class": 26,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083934
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083931
@@ -3064,6 +3830,11 @@
       "order": 104,
       "technology_id": 105,
       "tech_field_id": 39,
+      "ai_class": 38,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083947
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083944
@@ -3084,6 +3855,11 @@
       "order": 105,
       "technology_id": 106,
       "tech_field_id": 2,
+      "ai_class": 21,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083960
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083957
@@ -3104,6 +3880,11 @@
       "order": 106,
       "technology_id": 107,
       "tech_field_id": 34,
+      "ai_class": 6,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083973
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083970
@@ -3124,6 +3905,11 @@
       "order": 107,
       "technology_id": 108,
       "tech_field_id": 53,
+      "ai_class": 17,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083986
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083983
@@ -3144,6 +3930,11 @@
       "order": 108,
       "technology_id": 109,
       "tech_field_id": 23,
+      "ai_class": 9,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2083999
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2083996
@@ -3164,6 +3955,11 @@
       "order": 109,
       "technology_id": 110,
       "tech_field_id": 49,
+      "ai_class": 25,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084012
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084009
@@ -3184,6 +3980,11 @@
       "order": 110,
       "technology_id": 111,
       "tech_field_id": 64,
+      "ai_class": 28,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084025
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084022
@@ -3204,6 +4005,11 @@
       "order": 111,
       "technology_id": 112,
       "tech_field_id": 52,
+      "ai_class": 34,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084038
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084035
@@ -3224,6 +4030,11 @@
       "order": 112,
       "technology_id": 113,
       "tech_field_id": 53,
+      "ai_class": 4,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084051
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084048
@@ -3244,6 +4055,11 @@
       "order": 113,
       "technology_id": 114,
       "tech_field_id": 15,
+      "ai_class": 12,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084064
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084061
@@ -3264,6 +4080,11 @@
       "order": 114,
       "technology_id": 115,
       "tech_field_id": 54,
+      "ai_class": 26,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084077
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084074
@@ -3284,6 +4105,11 @@
       "order": 115,
       "technology_id": 116,
       "tech_field_id": 54,
+      "ai_class": 24,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084090
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084087
@@ -3304,6 +4130,11 @@
       "order": 116,
       "technology_id": 117,
       "tech_field_id": 50,
+      "ai_class": 32,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084103
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084100
@@ -3324,6 +4155,11 @@
       "order": 117,
       "technology_id": 118,
       "tech_field_id": 40,
+      "ai_class": 19,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084116
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084113
@@ -3344,6 +4180,11 @@
       "order": 118,
       "technology_id": 119,
       "tech_field_id": 55,
+      "ai_class": 19,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084129
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084126
@@ -3364,6 +4205,11 @@
       "order": 119,
       "technology_id": 120,
       "tech_field_id": 55,
+      "ai_class": 18,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084142
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084139
@@ -3384,6 +4230,11 @@
       "order": 120,
       "technology_id": 121,
       "tech_field_id": 22,
+      "ai_class": 21,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084155
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084152
@@ -3404,6 +4255,11 @@
       "order": 121,
       "technology_id": 122,
       "tech_field_id": 56,
+      "ai_class": 25,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084168
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084165
@@ -3424,6 +4280,11 @@
       "order": 122,
       "technology_id": 123,
       "tech_field_id": 74,
+      "ai_class": 26,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084181
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084178
@@ -3444,6 +4305,11 @@
       "order": 123,
       "technology_id": 124,
       "tech_field_id": 27,
+      "ai_class": 15,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084194
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084191
@@ -3464,6 +4330,11 @@
       "order": 124,
       "technology_id": 125,
       "tech_field_id": -1,
+      "ai_class": 38,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084207
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084204
@@ -3484,6 +4355,11 @@
       "order": 125,
       "technology_id": 126,
       "tech_field_id": 68,
+      "ai_class": 37,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084220
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084217
@@ -3504,6 +4380,11 @@
       "order": 126,
       "technology_id": 127,
       "tech_field_id": 52,
+      "ai_class": 26,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084233
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084230
@@ -3524,6 +4405,11 @@
       "order": 127,
       "technology_id": 128,
       "tech_field_id": 52,
+      "ai_class": 16,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084246
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084243
@@ -3544,6 +4430,11 @@
       "order": 128,
       "technology_id": 129,
       "tech_field_id": 68,
+      "ai_class": 10,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084259
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084256
@@ -3564,6 +4455,11 @@
       "order": 129,
       "technology_id": 130,
       "tech_field_id": 61,
+      "ai_class": 10,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084272
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084269
@@ -3584,6 +4480,11 @@
       "order": 130,
       "technology_id": 131,
       "tech_field_id": 16,
+      "ai_class": 1,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084285
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084282
@@ -3604,6 +4505,11 @@
       "order": 131,
       "technology_id": 132,
       "tech_field_id": 3,
+      "ai_class": 9,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084298
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084295
@@ -3624,6 +4530,11 @@
       "order": 132,
       "technology_id": 133,
       "tech_field_id": 19,
+      "ai_class": 9,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084311
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084308
@@ -3644,6 +4555,11 @@
       "order": 133,
       "technology_id": 134,
       "tech_field_id": 45,
+      "ai_class": 10,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084324
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084321
@@ -3664,6 +4580,11 @@
       "order": 134,
       "technology_id": 135,
       "tech_field_id": 43,
+      "ai_class": 3,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084337
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084334
@@ -3684,6 +4605,11 @@
       "order": 135,
       "technology_id": 136,
       "tech_field_id": 60,
+      "ai_class": 2,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084350
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084347
@@ -3704,6 +4630,11 @@
       "order": 136,
       "technology_id": 137,
       "tech_field_id": 59,
+      "ai_class": 26,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084363
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084360
@@ -3724,6 +4655,11 @@
       "order": 137,
       "technology_id": 138,
       "tech_field_id": 59,
+      "ai_class": 16,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084376
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084373
@@ -3744,6 +4680,11 @@
       "order": 138,
       "technology_id": 139,
       "tech_field_id": 40,
+      "ai_class": 21,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084389
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084386
@@ -3764,6 +4705,11 @@
       "order": 139,
       "technology_id": 140,
       "tech_field_id": 59,
+      "ai_class": 38,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084402
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084399
@@ -3784,6 +4730,11 @@
       "order": 140,
       "technology_id": 141,
       "tech_field_id": 49,
+      "ai_class": 40,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084415
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084412
@@ -3804,6 +4755,11 @@
       "order": 141,
       "technology_id": 142,
       "tech_field_id": 2,
+      "ai_class": 4,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084428
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084425
@@ -3824,6 +4780,11 @@
       "order": 142,
       "technology_id": 143,
       "tech_field_id": 60,
+      "ai_class": 25,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084441
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084438
@@ -3844,6 +4805,11 @@
       "order": 143,
       "technology_id": 144,
       "tech_field_id": 62,
+      "ai_class": 15,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084454
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084451
@@ -3864,6 +4830,11 @@
       "order": 144,
       "technology_id": 145,
       "tech_field_id": 0,
+      "ai_class": 16,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084467
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084464
@@ -3884,6 +4855,11 @@
       "order": 145,
       "technology_id": 146,
       "tech_field_id": 38,
+      "ai_class": 21,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084480
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084477
@@ -3904,6 +4880,11 @@
       "order": 146,
       "technology_id": 147,
       "tech_field_id": 30,
+      "ai_class": 12,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084493
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084490
@@ -3924,6 +4905,11 @@
       "order": 147,
       "technology_id": 148,
       "tech_field_id": 72,
+      "ai_class": 28,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084506
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084503
@@ -3944,6 +4930,11 @@
       "order": 148,
       "technology_id": 149,
       "tech_field_id": 47,
+      "ai_class": 21,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084519
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084516
@@ -3964,6 +4955,11 @@
       "order": 149,
       "technology_id": 150,
       "tech_field_id": 74,
+      "ai_class": 17,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084532
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084529
@@ -3984,6 +4980,11 @@
       "order": 150,
       "technology_id": 151,
       "tech_field_id": 14,
+      "ai_class": 27,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084545
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084542
@@ -4004,6 +5005,11 @@
       "order": 151,
       "technology_id": 152,
       "tech_field_id": 8,
+      "ai_class": 1,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084558
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084555
@@ -4024,6 +5030,11 @@
       "order": 152,
       "technology_id": 153,
       "tech_field_id": 74,
+      "ai_class": 34,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084571
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084568
@@ -4044,6 +5055,11 @@
       "order": 153,
       "technology_id": 154,
       "tech_field_id": 11,
+      "ai_class": 1,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084584
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084581
@@ -4064,6 +5080,11 @@
       "order": 154,
       "technology_id": 155,
       "tech_field_id": 56,
+      "ai_class": 2,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084597
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084594
@@ -4084,6 +5105,11 @@
       "order": 155,
       "technology_id": 156,
       "tech_field_id": 62,
+      "ai_class": 1,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084610
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084607
@@ -4104,6 +5130,11 @@
       "order": 156,
       "technology_id": 157,
       "tech_field_id": 57,
+      "ai_class": 24,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084623
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084620
@@ -4124,6 +5155,11 @@
       "order": 157,
       "technology_id": 158,
       "tech_field_id": 15,
+      "ai_class": 36,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084636
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084633
@@ -4144,6 +5180,11 @@
       "order": 158,
       "technology_id": 159,
       "tech_field_id": 15,
+      "ai_class": 36,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084649
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084646
@@ -4164,6 +5205,11 @@
       "order": 159,
       "technology_id": 160,
       "tech_field_id": 39,
+      "ai_class": 24,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084662
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084659
@@ -4184,6 +5230,11 @@
       "order": 160,
       "technology_id": 161,
       "tech_field_id": 41,
+      "ai_class": 34,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084675
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084672
@@ -4204,6 +5255,11 @@
       "order": 161,
       "technology_id": 162,
       "tech_field_id": 1,
+      "ai_class": 0,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084688
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084685
@@ -4224,6 +5280,11 @@
       "order": 162,
       "technology_id": 163,
       "tech_field_id": 10,
+      "ai_class": 5,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084701
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084698
@@ -4244,6 +5305,11 @@
       "order": 163,
       "technology_id": 164,
       "tech_field_id": 20,
+      "ai_class": 3,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084714
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084711
@@ -4264,6 +5330,11 @@
       "order": 164,
       "technology_id": 165,
       "tech_field_id": 74,
+      "ai_class": 28,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084727
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084724
@@ -4284,6 +5355,11 @@
       "order": 165,
       "technology_id": 166,
       "tech_field_id": 0,
+      "ai_class": 12,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084740
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084737
@@ -4304,6 +5380,11 @@
       "order": 166,
       "technology_id": 167,
       "tech_field_id": 22,
+      "ai_class": 39,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084753
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084750
@@ -4324,6 +5405,11 @@
       "order": 167,
       "technology_id": 168,
       "tech_field_id": 29,
+      "ai_class": 9,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084766
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084763
@@ -4344,6 +5430,11 @@
       "order": 168,
       "technology_id": 169,
       "tech_field_id": 42,
+      "ai_class": 9,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084779
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084776
@@ -4364,6 +5455,11 @@
       "order": 169,
       "technology_id": 170,
       "tech_field_id": 69,
+      "ai_class": 17,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084792
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084789
@@ -4384,6 +5480,11 @@
       "order": 170,
       "technology_id": 171,
       "tech_field_id": 26,
+      "ai_class": 38,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084805
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084802
@@ -4404,6 +5505,11 @@
       "order": 171,
       "technology_id": 172,
       "tech_field_id": 27,
+      "ai_class": 37,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084818
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084815
@@ -4424,6 +5530,11 @@
       "order": 172,
       "technology_id": 173,
       "tech_field_id": 27,
+      "ai_class": 12,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084831
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084828
@@ -4444,6 +5555,11 @@
       "order": 173,
       "technology_id": 174,
       "tech_field_id": 69,
+      "ai_class": 9,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084844
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084841
@@ -4464,6 +5580,11 @@
       "order": 174,
       "technology_id": 175,
       "tech_field_id": 25,
+      "ai_class": 27,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084857
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084854
@@ -4484,6 +5605,11 @@
       "order": 175,
       "technology_id": 176,
       "tech_field_id": 65,
+      "ai_class": 14,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084870
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084867
@@ -4504,6 +5630,11 @@
       "order": 176,
       "technology_id": 177,
       "tech_field_id": 71,
+      "ai_class": 36,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084883
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084880
@@ -4524,6 +5655,11 @@
       "order": 177,
       "technology_id": 178,
       "tech_field_id": 44,
+      "ai_class": 0,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084896
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084893
@@ -4544,6 +5680,11 @@
       "order": 178,
       "technology_id": 179,
       "tech_field_id": 21,
+      "ai_class": 17,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084909
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084906
@@ -4564,6 +5705,11 @@
       "order": 179,
       "technology_id": 180,
       "tech_field_id": 66,
+      "ai_class": 14,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084922
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084919
@@ -4584,6 +5730,11 @@
       "order": 180,
       "technology_id": 181,
       "tech_field_id": 66,
+      "ai_class": 24,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084935
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084932
@@ -4604,6 +5755,11 @@
       "order": 181,
       "technology_id": 182,
       "tech_field_id": 34,
+      "ai_class": 12,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084948
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084945
@@ -4624,6 +5780,11 @@
       "order": 182,
       "technology_id": 183,
       "tech_field_id": 35,
+      "ai_class": 0,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084961
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084958
@@ -4644,6 +5805,11 @@
       "order": 183,
       "technology_id": 184,
       "tech_field_id": 48,
+      "ai_class": 39,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084974
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084971
@@ -4664,6 +5830,11 @@
       "order": 184,
       "technology_id": 185,
       "tech_field_id": 69,
+      "ai_class": 17,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2084987
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084984
@@ -4684,6 +5855,11 @@
       "order": 185,
       "technology_id": 186,
       "tech_field_id": 19,
+      "ai_class": 22,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085000
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2084997
@@ -4704,6 +5880,11 @@
       "order": 186,
       "technology_id": 187,
       "tech_field_id": 22,
+      "ai_class": 32,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085013
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2085010
@@ -4724,6 +5905,11 @@
       "order": 187,
       "technology_id": 188,
       "tech_field_id": 16,
+      "ai_class": 35,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085026
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2085023
@@ -4744,6 +5930,11 @@
       "order": 188,
       "technology_id": 189,
       "tech_field_id": 23,
+      "ai_class": 22,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085039
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2085036
@@ -4764,6 +5955,11 @@
       "order": 189,
       "technology_id": 190,
       "tech_field_id": 46,
+      "ai_class": 35,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085052
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2085049
@@ -4784,6 +5980,11 @@
       "order": 190,
       "technology_id": 191,
       "tech_field_id": 9,
+      "ai_class": 32,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085065
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2085062
@@ -4804,6 +6005,11 @@
       "order": 191,
       "technology_id": 192,
       "tech_field_id": 21,
+      "ai_class": 35,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085078
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2085075
@@ -4824,6 +6030,11 @@
       "order": 192,
       "technology_id": 193,
       "tech_field_id": 17,
+      "ai_class": 6,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085091
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2085088
@@ -4844,6 +6055,11 @@
       "order": 193,
       "technology_id": 194,
       "tech_field_id": 50,
+      "ai_class": 39,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085104
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2085101
@@ -4864,6 +6080,11 @@
       "order": 194,
       "technology_id": 195,
       "tech_field_id": 33,
+      "ai_class": 40,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085117
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2085114
@@ -4884,6 +6105,11 @@
       "order": 195,
       "technology_id": 196,
       "tech_field_id": 45,
+      "ai_class": 36,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085130
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2085127
@@ -4904,6 +6130,11 @@
       "order": 196,
       "technology_id": 197,
       "tech_field_id": 72,
+      "ai_class": 5,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085143
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2085140
@@ -4924,6 +6155,11 @@
       "order": 197,
       "technology_id": 198,
       "tech_field_id": 44,
+      "ai_class": 0,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085156
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2085153
@@ -4944,6 +6180,11 @@
       "order": 198,
       "technology_id": 199,
       "tech_field_id": 61,
+      "ai_class": 28,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085169
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2085166
@@ -4964,6 +6205,11 @@
       "order": 199,
       "technology_id": 200,
       "tech_field_id": 73,
+      "ai_class": 11,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085182
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2085179
@@ -4984,6 +6230,11 @@
       "order": 200,
       "technology_id": 201,
       "tech_field_id": 74,
+      "ai_class": 32,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085195
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2085192
@@ -5004,6 +6255,11 @@
       "order": 201,
       "technology_id": 202,
       "tech_field_id": 50,
+      "ai_class": 21,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085208
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2085205
@@ -5024,6 +6280,11 @@
       "order": 202,
       "technology_id": 203,
       "tech_field_id": 53,
+      "ai_class": 32,
+      "ai_class_source": {
+        "source_id": "moo2-1.31-orion2-technology-ai-research",
+        "offset": 2085221
+      },
       "tech_field_source": {
         "source_id": "moo2-1.31-orion2-technology-table",
         "offset": 2085218

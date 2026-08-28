@@ -67,7 +67,7 @@ Tracked normalized data lives under `data/rulesets/moo2-1.31/`.
 | --- | --- | --- |
 | `race_traits.json` | 11 Race Designer groups, 53 selectable options | identities/options/pick model present; some exact behavior/cost parity work remains |
 | `races.json` | 13 standard races | stable preset identities/traits/provenance present |
-| `technologies.json` | 203 original technology identities/IDs + 82 TechFields/cost/topology metadata | starting ownership, breakthrough resolution, race-aware General/ordinary/Creative/Uncreative application selection and legal research actions are implemented; original Uncreative initial-selection timing/shared-RNG ownership and Hyper-Advanced repeated-field progression are verified; Advanced-start generation and broader effects remain |
+| `technologies.json` | 203 original technology identities/IDs + 82 TechFields/cost/topology metadata | starting ownership, breakthrough resolution, race-aware General/ordinary/Creative/Uncreative application selection and legal research actions are implemented; original Uncreative initial-selection timing/shared-RNG ownership and Hyper-Advanced repeated-field progression are verified; Advanced-start generator structure plus original AI weighting metadata are normalized, while the 19-grant runtime port and broader effects remain |
 | `buildings.json` | 48 original building IDs + original technology links | identities/links proven; costs, maintenance and gameplay effects remain |
 | `ship_hulls.json` | 6 military hull identities | picture identities/mappings proven; full hull stats/components/design rules remain |
 | `assets.json` | 156 semantic records | 143 confirmed, 13 deliberately pending generic race icons |

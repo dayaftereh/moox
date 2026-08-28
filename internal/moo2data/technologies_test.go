@@ -44,7 +44,7 @@ func TestDecodeTechnologiesUsesOriginalBoundedSequence(t *testing.T) {
 
 func writeSyntheticTechnologyExe(t *testing.T, path string) {
 	t.Helper()
-	data := make([]byte, newGameFieldsOffset+12)
+	data := make([]byte, technologyAIFieldGroupOffset+technologyAIFieldGroupCount*4)
 	for i := 0; i < technologyFieldCount; i++ {
 		offset := technologyFieldOffset + i*technologyFieldSize
 		fieldID := i + 1
@@ -58,10 +58,20 @@ func writeSyntheticTechnologyExe(t *testing.T, path string) {
 		binary.LittleEndian.PutUint32(data[offset+12:offset+16], uint32(50+fieldID))
 		data[offset+16] = byte(fieldID % 23)
 	}
+	for classID := 0; classID < technologyAIClassCount; classID++ {
+		offset := technologyAIClassTableOffset + classID*2
+		data[offset] = byte(5 + classID%10)
+		data[offset+1] = byte(classID % 2)
+	}
+	for i := 0; i < technologyAIFieldGroupCount; i++ {
+		offset := technologyAIFieldGroupOffset + i*4
+		binary.LittleEndian.PutUint32(data[offset:offset+4], uint32(i*i))
+	}
 	for i := 0; i < technologyCount; i++ {
 		offset := technologyTableOffset + i*technologyRecordSize
 		fieldID := i % 83
 		binary.LittleEndian.PutUint16(data[offset:offset+2], uint16(fieldID))
+		data[offset+3] = byte(i % technologyAIClassCount)
 		data[offset+5] = 1
 	}
 	start := []uint16{29, 55, 22, 57, 28, 23}

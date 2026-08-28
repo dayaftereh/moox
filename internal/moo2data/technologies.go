@@ -16,18 +16,23 @@ import (
 )
 
 const (
-	technologyNamesSourceID  = "moo2-1.31-techname-block0-technologies"
-	technologyTableSourceID  = "moo2-1.31-orion2-technology-table"
-	technologyFieldsSourceID = "moo2-1.31-orion2-technology-fields"
-	newGameFieldsSourceID    = "moo2-1.31-orion2-new-game-techfields"
-	hyperAdvancedSourceID    = "moo2-1.31-orion2-hyper-advanced-research"
-	technologyCount          = 203
-	technologyTableOffset    = 0x1FC720
-	technologyRecordSize     = 13
-	technologyFieldOffset    = 0x1FBFB5
-	technologyFieldSize      = 23
-	technologyFieldCount     = 82
-	newGameFieldsOffset      = 0x1FF7B0
+	technologyNamesSourceID      = "moo2-1.31-techname-block0-technologies"
+	technologyTableSourceID      = "moo2-1.31-orion2-technology-table"
+	technologyFieldsSourceID     = "moo2-1.31-orion2-technology-fields"
+	newGameFieldsSourceID        = "moo2-1.31-orion2-new-game-techfields"
+	hyperAdvancedSourceID        = "moo2-1.31-orion2-hyper-advanced-research"
+	technologyAIResearchSourceID = "moo2-1.31-orion2-technology-ai-research"
+	technologyCount              = 203
+	technologyTableOffset        = 0x1FC720
+	technologyRecordSize         = 13
+	technologyFieldOffset        = 0x1FBFB5
+	technologyFieldSize          = 23
+	technologyFieldCount         = 82
+	newGameFieldsOffset          = 0x1FF7B0
+	technologyAIClassTableOffset = 0x1FB82A
+	technologyAIClassCount       = 41
+	technologyAIFieldGroupOffset = 0x201CA0
+	technologyAIFieldGroupCount  = 23
 )
 
 type TechnologiesBundle struct {
@@ -62,6 +67,10 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 		return nil, err
 	}
 	technologyFields, stagedStartFields, err := decodeOriginalTechnologyTables(exeData)
+	if err != nil {
+		return nil, err
+	}
+	aiResearch, err := decodeOriginalTechnologyAIResearch(exeData)
 	if err != nil {
 		return nil, err
 	}
@@ -107,6 +116,13 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 				SHA256:      exeHash,
 			},
 			{
+				ID:          technologyAIResearchSourceID,
+				Type:        "original-observed",
+				Description: "Orion2.exe 1.31 technology AI/research metadata: technology record byte +3 is the AI class; class base-weight/competition pairs are at file offset 0x1FB82A and the 23 field-group progression values are at file offset 0x201CA0",
+				Archive:     "Orion2.exe",
+				SHA256:      exeHash,
+			},
+			{
 				ID:          hyperAdvancedSourceID,
 				Type:        "original-observed",
 				Description: "Orion2.exe 1.31 Player_Research_Cost_ at object-1 relative offset 0xD1E96 / VA 0xE1E96 uses fields 75..82 counters at player+0x21C..0x223 and adds counter*10000 RP; Give_Player_Field_ increments the selected counter on Hyper-Advanced breakthrough",
@@ -126,7 +142,8 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 			Verification:            "original-exe-staged-list-plus-classic-field0-invariant",
 			Source:                  ruleset.FieldProvenance{SourceID: newGameFieldsSourceID, Offset: intPtr(newGameFieldsOffset)},
 		},
-		Fields: technologyFields,
+		AIResearch: aiResearch,
+		Fields:     technologyFields,
 	}
 	english := &i18n.File{
 		SchemaVersion: i18n.SchemaVersion,
@@ -156,6 +173,8 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 			Order:                    order,
 			TechnologyID:             order + 1,
 			TechFieldID:              decodeTechnologyFieldID(exeData[fieldOffset]),
+			AIClass:                  int(exeData[fieldOffset+3]),
+			AIClassSource:            ruleset.FieldProvenance{SourceID: technologyAIResearchSourceID, Offset: intPtr(fieldOffset + 3)},
 			TechFieldSource:          ruleset.FieldProvenance{SourceID: technologyTableSourceID, Offset: intPtr(fieldOffset)},
 			StrategicCombatAvailable: exeData[fieldOffset+5] != 0,
 			StrategicCombatSource:    ruleset.FieldProvenance{SourceID: technologyTableSourceID, Offset: intPtr(fieldOffset + 5)},
@@ -172,6 +191,34 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 		return nil, err
 	}
 	return &TechnologiesBundle{Rules: out, English: english}, nil
+}
+
+func decodeOriginalTechnologyAIResearch(exeData []byte) (ruleset.TechnologyAIResearch, error) {
+	classEnd := technologyAIClassTableOffset + technologyAIClassCount*2
+	fieldGroupEnd := technologyAIFieldGroupOffset + technologyAIFieldGroupCount*4
+	if len(exeData) < classEnd || len(exeData) < fieldGroupEnd {
+		return ruleset.TechnologyAIResearch{}, fmt.Errorf("Orion2.exe is too short for technology AI research tables")
+	}
+	classes := make([]ruleset.TechnologyAIClass, technologyAIClassCount)
+	for classID := 0; classID < technologyAIClassCount; classID++ {
+		offset := technologyAIClassTableOffset + classID*2
+		classes[classID] = ruleset.TechnologyAIClass{
+			ClassID:              classID,
+			BaseWeight:           int(exeData[offset]),
+			CompetitionSensitive: exeData[offset+1] == 0,
+		}
+	}
+	fieldGroups := make([]int, technologyAIFieldGroupCount)
+	for i := range fieldGroups {
+		offset := technologyAIFieldGroupOffset + i*4
+		fieldGroups[i] = int(binary.LittleEndian.Uint32(exeData[offset : offset+4]))
+	}
+	return ruleset.TechnologyAIResearch{
+		TechnologyClasses: classes,
+		FieldGroupValues:  fieldGroups,
+		Verification:      "original-exe-calc-tech-value-and-choose-tech-application",
+		Source:            ruleset.FieldProvenance{SourceID: technologyAIResearchSourceID, Offset: intPtr(technologyAIClassTableOffset)},
+	}, nil
 }
 
 func decodeOriginalTechnologyTables(exeData []byte) ([]ruleset.TechnologyField, []int, error) {

@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const TechnologiesSchemaVersion = 3
+const TechnologiesSchemaVersion = 4
 
 type TechnologiesFile struct {
 	SchemaVersion int                    `json:"schema_version"`
@@ -14,6 +14,7 @@ type TechnologiesFile struct {
 	Sources       []Source               `json:"sources"`
 	NewGameStart  NewGameTechnologyStart `json:"new_game_start"`
 	HyperAdvanced HyperAdvancedResearch  `json:"hyper_advanced"`
+	AIResearch    TechnologyAIResearch   `json:"ai_research"`
 	Fields        []TechnologyField      `json:"technology_fields"`
 	Technologies  []Technology           `json:"technologies"`
 }
@@ -32,6 +33,19 @@ type HyperAdvancedResearch struct {
 	Source          FieldProvenance `json:"source"`
 }
 
+type TechnologyAIResearch struct {
+	TechnologyClasses []TechnologyAIClass `json:"technology_classes"`
+	FieldGroupValues  []int               `json:"field_group_values"`
+	Verification      string              `json:"verification"`
+	Source            FieldProvenance     `json:"source"`
+}
+
+type TechnologyAIClass struct {
+	ClassID              int  `json:"class_id"`
+	BaseWeight           int  `json:"base_weight"`
+	CompetitionSensitive bool `json:"competition_sensitive"`
+}
+
 type TechnologyField struct {
 	FieldID      int             `json:"field_id"`
 	PreviousID   int             `json:"previous_id"`
@@ -46,6 +60,8 @@ type Technology struct {
 	Order                    int             `json:"order"`
 	TechnologyID             int             `json:"technology_id"`
 	TechFieldID              int             `json:"tech_field_id"`
+	AIClass                  int             `json:"ai_class"`
+	AIClassSource            FieldProvenance `json:"ai_class_source"`
 	TechFieldSource          FieldProvenance `json:"tech_field_source"`
 	StrategicCombatAvailable bool            `json:"strategic_combat_available"`
 	StrategicCombatSource    FieldProvenance `json:"strategic_combat_source"`
@@ -89,6 +105,21 @@ func (f *TechnologiesFile) Validate() error {
 			return fmt.Errorf("hyper-advanced tech field[%d]=%d want=%d", i, fieldID, 75+i)
 		}
 	}
+	if len(f.AIResearch.TechnologyClasses) != 41 || len(f.AIResearch.FieldGroupValues) != 23 || f.AIResearch.Verification == "" || f.AIResearch.Source.SourceID == "" {
+		return fmt.Errorf("technology AI research metadata is incomplete")
+	}
+	for i, class := range f.AIResearch.TechnologyClasses {
+		if class.ClassID != i || class.BaseWeight <= 0 {
+			return fmt.Errorf("technology AI class[%d] is invalid: %+v", i, class)
+		}
+	}
+	lastFieldGroupValue := -1
+	for i, value := range f.AIResearch.FieldGroupValues {
+		if value < 0 || value < lastFieldGroupValue {
+			return fmt.Errorf("technology AI field-group value[%d]=%d is invalid", i, value)
+		}
+		lastFieldGroupValue = value
+	}
 	if len(f.Fields) != 82 {
 		return fmt.Errorf("expected 82 technology fields, got %d", len(f.Fields))
 	}
@@ -103,11 +134,14 @@ func (f *TechnologiesFile) Validate() error {
 	ids := make(map[string]struct{}, len(f.Technologies))
 	keys := make(map[string]struct{}, len(f.Technologies))
 	for order, tech := range f.Technologies {
-		if tech.ID == "" || tech.NameKey == "" || tech.NameSource.SourceID == "" || tech.TechFieldSource.SourceID == "" || tech.StrategicCombatSource.SourceID == "" {
+		if tech.ID == "" || tech.NameKey == "" || tech.NameSource.SourceID == "" || tech.TechFieldSource.SourceID == "" || tech.AIClassSource.SourceID == "" || tech.StrategicCombatSource.SourceID == "" {
 			return fmt.Errorf("technology id, name_key and source fields are required")
 		}
 		if tech.TechFieldID < -1 || tech.TechFieldID > 82 {
 			return fmt.Errorf("technology %q tech_field_id=%d outside [-1,82]", tech.ID, tech.TechFieldID)
+		}
+		if tech.AIClass < 0 || tech.AIClass >= len(f.AIResearch.TechnologyClasses) {
+			return fmt.Errorf("technology %q ai_class=%d outside [0,%d]", tech.ID, tech.AIClass, len(f.AIResearch.TechnologyClasses)-1)
 		}
 		if tech.Order != order || tech.TechnologyID != order+1 {
 			return fmt.Errorf("technology %q order/id mismatch: order=%d technology_id=%d expected=%d/%d", tech.ID, tech.Order, tech.TechnologyID, order, order+1)

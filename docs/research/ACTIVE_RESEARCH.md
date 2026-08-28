@@ -176,17 +176,17 @@ MOOX models this as sparse per-Empire `HyperAdvancedResearch` state and a server
 
 The original MOO2 technology-selection screen temporarily promotes Hyper counters by one while building its preview. That makes the first UI preview appear as 25,000 RP while the original strategic resolver evaluates a zero-counter first project at 15,000 RP. MOOX deliberately exposes the authoritative strategic cost and does not reproduce that UI-only off-by-one.
 
-`StateSchemaVersion = 7` and technology ruleset schema 3 now carry the semantic Hyper state/rules.
+`StateSchemaVersion = 7` and technology ruleset schema 4 now carry the semantic Hyper state/rules plus the original AI/research metadata needed by Advanced start.
 
 ### Current exact Research task
 
-Investigate and implement **Advanced-start randomized/race-aware technology ownership** without guessing:
+Implement the now-resolved **Advanced-start randomized/race-aware technology ownership** from `ADVANCED_START_RESEARCH_2026-08-28.md`:
 
-1. trace the original Advanced-start player-tech initialization path and identify how many extra fields/applications are granted;
-2. determine RNG ownership/order and race-policy interaction for ordinary, Creative and Uncreative empires;
-3. normalize only directly supported generator inputs/rules;
-4. use the shared New Game RNG rather than introducing an independent random stream;
-5. integrate the resulting starting ownership through the existing numeric TechField/Technology identities and server-authoritative state.
+1. expose normalized Technology AI class / TechField AI-group progression metadata through `EconomyRules`;
+2. model the original personality/objective/theme inputs as an explicit semantic Advanced preference profile;
+3. initialize Advanced technologies at the full New Game state boundary so all Empires share one RNG and later players can observe earlier players for Competition Tech Values;
+4. port the verified default-path `Calc_Tech_Value_` / `Choose_Tech_Application_` weighting and grant exactly 19 extras after the six Average fields;
+5. preserve ordinary / Creative / Uncreative and Strategic Combat acquisition semantics without introducing client-selected ownership.
 
 ### After Advanced Start
 
