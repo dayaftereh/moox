@@ -7,6 +7,58 @@ import (
 	"moox/internal/core"
 )
 
+const FreighterFleetTechnologyID = 69
+const FreighterFleetProjectID = "freighter_fleet"
+
+type ConstructionChoice struct {
+	ProjectKind      core.ConstructionProjectKind `json:"project_kind"`
+	ProjectID        string                       `json:"project_id"`
+	ProductionCostPP float64                      `json:"production_cost_pp"`
+	TechnologyID     int                          `json:"technology_id,omitempty"`
+	ProductionID     int                          `json:"production_id,omitempty"`
+	MaintenanceBC    int                          `json:"maintenance_bc,omitempty"`
+	FreightersAdded  int                          `json:"freighters_added,omitempty"`
+}
+
+func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empireID, colonyID core.ID) ([]ConstructionChoice, error) {
+	buildingChoices, err := r.AvailableBuildingChoices(state, empireID, colonyID)
+	if err != nil {
+		return nil, err
+	}
+	colony := colonyByID(state, colonyID)
+	if colony == nil {
+		return nil, fmt.Errorf("unknown colony %d", colonyID)
+	}
+	if colony.Construction != nil {
+		return []ConstructionChoice{}, nil
+	}
+	empire := empireByID(state, empireID)
+	if empire == nil {
+		return nil, fmt.Errorf("unknown empire %d", empireID)
+	}
+	choices := make([]ConstructionChoice, 0, len(buildingChoices)+1)
+	for _, choice := range buildingChoices {
+		choices = append(choices, ConstructionChoice{
+			ProjectKind:      core.ConstructionProjectBuilding,
+			ProjectID:        choice.BuildingID,
+			ProductionCostPP: choice.ProductionCostPP,
+			TechnologyID:     choice.TechnologyID,
+			ProductionID:     choice.ProductionID,
+			MaintenanceBC:    choice.MaintenanceBC,
+		})
+	}
+	if empireKnowsTechnology(empire, FreighterFleetTechnologyID) {
+		choices = append(choices, ConstructionChoice{
+			ProjectKind:      core.ConstructionProjectFreighterFleet,
+			ProjectID:        FreighterFleetProjectID,
+			ProductionCostPP: r.FreighterFleetCostPP,
+			TechnologyID:     FreighterFleetTechnologyID,
+			FreightersAdded:  r.FreightersPerFleet,
+		})
+	}
+	return choices, nil
+}
+
 type BuildingChoice struct {
 	BuildingID       string  `json:"building_id"`
 	ProductionID     int     `json:"production_id"`

@@ -204,34 +204,45 @@ MOOX now provides one server-owned transition for non-research Technology acquis
 
 Future diplomacy, espionage, conquest or scripted acquisition systems can now call this shared domain transition rather than mutating `KnownTechnologyIDs` directly.
 
-### Current exact project task - Freighter Fleet acquisition
+### Resolved Freighter Fleet acquisition
 
-Implement the first parked Economy follow-up using the already-resolved Food/Freighter rules:
+Freighter Fleet production now uses the same authoritative Construction model as buildings:
 
-1. model **Freighter Fleet** as a server-owned production choice worth exactly **5 Freighters**;
-2. use the verified **50 PP** production cost;
-3. expose the choice through the same authority-filtered Colony construction/legal-action surface used by buildings;
-4. complete the project into `Empire.Freighters += 5` with deterministic Observer/replay events;
-5. do not yet invent blockade, Population-transport, Treasury settlement or insufficient-Freighter priority changes.
+- Core Construction schema 8 supports `project_kind = freighter_fleet` with stable `project_id = freighter_fleet`;
+- `GameSession.ConstructionChoices` exposes Building and Freighter Fleet projects through one authority-filtered legal-action surface;
+- the normalized rule values are **50 PP** per Fleet and **5 Freighters** added on completion;
+- `colony.queue_freighter_fleet` is ownership/technology/busy-state validated and participates in normal strategic command resolution;
+- `colony.construction_progressed` now carries generic project kind/id while Building completion remains building-specific;
+- completed Freighter Fleets increment `Empire.Freighters` and emit `colony.freighter_fleet_completed` into Observer/replay history;
+- active Freighter Fleet Construction round-trips exactly through schema-8 state serialization.
 
-### After Freighter Fleet acquisition
+MOOX currently uses normalized Technology 69 (`freighters`) as the production unlock. The semantic Technology identity is normalized; the separate original UI branch for this exact gate was not newly isolated in the current disassembly pass, so it is not overstated as a fresh executable proof.
 
-- Treasury settlement of Freighter operating cost and surplus-Food income;
+### Current exact project task - Treasury settlement
+
+Connect the already-materialized Food/Freighter money values to an authoritative Empire Treasury without guessing unrelated economy rules:
+
+1. inspect the current Empire money/Treasury state and any normalized BC ledger rules;
+2. apply `FreighterOperatingCostBC` and `SurplusFoodIncomeBC` exactly once per strategic turn at a deterministic boundary;
+3. preserve the existing Food/Freighter transport calculation unchanged;
+4. emit Observer/replay settlement metadata sufficient to audit the BC delta;
+5. do not yet add blockade, Population transport or broader maintenance/tax systems unless required by the Treasury state model.
+
+### After Treasury settlement
+
 - blockade effects and Population transport through the shared Freighter pool;
 - exact original insufficient-Freighter priority;
 - Housing / Cloning Center / medicine growth modifiers;
 - Biospheres / Advanced City Planning / terraforming capacity transitions;
 - race-aware Population cohorts.
+
 ### Parked Economy follow-ups
 
-- Freighter Fleet acquisition/build legal action;
-- Treasury settlement of Freighter operating cost and surplus-Food income;
 - blockade effects and Population transport through the shared Freighter pool;
 - exact original insufficient-Freighter priority;
 - Housing / Cloning Center / medicine growth modifiers;
 - Biospheres / Advanced City Planning / terraforming capacity transitions;
-- race-aware Population cohorts.
-## Exploration budget
+- race-aware Population cohorts.## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.
 

@@ -584,6 +584,18 @@ func (s *GameSession) ResearchChoices(seatID protocol.SeatID, rules *game.Econom
 	}
 	return rules.AvailableResearchChoices(s.state, s.seats[index].seat.EmpireID)
 }
+func (s *GameSession) ConstructionChoices(seatID protocol.SeatID, colonyID core.ID, rules *game.EconomyRules) ([]game.ConstructionChoice, error) {
+	if rules == nil {
+		return nil, fmt.Errorf("economy rules must not be nil")
+	}
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	index := s.seatIndexLocked(seatID)
+	if index < 0 {
+		return nil, fmt.Errorf("unknown seat %d", seatID)
+	}
+	return rules.AvailableConstructionChoices(s.state, s.seats[index].seat.EmpireID, colonyID)
+}
 func (s *GameSession) BuildingChoices(seatID protocol.SeatID, colonyID core.ID, rules *game.EconomyRules) ([]game.BuildingChoice, error) {
 	if rules == nil {
 		return nil, fmt.Errorf("economy rules must not be nil")

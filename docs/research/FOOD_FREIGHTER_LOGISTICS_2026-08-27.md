@@ -162,7 +162,7 @@ Freighter Fleet = 5 Freighters
 Freighter Fleet cost = 50 PP
 ```
 
-This slice does not yet expose a `queue_freighter_fleet` construction command. Tests set the discrete Empire Freighter pool directly. Building/acquiring Freighter Fleets belongs in the later production/ship/logistics integration and should use the same Construction/legal-action authority model as other production choices.
+Freighter Fleet acquisition is now implemented through the shared Construction authority model. `GameSession.ConstructionChoices` exposes `project_kind = freighter_fleet` with the normalized 50 PP cost and +5 Freighters result; `colony.queue_freighter_fleet` is server-validated, progresses with the same pre-growth PP snapshot as buildings, and completion increments `Empire.Freighters` by five with Observer/replay events. MOOX currently gates this choice on normalized Technology 69 (`freighters`), which is the semantic unlock identity used by the runtime; this checkpoint does not claim that the separate original production-UI branch for that gate was newly isolated in disassembly.
 
 ## Blockades and population transport
 
@@ -216,6 +216,6 @@ Coverage now includes:
 
 ## Next exact work
 
-Food/Freighter/Starvation and the strategic turn-order question are closed for this pass. Remaining Economy follow-ups stay parked: Freighter acquisition, Treasury settlement, blockade/population transport, special growth/capacity layers and exact insufficient-Freighter allocation priority.
+Food/Freighter/Starvation and the strategic turn-order question are closed for this pass. Remaining Economy follow-ups stay parked: Treasury settlement, blockade/population transport, special growth/capacity layers and exact insufficient-Freighter allocation priority.
 
 Active Research work moves to exact Uncreative application RNG/initialization timing where practical, then hyper-advanced repeated-field state/cost and Advanced-start ownership.

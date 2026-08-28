@@ -196,6 +196,24 @@ func TestConstructionStateRoundTripsExactly(t *testing.T) {
 	}
 }
 
+func TestFreighterFleetConstructionStateRoundTripsExactly(t *testing.T) {
+	state := NewSmallFixture(302)
+	state.Colonies[0].Construction = &ConstructionState{ProjectKind: ConstructionProjectFreighterFleet, ProjectID: "freighter_fleet", ProgressPP: 17.25}
+	if err := state.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	encoded, err := MarshalState(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := UnmarshalState(encoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(state.Colonies[0].Construction, loaded.Colonies[0].Construction) {
+		t.Fatalf("Freighter Fleet construction changed across round-trip: want=%+v got=%+v", state.Colonies[0].Construction, loaded.Colonies[0].Construction)
+	}
+}
 func TestKnownTechnologyIDsValidateAndRoundTrip(t *testing.T) {
 	state := NewSmallFixture(403)
 	state.Empires[0].KnownTechnologyIDs = []int{22, 86, 141}

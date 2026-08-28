@@ -112,7 +112,8 @@ type Colony struct {
 type ConstructionProjectKind string
 
 const (
-	ConstructionProjectBuilding ConstructionProjectKind = "building"
+	ConstructionProjectBuilding       ConstructionProjectKind = "building"
+	ConstructionProjectFreighterFleet ConstructionProjectKind = "freighter_fleet"
 )
 
 type ConstructionState struct {
@@ -384,7 +385,7 @@ func (s *GameState) Validate() error {
 			return fmt.Errorf("colony[%d] has incomplete references", i)
 		}
 		if colony.Construction != nil {
-			if colony.Construction.ProjectKind != ConstructionProjectBuilding {
+			if colony.Construction.ProjectKind != ConstructionProjectBuilding && colony.Construction.ProjectKind != ConstructionProjectFreighterFleet {
 				return fmt.Errorf("colony[%d] construction project_kind %q is invalid", i, colony.Construction.ProjectKind)
 			}
 			if colony.Construction.ProjectID == "" {

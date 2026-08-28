@@ -54,6 +54,9 @@ func TestQueueBuildingAppliesCurrentTurnProduction(t *testing.T) {
 	if err := json.Unmarshal(result.Events[2].Data, &progressed); err != nil {
 		t.Fatal(err)
 	}
+	if progressed.ProjectKind != core.ConstructionProjectBuilding || progressed.ProjectID != "holo_simulator" {
+		t.Fatalf("building progress project identity=%+v", progressed)
+	}
 	if progressed.AppliedPP != 3 {
 		t.Fatalf("applied current-turn PP=%v want=3", progressed.AppliedPP)
 	}
