@@ -63,6 +63,243 @@ func (p AdvancedResearchPreferenceProfile) Validate() error {
 	return nil
 }
 
+func advancedObjectiveWeight(weight, classID, objective int) int {
+	switch objective {
+	case 0:
+		switch classID {
+		case 25, 26, 27:
+			return 100
+		}
+	case 1:
+		switch classID {
+		case 26:
+			return 50
+		case 19, 30:
+			return 100
+		case 25:
+			return 20
+		}
+	case 2:
+		switch classID {
+		case 21, 24, 29:
+			return 100
+		}
+	case 3:
+		switch classID {
+		case 36:
+			return 50
+		case 38:
+			return 100
+		}
+	}
+	return weight
+}
+
+func advancedThemeWeight(weight, classID, theme int) int {
+	switch theme {
+	case 0:
+		if classID == 18 || classID == 23 {
+			return 50
+		}
+	case 1:
+		switch classID {
+		case 15, 16:
+			return 20
+		case 32:
+			return 50
+		case 35:
+			return 100
+		}
+	case 2:
+		if classID == 18 {
+			return 50
+		}
+		if classID == 20 {
+			return 100
+		}
+	case 3:
+		if classID == 28 {
+			return 100
+		}
+		if classID == 26 {
+			return 20
+		}
+	case 4:
+		if classID == 37 {
+			return 100
+		}
+	case 5:
+		if classID == 31 || classID == 32 {
+			return 100
+		}
+	case 6:
+		if classID == 33 || classID == 34 {
+			return 100
+		}
+	}
+	return weight
+}
+
+func advancedPersonalityWeight(weight, classID, personality int) int {
+	switch personality {
+	case 0:
+		if classID == 3 || classID == 11 || classID == 12 {
+			return 100
+		}
+	case 1:
+		if classID == 11 || classID == 17 || classID == 33 {
+			return 100
+		}
+	case 2:
+		if classID == 39 {
+			return 50
+		}
+		if classID == 9 || classID == 10 {
+			return 100
+		}
+	case 3:
+		if classID == 2 {
+			return 100
+		}
+	case 4:
+		if classID == 1 || classID == 4 {
+			return 100
+		}
+	case 5:
+		if classID == 0 || classID == 4 {
+			return 100
+		}
+	}
+	return weight
+}
+
+func advancedRaceWeight(weight, classID int, race RaceResearchModifiers) int {
+	switch classID {
+	case 0:
+		if race.FarmingDelta < 0 {
+			weight = 100
+		} else if race.FarmingDelta > 0 {
+			weight = 10
+		}
+		if race.Lithovore {
+			return 1
+		}
+		if race.Cybernetic {
+			return 20
+		}
+	case 1:
+		if race.IndustryDelta < 0 {
+			return 100
+		}
+	case 2:
+		if race.ScienceDelta != 0 {
+			return 100
+		}
+	case 3:
+		if race.MoneyDelta < 0 {
+			return 100
+		}
+		if race.MoneyDelta > 0 {
+			return 20
+		}
+	case 4:
+		if race.IndustryDelta > 0 {
+			weight = 100
+		}
+		if race.Tolerant {
+			return 1
+		}
+	case 6:
+		if race.Subterranean {
+			weight = 20
+		}
+		if race.PopulationGrowthPercent < 0 {
+			return 100
+		}
+		if race.PopulationGrowthPercent > 0 {
+			return 5
+		}
+	case 12:
+		if race.SpyingBonus != 0 || race.GovernmentTraitID == "government_democracy" {
+			return 50
+		}
+	case 16:
+		if race.GroundCombatBonus < 0 {
+			return 20
+		}
+	case 18:
+		if race.ShipDefenseBonus < 0 {
+			return 50
+		}
+	case 25:
+		if race.ShipAttackBonus < 0 {
+			return 100
+		}
+	case 27:
+		if race.ShipAttackBonus > 0 {
+			return 100
+		}
+	case 28:
+		if race.ShipDefenseBonus > 0 {
+			return 100
+		}
+	case 37:
+		if race.StealthyShips {
+			return 1
+		}
+	case 40:
+		if race.GovernmentTraitID == "government_unification" {
+			return 1
+		}
+	}
+	return weight
+}
+
+func advancedSpecialTechnologyWeight(weight, technologyID int, race RaceResearchModifiers) int {
+	switch technologyID {
+	case 5: // Alien Management Center is redundant for Telepathic races.
+		if race.Telepathic {
+			return 1
+		}
+	case 131: // Planetary Gravity Generator value depends on native gravity.
+		if race.HighGWorld {
+			return 1
+		}
+		if race.LowGWorld {
+			return 50
+		}
+	}
+	return weight
+}
+
+func (r *EconomyRules) advancedProfileRaceBaseWeight(empire *core.Empire, technologyID int, profile AdvancedResearchPreferenceProfile) (int, error) {
+	if empire == nil {
+		return 0, fmt.Errorf("empire must not be nil")
+	}
+	if err := profile.Validate(); err != nil {
+		return 0, err
+	}
+	classID, ok := r.TechnologyAIClassByID[technologyID]
+	if !ok {
+		return 0, fmt.Errorf("Technology %d has no AI class", technologyID)
+	}
+	class, ok := r.TechnologyAIClasses[classID]
+	if !ok {
+		return 0, fmt.Errorf("Technology %d references unknown AI class %d", technologyID, classID)
+	}
+	race, ok := r.RaceResearchModifiers[empire.RaceID]
+	if !ok {
+		return 0, fmt.Errorf("empire %d has no research modifiers for race %q", empire.ID, empire.RaceID)
+	}
+	weight := class.BaseWeight
+	weight = advancedObjectiveWeight(weight, classID, profile.Objective)
+	weight = advancedThemeWeight(weight, classID, profile.Theme)
+	weight = advancedPersonalityWeight(weight, classID, profile.Personality)
+	weight = advancedRaceWeight(weight, classID, race)
+	weight = advancedSpecialTechnologyWeight(weight, technologyID, race)
+	return weight, nil
+}
+
 type NewGameTechnologyStateOptions struct {
 	Level               NewGameTechnologyLevel
 	StrategicCombat     bool

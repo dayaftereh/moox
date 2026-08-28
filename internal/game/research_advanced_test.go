@@ -210,3 +210,79 @@ func TestInitializeNewGameTechnologiesAverageUsesStableEmpireOrder(t *testing.T)
 		}
 	}
 }
+
+func TestAdvancedProfileWeightsMatchOriginalBranches(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		got  int
+		want int
+	}{
+		{"objective0-class25", advancedObjectiveWeight(7, 25, 0), 100},
+		{"objective1-class26", advancedObjectiveWeight(7, 26, 1), 50},
+		{"objective1-class25", advancedObjectiveWeight(7, 25, 1), 20},
+		{"objective2-class29", advancedObjectiveWeight(7, 29, 2), 100},
+		{"objective3-class36", advancedObjectiveWeight(7, 36, 3), 50},
+		{"theme0-class18", advancedThemeWeight(7, 18, 0), 50},
+		{"theme1-class15", advancedThemeWeight(7, 15, 1), 20},
+		{"theme1-class35", advancedThemeWeight(7, 35, 1), 100},
+		{"theme3-class26", advancedThemeWeight(7, 26, 3), 20},
+		{"theme6-class34", advancedThemeWeight(7, 34, 6), 100},
+		{"personality0-class12", advancedPersonalityWeight(7, 12, 0), 100},
+		{"personality1-class17", advancedPersonalityWeight(7, 17, 1), 100},
+		{"personality2-class39", advancedPersonalityWeight(7, 39, 2), 50},
+		{"personality3-class2", advancedPersonalityWeight(7, 2, 3), 100},
+		{"personality4-class4", advancedPersonalityWeight(7, 4, 4), 100},
+		{"personality5-class0", advancedPersonalityWeight(7, 0, 5), 100},
+		{"unchanged", advancedPersonalityWeight(7, 40, 5), 7},
+	} {
+		if tc.got != tc.want {
+			t.Fatalf("%s=%d want=%d", tc.name, tc.got, tc.want)
+		}
+	}
+}
+
+func TestAdvancedRaceWeightsMatchOriginalBranches(t *testing.T) {
+	for _, tc := range []struct {
+		name  string
+		class int
+		race  RaceResearchModifiers
+		want  int
+	}{
+		{"farming-negative", 0, RaceResearchModifiers{FarmingDelta: -0.5}, 100},
+		{"farming-positive", 0, RaceResearchModifiers{FarmingDelta: 1}, 10},
+		{"lithovore-overrides-farming", 0, RaceResearchModifiers{FarmingDelta: 1, Lithovore: true}, 1},
+		{"cybernetic-overrides-farming", 0, RaceResearchModifiers{FarmingDelta: 1, Cybernetic: true}, 20},
+		{"industry-negative", 1, RaceResearchModifiers{IndustryDelta: -1}, 100},
+		{"science-nonzero", 2, RaceResearchModifiers{ScienceDelta: 2}, 100},
+		{"money-positive", 3, RaceResearchModifiers{MoneyDelta: 1}, 20},
+		{"tolerant-overrides-industry", 4, RaceResearchModifiers{IndustryDelta: 2, Tolerant: true}, 1},
+		{"subterranean", 6, RaceResearchModifiers{Subterranean: true}, 20},
+		{"population-growth-positive-overrides-subterranean", 6, RaceResearchModifiers{Subterranean: true, PopulationGrowthPercent: 100}, 5},
+		{"population-growth-negative", 6, RaceResearchModifiers{PopulationGrowthPercent: -50}, 100},
+		{"spying", 12, RaceResearchModifiers{SpyingBonus: 20}, 50},
+		{"democracy", 12, RaceResearchModifiers{GovernmentTraitID: "government_democracy"}, 50},
+		{"ground-combat-negative", 16, RaceResearchModifiers{GroundCombatBonus: -10}, 20},
+		{"ship-defense-negative", 18, RaceResearchModifiers{ShipDefenseBonus: -20}, 50},
+		{"ship-attack-negative", 25, RaceResearchModifiers{ShipAttackBonus: -20}, 100},
+		{"ship-attack-positive", 27, RaceResearchModifiers{ShipAttackBonus: 20}, 100},
+		{"ship-defense-positive", 28, RaceResearchModifiers{ShipDefenseBonus: 25}, 100},
+		{"stealthy", 37, RaceResearchModifiers{StealthyShips: true}, 1},
+		{"unification", 40, RaceResearchModifiers{GovernmentTraitID: "government_unification"}, 1},
+	} {
+		if got := advancedRaceWeight(7, tc.class, tc.race); got != tc.want {
+			t.Fatalf("%s=%d want=%d", tc.name, got, tc.want)
+		}
+	}
+}
+
+func TestAdvancedSpecialTechnologyWeights(t *testing.T) {
+	if got := advancedSpecialTechnologyWeight(7, 5, RaceResearchModifiers{Telepathic: true}); got != 1 {
+		t.Fatalf("Telepathic Alien Management Center weight=%d want=1", got)
+	}
+	if got := advancedSpecialTechnologyWeight(7, 131, RaceResearchModifiers{LowGWorld: true}); got != 50 {
+		t.Fatalf("Low-G Planetary Gravity Generator weight=%d want=50", got)
+	}
+	if got := advancedSpecialTechnologyWeight(7, 131, RaceResearchModifiers{HighGWorld: true}); got != 1 {
+		t.Fatalf("High-G Planetary Gravity Generator weight=%d want=1", got)
+	}
+}
