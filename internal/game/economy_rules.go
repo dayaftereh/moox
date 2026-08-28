@@ -30,6 +30,7 @@ type RaceEconomyModifiers struct {
 	Cybernetic                 bool
 	Lithovore                  bool
 	FantasticTraders           bool
+	TransDimensional           bool
 	Creative                   bool
 	Uncreative                 bool
 	GravityID                  string
@@ -373,6 +374,8 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 				researchModifiers.Lithovore = true
 			case "fantastic_traders":
 				modifiers.FantasticTraders = true
+			case "trans_dimensional":
+				modifiers.TransDimensional = true
 			case "creative":
 				modifiers.Creative = true
 			case "uncreative":

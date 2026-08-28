@@ -263,35 +263,50 @@ MOOX Core schema 10 now stores semantic `StarSystem.BlockadedEmpireIDs`. Food lo
 
 Detailed evidence: `docs/research/BLOCKADE_FOOD_LOGISTICS_2026-08-28.md`.
 
-### Current exact project task - Population transport through the shared Freighter pool
+### Resolved Population relocation / shared Freighter pool
 
-Investigate the **original MOO2 1.31 Population transport / Freighter interaction** before extending the authoritative logistics state:
+Direct MOO2 1.31 executable analysis identified the Population-relocation system as the original **Settler** path rather than troop Transport fleets. MOOX now implements the proven shared-Freighter behavior:
 
-1. identify the original commands/state that create, move and resolve Population transports;
-2. determine exactly when transport demand reserves or consumes Freighters relative to Food imports;
-3. determine whether Food and Population share one capacity counter directly, use separate reservations, or settle in a fixed priority order;
-4. map cancellation, arrival, ownership and blocked-route behavior only where executable/save evidence supports it;
-5. add the smallest deterministic transport state and Observer/replay events without moving transport legality into UI/network adapters.
+- one active interstellar Settler reserves exactly **5 Freighters** before Food allocation;
+- original `player+0x40` is the active Settler count and the candidate launch guard is `(active + 1) * 5 <= total_freighters`;
+- the original maximum is 25 active interstellar Settlers per Empire;
+- same-System Population movement is immediate and consumes no Freighter reservation;
+- source must retain at least one Population unit;
+- inbound Settlers reserve destination Population capacity;
+- Farmer / Worker / Scientist identity is preserved in the current aggregate Population model;
+- ETA uses original parsec geometry, best Warp Drive speed and Trans Dimensional +2 FTL, with the original 15-turn cap;
+- arrival at a blockaded/unavailable/full destination loses the Settler; every resolved transfer releases its five Freighters before final Food materialization;
+- no in-flight cancel action is invented because direct original evidence found launch/increment and resolution/decrement writes but no separate Settler-cancel transition.
 
-Keep the proven Food blockade rule unchanged while researching transport competition.
+Core `StateSchemaVersion = 11` now stores semantic `PopulationTransfer` state. `colony.transfer_population` is server-authoritative, and Observer/replay receives start/progress/arrival/loss events plus explicit Food-logistics telemetry for reserved Population Freighters and Freighters remaining for Food.
 
-### After Population transport
+Detailed evidence: `docs/research/POPULATION_TRANSPORT_FREIGHTER_2026-08-29.md`.
 
-- full Fleet/Diplomacy-derived `Compute_Blockades_` materialization when canonical strategic Fleet/Diplomacy state exists;
-- missing original Treasury categories and deficit/scrap policy when those systems become modeled;
-- Housing / Cloning Center / medicine growth modifiers;
+### Current exact project task - Population growth building/medicine modifiers
+
+Investigate the **original MOO2 1.31 Housing / Cloning Center / medicine Population-growth modifiers** before extending the current classic base growth curve:
+
+1. isolate the exact original functions/data paths that add Housing, Cloning Center and medicine/technology growth bonuses;
+2. determine whether each modifier is additive Population/turn, multiplicative percentage, capacity-dependent, production-dependent or applied in another explicit order;
+3. determine stacking/order against race growth multipliers and the already-implemented capacity-limited classic curve;
+4. normalize only the required Building/Technology identities/effects with direct provenance rather than hard-coding UI text;
+5. add deterministic Core/Game/Session tests while preserving the verified rule that freshly grown Population cannot contribute PP/RP retroactively in the same turn.
+
+Do not begin Fleet/Diplomacy-derived blockade computation or unmodeled Treasury categories inside this slice; both remain dependent on broader strategic state.
+
+### After growth modifiers
+
 - Biospheres / Advanced City Planning / terraforming capacity transitions;
-- race-aware Population cohorts, including the later original Food-priority passes.
+- race-aware Population cohorts, including the later original Food-priority passes;
+- full Fleet/Diplomacy-derived `Compute_Blockades_` materialization when canonical strategic Fleet/Diplomacy state exists;
+- missing original Treasury categories and deficit/scrap policy when those systems are modeled.
 
 ### Parked Economy follow-ups
 
-- Population transport through the shared Freighter pool;
 - Fleet/Diplomacy-derived blockade production once canonical strategic state exists;
 - missing original Treasury categories and deficit/scrap policy;
-- Housing / Cloning Center / medicine growth modifiers;
 - Biospheres / Advanced City Planning / terraforming capacity transitions;
 - race-aware Population cohorts.
-
 ## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.

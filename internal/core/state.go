@@ -5,20 +5,21 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 10
+const StateSchemaVersion = 11
 
 type ID uint64
 
 type GameState struct {
-	SchemaVersion int      `json:"schema_version"`
-	Seed          uint64   `json:"seed"`
-	RNGState      uint64   `json:"rng_state"`
-	Turn          uint64   `json:"turn"`
-	NextID        ID       `json:"next_id"`
-	Galaxy        Galaxy   `json:"galaxy"`
-	Empires       []Empire `json:"empires"`
-	Colonies      []Colony `json:"colonies"`
-	Events        []Event  `json:"events"`
+	SchemaVersion       int                  `json:"schema_version"`
+	Seed                uint64               `json:"seed"`
+	RNGState            uint64               `json:"rng_state"`
+	Turn                uint64               `json:"turn"`
+	NextID              ID                   `json:"next_id"`
+	Galaxy              Galaxy               `json:"galaxy"`
+	Empires             []Empire             `json:"empires"`
+	Colonies            []Colony             `json:"colonies"`
+	PopulationTransfers []PopulationTransfer `json:"population_transfers,omitempty"`
+	Events              []Event              `json:"events"`
 }
 
 type Galaxy struct {
@@ -82,17 +83,19 @@ type EmpireTreasuryState struct {
 	NetModeledIncomeBC        float64 `json:"net_modeled_income_bc"`
 }
 type EmpireFoodLogistics struct {
-	FreightersRequired       int     `json:"freighters_required"`
-	FreightersUsed           int     `json:"freighters_used"`
-	LocalFoodSurplus         float64 `json:"local_food_surplus"`
-	LocalFoodShortage        float64 `json:"local_food_shortage"`
-	BlockedFoodSurplus       float64 `json:"blocked_food_surplus"`
-	BlockedFoodShortage      float64 `json:"blocked_food_shortage"`
-	FoodTransferred          float64 `json:"food_transferred"`
-	FoodUnmet                float64 `json:"food_unmet"`
-	SurplusFoodSold          float64 `json:"surplus_food_sold"`
-	FreighterOperatingCostBC float64 `json:"freighter_operating_cost_bc"`
-	SurplusFoodIncomeBC      float64 `json:"surplus_food_income_bc"`
+	FreightersRequired                    int     `json:"freighters_required"`
+	FreightersUsed                        int     `json:"freighters_used"`
+	PopulationTransportFreightersReserved int     `json:"population_transport_freighters_reserved"`
+	FreightersAvailableForFood            int     `json:"freighters_available_for_food"`
+	LocalFoodSurplus                      float64 `json:"local_food_surplus"`
+	LocalFoodShortage                     float64 `json:"local_food_shortage"`
+	BlockedFoodSurplus                    float64 `json:"blocked_food_surplus"`
+	BlockedFoodShortage                   float64 `json:"blocked_food_shortage"`
+	FoodTransferred                       float64 `json:"food_transferred"`
+	FoodUnmet                             float64 `json:"food_unmet"`
+	SurplusFoodSold                       float64 `json:"surplus_food_sold"`
+	FreighterOperatingCostBC              float64 `json:"freighter_operating_cost_bc"`
+	SurplusFoodIncomeBC                   float64 `json:"surplus_food_income_bc"`
 }
 
 type ResearchSelectionMode string
@@ -583,6 +586,32 @@ func (s *GameState) Validate() error {
 					return fmt.Errorf("system[%d] planet[%d] references unknown colony %d", si, pi, colonyID)
 				}
 			}
+		}
+	}
+	for i, transfer := range s.PopulationTransfers {
+		if transfer.EmpireID == 0 || transfer.SourceColonyID == 0 || transfer.DestinationColonyID == 0 {
+			return fmt.Errorf("population_transfer[%d] has incomplete references", i)
+		}
+		if transfer.SourceColonyID == transfer.DestinationColonyID {
+			return fmt.Errorf("population_transfer[%d] source and destination colony are identical", i)
+		}
+		if transfer.Job != PopulationJobFarmer && transfer.Job != PopulationJobWorker && transfer.Job != PopulationJobScientist {
+			return fmt.Errorf("population_transfer[%d] has invalid job %q", i, transfer.Job)
+		}
+		if transfer.RemainingTurns < 1 || transfer.RemainingTurns > 15 {
+			return fmt.Errorf("population_transfer[%d] remaining_turns %d outside [1,15]", i, transfer.RemainingTurns)
+		}
+		if _, ok := empireIDs[transfer.EmpireID]; !ok {
+			return fmt.Errorf("population_transfer[%d] references unknown empire %d", i, transfer.EmpireID)
+		}
+		if _, ok := colonyIDs[transfer.SourceColonyID]; !ok {
+			return fmt.Errorf("population_transfer[%d] references unknown source colony %d", i, transfer.SourceColonyID)
+		}
+		if _, ok := colonyIDs[transfer.DestinationColonyID]; !ok {
+			return fmt.Errorf("population_transfer[%d] references unknown destination colony %d", i, transfer.DestinationColonyID)
+		}
+		if err := checkID(transfer.ID, fmt.Sprintf("population_transfer[%d]", i)); err != nil {
+			return err
 		}
 	}
 	for id := range seen {

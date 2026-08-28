@@ -93,6 +93,12 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
 				}
 				events = append(events, event)
+			case CommandTransferPopulation:
+				event, err := r.transferPopulation(state, empireID, batch.SeatID, command)
+				if err != nil {
+					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
+				}
+				events = append(events, event)
 			case CommandSelectResearch:
 				event, err := r.selectResearch(state, empireID, batch.SeatID, command)
 				if err != nil {
@@ -142,6 +148,11 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 		return Resolution{}, err
 	}
 	events = append(events, constructionEvents...)
+	populationTransferEvents, err := r.advancePopulationTransfers(state)
+	if err != nil {
+		return Resolution{}, err
+	}
+	events = append(events, populationTransferEvents...)
 	// Recalculate the next-state local economy only after the original-order
 	// apply phases, then rematerialize logistics without emitting a second turn event.
 	for i := range state.Colonies {

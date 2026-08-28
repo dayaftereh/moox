@@ -118,7 +118,12 @@ func (r *EconomyResolver) materializeFoodLogistics(state *core.GameState, emit b
 		}
 
 		transferPossible := math.Min(eligibleSurplus, eligibleShortage)
-		capacity := float64(empire.Freighters) * r.Rules.FreighterFoodCapacity
+		populationReserved := populationTransferFreightersReserved(state, empire.ID)
+		availableForFood := empire.Freighters - populationReserved
+		if availableForFood < 0 {
+			availableForFood = 0
+		}
+		capacity := float64(availableForFood) * r.Rules.FreighterFoodCapacity
 		transfer := math.Min(transferPossible, capacity)
 		if transfer > populationEpsilon {
 			allocateFoodImports(eligibleColonies, transfer, r.Rules.FreighterFoodCapacity)
@@ -157,17 +162,19 @@ func (r *EconomyResolver) materializeFoodLogistics(state *core.GameState, emit b
 			saleRate = r.Rules.FantasticTradersSurplusFoodBCPerUnit
 		}
 		empire.FoodLogistics = core.EmpireFoodLogistics{
-			FreightersRequired:       required,
-			FreightersUsed:           used,
-			LocalFoodSurplus:         totalSurplus,
-			LocalFoodShortage:        totalShortage,
-			BlockedFoodSurplus:       blockedSurplus,
-			BlockedFoodShortage:      blockedShortage,
-			FoodTransferred:          transfer,
-			FoodUnmet:                remainingShortage,
-			SurplusFoodSold:          sellableSurplus,
-			FreighterOperatingCostBC: float64(used) * r.Rules.FreighterOperatingCostBC,
-			SurplusFoodIncomeBC:      sellableSurplus * saleRate,
+			FreightersRequired:                    required,
+			FreightersUsed:                        used,
+			PopulationTransportFreightersReserved: populationReserved,
+			FreightersAvailableForFood:            availableForFood,
+			LocalFoodSurplus:                      totalSurplus,
+			LocalFoodShortage:                     totalShortage,
+			BlockedFoodSurplus:                    blockedSurplus,
+			BlockedFoodShortage:                   blockedShortage,
+			FoodTransferred:                       transfer,
+			FoodUnmet:                             remainingShortage,
+			SurplusFoodSold:                       sellableSurplus,
+			FreighterOperatingCostBC:              float64(used) * r.Rules.FreighterOperatingCostBC,
+			SurplusFoodIncomeBC:                   sellableSurplus * saleRate,
 		}
 		if emit && (totalSurplus > populationEpsilon || totalShortage > populationEpsilon || transfer > populationEpsilon) {
 			event, err := NewDomainEvent("empire.food_logistics_resolved", 0, 0, FoodLogisticsResolvedEvent{EmpireID: empire.ID, Snapshot: empire.FoodLogistics, Colonies: colonyViews})
