@@ -234,25 +234,33 @@ The authoritative economy now has a semantic Treasury ledger backed by direct or
 
 Detailed evidence: `docs/research/TREASURY_SETTLEMENT_2026-08-28.md`.
 
-### Current exact project task - insufficient Freighter priority
+### Resolved insufficient-Freighter priority
 
-Determine the **original MOO2 1.31 allocation order when available Freighters cannot cover all required Food transport**, before changing current deterministic MOOX logistics:
+Direct MOO2 1.31 executable analysis resolved the constrained Food allocator in `Pass_Out_Imports_` (`0xDF8F0`): deficit Colonies are collected in original Colony-array order and limited Food/Freighters are assigned round-robin, one Food/Freighter per eligible step. The original then has additional population-cohort feeding passes; MOOX's current aggregate single-cohort state reduces this to one stable Colony-ID round-robin pass.
 
-1. identify the original routine that allocates the shared player Freighter pool to Colony Food shortages/routes;
-2. determine the stable ordering key (Colony array order, shortage size, distance, priority/status, or another field) from executable evidence;
-3. establish whether export/source choice and import/destination choice use the same or separate ordering;
-4. record tie behavior and any RNG use;
-5. only after the order is proven, replace MOOX's current simple deterministic allocation if necessary.
+MOOX now implements the proven import order and locks `[3,1,2]` shortage with four available loads to `[2,1,1]`, replacing the temporary proportional importer. Source export attribution remains telemetry because the original consumes an Empire-wide surplus pool rather than selecting a source route per import.
 
-Do not add blockade or Population transport in this slice; they remain downstream consumers of the shared Freighter pool.
+Detailed evidence: `docs/research/INSUFFICIENT_FREIGHTER_PRIORITY_2026-08-28.md`.
 
-### After insufficient-Freighter priority
+### Current exact project task - blockade effect on Food/Freighter logistics
 
-- blockade effects and Population transport through the shared Freighter pool;
+Investigate the **original MOO2 1.31 blockade eligibility/effect on Colony Food import/export** before adding Population transport competition:
+
+1. identify the original Colony/blockade predicate used by `Pass_Out_Imports_` and its surrounding resource-calculation path;
+2. determine whether blockade prevents imports, exports, both, or changes Food production/maintenance separately;
+3. determine when the blockade state is materialized relative to `Pre_Import_Computing_` / `Pass_Out_Imports_`;
+4. model only the smallest authoritative Colony/System state required for deterministic Food logistics;
+5. add replay/Observer-visible effects without moving blockade policy into UI/network adapters.
+
+Do not add Population transport until Food blockade eligibility is independently proven and represented.
+
+### After blockade Food/Freighter eligibility
+
+- Population transport through the shared Freighter pool;
 - missing original Treasury categories and deficit/scrap policy when those systems become modeled;
 - Housing / Cloning Center / medicine growth modifiers;
 - Biospheres / Advanced City Planning / terraforming capacity transitions;
-- race-aware Population cohorts.
+- race-aware Population cohorts, including the later original Food-priority passes.
 
 ### Parked Economy follow-ups
 

@@ -185,4 +185,4 @@ Implemented regression coverage includes:
 
 ## Next economy investigation
 
-Before expanding Food/Freighter logistics into blockade and Population transport, determine the **exact original insufficient-Freighter allocation priority**. MOOX should not guess which shortage/route receives the limited Freighter pool first.
+The **exact original insufficient-Freighter import priority** is now resolved in `INSUFFICIENT_FREIGHTER_PRIORITY_2026-08-28.md`: constrained imports use original-style round-robin deficit allocation. The next Food/Freighter expansion can therefore move to blockade eligibility/effects and Population transport without carrying the old allocation ambiguity.

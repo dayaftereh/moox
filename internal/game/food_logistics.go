@@ -91,7 +91,7 @@ func (r *EconomyResolver) materializeFoodLogistics(state *core.GameState, emit b
 		capacity := float64(empire.Freighters) * r.Rules.FreighterFoodCapacity
 		transfer := math.Min(transferPossible, capacity)
 		if transfer > populationEpsilon {
-			allocateFoodImports(colonies, transfer, totalShortage)
+			allocateFoodImports(colonies, transfer, r.Rules.FreighterFoodCapacity)
 			allocateFoodExports(colonies, transfer, totalSurplus)
 		}
 
@@ -157,26 +157,39 @@ func coloniesForEmpire(state *core.GameState, empireID core.ID) []*core.Colony {
 	return colonies
 }
 
-// The exact classic priority when Freighters are insufficient is not yet
-// evidenced. MOOX therefore uses deterministic proportional sharing across all
-// deficits/surpluses. The policy is isolated here so original ordering can
-// replace it without changing state or protocol shapes.
-func allocateFoodImports(colonies []*core.Colony, transfer, totalShortage float64) {
+// Original MOO2 1.31 Pass_Out_Imports_ builds its deficit-colony list in
+// colony-array order and, when Food/Freighters are insufficient, repeatedly
+// gives each eligible colony one Freighter-load of Food before wrapping to the
+// first colony. The original has additional passes for mixed population
+// cohorts. MOOX currently models one aggregate race cohort per Colony, so those
+// later cohort passes collapse to this single round-robin threshold. The caller
+// supplies Colonies in stable simulation-ID order as MOOX's deterministic
+// analogue of the original colony-array order.
+func allocateFoodImports(colonies []*core.Colony, transfer, foodPerFreighter float64) {
 	remaining := transfer
-	remainingWeight := totalShortage
-	for _, colony := range colonies {
-		shortage := colony.PopulationDynamics.LocalFoodShortage
-		if shortage <= populationEpsilon || remaining <= populationEpsilon {
-			continue
+	for remaining > populationEpsilon {
+		allocated := false
+		for _, colony := range colonies {
+			if remaining <= populationEpsilon {
+				break
+			}
+			dynamics := &colony.PopulationDynamics
+			shortage := dynamics.LocalFoodShortage - dynamics.FoodImported
+			if shortage <= populationEpsilon {
+				continue
+			}
+			share := math.Min(shortage, foodPerFreighter)
+			share = math.Min(share, remaining)
+			if share <= populationEpsilon {
+				continue
+			}
+			dynamics.FoodImported += share
+			remaining -= share
+			allocated = true
 		}
-		share := remaining
-		if remainingWeight > populationEpsilon {
-			share = remaining * shortage / remainingWeight
+		if !allocated {
+			break
 		}
-		share = math.Min(shortage, share)
-		colony.PopulationDynamics.FoodImported = share
-		remaining -= share
-		remainingWeight -= shortage
 	}
 }
 

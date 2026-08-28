@@ -72,7 +72,7 @@ Tracked normalized data lives under `data/rulesets/moo2-1.31/`.
 | `ship_hulls.json` | 6 military hull identities | picture identities/mappings proven; full hull stats/components/design rules remain |
 | `assets.json` | 156 semantic records | 143 confirmed, 13 deliberately pending generic race icons |
 | `planet_classes.json` | 5 sizes, 5 mineral classes, 3 gravity classes, 10 climates | size thresholds, mineral extraction and base food/farmer proven; broader galaxy generation intentionally deferred |
-| `economy.json` | base research/income/industry + Population/Sustenance + Food/Freighter/Starvation + Aquatic + gravity + starting-government + local Morale rules | base/contextual Economy, Freighter balancing/cost snapshot, surplus Food valuation, Starvation, 50-PP Freighter Fleet production (+5 Freighters) and authoritative modeled Treasury settlement implemented; blockade/population transport, missing original Treasury categories, broader buildings/pollution and advanced-government effects remain |
+| `economy.json` | base research/income/industry + Population/Sustenance + Food/Freighter/Starvation + Aquatic + gravity + starting-government + local Morale rules | base/contextual Economy, original-style round-robin insufficient-Freighter import priority, Freighter balancing/cost snapshot, surplus Food valuation, Starvation, 50-PP Freighter Fleet production (+5 Freighters) and authoritative modeled Treasury settlement implemented; blockade/population transport, mixed Population cohorts, missing original Treasury categories, broader buildings/pollution and advanced-government effects remain |
 
 ### Semantic asset coverage
 
@@ -137,7 +137,7 @@ The research/data tooling should not be confused with a playable engine. Major m
 - full strategic turn processing beyond the first population/economy resolver,
 - contextual/net colony economy beyond the implemented Gravity/Government/local-Morale layer (broader buildings, empire-wide morale tech, pollution, logistics, maintenance),
 - race-aware population cohorts for conquered/mixed-race colonies and persisted custom race designs,
-- blockade/population-transport logistics, exact insufficient-Freighter priority, missing original Treasury categories/deficit policy, Housing/Cloning/medicine growth modifiers and later capacity buildings,
+- blockade/population-transport logistics, mixed Population cohorts for the later original Food-priority passes, missing original Treasury categories/deficit policy, Housing/Cloning/medicine growth modifiers and later capacity buildings,
 - research progression/effects,
 - strategic fleet movement/colonization,
 - save-format versioning/migrations beyond the current exact state round trip,

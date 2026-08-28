@@ -1,6 +1,6 @@
 # Food, Freighter logistics and starvation - 2026-08-27
 
-Status: implemented deterministic Economy checkpoint; exact original insufficient-Freighter allocation priority and global 1.31 turn ordering remain open research.
+Status: implemented deterministic Economy checkpoint. Original 1.31 turn ordering and the insufficient-Freighter import priority are now directly verified; see `TURN_ORDER_2026-08-28.md` and `INSUFFICIENT_FREIGHTER_PRIORITY_2026-08-28.md`.
 
 This slice extends the direct-`float64` Population/Sustenance model with empire-wide Food balancing, Freighter capacity/cost accounting, surplus-Food valuation and starvation.
 
@@ -79,9 +79,11 @@ ceil(food_transferred / food_per_freighter)
 
 ### Insufficient-Freighter priority
 
-Available references establish capacity and automatic transfer, but do not reliably establish the exact original priority when several colonies compete for too few Freighters. Some community observations even describe the algorithm as unclear.
+Direct MOO2 1.31 disassembly has now resolved this. `Pass_Out_Imports_` (VA `0xDF8F0`) builds deficit Colonies in original Colony-array order and, when Food/Freighters are constrained, walks them round-robin. Each eligible step adds exactly one Food import while consuming one unit of Empire surplus and one available Freighter, then the allocator wraps to the first deficit Colony.
 
-MOOX therefore currently uses an explicit deterministic proportional-sharing policy across shortages and surpluses. This is a temporary MOOX policy, not an original-fidelity claim. It is isolated in `allocateFoodImports` / `allocateFoodExports` so a proven original priority can replace it without changing state, events or API shapes.
+The original contains four progressively broader feeding passes because it tracks mixed Population ownership/status cohorts in half-Food maintenance buckets. MOOX currently has one aggregate Population cohort per Colony, so the proven behavior reduces to one-Freighter-load round-robin in stable Colony-ID order. `allocateFoodImports` implements that behavior; the later cohort-specific passes remain deferred until race-aware Population cohorts exist. Export attribution remains MOOX telemetry because the original constrained path consumes an aggregate Empire surplus pool rather than selecting a source Colony route.
+
+See `INSUFFICIENT_FREIGHTER_PRIORITY_2026-08-28.md` for the exact addresses, thresholds and implementation boundary.
 
 ## Starvation and natural growth
 
@@ -216,6 +218,6 @@ Coverage now includes:
 
 ## Next exact work
 
-Food/Freighter/Starvation and the strategic turn-order question are closed for this pass. Remaining Economy follow-ups stay parked: Treasury settlement, blockade/population transport, special growth/capacity layers and exact insufficient-Freighter allocation priority.
+Food/Freighter/Starvation, strategic turn order, Freighter Fleet acquisition, Treasury settlement and the current single-cohort insufficient-Freighter priority are closed for this pass. Remaining Economy follow-ups stay parked: blockade/population transport, mixed Population cohorts and special growth/capacity layers.
 
 Active Research work moves to exact Uncreative application RNG/initialization timing where practical, then hyper-advanced repeated-field state/cost and Advanced-start ownership.

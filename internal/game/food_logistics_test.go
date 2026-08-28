@@ -73,6 +73,22 @@ func TestFoodLogisticsTransfersFoodWithFreighters(t *testing.T) {
 	}
 }
 
+func TestAllocateFoodImportsFollowsOriginalRoundRobinPriority(t *testing.T) {
+	colonies := []*core.Colony{
+		{ID: 10, PopulationDynamics: core.ColonyPopulationDynamics{LocalFoodShortage: 3}},
+		{ID: 20, PopulationDynamics: core.ColonyPopulationDynamics{LocalFoodShortage: 1}},
+		{ID: 30, PopulationDynamics: core.ColonyPopulationDynamics{LocalFoodShortage: 2}},
+	}
+
+	allocateFoodImports(colonies, 4, 1)
+
+	want := []float64{2, 1, 1}
+	for i, colony := range colonies {
+		if !closePopulationValue(colony.PopulationDynamics.FoodImported, want[i]) {
+			t.Fatalf("colony %d imported=%v want=%v", colony.ID, colony.PopulationDynamics.FoodImported, want[i])
+		}
+	}
+}
 func TestInsufficientFreightersLeaveShortageAndCauseStarvation(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	resolver, err := NewEconomyResolver(rules)
