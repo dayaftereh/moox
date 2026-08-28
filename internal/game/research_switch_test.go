@@ -156,3 +156,34 @@ func TestResearchSwitchDoesNotClampProgressToCheaperTarget(t *testing.T) {
 		t.Fatalf("switch clamped/transformed RP=%v want=79", state.Empires[0].Research.ProgressRP)
 	}
 }
+
+func TestResearchSwitchPreservesFractionalProgressRP(t *testing.T) {
+	_, resolver, state := initializedResearchRace(t, 755, "human", 0)
+	command, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4, TechnologyID: 56})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.selectResearch(state, state.Empires[0].ID, 1, command); err != nil {
+		t.Fatal(err)
+	}
+	state.Empires[0].Research.ProgressRP = 12.875
+
+	switchTo55, err := NewSelectResearchCommand(2, SelectResearchPayload{TechFieldID: 55})
+	if err != nil {
+		t.Fatal(err)
+	}
+	event, err := resolver.selectResearch(state, state.Empires[0].ID, 1, switchTo55)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if state.Empires[0].Research.ProgressRP != 12.875 {
+		t.Fatalf("fractional RP was rounded/truncated on switch: %v", state.Empires[0].Research.ProgressRP)
+	}
+	var payload ResearchSwitchedEvent
+	if err := json.Unmarshal(event.Data, &payload); err != nil {
+		t.Fatal(err)
+	}
+	if payload.TransferredRP != 12.875 {
+		t.Fatalf("fractional transferred_rp=%v want=12.875", payload.TransferredRP)
+	}
+}

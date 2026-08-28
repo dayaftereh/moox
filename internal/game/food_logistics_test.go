@@ -199,3 +199,84 @@ func TestSurplusFoodSaleAndFantasticTradersRate(t *testing.T) {
 		t.Fatalf("Fantastic Traders surplus income=%+v", tradersPayload.Snapshot)
 	}
 }
+
+func TestFoodLogisticsPreservesFractionalContinuousValues(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	resolver, err := NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := core.NewSmallFixture(736)
+	state.Empires[0].Freighters = 2
+	state.Colonies[0].PopulationDynamics.LocalFoodSurplus = 1.375
+	state.Colonies[0].PopulationDynamics.FoodSurplus = 1.375
+
+	planet := &state.Galaxy.Systems[1].Planets[0]
+	second := core.Colony{
+		ID:         state.NewID(),
+		EmpireID:   state.Empires[0].ID,
+		PlanetID:   planet.ID,
+		Population: core.PopulationState{Total: 2, Workers: 1, Scientists: 1},
+		PopulationDynamics: core.ColonyPopulationDynamics{
+			Capacity:          10,
+			LocalFoodShortage: 1.375,
+			FoodShortage:      1.375,
+		},
+	}
+	planet.ColonyID = second.ID
+	state.Colonies = append(state.Colonies, second)
+
+	events, err := resolver.materializeFoodLogistics(state, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(events) != 1 || events[0].Kind != "empire.food_logistics_resolved" {
+		t.Fatalf("unexpected logistics events: %+v", events)
+	}
+	var payload FoodLogisticsResolvedEvent
+	if err := json.Unmarshal(events[0].Data, &payload); err != nil {
+		t.Fatal(err)
+	}
+	if !closePopulationValue(payload.Snapshot.FoodTransferred, 1.375) || payload.Snapshot.FreightersUsed != 2 {
+		t.Fatalf("fractional transfer was truncated: %+v", payload.Snapshot)
+	}
+	if payload.Snapshot.FreighterOperatingCostBC != 1 {
+		t.Fatalf("freighter operating cost=%v want=1 BC", payload.Snapshot.FreighterOperatingCostBC)
+	}
+	if !closePopulationValue(payload.Colonies[0].FoodExported, 1.375) || !closePopulationValue(payload.Colonies[1].FoodImported, 1.375) {
+		t.Fatalf("fractional colony transfer was truncated: %+v", payload.Colonies)
+	}
+}
+
+func TestStarvationPreservesFractionalPopulationLoss(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	resolver, err := NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := core.NewSmallFixture(737)
+	planet := state.Galaxy.Systems[0].Planets[0]
+	colony := &state.Colonies[0]
+	colony.Population = core.PopulationState{Total: 4, Farmers: 2, Workers: 1, Scientists: 1}
+
+	dynamics, err := rules.CalculatePopulationDynamics(*colony, planet, "human", core.ColonyEconomy{Food: 2, Production: 3})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if dynamics.ProjectedStarvation <= 0 || dynamics.ProjectedStarvation == float64(int(dynamics.ProjectedStarvation)) {
+		t.Fatalf("expected fractional starvation loss, got %+v", dynamics)
+	}
+	colony.PopulationDynamics = dynamics
+	before := colony.Population.Total
+	events, err := resolver.advancePopulation(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(events) != 1 || events[0].Kind != "colony.population_starved" {
+		t.Fatalf("unexpected starvation events: %+v", events)
+	}
+	want := before - dynamics.ProjectedStarvation
+	if !closePopulationValue(colony.Population.Total, want) {
+		t.Fatalf("fractional starvation total=%v want=%v loss=%v", colony.Population.Total, want, dynamics.ProjectedStarvation)
+	}
+}
