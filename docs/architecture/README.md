@@ -452,7 +452,7 @@ The command/session boundary is now implemented across `internal/protocol`, `int
 
 The strategic runtime follows the original MOO2 1.31 materialize/apply pipeline. Current-turn Economy/Dynamics and Food logistics are materialized first; Research consumes the pre-growth RP snapshot, Population Growth/Starvation is applied, then Construction consumes the already-materialized pre-growth PP snapshot. The post-turn Economy/Dynamics snapshot is recalculated afterwards. Direct original-executable control/data flow and regression tests lock this ordering.
 
-Starvation and Food/Freighter logistics are implemented as an empire-wide deterministic phase. Research now has server-authoritative General/ordinary/Creative/Uncreative multi-application semantics. Research project switching is implemented with exact RP transfer and Observer/replay history. Direct original-executable analysis has also resolved the MOO2 1.31 turn-order question. The next Research slice is exact Uncreative RNG/initialization timing where practical, followed by hyper-advanced fields.
+Starvation and Food/Freighter logistics are implemented as an empire-wide deterministic phase. Research now has server-authoritative General/ordinary/Creative/Uncreative multi-application semantics. Research project switching is implemented with exact RP transfer and Observer/replay history. Direct original-executable analysis has resolved both the MOO2 1.31 turn-order question and Uncreative new-game fixed-application timing/shared-RNG ownership. The next Research slice is Hyper-Advanced repeated-field level/cost state.
 
 Network transports, Wails services and MCP remain adapters to this boundary and should not be introduced into the deterministic core.
 ## Related architecture documents

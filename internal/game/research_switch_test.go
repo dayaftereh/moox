@@ -9,7 +9,7 @@ import (
 )
 
 func TestResearchChoicesRemainAvailableDuringActiveProject(t *testing.T) {
-	rules, resolver, state := initializedResearchRace(t, 750, "human", 0)
+	rules, resolver, state := initializedResearchRace(t, 750, "human")
 	command, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4, TechnologyID: 56})
 	if err != nil {
 		t.Fatal(err)
@@ -33,7 +33,7 @@ func TestResearchChoicesRemainAvailableDuringActiveProject(t *testing.T) {
 }
 
 func TestResearchSwitchPreservesProgressAcrossFields(t *testing.T) {
-	rules, resolver, state := initializedResearchRace(t, 751, "human", 0)
+	rules, resolver, state := initializedResearchRace(t, 751, "human")
 	selectField4, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4, TechnologyID: 56})
 	if err != nil {
 		t.Fatal(err)
@@ -78,7 +78,7 @@ func TestResearchSwitchPreservesProgressAcrossFields(t *testing.T) {
 }
 
 func TestResearchSwitchPreservesProgressWithinFieldApplication(t *testing.T) {
-	_, resolver, state := initializedResearchRace(t, 752, "human", 0)
+	_, resolver, state := initializedResearchRace(t, 752, "human")
 	selectReinforcedHull, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4, TechnologyID: 56})
 	if err != nil {
 		t.Fatal(err)
@@ -106,7 +106,7 @@ func TestResearchSwitchPreservesProgressWithinFieldApplication(t *testing.T) {
 }
 
 func TestResearchSwitchRejectsSameSelectionWithoutMutation(t *testing.T) {
-	_, resolver, state := initializedResearchRace(t, 753, "human", 0)
+	_, resolver, state := initializedResearchRace(t, 753, "human")
 	command, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4, TechnologyID: 56})
 	if err != nil {
 		t.Fatal(err)
@@ -136,7 +136,7 @@ func TestResearchSwitchRejectsSameSelectionWithoutMutation(t *testing.T) {
 }
 
 func TestResearchSwitchDoesNotClampProgressToCheaperTarget(t *testing.T) {
-	_, resolver, state := initializedResearchRace(t, 754, "human", 0)
+	_, resolver, state := initializedResearchRace(t, 754, "human")
 	command, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4, TechnologyID: 56})
 	if err != nil {
 		t.Fatal(err)
@@ -158,7 +158,7 @@ func TestResearchSwitchDoesNotClampProgressToCheaperTarget(t *testing.T) {
 }
 
 func TestResearchSwitchPreservesFractionalProgressRP(t *testing.T) {
-	_, resolver, state := initializedResearchRace(t, 755, "human", 0)
+	_, resolver, state := initializedResearchRace(t, 755, "human")
 	command, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4, TechnologyID: 56})
 	if err != nil {
 		t.Fatal(err)

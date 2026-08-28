@@ -140,21 +140,40 @@ Economy/Food snapshot
 
 Both RP and PP remain **pre-growth** for the current turn. A combined regression test locks the event order and exact 4.5 RP / 3 PP fixture values.
 
+### Resolved Uncreative initial-selection timing
+
+Direct MOO2 1.31 executable analysis is now documented in `UNCREATIVE_INITIAL_SELECTION_2026-08-28.md`.
+
+Verified original chain:
+
+```text
+Init_New_Game_ (0x12479)
+-> Init_Players_ (0x12983)
+-> Init_Player_Tech_ (0x5E55F)
+-> Random_ (0x1247A0)
+```
+
+The fixed Uncreative applications are generated during New Game player initialization, not when a field is first opened or selected. The original walks TechFields `1..73`, skips General fields that already expose applications, draws from the shared New Game RNG, and retries illegal race/game-mode applications.
+
+MOOX now mirrors that architecture with caller-owned `NewGameRNG`, keeps the persisted `fixed_one` plan, excludes special Antaran TechField 74, and applies the verified Unification/Tolerant/Lithovore/Strategic-Combat rejection rules. Query-time `ResearchChoices()` remains RNG-free.
+
+`Ensure_Uncreative_Field_OK_` is verified as a later replacement/repair path after external technology acquisition; that transition remains parked rather than being conflated with initial generation.
+
 ### Current exact Research task
 
-Investigate the **original Uncreative application RNG / initialization timing** only as far as executable/save evidence supports it:
+Model the **original Hyper-Advanced repeated-field level/cost state** without guessing:
 
-1. determine whether the complete Uncreative field/application plan is fixed at new-game creation, first field visibility, research selection, or another deterministic point;
-2. inspect original symbols/callers around `Ensure_Uncreative_Field_OK_` and neighboring research functions;
-3. compare original behavior with the current persisted deterministic MOOX plan;
-4. replace only the generator/timing if original evidence is strong, without changing the `fixed_one` protocol/state shape.
+1. identify where per-player repeated Hyper-Advanced levels are stored and incremented;
+2. map TechFields `>= 75` to their repeat counters and original progression order;
+3. connect the already-verified `Player_Research_Cost_` dynamic `level * 10000` component to authoritative MOOX state;
+4. define the smallest persistent state/schema change needed for deterministic save/replay;
+5. only then allow `advanceResearch` to process Hyper-Advanced fields instead of its current explicit rejection.
 
-### After Uncreative timing
+### After Hyper-Advanced
 
-- hyper-advanced repeated-field level/cost state;
 - Advanced-start randomized/race-aware technology ownership;
-- later external acquisition interaction with an Uncreative fixed application.
-
+- Uncreative external-acquisition replacement using `Ensure_Uncreative_Field_OK_`;
+- identify the original `0x21CAF` Dimensional Portal gate when relevant.
 ### Parked Economy follow-ups
 
 - Freighter Fleet acquisition/build legal action;

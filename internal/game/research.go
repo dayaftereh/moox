@@ -16,9 +16,9 @@ const (
 )
 
 type NewGameTechnologyOptions struct {
-	Level                   NewGameTechnologyLevel
-	StrategicCombat         bool
-	UncreativeSelectionSeed uint64
+	Level           NewGameTechnologyLevel
+	StrategicCombat bool
+	NewGameRNG      *core.RNG
 }
 
 type ResearchCompletedEvent struct {
@@ -57,6 +57,13 @@ func (r *EconomyRules) InitializeEmpireTechnologies(empire *core.Empire, options
 	}
 	if len(empire.KnownTechnologyIDs) != 0 || len(empire.KnownTechnologyFieldIDs) != 0 || empire.Research != nil {
 		return fmt.Errorf("empire %d technology state is already initialized", empire.ID)
+	}
+	modifiers, ok := r.RaceModifiers[empire.RaceID]
+	if !ok {
+		return fmt.Errorf("empire %d has unknown race %q", empire.ID, empire.RaceID)
+	}
+	if modifiers.Uncreative && options.NewGameRNG == nil {
+		return fmt.Errorf("uncreative empire %d requires the caller-owned NewGameRNG", empire.ID)
 	}
 	fields := []int{r.NewGameAlwaysKnownFieldID}
 	switch options.Level {
@@ -103,10 +110,8 @@ func (r *EconomyRules) InitializeEmpireTechnologies(empire *core.Empire, options
 	return nil
 }
 
-// CompleteResearchField materializes only the ownership transition that occurs
-// after a research breakthrough has already been decided by the authoritative
-// simulation. Breakthrough probability/overflow and research selection are
-// intentionally separate from this transition.
+// initializeUncreativeResearchChoices materializes the original new-game
+// fixed-application plan for an Uncreative empire using the caller-owned RNG.
 func (r *EconomyRules) initializeUncreativeResearchChoices(empire *core.Empire, options NewGameTechnologyOptions) error {
 	modifiers, ok := r.RaceModifiers[empire.RaceID]
 	if !ok {
@@ -116,47 +121,91 @@ func (r *EconomyRules) initializeUncreativeResearchChoices(empire *core.Empire, 
 	if !modifiers.Uncreative {
 		return nil
 	}
-	if options.UncreativeSelectionSeed == 0 {
-		return fmt.Errorf("uncreative empire %d requires a nonzero UncreativeSelectionSeed", empire.ID)
+	if options.NewGameRNG == nil {
+		return fmt.Errorf("uncreative empire %d requires the caller-owned NewGameRNG", empire.ID)
 	}
 
-	fieldIDs := make([]int, 0, len(r.TechnologyIDsByField))
-	for fieldID := range r.TechnologyIDsByField {
-		if fieldID <= 0 || fieldID >= 75 {
-			continue
-		}
+	// Original MOO2 1.31 Init_Player_Tech_ selects fixed Uncreative
+	// applications during Init_Players_. Its field loop is exactly 1..73;
+	// field 74 is the special Antaran technology field and is not part of the
+	// normal Uncreative research plan. General/start fields already have
+	// available applications and therefore consume no Uncreative selection draw.
+	const originalUncreativeFieldMax = 73
+	choices := make([]core.FixedResearchChoice, 0, originalUncreativeFieldMax)
+	for fieldID := 1; fieldID <= originalUncreativeFieldMax; fieldID++ {
 		if _, general := r.GeneralResearchFieldIDs[fieldID]; general {
 			continue
 		}
-		fieldIDs = append(fieldIDs, fieldID)
-	}
-	sort.Ints(fieldIDs)
-
-	seed := options.UncreativeSelectionSeed ^ (uint64(empire.ID) * 0x9e3779b97f4a7c15)
-	rng := core.NewRNG(seed)
-	choices := make([]core.FixedResearchChoice, 0, len(fieldIDs))
-	for _, fieldID := range fieldIDs {
 		allIDs := r.TechnologyIDsByField[fieldID]
-		ids := make([]int, 0, len(allIDs))
+		if len(allIDs) == 0 {
+			return fmt.Errorf("uncreative research field %d has no normalized technology applications", fieldID)
+		}
+
+		eligible := 0
 		for _, technologyID := range allIDs {
-			if options.StrategicCombat && !r.TechnologyStrategicAvailable[technologyID] {
+			if r.uncreativeInitialTechnologyEligible(modifiers, options, technologyID) {
+				eligible++
+			}
+		}
+		if eligible == 0 {
+			return fmt.Errorf("uncreative research field %d has no eligible technology applications", fieldID)
+		}
+
+		// The original draws from the field's application slots and retries when
+		// the selected application is illegal for the race/game mode. Keep that
+		// gameplay-level RNG consumption pattern while retaining MOOX's own
+		// deterministic SplitMix64 generator rather than claiming LCG identity.
+		for {
+			index, err := options.NewGameRNG.Intn(len(allIDs))
+			if err != nil {
+				return err
+			}
+			technologyID := allIDs[index]
+			if !r.uncreativeInitialTechnologyEligible(modifiers, options, technologyID) {
 				continue
 			}
-			ids = append(ids, technologyID)
+			choices = append(choices, core.FixedResearchChoice{TechFieldID: fieldID, TechnologyID: technologyID})
+			break
 		}
-		if len(ids) == 0 {
-			continue
-		}
-		index, err := rng.Intn(len(ids))
-		if err != nil {
-			return err
-		}
-		choices = append(choices, core.FixedResearchChoice{TechFieldID: fieldID, TechnologyID: ids[index]})
 	}
 	empire.UncreativeResearchChoices = choices
 	return nil
 }
 
+// uncreativeInitialTechnologyEligible mirrors the original Init_Player_Tech_
+// race/mode exclusions that are already normalized in MOOX. The original also
+// gates Technology 52 (Dimensional Portal) on global byte 0x21CAF; the meaning
+// of that game-setting byte is not normalized yet, so that one gate remains
+// deliberately deferred rather than guessed here.
+func (r *EconomyRules) uncreativeInitialTechnologyEligible(modifiers RaceEconomyModifiers, options NewGameTechnologyOptions, technologyID int) bool {
+	if options.StrategicCombat && !r.TechnologyStrategicAvailable[technologyID] {
+		return false
+	}
+	if modifiers.GovernmentTraitID == "government_unification" {
+		switch technologyID {
+		case 86, 141, 195: // Holo Simulator, Pleasure Dome, Virtual Reality Network.
+			return false
+		}
+	}
+	if modifiers.Tolerant {
+		switch technologyID {
+		case 19, 50, 113, 142: // Pollution-management applications made redundant by Tolerant.
+			return false
+		}
+	}
+	if modifiers.Lithovore {
+		switch technologyID {
+		case 6, 29, 68, 87, 162, 178: // Food/farming applications made redundant by Lithovore.
+			return false
+		}
+	}
+	return true
+}
+
+// CompleteResearchField materializes only the ownership transition that occurs
+// after a research breakthrough has already been decided by the authoritative
+// simulation. Breakthrough probability/overflow and research selection are
+// intentionally separate from this transition.
 func (r *EconomyResolver) CompleteResearchField(state *core.GameState, empireID core.ID) (DomainEvent, error) {
 	if r == nil || r.Rules == nil {
 		return DomainEvent{}, fmt.Errorf("economy resolver has no rules")

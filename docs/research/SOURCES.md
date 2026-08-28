@@ -217,7 +217,7 @@ Use: secondary evidence that classic/default behavior prevents starvation from e
 
 https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Calculations
 
-Use: the page states its calculations were checked under MOO2 1.31 and documents the Growth/Starvation penalty formulas. It also describes a global strategic turn ordering that conflicts with the current MOOX pre-Population Construction/Research ordering. That ordering is tracked as unresolved evidence and is not silently adopted from this source alone.
+Use: the page states its calculations were checked under MOO2 1.31 and documents the Growth/Starvation penalty formulas. Its simplified strategic turn sequence is now superseded for implementation ordering by direct original-executable control/data-flow evidence in `TURN_ORDER_2026-08-28.md`.
 ## Multi-Technology Research references
 
 ### Original manual - Directing Research
@@ -238,7 +238,7 @@ https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Technologies
 
 Use: independent secondary cross-check that ordinary races choose one technology, Creative receives all technologies at a level for the same research cost, Uncreative receives one software-randomized technology, and bottom/general levels grant all technologies to every empire.
 
-The exact original Uncreative RNG seed/algorithm/timing is not treated as proven by these sources.
+These public sources establish the rule shape only. Exact initial-selection timing and RNG ownership are now grounded separately in direct original-executable evidence.
 
 ## Research switching references
 
@@ -263,3 +263,12 @@ Use: independent hosted copy of the same manual wording for switching research d
 SHA-256: `7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5`
 
 Use: primary/original-observed control-flow and data-flow evidence for `Next_Turn_Calc_`, `Apply_All_Player_Changes_`, `Check_For_Research_Breakthrough_`, `Apply_All_Colony_Changes_`, `Apply_Colony_Pop_Growth_`, `Apply_Production_`, resource materialization fields and subsequent `Do_Colony_Calculations_` refresh. Detailed addresses are recorded in `TURN_ORDER_2026-08-28.md`. This primary evidence supersedes the simplified secondary sequence when they differ.
+## Direct original Uncreative selection evidence
+
+### Private original MOO2 1.31 executable
+
+`C:\ASH\Temp\mastori2\Orion2.exe`
+
+SHA-256: `7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5`
+
+Use: primary/original-observed evidence for `Init_New_Game_`, `Init_Players_`, `Init_Player_Tech_`, `Random_`, the exact initial TechField `1..73` loop, General-field exceptions, Unification/Tolerant/Lithovore/Strategic-Combat eligibility rejection, and the later `Ensure_Uncreative_Field_OK_` repair path. Detailed addresses are recorded in `UNCREATIVE_INITIAL_SELECTION_2026-08-28.md`.

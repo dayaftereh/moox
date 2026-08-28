@@ -46,7 +46,7 @@ func TestAvailableResearchChoicesReturnsServerAuthoritativeFrontier(t *testing.T
 }
 
 func TestAvailableResearchChoicesRemainAvailableWhileResearchActive(t *testing.T) {
-	rules, resolver, state := initializedResearchRace(t, 702, "human", 0)
+	rules, resolver, state := initializedResearchRace(t, 702, "human")
 	command, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4, TechnologyID: 56})
 	if err != nil {
 		t.Fatal(err)

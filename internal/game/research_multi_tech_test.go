@@ -7,7 +7,7 @@ import (
 	"moox/internal/core"
 )
 
-func initializedResearchRace(t *testing.T, seed uint64, raceID string, uncreativeSeed uint64) (*EconomyRules, *EconomyResolver, *core.GameState) {
+func initializedResearchRace(t *testing.T, seed uint64, raceID string) (*EconomyRules, *EconomyResolver, *core.GameState) {
 	t.Helper()
 	rules := loadCommittedEconomyRules(t)
 	resolver, err := NewEconomyResolver(rules)
@@ -16,17 +16,22 @@ func initializedResearchRace(t *testing.T, seed uint64, raceID string, uncreativ
 	}
 	state := core.NewSmallFixture(seed)
 	state.Empires[0].RaceID = raceID
-	if err := rules.InitializeEmpireTechnologies(&state.Empires[0], NewGameTechnologyOptions{
-		Level:                   NewGameTechnologyPreWarp,
-		UncreativeSelectionSeed: uncreativeSeed,
-	}); err != nil {
+	options := NewGameTechnologyOptions{Level: NewGameTechnologyPreWarp}
+	var newGameRNG *core.RNG
+	if modifiers := rules.RaceModifiers[raceID]; modifiers.Uncreative {
+		newGameRNG = state.RNG()
+		options.NewGameRNG = newGameRNG
+	}
+	if err := rules.InitializeEmpireTechnologies(&state.Empires[0], options); err != nil {
 		t.Fatal(err)
+	}
+	if newGameRNG != nil {
+		state.CommitRNG(newGameRNG)
 	}
 	return rules, resolver, state
 }
-
 func TestOrdinaryResearchChoosesOneApplicationAtSelectionTime(t *testing.T) {
-	rules, resolver, state := initializedResearchRace(t, 740, "human", 0)
+	rules, resolver, state := initializedResearchRace(t, 740, "human")
 	choices, err := rules.AvailableResearchChoices(state, state.Empires[0].ID)
 	if err != nil {
 		t.Fatal(err)
@@ -81,7 +86,7 @@ func TestOrdinaryResearchChoosesOneApplicationAtSelectionTime(t *testing.T) {
 }
 
 func TestGeneralResearchFieldGrantsAllApplicationsForOrdinaryRace(t *testing.T) {
-	rules, resolver, state := initializedResearchRace(t, 741, "human", 0)
+	rules, resolver, state := initializedResearchRace(t, 741, "human")
 	choices, err := rules.AvailableResearchChoices(state, state.Empires[0].ID)
 	if err != nil {
 		t.Fatal(err)
@@ -109,7 +114,7 @@ func TestGeneralResearchFieldGrantsAllApplicationsForOrdinaryRace(t *testing.T) 
 }
 
 func TestCreativeResearchAcquiresAllFieldApplications(t *testing.T) {
-	rules, resolver, state := initializedResearchRace(t, 742, "psilon", 0)
+	rules, resolver, state := initializedResearchRace(t, 742, "psilon")
 	choices, err := rules.AvailableResearchChoices(state, state.Empires[0].ID)
 	if err != nil {
 		t.Fatal(err)
@@ -140,7 +145,7 @@ func TestCreativeResearchAcquiresAllFieldApplications(t *testing.T) {
 }
 
 func TestUncreativeResearchUsesPersistedFixedApplicationWithoutQueryRNG(t *testing.T) {
-	rules, resolver, state := initializedResearchRace(t, 743, "klackon", 0x12345678)
+	rules, resolver, state := initializedResearchRace(t, 743, "klackon")
 	fixedID, ok := fixedResearchTechnology(state.Empires[0].UncreativeResearchChoices, 4)
 	if !ok {
 		t.Fatal("Klackon has no persisted fixed application for TechField 4")
@@ -191,35 +196,114 @@ func TestUncreativeResearchUsesPersistedFixedApplicationWithoutQueryRNG(t *testi
 	}
 }
 
-func TestUncreativeResearchPlanIsDeterministicAndRequiresSeed(t *testing.T) {
+func TestUncreativeResearchPlanUsesSharedNewGameRNGDeterministically(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	missing := core.NewSmallFixture(744)
 	missing.Empires[0].RaceID = "klackon"
 	if err := rules.InitializeEmpireTechnologies(&missing.Empires[0], NewGameTechnologyOptions{Level: NewGameTechnologyPreWarp}); err == nil {
-		t.Fatal("Uncreative initialization accepted missing selection seed")
+		t.Fatal("Uncreative initialization accepted a missing NewGameRNG")
+	}
+	if len(missing.Empires[0].KnownTechnologyFieldIDs) != 0 || len(missing.Empires[0].KnownTechnologyIDs) != 0 || len(missing.Empires[0].UncreativeResearchChoices) != 0 {
+		t.Fatalf("failed NewGameRNG preflight partially initialized empire: %+v", missing.Empires[0])
 	}
 
 	first := core.NewSmallFixture(745)
 	second := core.NewSmallFixture(745)
 	first.Empires[0].RaceID = "klackon"
 	second.Empires[0].RaceID = "klackon"
-	options := NewGameTechnologyOptions{Level: NewGameTechnologyPreWarp, UncreativeSelectionSeed: 0xC0FFEE}
-	if err := rules.InitializeEmpireTechnologies(&first.Empires[0], options); err != nil {
+	firstRNG := first.RNG()
+	secondRNG := second.RNG()
+	firstInitialRNGState := firstRNG.State()
+	if err := rules.InitializeEmpireTechnologies(&first.Empires[0], NewGameTechnologyOptions{Level: NewGameTechnologyPreWarp, NewGameRNG: firstRNG}); err != nil {
 		t.Fatal(err)
 	}
-	if err := rules.InitializeEmpireTechnologies(&second.Empires[0], options); err != nil {
+	if err := rules.InitializeEmpireTechnologies(&second.Empires[0], NewGameTechnologyOptions{Level: NewGameTechnologyPreWarp, NewGameRNG: secondRNG}); err != nil {
 		t.Fatal(err)
+	}
+	first.CommitRNG(firstRNG)
+	second.CommitRNG(secondRNG)
+	if first.RNGState == firstInitialRNGState {
+		t.Fatal("Uncreative initialization did not consume the shared new-game RNG")
+	}
+	if first.RNGState != second.RNGState {
+		t.Fatalf("same new-game RNG state diverged: first=%d second=%d", first.RNGState, second.RNGState)
 	}
 	if !reflect.DeepEqual(first.Empires[0].UncreativeResearchChoices, second.Empires[0].UncreativeResearchChoices) {
-		t.Fatalf("same seed produced different Uncreative plan:\nfirst=%v\nsecond=%v", first.Empires[0].UncreativeResearchChoices, second.Empires[0].UncreativeResearchChoices)
+		t.Fatalf("same new-game RNG produced different Uncreative plans:\nfirst=%v\nsecond=%v", first.Empires[0].UncreativeResearchChoices, second.Empires[0].UncreativeResearchChoices)
 	}
 	if len(first.Empires[0].UncreativeResearchChoices) == 0 {
 		t.Fatal("Uncreative initialization produced no fixed research choices")
 	}
+	for _, fixed := range first.Empires[0].UncreativeResearchChoices {
+		if fixed.TechFieldID < 1 || fixed.TechFieldID > 73 {
+			t.Fatalf("Uncreative plan contains non-original initial field %+v", fixed)
+		}
+		if _, general := rules.GeneralResearchFieldIDs[fixed.TechFieldID]; general {
+			t.Fatalf("Uncreative plan incorrectly fixes General field %+v", fixed)
+		}
+	}
+	if _, found := fixedResearchTechnology(first.Empires[0].UncreativeResearchChoices, 74); found {
+		t.Fatal("Uncreative plan incorrectly contains special Antaran TechField 74")
+	}
 }
 
+func TestUncreativePlansConsumeOneSharedNewGameRNGAcrossPlayers(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	buildPair := func(seed uint64) (core.Empire, core.Empire, uint64) {
+		first := core.Empire{ID: 1, RaceID: "klackon"}
+		second := core.Empire{ID: 2, RaceID: "klackon"}
+		rng := core.NewRNG(seed)
+		options := NewGameTechnologyOptions{Level: NewGameTechnologyPreWarp, NewGameRNG: rng}
+		if err := rules.InitializeEmpireTechnologies(&first, options); err != nil {
+			t.Fatal(err)
+		}
+		if err := rules.InitializeEmpireTechnologies(&second, options); err != nil {
+			t.Fatal(err)
+		}
+		return first, second, rng.State()
+	}
+
+	firstA, secondA, stateA := buildPair(0x1BADB002)
+	firstB, secondB, stateB := buildPair(0x1BADB002)
+	if stateA != stateB || !reflect.DeepEqual(firstA.UncreativeResearchChoices, firstB.UncreativeResearchChoices) || !reflect.DeepEqual(secondA.UncreativeResearchChoices, secondB.UncreativeResearchChoices) {
+		t.Fatalf("shared new-game RNG sequence is not deterministic:\nA=%v / %v state=%d\nB=%v / %v state=%d", firstA.UncreativeResearchChoices, secondA.UncreativeResearchChoices, stateA, firstB.UncreativeResearchChoices, secondB.UncreativeResearchChoices, stateB)
+	}
+
+	human := core.Empire{ID: 3, RaceID: "human"}
+	humanRNG := core.NewRNG(0xDEADBEEF)
+	before := humanRNG.State()
+	if err := rules.InitializeEmpireTechnologies(&human, NewGameTechnologyOptions{Level: NewGameTechnologyPreWarp, NewGameRNG: humanRNG}); err != nil {
+		t.Fatal(err)
+	}
+	if humanRNG.State() != before {
+		t.Fatalf("ordinary player consumed Uncreative new-game RNG: before=%d after=%d", before, humanRNG.State())
+	}
+}
+func TestUncreativeInitialTechnologyEligibilityMatchesOriginalTraitFilters(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	modifiers := RaceEconomyModifiers{
+		GovernmentTraitID: "government_unification",
+		Tolerant:          true,
+		Lithovore:         true,
+	}
+	options := NewGameTechnologyOptions{Level: NewGameTechnologyPreWarp}
+	for _, technologyID := range []int{86, 141, 195, 19, 50, 113, 142, 6, 29, 68, 87, 162, 178} {
+		if rules.uncreativeInitialTechnologyEligible(modifiers, options, technologyID) {
+			t.Fatalf("original trait filter incorrectly accepted technology %d", technologyID)
+		}
+	}
+	if !rules.uncreativeInitialTechnologyEligible(modifiers, options, 13) {
+		t.Fatal("trait filter rejected unrelated Anti-Missile Rockets")
+	}
+	if rules.uncreativeInitialTechnologyEligible(RaceEconomyModifiers{}, NewGameTechnologyOptions{StrategicCombat: true}, 56) {
+		t.Fatal("strategic-combat filter accepted non-strategic Reinforced Hull")
+	}
+	if !rules.uncreativeInitialTechnologyEligible(RaceEconomyModifiers{}, NewGameTechnologyOptions{StrategicCombat: false}, 56) {
+		t.Fatal("tactical mode rejected Reinforced Hull")
+	}
+}
 func TestResearchCompletionRejectsRaceSelectionModeMismatch(t *testing.T) {
-	rules, resolver, state := initializedResearchRace(t, 746, "human", 0)
+	rules, resolver, state := initializedResearchRace(t, 746, "human")
 	state.Empires[0].Research = &core.ResearchState{
 		TechFieldID:   4,
 		SelectionMode: core.ResearchSelectionAll,
@@ -232,7 +316,7 @@ func TestResearchCompletionRejectsRaceSelectionModeMismatch(t *testing.T) {
 }
 
 func TestResearchCompletionRejectsUncreativeFixedChoiceMismatch(t *testing.T) {
-	rules, resolver, state := initializedResearchRace(t, 747, "klackon", 0xA11CE)
+	rules, resolver, state := initializedResearchRace(t, 747, "klackon")
 	fixedID, ok := fixedResearchTechnology(state.Empires[0].UncreativeResearchChoices, 4)
 	if !ok {
 		t.Fatal("missing Uncreative fixed TechField 4 application")

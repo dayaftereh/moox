@@ -134,7 +134,7 @@ The client is shown exactly one application and is not permitted to send a Techn
 
 Research-choice projection must be read-only. Calling `ResearchChoices()` from UI, AI or networking must never consume authoritative RNG or change which technology an Uncreative empire receives.
 
-MOOX therefore persists:
+MOOX persists:
 
 ```text
 Empire.UncreativeResearchChoices[]
@@ -142,23 +142,17 @@ Empire.UncreativeResearchChoices[]
     TechnologyID
 ```
 
-The plan is generated once during deterministic new-game technology initialization using an explicit `UncreativeSelectionSeed`, stable ascending TechField order and the project's SplitMix64 implementation. Legal-action queries only read the persisted plan.
+Direct original-executable analysis now proves that this full fixed plan is generated during `Init_Player_Tech_` inside New Game player initialization. MOOX therefore uses the caller-owned shared `NewGameRNG` rather than a separate Uncreative-only seed.
 
-The plan excludes:
-
-- field IDs `<= 0` that are not ordinary research fields;
-- General fields, because they use `all` for every race;
-- current hyper-advanced placeholder fields;
-- Strategic-Combat-unavailable applications when initialization explicitly uses Strategic Combat.
+The verified initial range is exactly TechField `1..73`. General fields remain `all`; special Antaran TechField 74 and Hyper-Advanced fields are not part of the initial fixed plan. The generator retries applications rejected by normalized Unification, Tolerant, Lithovore or Strategic-Combat rules. Legal-action queries only read the persisted result.
 
 ### Fidelity boundary
 
-The original rule that Uncreative gets one software-selected/random application is supported. The exact original RNG algorithm, seed source and precise point at which all Uncreative application choices become fixed are **not** yet proven.
+Timing, shared RNG ownership, field range and the modeled rejection loop are now original-derived. MOOX intentionally keeps SplitMix64 rather than claiming bit-identical original LCG output, and original field-slot ordering is not yet stored as a separate normalized vector.
 
-Generating the full fixed plan at MOOX empire setup is therefore an architectural/determinism policy, not a claim that MOO2 1.31 used the same PRNG sequence or initialization moment.
+One original eligibility gate remains deliberately unresolved: Technology 52 `dimensional_portal` depends on global byte `0x21CAF`, whose semantic setting identity is not yet normalized.
 
-This is deliberately isolated behind persisted `FixedResearchChoice` state so a future original-derived generator can replace it without changing ResearchChoice, commands or save semantics.
-
+See `UNCREATIVE_INITIAL_SELECTION_2026-08-28.md` for addresses and control/data-flow evidence.
 ## Server authority and command validation
 
 The client never submits an ownership set.
@@ -232,22 +226,19 @@ Regression coverage includes:
 - Klackon/Uncreative TechField 4 projects as `fixed_one` with the persisted application;
 - an Uncreative client cannot override the fixed application;
 - an Uncreative General field still uses `all`;
-- same initialization seed yields the same persisted Uncreative plan;
-- Uncreative initialization requires an explicit nonzero selection seed;
+- same shared New Game RNG state yields the same persisted Uncreative plan and final RNG state;
+- Uncreative initialization requires a caller-owned New Game RNG;
 - querying `ResearchChoices()` leaves the serialized authoritative state/RNG byte-identical;
 - existing GameSession authority, breakthrough and replay paths remain green.
 
 ## Open research / next slices
 
-The next Research work should remain focused and not reopen settled identity tables:
+Initial Uncreative fixed-application timing/RNG ownership is now resolved in `UNCREATIVE_INITIAL_SELECTION_2026-08-28.md`. Active Research work should proceed as:
 
-1. determine the original Uncreative application RNG/initialization timing more precisely if executable/save evidence is available;
-2. investigate switching/cancelling an active research project and whether RP progress is retained, lost or field-specific;
-3. use the resolved direct MOO2 1.31 turn-order evidence from `TURN_ORDER_2026-08-28.md`;
-4. model hyper-advanced repeated-field level/cost state;
-5. implement Advanced-start randomized/race-aware technology ownership using the now-correct Ordinary/Creative/Uncreative policy;
-6. later handle external acquisition of the already-fixed Uncreative application before that field is researched.
-
+1. model Hyper-Advanced repeated-field level/cost state;
+2. implement Advanced-start randomized/race-aware technology ownership;
+3. later implement Uncreative external-acquisition replacement using the verified `Ensure_Uncreative_Field_OK_` path;
+4. separately identify the `0x21CAF` Dimensional Portal eligibility gate when needed.
 
 ## Superseding switching checkpoint
 
