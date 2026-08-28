@@ -2,7 +2,7 @@
 
 ## Scope
 
-This checkpoint records direct Master of Orion II 1.31 executable evidence for the randomized Advanced-start technology generator. It deliberately separates proven generator structure from the still-unimplemented MOOX runtime port.
+This checkpoint records direct Master of Orion II 1.31 executable evidence for the randomized Advanced-start technology generator and the resulting MOOX runtime port. Original evidence and deliberate MOOX semantic representation remain distinguished below.
 
 ## Original initialization order
 
@@ -130,13 +130,26 @@ This is why exact Advanced initialization belongs at the full New Game state bou
 
 A second chooser filter is gated by global `0x21CB0`. `Set_Default_Game_Settings_` sets this value to `0`, while other values also alter NPC personality weights. MOOX has not yet normalized that broader difficulty/AI setting, so the first Advanced implementation should reproduce the directly verified default path and keep the `0x21CB0 > 0` layer explicit/deferred rather than guessing its public option meaning.
 
-## Next implementation slice
+## MOOX runtime implementation
 
-1. expose the normalized AI class/field-group metadata through `EconomyRules`;
-2. introduce an explicit Advanced preference profile instead of embedding `+0x28/+0x205/+0x206` legacy bytes;
-3. add a full-state New Game technology initializer so shared RNG and cross-player competition are deterministic and ordered;
-4. port the default-path `Calc_Tech_Value_` and `Choose_Tech_Application_` weighting;
-5. grant exactly 19 extra Advanced iterations with ordinary / Creative / Uncreative semantics;
-6. test repeatability, strategic filtering and cross-player ordering.
+Advanced-start ownership is now implemented at the full New Game state boundary.
 
-The existing per-Empire initializer remains appropriate for deterministic Pre-Warp/Average ownership and lower-level tests.
+The runtime:
+
+1. applies the deterministic Average baseline first;
+2. initializes Empires in stable ID order;
+3. uses one caller-owned shared `NewGameRNG`;
+4. calculates candidates from currently open TechFields after every grant;
+5. applies the verified default-path `Calc_Tech_Value_` / chooser weighting plus Advanced-start bonus multipliers;
+6. grants exactly 19 additional TechFields per Empire;
+7. preserves ordinary `choose_one`, Creative `all`, and Uncreative fixed-application ownership semantics;
+8. filters Strategic Combat-ineligible Technologies;
+9. lets later Empires observe earlier Advanced grants through Competition Tech Values.
+
+Regression coverage proves same-seed determinism, exactly 19 extras after the seven-field Average baseline, Strategic Combat filtering, stable cross-Empire ordering, one-RNG weighted choice behavior and final `GameState.Validate()` success.
+
+The broader original `0x21CB0 > 0` secondary chooser layer remains deferred because its public difficulty/AI-setting meaning is not normalized. The implemented path intentionally corresponds to the directly verified default-game setting.
+
+## Next Research slice
+
+Introduce an authoritative external Technology-grant transition and route the already-verified Uncreative post-acquisition repair through it. Source-specific systems such as diplomacy or random acquisition can then reuse that transition later without mutating Technology ownership directly.

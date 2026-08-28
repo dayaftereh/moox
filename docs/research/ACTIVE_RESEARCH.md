@@ -178,21 +178,33 @@ The original MOO2 technology-selection screen temporarily promotes Hyper counter
 
 `StateSchemaVersion = 7` and technology ruleset schema 4 now carry the semantic Hyper state/rules plus the original AI/research metadata needed by Advanced start.
 
+### Resolved Advanced-start randomized/race-aware ownership
+
+The Advanced New Game runtime is now implemented from the verified original structure:
+
+- six deterministic Average-start fields are applied first;
+- exactly 19 additional TechFields are granted per Empire;
+- candidate weights use the normalized original Technology AI class, class weight, field-group progression and the verified Advanced start bonus multipliers;
+- Empires are initialized in stable ID order and share one caller-owned `NewGameRNG`, so later Empires observe earlier grants for Competition Tech Values;
+- ordinary, Creative and Uncreative acquisition semantics remain server-owned and Strategic Combat filtering is enforced;
+- same-seed multi-Empire initialization is deterministic and the resulting Core state validates.
+
+The original Technology-selection UI's unrelated Hyper preview quirk remains intentionally separate from authoritative simulation.
+
 ### Current exact Research task
 
-Implement the now-resolved **Advanced-start randomized/race-aware technology ownership** from `ADVANCED_START_RESEARCH_2026-08-28.md`:
+Build the smallest **authoritative external Technology-grant transition** needed by future diplomacy/events/loot-style acquisition:
 
-1. expose normalized Technology AI class / TechField AI-group progression metadata through `EconomyRules`;
-2. model the original personality/objective/theme inputs as an explicit semantic Advanced preference profile;
-3. initialize Advanced technologies at the full New Game state boundary so all Empires share one RNG and later players can observe earlier players for Competition Tech Values;
-4. port the verified default-path `Calc_Tech_Value_` / `Choose_Tech_Application_` weighting and grant exactly 19 extras after the six Average fields;
-5. preserve ordinary / Creative / Uncreative and Strategic Combat acquisition semantics without introducing client-selected ownership.
+1. grant a concrete Technology through one server-owned game-layer transition instead of direct `KnownTechnologyIDs` mutation;
+2. materialize the owning TechField only when the acquisition semantics justify it, without inventing research completion;
+3. when the recipient is Uncreative, invoke the verified `RepairUncreativeResearchChoiceAfterAcquisition` path with caller-owned RNG and Random Events/Strategic Combat gates;
+4. emit an Observer/replay event describing acquired Technology, source kind and any repaired fixed application;
+5. add deterministic tests for ordinary and Uncreative recipients while keeping future source-specific systems outside this low-level transition.
 
-### After Advanced Start
+### After external Technology grants
 
-- wire the implemented Uncreative external-acquisition repair helper into future authoritative Technology-grant systems; the `0x21CAF` gate is resolved as Random Events;
+- wire concrete future acquisition sources into this transition as they are implemented;
 - later UI-fidelity work for the original Hyper temporary +1 preview / 20-level list boundary if desired.
-
 ### Parked Economy follow-ups
 
 - Freighter Fleet acquisition/build legal action;
