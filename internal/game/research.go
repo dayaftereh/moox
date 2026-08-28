@@ -177,11 +177,15 @@ func (r *EconomyRules) initializeUncreativeResearchChoices(empire *core.Empire, 
 	return nil
 }
 
-// uncreativeInitialTechnologyEligible mirrors the original Init_Player_Tech_
-// race/mode exclusions that are normalized in MOOX. Original global 0x21CAF is
-// now identified as the New Game Random Events toggle; Technology 52
-// (Dimensional Portal) is unavailable when Random Events are disabled.
-func (r *EconomyRules) uncreativeInitialTechnologyEligible(modifiers RaceEconomyModifiers, options NewGameTechnologyOptions, technologyID int) bool {
+type TechnologyEligibilityOptions struct {
+	StrategicCombat      bool
+	RandomEventsDisabled bool
+}
+
+// technologyEligibleForRaceAndGameMode mirrors the original Init_Tech_ helper
+// at VA 0x5E481. It is the shared race/game-mode application eligibility rule
+// used by New Game technology setup, including Creative all-application grants.
+func (r *EconomyRules) technologyEligibleForRaceAndGameMode(modifiers RaceEconomyModifiers, options TechnologyEligibilityOptions, technologyID int) bool {
 	if technologyID == 52 && options.RandomEventsDisabled {
 		return false
 	}
@@ -207,6 +211,15 @@ func (r *EconomyRules) uncreativeInitialTechnologyEligible(modifiers RaceEconomy
 		}
 	}
 	return true
+}
+
+// uncreativeInitialTechnologyEligible is retained as the New Game
+// Uncreative-plan seam, but delegates to the shared original eligibility rule.
+func (r *EconomyRules) uncreativeInitialTechnologyEligible(modifiers RaceEconomyModifiers, options NewGameTechnologyOptions, technologyID int) bool {
+	return r.technologyEligibleForRaceAndGameMode(modifiers, TechnologyEligibilityOptions{
+		StrategicCombat:      options.StrategicCombat,
+		RandomEventsDisabled: options.RandomEventsDisabled,
+	}, technologyID)
 }
 
 // CompleteResearchField materializes only the ownership transition that occurs

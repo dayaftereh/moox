@@ -130,6 +130,20 @@ selected = weighted_choice_one_rng_draw(scaled, shared_NewGameRNG)
 
 The full-state initializer must continue processing Empires in stable original-equivalent order because `Set_Competition_Tech_Values_` lets later Empires observe technologies already granted to earlier Empires.
 
+## Creative grant eligibility
+
+Direct `Init_Player_Tech_` analysis after `Choose_Tech_Application_` adds an important grant-side rule. When the selected Empire is Creative, the original walks all four applications of the chosen TechField, but it calls the application-eligibility helper at VA `0x5E481` before marking each one owned.
+
+That helper applies the same normalized exclusions used during initial technology setup:
+
+- Unification: Holo Simulator / Pleasure Dome / Virtual Reality Network exclusions;
+- Tolerant: pollution-management exclusions;
+- Lithovore: food/farming exclusions;
+- Strategic Combat availability;
+- Random Events gating of Technology 52 `dimensional_portal`.
+
+Therefore a Creative Advanced-start grant means **all legal applications**, not blindly every Technology in the TechField. MOOX now exposes this original rule through the shared game-layer helper `technologyEligibleForRaceAndGameMode`; the Advanced grant path should use it when materializing Creative ownership.
+
 ## Verification targets
 
 Tests for the runtime port should lock at least:
