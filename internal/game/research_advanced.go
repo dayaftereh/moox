@@ -492,6 +492,111 @@ func (r *EconomyRules) advancedCalcTechnologyWeight(state *core.GameState, empir
 	return weight, nil
 }
 
+type advancedWeightedTechnology struct {
+	TechnologyID int
+	Weight       int
+}
+
+func advancedStartingBonusWeight(weight, fieldID, technologyID int) int {
+	if fieldID == 4 {
+		weight *= 2
+	}
+	if technologyID == 114 {
+		weight *= 2
+	}
+	if technologyID == 51 {
+		weight *= 5
+	}
+	if fieldID == 73 {
+		weight *= 2
+	}
+	if weight == 0 {
+		weight = 1
+	}
+	return weight
+}
+
+func (r *EconomyRules) advancedWeightedCandidates(state *core.GameState, empireID core.ID, profile AdvancedResearchPreferenceProfile, strategicCombat bool) ([]advancedWeightedTechnology, int, error) {
+	candidates, err := r.advancedCandidateTechnologyIDs(state, empireID, strategicCombat)
+	if err != nil {
+		return nil, 0, err
+	}
+	if len(candidates) == 0 {
+		return nil, 0, fmt.Errorf("empire %d has no Advanced-start technology candidates", empireID)
+	}
+	rawWeights := make(map[int]int, len(candidates))
+	for _, technologyID := range candidates {
+		weight, err := r.advancedCalcTechnologyWeight(state, empireID, technologyID, profile, strategicCombat)
+		if err != nil {
+			return nil, 0, err
+		}
+		fieldID := r.TechnologyFieldByID[technologyID]
+		rawWeights[technologyID] = advancedStartingBonusWeight(weight, fieldID, technologyID)
+	}
+
+	threshold := 15
+	for {
+		weighted := make([]advancedWeightedTechnology, 0, len(candidates))
+		for _, technologyID := range candidates {
+			fieldID := r.TechnologyFieldByID[technologyID]
+			fieldCost := r.TechnologyFieldCostsRP[fieldID]
+			if fieldCost <= 0 {
+				return nil, 0, fmt.Errorf("TechField %d has invalid Advanced-start cost %.6f", fieldID, fieldCost)
+			}
+			// Init_Player_Tech_ runs before the empire has current-turn Research.
+			// The original therefore normalizes its zero divisor to 1.
+			costRatio := int(fieldCost)
+			if costRatio < 1 {
+				costRatio = 1
+			}
+			if costRatio > threshold {
+				continue
+			}
+			scaled := rawWeights[technologyID] * threshold / costRatio
+			if scaled <= 0 {
+				continue
+			}
+			weighted = append(weighted, advancedWeightedTechnology{TechnologyID: technologyID, Weight: scaled})
+		}
+		if len(weighted) != 0 {
+			return weighted, threshold, nil
+		}
+		threshold = (3 * threshold) / 2
+		if threshold <= 0 || threshold > 1_000_000_000 {
+			return nil, 0, fmt.Errorf("Advanced-start cost threshold overflow")
+		}
+	}
+}
+
+func (r *EconomyRules) chooseAdvancedStartingTechnology(state *core.GameState, empireID core.ID, profile AdvancedResearchPreferenceProfile, strategicCombat bool, rng *core.RNG) (int, error) {
+	if rng == nil {
+		return 0, fmt.Errorf("advanced technology chooser requires RNG")
+	}
+	weighted, _, err := r.advancedWeightedCandidates(state, empireID, profile, strategicCombat)
+	if err != nil {
+		return 0, err
+	}
+	total := 0
+	for _, candidate := range weighted {
+		total += candidate.Weight
+	}
+	if total <= 0 {
+		return 0, fmt.Errorf("Advanced-start weighted candidate total must be positive")
+	}
+	rollZeroBased, err := rng.Intn(total)
+	if err != nil {
+		return 0, err
+	}
+	roll := rollZeroBased + 1
+	for _, candidate := range weighted {
+		if roll <= candidate.Weight {
+			return candidate.TechnologyID, nil
+		}
+		roll -= candidate.Weight
+	}
+	return 0, fmt.Errorf("Advanced-start weighted choice exhausted total %d", total)
+}
+
 type NewGameTechnologyStateOptions struct {
 	Level               NewGameTechnologyLevel
 	StrategicCombat     bool
@@ -507,7 +612,7 @@ type advancedTechnologyChooser func(state *core.GameState, empireID core.ID, pro
 // enabled once the verified Calc_Tech_Value_ translation is supplied.
 func (r *EconomyRules) InitializeNewGameTechnologies(state *core.GameState, options NewGameTechnologyStateOptions) error {
 	if options.Level == NewGameTechnologyAdvanced {
-		return fmt.Errorf("advanced new-game technology weighting is not implemented yet; generator orchestration is available but Calc_Tech_Value_ translation is still required")
+		return r.initializeAdvancedNewGameTechnologies(state, options, r.chooseAdvancedStartingTechnology)
 	}
 	if state == nil {
 		return fmt.Errorf("game state must not be nil")

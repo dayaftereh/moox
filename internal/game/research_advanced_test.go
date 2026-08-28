@@ -3,6 +3,7 @@ package game
 import (
 	"fmt"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	"moox/internal/core"
@@ -464,5 +465,191 @@ func TestAdvancedCalcTechnologyWeightSpecialCases(t *testing.T) {
 	empire.KnownTechnologyIDs = appendUniqueSortedInt(empire.KnownTechnologyIDs, class18Tech)
 	if got, err := rules.advancedCalcTechnologyWeight(state, 1, class18Tech, profile, false); err != nil || got != 0 {
 		t.Fatalf("known Technology weight=%d err=%v want 0,nil", got, err)
+	}
+}
+
+func TestAdvancedStartingBonusWeightsMatchOriginal(t *testing.T) {
+	for _, tc := range []struct {
+		name         string
+		weight       int
+		fieldID      int
+		technologyID int
+		want         int
+	}{
+		{"field4", 7, 4, 1, 14},
+		{"technology114", 7, 1, 114, 14},
+		{"technology51", 7, 1, 51, 35},
+		{"field73", 7, 73, 1, 14},
+		{"combined", 7, 4, 51, 70},
+		{"zero-floor", 0, 1, 1, 1},
+	} {
+		if got := advancedStartingBonusWeight(tc.weight, tc.fieldID, tc.technologyID); got != tc.want {
+			t.Fatalf("%s=%d want=%d", tc.name, got, tc.want)
+		}
+	}
+}
+
+func TestAdvancedWeightedCandidatesUseFirstOriginalCostTier(t *testing.T) {
+	rules, err := LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := &core.GameState{Empires: []core.Empire{{ID: 1, RaceID: "human"}}}
+	if err := rules.InitializeEmpireTechnologies(&state.Empires[0], NewGameTechnologyOptions{Level: NewGameTechnologyAverage}); err != nil {
+		t.Fatal(err)
+	}
+	profile := AdvancedResearchPreferenceProfile{Personality: 1, Objective: 0, Theme: 0}
+	allCandidates, err := rules.advancedCandidateTechnologyIDs(state, 1, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	minCost := int(^uint(0) >> 1)
+	for _, technologyID := range allCandidates {
+		fieldID := rules.TechnologyFieldByID[technologyID]
+		cost := int(rules.TechnologyFieldCostsRP[fieldID])
+		if cost < minCost {
+			minCost = cost
+		}
+	}
+	wantThreshold := 15
+	for wantThreshold < minCost {
+		wantThreshold = (3 * wantThreshold) / 2
+	}
+	weighted, threshold, err := rules.advancedWeightedCandidates(state, 1, profile, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if threshold != wantThreshold {
+		t.Fatalf("Advanced cost threshold=%d want=%d for min field cost %d", threshold, wantThreshold, minCost)
+	}
+	if len(weighted) == 0 {
+		t.Fatal("Advanced weighted candidate set is empty")
+	}
+	for _, candidate := range weighted {
+		fieldID := rules.TechnologyFieldByID[candidate.TechnologyID]
+		if cost := int(rules.TechnologyFieldCostsRP[fieldID]); cost > threshold {
+			t.Fatalf("Technology %d cost=%d exceeds threshold=%d", candidate.TechnologyID, cost, threshold)
+		}
+		if candidate.Weight <= 0 {
+			t.Fatalf("Technology %d has non-positive scaled weight %d", candidate.TechnologyID, candidate.Weight)
+		}
+	}
+}
+
+func TestAdvancedWeightedChoiceUsesOneIntnCall(t *testing.T) {
+	rules, err := LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := &core.GameState{Empires: []core.Empire{{ID: 1, RaceID: "human"}}}
+	if err := rules.InitializeEmpireTechnologies(&state.Empires[0], NewGameTechnologyOptions{Level: NewGameTechnologyAverage}); err != nil {
+		t.Fatal(err)
+	}
+	profile := AdvancedResearchPreferenceProfile{Personality: 1, Objective: 0, Theme: 0}
+	weighted, _, err := rules.advancedWeightedCandidates(state, 1, profile, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	total := 0
+	weightedIDs := make(map[int]struct{}, len(weighted))
+	for _, candidate := range weighted {
+		total += candidate.Weight
+		weightedIDs[candidate.TechnologyID] = struct{}{}
+	}
+	const seed = uint64(0xA55A5AA5)
+	rng := core.NewRNG(seed)
+	expectedRNG := core.NewRNG(seed)
+	if _, err := expectedRNG.Intn(total); err != nil {
+		t.Fatal(err)
+	}
+	chosen, err := rules.chooseAdvancedStartingTechnology(state, 1, profile, false, rng)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := weightedIDs[chosen]; !ok {
+		t.Fatalf("chosen Technology %d is not in weighted set", chosen)
+	}
+	if rng.State() != expectedRNG.State() {
+		t.Fatalf("weighted chooser RNG state=0x%x want one Intn state=0x%x", rng.State(), expectedRNG.State())
+	}
+}
+
+func TestInitializeNewGameTechnologiesAdvancedEndToEnd(t *testing.T) {
+	rules, err := LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	newState := func() *core.GameState {
+		return &core.GameState{Empires: []core.Empire{
+			{ID: 2, RaceID: "human"},
+			{ID: 1, RaceID: "psilon"},
+			{ID: 3, RaceID: "klackon"},
+		}}
+	}
+	profiles := map[core.ID]AdvancedResearchPreferenceProfile{
+		1: {Personality: 1, Objective: 0, Theme: 0},
+		2: {Personality: 1, Objective: 0, Theme: 0},
+		3: {Personality: 1, Objective: 0, Theme: 0},
+	}
+	run := func(seed uint64, strategic bool) *core.GameState {
+		state := newState()
+		if err := rules.InitializeNewGameTechnologies(state, NewGameTechnologyStateOptions{
+			Level:               NewGameTechnologyAdvanced,
+			StrategicCombat:     strategic,
+			NewGameRNG:          core.NewRNG(seed),
+			AdvancedPreferences: profiles,
+		}); err != nil {
+			t.Fatal(err)
+		}
+		for _, empire := range state.Empires {
+			if got := len(empire.KnownTechnologyFieldIDs); got != 7+advancedNewGameExtraGrantCount {
+				t.Fatalf("Empire %d Advanced known fields=%d want=%d", empire.ID, got, 7+advancedNewGameExtraGrantCount)
+			}
+			if empire.Research != nil {
+				t.Fatalf("Empire %d has unexpected active starting Research", empire.ID)
+			}
+		}
+		return state
+	}
+	first := run(0xC0FFEE, false)
+	second := run(0xC0FFEE, false)
+	for _, empireID := range []core.ID{1, 2, 3} {
+		a := empireByID(first, empireID)
+		b := empireByID(second, empireID)
+		if a == nil || b == nil {
+			t.Fatalf("missing Empire %d", empireID)
+		}
+		if !slices.Equal(a.KnownTechnologyFieldIDs, b.KnownTechnologyFieldIDs) || !slices.Equal(a.KnownTechnologyIDs, b.KnownTechnologyIDs) || !slices.Equal(a.UncreativeResearchChoices, b.UncreativeResearchChoices) {
+			t.Fatalf("Empire %d Advanced start is not deterministic", empireID)
+		}
+	}
+	strategic := run(0xC0FFEE, true)
+	for _, empire := range strategic.Empires {
+		for _, technologyID := range empire.KnownTechnologyIDs {
+			if !rules.TechnologyStrategicAvailable[technologyID] {
+				t.Fatalf("Strategic Combat Empire %d owns unavailable Technology %d", empire.ID, technologyID)
+			}
+		}
+	}
+}
+
+func TestAdvancedInitializationProducesValidCoreState(t *testing.T) {
+	rules, err := LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := core.NewSmallFixture(0x123456)
+	empireID := state.Empires[0].ID
+	if err := rules.InitializeNewGameTechnologies(state, NewGameTechnologyStateOptions{
+		Level:      NewGameTechnologyAdvanced,
+		NewGameRNG: core.NewRNG(0x654321),
+		AdvancedPreferences: map[core.ID]AdvancedResearchPreferenceProfile{
+			empireID: {Personality: 1, Objective: 0, Theme: 0},
+		},
+	}); err != nil {
+		t.Fatal(err)
+	}
+	if err := state.Validate(); err != nil {
+		t.Fatalf("Advanced-start fixture state invalid: %v", err)
 	}
 }
