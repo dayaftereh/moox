@@ -4,6 +4,12 @@ This file is the authoritative recovery point for ongoing MOOX reverse engineeri
 
 Read this file before broad exploration. Update it whenever the active objective, blocker, checkpoint, or dirty-tree state changes.
 
+## Active slice marker
+
+Before starting or resuming an objective, check `docs/slices/_OPEN_*.md` according to `docs/slices/README.md`. An `_OPEN_` file takes precedence over selecting a new objective from this history file.
+
+Current open slice: `docs/slices/_OPEN_BLOCKADE_FOOD_FREIGHTER_2026-08-28.md`.
+
 ## Status
 
 **COMPLETED - 2026-08-27**

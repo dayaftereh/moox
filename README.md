@@ -28,6 +28,8 @@ Master of Orion X is transitioning from the advanced research/data-normalization
 The game is **not playable yet**, but the first strategic economy/construction/research path now runs through the authoritative session boundary. Population allocation, Food, Production, Research, BC and Construction progress use domain-native `float64` values; Population capacity, Food/Cybernetic sustenance, empire-wide Food/Freighter logistics, starvation and turn-end Population Growth are now materialized as well. Gravity, starting-government and local Morale context layer on top without implicit intermediate rounding. Technology ownership/buildability plus server-derived BuildingChoices and ResearchChoices are shared by future Human UI and AI controllers.
 
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the one active research objective.
+
+Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
 ### Latest runtime checkpoints
 
 - `56b0096` - deterministic single-project colony construction using original MOO2 1.31 building PP costs and BC maintenance data.
