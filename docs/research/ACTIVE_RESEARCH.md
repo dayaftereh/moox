@@ -191,20 +191,37 @@ The Advanced New Game runtime is now implemented from the verified original stru
 
 The original Technology-selection UI's unrelated Hyper preview quirk remains intentionally separate from authoritative simulation.
 
-### Current exact Research task
+### Resolved authoritative external Technology grants
 
-Build the smallest **authoritative external Technology-grant transition** needed by future diplomacy/events/loot-style acquisition:
+MOOX now provides one server-owned transition for non-research Technology acquisition:
 
-1. grant a concrete Technology through one server-owned game-layer transition instead of direct `KnownTechnologyIDs` mutation;
-2. materialize the owning TechField only when the acquisition semantics justify it, without inventing research completion;
-3. when the recipient is Uncreative, invoke the verified `RepairUncreativeResearchChoiceAfterAcquisition` path with caller-owned RNG and Random Events/Strategic Combat gates;
-4. emit an Observer/replay event describing acquired Technology, source kind and any repaired fixed application;
-5. add deterministic tests for ordinary and Uncreative recipients while keeping future source-specific systems outside this low-level transition.
+- `EconomyResolver.GrantTechnology` adds the concrete Technology only;
+- external acquisition does not invent TechField completion;
+- Uncreative recipients run the verified fixed-choice repair after ownership is added, using the authoritative `GameState` RNG;
+- failed/duplicate/conflicting grants do not partially mutate ownership or RNG;
+- a Technology currently contained in the active Research project is rejected until that specific original interaction is normalized instead of guessing;
+- `GameSession.GrantTechnology` validates/commits the result only in post-resolution and emits `empire.technology_granted` into Observer/replay history.
 
-### After external Technology grants
+Future diplomacy, espionage, conquest or scripted acquisition systems can now call this shared domain transition rather than mutating `KnownTechnologyIDs` directly.
 
-- wire concrete future acquisition sources into this transition as they are implemented;
-- later UI-fidelity work for the original Hyper temporary +1 preview / 20-level list boundary if desired.
+### Current exact project task - Freighter Fleet acquisition
+
+Implement the first parked Economy follow-up using the already-resolved Food/Freighter rules:
+
+1. model **Freighter Fleet** as a server-owned production choice worth exactly **5 Freighters**;
+2. use the verified **50 PP** production cost;
+3. expose the choice through the same authority-filtered Colony construction/legal-action surface used by buildings;
+4. complete the project into `Empire.Freighters += 5` with deterministic Observer/replay events;
+5. do not yet invent blockade, Population-transport, Treasury settlement or insufficient-Freighter priority changes.
+
+### After Freighter Fleet acquisition
+
+- Treasury settlement of Freighter operating cost and surplus-Food income;
+- blockade effects and Population transport through the shared Freighter pool;
+- exact original insufficient-Freighter priority;
+- Housing / Cloning Center / medicine growth modifiers;
+- Biospheres / Advanced City Planning / terraforming capacity transitions;
+- race-aware Population cohorts.
 ### Parked Economy follow-ups
 
 - Freighter Fleet acquisition/build legal action;

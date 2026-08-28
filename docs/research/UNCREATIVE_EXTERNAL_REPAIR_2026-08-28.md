@@ -125,9 +125,9 @@ Initial Uncreative fixed choices are generated during New Game initialization fr
 
 ## Implementation boundary
 
-The clean integration point is the future authoritative external-Technology grant operation used by trade, espionage, conquest or scripted acquisition. The repair should live in the game/session domain layer, not in Wails, network, MCP or UI code.
+The clean integration point is the authoritative external-Technology grant operation used by future trade, espionage, conquest or scripted acquisition. The repair lives in the game/session domain layer, not in Wails, network, MCP or UI code.
 
-Until such an external-acquisition operation exists, MOOX can expose the repair as a tested game-layer helper without fabricating a client command that grants Technologies.
+MOOX now has that low-level external-acquisition operation. It remains server-owned and is not exposed as a fabricated client command.
 
 ## Runtime application-slot ordering
 
@@ -141,7 +141,7 @@ MOOX now provides `EconomyRules.RepairUncreativeResearchChoiceAfterAcquisition`.
 
 `ResearchChoices` treats a legitimately missing Uncreative fixed choice as an unselectable field instead of a projection error. Technology 52 now follows the resolved `RandomEventsDisabled` domain option instead of an opaque `0x21CAF` placeholder.
 
-No external-acquisition client command is fabricated here. Trade/espionage/conquest can call the game-layer repair from their future authoritative grant transition.
+`EconomyResolver.GrantTechnology` and `GameSession.GrantTechnology` now provide the authoritative grant transition. The transition adds only the concrete Technology, does not invent TechField completion, commits any Uncreative repair RNG consumption through `GameState`, and emits `empire.technology_granted` into the strategic Observer/replay stream. Future trade/espionage/conquest systems can reuse this path without mutating Technology ownership directly.
 
 ## Verification targets
 
