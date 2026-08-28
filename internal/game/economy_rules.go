@@ -89,6 +89,8 @@ type EconomyRules struct {
 	NewGameAlwaysKnownFieldID                     int
 	NewGameStagedKnownFieldIDs                    []int
 	GeneralResearchFieldIDs                       map[int]struct{}
+	HyperAdvancedResearchFieldIDs                 map[int]struct{}
+	HyperAdvancedCostIncrementRP                  float64
 }
 
 func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
@@ -242,6 +244,11 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		}
 	}
 
+	hyperAdvancedResearchFieldIDs := make(map[int]struct{}, len(technologies.HyperAdvanced.TechFieldIDs))
+	for _, fieldID := range technologies.HyperAdvanced.TechFieldIDs {
+		hyperAdvancedResearchFieldIDs[fieldID] = struct{}{}
+	}
+
 	generalResearchFieldIDs := make(map[int]struct{}, len(technologies.NewGameStart.StagedKnownTechFieldIDs)+1)
 	generalResearchFieldIDs[technologies.NewGameStart.AlwaysKnownTechFieldID] = struct{}{}
 	for _, fieldID := range technologies.NewGameStart.StagedKnownTechFieldIDs {
@@ -294,6 +301,8 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		NewGameAlwaysKnownFieldID:                     technologies.NewGameStart.AlwaysKnownTechFieldID,
 		NewGameStagedKnownFieldIDs:                    append([]int(nil), technologies.NewGameStart.StagedKnownTechFieldIDs...),
 		GeneralResearchFieldIDs:                       generalResearchFieldIDs,
+		HyperAdvancedResearchFieldIDs:                 hyperAdvancedResearchFieldIDs,
+		HyperAdvancedCostIncrementRP:                  float64(technologies.HyperAdvanced.CostIncrementRP),
 	}
 	for _, climate := range planetClasses.Climates {
 		rules.ClimateFoodPerFarmer[climate.ID] = float64(climate.BaseFoodPerFarmer)

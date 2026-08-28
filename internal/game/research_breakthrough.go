@@ -49,12 +49,9 @@ func (r *EconomyResolver) advanceResearch(state *core.GameState) ([]DomainEvent,
 			continue
 		}
 		research := empire.Research
-		if research.TechFieldID >= 75 {
-			return nil, fmt.Errorf("empire %d research TechField %d uses hyper-advanced cost scaling that is not modeled yet", empireID, research.TechFieldID)
-		}
-		baseCostRP, ok := r.Rules.TechnologyFieldCostsRP[research.TechFieldID]
-		if !ok || baseCostRP <= 0 || math.IsNaN(baseCostRP) || math.IsInf(baseCostRP, 0) {
-			return nil, fmt.Errorf("invalid base cost for research TechField %d", research.TechFieldID)
+		baseCostRP, err := r.Rules.researchFieldCostRP(empire, research.TechFieldID)
+		if err != nil || baseCostRP <= 0 || math.IsNaN(baseCostRP) || math.IsInf(baseCostRP, 0) {
+			return nil, fmt.Errorf("invalid base cost for research TechField %d: %v", research.TechFieldID, err)
 		}
 
 		previousRP := research.ProgressRP
@@ -78,19 +75,27 @@ func (r *EconomyResolver) advanceResearch(state *core.GameState) ([]DomainEvent,
 		if err != nil {
 			return nil, err
 		}
+		completedLevels := 0
+		researchLevel := 0
+		if r.Rules.isHyperAdvancedField(research.TechFieldID) {
+			completedLevels, _ = hyperAdvancedCompletedLevels(empire, research.TechFieldID)
+			researchLevel = completedLevels + 1
+		}
 		progressEvent, err := NewDomainEvent("empire.research_progressed", 0, 0, ResearchProgressedEvent{
-			EmpireID:       empireID,
-			TechFieldID:    research.TechFieldID,
-			SelectionMode:  research.SelectionMode,
-			TechnologyIDs:  ids,
-			TechnologyKeys: keys,
-			BaseCostRP:     baseCostRP,
-			PreviousRP:     previousRP,
-			TurnResearchRP: turnResearchRP,
-			ProjectedRP:    projectedRP,
-			ChancePercent:  chance,
-			Roll:           roll,
-			Breakthrough:   breakthrough,
+			EmpireID:        empireID,
+			TechFieldID:     research.TechFieldID,
+			SelectionMode:   research.SelectionMode,
+			TechnologyIDs:   ids,
+			TechnologyKeys:  keys,
+			BaseCostRP:      baseCostRP,
+			PreviousRP:      previousRP,
+			TurnResearchRP:  turnResearchRP,
+			ProjectedRP:     projectedRP,
+			ChancePercent:   chance,
+			Roll:            roll,
+			Breakthrough:    breakthrough,
+			CompletedLevels: completedLevels,
+			ResearchLevel:   researchLevel,
 		})
 		if err != nil {
 			return nil, err

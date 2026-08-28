@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "ruleset": "moo2-1.31",
   "sources": [
     {
@@ -31,6 +31,13 @@
       "description": "Orion2.exe 1.31 six-entry uint16 staged new-game tech-field list at file offset 0x1FF7B0: 29,55,22,57,28,23; field-0 always-known behavior is cross-checked against classic reverse-engineering documentation",
       "archive": "Orion2.exe",
       "sha256": "7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5"
+    },
+    {
+      "id": "moo2-1.31-orion2-hyper-advanced-research",
+      "type": "original-observed",
+      "description": "Orion2.exe 1.31 Player_Research_Cost_ at object-1 relative offset 0xD1E96 / VA 0xE1E96 uses fields 75..82 counters at player+0x21C..0x223 and adds counter*10000 RP; Give_Player_Field_ increments the selected counter on Hyper-Advanced breakthrough",
+      "archive": "Orion2.exe",
+      "sha256": "7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5"
     }
   ],
   "new_game_start": {
@@ -47,6 +54,24 @@
     "source": {
       "source_id": "moo2-1.31-orion2-new-game-techfields",
       "offset": 2095024
+    }
+  },
+  "hyper_advanced": {
+    "tech_field_ids": [
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81,
+      82
+    ],
+    "cost_increment_rp": 10000,
+    "verification": "original-exe-player-research-cost-hyper-counter-runtime",
+    "source": {
+      "source_id": "moo2-1.31-orion2-hyper-advanced-research",
+      "offset": 859798
     }
   },
   "technology_fields": [

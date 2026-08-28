@@ -22,26 +22,30 @@ type NewGameTechnologyOptions struct {
 }
 
 type ResearchCompletedEvent struct {
-	EmpireID       core.ID                    `json:"empire_id"`
-	TechFieldID    int                        `json:"tech_field_id"`
-	SelectionMode  core.ResearchSelectionMode `json:"selection_mode"`
-	TechnologyIDs  []int                      `json:"technology_ids"`
-	TechnologyKeys []string                   `json:"technology_keys"`
+	EmpireID        core.ID                    `json:"empire_id"`
+	TechFieldID     int                        `json:"tech_field_id"`
+	SelectionMode   core.ResearchSelectionMode `json:"selection_mode"`
+	TechnologyIDs   []int                      `json:"technology_ids"`
+	TechnologyKeys  []string                   `json:"technology_keys"`
+	CompletedLevels int                        `json:"completed_levels,omitempty"`
+	ResearchLevel   int                        `json:"research_level,omitempty"`
 }
 
 type ResearchProgressedEvent struct {
-	EmpireID       core.ID                    `json:"empire_id"`
-	TechFieldID    int                        `json:"tech_field_id"`
-	SelectionMode  core.ResearchSelectionMode `json:"selection_mode"`
-	TechnologyIDs  []int                      `json:"technology_ids"`
-	TechnologyKeys []string                   `json:"technology_keys"`
-	BaseCostRP     float64                    `json:"base_cost_rp"`
-	PreviousRP     float64                    `json:"previous_rp"`
-	TurnResearchRP float64                    `json:"turn_research_rp"`
-	ProjectedRP    float64                    `json:"projected_rp"`
-	ChancePercent  int                        `json:"chance_percent"`
-	Roll           int                        `json:"roll"`
-	Breakthrough   bool                       `json:"breakthrough"`
+	EmpireID        core.ID                    `json:"empire_id"`
+	TechFieldID     int                        `json:"tech_field_id"`
+	SelectionMode   core.ResearchSelectionMode `json:"selection_mode"`
+	TechnologyIDs   []int                      `json:"technology_ids"`
+	TechnologyKeys  []string                   `json:"technology_keys"`
+	BaseCostRP      float64                    `json:"base_cost_rp"`
+	PreviousRP      float64                    `json:"previous_rp"`
+	TurnResearchRP  float64                    `json:"turn_research_rp"`
+	ProjectedRP     float64                    `json:"projected_rp"`
+	ChancePercent   int                        `json:"chance_percent"`
+	Roll            int                        `json:"roll"`
+	Breakthrough    bool                       `json:"breakthrough"`
+	CompletedLevels int                        `json:"completed_levels,omitempty"`
+	ResearchLevel   int                        `json:"research_level,omitempty"`
 }
 
 // InitializeEmpireTechnologies applies only new-game starts whose field set is
@@ -222,21 +226,35 @@ func (r *EconomyResolver) CompleteResearchField(state *core.GameState, empireID 
 	}
 	fieldID := empire.Research.TechFieldID
 	selectionMode := empire.Research.SelectionMode
-	fieldCost, ok := r.Rules.TechnologyFieldCostsRP[fieldID]
-	if !ok {
-		return DomainEvent{}, fmt.Errorf("unknown research tech field %d", fieldID)
+	fieldCost, err := r.Rules.researchFieldCostRP(empire, fieldID)
+	if err != nil {
+		return DomainEvent{}, err
+	}
+	if empire.Research.ProgressRP < fieldCost {
+		return DomainEvent{}, fmt.Errorf("empire %d research field %d has progress %.6f RP below cost %.6f RP", empireID, fieldID, empire.Research.ProgressRP, fieldCost)
+	}
+	if err := r.validateActiveResearchSelection(empire); err != nil {
+		return DomainEvent{}, err
+	}
+	if r.Rules.isHyperAdvancedField(fieldID) {
+		completedLevels, err := incrementHyperAdvancedCompletedLevels(empire, fieldID)
+		if err != nil {
+			return DomainEvent{}, err
+		}
+		empire.Research.ProgressRP = 0
+		return NewDomainEvent("empire.research_completed", 0, 0, ResearchCompletedEvent{
+			EmpireID:        empireID,
+			TechFieldID:     fieldID,
+			SelectionMode:   selectionMode,
+			CompletedLevels: completedLevels,
+			ResearchLevel:   completedLevels,
+		})
 	}
 	if containsInt(empire.KnownTechnologyFieldIDs, fieldID) {
 		return DomainEvent{}, fmt.Errorf("empire %d already completed technology field %d", empireID, fieldID)
 	}
-	if empire.Research.ProgressRP < fieldCost {
-		return DomainEvent{}, fmt.Errorf("empire %d research field %d has progress %.6f RP below base cost %.6f RP", empireID, fieldID, empire.Research.ProgressRP, fieldCost)
-	}
 	if len(empire.Research.TechnologyIDs) == 0 {
 		return DomainEvent{}, fmt.Errorf("empire %d research has no selected technology ids", empireID)
-	}
-	if err := r.validateActiveResearchSelection(empire); err != nil {
-		return DomainEvent{}, err
 	}
 	known := make(map[int]struct{}, len(empire.KnownTechnologyIDs))
 	for _, technologyID := range empire.KnownTechnologyIDs {
@@ -298,6 +316,10 @@ func (r *EconomyResolver) validateActiveResearchSelection(empire *core.Empire) e
 		return fmt.Errorf("empire %d research field %d selection mode=%q, expected %q", empire.ID, research.TechFieldID, research.SelectionMode, expectedMode)
 	}
 	switch expectedMode {
+	case core.ResearchSelectionRepeatField:
+		if !r.Rules.isHyperAdvancedField(research.TechFieldID) || len(research.TechnologyIDs) != 0 {
+			return fmt.Errorf("empire %d repeat-field research TechField %d must be Hyper-Advanced with no concrete technologies", empire.ID, research.TechFieldID)
+		}
 	case core.ResearchSelectionChooseOne:
 		if len(research.TechnologyIDs) != 1 {
 			return fmt.Errorf("empire %d choose-one research field %d has %d technologies, expected 1", empire.ID, research.TechFieldID, len(research.TechnologyIDs))

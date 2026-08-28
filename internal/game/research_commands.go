@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"reflect"
+	"slices"
 
 	"moox/internal/core"
 	"moox/internal/protocol"
@@ -26,13 +26,17 @@ type ResearchSelectedEvent struct {
 	TechnologyIDs      []int                      `json:"technology_ids"`
 	TechnologyKeys     []string                   `json:"technology_keys"`
 	TechnologyNameKeys []string                   `json:"technology_name_keys"`
+	CompletedLevels    int                        `json:"completed_levels,omitempty"`
+	ResearchLevel      int                        `json:"research_level,omitempty"`
 }
 
 type ResearchProjectSnapshot struct {
-	TechFieldID    int                        `json:"tech_field_id"`
-	SelectionMode  core.ResearchSelectionMode `json:"selection_mode"`
-	TechnologyIDs  []int                      `json:"technology_ids"`
-	TechnologyKeys []string                   `json:"technology_keys"`
+	TechFieldID     int                        `json:"tech_field_id"`
+	SelectionMode   core.ResearchSelectionMode `json:"selection_mode"`
+	TechnologyIDs   []int                      `json:"technology_ids"`
+	TechnologyKeys  []string                   `json:"technology_keys"`
+	CompletedLevels int                        `json:"completed_levels,omitempty"`
+	ResearchLevel   int                        `json:"research_level,omitempty"`
 }
 
 type ResearchSwitchedEvent struct {
@@ -132,18 +136,22 @@ func (r *EconomyResolver) selectResearch(state *core.GameState, empireID core.ID
 			TechnologyIDs:      append([]int(nil), acquiredIDs...),
 			TechnologyKeys:     keys,
 			TechnologyNameKeys: nameKeys,
+			CompletedLevels:    choice.CompletedLevels,
+			ResearchLevel:      choice.ResearchLevel,
 		})
 	}
 
-	previousSnapshot, err := r.Rules.researchProjectSnapshot(*previous)
+	previousSnapshot, err := r.Rules.researchProjectSnapshot(empire, *previous)
 	if err != nil {
 		return DomainEvent{}, err
 	}
 	currentSnapshot := ResearchProjectSnapshot{
-		TechFieldID:    current.TechFieldID,
-		SelectionMode:  current.SelectionMode,
-		TechnologyIDs:  append([]int(nil), current.TechnologyIDs...),
-		TechnologyKeys: append([]string(nil), keys...),
+		TechFieldID:     current.TechFieldID,
+		SelectionMode:   current.SelectionMode,
+		TechnologyIDs:   append([]int(nil), current.TechnologyIDs...),
+		TechnologyKeys:  append([]string(nil), keys...),
+		CompletedLevels: choice.CompletedLevels,
+		ResearchLevel:   choice.ResearchLevel,
 	}
 	empire.Research = &current
 	return NewDomainEvent("empire.research_switched", seatID, command.Sequence, ResearchSwitchedEvent{
@@ -169,6 +177,14 @@ func researchAcquisitionSet(choice ResearchChoice, requestedTechnologyID int) ([
 			return nil, fmt.Errorf("technology_id %d is not a legal application of TechField %d", requestedTechnologyID, choice.TechFieldID)
 		}
 		return []int{requestedTechnologyID}, nil
+	case core.ResearchSelectionRepeatField:
+		if requestedTechnologyID != 0 {
+			return nil, fmt.Errorf("technology_id must be omitted for repeat-field research")
+		}
+		if len(choice.TechnologyIDs) != 0 {
+			return nil, fmt.Errorf("repeat-field research TechField %d unexpectedly exposes concrete technologies", choice.TechFieldID)
+		}
+		return nil, nil
 	case core.ResearchSelectionFixedOne:
 		if requestedTechnologyID != 0 {
 			return nil, fmt.Errorf("technology_id must be omitted for fixed Uncreative research")
@@ -200,16 +216,24 @@ func (r *EconomyRules) researchTechnologyMetadata(ids []int) ([]string, []string
 	return keys, nameKeys, nil
 }
 
-func (r *EconomyRules) researchProjectSnapshot(state core.ResearchState) (ResearchProjectSnapshot, error) {
+func (r *EconomyRules) researchProjectSnapshot(empire *core.Empire, state core.ResearchState) (ResearchProjectSnapshot, error) {
 	keys, _, err := r.researchTechnologyMetadata(state.TechnologyIDs)
 	if err != nil {
 		return ResearchProjectSnapshot{}, err
 	}
+	completedLevels := 0
+	researchLevel := 0
+	if r.isHyperAdvancedField(state.TechFieldID) {
+		completedLevels, _ = hyperAdvancedCompletedLevels(empire, state.TechFieldID)
+		researchLevel = completedLevels + 1
+	}
 	return ResearchProjectSnapshot{
-		TechFieldID:    state.TechFieldID,
-		SelectionMode:  state.SelectionMode,
-		TechnologyIDs:  append([]int(nil), state.TechnologyIDs...),
-		TechnologyKeys: keys,
+		TechFieldID:     state.TechFieldID,
+		SelectionMode:   state.SelectionMode,
+		TechnologyIDs:   append([]int(nil), state.TechnologyIDs...),
+		TechnologyKeys:  keys,
+		CompletedLevels: completedLevels,
+		ResearchLevel:   researchLevel,
 	}, nil
 }
 
@@ -223,5 +247,5 @@ func cloneResearchState(state *core.ResearchState) core.ResearchState {
 }
 
 func sameResearchSelection(a, b core.ResearchState) bool {
-	return a.TechFieldID == b.TechFieldID && a.SelectionMode == b.SelectionMode && reflect.DeepEqual(a.TechnologyIDs, b.TechnologyIDs)
+	return a.TechFieldID == b.TechFieldID && a.SelectionMode == b.SelectionMode && slices.Equal(a.TechnologyIDs, b.TechnologyIDs)
 }

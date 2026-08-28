@@ -6,13 +6,14 @@ import (
 	"os"
 )
 
-const TechnologiesSchemaVersion = 2
+const TechnologiesSchemaVersion = 3
 
 type TechnologiesFile struct {
 	SchemaVersion int                    `json:"schema_version"`
 	Ruleset       string                 `json:"ruleset"`
 	Sources       []Source               `json:"sources"`
 	NewGameStart  NewGameTechnologyStart `json:"new_game_start"`
+	HyperAdvanced HyperAdvancedResearch  `json:"hyper_advanced"`
 	Fields        []TechnologyField      `json:"technology_fields"`
 	Technologies  []Technology           `json:"technologies"`
 }
@@ -22,6 +23,13 @@ type NewGameTechnologyStart struct {
 	StagedKnownTechFieldIDs []int           `json:"staged_known_tech_field_ids"`
 	Verification            string          `json:"verification"`
 	Source                  FieldProvenance `json:"source"`
+}
+
+type HyperAdvancedResearch struct {
+	TechFieldIDs    []int           `json:"tech_field_ids"`
+	CostIncrementRP int             `json:"cost_increment_rp"`
+	Verification    string          `json:"verification"`
+	Source          FieldProvenance `json:"source"`
 }
 
 type TechnologyField struct {
@@ -71,6 +79,14 @@ func (f *TechnologiesFile) Validate() error {
 	for i, want := range wantStart {
 		if f.NewGameStart.StagedKnownTechFieldIDs[i] != want {
 			return fmt.Errorf("new-game staged tech field[%d]=%d want=%d", i, f.NewGameStart.StagedKnownTechFieldIDs[i], want)
+		}
+	}
+	if len(f.HyperAdvanced.TechFieldIDs) != 8 || f.HyperAdvanced.CostIncrementRP != 10000 || f.HyperAdvanced.Verification == "" || f.HyperAdvanced.Source.SourceID == "" {
+		return fmt.Errorf("hyper-advanced research metadata is incomplete")
+	}
+	for i, fieldID := range f.HyperAdvanced.TechFieldIDs {
+		if fieldID != 75+i {
+			return fmt.Errorf("hyper-advanced tech field[%d]=%d want=%d", i, fieldID, 75+i)
 		}
 	}
 	if len(f.Fields) != 82 {

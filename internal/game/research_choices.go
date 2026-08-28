@@ -16,6 +16,8 @@ type ResearchChoice struct {
 	TechnologyIDs       []int                      `json:"technology_ids"`
 	TechnologyKeys      []string                   `json:"technology_keys"`
 	TechnologyNameKeys  []string                   `json:"technology_name_keys"`
+	CompletedLevels     int                        `json:"completed_levels,omitempty"`
+	ResearchLevel       int                        `json:"research_level,omitempty"`
 }
 
 // AvailableResearchChoices returns the server-authoritative research frontier.
@@ -56,7 +58,8 @@ func (r *EconomyRules) AvailableResearchChoices(state *core.GameState, empireID 
 
 	choices := make([]ResearchChoice, 0)
 	for _, fieldID := range fieldIDs {
-		if _, known := knownFields[fieldID]; known {
+		hyperAdvanced := r.isHyperAdvancedField(fieldID)
+		if _, known := knownFields[fieldID]; known && !hyperAdvanced {
 			continue
 		}
 		previousID := r.TechnologyFieldPreviousID[fieldID]
@@ -64,6 +67,24 @@ func (r *EconomyRules) AvailableResearchChoices(state *core.GameState, empireID 
 			if _, known := knownFields[previousID]; !known {
 				continue
 			}
+		}
+
+		if hyperAdvanced {
+			costRP, err := r.researchFieldCostRP(empire, fieldID)
+			if err != nil {
+				return nil, err
+			}
+			completed, _ := hyperAdvancedCompletedLevels(empire, fieldID)
+			choices = append(choices, ResearchChoice{
+				TechFieldID:         fieldID,
+				PreviousTechFieldID: previousID,
+				NextTechFieldID:     r.TechnologyFieldNextID[fieldID],
+				BaseCostRP:          costRP,
+				SelectionMode:       core.ResearchSelectionRepeatField,
+				CompletedLevels:     completed,
+				ResearchLevel:       completed + 1,
+			})
+			continue
 		}
 
 		allIDs := r.TechnologyIDsByField[fieldID]
@@ -124,6 +145,9 @@ func (r *EconomyRules) AvailableResearchChoices(state *core.GameState, empireID 
 }
 
 func (r *EconomyRules) researchSelectionMode(modifiers RaceEconomyModifiers, fieldID int) core.ResearchSelectionMode {
+	if r.isHyperAdvancedField(fieldID) {
+		return core.ResearchSelectionRepeatField
+	}
 	if _, general := r.GeneralResearchFieldIDs[fieldID]; general {
 		return core.ResearchSelectionAll
 	}

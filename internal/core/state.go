@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 6
+const StateSchemaVersion = 7
 
 type ID uint64
 
@@ -46,21 +46,27 @@ type Planet struct {
 }
 
 type Empire struct {
-	ID                        ID                    `json:"id"`
-	Name                      string                `json:"name"`
-	RaceID                    string                `json:"race_id"`
-	Capital                   ID                    `json:"capital_colony_id,omitempty"`
-	Freighters                int                   `json:"freighters"`
-	FoodLogistics             EmpireFoodLogistics   `json:"food_logistics"`
-	UncreativeResearchChoices []FixedResearchChoice `json:"uncreative_research_choices,omitempty"`
-	KnownTechnologyIDs        []int                 `json:"known_technology_ids,omitempty"`
-	KnownTechnologyFieldIDs   []int                 `json:"known_technology_field_ids,omitempty"`
-	Research                  *ResearchState        `json:"research,omitempty"`
+	ID                        ID                           `json:"id"`
+	Name                      string                       `json:"name"`
+	RaceID                    string                       `json:"race_id"`
+	Capital                   ID                           `json:"capital_colony_id,omitempty"`
+	Freighters                int                          `json:"freighters"`
+	FoodLogistics             EmpireFoodLogistics          `json:"food_logistics"`
+	UncreativeResearchChoices []FixedResearchChoice        `json:"uncreative_research_choices,omitempty"`
+	HyperAdvancedResearch     []HyperAdvancedResearchLevel `json:"hyper_advanced_research,omitempty"`
+	KnownTechnologyIDs        []int                        `json:"known_technology_ids,omitempty"`
+	KnownTechnologyFieldIDs   []int                        `json:"known_technology_field_ids,omitempty"`
+	Research                  *ResearchState               `json:"research,omitempty"`
 }
 
 type FixedResearchChoice struct {
 	TechFieldID  int `json:"tech_field_id"`
 	TechnologyID int `json:"technology_id"`
+}
+
+type HyperAdvancedResearchLevel struct {
+	TechFieldID     int `json:"tech_field_id"`
+	CompletedLevels int `json:"completed_levels"`
 }
 
 type EmpireFoodLogistics struct {
@@ -78,9 +84,10 @@ type EmpireFoodLogistics struct {
 type ResearchSelectionMode string
 
 const (
-	ResearchSelectionAll       ResearchSelectionMode = "all"
-	ResearchSelectionChooseOne ResearchSelectionMode = "choose_one"
-	ResearchSelectionFixedOne  ResearchSelectionMode = "fixed_one"
+	ResearchSelectionAll         ResearchSelectionMode = "all"
+	ResearchSelectionChooseOne   ResearchSelectionMode = "choose_one"
+	ResearchSelectionFixedOne    ResearchSelectionMode = "fixed_one"
+	ResearchSelectionRepeatField ResearchSelectionMode = "repeat_field"
 )
 
 type ResearchState struct {
@@ -294,6 +301,9 @@ func (s *GameState) Validate() error {
 			if fieldID < 0 || fieldID > 82 {
 				return fmt.Errorf("empire[%d] known technology field id %d outside [0,82]", i, fieldID)
 			}
+			if fieldID >= 75 {
+				return fmt.Errorf("empire[%d] repeatable Hyper-Advanced field %d must not be stored as permanently known", i, fieldID)
+			}
 			if _, exists := seenField[fieldID]; exists {
 				return fmt.Errorf("empire[%d] duplicate known technology field id %d", i, fieldID)
 			}
@@ -302,6 +312,16 @@ func (s *GameState) Validate() error {
 			}
 			seenField[fieldID] = struct{}{}
 			lastField = fieldID
+		}
+		lastHyperField := 0
+		for hi, level := range empire.HyperAdvancedResearch {
+			if level.TechFieldID < 75 || level.TechFieldID > 82 || level.CompletedLevels <= 0 {
+				return fmt.Errorf("empire[%d] invalid hyper-advanced research level field=%d completed_levels=%d", i, level.TechFieldID, level.CompletedLevels)
+			}
+			if hi > 0 && level.TechFieldID <= lastHyperField {
+				return fmt.Errorf("empire[%d] hyper-advanced research levels must be strictly ascending by field", i)
+			}
+			lastHyperField = level.TechFieldID
 		}
 		lastFixedField := 0
 		for fi, fixed := range empire.UncreativeResearchChoices {
@@ -321,14 +341,18 @@ func (s *GameState) Validate() error {
 				return fmt.Errorf("empire[%d] researches already-known technology field %d", i, empire.Research.TechFieldID)
 			}
 			switch empire.Research.SelectionMode {
-			case ResearchSelectionAll, ResearchSelectionChooseOne, ResearchSelectionFixedOne:
+			case ResearchSelectionAll, ResearchSelectionChooseOne, ResearchSelectionFixedOne, ResearchSelectionRepeatField:
 			default:
 				return fmt.Errorf("empire[%d] research selection_mode %q is invalid", i, empire.Research.SelectionMode)
 			}
 			if math.IsNaN(empire.Research.ProgressRP) || math.IsInf(empire.Research.ProgressRP, 0) || empire.Research.ProgressRP < 0 {
 				return fmt.Errorf("empire[%d] research progress_rp must be a finite non-negative number", i)
 			}
-			if len(empire.Research.TechnologyIDs) == 0 {
+			if empire.Research.SelectionMode == ResearchSelectionRepeatField {
+				if empire.Research.TechFieldID < 75 || empire.Research.TechFieldID > 82 || len(empire.Research.TechnologyIDs) != 0 {
+					return fmt.Errorf("empire[%d] repeat-field research requires Hyper-Advanced field 75..82 and no technology_ids", i)
+				}
+			} else if len(empire.Research.TechnologyIDs) == 0 {
 				return fmt.Errorf("empire[%d] research technology_ids are required", i)
 			}
 			lastResearchTech := 0

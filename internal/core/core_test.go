@@ -234,10 +234,10 @@ func TestResearchStateRoundTripsExactly(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !bytes.Contains(encoded, []byte(`"progress_rp": 42.125`)) && !bytes.Contains(encoded, []byte(`"progress_rp":42.125`)) {
-		t.Fatalf("schema-6 research JSON does not expose progress_rp: %s", encoded)
+		t.Fatalf("schema-7 research JSON does not expose progress_rp: %s", encoded)
 	}
 	if bytes.Contains(encoded, []byte("progress_milli")) {
-		t.Fatalf("legacy research progress_milli leaked into schema-6 JSON: %s", encoded)
+		t.Fatalf("legacy research progress_milli leaked into schema-7 JSON: %s", encoded)
 	}
 	loaded, err := UnmarshalState(encoded)
 	if err != nil {

@@ -195,15 +195,64 @@ func TestResearchResolutionIsReplayDeterministic(t *testing.T) {
 	}
 }
 
-func TestAutomaticResearchRejectsUnmodeledHyperAdvancedCostScaling(t *testing.T) {
+func TestAutomaticResearchRepeatsHyperAdvancedFieldWithDynamicCost(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	resolver, err := NewEconomyResolver(rules)
 	if err != nil {
 		t.Fatal(err)
 	}
 	state := core.NewSmallFixture(606)
-	state.Empires[0].Research = &core.ResearchState{TechFieldID: 75, SelectionMode: core.ResearchSelectionChooseOne, TechnologyIDs: []int{155}}
-	if _, err := resolver.advanceResearch(state); err == nil {
-		t.Fatal("expected hyper-advanced dynamic cost scaling to remain explicitly unsupported")
+	state.Empires[0].RaceID = "human"
+	state.Empires[0].KnownTechnologyFieldIDs = []int{70}
+	state.Empires[0].Research = &core.ResearchState{TechFieldID: 75, SelectionMode: core.ResearchSelectionRepeatField}
+	state.Colonies[0].AdjustedEconomy.Research = 50000
+
+	first, err := resolver.advanceResearch(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(first) != 2 {
+		t.Fatalf("first Hyper-Advanced turn events=%d want=2: %+v", len(first), first)
+	}
+	var firstProgress ResearchProgressedEvent
+	if err := json.Unmarshal(first[0].Data, &firstProgress); err != nil {
+		t.Fatal(err)
+	}
+	if firstProgress.BaseCostRP != 15000 || firstProgress.CompletedLevels != 0 || firstProgress.ResearchLevel != 1 || !firstProgress.Breakthrough {
+		t.Fatalf("first Hyper-Advanced progress=%+v", firstProgress)
+	}
+	var firstComplete ResearchCompletedEvent
+	if err := json.Unmarshal(first[1].Data, &firstComplete); err != nil {
+		t.Fatal(err)
+	}
+	if firstComplete.CompletedLevels != 1 || firstComplete.ResearchLevel != 1 || len(firstComplete.TechnologyIDs) != 0 {
+		t.Fatalf("first Hyper-Advanced completion=%+v", firstComplete)
+	}
+	if state.Empires[0].Research == nil || state.Empires[0].Research.TechFieldID != 75 || state.Empires[0].Research.SelectionMode != core.ResearchSelectionRepeatField || state.Empires[0].Research.ProgressRP != 0 || len(state.Empires[0].Research.TechnologyIDs) != 0 {
+		t.Fatalf("Hyper-Advanced research did not remain active/reset: %+v", state.Empires[0].Research)
+	}
+	if level, ok := hyperAdvancedCompletedLevels(&state.Empires[0], 75); !ok || level != 1 {
+		t.Fatalf("Hyper-Advanced field 75 completed level=%d ok=%v state=%v", level, ok, state.Empires[0].HyperAdvancedResearch)
+	}
+	if containsInt(state.Empires[0].KnownTechnologyFieldIDs, 75) {
+		t.Fatalf("repeatable Hyper-Advanced field was marked permanently known: %v", state.Empires[0].KnownTechnologyFieldIDs)
+	}
+
+	second, err := resolver.advanceResearch(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(second) != 2 {
+		t.Fatalf("second Hyper-Advanced turn events=%d want=2: %+v", len(second), second)
+	}
+	var secondProgress ResearchProgressedEvent
+	if err := json.Unmarshal(second[0].Data, &secondProgress); err != nil {
+		t.Fatal(err)
+	}
+	if secondProgress.BaseCostRP != 25000 || secondProgress.CompletedLevels != 1 || secondProgress.ResearchLevel != 2 || !secondProgress.Breakthrough {
+		t.Fatalf("second Hyper-Advanced progress=%+v", secondProgress)
+	}
+	if level, ok := hyperAdvancedCompletedLevels(&state.Empires[0], 75); !ok || level != 2 {
+		t.Fatalf("Hyper-Advanced field 75 second level=%d ok=%v", level, ok)
 	}
 }

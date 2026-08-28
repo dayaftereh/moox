@@ -31,7 +31,7 @@ Fields normalized in this checkpoint:
 +0x10 uint8   AI group
 ```
 
-For example, field 1 decodes as previous=18, next=34, cost=400 RP, AI group=5. These values are stored in technology schema v2 and converted to the runtime fixed-point scale where needed.
+For example, field 1 decodes as previous=18, next=34, cost=400 RP, AI group=5. These values originated in technology schema v2; the current technology schema is v3 after adding original-derived Hyper-Advanced repeated-field metadata. Research costs are exposed to the runtime in RP-native `float64`, consistent with the current numeric architecture.
 
 ## New-game staged technology fields
 

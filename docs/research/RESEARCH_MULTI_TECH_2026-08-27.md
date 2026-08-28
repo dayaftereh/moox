@@ -240,6 +240,10 @@ Initial Uncreative fixed-application timing/RNG ownership is now resolved in `UN
 3. later implement Uncreative external-acquisition replacement using the verified `Ensure_Uncreative_Field_OK_` path;
 4. separately identify the `0x21CAF` Dimensional Portal eligibility gate when needed.
 
+## Superseding Hyper-Advanced checkpoint
+
+Hyper-Advanced fields 75..82 are now modeled separately as server-owned `repeat_field` research with no Technology IDs and dynamic per-Empire level costs. See `HYPER_ADVANCED_RESEARCH_2026-08-28.md`. This does not change the ordinary/Creative/Uncreative application policy defined in this checkpoint.
+
 ## Superseding switching checkpoint
 
 Active-project switching and accumulated-RP transfer are now implemented and documented in `RESEARCH_SWITCHING_2026-08-27.md`. The `all` / `choose_one` / `fixed_one` policy defined here remains unchanged during switches.

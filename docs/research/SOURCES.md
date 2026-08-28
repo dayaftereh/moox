@@ -272,3 +272,15 @@ Use: primary/original-observed control-flow and data-flow evidence for `Next_Tur
 SHA-256: `7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5`
 
 Use: primary/original-observed evidence for `Init_New_Game_`, `Init_Players_`, `Init_Player_Tech_`, `Random_`, the exact initial TechField `1..73` loop, General-field exceptions, Unification/Tolerant/Lithovore/Strategic-Combat eligibility rejection, and the later `Ensure_Uncreative_Field_OK_` repair path. Detailed addresses are recorded in `UNCREATIVE_INITIAL_SELECTION_2026-08-28.md`.
+
+## Direct original Hyper-Advanced research evidence
+
+### Private original MOO2 1.31 executable and save
+
+`C:\ASH\Temp\mastori2\Orion2.exe`
+
+SHA-256: `7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5`
+
+`C:\ASH\Temp\mastori2\SAVE10.GAM` is used only as an original-state cross-check for the established player-array layout and initial zero Hyper counters.
+
+Use: primary/original-observed evidence for `Player_Research_Cost_` (`0xE1E96`), the eight per-player counters at `player+0x21C..0x223`, `Give_Player_Field_` (`0xE4410`) increment-without-Technology-grant behavior, and `_Tech_Select_` (`0x10DC12`) temporary counter promotion used only by the original selection-screen preview. Detailed addresses and the MOOX strategic/UI policy boundary are recorded in `HYPER_ADVANCED_RESEARCH_2026-08-28.md`.

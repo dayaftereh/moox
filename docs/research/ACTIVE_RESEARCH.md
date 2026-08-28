@@ -159,21 +159,41 @@ MOOX now mirrors that architecture with caller-owned `NewGameRNG`, keeps the per
 
 `Ensure_Uncreative_Field_OK_` is verified as a later replacement/repair path after external technology acquisition; that transition remains parked rather than being conflated with initial generation.
 
+### Resolved Hyper-Advanced repeated-field research
+
+Direct MOO2 1.31 executable and save-state evidence is now documented in `HYPER_ADVANCED_RESEARCH_2026-08-28.md`.
+
+Verified strategic semantics:
+
+```text
+TechField 75..82
+completed-level counter: player+0x21C..0x223
+cost = 15000 RP + completed_levels * 10000 RP
+breakthrough -> completed_levels++ -> ProgressRP=0 -> same field remains active
+```
+
+MOOX models this as sparse per-Empire `HyperAdvancedResearch` state and a server-owned `repeat_field` research mode. There are no fake Technology IDs. `ResearchChoices` exposes the authoritative current strategic threshold, completed level and next research level.
+
+The original MOO2 technology-selection screen temporarily promotes Hyper counters by one while building its preview. That makes the first UI preview appear as 25,000 RP while the original strategic resolver evaluates a zero-counter first project at 15,000 RP. MOOX deliberately exposes the authoritative strategic cost and does not reproduce that UI-only off-by-one.
+
+`StateSchemaVersion = 7` and technology ruleset schema 3 now carry the semantic Hyper state/rules.
+
 ### Current exact Research task
 
-Model the **original Hyper-Advanced repeated-field level/cost state** without guessing:
+Investigate and implement **Advanced-start randomized/race-aware technology ownership** without guessing:
 
-1. identify where per-player repeated Hyper-Advanced levels are stored and incremented;
-2. map TechFields `>= 75` to their repeat counters and original progression order;
-3. connect the already-verified `Player_Research_Cost_` dynamic `level * 10000` component to authoritative MOOX state;
-4. define the smallest persistent state/schema change needed for deterministic save/replay;
-5. only then allow `advanceResearch` to process Hyper-Advanced fields instead of its current explicit rejection.
+1. trace the original Advanced-start player-tech initialization path and identify how many extra fields/applications are granted;
+2. determine RNG ownership/order and race-policy interaction for ordinary, Creative and Uncreative empires;
+3. normalize only directly supported generator inputs/rules;
+4. use the shared New Game RNG rather than introducing an independent random stream;
+5. integrate the resulting starting ownership through the existing numeric TechField/Technology identities and server-authoritative state.
 
-### After Hyper-Advanced
+### After Advanced Start
 
-- Advanced-start randomized/race-aware technology ownership;
 - Uncreative external-acquisition replacement using `Ensure_Uncreative_Field_OK_`;
-- identify the original `0x21CAF` Dimensional Portal gate when relevant.
+- identify the original `0x21CAF` Dimensional Portal gate when relevant;
+- later UI-fidelity work for the original Hyper temporary +1 preview / 20-level list boundary if desired.
+
 ### Parked Economy follow-ups
 
 - Freighter Fleet acquisition/build legal action;

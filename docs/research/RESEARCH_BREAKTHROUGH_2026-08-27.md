@@ -53,7 +53,7 @@ projected_rp = accumulated_research + empire_research_this_turn
 
 This confirms that the displayed/rolled breakthrough chance already includes the current turn's research before that research is committed to the accumulated total.
 
-For standard fields this uses the normalized base RP cost. Original hyper-advanced fields (`TechField >= 75`) add player-specific repeated-field cost scaling. That state is not modeled yet, so automatic breakthrough resolution explicitly rejects those fields instead of silently using an incorrect static cost.
+For standard fields this uses the normalized base RP cost. Hyper-Advanced fields 75..82 now use the directly verified player-specific repeated-field cost `static 15000 RP + completed_levels * 10000 RP`; successful Hyper breakthroughs increment the field level, reset RP to zero, grant no concrete Technology IDs and keep the same repeated field active. See `HYPER_ADVANCED_RESEARCH_2026-08-28.md`.
 
 ## Original RNG comparison
 
@@ -104,7 +104,7 @@ This intentionally diverges from the old integer storage behavior. It avoids los
 
 The verified breakthrough curve remains useful as a gameplay rule. MOOX computes it from the full floating-point projected RP and floors only the final percentage used by the discrete 1..100 roll. Therefore rounding occurs at the named probability boundary, not during RP accumulation.
 
-`GameState.Validate` rejects negative, NaN and infinite research progress. Current persistent state schema 6 serializes the value as numeric `progress_rp`; Population/Food-logistics and multi-Technology Research additions retain the same domain-native numeric policy.
+`GameState.Validate` rejects negative, NaN and infinite research progress. Current persistent state schema 7 serializes the value as numeric `progress_rp`; Population/Food-logistics and multi-Technology Research additions retain the same domain-native numeric policy.
 ## Turn resolution and overflow
 
 The original turn resolver at VA `0xE44E0` performs this order:

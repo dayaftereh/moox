@@ -20,6 +20,7 @@ const (
 	technologyTableSourceID  = "moo2-1.31-orion2-technology-table"
 	technologyFieldsSourceID = "moo2-1.31-orion2-technology-fields"
 	newGameFieldsSourceID    = "moo2-1.31-orion2-new-game-techfields"
+	hyperAdvancedSourceID    = "moo2-1.31-orion2-hyper-advanced-research"
 	technologyCount          = 203
 	technologyTableOffset    = 0x1FC720
 	technologyRecordSize     = 13
@@ -105,6 +106,19 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 				Archive:     "Orion2.exe",
 				SHA256:      exeHash,
 			},
+			{
+				ID:          hyperAdvancedSourceID,
+				Type:        "original-observed",
+				Description: "Orion2.exe 1.31 Player_Research_Cost_ at object-1 relative offset 0xD1E96 / VA 0xE1E96 uses fields 75..82 counters at player+0x21C..0x223 and adds counter*10000 RP; Give_Player_Field_ increments the selected counter on Hyper-Advanced breakthrough",
+				Archive:     "Orion2.exe",
+				SHA256:      exeHash,
+			},
+		},
+		HyperAdvanced: ruleset.HyperAdvancedResearch{
+			TechFieldIDs:    []int{75, 76, 77, 78, 79, 80, 81, 82},
+			CostIncrementRP: 10000,
+			Verification:    "original-exe-player-research-cost-hyper-counter-runtime",
+			Source:          ruleset.FieldProvenance{SourceID: hyperAdvancedSourceID, Offset: intPtr(0xD1E96)},
 		},
 		NewGameStart: ruleset.NewGameTechnologyStart{
 			AlwaysKnownTechFieldID:  0,

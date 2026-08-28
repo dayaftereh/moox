@@ -240,8 +240,8 @@ A private developer-only original-asset viewer may exist for comparison, but ori
 
 ## Recommended immediate next work
 
-1. Model original Hyper-Advanced repeated-field level/cost state and remove the current explicit runtime rejection only after the repeated-level state is verified.
-2. Implement Advanced-start randomized/race-aware technology ownership using the completed General/ordinary/Creative/Uncreative policy.
-3. Later implement Uncreative external-acquisition replacement using `Ensure_Uncreative_Field_OK_` and resolve the remaining Dimensional Portal eligibility gate when needed.
-4. Then continue the first headless vertical slice toward colony ship production, movement and a second colony.
+1. Implement Advanced-start randomized/race-aware technology ownership using the completed General/ordinary/Creative/Uncreative and Hyper-Advanced policies.
+2. Later implement Uncreative external-acquisition replacement using `Ensure_Uncreative_Field_OK_` and resolve the remaining Dimensional Portal eligibility gate when needed.
+3. Then continue the first headless vertical slice toward colony ship production, movement and a second colony.
+4. Keep the original Hyper selection-screen +1 preview / 20-level list boundary as optional UI-fidelity work, not a strategic-core rule.
 Do not reopen closed race/building/ship graphics research unless contradictory evidence or a concrete runtime requirement demands it. Wails v3 remains the planned application shell; transports/UI must continue to consume the same canonical Session/legal-action APIs rather than contain gameplay rules.
