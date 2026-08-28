@@ -203,9 +203,9 @@ MOOX uses the normalized `Lithovore` flag.
 
 When Strategic Combat is active, the helper rejects applications whose original strategic-availability byte is false. MOOX already has normalized per-Technology strategic availability and now uses it in this rejection loop.
 
-### Remaining unresolved gate: Dimensional Portal
+### Resolved Random Events gate: Dimensional Portal
 
-The original helper additionally rejects Technology 52 `dimensional_portal` when global byte `0x21CAF == 0`. The semantic identity of that global setting is not yet sufficiently normalized. MOOX deliberately does not guess this condition in the current slice.
+The original helper rejects Technology 52 `dimensional_portal` when global byte `0x21CAF == 0`. Direct New Game UI, event-system and technology-path evidence now identifies `0x21CAF` as **Random Events enabled**. MOOX therefore excludes Technology 52 when `RandomEventsDisabled` is true. See `RANDOM_EVENTS_TECH_GATE_2026-08-28.md`.
 
 ## `Ensure_Uncreative_Field_OK_` is a replacement/repair path
 
@@ -319,5 +319,5 @@ Next narrow targets:
 
 1. model original Hyper-Advanced repeated-field level/cost state;
 2. then implement Advanced-start randomized/race-aware technology ownership;
-3. later return to Uncreative external-acquisition replacement using `Ensure_Uncreative_Field_OK_`;
-4. separately identify the `0x21CAF` Dimensional Portal gate when relevant.
+3. wire the now-implemented Uncreative repair helper into future external Technology-grant transitions;
+4. keep the resolved Random Events / Dimensional Portal gate centralized in those grant rules.

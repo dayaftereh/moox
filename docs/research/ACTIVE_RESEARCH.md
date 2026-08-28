@@ -190,8 +190,7 @@ Implement the now-resolved **Advanced-start randomized/race-aware technology own
 
 ### After Advanced Start
 
-- Uncreative external-acquisition replacement using `Ensure_Uncreative_Field_OK_`;
-- identify the original `0x21CAF` Dimensional Portal gate when relevant;
+- wire the implemented Uncreative external-acquisition repair helper into future authoritative Technology-grant systems; the `0x21CAF` gate is resolved as Random Events;
 - later UI-fidelity work for the original Hyper temporary +1 preview / 20-level list boundary if desired.
 
 ### Parked Economy follow-ups

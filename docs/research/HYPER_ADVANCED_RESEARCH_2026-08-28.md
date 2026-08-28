@@ -309,6 +309,6 @@ Hyper-Advanced repeated-field runtime is now closed for the strategic core.
 Next Research slice:
 
 1. Advanced-start randomized/race-aware technology ownership;
-2. later Uncreative external-acquisition replacement using `Ensure_Uncreative_Field_OK_`;
-3. later identify the original `0x21CAF` Dimensional Portal gate;
+2. later wire the implemented Uncreative repair helper into external Technology-grant systems;
+3. Random Events / Dimensional Portal gating is now resolved in `RANDOM_EVENTS_TECH_GATE_2026-08-28.md`;
 4. UI-fidelity work may separately revisit the original temporary +1 preview and 20-level list boundary, but neither belongs in authoritative strategic cost calculation.

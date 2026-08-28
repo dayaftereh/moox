@@ -301,6 +301,12 @@ func TestUncreativeInitialTechnologyEligibilityMatchesOriginalTraitFilters(t *te
 	if !rules.uncreativeInitialTechnologyEligible(RaceEconomyModifiers{}, NewGameTechnologyOptions{StrategicCombat: false}, 56) {
 		t.Fatal("tactical mode rejected Reinforced Hull")
 	}
+	if rules.uncreativeInitialTechnologyEligible(RaceEconomyModifiers{}, NewGameTechnologyOptions{RandomEventsDisabled: true}, 52) {
+		t.Fatal("No Random Events accepted Dimensional Portal")
+	}
+	if !rules.uncreativeInitialTechnologyEligible(RaceEconomyModifiers{}, NewGameTechnologyOptions{}, 52) {
+		t.Fatal("default Random Events setting rejected Dimensional Portal")
+	}
 }
 func TestResearchCompletionRejectsRaceSelectionModeMismatch(t *testing.T) {
 	rules, resolver, state := initializedResearchRace(t, 746, "human")

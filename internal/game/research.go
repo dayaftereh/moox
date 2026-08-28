@@ -16,9 +16,10 @@ const (
 )
 
 type NewGameTechnologyOptions struct {
-	Level           NewGameTechnologyLevel
-	StrategicCombat bool
-	NewGameRNG      *core.RNG
+	Level                NewGameTechnologyLevel
+	StrategicCombat      bool
+	RandomEventsDisabled bool
+	NewGameRNG           *core.RNG
 }
 
 type ResearchCompletedEvent struct {
@@ -177,11 +178,13 @@ func (r *EconomyRules) initializeUncreativeResearchChoices(empire *core.Empire, 
 }
 
 // uncreativeInitialTechnologyEligible mirrors the original Init_Player_Tech_
-// race/mode exclusions that are already normalized in MOOX. The original also
-// gates Technology 52 (Dimensional Portal) on global byte 0x21CAF; the meaning
-// of that game-setting byte is not normalized yet, so that one gate remains
-// deliberately deferred rather than guessed here.
+// race/mode exclusions that are normalized in MOOX. Original global 0x21CAF is
+// now identified as the New Game Random Events toggle; Technology 52
+// (Dimensional Portal) is unavailable when Random Events are disabled.
 func (r *EconomyRules) uncreativeInitialTechnologyEligible(modifiers RaceEconomyModifiers, options NewGameTechnologyOptions, technologyID int) bool {
+	if technologyID == 52 && options.RandomEventsDisabled {
+		return false
+	}
 	if options.StrategicCombat && !r.TechnologyStrategicAvailable[technologyID] {
 		return false
 	}

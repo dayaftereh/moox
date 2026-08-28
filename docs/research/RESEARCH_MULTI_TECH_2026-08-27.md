@@ -150,7 +150,7 @@ The verified initial range is exactly TechField `1..73`. General fields remain `
 
 Timing, shared RNG ownership, field range and the modeled rejection loop are now original-derived. MOOX intentionally keeps SplitMix64 rather than claiming bit-identical original LCG output, and original field-slot ordering is not yet stored as a separate normalized vector.
 
-One original eligibility gate remains deliberately unresolved: Technology 52 `dimensional_portal` depends on global byte `0x21CAF`, whose semantic setting identity is not yet normalized.
+Technology 52 `dimensional_portal` is now resolved: original global `0x21CAF` is the New Game Random Events flag, and the Technology is unavailable when Random Events are disabled. See `RANDOM_EVENTS_TECH_GATE_2026-08-28.md`.
 
 See `UNCREATIVE_INITIAL_SELECTION_2026-08-28.md` for addresses and control/data-flow evidence.
 ## Server authority and command validation
@@ -237,8 +237,8 @@ Initial Uncreative fixed-application timing/RNG ownership is now resolved in `UN
 
 1. model Hyper-Advanced repeated-field level/cost state;
 2. implement Advanced-start randomized/race-aware technology ownership;
-3. later implement Uncreative external-acquisition replacement using the verified `Ensure_Uncreative_Field_OK_` path;
-4. separately identify the `0x21CAF` Dimensional Portal eligibility gate when needed.
+3. wire the implemented Uncreative external-acquisition repair helper into future authoritative Technology grants;
+4. keep Random Events / Dimensional Portal eligibility centralized in the domain layer.
 
 ## Superseding Hyper-Advanced checkpoint
 

@@ -30,7 +30,7 @@ This means external acquisition of a non-fixed application does not replace the 
 
 A state-0 application is eligible for the repair reservoir when:
 
-1. it is not suppressed by the unresolved Dimensional Portal gate;
+1. Technology 52 is allowed only when Random Events are enabled;
 2. its TechField is not special government-evolution TechField `6`;
 3. Strategic Combat availability is satisfied when Strategic Combat is enabled.
 
@@ -38,7 +38,7 @@ A state-0 application is eligible for the repair reservoir when:
 
 Technology `52` (`dimensional_portal`) is rejected when original global `0x21CAF == 0`.
 
-The semantic identity of that original global remains unresolved. MOOX must not invent a public setting for it. Until normalized, this gate should remain an explicit deferred policy input rather than being guessed.
+Direct New Game UI and event-system evidence now identifies original global `0x21CAF` as **Random Events enabled**. The repair therefore excludes Technology 52 when `RandomEventsDisabled` is true. See `RANDOM_EVENTS_TECH_GATE_2026-08-28.md`.
 
 ### Government evolution field 6
 
@@ -99,7 +99,7 @@ MOOX does not persist original per-Technology status bytes. The equivalent seman
 - `Empire.UncreativeResearchChoices`;
 - the normalized TechField -> Technology membership;
 - normalized Strategic Combat availability;
-- explicit policy for the still-unresolved Dimensional Portal gate.
+- semantic Random Events configuration for the Dimensional Portal gate.
 
 A future external-Technology acquisition transition should therefore perform:
 
@@ -139,7 +139,7 @@ Therefore, for ordinary TechFields `1..73`, MOOX `TechnologyIDsByField` ascendin
 
 MOOX now provides `EconomyRules.RepairUncreativeResearchChoiceAfterAcquisition`. It expects the acquired Technology to already be in `Empire.KnownTechnologyIDs`, consumes the caller-owned RNG with the verified reservoir pattern, persists a replacement `FixedResearchChoice` when one exists, removes the fixed choice when no legal replacement remains, and leaves TechField 6 without random government-family repair.
 
-`ResearchChoices` treats a legitimately missing Uncreative fixed choice as an unselectable field instead of a projection error. The unresolved Technology 52 gate remains explicit through `DimensionalPortalAllowed`; callers cannot silently guess the original `0x21CAF` meaning.
+`ResearchChoices` treats a legitimately missing Uncreative fixed choice as an unselectable field instead of a projection error. Technology 52 now follows the resolved `RandomEventsDisabled` domain option instead of an opaque `0x21CAF` placeholder.
 
 No external-acquisition client command is fabricated here. Trade/espionage/conquest can call the game-layer repair from their future authoritative grant transition.
 

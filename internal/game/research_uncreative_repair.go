@@ -7,14 +7,12 @@ import (
 	"moox/internal/core"
 )
 
-// UncreativeResearchRepairOptions carries only the original repair-path gates
-// that have semantic MOOX representations. DimensionalPortalAllowed remains a
-// pointer because the original 0x21CAF setting is not normalized yet: callers
-// must explicitly provide the eligibility decision before Technology 52 can be
-// considered instead of silently guessing the old global setting.
+// UncreativeResearchRepairOptions carries the original repair-path game-mode
+// gates using semantic MOOX names. RandomEventsDisabled maps the original New
+// Game "No Random Events" option (global 0x21CAF == 0).
 type UncreativeResearchRepairOptions struct {
-	StrategicCombat          bool
-	DimensionalPortalAllowed *bool
+	StrategicCombat      bool
+	RandomEventsDisabled bool
 }
 
 // UncreativeResearchRepairResult describes the persisted fixed-choice mutation
@@ -131,13 +129,8 @@ func (r *EconomyRules) uncreativeRepairTechnologyEligible(fieldID, technologyID 
 	if fieldID == 6 {
 		return false, nil
 	}
-	if technologyID == 52 { // Dimensional Portal.
-		if options.DimensionalPortalAllowed == nil {
-			return false, fmt.Errorf("Dimensional Portal Uncreative-repair eligibility requires the unresolved original 0x21CAF policy")
-		}
-		if !*options.DimensionalPortalAllowed {
-			return false, nil
-		}
+	if technologyID == 52 && options.RandomEventsDisabled { // Dimensional Portal.
+		return false, nil
 	}
 	if options.StrategicCombat && !r.TechnologyStrategicAvailable[technologyID] {
 		return false, nil

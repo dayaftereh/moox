@@ -196,22 +196,25 @@ func TestUncreativeRepairDoesNotRandomlyReplaceGovernmentEvolution(t *testing.T)
 	}
 }
 
-func TestUncreativeRepairKeepsDimensionalPortalGateExplicit(t *testing.T) {
+func TestUncreativeRepairRespectsRandomEventsDimensionalPortalGate(t *testing.T) {
 	rules, empire := uncreativeRepairFixture(t)
 	const fieldID = 51
 	setFixedResearchTechnologyForRepairTest(t, &empire, fieldID, 54)
 	addKnownTechnologyForRepairTest(&empire, 54)
 
-	if _, err := rules.RepairUncreativeResearchChoiceAfterAcquisition(
+	result, err := rules.RepairUncreativeResearchChoiceAfterAcquisition(
 		&empire,
 		54,
-		UncreativeResearchRepairOptions{},
+		UncreativeResearchRepairOptions{RandomEventsDisabled: true},
 		core.NewRNG(1),
-	); err == nil {
-		t.Fatal("expected unresolved Dimensional Portal repair gate to require an explicit policy")
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !result.Changed || result.ReplacementTechnologyID != 0 {
+		t.Fatalf("No Random Events repair=%+v want no Dimensional Portal replacement", result)
 	}
 
-	allow := true
 	rules, empire = uncreativeRepairFixture(t)
 	setFixedResearchTechnologyForRepairTest(t, &empire, fieldID, 54)
 	addKnownTechnologyForRepairTest(&empire, 54)
@@ -220,17 +223,17 @@ func TestUncreativeRepairKeepsDimensionalPortalGateExplicit(t *testing.T) {
 	if _, err := expected.Intn(1); err != nil {
 		t.Fatal(err)
 	}
-	result, err := rules.RepairUncreativeResearchChoiceAfterAcquisition(
+	result, err = rules.RepairUncreativeResearchChoiceAfterAcquisition(
 		&empire,
 		54,
-		UncreativeResearchRepairOptions{DimensionalPortalAllowed: &allow},
+		UncreativeResearchRepairOptions{}, // Random Events enabled by original default.
 		rng,
 	)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !result.Changed || result.ReplacementTechnologyID != 52 {
-		t.Fatalf("Dimensional Portal repair=%+v want Technology 52", result)
+		t.Fatalf("Random Events repair=%+v want Technology 52", result)
 	}
 	if rng.State() != expected.State() {
 		t.Fatalf("Dimensional Portal one-candidate reservoir RNG=%d want=%d", rng.State(), expected.State())
