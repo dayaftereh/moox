@@ -47,11 +47,11 @@ func TestQueueBuildingAppliesCurrentTurnProduction(t *testing.T) {
 	if colony.AdjustedEconomy.Production <= colony.Construction.ProgressPP {
 		t.Fatalf("post-growth production=%v should exceed consumed current-turn PP=%v", colony.AdjustedEconomy.Production, colony.Construction.ProgressPP)
 	}
-	if len(result.Events) != 3 || result.Events[0].Kind != "colony.construction_queued" || result.Events[1].Kind != "colony.population_grew" || result.Events[2].Kind != "colony.construction_progressed" {
+	if len(result.Events) != 4 || result.Events[0].Kind != "colony.construction_queued" || result.Events[1].Kind != "empire.treasury_settled" || result.Events[2].Kind != "colony.population_grew" || result.Events[3].Kind != "colony.construction_progressed" {
 		t.Fatalf("unexpected construction/growth events: %+v", result.Events)
 	}
 	var progressed ConstructionProgressedEvent
-	if err := json.Unmarshal(result.Events[2].Data, &progressed); err != nil {
+	if err := json.Unmarshal(result.Events[3].Data, &progressed); err != nil {
 		t.Fatal(err)
 	}
 	if progressed.ProjectKind != core.ConstructionProjectBuilding || progressed.ProjectID != "holo_simulator" {
@@ -158,15 +158,18 @@ func TestCompletedBuildingAffectsPostTurnSnapshotWithoutRetroactivePP(t *testing
 	if colony.AdjustedEconomy.Production <= 144 {
 		t.Fatalf("post-growth/post-building production=%v should exceed 144", colony.AdjustedEconomy.Production)
 	}
-	if len(first.Events) != 4 || first.Events[1].Kind != "colony.population_grew" || first.Events[2].Kind != "colony.construction_progressed" || first.Events[3].Kind != "colony.building_completed" {
+	if len(first.Events) != 5 || first.Events[1].Kind != "empire.treasury_settled" || first.Events[2].Kind != "colony.population_grew" || first.Events[3].Kind != "colony.construction_progressed" || first.Events[4].Kind != "colony.building_completed" {
 		t.Fatalf("unexpected completion/growth events: %+v", first.Events)
 	}
 	var progress ConstructionProgressedEvent
-	if err := json.Unmarshal(first.Events[2].Data, &progress); err != nil {
+	if err := json.Unmarshal(first.Events[3].Data, &progress); err != nil {
 		t.Fatal(err)
 	}
 	if progress.AppliedPP != 120 {
 		t.Fatalf("completed building consumed %v PP, want exactly current-turn 120", progress.AppliedPP)
+	}
+	if first.State.Empires[0].Treasury.BuildingMaintenanceBC != 0 {
+		t.Fatalf("same-turn Treasury charged newly completed building maintenance: %+v", first.State.Empires[0].Treasury)
 	}
 	second, err := resolver.Resolve(ctx, first.State, nil)
 	if err != nil {
@@ -175,6 +178,9 @@ func TestCompletedBuildingAffectsPostTurnSnapshotWithoutRetroactivePP(t *testing
 	colony = second.State.Colonies[0]
 	if colony.EconomyContext.MoraleBuildingBonusPercent != 20 || colony.EconomyContext.MoralePercent != 20 {
 		t.Fatalf("completed Holo missing on subsequent recalculation: %+v", colony.EconomyContext)
+	}
+	if second.State.Empires[0].Treasury.BuildingMaintenanceBC != 1 {
+		t.Fatalf("next-turn Treasury maintenance=%v want=1 for Holo Simulator", second.State.Empires[0].Treasury.BuildingMaintenanceBC)
 	}
 }
 

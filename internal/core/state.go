@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 8
+const StateSchemaVersion = 9
 
 type ID uint64
 
@@ -51,6 +51,7 @@ type Empire struct {
 	RaceID                    string                       `json:"race_id"`
 	Capital                   ID                           `json:"capital_colony_id,omitempty"`
 	Freighters                int                          `json:"freighters"`
+	Treasury                  EmpireTreasuryState          `json:"treasury"`
 	FoodLogistics             EmpireFoodLogistics          `json:"food_logistics"`
 	UncreativeResearchChoices []FixedResearchChoice        `json:"uncreative_research_choices,omitempty"`
 	HyperAdvancedResearch     []HyperAdvancedResearchLevel `json:"hyper_advanced_research,omitempty"`
@@ -69,6 +70,16 @@ type HyperAdvancedResearchLevel struct {
 	CompletedLevels int `json:"completed_levels"`
 }
 
+type EmpireTreasuryState struct {
+	BalanceBC                 float64 `json:"balance_bc"`
+	TaxIncomeBC               float64 `json:"tax_income_bc"`
+	SurplusFoodIncomeBC       float64 `json:"surplus_food_income_bc"`
+	GrossIncomeBC             float64 `json:"gross_income_bc"`
+	BuildingMaintenanceBC     float64 `json:"building_maintenance_bc"`
+	FreighterOperatingCostBC  float64 `json:"freighter_operating_cost_bc"`
+	TotalModeledMaintenanceBC float64 `json:"total_modeled_maintenance_bc"`
+	NetModeledIncomeBC        float64 `json:"net_modeled_income_bc"`
+}
 type EmpireFoodLogistics struct {
 	FreightersRequired       int     `json:"freighters_required"`
 	FreightersUsed           int     `json:"freighters_used"`
@@ -268,6 +279,38 @@ func (s *GameState) Validate() error {
 		}
 		if empire.Freighters < 0 {
 			return fmt.Errorf("empire[%d] freighters must be non-negative", i)
+		}
+		for _, item := range []struct {
+			label string
+			value float64
+		}{
+			{"treasury.balance_bc", empire.Treasury.BalanceBC},
+			{"treasury.tax_income_bc", empire.Treasury.TaxIncomeBC},
+			{"treasury.surplus_food_income_bc", empire.Treasury.SurplusFoodIncomeBC},
+			{"treasury.gross_income_bc", empire.Treasury.GrossIncomeBC},
+			{"treasury.building_maintenance_bc", empire.Treasury.BuildingMaintenanceBC},
+			{"treasury.freighter_operating_cost_bc", empire.Treasury.FreighterOperatingCostBC},
+			{"treasury.total_modeled_maintenance_bc", empire.Treasury.TotalModeledMaintenanceBC},
+			{"treasury.net_modeled_income_bc", empire.Treasury.NetModeledIncomeBC},
+		} {
+			if math.IsNaN(item.value) || math.IsInf(item.value, 0) {
+				return fmt.Errorf("empire[%d] %s must be finite", i, item.label)
+			}
+		}
+		for _, item := range []struct {
+			label string
+			value float64
+		}{
+			{"treasury.tax_income_bc", empire.Treasury.TaxIncomeBC},
+			{"treasury.surplus_food_income_bc", empire.Treasury.SurplusFoodIncomeBC},
+			{"treasury.gross_income_bc", empire.Treasury.GrossIncomeBC},
+			{"treasury.building_maintenance_bc", empire.Treasury.BuildingMaintenanceBC},
+			{"treasury.freighter_operating_cost_bc", empire.Treasury.FreighterOperatingCostBC},
+			{"treasury.total_modeled_maintenance_bc", empire.Treasury.TotalModeledMaintenanceBC},
+		} {
+			if item.value < 0 {
+				return fmt.Errorf("empire[%d] %s must be non-negative", i, item.label)
+			}
 		}
 		if empire.FoodLogistics.FreightersRequired < 0 || empire.FoodLogistics.FreightersUsed < 0 || empire.FoodLogistics.FreightersUsed > empire.Freighters {
 			return fmt.Errorf("empire[%d] food logistics freighter counts are invalid", i)

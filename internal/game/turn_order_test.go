@@ -46,6 +46,7 @@ func TestStrategicApplyOrderUsesPreGrowthResearchAndConstructionSnapshots(t *tes
 	wantKinds := []string{
 		"colony.construction_queued",
 		"empire.research_selected",
+		"empire.treasury_settled",
 		"empire.research_progressed",
 		"colony.population_grew",
 		"colony.construction_progressed",
@@ -60,7 +61,7 @@ func TestStrategicApplyOrderUsesPreGrowthResearchAndConstructionSnapshots(t *tes
 	}
 
 	var research ResearchProgressedEvent
-	if err := json.Unmarshal(result.Events[2].Data, &research); err != nil {
+	if err := json.Unmarshal(result.Events[3].Data, &research); err != nil {
 		t.Fatal(err)
 	}
 	if research.TurnResearchRP != 4.5 || research.ProjectedRP != 4.5 {
@@ -68,7 +69,7 @@ func TestStrategicApplyOrderUsesPreGrowthResearchAndConstructionSnapshots(t *tes
 	}
 
 	var construction ConstructionProgressedEvent
-	if err := json.Unmarshal(result.Events[4].Data, &construction); err != nil {
+	if err := json.Unmarshal(result.Events[5].Data, &construction); err != nil {
 		t.Fatal(err)
 	}
 	if construction.AppliedPP != 3 {

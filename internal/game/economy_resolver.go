@@ -117,6 +117,11 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 		return Resolution{}, err
 	}
 	events = append(events, foodEvents...)
+	treasuryEvents, err := r.settleTreasury(state)
+	if err != nil {
+		return Resolution{}, err
+	}
+	events = append(events, treasuryEvents...)
 	// Original 1.31 keeps current-turn colony resource values materialized before
 	// Next_Turn_Calc applies state changes. Player research consumes that snapshot
 	// first; Population growth/starvation is then applied; Construction consumes

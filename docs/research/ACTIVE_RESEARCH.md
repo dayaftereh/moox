@@ -176,7 +176,7 @@ MOOX models this as sparse per-Empire `HyperAdvancedResearch` state and a server
 
 The original MOO2 technology-selection screen temporarily promotes Hyper counters by one while building its preview. That makes the first UI preview appear as 25,000 RP while the original strategic resolver evaluates a zero-counter first project at 15,000 RP. MOOX deliberately exposes the authoritative strategic cost and does not reproduce that UI-only off-by-one.
 
-Technology ruleset schema 4 carries the semantic Hyper state/rules plus the original AI/research metadata used by Advanced start. Core `StateSchemaVersion = 8` now additionally generalizes Colony Construction to semantic `project_kind` / `project_id`, with `building` as the first project kind and Freighter Fleet as the next planned one.
+Technology ruleset schema 4 carries the semantic Hyper state/rules plus the original AI/research metadata used by Advanced start. Core `StateSchemaVersion = 9` includes the generalized Colony Construction to semantic `project_kind` / `project_id`, with `building` as the first project kind and Freighter Fleet as the next planned one.
 
 ### Resolved Advanced-start randomized/race-aware ownership
 
@@ -208,30 +208,48 @@ Future diplomacy, espionage, conquest or scripted acquisition systems can now ca
 
 Freighter Fleet production now uses the same authoritative Construction model as buildings:
 
-- Core Construction schema 8 supports `project_kind = freighter_fleet` with stable `project_id = freighter_fleet`;
+- Core Construction schema 9 supports `project_kind = freighter_fleet` with stable `project_id = freighter_fleet`;
 - `GameSession.ConstructionChoices` exposes Building and Freighter Fleet projects through one authority-filtered legal-action surface;
 - the normalized rule values are **50 PP** per Fleet and **5 Freighters** added on completion;
 - `colony.queue_freighter_fleet` is ownership/technology/busy-state validated and participates in normal strategic command resolution;
 - `colony.construction_progressed` now carries generic project kind/id while Building completion remains building-specific;
 - completed Freighter Fleets increment `Empire.Freighters` and emit `colony.freighter_fleet_completed` into Observer/replay history;
-- active Freighter Fleet Construction round-trips exactly through schema-8 state serialization.
+- active Freighter Fleet Construction round-trips exactly through schema-9 state serialization.
 
 MOOX currently uses normalized Technology 69 (`freighters`) as the production unlock. The semantic Technology identity is normalized; the separate original UI branch for this exact gate was not newly isolated in the current disassembly pass, so it is not overstated as a fresh executable proof.
 
-### Current exact project task - Treasury settlement
+### Resolved Treasury settlement
 
-Connect the already-materialized Food/Freighter money values to an authoritative Empire Treasury without guessing unrelated economy rules:
+The authoritative economy now has a semantic Treasury ledger backed by direct original evidence:
 
-1. inspect the current Empire money/Treasury state and any normalized BC ledger rules;
-2. apply `FreighterOperatingCostBC` and `SurplusFoodIncomeBC` exactly once per strategic turn at a deterministic boundary;
-3. preserve the existing Food/Freighter transport calculation unchanged;
-4. emit Observer/replay settlement metadata sufficient to audit the BC delta;
-5. do not yet add blockade, Population transport or broader maintenance/tax systems unless required by the Treasury state model.
+- original `player+0x32` is the persistent Treasury balance;
+- original `+0xAE` gross minus `+0xB4` total Maintenance produces `+0xB2` net BC;
+- `Apply_All_Player_Changes_` adds `+0xB2` to Treasury before the Research-breakthrough path;
+- New Game initializes Treasury to **50 BC** at original VA `0x12C86`, independently cross-checked in all five active `SAVE10.GAM` player records;
+- Core schema 9 stores Treasury as domain-native `float64` with an auditable semantic snapshot;
+- current MOOX settlement includes implemented Tax + surplus-Food income and Building + active-Freighter Maintenance only;
+- missing original Maintenance/income categories and `Player_Maintenance_` deficit/scrap policy remain explicit follow-ups rather than guessed values;
+- `empire.treasury_settled` is emitted before Research and appears in Observer/replay history;
+- a Building completed later in the turn starts charging Maintenance only on the next settlement.
 
-### After Treasury settlement
+Detailed evidence: `docs/research/TREASURY_SETTLEMENT_2026-08-28.md`.
+
+### Current exact project task - insufficient Freighter priority
+
+Determine the **original MOO2 1.31 allocation order when available Freighters cannot cover all required Food transport**, before changing current deterministic MOOX logistics:
+
+1. identify the original routine that allocates the shared player Freighter pool to Colony Food shortages/routes;
+2. determine the stable ordering key (Colony array order, shortage size, distance, priority/status, or another field) from executable evidence;
+3. establish whether export/source choice and import/destination choice use the same or separate ordering;
+4. record tie behavior and any RNG use;
+5. only after the order is proven, replace MOOX's current simple deterministic allocation if necessary.
+
+Do not add blockade or Population transport in this slice; they remain downstream consumers of the shared Freighter pool.
+
+### After insufficient-Freighter priority
 
 - blockade effects and Population transport through the shared Freighter pool;
-- exact original insufficient-Freighter priority;
+- missing original Treasury categories and deficit/scrap policy when those systems become modeled;
 - Housing / Cloning Center / medicine growth modifiers;
 - Biospheres / Advanced City Planning / terraforming capacity transitions;
 - race-aware Population cohorts.
@@ -239,10 +257,11 @@ Connect the already-materialized Food/Freighter money values to an authoritative
 ### Parked Economy follow-ups
 
 - blockade effects and Population transport through the shared Freighter pool;
-- exact original insufficient-Freighter priority;
+- missing original Treasury categories and deficit/scrap policy;
 - Housing / Cloning Center / medicine growth modifiers;
 - Biospheres / Advanced City Planning / terraforming capacity transitions;
-- race-aware Population cohorts.## Exploration budget
+- race-aware Population cohorts.
+## Exploration budget
 
 Budget for the current investigation path: **10 consecutive search/inspection actions without materialized progress**.
 

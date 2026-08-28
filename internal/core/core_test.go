@@ -214,6 +214,33 @@ func TestFreighterFleetConstructionStateRoundTripsExactly(t *testing.T) {
 		t.Fatalf("Freighter Fleet construction changed across round-trip: want=%+v got=%+v", state.Colonies[0].Construction, loaded.Colonies[0].Construction)
 	}
 }
+func TestTreasuryStateRoundTripsExactly(t *testing.T) {
+	state := NewSmallFixture(303)
+	state.Empires[0].Treasury = EmpireTreasuryState{
+		BalanceBC:                 54.75,
+		TaxIncomeBC:               4.5,
+		SurplusFoodIncomeBC:       2.25,
+		GrossIncomeBC:             6.75,
+		BuildingMaintenanceBC:     1,
+		FreighterOperatingCostBC:  1,
+		TotalModeledMaintenanceBC: 2,
+		NetModeledIncomeBC:        4.75,
+	}
+	if err := state.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	encoded, err := MarshalState(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := UnmarshalState(encoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(state.Empires[0].Treasury, loaded.Empires[0].Treasury) {
+		t.Fatalf("Treasury changed across round-trip: want=%+v got=%+v", state.Empires[0].Treasury, loaded.Empires[0].Treasury)
+	}
+}
 func TestKnownTechnologyIDsValidateAndRoundTrip(t *testing.T) {
 	state := NewSmallFixture(403)
 	state.Empires[0].KnownTechnologyIDs = []int{22, 86, 141}
