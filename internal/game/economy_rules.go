@@ -47,6 +47,7 @@ type EconomyRules struct {
 	ClimateFoodPerFarmer                          map[string]float64
 	MineralIndustryPerWorker                      map[string]float64
 	RaceModifiers                                 map[string]RaceEconomyModifiers
+	RaceResearchModifiers                         map[string]RaceResearchModifiers
 	AquaticFoodBonus                              float64
 	AquaticFoodClimateIDs                         map[string]struct{}
 	BaseResearchPerScientist                      float64
@@ -81,11 +82,15 @@ type EconomyRules struct {
 	TechnologyFieldCostsRP                        map[int]float64
 	TechnologyFieldPreviousID                     map[int]int
 	TechnologyFieldNextID                         map[int]int
+	TechnologyFieldAIGroup                        map[int]int
 	TechnologyIDsByField                          map[int][]int
 	TechnologyFieldByID                           map[int]int
 	TechnologyKeyByID                             map[int]string
 	TechnologyNameKeyByID                         map[int]string
 	TechnologyStrategicAvailable                  map[int]bool
+	TechnologyAIClassByID                         map[int]int
+	TechnologyAIClasses                           map[int]TechnologyAIClassDefinition
+	TechnologyAIFieldGroupValues                  []int
 	NewGameAlwaysKnownFieldID                     int
 	NewGameStagedKnownFieldIDs                    []int
 	GeneralResearchFieldIDs                       map[int]struct{}
@@ -181,23 +186,32 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	technologyFieldCosts := make(map[int]float64, len(technologies.Fields))
 	technologyFieldPreviousID := make(map[int]int, len(technologies.Fields))
 	technologyFieldNextID := make(map[int]int, len(technologies.Fields))
+	technologyFieldAIGroup := make(map[int]int, len(technologies.Fields))
 	for _, field := range technologies.Fields {
 		technologyFieldCosts[field.FieldID] = float64(field.ResearchCost)
 		technologyFieldPreviousID[field.FieldID] = field.PreviousID
 		technologyFieldNextID[field.FieldID] = field.NextID
+		technologyFieldAIGroup[field.FieldID] = field.AIGroup
 	}
 	technologyIDsByField := make(map[int][]int)
 	technologyFieldByID := make(map[int]int, len(technologies.Technologies))
 	technologyKeyByID := make(map[int]string, len(technologies.Technologies))
 	technologyNameKeyByID := make(map[int]string, len(technologies.Technologies))
 	technologyStrategicAvailable := make(map[int]bool, len(technologies.Technologies))
+	technologyAIClassByID := make(map[int]int, len(technologies.Technologies))
 	for _, technology := range technologies.Technologies {
 		technologyFieldByID[technology.TechnologyID] = technology.TechFieldID
 		technologyKeyByID[technology.TechnologyID] = technology.ID
 		technologyNameKeyByID[technology.TechnologyID] = technology.NameKey
 		technologyStrategicAvailable[technology.TechnologyID] = technology.StrategicCombatAvailable
+		technologyAIClassByID[technology.TechnologyID] = technology.AIClass
 		technologyIDsByField[technology.TechFieldID] = append(technologyIDsByField[technology.TechFieldID], technology.TechnologyID)
 	}
+	technologyAIClasses := make(map[int]TechnologyAIClassDefinition, len(technologies.AIResearch.TechnologyClasses))
+	for _, class := range technologies.AIResearch.TechnologyClasses {
+		technologyAIClasses[class.ClassID] = TechnologyAIClassDefinition{BaseWeight: class.BaseWeight, CompetitionSensitive: class.CompetitionSensitive}
+	}
+	technologyAIFieldGroupValues := append([]int(nil), technologies.AIResearch.FieldGroupValues...)
 	buildingIDs := make(map[string]struct{}, len(buildings.Buildings))
 	buildingDefinitions := make(map[string]BuildingDefinition, len(buildings.Buildings))
 	for _, building := range buildings.Buildings {
@@ -259,6 +273,7 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		ClimateFoodPerFarmer:                          make(map[string]float64, len(planetClasses.Climates)),
 		MineralIndustryPerWorker:                      make(map[string]float64, len(planetClasses.MineralClasses)),
 		RaceModifiers:                                 make(map[string]RaceEconomyModifiers, len(races.Races)),
+		RaceResearchModifiers:                         make(map[string]RaceResearchModifiers, len(races.Races)),
 		AquaticFoodBonus:                              float64(economy.AquaticFoodBonus.Value),
 		AquaticFoodClimateIDs:                         aquaticClimates,
 		BaseResearchPerScientist:                      float64(economy.BaseResearchPerScientist.Value),
@@ -293,11 +308,15 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		TechnologyFieldCostsRP:                        technologyFieldCosts,
 		TechnologyFieldPreviousID:                     technologyFieldPreviousID,
 		TechnologyFieldNextID:                         technologyFieldNextID,
+		TechnologyFieldAIGroup:                        technologyFieldAIGroup,
 		TechnologyIDsByField:                          technologyIDsByField,
 		TechnologyFieldByID:                           technologyFieldByID,
 		TechnologyKeyByID:                             technologyKeyByID,
 		TechnologyNameKeyByID:                         technologyNameKeyByID,
 		TechnologyStrategicAvailable:                  technologyStrategicAvailable,
+		TechnologyAIClassByID:                         technologyAIClassByID,
+		TechnologyAIClasses:                           technologyAIClasses,
+		TechnologyAIFieldGroupValues:                  technologyAIFieldGroupValues,
 		NewGameAlwaysKnownFieldID:                     technologies.NewGameStart.AlwaysKnownTechFieldID,
 		NewGameStagedKnownFieldIDs:                    append([]int(nil), technologies.NewGameStart.StagedKnownTechFieldIDs...),
 		GeneralResearchFieldIDs:                       generalResearchFieldIDs,
@@ -330,6 +349,7 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 
 	for _, race := range races.Races {
 		modifiers := RaceEconomyModifiers{GravityID: "normal_g", PopulationGrowthMultiplier: 1}
+		researchModifiers := RaceResearchModifiers{}
 		for _, selection := range race.TraitSelections {
 			option, ok := options[selection.TraitID]
 			if !ok {
@@ -338,14 +358,19 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 			switch option.Ability {
 			case "aquatic":
 				modifiers.Aquatic = true
+				researchModifiers.Aquatic = true
 			case "tolerant":
 				modifiers.Tolerant = true
+				researchModifiers.Tolerant = true
 			case "subterranean":
 				modifiers.Subterranean = true
+				researchModifiers.Subterranean = true
 			case "cybernetic":
 				modifiers.Cybernetic = true
+				researchModifiers.Cybernetic = true
 			case "lithovore":
 				modifiers.Lithovore = true
+				researchModifiers.Lithovore = true
 			case "fantastic_traders":
 				modifiers.FantasticTraders = true
 			case "creative":
@@ -354,10 +379,17 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 				modifiers.Uncreative = true
 			case "low_g_world":
 				modifiers.GravityID = "low_g"
+				researchModifiers.LowGWorld = true
 			case "high_g_world":
 				modifiers.GravityID = "heavy_g"
+				researchModifiers.HighGWorld = true
 			case "government_feudal", "government_dictatorship", "government_democracy", "government_unification":
 				modifiers.GovernmentTraitID = option.Ability
+				researchModifiers.GovernmentTraitID = option.Ability
+			case "telepathic":
+				researchModifiers.Telepathic = true
+			case "stealthy_ships":
+				researchModifiers.StealthyShips = true
 			}
 			if option.Value == nil {
 				continue
@@ -366,14 +398,27 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 			switch option.ValueKind {
 			case "food_per_farmer_delta":
 				modifiers.FoodPerFarmer += delta
+				researchModifiers.FarmingDelta = delta
 			case "production_per_worker_delta":
 				modifiers.ProductionPerWorker += delta
+				researchModifiers.IndustryDelta = delta
 			case "research_per_scientist_delta":
 				modifiers.ResearchPerScientist += delta
+				researchModifiers.ScienceDelta = delta
 			case "tax_bc_per_population_delta":
 				modifiers.TaxBCPerPopulation += delta
+				researchModifiers.MoneyDelta = delta
 			case "population_growth_multiplier":
 				modifiers.PopulationGrowthMultiplier = delta
+				researchModifiers.PopulationGrowthPercent = int(math.Round((delta - 1) * 100))
+			case "ship_defense_bonus":
+				researchModifiers.ShipDefenseBonus = int(math.Round(delta))
+			case "ship_attack_bonus":
+				researchModifiers.ShipAttackBonus = int(math.Round(delta))
+			case "ground_combat_bonus":
+				researchModifiers.GroundCombatBonus = int(math.Round(delta))
+			case "spying_bonus":
+				researchModifiers.SpyingBonus = int(math.Round(delta))
 			}
 		}
 		if modifiers.Creative && modifiers.Uncreative {
@@ -389,6 +434,7 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 			return nil, fmt.Errorf("race %q uses unsupported government %q", race.ID, modifiers.GovernmentTraitID)
 		}
 		rules.RaceModifiers[race.ID] = modifiers
+		rules.RaceResearchModifiers[race.ID] = researchModifiers
 	}
 	return rules, nil
 }
