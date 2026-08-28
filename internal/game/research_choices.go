@@ -105,7 +105,10 @@ func (r *EconomyRules) AvailableResearchChoices(state *core.GameState, empireID 
 		if mode == core.ResearchSelectionFixedOne {
 			fixedID, found := fixedResearchTechnology(empire.UncreativeResearchChoices, fieldID)
 			if !found {
-				return nil, fmt.Errorf("uncreative empire %d has no fixed technology for research field %d", empireID, fieldID)
+				// A later external-acquisition repair can legitimately leave an
+				// Uncreative field with no eligible application. The original leaves
+				// that field open but unselectable; mirror that legal-action surface.
+				continue
 			}
 			if _, known := knownTech[fixedID]; known {
 				return nil, fmt.Errorf("uncreative empire %d already knows fixed technology %d for incomplete field %d; external-acquisition semantics are not modeled yet", empireID, fixedID, fieldID)

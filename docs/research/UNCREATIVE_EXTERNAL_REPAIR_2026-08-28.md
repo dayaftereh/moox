@@ -129,6 +129,20 @@ The clean integration point is the future authoritative external-Technology gran
 
 Until such an external-acquisition operation exists, MOOX can expose the repair as a tested game-layer helper without fabricating a client command that grants Technologies.
 
+## Runtime application-slot ordering
+
+Direct `Init_Tech_` analysis at VA `0x5E1E3` resolves the remaining ordering question. The static TechField application slots start empty. `Init_Tech_` scans Technology/application IDs in ascending order and writes each application into the first empty slot of its TechField. Special TechField 74 is skipped by this normal slot-building path.
+
+Therefore, for ordinary TechFields `1..73`, MOOX `TechnologyIDsByField` ascending-ID order is already the original runtime application-slot order used by `Ensure_Uncreative_Field_OK_`. No additional legacy slot array is needed in authoritative state or rules.
+
+## Current MOOX game-layer support
+
+MOOX now provides `EconomyRules.RepairUncreativeResearchChoiceAfterAcquisition`. It expects the acquired Technology to already be in `Empire.KnownTechnologyIDs`, consumes the caller-owned RNG with the verified reservoir pattern, persists a replacement `FixedResearchChoice` when one exists, removes the fixed choice when no legal replacement remains, and leaves TechField 6 without random government-family repair.
+
+`ResearchChoices` treats a legitimately missing Uncreative fixed choice as an unselectable field instead of a projection error. The unresolved Technology 52 gate remains explicit through `DimensionalPortalAllowed`; callers cannot silently guess the original `0x21CAF` meaning.
+
+No external-acquisition client command is fabricated here. Trade/espionage/conquest can call the game-layer repair from their future authoritative grant transition.
+
 ## Verification targets
 
 Runtime tests should lock:
