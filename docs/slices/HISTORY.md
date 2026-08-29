@@ -23,6 +23,7 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 | Population relocation / shared Freighters | Same-system immediate moves and interstellar Settler reservations/ETA/arrival/loss handling implemented; Core schema advanced to 11 | `f816eaf` | `docs/research/POPULATION_TRANSPORT_FREIGHTER_2026-08-29.md` |
 | Population growth building / medicine modifiers | Housing continuous Production mode, Microbiotics +25pp, Universal Antidote +50pp and flat Cloning Center +0.1 Population/turn implemented; Core schema advanced to 12 | `e7f0d72` | `docs/research/POPULATION_GROWTH_MODIFIERS_2026-08-29.md` |
 | Population capacity transitions | Advanced City Planning +5, Biospheres +2, semantic Terraforming/Gaia climate transformations and immediate capacity-clamp invariant implemented; Core schema advanced to 13 | `25d05a9` | `docs/research/POPULATION_CAPACITY_TRANSITIONS_2026-08-29.md` |
+| Race-aware Population cohorts | Core schema 14 organic cohorts, source-race Economy, exact four-pass Food priority, per-origin Growth/Starvation, heterogeneous capacity and cohort-aware Population transfer implemented | `7c49e90` | `docs/research/POPULATION_COHORTS_2026-08-29.md` |
 
 ## Meta workflow
 

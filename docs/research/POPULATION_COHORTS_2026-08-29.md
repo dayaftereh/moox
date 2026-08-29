@@ -1,6 +1,6 @@
 # Race-aware Population cohorts - 2026-08-29
 
-**Open marker:** `docs/slices/_OPEN_POPULATION_COHORTS_2026-08-29.md`
+**Open marker:** none; the completed marker was removed in Gate 4.
 
 ## Goal
 
@@ -8,7 +8,7 @@ Determine original Master of Orion II 1.31 Population cohort behavior for native
 
 ## Gate 1 - Checkup + original analysis / reverse engineering
 
-**Status:** Gates 1-3 complete; Gate 4 follow-up QA + commit + close pending.
+**Status:** Gates 1-4 complete; slice closed.
 
 ### Recovery state
 
@@ -761,3 +761,27 @@ go test ./...
 ```
 
 The repository-wide Go test suite is green. Gate 4 remains responsible for the formal final formatting/vet/diff review, permanent status reconciliation, commit and slice close.
+
+## Gate 4 - final QA and close
+
+**Status:** complete on 2026-08-29.
+
+Final implementation commit:
+
+```text
+7c49e90 game: implement race-aware population cohorts
+```
+
+Formal Gate 4 verification completed after a final `gofmt` pass over all changed Go files:
+
+```text
+go test ./...
+go vet ./...
+git diff --check
+```
+
+All three checks passed. The final diff review also confirmed that the update to `INSUFFICIENT_FREIGHTER_PRIORITY_2026-08-28.md` closes the previously documented mixed-cohort four-pass Food deferral rather than introducing unrelated scope.
+
+The closing documentation pass reconciles `README.md`, `docs/PROJECT_STATUS.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/research/ACTIVE_RESEARCH.md` and `docs/slices/HISTORY.md` with Core schema 14, removes the completed `_OPEN_POPULATION_COHORTS_2026-08-29.md` marker, and leaves the next queued objective un-opened until work actually begins.
+
+Gate 4 found one documentation-only recovery drift before commit: `ACTIVE_RESEARCH.md` still reported Core schema 13 after Gate 3 had advanced the authoritative state to schema 14. That was corrected before the implementation commit. No gameplay defect was found by the final QA.
