@@ -1,6 +1,6 @@
 # Canonical strategic Fleet/Diplomacy blockade production - 2026-08-29
 
-**Open marker:** `docs/slices/_OPEN_FLEET_DIPLOMACY_BLOCKADES_2026-08-29.md`
+**Open marker:** none; the completed marker was removed in Gate 4.
 
 ## Goal
 
@@ -8,7 +8,7 @@ Determine the minimum original Master of Orion II 1.31 Fleet and diplomacy/relat
 
 ## Gate 1 - Checkup + original analysis / reverse engineering
 
-**Status:** Gates 1-3 complete on 2026-08-29; Gate 4 QA/commit/close pending.
+**Status:** Gates 1-4 complete on 2026-08-29; slice closed.
 
 ### Recovery state
 
@@ -451,3 +451,26 @@ git diff --check           PASS
 ```
 
 Formal Gate 4 still owns the final formatting/test/vet/diff QA, commit, permanent-history update and deletion of the `_OPEN_` marker.
+
+
+## Gate 4 - final QA and close
+
+**Status:** complete on 2026-08-29.
+
+Final implementation commit:
+
+```text
+d148502 game: derive strategic system blockades
+```
+
+Formal Gate 4 verification completed after a final `gofmt` pass over all changed Go files:
+
+```text
+go test ./...
+go vet ./...
+git diff --check
+```
+
+All three checks passed. The final status review reconciles README, PROJECT_STATUS, IMPLEMENTATION_PLAN, ACTIVE_RESEARCH and HISTORY with Core schema 15 and the now-authoritative Fleet/Diplomacy blockade producer. The completed `_OPEN_FLEET_DIPLOMACY_BLOCKADES_2026-08-29.md` marker is removed in the closing documentation commit; no next marker is created until the next slice actually begins.
+
+No gameplay defect was found by the final QA. The next queued objective is the missing original Treasury income/Maintenance categories and deficit/scrap policy, constrained to categories whose dependencies already exist.

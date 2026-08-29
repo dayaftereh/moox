@@ -6,12 +6,13 @@ MOOX is actively inside the deterministic headless runtime. The authoritative `G
 
 Implemented/established runtime baseline includes:
 
-- deterministic pure-Go Core state, seeded serializable RNG, stable IDs and exact schema-14 JSON round trips;
+- deterministic pure-Go Core state, seeded serializable RNG, stable IDs and exact schema-15 JSON round trips;
 - authoritative Session/Command/Event/Observer architecture with Human/AI-shared legal-action projections;
 - domain-native `float64` cohort Population quantities, Food, PP, RP, BC and Construction progress (`ADR-0003`);
 - base/contextual Colony Economy with Gravity, starting-government and local Morale layers;
 - race-aware organic Population cohorts with heterogeneous capacity, Food/Cybernetic sustenance, per-origin starvation and the classic capacity-limited turn-end Growth curve;
 - Empire-wide Food/Freighter balancing with exact four-pass mixed-cohort priority, verified constrained round-robin allocation and system-blockade exclusion;
+- minimal strategic Fleet location/role plus directed Empire relations, with deterministic Colony-presence/hostile-combat-Fleet blockade production before Settler arrival/final Food;
 - semantic Population relocation / Settlers sharing the same Freighter pool, including same-system movement, interstellar reservation, ETA and resolution;
 - generic single-project Construction with technology-gated Buildings and Freighter Fleet production;
 - modeled Treasury settlement before Research;
@@ -20,7 +21,7 @@ Implemented/established runtime baseline includes:
 
 Major engine systems still missing include active conquest/assimilation and Android/Native/custom-race Population extensions, complete Economy categories/pollution, strategic fleet movement/colonization, ship design/combat rules, diplomacy, AI behavior and playable UI.
 
-The immediate implementation focus is the canonical strategic Fleet/Diplomacy foundation needed for blockade production. `docs/research/ACTIVE_RESEARCH.md` is the authoritative next-slice handoff, while `docs/slices/HISTORY.md` records closed slices so completed work is not accidentally re-queued.
+The immediate implementation focus is the missing original Treasury income/Maintenance categories and deficit/scrap policy whose dependencies are already authoritative. `docs/research/ACTIVE_RESEARCH.md` is the authoritative next-slice handoff, while `docs/slices/HISTORY.md` records closed slices so completed work is not accidentally re-queued.
 ## Guiding architecture
 
 Build the game rules as a deterministic, headless simulation core first. UI, rendering, audio and platform integration should depend on that core rather than contain game rules themselves.
@@ -243,9 +244,9 @@ A private developer-only original-asset viewer may exist for comparison, but ori
 
 ## Recommended immediate next work
 
-1. Establish the minimum canonical strategic Fleet/Diplomacy state required to derive system blockades and feed the existing authoritative Food-logistics consumer without temporary source state.
-2. Complete missing Treasury income/Maintenance categories and the original deficit/scrap policy only as their dependent systems become authoritative.
-3. Continue the first headless vertical game loop toward colony-ship production, strategic movement/colonization and a second colony.
+1. Complete missing Treasury income/Maintenance categories and the original deficit/scrap policy only as their dependent systems become authoritative.
+2. Continue the first headless vertical game loop toward colony-ship production, strategic movement/colonization and a second colony.
+3. Extend strategic Fleet movement/location beyond the current at-system blockade presence when the movement/colonization slice begins.
 4. Keep active conquest/assimilation plus Android/Native/custom-race Population extensions as later evidence-driven Population slices rather than reopening the completed organic-cohort core.
 5. Keep the original Hyper selection-screen +1 preview / 20-level list boundary as optional UI-fidelity work, not a strategic-core rule.
 

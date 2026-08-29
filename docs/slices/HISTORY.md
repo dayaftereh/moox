@@ -24,6 +24,7 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 | Population growth building / medicine modifiers | Housing continuous Production mode, Microbiotics +25pp, Universal Antidote +50pp and flat Cloning Center +0.1 Population/turn implemented; Core schema advanced to 12 | `e7f0d72` | `docs/research/POPULATION_GROWTH_MODIFIERS_2026-08-29.md` |
 | Population capacity transitions | Advanced City Planning +5, Biospheres +2, semantic Terraforming/Gaia climate transformations and immediate capacity-clamp invariant implemented; Core schema advanced to 13 | `25d05a9` | `docs/research/POPULATION_CAPACITY_TRANSITIONS_2026-08-29.md` |
 | Race-aware Population cohorts | Core schema 14 organic cohorts, source-race Economy, exact four-pass Food priority, per-origin Growth/Starvation, heterogeneous capacity and cohort-aware Population transfer implemented | `7c49e90` | `docs/research/POPULATION_COHORTS_2026-08-29.md` |
+| Strategic Fleet/Diplomacy blockade production | Core schema 15 minimal strategic Fleets/directed relations and deterministic Colony-presence + hostile-combat-Fleet system blockade production implemented | `d148502` | `docs/research/FLEET_DIPLOMACY_BLOCKADES_2026-08-29.md` |
 
 ## Meta workflow
 
@@ -35,6 +36,6 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 
 - `docs/slices/` contains **no** `_OPEN_*.md` marker.
 - The completed rows above have committed runtime/tests and/or explicit closing documentation in Git history.
-- The next queued gameplay slice is race-aware Population cohorts for conquered/mixed-race Colonies and the later original Food-priority passes; it is intentionally **not** marked open until work on that slice actually begins.
+- The next queued gameplay slice is the missing original Treasury income/Maintenance categories and deficit/scrap policy; it is intentionally **not** marked open until work on that slice actually begins.
 - Live current status is authoritative in `README.md`, `docs/PROJECT_STATUS.md`, `docs/architecture/README.md`, and `docs/research/ACTIVE_RESEARCH.md`.
 - Historical research documents are evidence checkpoints and are not rewritten merely because a later slice resolved one of their then-deferred items.

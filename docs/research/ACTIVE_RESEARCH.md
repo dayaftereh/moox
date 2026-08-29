@@ -5,12 +5,12 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: `docs/slices/_OPEN_FLEET_DIPLOMACY_BLOCKADES_2026-08-29.md`.
-- Active slice: **Canonical strategic Fleet/Diplomacy blockade production**.
-- Latest completed gameplay slice: Race-aware Population cohorts (`7c49e90`).
+- Open slice marker: **none**.
+- Active slice: **none**; the Canonical strategic Fleet/Diplomacy blockade-production slice is complete.
+- Latest completed gameplay slice: Canonical strategic Fleet/Diplomacy blockade production (`d148502`).
 - Core `StateSchemaVersion`: **15**.
 - Economy ruleset schema: **7**.
-- Current slice evidence: `docs/research/FLEET_DIPLOMACY_BLOCKADES_2026-08-29.md`.
+- Latest permanent evidence: `docs/research/FLEET_DIPLOMACY_BLOCKADES_2026-08-29.md`.
 - Previous closed-slice evidence: `docs/research/POPULATION_COHORTS_2026-08-29.md`.
 - Before starting new work, check `docs/slices/_OPEN_*.md`; resume any marker before opening another slice.
 
@@ -28,48 +28,39 @@ The current Research/Economy chain is implemented and recorded in `docs/slices/H
 - Terraforming and Gaia Transformation as one-shot planetary climate projects with original legality/mappings and deterministic Barren middle-orbit RNG;
 - Core schema 14 organic Population cohorts with origin/loyalty/assimilation identity;
 - race-aware mixed-colony Economy, exact four-pass Food priority, per-origin Growth/Starvation and heterogeneous capacity;
-- cohort-aware Population transfer preserved through GameSession, Observer and replay.
+- cohort-aware Population transfer preserved through GameSession, Observer and replay;
+- Core schema 15 strategic Fleet ownership/location plus directed Empire relations;
+- deterministic system-blockade production from Colony presence + stationary combat Fleets + directed hostility, materialized before Settler arrival/final Food.
 
-## Current objective
+## Next queued objective
 
-### Canonical strategic Fleet/Diplomacy state for blockade production
+### Missing original Treasury income/Maintenance categories and deficit/scrap policy
 
-Current gate: **Gate 4 - QA + commit + close pending**. Gates 1-3 are complete. Gate 2 was accepted on 2026-08-29 without scope changes; Gate 3 implemented Core schema 15 strategic Fleet/directed relation state plus deterministic blockade production and original-order integration before Population-transfer arrivals/final Food. `docs/research/FLEET_DIPLOMACY_BLOCKADES_2026-08-29.md` is the permanent evidence and implementation record.
+Do **not** create an `_OPEN_*.md` marker until work on this next slice actually begins. When it begins, use the four-gate protocol in `docs/slices/README.md`.
 
-Gate 1 now establishes:
+The current Treasury runtime already has the directly verified 50 BC New Game balance and strategic settlement of the currently modeled Tax + surplus-Food income against Building + active-Freighter Maintenance. The next queued slice should extend that model only with original categories and deficit behavior that can be evidenced without inventing dependencies that do not yet exist.
 
-- target system presence is derived from **Colony ownership**, not defending Fleet presence;
-- only stationary (`fleet +0x64 == 0`) ordinary/combat (`fleet +0x11 == 0`) strategic Fleets participate in normal blockade production;
-- Fleet owner and system are the direct identities used by the original producer;
-- normal blockade hostility is a **directed fleet-owner -> target-owner** relationship predicate, with original relation values `4..6` accepted;
-- several hostile Fleet owners combine idempotently into the target blockade mask;
-- the original also materializes per-target blockader masks, but current MOOX consumers require only the already-persisted `StarSystem.BlockadedEmpireIDs`;
-- original timing is first Colony/Food pass -> `Compute_Blockades_` -> Settler movement -> final Colony/Food pass, mapping cleanly to a MOOX recomputation immediately before `advancePopulationTransfers`;
-- special/non-player fleet owners, full movement-state enums, full diplomacy state names and tactical fleet composition remain deliberately deferred.
+Gate 1 should establish from original MOO2 1.31 executable/data/save evidence where possible:
 
-### Proposed Gate 2 shape
-
-Advance Core schema **14 -> 15** with minimal semantic strategic state:
-
-- `StrategicFleet { ID, EmpireID, Role, AtSystemID }`, where only `role=Combat` and a non-zero `AtSystemID` can blockade;
-- directed `DiplomaticRelation { FromEmpireID, ToEmpireID, Stance }`, initially semantic `neutral|hostile` rather than guessed names for legacy relation values;
-- no duplicate System-presence state: Colony owners are derived from existing Planet/Colony state;
-- pure deterministic `recomputeSystemBlockades` clears/rebuilds sorted/unique `StarSystem.BlockadedEmpireIDs` from Fleet + relation + Colony state;
-- run that phase after Construction and before Population-transfer resolution/final Food recalculation;
-- no new player command and no tactical/broad-diplomacy scope.
+1. which additional income and Maintenance categories are part of the strategic Treasury settlement path;
+2. which categories can be represented with systems MOOX already owns and which must remain deferred until dependent systems exist;
+3. the exact order and rounding boundaries of Treasury aggregation relative to the already-implemented settlement timing;
+4. what happens when available BC cannot satisfy required Maintenance, including the original deficit/scrap selection policy and any protected/excluded assets;
+5. the minimum Core/Game/Session state and deterministic tests needed to add those categories without duplicating future Fleet/Ship/Leader state.
 
 ### Scope guard
 
-Keep this slice focused on canonical strategic Fleet/Diplomacy state **only as far as required to produce blockade state**. Do not absorb tactical combat, ship-design fidelity, fleet strength, full movement/ETA, diplomacy negotiations/treaties, special/non-player fleets, AI strategy or UI work.
+Keep the next slice focused on Treasury categories and deficit/scrap behavior whose dependencies are already authoritative. Do not fabricate Ship/Leader/Spy/Fleet Maintenance records or broad economic systems solely to fill missing Treasury lines; evidence-dependent categories may stay deferred.
 
-## Planned queue after blockade production
+## Planned queue after Treasury completion
 
-1. Missing original Treasury income/Maintenance categories and deficit/scrap policy once their dependent systems exist.
-2. Continue the first headless vertical game loop toward colony-ship production, strategic movement/colonization and a second colony.
+1. Continue the first headless vertical game loop toward colony-ship production, strategic movement/colonization and a second colony.
+2. Extend strategic Fleet movement/location beyond the current at-system blockade presence when the movement/colonization slice begins.
 
 ## Explicitly parked / UI-only fidelity
 
-- Active conquest/occupation/automatic-assimilation progression, Android/Native population and persisted custom race designs remain later Population extensions; the cohort slice intentionally did not absorb them.
+- Full Fleet movement/path/ETA, special/non-player Fleet owners, tactical Fleet composition and broad diplomacy/treaty negotiation remain later strategic slices; the blockade slice intentionally implemented only the minimum producer state.
+- Active conquest/occupation/automatic-assimilation progression, Android/Native population and persisted custom race designs remain later Population extensions.
 - The original Hyper-Advanced research-selection screen temporarily previews counters at `completed + 1` and has a 20-level list boundary. MOOX deliberately keeps authoritative strategic cost/progression separate from that original UI quirk.
 - Original copyrighted assets remain private reference material and are not distributable MOOX content.
 - Wails/network/MCP layers remain adapters and must not own gameplay legality or deterministic state transitions.
