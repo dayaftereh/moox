@@ -22,6 +22,7 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 | System blockade -> Food logistics | Authoritative blockaded-Empire system state excludes Colonies from Food import/export/sale pools | `0c699a8` | `docs/research/BLOCKADE_FOOD_LOGISTICS_2026-08-28.md` |
 | Population relocation / shared Freighters | Same-system immediate moves and interstellar Settler reservations/ETA/arrival/loss handling implemented; Core schema advanced to 11 | `f816eaf` | `docs/research/POPULATION_TRANSPORT_FREIGHTER_2026-08-29.md` |
 | Population growth building / medicine modifiers | Housing continuous Production mode, Microbiotics +25pp, Universal Antidote +50pp and flat Cloning Center +0.1 Population/turn implemented; Core schema advanced to 12 | `e7f0d72` | `docs/research/POPULATION_GROWTH_MODIFIERS_2026-08-29.md` |
+| Population capacity transitions | Advanced City Planning +5, Biospheres +2, semantic Terraforming/Gaia climate transformations and immediate capacity-clamp invariant implemented; Core schema advanced to 13 | `25d05a9` | `docs/research/POPULATION_CAPACITY_TRANSITIONS_2026-08-29.md` |
 
 ## Meta workflow
 
@@ -33,6 +34,6 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 
 - `docs/slices/` contains **no** `_OPEN_*.md` marker.
 - The completed rows above have committed runtime/tests and/or explicit closing documentation in Git history.
-- The next queued gameplay slice is Biospheres / Advanced City Planning / terraforming Population-capacity transitions; it is intentionally **not** marked open until work on that slice actually begins.
+- The next queued gameplay slice is race-aware Population cohorts for conquered/mixed-race Colonies and the later original Food-priority passes; it is intentionally **not** marked open until work on that slice actually begins.
 - Live current status is authoritative in `README.md`, `docs/PROJECT_STATUS.md`, `docs/architecture/README.md`, and `docs/research/ACTIVE_RESEARCH.md`.
 - Historical research documents are evidence checkpoints and are not rewritten merely because a later slice resolved one of their then-deferred items.

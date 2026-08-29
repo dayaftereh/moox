@@ -417,3 +417,11 @@ go vet ./...
 ```
 
 All original-executable temporary disassembly extracts from Gate 1 were removed before implementation. No original binary/object copy is part of the repository changes.
+
+## Slice close
+
+- Implementation commit: `25d05a9` (`game: implement population capacity transitions`).
+- Core schema after implementation: **13**.
+- Economy ruleset schema after implementation: **7**.
+- Gate 4 QA: `git diff --check`, `go test ./...`, and `go vet ./...` all passed.
+- Next queued slice: race-aware Population cohorts for conquered/mixed-race Colonies and the later original Food-priority passes.
