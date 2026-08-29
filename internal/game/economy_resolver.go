@@ -87,6 +87,12 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
 				}
 				events = append(events, event)
+			case CommandQueueHousing:
+				event, err := r.queueHousing(state, empireID, batch.SeatID, command)
+				if err != nil {
+					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
+				}
+				events = append(events, event)
 			case CommandQueueFreighterFleet:
 				event, err := r.queueFreighterFleet(state, empireID, batch.SeatID, command)
 				if err != nil {
@@ -183,7 +189,7 @@ func (r *EconomyResolver) recalculateColony(state *core.GameState, colony *core.
 	if err != nil {
 		return fmt.Errorf("calculate colony %d contextual economy: %w", colony.ID, err)
 	}
-	dynamics, err := r.Rules.CalculatePopulationDynamics(*colony, *planet, empire.RaceID, adjusted)
+	dynamics, err := r.Rules.CalculatePopulationDynamicsForEmpire(*colony, *planet, *empire, adjusted)
 	if err != nil {
 		return fmt.Errorf("calculate colony %d population dynamics: %w", colony.ID, err)
 	}

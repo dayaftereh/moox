@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const EconomySchemaVersion = 5
+const EconomySchemaVersion = 6
 
 type EconomyFile struct {
 	SchemaVersion            int                        `json:"schema_version"`
@@ -55,11 +55,26 @@ type PopulationEconomyRule struct {
 	CyberneticFoodPerPopulation       float64                         `json:"cybernetic_food_per_population"`
 	CyberneticProductionPerPopulation float64                         `json:"cybernetic_production_per_population"`
 	GrowthCurveFactor                 float64                         `json:"growth_curve_factor"`
+	GrowthModifiers                   PopulationGrowthModifierRule    `json:"growth_modifiers"`
 	TolerantHabitabilityBonus         float64                         `json:"tolerant_habitability_bonus"`
 	SubterraneanCapacityPerSizeClass  float64                         `json:"subterranean_capacity_per_size_class"`
 	SizeCapacity                      []PopulationSizeCapacity        `json:"size_capacity"`
 	ClimateHabitability               []PopulationClimateHabitability `json:"climate_habitability"`
 	SourceIDs                         []string                        `json:"source_ids"`
+}
+
+type PopulationGrowthModifierRule struct {
+	HousingPercentPerProductionPerPopulation float64                           `json:"housing_percent_per_production_per_population"`
+	HousingPercentRounding                   string                            `json:"housing_percent_rounding"`
+	CloningCenterBuildingID                  string                            `json:"cloning_center_building_id"`
+	CloningCenterFlatGrowth                  float64                           `json:"cloning_center_flat_growth"`
+	TechnologyBonuses                        []PopulationGrowthTechnologyBonus `json:"technology_bonuses"`
+	SourceIDs                                []string                          `json:"source_ids"`
+}
+
+type PopulationGrowthTechnologyBonus struct {
+	TechnologyKey string  `json:"technology_key"`
+	Bonus         float64 `json:"bonus"`
 }
 
 type FoodLogisticsEconomyRule struct {
@@ -251,6 +266,28 @@ func (f *EconomyFile) validatePopulation(sources map[string]struct{}) error {
 	p := f.Population
 	if p.FoodPerPopulation <= 0 || p.CyberneticFoodPerPopulation < 0 || p.CyberneticProductionPerPopulation < 0 || p.GrowthCurveFactor <= 0 || p.TolerantHabitabilityBonus < 0 || p.SubterraneanCapacityPerSizeClass < 0 {
 		return fmt.Errorf("population economy scalar values are invalid")
+	}
+	growth := p.GrowthModifiers
+	if growth.HousingPercentPerProductionPerPopulation <= 0 || growth.HousingPercentRounding != "down" || growth.CloningCenterBuildingID == "" || growth.CloningCenterFlatGrowth <= 0 {
+		return fmt.Errorf("population growth modifier scalars are invalid")
+	}
+	if len(growth.TechnologyBonuses) == 0 || len(growth.SourceIDs) == 0 {
+		return fmt.Errorf("population growth modifiers require technology bonuses and sources")
+	}
+	seenGrowthTechnologies := make(map[string]struct{}, len(growth.TechnologyBonuses))
+	for i, bonus := range growth.TechnologyBonuses {
+		if bonus.TechnologyKey == "" || bonus.Bonus <= 0 {
+			return fmt.Errorf("population growth technology_bonuses[%d] is invalid", i)
+		}
+		if _, exists := seenGrowthTechnologies[bonus.TechnologyKey]; exists {
+			return fmt.Errorf("duplicate population growth technology %q", bonus.TechnologyKey)
+		}
+		seenGrowthTechnologies[bonus.TechnologyKey] = struct{}{}
+	}
+	for _, sourceID := range growth.SourceIDs {
+		if _, ok := sources[sourceID]; !ok {
+			return fmt.Errorf("population growth modifiers reference unknown source %q", sourceID)
+		}
 	}
 	if len(p.SizeCapacity) != 5 || len(p.ClimateHabitability) != 10 {
 		return fmt.Errorf("population size/climate rule counts=%d/%d, expected 5/10", len(p.SizeCapacity), len(p.ClimateHabitability))

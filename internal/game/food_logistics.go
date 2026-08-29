@@ -23,26 +23,49 @@ type FoodLogisticsResolvedEvent struct {
 	Colonies []ColonyFoodLogistics    `json:"colonies"`
 }
 
-func (r *EconomyRules) refreshPopulationProjection(dynamics *core.ColonyPopulationDynamics, population float64, raceID string) error {
+func (r *EconomyRules) refreshPopulationProjection(dynamics *core.ColonyPopulationDynamics, colony core.Colony, empire core.Empire) error {
 	if dynamics == nil {
 		return fmt.Errorf("population dynamics must not be nil")
 	}
-	modifiers, ok := r.RaceModifiers[raceID]
+	population := colony.Population.Total
+	modifiers, ok := r.RaceModifiers[empire.RaceID]
 	if !ok {
-		return fmt.Errorf("unknown race %q", raceID)
+		return fmt.Errorf("unknown race %q", empire.RaceID)
 	}
 	baseGrowth := 0.0
 	if population > 0 && population < dynamics.Capacity {
 		baseGrowth = math.Sqrt(r.PopulationGrowthCurveFactor * population * (dynamics.Capacity - population) / dynamics.Capacity)
 	}
-	naturalGrowth := baseGrowth * modifiers.PopulationGrowthMultiplier
+	growthMultiplier := modifiers.PopulationGrowthMultiplier
+	for _, technologyID := range empire.KnownTechnologyIDs {
+		if bonus, ok := r.PopulationGrowthTechnologyBonusByID[technologyID]; ok {
+			growthMultiplier += bonus
+		}
+	}
+	if colony.Construction != nil && colony.Construction.ProjectKind == core.ConstructionProjectHousing {
+		if colony.Construction.ProjectID != HousingProjectID {
+			return fmt.Errorf("colony %d has invalid Housing project id %q", colony.ID, colony.Construction.ProjectID)
+		}
+		if population > populationEpsilon && population < dynamics.Capacity && dynamics.ProductionAvailable > 0 {
+			housingPercent := r.HousingGrowthPercentPerPPPerPopulation * dynamics.ProductionAvailable / population
+			if r.HousingGrowthPercentRounding == "down" {
+				housingPercent = math.Floor(housingPercent + populationEpsilon)
+			}
+			growthMultiplier += housingPercent / 100
+		}
+	}
+	flatGrowth := 0.0
+	if population > 0 && population < dynamics.Capacity && colonyHasBuilding(colony, r.CloningCenterBuildingID) {
+		flatGrowth = r.CloningCenterFlatGrowth
+	}
+	naturalGrowth := baseGrowth * growthMultiplier
 	starvationPenalty := dynamics.FoodShortage * r.StarvationPopulationPerFoodShortage
 	if modifiers.Cybernetic {
 		starvationPenalty = dynamics.FoodShortage*r.CyberneticStarvationPopulationPerFoodShortage + dynamics.ProductionShortage*r.CyberneticStarvationPopulationPerPPShortage
 	}
-	net := naturalGrowth - starvationPenalty
+	net := naturalGrowth + flatGrowth - starvationPenalty
 	dynamics.BaseGrowth = baseGrowth
-	dynamics.GrowthMultiplier = modifiers.PopulationGrowthMultiplier
+	dynamics.GrowthMultiplier = growthMultiplier
 	dynamics.ProjectedGrowth = 0
 	dynamics.ProjectedStarvation = 0
 	if net > populationEpsilon {
@@ -52,6 +75,15 @@ func (r *EconomyRules) refreshPopulationProjection(dynamics *core.ColonyPopulati
 		dynamics.ProjectedStarvation = math.Min(maxLoss, -net)
 	}
 	return nil
+}
+
+func colonyHasBuilding(colony core.Colony, buildingID string) bool {
+	for _, owned := range colony.Buildings {
+		if owned == buildingID {
+			return true
+		}
+	}
+	return false
 }
 
 func (r *EconomyResolver) materializeFoodLogistics(state *core.GameState, emit bool) ([]DomainEvent, error) {
@@ -145,7 +177,7 @@ func (r *EconomyResolver) materializeFoodLogistics(state *core.GameState, emit b
 			d := &colony.PopulationDynamics
 			d.FoodSurplus = math.Max(0, d.LocalFoodSurplus-d.FoodExported)
 			d.FoodShortage = math.Max(0, d.LocalFoodShortage-d.FoodImported)
-			if err := r.Rules.refreshPopulationProjection(d, colony.Population.Total, empire.RaceID); err != nil {
+			if err := r.Rules.refreshPopulationProjection(d, *colony, *empire); err != nil {
 				return nil, fmt.Errorf("colony %d population projection: %w", colony.ID, err)
 			}
 			if !blockadedByColonyID[colony.ID] {

@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"math"
 
 	"moox/internal/core"
 	"moox/internal/protocol"
@@ -25,6 +26,15 @@ type ConstructionProgressedEvent struct {
 type BuildingCompletedEvent struct {
 	ColonyID   core.ID `json:"colony_id"`
 	BuildingID string  `json:"building_id"`
+}
+
+type HousingQueuedEvent struct {
+	ColonyID core.ID `json:"colony_id"`
+}
+
+type HousingStoppedEvent struct {
+	ColonyID core.ID `json:"colony_id"`
+	Reason   string  `json:"reason"`
 }
 
 func (r *EconomyResolver) queueBuilding(state *core.GameState, empireID core.ID, seatID protocol.SeatID, command protocol.Command) (DomainEvent, error) {
@@ -66,6 +76,40 @@ func (r *EconomyResolver) queueBuilding(state *core.GameState, empireID core.ID,
 	})
 }
 
+func (r *EconomyResolver) queueHousing(state *core.GameState, empireID core.ID, seatID protocol.SeatID, command protocol.Command) (DomainEvent, error) {
+	payload, err := decodeQueueHousing(command)
+	if err != nil {
+		return DomainEvent{}, err
+	}
+	colony := colonyByID(state, payload.ColonyID)
+	if colony == nil {
+		return DomainEvent{}, fmt.Errorf("references unknown colony %d", payload.ColonyID)
+	}
+	if colony.EmpireID != empireID {
+		return DomainEvent{}, fmt.Errorf("seat %d cannot queue Housing on colony %d owned by empire %d", seatID, colony.ID, colony.EmpireID)
+	}
+	if colony.Construction != nil {
+		return DomainEvent{}, fmt.Errorf("colony %d already constructs %s %q", colony.ID, colony.Construction.ProjectKind, colony.Construction.ProjectID)
+	}
+	empire := empireByID(state, empireID)
+	if empire == nil {
+		return DomainEvent{}, fmt.Errorf("seat %d references unknown empire %d", seatID, empireID)
+	}
+	planet := planetByID(state, colony.PlanetID)
+	if planet == nil {
+		return DomainEvent{}, fmt.Errorf("colony %d references unknown planet %d", colony.ID, colony.PlanetID)
+	}
+	capacity, err := r.Rules.PopulationCapacity(*planet, empire.RaceID)
+	if err != nil {
+		return DomainEvent{}, err
+	}
+	if colony.Population.Total >= capacity-populationEpsilon {
+		return DomainEvent{}, fmt.Errorf("colony %d is already at population capacity %g", colony.ID, capacity)
+	}
+	colony.Construction = &core.ConstructionState{ProjectKind: core.ConstructionProjectHousing, ProjectID: HousingProjectID}
+	return NewDomainEvent("colony.housing_queued", seatID, command.Sequence, HousingQueuedEvent{ColonyID: colony.ID})
+}
+
 func (r *EconomyResolver) advanceConstruction(state *core.GameState) ([]DomainEvent, error) {
 	var events []DomainEvent
 	for i := range state.Colonies {
@@ -75,6 +119,20 @@ func (r *EconomyResolver) advanceConstruction(state *core.GameState) ([]DomainEv
 		}
 		projectKind := colony.Construction.ProjectKind
 		projectID := colony.Construction.ProjectID
+		if projectKind == core.ConstructionProjectHousing {
+			if projectID != HousingProjectID || math.Abs(colony.Construction.ProgressPP) > populationEpsilon {
+				return nil, fmt.Errorf("colony %d has invalid Housing construction state", colony.ID)
+			}
+			if colony.PopulationDynamics.Capacity > 0 && colony.Population.Total >= colony.PopulationDynamics.Capacity-populationEpsilon {
+				colony.Construction = nil
+				stopped, err := NewDomainEvent("colony.housing_stopped", 0, 0, HousingStoppedEvent{ColonyID: colony.ID, Reason: "population_capacity"})
+				if err != nil {
+					return nil, err
+				}
+				events = append(events, stopped)
+			}
+			continue
+		}
 		costPP, err := r.constructionProjectCostPP(colony.Construction)
 		if err != nil {
 			return nil, fmt.Errorf("colony %d: %w", colony.ID, err)

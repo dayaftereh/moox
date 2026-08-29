@@ -9,6 +9,7 @@ import (
 
 const FreighterFleetTechnologyID = 69
 const FreighterFleetProjectID = "freighter_fleet"
+const HousingProjectID = "housing"
 
 type ConstructionChoice struct {
 	ProjectKind      core.ConstructionProjectKind `json:"project_kind"`
@@ -36,7 +37,7 @@ func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empir
 	if empire == nil {
 		return nil, fmt.Errorf("unknown empire %d", empireID)
 	}
-	choices := make([]ConstructionChoice, 0, len(buildingChoices)+1)
+	choices := make([]ConstructionChoice, 0, len(buildingChoices)+2)
 	for _, choice := range buildingChoices {
 		choices = append(choices, ConstructionChoice{
 			ProjectKind:      core.ConstructionProjectBuilding,
@@ -45,6 +46,20 @@ func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empir
 			TechnologyID:     choice.TechnologyID,
 			ProductionID:     choice.ProductionID,
 			MaintenanceBC:    choice.MaintenanceBC,
+		})
+	}
+	planet := planetByID(state, colony.PlanetID)
+	if planet == nil {
+		return nil, fmt.Errorf("colony %d references unknown planet %d", colony.ID, colony.PlanetID)
+	}
+	capacity, err := r.PopulationCapacity(*planet, empire.RaceID)
+	if err != nil {
+		return nil, fmt.Errorf("colony %d population capacity: %w", colony.ID, err)
+	}
+	if colony.Population.Total < capacity-populationEpsilon {
+		choices = append(choices, ConstructionChoice{
+			ProjectKind: core.ConstructionProjectHousing,
+			ProjectID:   HousingProjectID,
 		})
 	}
 	if empireKnowsTechnology(empire, FreighterFleetTechnologyID) {

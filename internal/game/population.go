@@ -54,6 +54,15 @@ func (r *EconomyRules) PopulationCapacity(planet core.Planet, raceID string) (fl
 }
 
 func (r *EconomyRules) CalculatePopulationDynamics(colony core.Colony, planet core.Planet, raceID string, adjusted core.ColonyEconomy) (core.ColonyPopulationDynamics, error) {
+	return r.calculatePopulationDynamics(colony, planet, core.Empire{RaceID: raceID}, adjusted)
+}
+
+func (r *EconomyRules) CalculatePopulationDynamicsForEmpire(colony core.Colony, planet core.Planet, empire core.Empire, adjusted core.ColonyEconomy) (core.ColonyPopulationDynamics, error) {
+	return r.calculatePopulationDynamics(colony, planet, empire, adjusted)
+}
+
+func (r *EconomyRules) calculatePopulationDynamics(colony core.Colony, planet core.Planet, empire core.Empire, adjusted core.ColonyEconomy) (core.ColonyPopulationDynamics, error) {
+	raceID := empire.RaceID
 	capacity, err := r.PopulationCapacity(planet, raceID)
 	if err != nil {
 		return core.ColonyPopulationDynamics{}, err
@@ -84,7 +93,7 @@ func (r *EconomyRules) CalculatePopulationDynamics(colony core.Colony, planet co
 		ProductionShortage:  math.Max(0, -productionDelta),
 		ProductionAvailable: math.Max(0, productionDelta),
 	}
-	if err := r.refreshPopulationProjection(&dynamics, population, raceID); err != nil {
+	if err := r.refreshPopulationProjection(&dynamics, colony, empire); err != nil {
 		return core.ColonyPopulationDynamics{}, err
 	}
 	return dynamics, nil

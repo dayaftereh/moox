@@ -57,6 +57,11 @@ type EconomyRules struct {
 	CyberneticFoodPerUnit                         float64
 	CyberneticProductionPerUnit                   float64
 	PopulationGrowthCurveFactor                   float64
+	HousingGrowthPercentPerPPPerPopulation        float64
+	HousingGrowthPercentRounding                  string
+	CloningCenterBuildingID                       string
+	CloningCenterFlatGrowth                       float64
+	PopulationGrowthTechnologyBonusByID           map[int]float64
 	TolerantHabitabilityBonus                     float64
 	SubterraneanCapacityPerClass                  float64
 	PopulationSizeCapacity                        map[string]float64
@@ -197,12 +202,14 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	technologyIDsByField := make(map[int][]int)
 	technologyFieldByID := make(map[int]int, len(technologies.Technologies))
 	technologyKeyByID := make(map[int]string, len(technologies.Technologies))
+	technologyIDByKey := make(map[string]int, len(technologies.Technologies))
 	technologyNameKeyByID := make(map[int]string, len(technologies.Technologies))
 	technologyStrategicAvailable := make(map[int]bool, len(technologies.Technologies))
 	technologyAIClassByID := make(map[int]int, len(technologies.Technologies))
 	for _, technology := range technologies.Technologies {
 		technologyFieldByID[technology.TechnologyID] = technology.TechFieldID
 		technologyKeyByID[technology.TechnologyID] = technology.ID
+		technologyIDByKey[technology.ID] = technology.TechnologyID
 		technologyNameKeyByID[technology.TechnologyID] = technology.NameKey
 		technologyStrategicAvailable[technology.TechnologyID] = technology.StrategicCombatAvailable
 		technologyAIClassByID[technology.TechnologyID] = technology.AIClass
@@ -218,6 +225,18 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	for _, building := range buildings.Buildings {
 		buildingIDs[building.ID] = struct{}{}
 		buildingDefinitions[building.ID] = BuildingDefinition{BuildingID: building.ID, ProductionID: building.ProductionID, TechnologyID: building.TechnologyID, ProductionCostPP: float64(building.ProductionCostPP), MaintenanceBC: building.MaintenanceBC}
+	}
+	growthRules := economy.Population.GrowthModifiers
+	if _, ok := buildingIDs[growthRules.CloningCenterBuildingID]; !ok {
+		return nil, fmt.Errorf("population growth rule references unknown Cloning Center building %q", growthRules.CloningCenterBuildingID)
+	}
+	populationGrowthTechnologyBonusByID := make(map[int]float64, len(growthRules.TechnologyBonuses))
+	for _, bonus := range growthRules.TechnologyBonuses {
+		technologyID, ok := technologyIDByKey[bonus.TechnologyKey]
+		if !ok {
+			return nil, fmt.Errorf("population growth rule references unknown technology %q", bonus.TechnologyKey)
+		}
+		populationGrowthTechnologyBonusByID[technologyID] = bonus.Bonus
 	}
 	moraleBarracksGovernments := make(map[string]struct{}, len(economy.Morale.BarracksGovernmentTraitIDs))
 	for _, traitID := range economy.Morale.BarracksGovernmentTraitIDs {
@@ -283,6 +302,11 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		CyberneticFoodPerUnit:                         economy.Population.CyberneticFoodPerPopulation,
 		CyberneticProductionPerUnit:                   economy.Population.CyberneticProductionPerPopulation,
 		PopulationGrowthCurveFactor:                   economy.Population.GrowthCurveFactor,
+		HousingGrowthPercentPerPPPerPopulation:        growthRules.HousingPercentPerProductionPerPopulation,
+		HousingGrowthPercentRounding:                  growthRules.HousingPercentRounding,
+		CloningCenterBuildingID:                       growthRules.CloningCenterBuildingID,
+		CloningCenterFlatGrowth:                       growthRules.CloningCenterFlatGrowth,
+		PopulationGrowthTechnologyBonusByID:           populationGrowthTechnologyBonusByID,
 		TolerantHabitabilityBonus:                     economy.Population.TolerantHabitabilityBonus,
 		SubterraneanCapacityPerClass:                  economy.Population.SubterraneanCapacityPerSizeClass,
 		PopulationSizeCapacity:                        populationSizeCapacity,

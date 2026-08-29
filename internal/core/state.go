@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 11
+const StateSchemaVersion = 12
 
 type ID uint64
 
@@ -131,6 +131,7 @@ type ConstructionProjectKind string
 const (
 	ConstructionProjectBuilding       ConstructionProjectKind = "building"
 	ConstructionProjectFreighterFleet ConstructionProjectKind = "freighter_fleet"
+	ConstructionProjectHousing        ConstructionProjectKind = "housing"
 )
 
 type ConstructionState struct {
@@ -453,7 +454,7 @@ func (s *GameState) Validate() error {
 			return fmt.Errorf("colony[%d] has incomplete references", i)
 		}
 		if colony.Construction != nil {
-			if colony.Construction.ProjectKind != ConstructionProjectBuilding && colony.Construction.ProjectKind != ConstructionProjectFreighterFleet {
+			if colony.Construction.ProjectKind != ConstructionProjectBuilding && colony.Construction.ProjectKind != ConstructionProjectFreighterFleet && colony.Construction.ProjectKind != ConstructionProjectHousing {
 				return fmt.Errorf("colony[%d] construction project_kind %q is invalid", i, colony.Construction.ProjectKind)
 			}
 			if colony.Construction.ProjectID == "" {
@@ -461,6 +462,14 @@ func (s *GameState) Validate() error {
 			}
 			if !finiteNonNegative(colony.Construction.ProgressPP) {
 				return fmt.Errorf("colony[%d] construction progress_pp must be finite and non-negative", i)
+			}
+			if colony.Construction.ProjectKind == ConstructionProjectHousing {
+				if colony.Construction.ProjectID != "housing" {
+					return fmt.Errorf("colony[%d] housing construction project_id must be %q", i, "housing")
+				}
+				if !nearlyEqual(colony.Construction.ProgressPP, 0) {
+					return fmt.Errorf("colony[%d] housing construction must not accumulate progress_pp", i)
+				}
 			}
 		}
 		population := colony.Population

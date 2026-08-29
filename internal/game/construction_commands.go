@@ -12,6 +12,7 @@ import (
 
 const CommandQueueBuilding = "colony.queue_building"
 const CommandQueueFreighterFleet = "colony.queue_freighter_fleet"
+const CommandQueueHousing = "colony.queue_housing"
 
 type QueueBuildingPayload struct {
 	ColonyID   core.ID `json:"colony_id"`
@@ -52,6 +53,36 @@ func validateQueueBuildingPayload(payload QueueBuildingPayload) error {
 		return fmt.Errorf("building_id must not be empty")
 	}
 	return nil
+}
+
+type QueueHousingPayload struct {
+	ColonyID core.ID `json:"colony_id"`
+}
+
+func NewQueueHousingCommand(sequence uint32, payload QueueHousingPayload) (protocol.Command, error) {
+	if payload.ColonyID == 0 {
+		return protocol.Command{}, fmt.Errorf("colony_id must be non-zero")
+	}
+	return protocol.NewCommand(sequence, CommandQueueHousing, payload)
+}
+
+func decodeQueueHousing(command protocol.Command) (QueueHousingPayload, error) {
+	var payload QueueHousingPayload
+	decoder := json.NewDecoder(bytes.NewReader(command.Payload))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&payload); err != nil {
+		return QueueHousingPayload{}, fmt.Errorf("decode %s: %w", CommandQueueHousing, err)
+	}
+	if err := decoder.Decode(&struct{}{}); err != io.EOF {
+		if err == nil {
+			return QueueHousingPayload{}, fmt.Errorf("decode %s: trailing JSON value", CommandQueueHousing)
+		}
+		return QueueHousingPayload{}, fmt.Errorf("decode %s trailing data: %w", CommandQueueHousing, err)
+	}
+	if payload.ColonyID == 0 {
+		return QueueHousingPayload{}, fmt.Errorf("colony_id must be non-zero")
+	}
+	return payload, nil
 }
 
 type QueueFreighterFleetPayload struct {

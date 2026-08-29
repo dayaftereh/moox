@@ -1,15 +1,18 @@
 # Active research / implementation handoff
 
-This file is the authoritative **live** handoff for the next Master of Orion X implementation slice.
+This file is the authoritative **live** handoff for the current Master of Orion X implementation slice.
 Permanent reverse-engineering evidence and closed results live in `docs/research/`. The completed-slice ledger lives in `docs/slices/HISTORY.md`.
 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: **none**. `docs/slices/_OPEN_*.md` must therefore be empty.
+- Open slice marker: `docs/slices/_OPEN_POPULATION_GROWTH_MODIFIERS_2026-08-29.md`.
+- Active slice: **Population growth building / medicine modifiers**.
+- Current gate: **Gate 4 - QA / commit / close in progress**.
 - Latest completed gameplay slice: Population relocation through the shared Freighter pool (`f816eaf`).
 - Core `StateSchemaVersion`: **11**.
-- Do not start a later slice while an `_OPEN_*.md` marker exists; resume that marker first according to `docs/slices/README.md`.
+- Permanent evidence note: `docs/research/POPULATION_GROWTH_MODIFIERS_2026-08-29.md`.
+- Do not start a later slice while this `_OPEN_*.md` marker exists; resume it first according to `docs/slices/README.md`.
 
 ## Closed sequence - do not rediscover without contradictory evidence
 
@@ -30,13 +33,13 @@ The recent Research/Economy sequence is closed and recorded in `docs/slices/HIST
 
 Historical research documents may still say that a later item was "deferred" at the time that document was written. Treat `README.md`, `docs/PROJECT_STATUS.md`, this file and `docs/slices/HISTORY.md` as the current status surfaces.
 
-## Next slice to start
+## Active objective
 
 ### Population growth building / medicine modifiers
 
-Investigate the original MOO2 1.31 Housing / Cloning Center / medicine Population-growth modifiers before extending the current classic base growth curve.
+Establish original MOO2 1.31 behavior for Housing, Cloning Center and medicine/Technology Population-growth modifiers before extending the current classic base growth curve.
 
-Gate 1 should establish, from executable/data/save evidence where possible:
+Gate 1 must establish, from executable/data/save evidence where possible:
 
 1. the exact original functions/data paths for Housing, Cloning Center and medicine/Technology growth bonuses;
 2. whether each modifier is additive Population/turn, multiplicative, capacity-dependent, Production-dependent or applied in another explicit form;
@@ -44,13 +47,31 @@ Gate 1 should establish, from executable/data/save evidence where possible:
 4. the minimal normalized Building/Technology identities/effects required by the runtime;
 5. the deterministic Core/Game/Session test shape while preserving the verified rule that freshly grown Population cannot contribute RP/PP retroactively in the same turn.
 
-At the moment this slice actually starts, create a recovery marker such as:
+### Scope
 
-```text
-docs/slices/_OPEN_POPULATION_GROWTH_MODIFIERS_2026-08-29.md
-```
+In scope:
 
-Do not implement gameplay before the original-evidence check and implementation shape have been recorded according to the four-gate slice protocol.
+- original growth-calculation executable paths and directly related normalized Building/Technology identities;
+- Housing, Cloning Center and medicine/Technology Population-growth effects;
+- ordering/stacking with the existing classic curve and race-growth multiplier;
+- test and state/API design needed for this slice.
+
+Out of scope for this slice unless direct evidence makes it inseparable:
+
+- Biospheres / Advanced City Planning / terraforming Population-capacity transitions;
+- mixed/conquered Population cohorts;
+- UI fidelity;
+- strategic Fleet/Diplomacy blockade production;
+- unrelated Treasury or Technology effects.
+
+### Next exact action
+
+Close the completed Population-growth modifier slice after final status synchronization: record the implementation commit in `docs/slices/HISTORY.md`, update README/project status to schema 12 and the next queued capacity slice, remove the `_OPEN_*.md` marker, then commit the closing documentation.
+
+### Exploration budget
+
+- Current path: Gate 3 implemented and full QA green; Gate 4 closure in progress.
+- Consecutive inspection actions without materialized finding: 0 / 10.
 
 ## Planned queue after growth modifiers
 

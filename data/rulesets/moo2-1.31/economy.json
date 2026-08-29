@@ -1,5 +1,5 @@
 {
-    "schema_version":  5,
+    "schema_version":  6,
     "ruleset":  "moo2-1.31",
     "sources":  [
                     {
@@ -80,6 +80,13 @@
                         "description":  "MOO2 1.50 parameter documentation identifies classic/default behavior as preventing starvation from eliminating the final population unit.",
                         "url":  "https://www.moo2mod.com/doc/150/parameters.html",
                         "accessed_date":  "2026-08-27"
+                    },
+                    {
+                        "id":  "moo2-1.31-orion2-population-growth-modifiers",
+                        "type":  "original-derived",
+                        "description":  "Direct Orion2.exe 1.31 disassembly of Colony_Pop_Grows_, Apply_Colony_Pop_Growth_, Housing_Is_Useless_ and related calculation paths proves Housing production scaling, Cloning Center flat growth, Microbiotics +25 percentage points and Universal Antidote +50 percentage points.",
+                        "archive":  "Orion2.exe",
+                        "sha256":  "7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5"
                     }
                 ],
     "base_research_per_scientist":  {
@@ -95,6 +102,19 @@
                        "cybernetic_food_per_population":  0.5,
                        "cybernetic_production_per_population":  0.5,
                        "growth_curve_factor":  0.002,
+                       "growth_modifiers":  {
+                                                  "housing_percent_per_production_per_population":  40.0,
+                                                  "housing_percent_rounding":  "down",
+                                                  "cloning_center_building_id":  "cloning_center",
+                                                  "cloning_center_flat_growth":  0.1,
+                                                  "technology_bonuses":  [
+                                                                             { "technology_key":  "microbiotics", "bonus":  0.25 },
+                                                                             { "technology_key":  "universal_antidote", "bonus":  0.50 }
+                                                                         ],
+                                                  "source_ids":  [
+                                                                     "moo2-1.31-orion2-population-growth-modifiers"
+                                                                 ]
+                                              },
                        "tolerant_habitability_bonus":  0.25,
                        "subterranean_capacity_per_size_class":  2.0,
                        "size_capacity":  [
