@@ -13,6 +13,7 @@ import (
 const CommandQueueBuilding = "colony.queue_building"
 const CommandQueueFreighterFleet = "colony.queue_freighter_fleet"
 const CommandQueueHousing = "colony.queue_housing"
+const CommandQueuePlanetaryTransformation = "colony.queue_planetary_transformation"
 
 type QueueBuildingPayload struct {
 	ColonyID   core.ID `json:"colony_id"`
@@ -83,6 +84,47 @@ func decodeQueueHousing(command protocol.Command) (QueueHousingPayload, error) {
 		return QueueHousingPayload{}, fmt.Errorf("colony_id must be non-zero")
 	}
 	return payload, nil
+}
+
+type QueuePlanetaryTransformationPayload struct {
+	ColonyID  core.ID `json:"colony_id"`
+	ProjectID string  `json:"project_id"`
+}
+
+func NewQueuePlanetaryTransformationCommand(sequence uint32, payload QueuePlanetaryTransformationPayload) (protocol.Command, error) {
+	if err := validateQueuePlanetaryTransformationPayload(payload); err != nil {
+		return protocol.Command{}, err
+	}
+	return protocol.NewCommand(sequence, CommandQueuePlanetaryTransformation, payload)
+}
+
+func decodeQueuePlanetaryTransformation(command protocol.Command) (QueuePlanetaryTransformationPayload, error) {
+	var payload QueuePlanetaryTransformationPayload
+	decoder := json.NewDecoder(bytes.NewReader(command.Payload))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&payload); err != nil {
+		return QueuePlanetaryTransformationPayload{}, fmt.Errorf("decode %s: %w", CommandQueuePlanetaryTransformation, err)
+	}
+	if err := decoder.Decode(&struct{}{}); err != io.EOF {
+		if err == nil {
+			return QueuePlanetaryTransformationPayload{}, fmt.Errorf("decode %s: trailing JSON value", CommandQueuePlanetaryTransformation)
+		}
+		return QueuePlanetaryTransformationPayload{}, fmt.Errorf("decode %s trailing data: %w", CommandQueuePlanetaryTransformation, err)
+	}
+	if err := validateQueuePlanetaryTransformationPayload(payload); err != nil {
+		return QueuePlanetaryTransformationPayload{}, err
+	}
+	return payload, nil
+}
+
+func validateQueuePlanetaryTransformationPayload(payload QueuePlanetaryTransformationPayload) error {
+	if payload.ColonyID == 0 {
+		return fmt.Errorf("colony_id must be non-zero")
+	}
+	if payload.ProjectID == "" {
+		return fmt.Errorf("project_id must not be empty")
+	}
+	return nil
 }
 
 type QueueFreighterFleetPayload struct {

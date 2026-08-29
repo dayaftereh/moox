@@ -44,6 +44,26 @@ type BuildingDefinition struct {
 	ProductionCostPP float64
 	MaintenanceBC    int
 }
+
+type BarrenOrbitTransformationRule struct {
+	InnerOrbitMax int
+	MiddleOrbit   int
+	OuterOrbitMin int
+	InnerResult   string
+	OuterResult   string
+	MiddleResults []string
+}
+
+type PlanetaryTransformationDefinition struct {
+	ProjectID             string
+	ProductionID          int
+	TechnologyID          int
+	ProductionCostPP      float64
+	AllowedClimateIDs     map[string]struct{}
+	ResultClimateBySource map[string]string
+	BarrenOrbitRule       *BarrenOrbitTransformationRule
+}
+
 type EconomyRules struct {
 	ClimateFoodPerFarmer                          map[string]float64
 	MineralIndustryPerWorker                      map[string]float64
@@ -62,6 +82,11 @@ type EconomyRules struct {
 	CloningCenterBuildingID                       string
 	CloningCenterFlatGrowth                       float64
 	PopulationGrowthTechnologyBonusByID           map[int]float64
+	AdvancedCityPlanningTechnologyID              int
+	AdvancedCityPlanningCapacityBonus             float64
+	BiospheresBuildingID                          string
+	BiospheresCapacityBonus                       float64
+	PlanetaryTransformations                      map[string]PlanetaryTransformationDefinition
 	TolerantHabitabilityBonus                     float64
 	SubterraneanCapacityPerClass                  float64
 	PopulationSizeCapacity                        map[string]float64
@@ -238,6 +263,50 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		}
 		populationGrowthTechnologyBonusByID[technologyID] = bonus.Bonus
 	}
+	capacityRules := economy.Population.CapacityModifiers
+	advancedCityPlanningTechnologyID, ok := technologyIDByKey[capacityRules.AdvancedCityPlanningTechnologyKey]
+	if !ok {
+		return nil, fmt.Errorf("population capacity rule references unknown technology %q", capacityRules.AdvancedCityPlanningTechnologyKey)
+	}
+	if _, ok := buildingIDs[capacityRules.BiospheresBuildingID]; !ok {
+		return nil, fmt.Errorf("population capacity rule references unknown Biospheres building %q", capacityRules.BiospheresBuildingID)
+	}
+	planetaryTransformations := make(map[string]PlanetaryTransformationDefinition, len(capacityRules.PlanetaryTransformations))
+	for _, transformation := range capacityRules.PlanetaryTransformations {
+		building, ok := buildingDefinitions[transformation.ProjectID]
+		if !ok {
+			return nil, fmt.Errorf("population capacity rule references unknown transformation production identity %q", transformation.ProjectID)
+		}
+		allowed := make(map[string]struct{}, len(transformation.AllowedClimateIDs))
+		for _, climateID := range transformation.AllowedClimateIDs {
+			if _, ok := climateIDs[climateID]; !ok {
+				return nil, fmt.Errorf("planetary transformation %q references unknown allowed climate %q", transformation.ProjectID, climateID)
+			}
+			allowed[climateID] = struct{}{}
+		}
+		results := make(map[string]string, len(transformation.ResultClimateBySource))
+		for sourceClimate, resultClimate := range transformation.ResultClimateBySource {
+			if _, ok := climateIDs[sourceClimate]; !ok {
+				return nil, fmt.Errorf("planetary transformation %q references unknown source climate %q", transformation.ProjectID, sourceClimate)
+			}
+			if _, ok := climateIDs[resultClimate]; !ok {
+				return nil, fmt.Errorf("planetary transformation %q references unknown result climate %q", transformation.ProjectID, resultClimate)
+			}
+			results[sourceClimate] = resultClimate
+		}
+		var barren *BarrenOrbitTransformationRule
+		if rule := transformation.BarrenOrbitRule; rule != nil {
+			for _, climateID := range append([]string{rule.InnerResult, rule.OuterResult}, rule.MiddleResults...) {
+				if _, ok := climateIDs[climateID]; !ok {
+					return nil, fmt.Errorf("planetary transformation %q barren rule references unknown result climate %q", transformation.ProjectID, climateID)
+				}
+			}
+			barren = &BarrenOrbitTransformationRule{InnerOrbitMax: rule.InnerOrbitMax, MiddleOrbit: rule.MiddleOrbit, OuterOrbitMin: rule.OuterOrbitMin, InnerResult: rule.InnerResult, OuterResult: rule.OuterResult, MiddleResults: append([]string(nil), rule.MiddleResults...)}
+		}
+		planetaryTransformations[transformation.ProjectID] = PlanetaryTransformationDefinition{
+			ProjectID: transformation.ProjectID, ProductionID: building.ProductionID, TechnologyID: building.TechnologyID, ProductionCostPP: building.ProductionCostPP, AllowedClimateIDs: allowed, ResultClimateBySource: results, BarrenOrbitRule: barren,
+		}
+	}
 	moraleBarracksGovernments := make(map[string]struct{}, len(economy.Morale.BarracksGovernmentTraitIDs))
 	for _, traitID := range economy.Morale.BarracksGovernmentTraitIDs {
 		moraleBarracksGovernments[traitID] = struct{}{}
@@ -307,6 +376,11 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		CloningCenterBuildingID:                       growthRules.CloningCenterBuildingID,
 		CloningCenterFlatGrowth:                       growthRules.CloningCenterFlatGrowth,
 		PopulationGrowthTechnologyBonusByID:           populationGrowthTechnologyBonusByID,
+		AdvancedCityPlanningTechnologyID:              advancedCityPlanningTechnologyID,
+		AdvancedCityPlanningCapacityBonus:             capacityRules.AdvancedCityPlanningFlatCapacity,
+		BiospheresBuildingID:                          capacityRules.BiospheresBuildingID,
+		BiospheresCapacityBonus:                       capacityRules.BiospheresFlatCapacity,
+		PlanetaryTransformations:                      planetaryTransformations,
 		TolerantHabitabilityBonus:                     economy.Population.TolerantHabitabilityBonus,
 		SubterraneanCapacityPerClass:                  economy.Population.SubterraneanCapacityPerSizeClass,
 		PopulationSizeCapacity:                        populationSizeCapacity,

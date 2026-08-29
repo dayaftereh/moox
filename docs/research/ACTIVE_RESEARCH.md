@@ -5,8 +5,8 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: **none**.
-- Active slice: **none**; the Population growth building / medicine modifier slice is complete.
+- Open slice marker: `docs/slices/_OPEN_POPULATION_CAPACITY_TRANSITIONS_2026-08-29.md`.
+- Active slice: **Population capacity transitions**.
 - Latest completed gameplay slice: Population growth building / medicine modifiers (`e7f0d72`).
 - Core `StateSchemaVersion`: **12**.
 - Economy ruleset schema: **6**.
@@ -30,11 +30,11 @@ The current Research/Economy chain is implemented and recorded in `docs/slices/H
 
 Historical research documents may still describe later items as deferred at the time they were written. Treat `README.md`, `docs/PROJECT_STATUS.md`, this file and `docs/slices/HISTORY.md` as the current status surfaces.
 
-## Next queued objective
+## Current objective
 
 ### Biospheres / Advanced City Planning / terraforming Population-capacity transitions
 
-Do **not** create an `_OPEN_*.md` marker until work on this next slice actually begins. When it begins, use the four-gate protocol in `docs/slices/README.md`.
+Current gate: **Gate 4 - QA / commit / close in progress**. Gate 3 implementation is complete; run full repository QA, commit the implementation, reconcile status/history, remove the open marker and close the slice.
 
 Gate 1 should establish from original MOO2 1.31 executable/data/save evidence where possible:
 

@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 12
+const StateSchemaVersion = 13
 
 type ID uint64
 
@@ -129,9 +129,10 @@ type Colony struct {
 type ConstructionProjectKind string
 
 const (
-	ConstructionProjectBuilding       ConstructionProjectKind = "building"
-	ConstructionProjectFreighterFleet ConstructionProjectKind = "freighter_fleet"
-	ConstructionProjectHousing        ConstructionProjectKind = "housing"
+	ConstructionProjectBuilding                ConstructionProjectKind = "building"
+	ConstructionProjectFreighterFleet          ConstructionProjectKind = "freighter_fleet"
+	ConstructionProjectHousing                 ConstructionProjectKind = "housing"
+	ConstructionProjectPlanetaryTransformation ConstructionProjectKind = "planetary_transformation"
 )
 
 type ConstructionState struct {
@@ -454,7 +455,7 @@ func (s *GameState) Validate() error {
 			return fmt.Errorf("colony[%d] has incomplete references", i)
 		}
 		if colony.Construction != nil {
-			if colony.Construction.ProjectKind != ConstructionProjectBuilding && colony.Construction.ProjectKind != ConstructionProjectFreighterFleet && colony.Construction.ProjectKind != ConstructionProjectHousing {
+			if colony.Construction.ProjectKind != ConstructionProjectBuilding && colony.Construction.ProjectKind != ConstructionProjectFreighterFleet && colony.Construction.ProjectKind != ConstructionProjectHousing && colony.Construction.ProjectKind != ConstructionProjectPlanetaryTransformation {
 				return fmt.Errorf("colony[%d] construction project_kind %q is invalid", i, colony.Construction.ProjectKind)
 			}
 			if colony.Construction.ProjectID == "" {
@@ -469,6 +470,11 @@ func (s *GameState) Validate() error {
 				}
 				if !nearlyEqual(colony.Construction.ProgressPP, 0) {
 					return fmt.Errorf("colony[%d] housing construction must not accumulate progress_pp", i)
+				}
+			}
+			if colony.Construction.ProjectKind == ConstructionProjectPlanetaryTransformation {
+				if colony.Construction.ProjectID != "terraforming" && colony.Construction.ProjectID != "gaia_transformation" {
+					return fmt.Errorf("colony[%d] planetary transformation project_id %q is invalid", i, colony.Construction.ProjectID)
 				}
 			}
 		}

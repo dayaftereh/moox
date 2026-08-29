@@ -37,6 +37,22 @@ type HousingStoppedEvent struct {
 	Reason   string  `json:"reason"`
 }
 
+type PlanetaryTransformationQueuedEvent struct {
+	ColonyID         core.ID `json:"colony_id"`
+	PlanetID         core.ID `json:"planet_id"`
+	ProjectID        string  `json:"project_id"`
+	ProductionCostPP float64 `json:"production_cost_pp"`
+}
+
+type PlanetaryTransformationCompletedEvent struct {
+	ColonyID          core.ID `json:"colony_id"`
+	PlanetID          core.ID `json:"planet_id"`
+	ProjectID         string  `json:"project_id"`
+	PreviousClimateID string  `json:"previous_climate_id"`
+	CurrentClimateID  string  `json:"current_climate_id"`
+	PopulationRemoved float64 `json:"population_removed,omitempty"`
+}
+
 func (r *EconomyResolver) queueBuilding(state *core.GameState, empireID core.ID, seatID protocol.SeatID, command protocol.Command) (DomainEvent, error) {
 	payload, err := decodeQueueBuilding(command)
 	if err != nil {
@@ -56,6 +72,9 @@ func (r *EconomyResolver) queueBuilding(state *core.GameState, empireID core.ID,
 	definition, ok := r.Rules.BuildingDefinitions[payload.BuildingID]
 	if !ok {
 		return DomainEvent{}, fmt.Errorf("unknown building %q", payload.BuildingID)
+	}
+	if _, transformation := r.Rules.PlanetaryTransformations[payload.BuildingID]; transformation {
+		return DomainEvent{}, fmt.Errorf("%q is a planetary transformation, not a persistent building", payload.BuildingID)
 	}
 	if !empireKnowsTechnology(empire, definition.TechnologyID) {
 		return DomainEvent{}, fmt.Errorf("empire %d does not know technology %d required for building %q", empireID, definition.TechnologyID, payload.BuildingID)
@@ -99,7 +118,7 @@ func (r *EconomyResolver) queueHousing(state *core.GameState, empireID core.ID, 
 	if planet == nil {
 		return DomainEvent{}, fmt.Errorf("colony %d references unknown planet %d", colony.ID, colony.PlanetID)
 	}
-	capacity, err := r.Rules.PopulationCapacity(*planet, empire.RaceID)
+	capacity, err := r.Rules.ColonyPopulationCapacity(*colony, *planet, *empire)
 	if err != nil {
 		return DomainEvent{}, err
 	}
@@ -108,6 +127,45 @@ func (r *EconomyResolver) queueHousing(state *core.GameState, empireID core.ID, 
 	}
 	colony.Construction = &core.ConstructionState{ProjectKind: core.ConstructionProjectHousing, ProjectID: HousingProjectID}
 	return NewDomainEvent("colony.housing_queued", seatID, command.Sequence, HousingQueuedEvent{ColonyID: colony.ID})
+}
+
+func (r *EconomyResolver) queuePlanetaryTransformation(state *core.GameState, empireID core.ID, seatID protocol.SeatID, command protocol.Command) (DomainEvent, error) {
+	payload, err := decodeQueuePlanetaryTransformation(command)
+	if err != nil {
+		return DomainEvent{}, err
+	}
+	colony := colonyByID(state, payload.ColonyID)
+	if colony == nil {
+		return DomainEvent{}, fmt.Errorf("references unknown colony %d", payload.ColonyID)
+	}
+	if colony.EmpireID != empireID {
+		return DomainEvent{}, fmt.Errorf("seat %d cannot queue planetary transformation on colony %d owned by empire %d", seatID, colony.ID, colony.EmpireID)
+	}
+	if colony.Construction != nil {
+		return DomainEvent{}, fmt.Errorf("colony %d already constructs %s %q", colony.ID, colony.Construction.ProjectKind, colony.Construction.ProjectID)
+	}
+	empire := empireByID(state, empireID)
+	if empire == nil {
+		return DomainEvent{}, fmt.Errorf("seat %d references unknown empire %d", seatID, empireID)
+	}
+	definition, ok := r.Rules.PlanetaryTransformations[payload.ProjectID]
+	if !ok {
+		return DomainEvent{}, fmt.Errorf("unknown planetary transformation %q", payload.ProjectID)
+	}
+	if !empireKnowsTechnology(empire, definition.TechnologyID) {
+		return DomainEvent{}, fmt.Errorf("empire %d does not know technology %d required for planetary transformation %q", empireID, definition.TechnologyID, payload.ProjectID)
+	}
+	planet := planetByID(state, colony.PlanetID)
+	if planet == nil {
+		return DomainEvent{}, fmt.Errorf("colony %d references unknown planet %d", colony.ID, colony.PlanetID)
+	}
+	if _, allowed := definition.AllowedClimateIDs[planet.ClimateID]; !allowed {
+		return DomainEvent{}, fmt.Errorf("planetary transformation %q is not legal on climate %q", payload.ProjectID, planet.ClimateID)
+	}
+	colony.Construction = &core.ConstructionState{ProjectKind: core.ConstructionProjectPlanetaryTransformation, ProjectID: payload.ProjectID}
+	return NewDomainEvent("colony.planetary_transformation_queued", seatID, command.Sequence, PlanetaryTransformationQueuedEvent{
+		ColonyID: colony.ID, PlanetID: planet.ID, ProjectID: payload.ProjectID, ProductionCostPP: definition.ProductionCostPP,
+	})
 }
 
 func (r *EconomyResolver) advanceConstruction(state *core.GameState) ([]DomainEvent, error) {
@@ -174,6 +232,12 @@ func (r *EconomyResolver) advanceConstruction(state *core.GameState) ([]DomainEv
 				return nil, err
 			}
 			events = append(events, completed)
+		case core.ConstructionProjectPlanetaryTransformation:
+			completed, err := r.completePlanetaryTransformation(state, colony, projectID)
+			if err != nil {
+				return nil, err
+			}
+			events = append(events, completed)
 		case core.ConstructionProjectFreighterFleet:
 			empire := empireByID(state, colony.EmpireID)
 			if empire == nil {
@@ -208,6 +272,12 @@ func (r *EconomyResolver) constructionProjectCostPP(project *core.ConstructionSt
 			return 0, fmt.Errorf("constructs unknown building %q", project.ProjectID)
 		}
 		return definition.ProductionCostPP, nil
+	case core.ConstructionProjectPlanetaryTransformation:
+		definition, ok := r.Rules.PlanetaryTransformations[project.ProjectID]
+		if !ok {
+			return 0, fmt.Errorf("constructs unknown planetary transformation %q", project.ProjectID)
+		}
+		return definition.ProductionCostPP, nil
 	case core.ConstructionProjectFreighterFleet:
 		if project.ProjectID != FreighterFleetProjectID {
 			return 0, fmt.Errorf("constructs unknown Freighter Fleet project %q", project.ProjectID)
@@ -215,6 +285,71 @@ func (r *EconomyResolver) constructionProjectCostPP(project *core.ConstructionSt
 		return r.Rules.FreighterFleetCostPP, nil
 	default:
 		return 0, fmt.Errorf("constructs unsupported project kind %q", project.ProjectKind)
+	}
+}
+
+func (r *EconomyResolver) completePlanetaryTransformation(state *core.GameState, colony *core.Colony, projectID string) (DomainEvent, error) {
+	definition, ok := r.Rules.PlanetaryTransformations[projectID]
+	if !ok {
+		return DomainEvent{}, fmt.Errorf("colony %d completed unknown planetary transformation %q", colony.ID, projectID)
+	}
+	planet := planetByID(state, colony.PlanetID)
+	if planet == nil {
+		return DomainEvent{}, fmt.Errorf("colony %d references unknown planet %d", colony.ID, colony.PlanetID)
+	}
+	previousClimate := planet.ClimateID
+	if _, allowed := definition.AllowedClimateIDs[previousClimate]; !allowed {
+		return DomainEvent{}, fmt.Errorf("planetary transformation %q is no longer legal on climate %q", projectID, previousClimate)
+	}
+	empire := empireByID(state, colony.EmpireID)
+	if empire == nil {
+		return DomainEvent{}, fmt.Errorf("colony %d references unknown empire %d", colony.ID, colony.EmpireID)
+	}
+	previousCapacity, err := r.Rules.ColonyPopulationCapacity(*colony, *planet, *empire)
+	if err != nil {
+		return DomainEvent{}, err
+	}
+	currentClimate, err := r.planetaryTransformationTargetClimate(state, *planet, definition)
+	if err != nil {
+		return DomainEvent{}, err
+	}
+	planet.ClimateID = currentClimate
+	currentCapacity, err := r.Rules.ColonyPopulationCapacity(*colony, *planet, *empire)
+	if err != nil {
+		return DomainEvent{}, err
+	}
+	populationRemoved := 0.0
+	if currentCapacity+populationEpsilon < previousCapacity {
+		populationRemoved = clampAggregatePopulationToCapacity(colony, currentCapacity)
+	}
+	return NewDomainEvent("colony.planetary_transformation_completed", 0, 0, PlanetaryTransformationCompletedEvent{
+		ColonyID: colony.ID, PlanetID: planet.ID, ProjectID: projectID, PreviousClimateID: previousClimate, CurrentClimateID: currentClimate, PopulationRemoved: populationRemoved,
+	})
+}
+
+func (r *EconomyResolver) planetaryTransformationTargetClimate(state *core.GameState, planet core.Planet, definition PlanetaryTransformationDefinition) (string, error) {
+	if result, ok := definition.ResultClimateBySource[planet.ClimateID]; ok {
+		return result, nil
+	}
+	if planet.ClimateID != "barren" || definition.BarrenOrbitRule == nil {
+		return "", fmt.Errorf("planetary transformation %q has no result for climate %q", definition.ProjectID, planet.ClimateID)
+	}
+	rule := definition.BarrenOrbitRule
+	switch {
+	case planet.Orbit > 0 && planet.Orbit <= rule.InnerOrbitMax:
+		return rule.InnerResult, nil
+	case planet.Orbit == rule.MiddleOrbit:
+		rng := state.RNG()
+		index, err := rng.Intn(len(rule.MiddleResults))
+		if err != nil {
+			return "", err
+		}
+		state.CommitRNG(rng)
+		return rule.MiddleResults[index], nil
+	case planet.Orbit >= rule.OuterOrbitMin:
+		return rule.OuterResult, nil
+	default:
+		return "", fmt.Errorf("planet %d has unsupported orbit %d for barren transformation", planet.ID, planet.Orbit)
 	}
 }
 

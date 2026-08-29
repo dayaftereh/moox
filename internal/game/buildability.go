@@ -37,7 +37,7 @@ func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empir
 	if empire == nil {
 		return nil, fmt.Errorf("unknown empire %d", empireID)
 	}
-	choices := make([]ConstructionChoice, 0, len(buildingChoices)+2)
+	choices := make([]ConstructionChoice, 0, len(buildingChoices)+len(r.PlanetaryTransformations)+2)
 	for _, choice := range buildingChoices {
 		choices = append(choices, ConstructionChoice{
 			ProjectKind:      core.ConstructionProjectBuilding,
@@ -52,7 +52,26 @@ func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empir
 	if planet == nil {
 		return nil, fmt.Errorf("colony %d references unknown planet %d", colony.ID, colony.PlanetID)
 	}
-	capacity, err := r.PopulationCapacity(*planet, empire.RaceID)
+	transformationChoices := make([]ConstructionChoice, 0, len(r.PlanetaryTransformations))
+	for _, definition := range r.PlanetaryTransformations {
+		if !empireKnowsTechnology(empire, definition.TechnologyID) {
+			continue
+		}
+		if _, allowed := definition.AllowedClimateIDs[planet.ClimateID]; !allowed {
+			continue
+		}
+		transformationChoices = append(transformationChoices, ConstructionChoice{
+			ProjectKind: core.ConstructionProjectPlanetaryTransformation, ProjectID: definition.ProjectID, ProductionCostPP: definition.ProductionCostPP, TechnologyID: definition.TechnologyID, ProductionID: definition.ProductionID,
+		})
+	}
+	sort.Slice(transformationChoices, func(i, j int) bool {
+		if transformationChoices[i].ProductionID != transformationChoices[j].ProductionID {
+			return transformationChoices[i].ProductionID < transformationChoices[j].ProductionID
+		}
+		return transformationChoices[i].ProjectID < transformationChoices[j].ProjectID
+	})
+	choices = append(choices, transformationChoices...)
+	capacity, err := r.ColonyPopulationCapacity(*colony, *planet, *empire)
 	if err != nil {
 		return nil, fmt.Errorf("colony %d population capacity: %w", colony.ID, err)
 	}
@@ -118,6 +137,9 @@ func (r *EconomyRules) AvailableBuildingChoices(state *core.GameState, empireID,
 
 	choices := make([]BuildingChoice, 0)
 	for _, definition := range r.BuildingDefinitions {
+		if _, transformation := r.PlanetaryTransformations[definition.BuildingID]; transformation {
+			continue
+		}
 		if _, exists := owned[definition.BuildingID]; exists {
 			continue
 		}

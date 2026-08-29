@@ -11,8 +11,8 @@ func TestHousingConstructionStateRoundTripsInSchema12(t *testing.T) {
 		ProjectKind: ConstructionProjectHousing,
 		ProjectID:   "housing",
 	}
-	if state.SchemaVersion != 12 || StateSchemaVersion != 12 {
-		t.Fatalf("schema=%d constant=%d want=12", state.SchemaVersion, StateSchemaVersion)
+	if state.SchemaVersion != StateSchemaVersion {
+		t.Fatalf("schema=%d constant=%d", state.SchemaVersion, StateSchemaVersion)
 	}
 	if err := state.Validate(); err != nil {
 		t.Fatal(err)

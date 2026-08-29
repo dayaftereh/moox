@@ -93,6 +93,12 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
 				}
 				events = append(events, event)
+			case CommandQueuePlanetaryTransformation:
+				event, err := r.queuePlanetaryTransformation(state, empireID, batch.SeatID, command)
+				if err != nil {
+					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
+				}
+				events = append(events, event)
 			case CommandQueueFreighterFleet:
 				event, err := r.queueFreighterFleet(state, empireID, batch.SeatID, command)
 				if err != nil {

@@ -1,5 +1,5 @@
 {
-    "schema_version":  6,
+    "schema_version":  7,
     "ruleset":  "moo2-1.31",
     "sources":  [
                     {
@@ -87,6 +87,13 @@
                         "description":  "Direct Orion2.exe 1.31 disassembly of Colony_Pop_Grows_, Apply_Colony_Pop_Growth_, Housing_Is_Useless_ and related calculation paths proves Housing production scaling, Cloning Center flat growth, Microbiotics +25 percentage points and Universal Antidote +50 percentage points.",
                         "archive":  "Orion2.exe",
                         "sha256":  "7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5"
+                    },
+                    {
+                        "id":  "moo2-1.31-orion2-population-capacity-transitions",
+                        "type":  "original-derived",
+                        "description":  "Direct Orion2.exe 1.31 disassembly of Player_Effective_Climate_, Planet_Max_Population_For_Player_, Colony_Race_Pop_Limit_, Add_Building_ and Remove_Building_ proves Advanced City Planning +5, Biospheres +2, capacity stacking and Terraforming/Gaia physical-climate transitions.",
+                        "archive":  "Orion2.exe",
+                        "sha256":  "7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5"
                     }
                 ],
     "base_research_per_scientist":  {
@@ -115,6 +122,41 @@
                                                                      "moo2-1.31-orion2-population-growth-modifiers"
                                                                  ]
                                               },
+                       "capacity_modifiers":  {
+                                                     "advanced_city_planning_technology_key":  "advanced_city_planning",
+                                                     "advanced_city_planning_flat_capacity":  5.0,
+                                                     "biospheres_building_id":  "biospheres",
+                                                     "biospheres_flat_capacity":  2.0,
+                                                     "planetary_transformations":  [
+                                                                                    {
+                                                                                        "project_id":  "terraforming",
+                                                                                        "allowed_climate_ids":  ["barren", "desert", "tundra", "ocean", "swamp", "arid"],
+                                                                                        "result_climate_by_source":  {
+                                                                                                                          "desert":  "arid",
+                                                                                                                          "tundra":  "swamp",
+                                                                                                                          "ocean":  "terran",
+                                                                                                                          "swamp":  "terran",
+                                                                                                                          "arid":  "terran"
+                                                                                                                      },
+                                                                                        "barren_orbit_rule":  {
+                                                                                                                    "inner_orbit_max":  2,
+                                                                                                                    "middle_orbit":  3,
+                                                                                                                    "outer_orbit_min":  4,
+                                                                                                                    "inner_result":  "desert",
+                                                                                                                    "outer_result":  "tundra",
+                                                                                                                    "middle_results":  ["desert", "tundra"]
+                                                                                                                },
+                                                                                        "source_ids":  ["moo2-1.31-orion2-population-capacity-transitions"]
+                                                                                    },
+                                                                                    {
+                                                                                        "project_id":  "gaia_transformation",
+                                                                                        "allowed_climate_ids":  ["terran"],
+                                                                                        "result_climate_by_source":  {"terran":  "gaia"},
+                                                                                        "source_ids":  ["moo2-1.31-orion2-population-capacity-transitions"]
+                                                                                    }
+                                                                                ],
+                                                     "source_ids":  ["moo2-1.31-orion2-population-capacity-transitions"]
+                                                 },
                        "tolerant_habitability_bonus":  0.25,
                        "subterranean_capacity_per_size_class":  2.0,
                        "size_capacity":  [

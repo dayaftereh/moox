@@ -9,9 +9,9 @@ import (
 
 const populationEpsilon = 1e-9
 
-// PopulationCapacity returns the current race-specific population cap for a
-// planet. Classic size/climate capacity rounding is retained as an explicit
-// gameplay boundary; Population itself remains continuous float64 state.
+// PopulationCapacity returns the race/planet population cap before Empire-wide
+// Technologies and Colony-local Buildings. It mirrors the original helper layer
+// used underneath Planet_Max_Population_For_Player_ and Colony_Race_Pop_Limit_.
 func (r *EconomyRules) PopulationCapacity(planet core.Planet, raceID string) (float64, error) {
 	if r == nil {
 		return 0, fmt.Errorf("economy rules must not be nil")
@@ -53,6 +53,55 @@ func (r *EconomyRules) PopulationCapacity(planet core.Planet, raceID string) (fl
 	return capacity, nil
 }
 
+// PopulationCapacityForEmpire adds Empire-wide capacity effects to the
+// race/planet capacity. Original 1.31 applies Advanced City Planning here.
+func (r *EconomyRules) PopulationCapacityForEmpire(planet core.Planet, empire core.Empire) (float64, error) {
+	capacity, err := r.PopulationCapacity(planet, empire.RaceID)
+	if err != nil {
+		return 0, err
+	}
+	if empireKnowsTechnology(&empire, r.AdvancedCityPlanningTechnologyID) {
+		capacity += r.AdvancedCityPlanningCapacityBonus
+	}
+	return capacity, nil
+}
+
+// ColonyPopulationCapacity adds Colony-local effects after the Empire-wide
+// capacity layer. Original 1.31 adds Biospheres after Advanced City Planning.
+func (r *EconomyRules) ColonyPopulationCapacity(colony core.Colony, planet core.Planet, empire core.Empire) (float64, error) {
+	capacity, err := r.PopulationCapacityForEmpire(planet, empire)
+	if err != nil {
+		return 0, err
+	}
+	if colonyHasBuilding(colony, r.BiospheresBuildingID) {
+		capacity += r.BiospheresCapacityBonus
+	}
+	return capacity, nil
+}
+
+// clampAggregatePopulationToCapacity is the current single-cohort fallback for
+// an authoritative capacity decrease. Original 1.31 removes Population
+// immediately when a capacity source disappears. Until race/job cohorts are
+// normalized, MOOX preserves the aggregate role proportions while clamping.
+func clampAggregatePopulationToCapacity(colony *core.Colony, capacity float64) float64 {
+	if colony == nil || colony.Population.Total <= capacity+populationEpsilon {
+		return 0
+	}
+	previous := colony.Population.Total
+	if capacity < 0 {
+		capacity = 0
+	}
+	factor := 0.0
+	if previous > populationEpsilon {
+		factor = capacity / previous
+	}
+	colony.Population.Farmers *= factor
+	colony.Population.Workers *= factor
+	colony.Population.Scientists *= factor
+	colony.Population.Total = capacity
+	return previous - capacity
+}
+
 func (r *EconomyRules) CalculatePopulationDynamics(colony core.Colony, planet core.Planet, raceID string, adjusted core.ColonyEconomy) (core.ColonyPopulationDynamics, error) {
 	return r.calculatePopulationDynamics(colony, planet, core.Empire{RaceID: raceID}, adjusted)
 }
@@ -63,7 +112,7 @@ func (r *EconomyRules) CalculatePopulationDynamicsForEmpire(colony core.Colony, 
 
 func (r *EconomyRules) calculatePopulationDynamics(colony core.Colony, planet core.Planet, empire core.Empire, adjusted core.ColonyEconomy) (core.ColonyPopulationDynamics, error) {
 	raceID := empire.RaceID
-	capacity, err := r.PopulationCapacity(planet, raceID)
+	capacity, err := r.ColonyPopulationCapacity(colony, planet, empire)
 	if err != nil {
 		return core.ColonyPopulationDynamics{}, err
 	}

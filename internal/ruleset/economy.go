@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const EconomySchemaVersion = 6
+const EconomySchemaVersion = 7
 
 type EconomyFile struct {
 	SchemaVersion            int                        `json:"schema_version"`
@@ -56,6 +56,7 @@ type PopulationEconomyRule struct {
 	CyberneticProductionPerPopulation float64                         `json:"cybernetic_production_per_population"`
 	GrowthCurveFactor                 float64                         `json:"growth_curve_factor"`
 	GrowthModifiers                   PopulationGrowthModifierRule    `json:"growth_modifiers"`
+	CapacityModifiers                 PopulationCapacityModifierRule  `json:"capacity_modifiers"`
 	TolerantHabitabilityBonus         float64                         `json:"tolerant_habitability_bonus"`
 	SubterraneanCapacityPerSizeClass  float64                         `json:"subterranean_capacity_per_size_class"`
 	SizeCapacity                      []PopulationSizeCapacity        `json:"size_capacity"`
@@ -75,6 +76,32 @@ type PopulationGrowthModifierRule struct {
 type PopulationGrowthTechnologyBonus struct {
 	TechnologyKey string  `json:"technology_key"`
 	Bonus         float64 `json:"bonus"`
+}
+
+type PopulationCapacityModifierRule struct {
+	AdvancedCityPlanningTechnologyKey string                        `json:"advanced_city_planning_technology_key"`
+	AdvancedCityPlanningFlatCapacity  float64                       `json:"advanced_city_planning_flat_capacity"`
+	BiospheresBuildingID              string                        `json:"biospheres_building_id"`
+	BiospheresFlatCapacity            float64                       `json:"biospheres_flat_capacity"`
+	PlanetaryTransformations          []PlanetaryTransformationRule `json:"planetary_transformations"`
+	SourceIDs                         []string                      `json:"source_ids"`
+}
+
+type PlanetaryTransformationRule struct {
+	ProjectID             string                       `json:"project_id"`
+	AllowedClimateIDs     []string                     `json:"allowed_climate_ids"`
+	ResultClimateBySource map[string]string            `json:"result_climate_by_source"`
+	BarrenOrbitRule       *BarrenTerraformingOrbitRule `json:"barren_orbit_rule,omitempty"`
+	SourceIDs             []string                     `json:"source_ids"`
+}
+
+type BarrenTerraformingOrbitRule struct {
+	InnerOrbitMax int      `json:"inner_orbit_max"`
+	MiddleOrbit   int      `json:"middle_orbit"`
+	OuterOrbitMin int      `json:"outer_orbit_min"`
+	InnerResult   string   `json:"inner_result"`
+	OuterResult   string   `json:"outer_result"`
+	MiddleResults []string `json:"middle_results"`
 }
 
 type FoodLogisticsEconomyRule struct {
@@ -287,6 +314,41 @@ func (f *EconomyFile) validatePopulation(sources map[string]struct{}) error {
 	for _, sourceID := range growth.SourceIDs {
 		if _, ok := sources[sourceID]; !ok {
 			return fmt.Errorf("population growth modifiers reference unknown source %q", sourceID)
+		}
+	}
+	capacity := p.CapacityModifiers
+	if capacity.AdvancedCityPlanningTechnologyKey == "" || capacity.AdvancedCityPlanningFlatCapacity <= 0 || capacity.BiospheresBuildingID == "" || capacity.BiospheresFlatCapacity <= 0 {
+		return fmt.Errorf("population capacity modifier scalars are invalid")
+	}
+	if len(capacity.PlanetaryTransformations) == 0 || len(capacity.SourceIDs) == 0 {
+		return fmt.Errorf("population capacity modifiers require transformations and sources")
+	}
+	seenTransformations := make(map[string]struct{}, len(capacity.PlanetaryTransformations))
+	for i, transformation := range capacity.PlanetaryTransformations {
+		if transformation.ProjectID == "" || len(transformation.AllowedClimateIDs) == 0 || len(transformation.SourceIDs) == 0 {
+			return fmt.Errorf("population planetary_transformations[%d] is invalid", i)
+		}
+		if _, exists := seenTransformations[transformation.ProjectID]; exists {
+			return fmt.Errorf("duplicate population planetary transformation %q", transformation.ProjectID)
+		}
+		seenTransformations[transformation.ProjectID] = struct{}{}
+		if len(transformation.ResultClimateBySource) == 0 && transformation.BarrenOrbitRule == nil {
+			return fmt.Errorf("population planetary transformation %q has no results", transformation.ProjectID)
+		}
+		if rule := transformation.BarrenOrbitRule; rule != nil {
+			if rule.InnerOrbitMax <= 0 || rule.MiddleOrbit <= rule.InnerOrbitMax || rule.OuterOrbitMin <= rule.MiddleOrbit || rule.InnerResult == "" || rule.OuterResult == "" || len(rule.MiddleResults) < 2 {
+				return fmt.Errorf("population planetary transformation %q has invalid barren orbit rule", transformation.ProjectID)
+			}
+		}
+		for _, sourceID := range transformation.SourceIDs {
+			if _, ok := sources[sourceID]; !ok {
+				return fmt.Errorf("population planetary transformation %q references unknown source %q", transformation.ProjectID, sourceID)
+			}
+		}
+	}
+	for _, sourceID := range capacity.SourceIDs {
+		if _, ok := sources[sourceID]; !ok {
+			return fmt.Errorf("population capacity modifiers reference unknown source %q", sourceID)
 		}
 	}
 	if len(p.SizeCapacity) != 5 || len(p.ClimateHabitability) != 10 {
