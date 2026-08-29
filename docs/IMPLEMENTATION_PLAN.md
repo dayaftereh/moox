@@ -1,23 +1,26 @@
 # MOOX Implementation Plan
 
-## Current position - 2026-08-27
+## Current position - 2026-08-29
 
-MOOX is now actively inside the deterministic headless runtime. Phase 1 infrastructure is established and the first Phase-2/Phase-3 Economy/Research slices already execute through the authoritative `GameSession` boundary.
+MOOX is actively inside the deterministic headless runtime. The authoritative `GameSession` boundary now executes a substantial first strategic Economy/Research/Construction path rather than only infrastructure.
 
-Implemented/established runtime baseline:
+Implemented/established runtime baseline includes:
 
-- deterministic pure-Go core state, seeded serializable RNG, stable IDs and exact JSON round trips,
-- authoritative Session/Command/Event/Observer architecture with Human/AI-shared legal-action projections,
-- domain-native `float64` Population, Food, PP, RP, BC and Construction progress (`ADR-0003`),
-- base/contextual colony Economy with Gravity, starting-government and local Morale layers,
-- technology-gated BuildingChoices plus deterministic single-project Construction,
-- normalized Technology Fields/RP costs, Pre-Warp/Average ownership, breakthrough resolution and authority-filtered `ResearchChoices`,
-- server-side `empire.select_research` materialization of Technology IDs/keys,
-- Population capacity, Food/Cybernetic sustenance and direct-float turn-end Population Growth with explicit pre-growth Construction/Research ordering.
+- deterministic pure-Go Core state, seeded serializable RNG, stable IDs and exact schema-11 JSON round trips;
+- authoritative Session/Command/Event/Observer architecture with Human/AI-shared legal-action projections;
+- domain-native `float64` Population, Food, PP, RP, BC and Construction progress (`ADR-0003`);
+- base/contextual Colony Economy with Gravity, starting-government and local Morale layers;
+- Population capacity, Food/Cybernetic sustenance, starvation and the classic capacity-limited turn-end Growth curve;
+- Empire-wide Food/Freighter balancing with verified insufficient-Freighter round-robin priority and system-blockade exclusion;
+- semantic Population relocation / Settlers sharing the same Freighter pool, including same-system movement, interstellar reservation, ETA and resolution;
+- generic single-project Construction with technology-gated Buildings and Freighter Fleet production;
+- modeled Treasury settlement before Research;
+- normalized Technology Fields/RP costs, Pre-Warp/Average/Advanced starts, breakthrough resolution, race-aware multi-application research, project switching and Hyper-Advanced repeat fields;
+- authoritative external Technology grants with verified Uncreative fixed-choice repair.
 
-Still missing major engine systems include strategic movement/colonization, complete Economy logistics/pollution/maintenance, complete Technology effects and Creative/Uncreative semantics, ship design/combat rules, diplomacy and playable UI.
+Major engine systems still missing include broader Population modifiers/capacity transitions, complete Economy categories/pollution, strategic fleet movement/colonization, ship design/combat rules, diplomacy, AI behavior and playable UI.
 
-Current work is deliberately two-lane: Economy/Population is the immediate implementation focus, while Research multi-Technology TechField behavior remains the next Research-specific slice. `docs/research/ACTIVE_RESEARCH.md` is the authoritative handoff for both lanes.
+The immediate implementation focus is Economy/Population. `docs/research/ACTIVE_RESEARCH.md` is the authoritative next-slice handoff, while `docs/slices/HISTORY.md` records closed slices so completed work is not accidentally re-queued.
 ## Guiding architecture
 
 Build the game rules as a deterministic, headless simulation core first. UI, rendering, audio and platform integration should depend on that core rather than contain game rules themselves.
@@ -240,8 +243,12 @@ A private developer-only original-asset viewer may exist for comparison, but ori
 
 ## Recommended immediate next work
 
-1. Implement Advanced-start randomized/race-aware technology ownership using the completed General/ordinary/Creative/Uncreative and Hyper-Advanced policies.
-2. Wire the implemented `Ensure_Uncreative_Field_OK_`-equivalent repair helper into future trade/espionage/conquest Technology grants; the former `0x21CAF` mystery is resolved as the Random Events toggle.
-3. Then continue the first headless vertical slice toward colony ship production, movement and a second colony.
-4. Keep the original Hyper selection-screen +1 preview / 20-level list boundary as optional UI-fidelity work, not a strategic-core rule.
-Do not reopen closed race/building/ship graphics research unless contradictory evidence or a concrete runtime requirement demands it. Wails v3 remains the planned application shell; transports/UI must continue to consume the same canonical Session/legal-action APIs rather than contain gameplay rules.
+1. Research and implement Housing / Cloning Center / medicine Population-growth modifiers against the existing classic capacity-limited Growth curve.
+2. Then model Biospheres / Advanced City Planning / terraforming Population-capacity transitions.
+3. Then add race-aware Population cohorts for conquered/mixed-race Colonies and use them to restore the later original Food-priority passes that cannot be represented by the current aggregate single-cohort model.
+4. Keep full Fleet/Diplomacy-derived blockade production attached to the future canonical strategic Fleet/Diplomacy state rather than inventing a temporary source model.
+5. Complete missing Treasury income/Maintenance categories and the original deficit/scrap policy only as their dependent systems become authoritative.
+6. Continue the first headless vertical game loop toward colony-ship production, strategic movement/colonization and a second colony.
+7. Keep the original Hyper selection-screen +1 preview / 20-level list boundary as optional UI-fidelity work, not a strategic-core rule.
+
+Do not reopen closed Research/Economy slices listed in `docs/slices/HISTORY.md` unless contradictory original evidence or a concrete runtime regression requires it. Wails v3 remains the planned application shell; transports/UI must continue to consume the same canonical Session/legal-action surfaces rather than owning gameplay rules.

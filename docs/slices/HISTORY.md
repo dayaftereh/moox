@@ -1,0 +1,37 @@
+# Completed work slices
+
+This ledger is the compact audit trail for **closed** Master of Orion X implementation slices. It complements the permanent evidence documents under `docs/research/` and prevents completed work from remaining accidentally listed as pending in live roadmaps.
+
+A row belongs here only after implementation/documentation/QA has been closed. An unfinished slice is represented instead by `docs/slices/_OPEN_*.md`.
+
+## Research and Economy sequence
+
+| Slice | Result | Closing commit | Permanent evidence / checkpoint |
+| --- | --- | --- | --- |
+| Race-aware multi-Technology research | General/ordinary/Creative/Uncreative application policies and shared legal actions implemented | `f36ab5a` | `docs/research/RESEARCH_MULTI_TECH_2026-08-27.md` |
+| Research project switching | Active project can change with complete accumulated RP transfer and Observer/replay history | `5d2f983` | `docs/research/RESEARCH_SWITCHING_2026-08-27.md` |
+| Strategic turn order | Direct executable evidence fixed Research -> Growth/Starvation -> Construction with pre-growth RP/PP snapshots | `30e2b6d` | `docs/research/TURN_ORDER_2026-08-28.md` |
+| Uncreative initialization | Fixed applications generated during New Game from the shared New Game RNG | `945f777` | `docs/research/UNCREATIVE_INITIAL_SELECTION_2026-08-28.md` |
+| Hyper-Advanced repeated research | Per-Empire repeat levels, dynamic strategic cost and repeat completion implemented; original UI preview off-by-one documented but not copied into the core | `212632a` | `docs/research/HYPER_ADVANCED_RESEARCH_2026-08-28.md` |
+| Advanced-start technology ownership | Original-style randomized/race-aware Advanced start implemented with shared New Game RNG and exactly 19 weighted extra grants | `f80b9bc` | `docs/research/ADVANCED_START_RESEARCH_2026-08-28.md`, `docs/research/ADVANCED_START_CHOOSER_2026-08-28.md` |
+| External Technology grants / Uncreative repair | Server-authoritative grant transition implemented; incomplete TechFields are preserved and Uncreative fixed choices are repaired through authoritative RNG | `6258ac5` | `docs/research/UNCREATIVE_EXTERNAL_REPAIR_2026-08-28.md` |
+| Construction project generalization | Construction state generalized from Building-only identity to semantic project kind/id as prerequisite for non-building projects | `3724275` | architecture/runtime checkpoint in current status docs |
+| Freighter Fleet construction | 50 PP project adds 5 Empire Freighters through authoritative Construction legal actions/events | `9ae1ef8` | `docs/research/FOOD_FREIGHTER_LOGISTICS_2026-08-27.md` |
+| Treasury settlement | 50 BC New Game Treasury and modeled strategic settlement implemented before Research | `2861150` | `docs/research/TREASURY_SETTLEMENT_2026-08-28.md` |
+| Insufficient-Freighter priority | Temporary proportional allocation replaced by original-style round-robin deficit allocation | `b972ee0` | `docs/research/INSUFFICIENT_FREIGHTER_PRIORITY_2026-08-28.md` |
+| System blockade -> Food logistics | Authoritative blockaded-Empire system state excludes Colonies from Food import/export/sale pools | `0c699a8` | `docs/research/BLOCKADE_FOOD_LOGISTICS_2026-08-28.md` |
+| Population relocation / shared Freighters | Same-system immediate moves and interstellar Settler reservations/ETA/arrival/loss handling implemented; Core schema advanced to 11 | `f816eaf` | `docs/research/POPULATION_TRANSPORT_FREIGHTER_2026-08-29.md` |
+
+## Meta workflow
+
+| Slice | Result | Closing commit | Permanent documentation |
+| --- | --- | --- | --- |
+| Recovery-safe slice protocol | Four-gate workflow and `_OPEN_*.md` recovery marker convention established | `204ced7` | `docs/slices/README.md` |
+
+## Current audit state - 2026-08-29
+
+- `docs/slices/` contains **no** `_OPEN_*.md` marker.
+- The completed rows above have committed runtime/tests and/or explicit closing documentation in Git history.
+- The next queued gameplay slice is Population growth building/medicine modifiers; it is intentionally **not** marked open until work on that slice actually begins.
+- Live current status is authoritative in `README.md`, `docs/PROJECT_STATUS.md`, `docs/architecture/README.md`, and `docs/research/ACTIVE_RESEARCH.md`.
+- Historical research documents are evidence checkpoints and are not rewritten merely because a later slice resolved one of their then-deferred items.

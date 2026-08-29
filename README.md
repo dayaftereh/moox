@@ -45,6 +45,7 @@ The active runtime follows a domain-native numeric architecture: continuous quan
 - `docs/research/SOURCES.md` - curated source register with links and usage notes.
 - `docs/WORKING_RULES.md` - mandatory convergence/checkpoint rules for long research sessions.
 - `docs/research/ACTIVE_RESEARCH.md` - authoritative current objective, next exact action, blockers and closed milestones.
+- docs/slices/HISTORY.md - compact audit ledger of closed implementation slices, closing commits and permanent evidence documents.
 - `docs/research/ECONOMY_BASELINE_2026-08-27.md` - first population-command and base colony-economy fidelity checkpoint.
 - `docs/research/ECONOMY_CONTEXT_2026-08-27.md` - Gravity/Government contextual economy checkpoint and current model limitations.
 - `docs/research/ECONOMY_MORALE_2026-08-27.md` - local Morale/Barracks/building checkpoint and deferred empire-wide morale systems.

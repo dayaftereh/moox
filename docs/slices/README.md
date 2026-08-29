@@ -2,6 +2,8 @@
 
 This directory defines the recovery-safe workflow for focused Master of Orion X implementation slices.
 
+Closed slices are audited in docs/slices/HISTORY.md; the current/next objective remains authoritative in docs/research/ACTIVE_RESEARCH.md.
+
 ## Open-slice marker
 
 An unfinished slice is represented by a file named:
