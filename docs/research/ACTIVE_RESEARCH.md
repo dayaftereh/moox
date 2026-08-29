@@ -1,89 +1,64 @@
 # Active research / implementation handoff
 
-This file is the authoritative **live** handoff for the current Master of Orion X implementation slice.
-Permanent reverse-engineering evidence and closed results live in `docs/research/`. The completed-slice ledger lives in `docs/slices/HISTORY.md`.
+This file is the authoritative **live** handoff for the current Master of Orion X implementation sequence. Permanent reverse-engineering evidence and closed results live in `docs/research/`; the completed-slice ledger lives in `docs/slices/HISTORY.md`.
 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: `docs/slices/_OPEN_POPULATION_GROWTH_MODIFIERS_2026-08-29.md`.
-- Active slice: **Population growth building / medicine modifiers**.
-- Current gate: **Gate 4 - QA / commit / close in progress**.
-- Latest completed gameplay slice: Population relocation through the shared Freighter pool (`f816eaf`).
-- Core `StateSchemaVersion`: **11**.
-- Permanent evidence note: `docs/research/POPULATION_GROWTH_MODIFIERS_2026-08-29.md`.
-- Do not start a later slice while this `_OPEN_*.md` marker exists; resume it first according to `docs/slices/README.md`.
+- Open slice marker: **none**.
+- Active slice: **none**; the Population growth building / medicine modifier slice is complete.
+- Latest completed gameplay slice: Population growth building / medicine modifiers (`e7f0d72`).
+- Core `StateSchemaVersion`: **12**.
+- Economy ruleset schema: **6**.
+- Permanent evidence: `docs/research/POPULATION_GROWTH_MODIFIERS_2026-08-29.md`.
+- Before starting new work, check `docs/slices/_OPEN_*.md`; resume any marker before opening another slice.
 
-## Closed sequence - do not rediscover without contradictory evidence
+## Recently closed runtime sequence
 
-The recent Research/Economy sequence is closed and recorded in `docs/slices/HISTORY.md`. In particular, the following are implemented rather than pending:
+The current Research/Economy chain is implemented and recorded in `docs/slices/HISTORY.md`, including:
 
-- General / ordinary / Creative / Uncreative multi-Technology research policies;
-- exact research-project switching with full RP transfer;
-- verified MOO2 strategic Research -> Population Growth/Starvation -> Construction ordering with pre-growth RP/PP snapshots;
-- Uncreative initial fixed-choice generation from the shared New Game RNG;
-- Hyper-Advanced repeat-field state, strategic cost progression and repeat completion;
-- Advanced-start randomized/race-aware technology ownership with the verified 19 extra grants;
-- authoritative external Technology grants plus verified Uncreative fixed-choice repair;
-- Freighter Fleet construction (50 PP -> 5 Empire Freighters);
-- authoritative modeled Treasury settlement;
-- original insufficient-Freighter round-robin import priority;
-- authoritative system-blockade exclusion from Food import/export/sale pools;
-- Population relocation / Settlers using the shared Freighter pool, including same-system moves, interstellar reservation, ETA and arrival/loss handling.
+- race-aware multi-Technology research, switching, Uncreative initialization and repair;
+- Hyper-Advanced repeated fields and Advanced-start randomized/race-aware ownership;
+- original strategic Research -> Population -> Construction ordering with pre-growth RP/PP snapshots;
+- Freighter Fleet production, Treasury settlement, round-robin constrained Food imports and system-blockade Food exclusion;
+- Population relocation through the shared Freighter pool;
+- Housing as a semantic continuous Production project;
+- Microbiotics +25 percentage points and Universal Antidote +50 percentage points on natural Population Growth;
+- Cloning Center flat +0.1 Population/turn, separate from the natural-growth multiplier;
+- original Housing Production scaling using Production available after Cybernetic sustenance;
+- schema-12 persisted Housing state plus authoritative GameSession/Observer lifecycle.
 
-Historical research documents may still say that a later item was "deferred" at the time that document was written. Treat `README.md`, `docs/PROJECT_STATUS.md`, this file and `docs/slices/HISTORY.md` as the current status surfaces.
+Historical research documents may still describe later items as deferred at the time they were written. Treat `README.md`, `docs/PROJECT_STATUS.md`, this file and `docs/slices/HISTORY.md` as the current status surfaces.
 
-## Active objective
+## Next queued objective
 
-### Population growth building / medicine modifiers
+### Biospheres / Advanced City Planning / terraforming Population-capacity transitions
 
-Establish original MOO2 1.31 behavior for Housing, Cloning Center and medicine/Technology Population-growth modifiers before extending the current classic base growth curve.
+Do **not** create an `_OPEN_*.md` marker until work on this next slice actually begins. When it begins, use the four-gate protocol in `docs/slices/README.md`.
 
-Gate 1 must establish, from executable/data/save evidence where possible:
+Gate 1 should establish from original MOO2 1.31 executable/data/save evidence where possible:
 
-1. the exact original functions/data paths for Housing, Cloning Center and medicine/Technology growth bonuses;
-2. whether each modifier is additive Population/turn, multiplicative, capacity-dependent, Production-dependent or applied in another explicit form;
-3. stacking/order against race growth multipliers and the already implemented capacity-limited classic curve;
-4. the minimal normalized Building/Technology identities/effects required by the runtime;
-5. the deterministic Core/Game/Session test shape while preserving the verified rule that freshly grown Population cannot contribute RP/PP retroactively in the same turn.
+1. exact capacity effects and ordering for Biospheres;
+2. exact Advanced City Planning capacity effect and ownership/application semantics;
+3. terraforming/climate-transition effects on current and maximum Population;
+4. interaction with Aquatic, Tolerant and Subterranean capacity rules already normalized;
+5. whether capacity decreases can force Population loss immediately or only clamp future growth;
+6. minimal normalized Building/Technology/runtime identities plus deterministic Core/Game/Session test shape.
 
-### Scope
+### Scope guard
 
-In scope:
+Keep the next slice focused on Population **capacity transitions**. Do not expand it into mixed/conquered Population cohorts, unrelated Building economy effects, Fleet/Diplomacy blockade production, UI fidelity or missing Treasury categories unless direct evidence makes one inseparable.
 
-- original growth-calculation executable paths and directly related normalized Building/Technology identities;
-- Housing, Cloning Center and medicine/Technology Population-growth effects;
-- ordering/stacking with the existing classic curve and race-growth multiplier;
-- test and state/API design needed for this slice.
+## Planned queue after capacity transitions
 
-Out of scope for this slice unless direct evidence makes it inseparable:
-
-- Biospheres / Advanced City Planning / terraforming Population-capacity transitions;
-- mixed/conquered Population cohorts;
-- UI fidelity;
-- strategic Fleet/Diplomacy blockade production;
-- unrelated Treasury or Technology effects.
-
-### Next exact action
-
-Close the completed Population-growth modifier slice after final status synchronization: record the implementation commit in `docs/slices/HISTORY.md`, update README/project status to schema 12 and the next queued capacity slice, remove the `_OPEN_*.md` marker, then commit the closing documentation.
-
-### Exploration budget
-
-- Current path: Gate 3 implemented and full QA green; Gate 4 closure in progress.
-- Consecutive inspection actions without materialized finding: 0 / 10.
-
-## Planned queue after growth modifiers
-
-1. Biospheres / Advanced City Planning / terraforming Population-capacity transitions.
-2. Race-aware Population cohorts, including conquered/mixed-race colonies and the later original Food-priority passes.
-3. Full Fleet/Diplomacy-derived `Compute_Blockades_` materialization once canonical strategic Fleet/Diplomacy state exists.
-4. Missing original Treasury income/Maintenance categories and deficit/scrap policy once their dependent systems exist.
-5. Continue the first headless vertical game loop toward colony-ship production, strategic movement/colonization and a second colony.
+1. Race-aware Population cohorts, including conquered/mixed-race Colonies and later original Food-priority passes.
+2. Full Fleet/Diplomacy-derived blockade production once canonical strategic Fleet/Diplomacy state exists.
+3. Missing original Treasury income/Maintenance categories and deficit/scrap policy once dependent systems exist.
+4. Continue the first headless vertical game loop toward colony-ship production, strategic movement/colonization and a second colony.
 
 ## Explicitly parked / UI-only fidelity
 
-- The original Hyper-Advanced research-selection screen temporarily previews counters at `completed + 1` and has a 20-level list boundary. MOOX deliberately keeps authoritative strategic cost/progression separate from that original UI quirk; revisit only when implementing UI-fidelity behavior.
+- The original Hyper-Advanced research-selection screen temporarily previews counters at `completed + 1` and has a 20-level list boundary. MOOX deliberately keeps authoritative strategic cost/progression separate from that original UI quirk.
 - Original copyrighted assets remain private reference material and are not distributable MOOX content.
 - Wails/network/MCP layers remain adapters and must not own gameplay legality or deterministic state transitions.
 
@@ -95,6 +70,6 @@ Before closing any future slice:
 - synchronize runtime/data/API decisions and deterministic tests;
 - run `gofmt` on changed Go files, `go test ./...`, `go vet ./...`, and `git diff --check`;
 - update the current live status surfaces;
-- add the slice to `docs/slices/HISTORY.md` with closing commit and evidence document;
-- delete its `_OPEN_*.md` marker in the closing commit;
+- add the slice to `docs/slices/HISTORY.md` with implementation commit and evidence document;
+- delete its `_OPEN_*.md` marker in the closing documentation commit;
 - leave the next slice unmarked until it is actually started.

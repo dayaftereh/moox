@@ -243,12 +243,11 @@ A private developer-only original-asset viewer may exist for comparison, but ori
 
 ## Recommended immediate next work
 
-1. Research and implement Housing / Cloning Center / medicine Population-growth modifiers against the existing classic capacity-limited Growth curve.
-2. Then model Biospheres / Advanced City Planning / terraforming Population-capacity transitions.
-3. Then add race-aware Population cohorts for conquered/mixed-race Colonies and use them to restore the later original Food-priority passes that cannot be represented by the current aggregate single-cohort model.
-4. Keep full Fleet/Diplomacy-derived blockade production attached to the future canonical strategic Fleet/Diplomacy state rather than inventing a temporary source model.
-5. Complete missing Treasury income/Maintenance categories and the original deficit/scrap policy only as their dependent systems become authoritative.
-6. Continue the first headless vertical game loop toward colony-ship production, strategic movement/colonization and a second colony.
-7. Keep the original Hyper selection-screen +1 preview / 20-level list boundary as optional UI-fidelity work, not a strategic-core rule.
+1. Research and implement Biospheres / Advanced City Planning / terraforming Population-capacity transitions.
+2. Then add race-aware Population cohorts for conquered/mixed-race Colonies and use them to restore the later original Food-priority passes that cannot be represented by the current aggregate single-cohort model.
+3. Keep full Fleet/Diplomacy-derived blockade production attached to the future canonical strategic Fleet/Diplomacy state rather than inventing a temporary source model.
+4. Complete missing Treasury income/Maintenance categories and the original deficit/scrap policy only as their dependent systems become authoritative.
+5. Continue the first headless vertical game loop toward colony-ship production, strategic movement/colonization and a second colony.
+6. Keep the original Hyper selection-screen +1 preview / 20-level list boundary as optional UI-fidelity work, not a strategic-core rule.
 
 Do not reopen closed Research/Economy slices listed in `docs/slices/HISTORY.md` unless contradictory original evidence or a concrete runtime regression requires it. Wails v3 remains the planned application shell; transports/UI must continue to consume the same canonical Session/legal-action surfaces rather than owning gameplay rules.

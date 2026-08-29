@@ -399,3 +399,11 @@ go vet ./...
 ```
 
 No temporary original-executable extraction remains in the working environment.
+
+## Slice close
+
+- Implementation commit: `e7f0d72` (`game: implement population growth modifiers`).
+- Core schema after implementation: **12**.
+- Economy ruleset schema after implementation: **6**.
+- Gate 4 QA: `git diff --check`, `go test ./...`, and `go vet ./...` all passed.
+- Next queued slice: Biospheres / Advanced City Planning / terraforming Population-capacity transitions.
