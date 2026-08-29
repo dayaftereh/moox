@@ -235,7 +235,7 @@ func TestAdvancedCityPlanningBreakthroughDoesNotRetroactivelyGrowPopulation(t *t
 	colony := &state.Colonies[0]
 	planet := planetByID(state, colony.PlanetID)
 	planet.ClimateID = "terran"
-	colony.Population = core.PopulationState{Total: 12, Farmers: 6, Workers: 5, Scientists: 1}
+	colony.Population = core.NewAssimilatedPopulation(colony.EmpireID, 6, 5, 1)
 	if err := resolver.recalculateColony(state, colony); err != nil {
 		t.Fatal(err)
 	}
@@ -256,8 +256,8 @@ func TestAdvancedCityPlanningBreakthroughDoesNotRetroactivelyGrowPopulation(t *t
 	if !empireKnowsTechnology(empire, rules.AdvancedCityPlanningTechnologyID) {
 		t.Fatalf("Advanced City Planning was not acquired: %v", empire.KnownTechnologyIDs)
 	}
-	if colony.Population.Total != 12 {
-		t.Fatalf("ACP breakthrough retroactively grew Population: %v", colony.Population.Total)
+	if colony.Population.Total() != 12 {
+		t.Fatalf("ACP breakthrough retroactively grew Population: %v", colony.Population.Total())
 	}
 	if colony.PopulationDynamics.Capacity != 17 || colony.PopulationDynamics.ProjectedGrowth <= 0 {
 		t.Fatalf("post-research dynamics=%+v want capacity=17 and next-state growth", colony.PopulationDynamics)
@@ -286,7 +286,7 @@ func TestBiospheresAndGaiaCompletionAffectNextStateCapacityOnly(t *testing.T) {
 			colony := &state.Colonies[0]
 			planet := planetByID(state, colony.PlanetID)
 			planet.ClimateID = tc.climate
-			colony.Population = core.PopulationState{Total: 12, Farmers: 6, Workers: 6}
+			colony.Population = core.NewAssimilatedPopulation(colony.EmpireID, 6, 6, 0)
 			if err := resolver.recalculateColony(state, colony); err != nil {
 				t.Fatal(err)
 			}
@@ -307,8 +307,8 @@ func TestBiospheresAndGaiaCompletionAffectNextStateCapacityOnly(t *testing.T) {
 			if _, err := resolver.Resolve(ResolveContext{}, state, nil); err != nil {
 				t.Fatal(err)
 			}
-			if colony.Population.Total != 12 {
-				t.Fatalf("completion retroactively grew Population: %v", colony.Population.Total)
+			if colony.Population.Total() != 12 {
+				t.Fatalf("completion retroactively grew Population: %v", colony.Population.Total())
 			}
 			if planet.ClimateID != tc.wantClimate {
 				t.Fatalf("post-completion climate=%q want=%q", planet.ClimateID, tc.wantClimate)
@@ -321,9 +321,9 @@ func TestBiospheresAndGaiaCompletionAffectNextStateCapacityOnly(t *testing.T) {
 }
 
 func TestAggregateCapacityClampPreservesRoleProportions(t *testing.T) {
-	colony := core.Colony{Population: core.PopulationState{Total: 10, Farmers: 4, Workers: 3, Scientists: 3}}
+	colony := core.Colony{Population: core.NewAssimilatedPopulation(1, 4, 3, 3)}
 	removed := clampAggregatePopulationToCapacity(&colony, 5)
-	if removed != 5 || colony.Population.Total != 5 || colony.Population.Farmers != 2 || colony.Population.Workers != 1.5 || colony.Population.Scientists != 1.5 {
+	if removed != 5 || colony.Population.Total() != 5 || colony.Population.Farmers() != 2 || colony.Population.Workers() != 1.5 || colony.Population.Scientists() != 1.5 {
 		t.Fatalf("clamped aggregate population=%+v removed=%v", colony.Population, removed)
 	}
 }

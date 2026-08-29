@@ -7,7 +7,7 @@ import (
 
 func TestStateAcceptsFractionalPopulationAndEconomy(t *testing.T) {
 	state := NewSmallFixture(710)
-	state.Colonies[0].Population = PopulationState{Total: 4, Farmers: 1.25, Workers: 1.5, Scientists: 1.25}
+	state.Colonies[0].Population = NewAssimilatedPopulation(state.Empires[0].ID, 1.25, 1.5, 1.25)
 	state.Colonies[0].Economy = ColonyEconomy{Food: 2.5, Production: 4.5, Research: 3.75, TaxBC: 4}
 	state.Colonies[0].AdjustedEconomy = ColonyEconomy{Food: 2.5, Production: 4.5, Research: 5.625, TaxBC: 6}
 	state.Colonies[0].Construction = &ConstructionState{ProjectKind: ConstructionProjectBuilding, ProjectID: "holo_simulator", ProgressPP: 2.75}
@@ -21,8 +21,8 @@ func TestStateRejectsInvalidContinuousValues(t *testing.T) {
 		name   string
 		mutate func(*GameState)
 	}{
-		{"population nan", func(s *GameState) { s.Colonies[0].Population.Total = math.NaN() }},
-		{"population infinity", func(s *GameState) { s.Colonies[0].Population.Farmers = math.Inf(1) }},
+		{"population nan", func(s *GameState) { s.Colonies[0].Population.Cohorts[0].Workers = math.NaN() }},
+		{"population infinity", func(s *GameState) { s.Colonies[0].Population.Cohorts[0].Farmers = math.Inf(1) }},
 		{"economy nan", func(s *GameState) { s.Colonies[0].Economy.Food = math.NaN() }},
 		{"adjusted economy infinity", func(s *GameState) { s.Colonies[0].AdjustedEconomy.Research = math.Inf(1) }},
 		{"population dynamics nan", func(s *GameState) { s.Colonies[0].PopulationDynamics.ProjectedGrowth = math.NaN() }},

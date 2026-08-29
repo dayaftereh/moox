@@ -10,13 +10,13 @@ func TestPopulationTransferStateRoundTripsExactly(t *testing.T) {
 	planet := &state.Galaxy.Systems[1].Planets[0]
 	second := Colony{
 		ID: state.NewID(), EmpireID: state.Empires[0].ID, PlanetID: planet.ID,
-		Population: PopulationState{Total: 1, Workers: 1},
+		Population: NewAssimilatedPopulation(state.Empires[0].ID, 0, 1, 0),
 	}
 	planet.ColonyID = second.ID
 	state.Colonies = append(state.Colonies, second)
 	state.PopulationTransfers = []PopulationTransfer{{
 		ID: state.NewID(), EmpireID: state.Empires[0].ID, SourceColonyID: state.Colonies[0].ID,
-		DestinationColonyID: second.ID, Job: PopulationJobWorker, RemainingTurns: 3,
+		DestinationColonyID: second.ID, OriginEmpireID: state.Empires[0].ID, LoyaltyEmpireID: state.Empires[0].ID, AssimilationState: PopulationAssimilated, Job: PopulationJobWorker, RemainingTurns: 3,
 	}}
 	encoded, err := MarshalState(state)
 	if err != nil {

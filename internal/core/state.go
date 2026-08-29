@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 13
+const StateSchemaVersion = 14
 
 type ID uint64
 
@@ -141,13 +141,6 @@ type ConstructionState struct {
 	ProgressPP  float64                 `json:"progress_pp"`
 }
 
-type PopulationState struct {
-	Total      float64 `json:"total"`
-	Farmers    float64 `json:"farmers"`
-	Workers    float64 `json:"workers"`
-	Scientists float64 `json:"scientists"`
-}
-
 // ColonyEconomy stores domain-native continuous resource output. Values are
 // expressed directly as Food, PP, RP and BC rather than scaled integer units.
 type ColonyEconomy struct {
@@ -160,22 +153,39 @@ type ColonyEconomy struct {
 // ColonyPopulationDynamics stores the materialized per-turn capacity,
 // sustenance, available-production and projected-growth values derived from
 // authoritative Colony, Planet and Race state.
-type ColonyPopulationDynamics struct {
+type PopulationOriginDynamics struct {
+	OriginEmpireID      ID      `json:"origin_empire_id"`
 	Capacity            float64 `json:"capacity"`
-	FoodRequired        float64 `json:"food_required"`
-	LocalFoodSurplus    float64 `json:"local_food_surplus"`
-	LocalFoodShortage   float64 `json:"local_food_shortage"`
-	FoodImported        float64 `json:"food_imported"`
-	FoodExported        float64 `json:"food_exported"`
-	FoodSurplus         float64 `json:"food_surplus"`
-	FoodShortage        float64 `json:"food_shortage"`
-	ProductionRequired  float64 `json:"production_required"`
-	ProductionShortage  float64 `json:"production_shortage"`
-	ProductionAvailable float64 `json:"production_available"`
+	Population          float64 `json:"population"`
+	Food2Required       float64 `json:"food2_required"`
 	BaseGrowth          float64 `json:"base_growth"`
 	GrowthMultiplier    float64 `json:"growth_multiplier"`
 	ProjectedGrowth     float64 `json:"projected_growth"`
 	ProjectedStarvation float64 `json:"projected_starvation"`
+}
+
+type ColonyPopulationDynamics struct {
+	Capacity                float64                    `json:"capacity"`
+	FoodRequired            float64                    `json:"food_required"`
+	OwnerOriginFood2        float64                    `json:"owner_origin_food2"`
+	AssimilatedForeignFood2 float64                    `json:"assimilated_foreign_food2"`
+	ConqueredForeignFood2   float64                    `json:"conquered_foreign_food2"`
+	RemainingFood2          float64                    `json:"remaining_food2"`
+	WholeFoodRequired       float64                    `json:"whole_food_required"`
+	LocalFoodSurplus        float64                    `json:"local_food_surplus"`
+	LocalFoodShortage       float64                    `json:"local_food_shortage"`
+	FoodImported            float64                    `json:"food_imported"`
+	FoodExported            float64                    `json:"food_exported"`
+	FoodSurplus             float64                    `json:"food_surplus"`
+	FoodShortage            float64                    `json:"food_shortage"`
+	ProductionRequired      float64                    `json:"production_required"`
+	ProductionShortage      float64                    `json:"production_shortage"`
+	ProductionAvailable     float64                    `json:"production_available"`
+	BaseGrowth              float64                    `json:"base_growth"`
+	GrowthMultiplier        float64                    `json:"growth_multiplier"`
+	ProjectedGrowth         float64                    `json:"projected_growth"`
+	ProjectedStarvation     float64                    `json:"projected_starvation"`
+	Origins                 []PopulationOriginDynamics `json:"origins,omitempty"`
 }
 
 // ColonyEconomyContext records the currently implemented percentage layers used
@@ -479,21 +489,11 @@ func (s *GameState) Validate() error {
 			}
 		}
 		population := colony.Population
-		for _, item := range []struct {
-			label string
-			value float64
-		}{
-			{"total", population.Total},
-			{"farmers", population.Farmers},
-			{"workers", population.Workers},
-			{"scientists", population.Scientists},
-		} {
-			if !finiteNonNegative(item.value) {
-				return fmt.Errorf("colony[%d] population %s must be finite and non-negative", i, item.label)
-			}
-		}
-		if assigned := population.Farmers + population.Workers + population.Scientists; !nearlyEqual(assigned, population.Total) {
-			return fmt.Errorf("colony[%d] assigned population=%g does not equal total=%g", i, assigned, population.Total)
+		if err := population.Validate(colony.EmpireID, func(id ID) bool {
+			_, ok := empireIDs[id]
+			return ok
+		}); err != nil {
+			return fmt.Errorf("colony[%d] population: %w", i, err)
 		}
 		for _, item := range []struct {
 			label string
@@ -518,6 +518,11 @@ func (s *GameState) Validate() error {
 		}{
 			{"population_capacity", colony.PopulationDynamics.Capacity},
 			{"food_required", colony.PopulationDynamics.FoodRequired},
+			{"owner_origin_food2", colony.PopulationDynamics.OwnerOriginFood2},
+			{"assimilated_foreign_food2", colony.PopulationDynamics.AssimilatedForeignFood2},
+			{"conquered_foreign_food2", colony.PopulationDynamics.ConqueredForeignFood2},
+			{"remaining_food2", colony.PopulationDynamics.RemainingFood2},
+			{"whole_food_required", colony.PopulationDynamics.WholeFoodRequired},
 			{"local_food_surplus", colony.PopulationDynamics.LocalFoodSurplus},
 			{"local_food_shortage", colony.PopulationDynamics.LocalFoodShortage},
 			{"food_imported", colony.PopulationDynamics.FoodImported},
@@ -536,6 +541,24 @@ func (s *GameState) Validate() error {
 				return fmt.Errorf("colony[%d] %s must be finite and non-negative", i, item.label)
 			}
 		}
+		originSeen := make(map[ID]struct{}, len(colony.PopulationDynamics.Origins))
+		for oi, origin := range colony.PopulationDynamics.Origins {
+			if origin.OriginEmpireID == 0 {
+				return fmt.Errorf("colony[%d] population origin dynamics[%d] missing origin empire", i, oi)
+			}
+			if _, ok := empireIDs[origin.OriginEmpireID]; !ok {
+				return fmt.Errorf("colony[%d] population origin dynamics[%d] references unknown empire %d", i, oi, origin.OriginEmpireID)
+			}
+			if _, ok := originSeen[origin.OriginEmpireID]; ok {
+				return fmt.Errorf("colony[%d] population origin dynamics duplicates empire %d", i, origin.OriginEmpireID)
+			}
+			originSeen[origin.OriginEmpireID] = struct{}{}
+			for _, item := range []float64{origin.Capacity, origin.Population, origin.Food2Required, origin.BaseGrowth, origin.GrowthMultiplier, origin.ProjectedGrowth, origin.ProjectedStarvation} {
+				if !finiteNonNegative(item) {
+					return fmt.Errorf("colony[%d] population origin dynamics[%d] contains invalid value", i, oi)
+				}
+			}
+		}
 		if colony.PopulationDynamics.FoodImported > colony.PopulationDynamics.LocalFoodShortage+1e-9 || colony.PopulationDynamics.FoodExported > colony.PopulationDynamics.LocalFoodSurplus+1e-9 {
 			return fmt.Errorf("colony[%d] food import/export exceeds local shortage/surplus", i)
 		}
@@ -551,8 +574,8 @@ func (s *GameState) Validate() error {
 		if colony.PopulationDynamics.ProductionAvailable > 1e-9 && colony.PopulationDynamics.ProductionShortage > 1e-9 {
 			return fmt.Errorf("colony[%d] cannot have production available and shortage simultaneously", i)
 		}
-		if colony.PopulationDynamics.Capacity > 0 && colony.Population.Total <= colony.PopulationDynamics.Capacity+1e-9 {
-			remaining := math.Max(0, colony.PopulationDynamics.Capacity-colony.Population.Total)
+		if colony.PopulationDynamics.Capacity > 0 && colony.Population.Total() <= colony.PopulationDynamics.Capacity+1e-9 {
+			remaining := math.Max(0, colony.PopulationDynamics.Capacity-colony.Population.Total())
 			if colony.PopulationDynamics.ProjectedGrowth > remaining+1e-9 {
 				return fmt.Errorf("colony[%d] projected growth %g exceeds remaining capacity %g", i, colony.PopulationDynamics.ProjectedGrowth, remaining)
 			}
@@ -609,6 +632,18 @@ func (s *GameState) Validate() error {
 		}
 		if transfer.SourceColonyID == transfer.DestinationColonyID {
 			return fmt.Errorf("population_transfer[%d] source and destination colony are identical", i)
+		}
+		if transfer.OriginEmpireID == 0 || transfer.LoyaltyEmpireID == 0 || transfer.AssimilationState != PopulationAssimilated {
+			return fmt.Errorf("population_transfer[%d] must identify assimilated organic cohort", i)
+		}
+		if _, ok := empireIDs[transfer.OriginEmpireID]; !ok {
+			return fmt.Errorf("population_transfer[%d] references unknown origin empire %d", i, transfer.OriginEmpireID)
+		}
+		if _, ok := empireIDs[transfer.LoyaltyEmpireID]; !ok {
+			return fmt.Errorf("population_transfer[%d] references unknown loyalty empire %d", i, transfer.LoyaltyEmpireID)
+		}
+		if transfer.LoyaltyEmpireID != transfer.EmpireID {
+			return fmt.Errorf("population_transfer[%d] assimilated cohort loyalty must match transfer empire", i)
 		}
 		if transfer.Job != PopulationJobFarmer && transfer.Job != PopulationJobWorker && transfer.Job != PopulationJobScientist {
 			return fmt.Errorf("population_transfer[%d] has invalid job %q", i, transfer.Job)

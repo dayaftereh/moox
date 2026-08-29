@@ -2,6 +2,7 @@ package game
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 
 	"moox/internal/core"
@@ -35,7 +36,7 @@ func TestPopulationTransferReservesFiveFreightersBeforeFoodAndReleasesOnArrival(
 	if state.PopulationTransfers[0].RemainingTurns != 1 {
 		t.Fatalf("ETA=%d want=1 for Alpha->Beta at Nuclear Drive speed", state.PopulationTransfers[0].RemainingTurns)
 	}
-	if home.Population.Total != 3 || home.Population.Farmers != 2 {
+	if home.Population.Total() != 3 || home.Population.Farmers() != 2 {
 		t.Fatalf("source population after launch=%+v", home.Population)
 	}
 
@@ -69,7 +70,7 @@ func TestPopulationTransferReservesFiveFreightersBeforeFoodAndReleasesOnArrival(
 	if findDomainEvent(transferEvents, "empire.population_transfer_arrived") == nil {
 		t.Fatalf("missing arrival event: %+v", transferEvents)
 	}
-	if destination.Population.Total != 3 || destination.Population.Farmers != 1 {
+	if destination.Population.Total() != 3 || destination.Population.Farmers() != 1 {
 		t.Fatalf("destination population after arrival=%+v", destination.Population)
 	}
 	if _, err := resolver.materializeFoodLogistics(state, false); err != nil {
@@ -87,7 +88,7 @@ func TestPopulationTransferWithinSystemIsImmediateAndNeedsNoFreighters(t *testin
 	home := &state.Colonies[0]
 	system := &state.Galaxy.Systems[0]
 	planet := core.Planet{ID: state.NewID(), Name: "Alpha II", Orbit: 2, SizeID: "medium", MineralID: "abundant", GravityID: "normal_g", ClimateID: "terran"}
-	destination := core.Colony{ID: state.NewID(), EmpireID: state.Empires[0].ID, PlanetID: planet.ID, Population: core.PopulationState{Total: 2, Workers: 2}}
+	destination := core.Colony{ID: state.NewID(), EmpireID: state.Empires[0].ID, PlanetID: planet.ID, Population: core.NewAssimilatedPopulation(state.Empires[0].ID, 0, 2, 0)}
 	planet.ColonyID = destination.ID
 	system.Planets = append(system.Planets, planet)
 	state.Colonies = append(state.Colonies, destination)
@@ -103,7 +104,7 @@ func TestPopulationTransferWithinSystemIsImmediateAndNeedsNoFreighters(t *testin
 	if event.Kind != "colony.population_transferred" || len(state.PopulationTransfers) != 0 {
 		t.Fatalf("same-system transfer kind=%s active=%+v", event.Kind, state.PopulationTransfers)
 	}
-	if state.Colonies[0].Population.Farmers != 1 || state.Colonies[1].Population.Farmers != 1 {
+	if state.Colonies[0].Population.Farmers() != 1 || state.Colonies[1].Population.Farmers() != 1 {
 		t.Fatalf("same-system job preservation failed source=%+v destination=%+v", state.Colonies[0].Population, state.Colonies[1].Population)
 	}
 }
@@ -137,7 +138,7 @@ func TestPopulationTransferIsLostWhenDestinationIsBlockadedAtArrival(t *testing.
 	if payload.Reason != "destination_blockaded" || payload.FreightersReleased != 5 {
 		t.Fatalf("lost payload=%+v", payload)
 	}
-	if destination.Population != beforeDestination || len(state.PopulationTransfers) != 0 {
+	if !reflect.DeepEqual(destination.Population, beforeDestination) || len(state.PopulationTransfers) != 0 {
 		t.Fatalf("blockaded arrival changed destination or retained transfer: pop=%+v transfers=%+v", destination.Population, state.PopulationTransfers)
 	}
 }
@@ -155,9 +156,9 @@ func TestPopulationTransferCapacityCountsInboundSettlers(t *testing.T) {
 	if capacity < 2 {
 		t.Fatalf("unexpected destination capacity %g", capacity)
 	}
-	destination.Population = core.PopulationState{Total: capacity - 1, Workers: capacity - 1}
+	destination.Population = core.NewAssimilatedPopulation(empireID, 0, capacity-1, 0)
 	state.PopulationTransfers = append(state.PopulationTransfers, core.PopulationTransfer{
-		ID: state.NewID(), EmpireID: empireID, SourceColonyID: home.ID, DestinationColonyID: destination.ID, Job: core.PopulationJobWorker, RemainingTurns: 2,
+		ID: state.NewID(), EmpireID: empireID, SourceColonyID: home.ID, DestinationColonyID: destination.ID, OriginEmpireID: empireID, LoyaltyEmpireID: empireID, AssimilationState: core.PopulationAssimilated, Job: core.PopulationJobWorker, RemainingTurns: 2,
 	})
 	command, _ := NewTransferPopulationCommand(1, TransferPopulationPayload{SourceColonyID: home.ID, DestinationColonyID: destination.ID, Job: core.PopulationJobFarmer})
 	if _, err := resolver.transferPopulation(state, empireID, 1, command); err == nil {

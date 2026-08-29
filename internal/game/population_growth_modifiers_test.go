@@ -11,7 +11,7 @@ import (
 func TestPopulationGrowthMedicineModifiersAddPercentagePoints(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	planet := core.Planet{SizeID: "medium", ClimateID: "terran"}
-	colony := core.Colony{Population: core.PopulationState{Total: 4, Farmers: 2, Workers: 1, Scientists: 1}}
+	colony := core.Colony{Population: core.NewAssimilatedPopulation(1, 2, 1, 1)}
 	adjusted := core.ColonyEconomy{Food: 4, Production: 3}
 	base := math.Sqrt(0.002 * 4 * (12 - 4) / 12)
 
@@ -36,7 +36,7 @@ func TestPopulationGrowthHousingUsesAvailableProductionAndOriginalFloor(t *testi
 	rules := loadCommittedEconomyRules(t)
 	planet := core.Planet{SizeID: "medium", ClimateID: "terran"}
 	colony := core.Colony{
-		Population:   core.PopulationState{Total: 4, Farmers: 2, Workers: 1, Scientists: 1},
+		Population:   core.NewAssimilatedPopulation(1, 2, 1, 1),
 		Construction: &core.ConstructionState{ProjectKind: core.ConstructionProjectHousing, ProjectID: HousingProjectID},
 	}
 	got, err := rules.CalculatePopulationDynamicsForEmpire(colony, planet, core.Empire{RaceID: "human"}, core.ColonyEconomy{Food: 4, Production: 3.25})
@@ -65,7 +65,7 @@ func TestPopulationGrowthCloningCenterIsFlatAndNotMultiplied(t *testing.T) {
 	rules.RaceModifiers["human"] = modifiers
 	planet := core.Planet{SizeID: "medium", ClimateID: "terran"}
 	colony := core.Colony{
-		Population: core.PopulationState{Total: 4, Farmers: 2, Workers: 1, Scientists: 1},
+		Population: core.NewAssimilatedPopulation(1, 2, 1, 1),
 		Buildings:  []string{rules.CloningCenterBuildingID},
 	}
 	got, err := rules.CalculatePopulationDynamicsForEmpire(colony, planet, core.Empire{RaceID: "human"}, core.ColonyEconomy{Food: 4, Production: 3})
@@ -86,7 +86,7 @@ func TestPopulationGrowthCombinedOriginalStackingAndCapacityClamp(t *testing.T) 
 	rules.RaceModifiers["human"] = modifiers
 	planet := core.Planet{SizeID: "medium", ClimateID: "terran"}
 	colony := core.Colony{
-		Population:   core.PopulationState{Total: 4, Farmers: 2, Workers: 1, Scientists: 1},
+		Population:   core.NewAssimilatedPopulation(1, 2, 1, 1),
 		Buildings:    []string{rules.CloningCenterBuildingID},
 		Construction: &core.ConstructionState{ProjectKind: core.ConstructionProjectHousing, ProjectID: HousingProjectID},
 	}
@@ -102,7 +102,7 @@ func TestPopulationGrowthCombinedOriginalStackingAndCapacityClamp(t *testing.T) 
 		t.Fatalf("combined growth=%+v want multiplier=%v projected=%v", got, wantMultiplier, want)
 	}
 
-	colony.Population = core.PopulationState{Total: 11.95, Farmers: 4, Workers: 4, Scientists: 3.95}
+	colony.Population = core.NewAssimilatedPopulation(colony.EmpireID, 4, 4, 3.95)
 	colony.Construction = nil
 	clamped, err := rules.CalculatePopulationDynamicsForEmpire(colony, planet, core.Empire{RaceID: "human"}, core.ColonyEconomy{Food: 12, Production: 3})
 	if err != nil {
@@ -153,10 +153,7 @@ func TestHousingChoiceQueueAndCapacityAutoStop(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	colony.Population.Total = capacity
-	colony.Population.Farmers = capacity
-	colony.Population.Workers = 0
-	colony.Population.Scientists = 0
+	colony.Population = core.NewAssimilatedPopulation(colony.EmpireID, capacity, 0, 0)
 	colony.PopulationDynamics.Capacity = capacity
 	events, err := resolver.advanceConstruction(state)
 	if err != nil {

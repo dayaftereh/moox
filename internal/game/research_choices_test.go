@@ -133,7 +133,7 @@ func TestStrategicResolverSelectsResearchAndAppliesFractionalTurnRP(t *testing.T
 	if err := rules.InitializeEmpireTechnologies(&state.Empires[0], NewGameTechnologyOptions{Level: NewGameTechnologyPreWarp}); err != nil {
 		t.Fatal(err)
 	}
-	state.Colonies[0].Population = core.PopulationState{Total: 4, Farmers: 1.25, Workers: 1.5, Scientists: 1.25}
+	state.Colonies[0].Population = core.NewAssimilatedPopulation(state.Empires[0].ID, 1.25, 1.5, 1.25)
 	command, err := NewSelectResearchCommand(1, SelectResearchPayload{TechFieldID: 4, TechnologyID: 56})
 	if err != nil {
 		t.Fatal(err)
@@ -195,7 +195,7 @@ func TestResearchUsesPreGrowthTurnOutput(t *testing.T) {
 		t.Fatalf("same-turn research progress=%v want pre-growth 4.5 RP", result.State.Empires[0].Research.ProgressRP)
 	}
 	colony := result.State.Colonies[0]
-	if colony.Population.Total <= 4 {
+	if colony.Population.Total() <= 4 {
 		t.Fatalf("expected turn-end population growth, got %+v", colony.Population)
 	}
 	if colony.AdjustedEconomy.Research <= 4.5 {

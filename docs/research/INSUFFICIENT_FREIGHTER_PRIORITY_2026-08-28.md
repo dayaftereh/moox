@@ -109,3 +109,15 @@ The exact insufficient-Freighter import priority is closed for the current aggre
 - blockade eligibility/effects;
 - Population transport and reservation of the shared Freighter pool;
 - mixed race/status Population cohorts, at which point the original four feeding passes can be represented completely.
+## 2026-08-29 cohort-resolution addendum
+
+The previously deferred meanings of Colony Food2 buckets `+0xFC/+0xFD/+0xFE/+0xFF` are now resolved by direct `Colony_Food_Maintenance_` analysis in `docs/research/POPULATION_COHORTS_2026-08-29.md`:
+
+```text
+FC = current owner's origin population
+FD = assimilated foreign organic population
+FE = conquered/unassimilated foreign organic population
+FF = Native population (source code 9)
+```
+
+Android population (source code 8) consumes Production rather than Food and is absent from these Food thresholds. The four-pass allocator described above is therefore no longer a deferred unknown; its semantic priority is owner -> assimilated foreign -> conquered foreign -> final rounded/Native demand.

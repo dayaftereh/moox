@@ -5,12 +5,13 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: **none**.
-- Active slice: **none**; the Population capacity transition slice is complete.
+- Open slice marker: `docs/slices/_OPEN_POPULATION_COHORTS_2026-08-29.md`.
+- Active slice: **Race-aware Population cohorts**.
 - Latest completed gameplay slice: Population capacity transitions (`25d05a9`).
-- Core `StateSchemaVersion`: **13**.
+- Core `StateSchemaVersion`: **14**.
 - Economy ruleset schema: **7**.
-- Permanent evidence: `docs/research/POPULATION_CAPACITY_TRANSITIONS_2026-08-29.md`.
+- Current slice evidence: `docs/research/POPULATION_COHORTS_2026-08-29.md`.
+- Previous closed-slice evidence: `docs/research/POPULATION_CAPACITY_TRANSITIONS_2026-08-29.md`.
 - Before starting new work, check `docs/slices/_OPEN_*.md`; resume any marker before opening another slice.
 
 ## Recently closed runtime sequence
@@ -27,11 +28,11 @@ The current Research/Economy chain is implemented and recorded in `docs/slices/H
 - Terraforming and Gaia Transformation as one-shot planetary climate projects with original legality/mappings and deterministic Barren middle-orbit RNG;
 - schema-13 persisted planetary-transformation construction plus authoritative GameSession/Observer lifecycle.
 
-## Next queued objective
+## Current objective
 
 ### Race-aware Population cohorts / conquered and mixed-race Colonies
 
-Do **not** create an `_OPEN_*.md` marker until work on this next slice actually begins. When it begins, use the four-gate protocol in `docs/slices/README.md`.
+Current gate: **Gate 4 - follow-up QA + commit + close pending**. Gate 3 completed on 2026-08-29: Core schema 14 now persists authoritative organic Population cohorts; Economy, Food logistics, growth/starvation, heterogeneous capacity, transfers and Session/Observer behavior are cohort-aware. The full Go test suite passes; final vet/diff/documentation/commit/close remains Gate 4.
 
 Gate 1 should establish from original MOO2 1.31 executable/data/save evidence where possible:
 

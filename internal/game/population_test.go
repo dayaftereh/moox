@@ -57,7 +57,7 @@ func TestPopulationRaceGrowthMultipliersAreNormalized(t *testing.T) {
 func TestPopulationSustenanceUsesDomainNativeFoodAndProduction(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	planet := core.Planet{SizeID: "medium", ClimateID: "terran"}
-	colony := core.Colony{Population: core.PopulationState{Total: 4, Farmers: 2, Workers: 1, Scientists: 1}}
+	colony := core.Colony{Population: core.NewAssimilatedPopulation(1, 2, 1, 1)}
 
 	human, err := rules.CalculatePopulationDynamics(colony, planet, "human", core.ColonyEconomy{Food: 4, Production: 3})
 	if err != nil {
@@ -87,7 +87,7 @@ func TestPopulationSustenanceUsesDomainNativeFoodAndProduction(t *testing.T) {
 func TestPopulationGrowthUsesDirectFloatPopulationUnits(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	planet := core.Planet{SizeID: "medium", ClimateID: "terran"}
-	colony := core.Colony{Population: core.PopulationState{Total: 4, Farmers: 2, Workers: 1, Scientists: 1}}
+	colony := core.Colony{Population: core.NewAssimilatedPopulation(1, 2, 1, 1)}
 	got, err := rules.CalculatePopulationDynamics(colony, planet, "human", core.ColonyEconomy{Food: 4, Production: 3})
 	if err != nil {
 		t.Fatal(err)
@@ -104,7 +104,7 @@ func TestPopulationGrowthUsesDirectFloatPopulationUnits(t *testing.T) {
 func TestPopulationGrowthAppliesRaceMultiplierAndNetsShortagePenalty(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	planet := core.Planet{SizeID: "medium", ClimateID: "terran"}
-	colony := core.Colony{Population: core.PopulationState{Total: 4, Farmers: 2, Workers: 1, Scientists: 1}}
+	colony := core.Colony{Population: core.NewAssimilatedPopulation(1, 2, 1, 1)}
 
 	sakkra, err := rules.CalculatePopulationDynamics(colony, planet, "sakkra", core.ColonyEconomy{Food: 4, Production: 3})
 	if err != nil {
@@ -143,7 +143,7 @@ func TestAdvancePopulationPreservesFractionalJobShares(t *testing.T) {
 	}
 	state := core.NewSmallFixture(720)
 	colony := &state.Colonies[0]
-	colony.Population = core.PopulationState{Total: 4, Farmers: 1.25, Workers: 1.5, Scientists: 1.25}
+	colony.Population = core.NewAssimilatedPopulation(colony.EmpireID, 1.25, 1.5, 1.25)
 	colony.PopulationDynamics = core.ColonyPopulationDynamics{Capacity: 12, ProjectedGrowth: 0.08, GrowthMultiplier: 1}
 
 	events, err := resolver.advancePopulation(state)
@@ -153,14 +153,14 @@ func TestAdvancePopulationPreservesFractionalJobShares(t *testing.T) {
 	if len(events) != 1 || events[0].Kind != "colony.population_grew" {
 		t.Fatalf("events=%+v", events)
 	}
-	if !closePopulationValue(colony.Population.Total, 4.08) {
-		t.Fatalf("total=%v want=4.08", colony.Population.Total)
+	if !closePopulationValue(colony.Population.Total(), 4.08) {
+		t.Fatalf("total=%v want=4.08", colony.Population.Total())
 	}
-	assigned := colony.Population.Farmers + colony.Population.Workers + colony.Population.Scientists
-	if !closePopulationValue(assigned, colony.Population.Total) {
-		t.Fatalf("assignments=%v total=%v", assigned, colony.Population.Total)
+	assigned := colony.Population.Farmers() + colony.Population.Workers() + colony.Population.Scientists()
+	if !closePopulationValue(assigned, colony.Population.Total()) {
+		t.Fatalf("assignments=%v total=%v", assigned, colony.Population.Total())
 	}
-	if !closePopulationValue(colony.Population.Farmers/colony.Population.Total, 1.25/4) || !closePopulationValue(colony.Population.Workers/colony.Population.Total, 1.5/4) {
+	if !closePopulationValue(colony.Population.Farmers()/colony.Population.Total(), 1.25/4) || !closePopulationValue(colony.Population.Workers()/colony.Population.Total(), 1.5/4) {
 		t.Fatalf("job shares changed: %+v", colony.Population)
 	}
 }

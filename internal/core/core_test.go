@@ -130,7 +130,7 @@ func TestIntnRangeAndValidation(t *testing.T) {
 
 func TestValidateRejectsPopulationAssignmentMismatch(t *testing.T) {
 	state := NewSmallFixture(19)
-	state.Colonies[0].Population.Workers++
+	state.Colonies[0].Population.Cohorts = append(state.Colonies[0].Population.Cohorts, state.Colonies[0].Population.Cohorts[0])
 	if err := state.Validate(); err == nil {
 		t.Fatal("expected mismatched population assignment to fail validation")
 	}

@@ -122,7 +122,7 @@ func (r *EconomyResolver) queueHousing(state *core.GameState, empireID core.ID, 
 	if err != nil {
 		return DomainEvent{}, err
 	}
-	if colony.Population.Total >= capacity-populationEpsilon {
+	if colony.Population.Total() >= capacity-populationEpsilon {
 		return DomainEvent{}, fmt.Errorf("colony %d is already at population capacity %g", colony.ID, capacity)
 	}
 	colony.Construction = &core.ConstructionState{ProjectKind: core.ConstructionProjectHousing, ProjectID: HousingProjectID}
@@ -181,7 +181,7 @@ func (r *EconomyResolver) advanceConstruction(state *core.GameState) ([]DomainEv
 			if projectID != HousingProjectID || math.Abs(colony.Construction.ProgressPP) > populationEpsilon {
 				return nil, fmt.Errorf("colony %d has invalid Housing construction state", colony.ID)
 			}
-			if colony.PopulationDynamics.Capacity > 0 && colony.Population.Total >= colony.PopulationDynamics.Capacity-populationEpsilon {
+			if colony.PopulationDynamics.Capacity > 0 && colony.Population.Total() >= colony.PopulationDynamics.Capacity-populationEpsilon {
 				colony.Construction = nil
 				stopped, err := NewDomainEvent("colony.housing_stopped", 0, 0, HousingStoppedEvent{ColonyID: colony.ID, Reason: "population_capacity"})
 				if err != nil {
@@ -305,22 +305,14 @@ func (r *EconomyResolver) completePlanetaryTransformation(state *core.GameState,
 	if empire == nil {
 		return DomainEvent{}, fmt.Errorf("colony %d references unknown empire %d", colony.ID, colony.EmpireID)
 	}
-	previousCapacity, err := r.Rules.ColonyPopulationCapacity(*colony, *planet, *empire)
-	if err != nil {
-		return DomainEvent{}, err
-	}
 	currentClimate, err := r.planetaryTransformationTargetClimate(state, *planet, definition)
 	if err != nil {
 		return DomainEvent{}, err
 	}
 	planet.ClimateID = currentClimate
-	currentCapacity, err := r.Rules.ColonyPopulationCapacity(*colony, *planet, *empire)
+	populationRemoved, err := r.trimColonyToHeterogeneousCapacity(state, colony)
 	if err != nil {
 		return DomainEvent{}, err
-	}
-	populationRemoved := 0.0
-	if currentCapacity+populationEpsilon < previousCapacity {
-		populationRemoved = clampAggregatePopulationToCapacity(colony, currentCapacity)
 	}
 	return NewDomainEvent("colony.planetary_transformation_completed", 0, 0, PlanetaryTransformationCompletedEvent{
 		ColonyID: colony.ID, PlanetID: planet.ID, ProjectID: projectID, PreviousClimateID: previousClimate, CurrentClimateID: currentClimate, PopulationRemoved: populationRemoved,

@@ -2,6 +2,7 @@ package game
 
 import (
 	"encoding/json"
+	"reflect"
 	"testing"
 
 	"moox/internal/core"
@@ -32,8 +33,8 @@ func TestFractionalPopulationAssignmentProducesFractionalEconomy(t *testing.T) {
 	if err := json.Unmarshal(result.Events[0].Data, &assigned); err != nil {
 		t.Fatal(err)
 	}
-	wantPopulation := core.PopulationState{Total: 4, Farmers: 1.25, Workers: 1.5, Scientists: 1.25}
-	if assigned.Current != wantPopulation {
+	wantPopulation := core.NewAssimilatedPopulation(state.Empires[0].ID, 1.25, 1.5, 1.25)
+	if !reflect.DeepEqual(assigned.Current, wantPopulation) {
 		t.Fatalf("assigned population=%+v want=%+v", assigned.Current, wantPopulation)
 	}
 	wantBase := core.ColonyEconomy{Food: 2.5, Production: 4.5, Research: 3.75, TaxBC: 4}

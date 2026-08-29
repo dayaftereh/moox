@@ -27,7 +27,7 @@ func (r *EconomyRules) refreshPopulationProjection(dynamics *core.ColonyPopulati
 	if dynamics == nil {
 		return fmt.Errorf("population dynamics must not be nil")
 	}
-	population := colony.Population.Total
+	population := colony.Population.Total()
 	modifiers, ok := r.RaceModifiers[empire.RaceID]
 	if !ok {
 		return fmt.Errorf("unknown race %q", empire.RaceID)
@@ -177,8 +177,8 @@ func (r *EconomyResolver) materializeFoodLogistics(state *core.GameState, emit b
 			d := &colony.PopulationDynamics
 			d.FoodSurplus = math.Max(0, d.LocalFoodSurplus-d.FoodExported)
 			d.FoodShortage = math.Max(0, d.LocalFoodShortage-d.FoodImported)
-			if err := r.Rules.refreshPopulationProjection(d, *colony, *empire); err != nil {
-				return nil, fmt.Errorf("colony %d population projection: %w", colony.ID, err)
+			if err := r.refreshRaceAwarePopulationProjection(state, *colony, *empire, colony.AdjustedEconomy.Food, d); err != nil {
+				return nil, fmt.Errorf("colony %d race-aware population projection: %w", colony.ID, err)
 			}
 			if !blockadedByColonyID[colony.ID] {
 				sellableSurplus += d.FoodSurplus
@@ -252,6 +252,66 @@ func coloniesForEmpire(state *core.GameState, empireID core.ID) []*core.Colony {
 // analogue of the original colony-array order.
 func allocateFoodImports(colonies []*core.Colony, transfer, foodPerFreighter float64) {
 	remaining := transfer
+	semantic := false
+	for _, colony := range colonies {
+		d := colony.PopulationDynamics
+		if d.OwnerOriginFood2 > populationEpsilon || d.AssimilatedForeignFood2 > populationEpsilon || d.ConqueredForeignFood2 > populationEpsilon || d.RemainingFood2 > populationEpsilon || d.WholeFoodRequired > populationEpsilon {
+			semantic = true
+			break
+		}
+	}
+	if !semantic {
+		allocateFoodImportsLegacy(colonies, transfer, foodPerFreighter)
+		return
+	}
+
+	for pass := 1; pass <= 4 && remaining > populationEpsilon; pass++ {
+		for remaining > populationEpsilon {
+			allocated := false
+			for _, colony := range colonies {
+				if remaining <= populationEpsilon {
+					break
+				}
+				d := &colony.PopulationDynamics
+				target := foodImportPassTarget(*d, pass)
+				current := colony.AdjustedEconomy.Food + d.FoodImported
+				need := target - current
+				if need <= populationEpsilon {
+					continue
+				}
+				share := math.Min(need, foodPerFreighter)
+				share = math.Min(share, remaining)
+				if share <= populationEpsilon {
+					continue
+				}
+				d.FoodImported += share
+				remaining -= share
+				allocated = true
+			}
+			if !allocated {
+				break
+			}
+		}
+	}
+}
+
+func foodImportPassTarget(d core.ColonyPopulationDynamics, pass int) float64 {
+	switch pass {
+	case 1:
+		return d.OwnerOriginFood2 / 2
+	case 2:
+		return (d.OwnerOriginFood2 + d.AssimilatedForeignFood2) / 2
+	case 3:
+		return (d.OwnerOriginFood2 + d.AssimilatedForeignFood2 + d.ConqueredForeignFood2) / 2
+	case 4:
+		return d.WholeFoodRequired
+	default:
+		return d.WholeFoodRequired
+	}
+}
+
+func allocateFoodImportsLegacy(colonies []*core.Colony, transfer, foodPerFreighter float64) {
+	remaining := transfer
 	for remaining > populationEpsilon {
 		allocated := false
 		for _, colony := range colonies {
@@ -277,7 +337,6 @@ func allocateFoodImports(colonies []*core.Colony, transfer, foodPerFreighter flo
 		}
 	}
 }
-
 func allocateFoodExports(colonies []*core.Colony, transfer, totalSurplus float64) {
 	remaining := transfer
 	remainingWeight := totalSurplus

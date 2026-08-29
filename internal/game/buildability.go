@@ -71,11 +71,11 @@ func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empir
 		return transformationChoices[i].ProjectID < transformationChoices[j].ProjectID
 	})
 	choices = append(choices, transformationChoices...)
-	capacity, err := r.ColonyPopulationCapacity(*colony, *planet, *empire)
+	hasGrowthRoom, err := r.mixedPopulationHasGrowthRoom(state, *colony, *planet, *empire)
 	if err != nil {
-		return nil, fmt.Errorf("colony %d population capacity: %w", colony.ID, err)
+		return nil, fmt.Errorf("colony %d mixed population capacity: %w", colony.ID, err)
 	}
-	if colony.Population.Total < capacity-populationEpsilon {
+	if hasGrowthRoom {
 		choices = append(choices, ConstructionChoice{
 			ProjectKind: core.ConstructionProjectHousing,
 			ProjectID:   HousingProjectID,

@@ -3,6 +3,7 @@ package session
 import (
 	"encoding/json"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	"moox/internal/core"
@@ -48,7 +49,7 @@ func TestEconomyCommandFlowsThroughAuthoritativeSessionAndObserver(t *testing.T)
 		t.Fatalf("unexpected resolved phase/revision: %q/%v", observer.Phase, observer.Revision)
 	}
 	colony := observer.State.Colonies[0]
-	if colony.Population.Total >= 4 || colony.Population.Total <= 0 {
+	if colony.Population.Total() >= 4 || colony.Population.Total() <= 0 {
 		t.Fatalf("expected starvation transition in final observer state: %+v", colony.Population)
 	}
 	if colony.EconomyContext.GovernmentTraitID != "government_democracy" || colony.EconomyContext.GravityPenaltyPercent != 0 {
@@ -68,7 +69,7 @@ func TestEconomyCommandFlowsThroughAuthoritativeSessionAndObserver(t *testing.T)
 			if err := json.Unmarshal(event.Data, &payload); err != nil {
 				t.Fatal(err)
 			}
-			if payload.Current != (core.PopulationState{Total: 4, Farmers: 1, Workers: 2, Scientists: 1}) {
+			if want := core.NewAssimilatedPopulation(state.Empires[0].ID, 1, 2, 1); !reflect.DeepEqual(payload.Current, want) {
 				t.Fatalf("assignment payload population=%+v", payload.Current)
 			}
 			if payload.BaseEconomy != (core.ColonyEconomy{Food: 2, Production: 6, Research: 3, TaxBC: 4}) {
@@ -117,7 +118,7 @@ func TestEconomyCommandCannotCrossSeatEmpireBoundaryThroughSession(t *testing.T)
 		t.Fatal("expected cross-empire population command to fail")
 	}
 	after, _ := s.ObserverView()
-	if after.Revision != before.Revision || after.Phase != before.Phase || after.State.Colonies[0].Population != before.State.Colonies[0].Population {
+	if after.Revision != before.Revision || after.Phase != before.Phase || !reflect.DeepEqual(after.State.Colonies[0].Population, before.State.Colonies[0].Population) {
 		t.Fatalf("failed malicious resolve changed authoritative session")
 	}
 }

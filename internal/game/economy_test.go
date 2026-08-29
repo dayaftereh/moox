@@ -3,6 +3,7 @@ package game
 import (
 	"encoding/json"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	"moox/internal/core"
@@ -74,7 +75,7 @@ func TestCalculateBaseEconomyUsesDomainNativeRoleOutputs(t *testing.T) {
 		t.Fatalf("human base economy = %+v, want %+v", got, want)
 	}
 
-	colony.Population = core.PopulationState{Total: 4, Farmers: 1, Workers: 1, Scientists: 2}
+	colony.Population = core.NewAssimilatedPopulation(colony.EmpireID, 1, 1, 2)
 	psilon, err := rules.CalculateBaseEconomy(colony, planet, "psilon")
 	if err != nil {
 		t.Fatal(err)
@@ -108,7 +109,7 @@ func TestEconomyResolverAssignsOwnedPopulationAndEmitsEvent(t *testing.T) {
 	if err := json.Unmarshal(result.Events[0].Data, &assigned); err != nil {
 		t.Fatal(err)
 	}
-	if assigned.Current != (core.PopulationState{Total: 4, Farmers: 1, Workers: 2, Scientists: 1}) {
+	if want := core.NewAssimilatedPopulation(state.Empires[0].ID, 1, 2, 1); !reflect.DeepEqual(assigned.Current, want) {
 		t.Fatalf("population assignment event = %+v", assigned.Current)
 	}
 	if assigned.BaseEconomy != (core.ColonyEconomy{Food: 2, Production: 6, Research: 3, TaxBC: 4}) {
@@ -153,7 +154,7 @@ func TestFoodBonusesDoNotMakeNoFarmingPlanetFarmable(t *testing.T) {
 	colony := state.Colonies[0]
 	planet := state.Galaxy.Systems[0].Planets[0]
 	planet.ClimateID = "barren"
-	colony.Population = core.PopulationState{Total: 4, Farmers: 4}
+	colony.Population = core.NewAssimilatedPopulation(colony.EmpireID, 4, 0, 0)
 
 	got, err := rules.CalculateBaseEconomy(colony, planet, "sakkra")
 	if err != nil {
@@ -168,7 +169,7 @@ func TestAquaticFoodCoefficientAppliesOnlyToNormalizedWetClimates(t *testing.T) 
 	rules := loadCommittedEconomyRules(t)
 	state := core.NewSmallFixture(93)
 	colony := state.Colonies[0]
-	colony.Population = core.PopulationState{Total: 4, Farmers: 1, Workers: 1, Scientists: 2}
+	colony.Population = core.NewAssimilatedPopulation(colony.EmpireID, 1, 1, 2)
 	planet := state.Galaxy.Systems[0].Planets[0]
 
 	planet.ClimateID = "tundra"
@@ -194,7 +195,7 @@ func TestPopulationIncomePreservesFractionalBC(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	state := core.NewSmallFixture(94)
 	colony := state.Colonies[0]
-	colony.Population = core.PopulationState{Total: 1, Scientists: 1}
+	colony.Population = core.NewAssimilatedPopulation(colony.EmpireID, 0, 0, 1)
 	planet := state.Galaxy.Systems[0].Planets[0]
 	modifiers := rules.RaceModifiers["human"]
 	modifiers.TaxBCPerPopulation = 0.5
@@ -238,7 +239,7 @@ func TestContextualEconomyLowGAndHeavyGMatrix(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	state := core.NewSmallFixture(102)
 	colony := state.Colonies[0]
-	colony.Population = core.PopulationState{Total: 1, Scientists: 1}
+	colony.Population = core.NewAssimilatedPopulation(colony.EmpireID, 0, 0, 1)
 	colony.Buildings = []string{"marine_barracks"}
 	planet := state.Galaxy.Systems[0].Planets[0]
 
@@ -281,7 +282,7 @@ func TestContextualEconomyUnificationAppliesToFoodAndIndustry(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	state := core.NewSmallFixture(103)
 	colony := state.Colonies[0]
-	colony.Population = core.PopulationState{Total: 2, Farmers: 1, Workers: 1}
+	colony.Population = core.NewAssimilatedPopulation(colony.EmpireID, 1, 1, 0)
 	planet := state.Galaxy.Systems[0].Planets[0]
 	base, err := rules.CalculateBaseEconomy(colony, planet, "klackon")
 	if err != nil {
@@ -306,7 +307,7 @@ func TestContextualEconomyFeudalResearchPenalty(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	state := core.NewSmallFixture(104)
 	colony := state.Colonies[0]
-	colony.Population = core.PopulationState{Total: 1, Scientists: 1}
+	colony.Population = core.NewAssimilatedPopulation(colony.EmpireID, 0, 0, 1)
 	colony.Buildings = []string{"marine_barracks"}
 	planet := state.Galaxy.Systems[0].Planets[0]
 	base, err := rules.CalculateBaseEconomy(colony, planet, "sakkra")
@@ -326,7 +327,7 @@ func TestMoraleBarracksPenaltyAndRemoval(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	state := core.NewSmallFixture(105)
 	colony := state.Colonies[0]
-	colony.Population = core.PopulationState{Total: 1, Scientists: 1}
+	colony.Population = core.NewAssimilatedPopulation(colony.EmpireID, 0, 0, 1)
 	planet := state.Galaxy.Systems[0].Planets[0]
 	planet.GravityID = "low_g"
 	base, err := rules.CalculateBaseEconomy(colony, planet, "psilon")
@@ -361,7 +362,7 @@ func TestMoraleBuildingsAreCumulativeAndAffectMoneySeparately(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	state := core.NewSmallFixture(106)
 	colony := state.Colonies[0]
-	colony.Population = core.PopulationState{Total: 1, Scientists: 1}
+	colony.Population = core.NewAssimilatedPopulation(colony.EmpireID, 0, 0, 1)
 	colony.Buildings = []string{"holo_simulator", "pleasure_dome"}
 	planet := state.Galaxy.Systems[0].Planets[0]
 	base, err := rules.CalculateBaseEconomy(colony, planet, "human")
@@ -387,7 +388,7 @@ func TestUnificationRecordsButIgnoresMorale(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	state := core.NewSmallFixture(107)
 	colony := state.Colonies[0]
-	colony.Population = core.PopulationState{Total: 2, Farmers: 1, Workers: 1}
+	colony.Population = core.NewAssimilatedPopulation(colony.EmpireID, 1, 1, 0)
 	colony.Buildings = []string{"holo_simulator", "pleasure_dome"}
 	planet := state.Galaxy.Systems[0].Planets[0]
 	base, err := rules.CalculateBaseEconomy(colony, planet, "klackon")

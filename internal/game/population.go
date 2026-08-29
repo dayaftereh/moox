@@ -84,10 +84,10 @@ func (r *EconomyRules) ColonyPopulationCapacity(colony core.Colony, planet core.
 // immediately when a capacity source disappears. Until race/job cohorts are
 // normalized, MOOX preserves the aggregate role proportions while clamping.
 func clampAggregatePopulationToCapacity(colony *core.Colony, capacity float64) float64 {
-	if colony == nil || colony.Population.Total <= capacity+populationEpsilon {
+	if colony == nil || colony.Population.Total() <= capacity+populationEpsilon {
 		return 0
 	}
-	previous := colony.Population.Total
+	previous := colony.Population.Total()
 	if capacity < 0 {
 		capacity = 0
 	}
@@ -95,10 +95,12 @@ func clampAggregatePopulationToCapacity(colony *core.Colony, capacity float64) f
 	if previous > populationEpsilon {
 		factor = capacity / previous
 	}
-	colony.Population.Farmers *= factor
-	colony.Population.Workers *= factor
-	colony.Population.Scientists *= factor
-	colony.Population.Total = capacity
+	for i := range colony.Population.Cohorts {
+		colony.Population.Cohorts[i].Farmers *= factor
+		colony.Population.Cohorts[i].Workers *= factor
+		colony.Population.Cohorts[i].Scientists *= factor
+	}
+	colony.Population.Normalize()
 	return previous - capacity
 }
 
@@ -120,7 +122,7 @@ func (r *EconomyRules) calculatePopulationDynamics(colony core.Colony, planet co
 	if !ok {
 		return core.ColonyPopulationDynamics{}, fmt.Errorf("unknown race %q", raceID)
 	}
-	population := colony.Population.Total
+	population := colony.Population.Total()
 	foodRequired := population * r.PopulationFoodPerUnit
 	productionRequired := 0.0
 	if modifiers.Lithovore {
@@ -168,20 +170,28 @@ func (r *EconomyResolver) advancePopulation(state *core.GameState) ([]DomainEven
 	var events []DomainEvent
 	for i := range state.Colonies {
 		colony := &state.Colonies[i]
-		if colony.Population.Total <= populationEpsilon {
+		if colony.Population.Total() <= populationEpsilon {
 			continue
 		}
-		previous := colony.Population
-		if growth := colony.PopulationDynamics.ProjectedGrowth; growth > populationEpsilon {
-			nextTotal := math.Min(colony.PopulationDynamics.Capacity, previous.Total+growth)
-			applied := nextTotal - previous.Total
+		previous := clonePopulationState(colony.Population)
+		if loss := colony.PopulationDynamics.ProjectedStarvation; loss > populationEpsilon {
+			if len(colony.PopulationDynamics.Origins) == 0 {
+				nextTotal := math.Max(r.Rules.MinimumPopulationAfterStarvation, previous.Total()-loss)
+				scalePopulation(&colony.Population, previous, nextTotal)
+			} else {
+				for _, origin := range colony.PopulationDynamics.Origins {
+					if err := applyOriginStarvation(&colony.Population, origin.OriginEmpireID, origin.ProjectedStarvation); err != nil {
+						return nil, fmt.Errorf("colony %d starvation origin %d: %w", colony.ID, origin.OriginEmpireID, err)
+					}
+				}
+			}
+			applied := previous.Total() - colony.Population.Total()
 			if applied <= populationEpsilon {
 				continue
 			}
-			scalePopulation(&colony.Population, previous, nextTotal)
-			event, err := NewDomainEvent("colony.population_grew", 0, 0, PopulationGrewEvent{
+			event, err := NewDomainEvent("colony.population_starved", 0, 0, PopulationStarvedEvent{
 				ColonyID: colony.ID, Previous: previous, Current: colony.Population,
-				AppliedGrowth: applied, Dynamics: colony.PopulationDynamics,
+				AppliedLoss: applied, Dynamics: colony.PopulationDynamics,
 			})
 			if err != nil {
 				return nil, err
@@ -189,16 +199,27 @@ func (r *EconomyResolver) advancePopulation(state *core.GameState) ([]DomainEven
 			events = append(events, event)
 			continue
 		}
-		if loss := colony.PopulationDynamics.ProjectedStarvation; loss > populationEpsilon {
-			nextTotal := math.Max(r.Rules.MinimumPopulationAfterStarvation, previous.Total-loss)
-			applied := previous.Total - nextTotal
+		if growth := colony.PopulationDynamics.ProjectedGrowth; growth > populationEpsilon {
+			if len(colony.PopulationDynamics.Origins) == 0 {
+				nextTotal := math.Min(colony.PopulationDynamics.Capacity, previous.Total()+growth)
+				scalePopulation(&colony.Population, previous, nextTotal)
+			} else {
+				for _, origin := range colony.PopulationDynamics.Origins {
+					if err := applyOriginGrowth(&colony.Population, colony.EmpireID, origin); err != nil {
+						return nil, fmt.Errorf("colony %d growth origin %d: %w", colony.ID, origin.OriginEmpireID, err)
+					}
+				}
+				if _, err := r.trimColonyToHeterogeneousCapacity(state, colony); err != nil {
+					return nil, err
+				}
+			}
+			applied := colony.Population.Total() - previous.Total()
 			if applied <= populationEpsilon {
 				continue
 			}
-			scalePopulation(&colony.Population, previous, nextTotal)
-			event, err := NewDomainEvent("colony.population_starved", 0, 0, PopulationStarvedEvent{
+			event, err := NewDomainEvent("colony.population_grew", 0, 0, PopulationGrewEvent{
 				ColonyID: colony.ID, Previous: previous, Current: colony.Population,
-				AppliedLoss: applied, Dynamics: colony.PopulationDynamics,
+				AppliedGrowth: applied, Dynamics: colony.PopulationDynamics,
 			})
 			if err != nil {
 				return nil, err
@@ -208,18 +229,18 @@ func (r *EconomyResolver) advancePopulation(state *core.GameState) ([]DomainEven
 	}
 	return events, nil
 }
-
 func scalePopulation(target *core.PopulationState, previous core.PopulationState, nextTotal float64) {
-	if previous.Total <= populationEpsilon {
-		*target = core.PopulationState{Total: nextTotal}
+	if previous.Total() <= populationEpsilon {
+		target.Cohorts = nil
 		return
 	}
-	ratio := nextTotal / previous.Total
-	target.Total = nextTotal
-	target.Farmers = previous.Farmers * ratio
-	target.Workers = previous.Workers * ratio
-	target.Scientists = nextTotal - target.Farmers - target.Workers
-	if target.Scientists < 0 && target.Scientists > -populationEpsilon {
-		target.Scientists = 0
+	ratio := nextTotal / previous.Total()
+	*target = previous
+	target.Cohorts = append([]core.PopulationCohort(nil), previous.Cohorts...)
+	for i := range target.Cohorts {
+		target.Cohorts[i].Farmers *= ratio
+		target.Cohorts[i].Workers *= ratio
+		target.Cohorts[i].Scientists *= ratio
 	}
+	target.Normalize()
 }

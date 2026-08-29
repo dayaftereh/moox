@@ -58,13 +58,13 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 					return Resolution{}, fmt.Errorf("seat %d cannot assign population on colony %d owned by empire %d", batch.SeatID, colony.ID, colony.EmpireID)
 				}
 				assigned := payload.Farmers + payload.Workers + payload.Scientists
-				if math.Abs(assigned-colony.Population.Total) > 1e-9*math.Max(1, math.Max(math.Abs(assigned), math.Abs(colony.Population.Total))) {
-					return Resolution{}, fmt.Errorf("colony %d assignment total %g does not equal population total %g", colony.ID, assigned, colony.Population.Total)
+				if math.Abs(assigned-colony.Population.Total()) > 1e-9*math.Max(1, math.Max(math.Abs(assigned), math.Abs(colony.Population.Total()))) {
+					return Resolution{}, fmt.Errorf("colony %d assignment total %g does not equal population total %g", colony.ID, assigned, colony.Population.Total())
 				}
 				previous := colony.Population
-				colony.Population.Farmers = payload.Farmers
-				colony.Population.Workers = payload.Workers
-				colony.Population.Scientists = payload.Scientists
+				if err := colony.Population.SetAggregateJobs(payload.Farmers, payload.Workers, payload.Scientists); err != nil {
+					return Resolution{}, fmt.Errorf("colony %d assignment: %w", colony.ID, err)
+				}
 				if err := r.recalculateColony(state, colony); err != nil {
 					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
 				}
@@ -187,17 +187,13 @@ func (r *EconomyResolver) recalculateColony(state *core.GameState, colony *core.
 	if empire == nil {
 		return fmt.Errorf("colony %d references unknown empire %d", colony.ID, colony.EmpireID)
 	}
-	base, err := r.Rules.CalculateBaseEconomy(*colony, *planet, empire.RaceID)
+	base, context, adjusted, err := r.calculateRaceAwareColonyEconomy(state, *colony, *planet, *empire)
 	if err != nil {
-		return fmt.Errorf("calculate colony %d base economy: %w", colony.ID, err)
+		return fmt.Errorf("calculate colony %d race-aware economy: %w", colony.ID, err)
 	}
-	context, adjusted, err := r.Rules.CalculateContextualEconomy(base, *colony, *planet, empire.RaceID)
+	dynamics, err := r.calculateRaceAwarePopulationDynamics(state, *colony, *planet, *empire, adjusted)
 	if err != nil {
-		return fmt.Errorf("calculate colony %d contextual economy: %w", colony.ID, err)
-	}
-	dynamics, err := r.Rules.CalculatePopulationDynamicsForEmpire(*colony, *planet, *empire, adjusted)
-	if err != nil {
-		return fmt.Errorf("calculate colony %d population dynamics: %w", colony.ID, err)
+		return fmt.Errorf("calculate colony %d race-aware population dynamics: %w", colony.ID, err)
 	}
 	colony.Economy = base
 	colony.EconomyContext = context

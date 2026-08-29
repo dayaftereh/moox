@@ -76,7 +76,7 @@ func TestStrategicApplyOrderUsesPreGrowthResearchAndConstructionSnapshots(t *tes
 		t.Fatalf("construction used non-pre-growth output: %+v", construction)
 	}
 	colony := result.State.Colonies[0]
-	if colony.Population.Total <= 4 {
+	if colony.Population.Total() <= 4 {
 		t.Fatalf("expected Population growth before construction apply, got %+v", colony.Population)
 	}
 	if colony.AdjustedEconomy.Research <= research.TurnResearchRP || colony.AdjustedEconomy.Production <= construction.AppliedPP {

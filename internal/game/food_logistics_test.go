@@ -12,14 +12,14 @@ func twoColonyFoodFixture(t *testing.T, seed uint64) (*core.GameState, *core.Col
 	t.Helper()
 	state := core.NewSmallFixture(seed)
 	home := &state.Colonies[0]
-	home.Population = core.PopulationState{Total: 4, Farmers: 3, Scientists: 1}
+	home.Population = core.NewAssimilatedPopulation(home.EmpireID, 3, 0, 1)
 
 	planet := &state.Galaxy.Systems[1].Planets[0] // small desert
 	second := core.Colony{
 		ID:         state.NewID(),
 		EmpireID:   state.Empires[0].ID,
 		PlanetID:   planet.ID,
-		Population: core.PopulationState{Total: 2, Workers: 1, Scientists: 1},
+		Population: core.NewAssimilatedPopulation(state.Empires[0].ID, 0, 1, 1),
 	}
 	planet.ColonyID = second.ID
 	state.Colonies = append(state.Colonies, second)
@@ -97,7 +97,7 @@ func TestInsufficientFreightersLeaveShortageAndCauseStarvation(t *testing.T) {
 	}
 	state, _, sink := twoColonyFoodFixture(t, 731)
 	state.Empires[0].Freighters = 1
-	previous := sink.Population.Total
+	previous := sink.Population.Total()
 
 	result, err := resolver.Resolve(ResolveContext{}, state, nil)
 	if err != nil {
@@ -122,11 +122,11 @@ func TestInsufficientFreightersLeaveShortageAndCauseStarvation(t *testing.T) {
 	if err := json.Unmarshal(starved.Data, &payload); err != nil {
 		t.Fatal(err)
 	}
-	if payload.ColonyID != sink.ID || payload.AppliedLoss <= 0 || payload.Current.Total >= previous {
+	if payload.ColonyID != sink.ID || payload.AppliedLoss <= 0 || payload.Current.Total() >= previous {
 		t.Fatalf("unexpected starvation payload: %+v", payload)
 	}
-	assigned := payload.Current.Farmers + payload.Current.Workers + payload.Current.Scientists
-	if !closePopulationValue(assigned, payload.Current.Total) {
+	assigned := payload.Current.Farmers() + payload.Current.Workers() + payload.Current.Scientists()
+	if !closePopulationValue(assigned, payload.Current.Total()) {
 		t.Fatalf("starvation broke population allocation: %+v", payload.Current)
 	}
 }
@@ -138,13 +138,13 @@ func TestStarvationCannotEliminateLastPopulationUnit(t *testing.T) {
 		t.Fatal(err)
 	}
 	state := core.NewSmallFixture(732)
-	state.Colonies[0].Population = core.PopulationState{Total: 1, Workers: 1}
+	state.Colonies[0].Population = core.NewAssimilatedPopulation(state.Empires[0].ID, 0, 1, 0)
 	state.Empires[0].Freighters = 0
 	result, err := resolver.Resolve(ResolveContext{}, state, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.State.Colonies[0].Population.Total != 1 {
+	if result.State.Colonies[0].Population.Total() != 1 {
 		t.Fatalf("last population unit starved away: %+v", result.State.Colonies[0].Population)
 	}
 }
@@ -152,7 +152,7 @@ func TestStarvationCannotEliminateLastPopulationUnit(t *testing.T) {
 func TestCyberneticStarvationUsesFoodAndProductionShortage(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	planet := core.Planet{SizeID: "medium", ClimateID: "terran"}
-	colony := core.Colony{Population: core.PopulationState{Total: 4, Farmers: 1, Scientists: 3}}
+	colony := core.Colony{Population: core.NewAssimilatedPopulation(1, 1, 0, 3)}
 	adjusted := core.ColonyEconomy{Food: 1, Production: 1}
 	d, err := rules.CalculatePopulationDynamics(colony, planet, "meklar", adjusted)
 	if err != nil {
@@ -177,7 +177,7 @@ func TestSurplusFoodSaleAndFantasticTradersRate(t *testing.T) {
 	}
 
 	regularState := core.NewSmallFixture(733)
-	regularState.Colonies[0].Population = core.PopulationState{Total: 4, Farmers: 3, Scientists: 1}
+	regularState.Colonies[0].Population = core.NewAssimilatedPopulation(regularState.Empires[0].ID, 3, 0, 1)
 	regular, err := resolver.Resolve(ResolveContext{}, regularState, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -198,7 +198,7 @@ func TestSurplusFoodSaleAndFantasticTradersRate(t *testing.T) {
 	m.FantasticTraders = true
 	rules.RaceModifiers["human"] = m
 	tradersState := core.NewSmallFixture(734)
-	tradersState.Colonies[0].Population = core.PopulationState{Total: 4, Farmers: 3, Scientists: 1}
+	tradersState.Colonies[0].Population = core.NewAssimilatedPopulation(tradersState.Empires[0].ID, 3, 0, 1)
 	traders, err := resolver.Resolve(ResolveContext{}, tradersState, nil)
 	if err != nil {
 		t.Fatal(err)
@@ -232,7 +232,7 @@ func TestFoodLogisticsPreservesFractionalContinuousValues(t *testing.T) {
 		ID:         state.NewID(),
 		EmpireID:   state.Empires[0].ID,
 		PlanetID:   planet.ID,
-		Population: core.PopulationState{Total: 2, Workers: 1, Scientists: 1},
+		Population: core.NewAssimilatedPopulation(state.Empires[0].ID, 0, 1, 1),
 		PopulationDynamics: core.ColonyPopulationDynamics{
 			Capacity:          10,
 			LocalFoodShortage: 1.375,
@@ -273,7 +273,7 @@ func TestStarvationPreservesFractionalPopulationLoss(t *testing.T) {
 	state := core.NewSmallFixture(737)
 	planet := state.Galaxy.Systems[0].Planets[0]
 	colony := &state.Colonies[0]
-	colony.Population = core.PopulationState{Total: 4, Farmers: 2, Workers: 1, Scientists: 1}
+	colony.Population = core.NewAssimilatedPopulation(colony.EmpireID, 2, 1, 1)
 
 	dynamics, err := rules.CalculatePopulationDynamics(*colony, planet, "human", core.ColonyEconomy{Food: 2, Production: 3})
 	if err != nil {
@@ -283,7 +283,7 @@ func TestStarvationPreservesFractionalPopulationLoss(t *testing.T) {
 		t.Fatalf("expected fractional starvation loss, got %+v", dynamics)
 	}
 	colony.PopulationDynamics = dynamics
-	before := colony.Population.Total
+	before := colony.Population.Total()
 	events, err := resolver.advancePopulation(state)
 	if err != nil {
 		t.Fatal(err)
@@ -292,8 +292,8 @@ func TestStarvationPreservesFractionalPopulationLoss(t *testing.T) {
 		t.Fatalf("unexpected starvation events: %+v", events)
 	}
 	want := before - dynamics.ProjectedStarvation
-	if !closePopulationValue(colony.Population.Total, want) {
-		t.Fatalf("fractional starvation total=%v want=%v loss=%v", colony.Population.Total, want, dynamics.ProjectedStarvation)
+	if !closePopulationValue(colony.Population.Total(), want) {
+		t.Fatalf("fractional starvation total=%v want=%v loss=%v", colony.Population.Total(), want, dynamics.ProjectedStarvation)
 	}
 }
 

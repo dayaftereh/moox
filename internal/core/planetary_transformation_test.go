@@ -5,15 +5,15 @@ import (
 	"testing"
 )
 
-func TestPlanetaryTransformationStateRoundTripsInSchema13(t *testing.T) {
+func TestPlanetaryTransformationStateRoundTripsInCurrentSchema(t *testing.T) {
 	state := NewSmallFixture(0xA200)
 	state.Colonies[0].Construction = &ConstructionState{
 		ProjectKind: ConstructionProjectPlanetaryTransformation,
 		ProjectID:   "terraforming",
 		ProgressPP:  123.5,
 	}
-	if StateSchemaVersion != 13 || state.SchemaVersion != 13 {
-		t.Fatalf("schema=%d constant=%d want=13", state.SchemaVersion, StateSchemaVersion)
+	if StateSchemaVersion != 14 || state.SchemaVersion != 14 {
+		t.Fatalf("schema=%d constant=%d want=14", state.SchemaVersion, StateSchemaVersion)
 	}
 	if err := state.Validate(); err != nil {
 		t.Fatal(err)

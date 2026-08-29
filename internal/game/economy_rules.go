@@ -570,10 +570,10 @@ func (r *EconomyRules) CalculateBaseEconomy(colony core.Colony, planet core.Plan
 	taxPerPopulation := math.Max(0, r.BaseTaxBCPerPopulation+modifiers.TaxBCPerPopulation)
 	population := colony.Population
 	return core.ColonyEconomy{
-		Food:       population.Farmers * foodPerFarmer,
-		Production: population.Workers * productionPerWorker,
-		Research:   population.Scientists * researchPerScientist,
-		TaxBC:      population.Total * taxPerPopulation,
+		Food:       population.Farmers() * foodPerFarmer,
+		Production: population.Workers() * productionPerWorker,
+		Research:   population.Scientists() * researchPerScientist,
+		TaxBC:      population.Total() * taxPerPopulation,
 	}, nil
 }
 
