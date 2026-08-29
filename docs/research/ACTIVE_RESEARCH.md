@@ -5,13 +5,13 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: **none**.
-- Active slice: **none**; the Race-aware Population cohorts slice is complete.
+- Open slice marker: `docs/slices/_OPEN_FLEET_DIPLOMACY_BLOCKADES_2026-08-29.md`.
+- Active slice: **Canonical strategic Fleet/Diplomacy blockade production**.
 - Latest completed gameplay slice: Race-aware Population cohorts (`7c49e90`).
-- Core `StateSchemaVersion`: **14**.
+- Core `StateSchemaVersion`: **15**.
 - Economy ruleset schema: **7**.
-- Latest permanent evidence: `docs/research/POPULATION_COHORTS_2026-08-29.md`.
-- Previous closed-slice evidence: `docs/research/POPULATION_CAPACITY_TRANSITIONS_2026-08-29.md`.
+- Current slice evidence: `docs/research/FLEET_DIPLOMACY_BLOCKADES_2026-08-29.md`.
+- Previous closed-slice evidence: `docs/research/POPULATION_COHORTS_2026-08-29.md`.
 - Before starting new work, check `docs/slices/_OPEN_*.md`; resume any marker before opening another slice.
 
 ## Recently closed runtime sequence
@@ -30,25 +30,37 @@ The current Research/Economy chain is implemented and recorded in `docs/slices/H
 - race-aware mixed-colony Economy, exact four-pass Food priority, per-origin Growth/Starvation and heterogeneous capacity;
 - cohort-aware Population transfer preserved through GameSession, Observer and replay.
 
-## Next queued objective
+## Current objective
 
 ### Canonical strategic Fleet/Diplomacy state for blockade production
 
-Do **not** create an `_OPEN_*.md` marker until work on this next slice actually begins. When it begins, use the four-gate protocol in `docs/slices/README.md`.
+Current gate: **Gate 4 - QA + commit + close pending**. Gates 1-3 are complete. Gate 2 was accepted on 2026-08-29 without scope changes; Gate 3 implemented Core schema 15 strategic Fleet/directed relation state plus deterministic blockade production and original-order integration before Population-transfer arrivals/final Food. `docs/research/FLEET_DIPLOMACY_BLOCKADES_2026-08-29.md` is the permanent evidence and implementation record.
 
-The current Food-logistics consumer already understands authoritative per-system blockade state, but blockade production is still deliberately not invented from temporary data. The next queued slice should establish the minimum canonical strategic Fleet/Diplomacy state needed to derive that blockade state deterministically.
+Gate 1 now establishes:
 
-Gate 1 should establish from original MOO2 1.31 executable/data/save evidence where possible:
+- target system presence is derived from **Colony ownership**, not defending Fleet presence;
+- only stationary (`fleet +0x64 == 0`) ordinary/combat (`fleet +0x11 == 0`) strategic Fleets participate in normal blockade production;
+- Fleet owner and system are the direct identities used by the original producer;
+- normal blockade hostility is a **directed fleet-owner -> target-owner** relationship predicate, with original relation values `4..6` accepted;
+- several hostile Fleet owners combine idempotently into the target blockade mask;
+- the original also materializes per-target blockader masks, but current MOOX consumers require only the already-persisted `StarSystem.BlockadedEmpireIDs`;
+- original timing is first Colony/Food pass -> `Compute_Blockades_` -> Settler movement -> final Colony/Food pass, mapping cleanly to a MOOX recomputation immediately before `advancePopulationTransfers`;
+- special/non-player fleet owners, full movement-state enums, full diplomacy state names and tactical fleet composition remain deliberately deferred.
 
-1. the minimum authoritative strategic Fleet identity/location/owner state required for blockade production;
-2. how hostile/friendly/diplomatic relationships participate in system blockade eligibility;
-3. when blockade state is derived or refreshed in the strategic turn lifecycle;
-4. whether multiple fleets/empires combine, cancel or otherwise affect blockade presence;
-5. the minimal Core/Game/Session/Observer schema that lets existing Food logistics consume derived blockades without importing tactical-combat scope.
+### Proposed Gate 2 shape
+
+Advance Core schema **14 -> 15** with minimal semantic strategic state:
+
+- `StrategicFleet { ID, EmpireID, Role, AtSystemID }`, where only `role=Combat` and a non-zero `AtSystemID` can blockade;
+- directed `DiplomaticRelation { FromEmpireID, ToEmpireID, Stance }`, initially semantic `neutral|hostile` rather than guessed names for legacy relation values;
+- no duplicate System-presence state: Colony owners are derived from existing Planet/Colony state;
+- pure deterministic `recomputeSystemBlockades` clears/rebuilds sorted/unique `StarSystem.BlockadedEmpireIDs` from Fleet + relation + Colony state;
+- run that phase after Construction and before Population-transfer resolution/final Food recalculation;
+- no new player command and no tactical/broad-diplomacy scope.
 
 ### Scope guard
 
-Keep the next slice focused on canonical strategic Fleet/Diplomacy state **only as far as required to produce blockade state**. Do not absorb tactical combat, ship-design fidelity, broad diplomacy negotiations, AI strategy or UI work unless direct evidence makes one inseparable from blockade legality.
+Keep this slice focused on canonical strategic Fleet/Diplomacy state **only as far as required to produce blockade state**. Do not absorb tactical combat, ship-design fidelity, fleet strength, full movement/ETA, diplomacy negotiations/treaties, special/non-player fleets, AI strategy or UI work.
 
 ## Planned queue after blockade production
 
@@ -57,7 +69,7 @@ Keep the next slice focused on canonical strategic Fleet/Diplomacy state **only 
 
 ## Explicitly parked / UI-only fidelity
 
-- Active conquest/occupation/automatic-assimilation progression, Android/Native population and persisted custom race designs remain later Population extensions; Gate 3 intentionally did not absorb them.
+- Active conquest/occupation/automatic-assimilation progression, Android/Native population and persisted custom race designs remain later Population extensions; the cohort slice intentionally did not absorb them.
 - The original Hyper-Advanced research-selection screen temporarily previews counters at `completed + 1` and has a 20-level list boundary. MOOX deliberately keeps authoritative strategic cost/progression separate from that original UI quirk.
 - Original copyrighted assets remain private reference material and are not distributable MOOX content.
 - Wails/network/MCP layers remain adapters and must not own gameplay legality or deterministic state transitions.

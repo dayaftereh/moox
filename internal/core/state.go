@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 14
+const StateSchemaVersion = 15
 
 type ID uint64
 
@@ -18,6 +18,8 @@ type GameState struct {
 	Galaxy              Galaxy               `json:"galaxy"`
 	Empires             []Empire             `json:"empires"`
 	Colonies            []Colony             `json:"colonies"`
+	StrategicFleets     []StrategicFleet     `json:"strategic_fleets,omitempty"`
+	DiplomaticRelations []DiplomaticRelation `json:"diplomatic_relations,omitempty"`
 	PopulationTransfers []PopulationTransfer `json:"population_transfers,omitempty"`
 	Events              []Event              `json:"events"`
 }
@@ -252,6 +254,7 @@ func (s *GameState) Validate() error {
 
 	seen := make(map[ID]string)
 	planetIDs := make(map[ID]struct{})
+	systemIDs := make(map[ID]struct{})
 	empireIDs := make(map[ID]struct{})
 	colonyIDs := make(map[ID]struct{})
 	checkID := func(id ID, label string) error {
@@ -276,6 +279,7 @@ func (s *GameState) Validate() error {
 		if err := checkID(system.ID, fmt.Sprintf("system[%d]", si)); err != nil {
 			return err
 		}
+		systemIDs[system.ID] = struct{}{}
 		lastBlockadedEmpireID := ID(0)
 		for bi, empireID := range system.BlockadedEmpireIDs {
 			if empireID == 0 {
@@ -451,6 +455,9 @@ func (s *GameState) Validate() error {
 			}
 		}
 		empireIDs[empire.ID] = struct{}{}
+	}
+	if err := validateStrategicState(s, empireIDs, systemIDs, checkID); err != nil {
+		return err
 	}
 	for si := range s.Galaxy.Systems {
 		for _, empireID := range s.Galaxy.Systems[si].BlockadedEmpireIDs {

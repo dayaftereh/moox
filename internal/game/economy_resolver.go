@@ -160,6 +160,13 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 		return Resolution{}, err
 	}
 	events = append(events, constructionEvents...)
+	// Original 1.31 recomputes strategic blockades after the first Colony pass and
+	// immediately before Settler movement. Rebuild the derived system blockade state
+	// here so Population-transfer arrivals and the final Food snapshot consume the same
+	// current Fleet/Diplomacy result.
+	if err := recomputeSystemBlockades(state); err != nil {
+		return Resolution{}, err
+	}
 	populationTransferEvents, err := r.advancePopulationTransfers(state)
 	if err != nil {
 		return Resolution{}, err
