@@ -5,62 +5,62 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: **none**.
-- Active slice: **none**; the Canonical strategic Fleet/Diplomacy blockade-production slice is complete.
+- Open slice marker: `docs/slices/_OPEN_TREASURY_MAINTENANCE_DEFICIT_2026-08-29.md`.
+- Active slice: **Treasury Maintenance categories and deficit/scrap policy**.
+- Current gate: **Gate 4 - QA and close in progress**.
 - Latest completed gameplay slice: Canonical strategic Fleet/Diplomacy blockade production (`d148502`).
 - Core `StateSchemaVersion`: **15**.
 - Economy ruleset schema: **7**.
-- Latest permanent evidence: `docs/research/FLEET_DIPLOMACY_BLOCKADES_2026-08-29.md`.
-- Previous closed-slice evidence: `docs/research/POPULATION_COHORTS_2026-08-29.md`.
+- Current permanent evidence: `docs/research/TREASURY_MAINTENANCE_DEFICIT_2026-08-29.md`.
+- Previous Treasury evidence: `docs/research/TREASURY_SETTLEMENT_2026-08-28.md`.
 - Before starting new work, check `docs/slices/_OPEN_*.md`; resume any marker before opening another slice.
 
 ## Recently closed runtime sequence
 
-The current Research/Economy chain is implemented and recorded in `docs/slices/HISTORY.md`, including:
+The current Research/Economy chain is implemented and recorded in `docs/slices/HISTORY.md`, including race-aware research, original strategic turn ordering, Freighter/Food logistics, modeled Treasury settlement, Population relocation/growth/capacity/cohorts, and Core schema 15 strategic Fleet/Diplomacy blockade production.
 
-- race-aware multi-Technology research, switching, Uncreative initialization and repair;
-- Hyper-Advanced repeated fields and Advanced-start randomized/race-aware ownership;
-- original strategic Research -> Population -> Construction ordering with pre-growth RP/PP snapshots;
-- Freighter Fleet production, Treasury settlement, constrained Food imports and system-blockade Food exclusion;
-- Population relocation through the shared Freighter pool;
-- Housing, Microbiotics, Universal Antidote and Cloning Center Population-growth modifiers;
-- Advanced City Planning +5 and Biospheres +2 Population-capacity layers;
-- Terraforming and Gaia Transformation as one-shot planetary climate projects with original legality/mappings and deterministic Barren middle-orbit RNG;
-- Core schema 14 organic Population cohorts with origin/loyalty/assimilation identity;
-- race-aware mixed-colony Economy, exact four-pass Food priority, per-origin Growth/Starvation and heterogeneous capacity;
-- cohort-aware Population transfer preserved through GameSession, Observer and replay;
-- Core schema 15 strategic Fleet ownership/location plus directed Empire relations;
-- deterministic system-blockade production from Colony presence + stationary combat Fleets + directed hostility, materialized before Settler arrival/final Food.
+## Current objective
 
-## Next queued objective
+### Treasury Maintenance categories and deficit/scrap policy
 
-### Missing original Treasury income/Maintenance categories and deficit/scrap policy
+Gate 1 is complete and the proposed narrow Gate 2 contract was accepted on 2026-08-30. Gate 3 is implementing only the two dependency-safe fidelity corrections.
 
-Do **not** create an `_OPEN_*.md` marker until work on this next slice actually begins. When it begins, use the four-gate protocol in `docs/slices/README.md`.
+Gate 1 resolves the original six Maintenance component words at player `+0xB8..+0xC2` as:
 
-The current Treasury runtime already has the directly verified 50 BC New Game balance and strategic settlement of the currently modeled Tax + surplus-Food income against Building + active-Freighter Maintenance. The next queued slice should extend that model only with original categories and deficit behavior that can be evidenced without inventing dependencies that do not yet exist.
+1. Colony/Building Maintenance;
+2. active Freighter operating cost;
+3. Ship command-point overage Maintenance;
+4. Spy Maintenance;
+5. outgoing Tribute payments;
+6. Officer/Leader Maintenance.
 
-Gate 1 should establish from original MOO2 1.31 executable/data/save evidence where possible:
+The original gross/current BC path additionally includes Colony BC production, Leader economic bonuses, treaty effects, received Tribute and positive surplus-Food sale income.
 
-1. which additional income and Maintenance categories are part of the strategic Treasury settlement path;
-2. which categories can be represented with systems MOOX already owns and which must remain deferred until dependent systems exist;
-3. the exact order and rounding boundaries of Treasury aggregation relative to the already-implemented settlement timing;
-4. what happens when available BC cannot satisfy required Maintenance, including the original deficit/scrap selection policy and any protected/excluded assets;
-5. the minimum Core/Game/Session state and deterministic tests needed to add those categories without duplicating future Fleet/Ship/Leader state.
+The original forced deficit routine `Player_Maintenance_` begins only when `Treasury + current net BC < 0` and then uses staged, deterministic, asset-aware liquidation across Buildings, Spies, Ships and Leaders. It does not directly auto-scrap Freighters. Because MOOX lacks canonical Ship/Spy/Leader and treaty-economic state, implementing only the currently available asset classes would be observably non-original and remains deferred.
+
+### Proposed Gate 2 shape
+
+Keep Core schema **15** and Economy ruleset schema **7**. Make only the two dependency-safe fidelity corrections now:
+
+- active Freighter Maintenance uses existing `PopulationTransportFreightersReserved + FreightersUsed` and materializes whole-BC cost as `floor(activeFreighters / 2)`; this closes the prior Settler-reservation Maintenance uncertainty;
+- surplus-Food sale retains continuous `SurplusFoodSold` telemetry but materializes original whole-BC income as `floor(SurplusFoodSold * rate)`, with normal rate 0.5 and Fantastic Traders rate 1.0.
+
+Keep current Building Maintenance and Treasury settlement order unchanged. Do not add zero-valued fake Ship/Spy/Tribute/Officer categories and do not implement partial automatic deficit liquidation. Negative `BalanceBC` remains an explicit modernization until the source asset systems required by original `Player_Maintenance_` are authoritative.
 
 ### Scope guard
 
-Keep the next slice focused on Treasury categories and deficit/scrap behavior whose dependencies are already authoritative. Do not fabricate Ship/Leader/Spy/Fleet Maintenance records or broad economic systems solely to fill missing Treasury lines; evidence-dependent categories may stay deferred.
+Do not absorb Ship command-point state, Spies, Leaders, treaty economics, ship design/combat or broad diplomacy merely to make Treasury totals look complete. These dependencies should be implemented in their own evidence-driven slices and then wired into the already-resolved original Treasury buckets.
 
-## Planned queue after Treasury completion
+## Planned queue after this Treasury slice
 
 1. Continue the first headless vertical game loop toward colony-ship production, strategic movement/colonization and a second colony.
-2. Extend strategic Fleet movement/location beyond the current at-system blockade presence when the movement/colonization slice begins.
+2. Extend strategic Fleet movement/location beyond current at-system blockade presence when the movement/colonization slice begins.
+3. Revisit complete deficit/scrap liquidation only after canonical Ship/Spy/Leader/treaty state exists.
 
 ## Explicitly parked / UI-only fidelity
 
-- Full Fleet movement/path/ETA, special/non-player Fleet owners, tactical Fleet composition and broad diplomacy/treaty negotiation remain later strategic slices; the blockade slice intentionally implemented only the minimum producer state.
+- Full Fleet movement/path/ETA, special/non-player Fleet owners, tactical Fleet composition and broad diplomacy/treaty negotiation remain later strategic slices.
 - Active conquest/occupation/automatic-assimilation progression, Android/Native population and persisted custom race designs remain later Population extensions.
-- The original Hyper-Advanced research-selection screen temporarily previews counters at `completed + 1` and has a 20-level list boundary. MOOX deliberately keeps authoritative strategic cost/progression separate from that original UI quirk.
+- The original Hyper-Advanced research-selection screen preview/list-boundary quirks remain optional UI fidelity, not strategic-core rules.
 - Original copyrighted assets remain private reference material and are not distributable MOOX content.
 - Wails/network/MCP layers remain adapters and must not own gameplay legality or deterministic state transitions.

@@ -166,6 +166,15 @@ func (r *EconomyResolver) materializeFoodLogistics(state *core.GameState, emit b
 		if transfer > populationEpsilon {
 			used = int(math.Ceil(transfer/r.Rules.FreighterFoodCapacity - populationEpsilon))
 		}
+		unusedFreighters := availableForFood - used
+		if unusedFreighters < 0 {
+			unusedFreighters = 0
+		}
+		activeFreighters := empire.Freighters - unusedFreighters
+		if activeFreighters < 0 {
+			activeFreighters = 0
+		}
+		freighterOperatingCostBC := math.Floor(float64(activeFreighters)*r.Rules.FreighterOperatingCostBC + populationEpsilon)
 		required := 0
 		if transferPossible > populationEpsilon {
 			required = int(math.Ceil(transferPossible/r.Rules.FreighterFoodCapacity - populationEpsilon))
@@ -205,8 +214,8 @@ func (r *EconomyResolver) materializeFoodLogistics(state *core.GameState, emit b
 			FoodTransferred:                       transfer,
 			FoodUnmet:                             remainingShortage,
 			SurplusFoodSold:                       sellableSurplus,
-			FreighterOperatingCostBC:              float64(used) * r.Rules.FreighterOperatingCostBC,
-			SurplusFoodIncomeBC:                   sellableSurplus * saleRate,
+			FreighterOperatingCostBC:              freighterOperatingCostBC,
+			SurplusFoodIncomeBC:                   math.Floor(sellableSurplus*saleRate + populationEpsilon),
 		}
 		if emit && (totalSurplus > populationEpsilon || totalShortage > populationEpsilon || transfer > populationEpsilon) {
 			event, err := NewDomainEvent("empire.food_logistics_resolved", 0, 0, FoodLogisticsResolvedEvent{EmpireID: empire.ID, Snapshot: empire.FoodLogistics, Colonies: colonyViews})

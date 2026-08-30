@@ -59,6 +59,9 @@ func TestPopulationTransferReservesFiveFreightersBeforeFoodAndReleasesOnArrival(
 	if food.Snapshot.PopulationTransportFreightersReserved != 5 || food.Snapshot.FreightersAvailableForFood != 0 || food.Snapshot.FreightersUsed != 0 {
 		t.Fatalf("food Freighter reservation snapshot=%+v", food.Snapshot)
 	}
+	if food.Snapshot.FreighterOperatingCostBC != 2 {
+		t.Fatalf("reserved Freighter operating cost=%v want=2 BC", food.Snapshot.FreighterOperatingCostBC)
+	}
 
 	transferEvents, err := resolver.advancePopulationTransfers(state)
 	if err != nil {
@@ -81,6 +84,51 @@ func TestPopulationTransferReservesFiveFreightersBeforeFoodAndReleasesOnArrival(
 	}
 }
 
+func TestPopulationTransferReservationAndFoodUseShareFreighterMaintenanceBucket(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	resolver, err := NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state, home, destination := twoColonyFoodFixture(t, 0xA300)
+	empire := &state.Empires[0]
+	empire.Freighters = 6
+	empire.KnownTechnologyIDs = []int{120} // Nuclear Drive: original FTL speed 2.
+
+	command, err := NewTransferPopulationCommand(1, TransferPopulationPayload{
+		SourceColonyID: home.ID, DestinationColonyID: destination.ID, Job: core.PopulationJobFarmer,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.transferPopulation(state, empire.ID, protocol.SeatID(1), command); err != nil {
+		t.Fatal(err)
+	}
+	for i := range state.Colonies {
+		if err := resolver.recalculateColony(state, &state.Colonies[i]); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := resolver.materializeFoodLogistics(state, false); err != nil {
+		t.Fatal(err)
+	}
+
+	snapshot := empire.FoodLogistics
+	if snapshot.PopulationTransportFreightersReserved != 5 || snapshot.FreightersAvailableForFood != 1 || snapshot.FreightersUsed != 1 {
+		t.Fatalf("combined Freighter activity snapshot=%+v", snapshot)
+	}
+	if snapshot.FreighterOperatingCostBC != 3 {
+		t.Fatalf("combined Freighter operating cost=%v want=3 BC snapshot=%+v", snapshot.FreighterOperatingCostBC, snapshot)
+	}
+
+	empire.Treasury.BalanceBC = 50
+	if _, err := resolver.settleTreasury(state); err != nil {
+		t.Fatal(err)
+	}
+	if empire.Treasury.FreighterOperatingCostBC != 3 {
+		t.Fatalf("Treasury FreighterOperatingCostBC=%v want=3 BC Treasury=%+v", empire.Treasury.FreighterOperatingCostBC, empire.Treasury)
+	}
+}
 func TestPopulationTransferWithinSystemIsImmediateAndNeedsNoFreighters(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	resolver, _ := NewEconomyResolver(rules)

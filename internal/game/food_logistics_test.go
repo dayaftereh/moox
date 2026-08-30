@@ -73,6 +73,91 @@ func TestFoodLogisticsTransfersFoodWithFreighters(t *testing.T) {
 	}
 }
 
+func TestFreighterOperatingCostUsesOriginalAggregateWholeBCBoundary(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	resolver, err := NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cases := []struct {
+		name       string
+		transfer   float64
+		freighters int
+		wantUsed   int
+		wantCost   float64
+	}{
+		{name: "one active", transfer: 0.75, freighters: 1, wantUsed: 1, wantCost: 0},
+		{name: "three active", transfer: 2.25, freighters: 3, wantUsed: 3, wantCost: 1},
+	}
+
+	for i, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			state, source, sink := twoColonyFoodFixture(t, uint64(0xA100+i))
+			state.Empires[0].Freighters = tc.freighters
+			source.PopulationDynamics.LocalFoodSurplus = tc.transfer
+			source.PopulationDynamics.FoodSurplus = tc.transfer
+			sink.PopulationDynamics.LocalFoodShortage = tc.transfer
+			sink.PopulationDynamics.FoodShortage = tc.transfer
+
+			if _, err := resolver.materializeFoodLogistics(state, false); err != nil {
+				t.Fatal(err)
+			}
+			snapshot := state.Empires[0].FoodLogistics
+			if snapshot.FreightersUsed != tc.wantUsed {
+				t.Fatalf("FreightersUsed=%d want=%d snapshot=%+v", snapshot.FreightersUsed, tc.wantUsed, snapshot)
+			}
+			if snapshot.FreighterOperatingCostBC != tc.wantCost {
+				t.Fatalf("FreighterOperatingCostBC=%v want=%v snapshot=%+v", snapshot.FreighterOperatingCostBC, tc.wantCost, snapshot)
+			}
+		})
+	}
+}
+
+func TestSurplusFoodSaleUsesOriginalWholeBCBoundary(t *testing.T) {
+	cases := []struct {
+		name      string
+		surplus   float64
+		fantastic bool
+		wantBC    float64
+	}{
+		{name: "regular one food", surplus: 1, wantBC: 0},
+		{name: "regular two food", surplus: 2, wantBC: 1},
+		{name: "regular three food", surplus: 3, wantBC: 1},
+		{name: "regular fractional food remains continuous", surplus: 3.75, wantBC: 1},
+		{name: "fantastic one food", surplus: 1, fantastic: true, wantBC: 1},
+		{name: "fantastic fractional food remains continuous", surplus: 2.75, fantastic: true, wantBC: 2},
+	}
+
+	for i, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			rules := loadCommittedEconomyRules(t)
+			if tc.fantastic {
+				mods := rules.RaceModifiers["human"]
+				mods.FantasticTraders = true
+				rules.RaceModifiers["human"] = mods
+			}
+			resolver, err := NewEconomyResolver(rules)
+			if err != nil {
+				t.Fatal(err)
+			}
+			state := core.NewSmallFixture(uint64(0xA200 + i))
+			state.Colonies[0].PopulationDynamics.LocalFoodSurplus = tc.surplus
+			state.Colonies[0].PopulationDynamics.FoodSurplus = tc.surplus
+
+			if _, err := resolver.materializeFoodLogistics(state, false); err != nil {
+				t.Fatal(err)
+			}
+			snapshot := state.Empires[0].FoodLogistics
+			if !closePopulationValue(snapshot.SurplusFoodSold, tc.surplus) {
+				t.Fatalf("SurplusFoodSold=%v want=%v snapshot=%+v", snapshot.SurplusFoodSold, tc.surplus, snapshot)
+			}
+			if snapshot.SurplusFoodIncomeBC != tc.wantBC {
+				t.Fatalf("SurplusFoodIncomeBC=%v want=%v snapshot=%+v", snapshot.SurplusFoodIncomeBC, tc.wantBC, snapshot)
+			}
+		})
+	}
+}
 func TestAllocateFoodImportsFollowsOriginalRoundRobinPriority(t *testing.T) {
 	colonies := []*core.Colony{
 		{ID: 10, PopulationDynamics: core.ColonyPopulationDynamics{LocalFoodShortage: 3}},
