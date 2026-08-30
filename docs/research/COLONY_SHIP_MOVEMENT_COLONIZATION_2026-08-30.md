@@ -700,3 +700,24 @@ go test ./... -count=1
 passed across all packages.
 
 Gate 4 remains pending for final gofmt, full test/vet/diff QA, implementation commit and slice-closing documentation/marker removal.
+## Gate 4 - QA and closure
+
+**Status:** passed and closed on 2026-08-30.
+
+Implementation commit:
+
+```text
+db9d01e game: add colony ship colonization loop
+```
+
+Final Gate-4 verification completed successfully:
+
+```text
+gofmt -w <all changed Go files>
+go test ./... -count=1
+go vet ./...
+go test ./internal/core ./internal/game ./internal/session -run "ColonyShip|ColonizePlanet|StrategicFleetTransit|RecomputeSystemBlockades|PopulationTransfer" -count=1
+git diff --check
+```
+
+The focused regressions protect the new Colony Ship construction/transit/colonization path together with adjacent strategic-blockade and Population-transfer behavior. The full package suite and vet baseline are green. The slice marker is removed by the closing documentation commit; no push is part of Gate 4.

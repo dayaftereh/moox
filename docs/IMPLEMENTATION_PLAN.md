@@ -1,27 +1,28 @@
 # MOOX Implementation Plan
 
-## Current position - 2026-08-29
+## Current position - 2026-08-30
 
 MOOX is actively inside the deterministic headless runtime. The authoritative `GameSession` boundary now executes a substantial first strategic Economy/Research/Construction path rather than only infrastructure.
 
 Implemented/established runtime baseline includes:
 
-- deterministic pure-Go Core state, seeded serializable RNG, stable IDs and exact schema-15 JSON round trips;
+- deterministic pure-Go Core state, seeded serializable RNG, stable IDs and exact schema-16 JSON round trips;
 - authoritative Session/Command/Event/Observer architecture with Human/AI-shared legal-action projections;
 - domain-native `float64` cohort Population quantities, Food, PP, RP, BC and Construction progress (`ADR-0003`);
 - base/contextual Colony Economy with Gravity, starting-government and local Morale layers;
 - race-aware organic Population cohorts with heterogeneous capacity, Food/Cybernetic sustenance, per-origin starvation and the classic capacity-limited turn-end Growth curve;
 - Empire-wide Food/Freighter balancing with exact four-pass mixed-cohort priority, verified constrained round-robin allocation and system-blockade exclusion;
 - minimal strategic Fleet location/role plus directed Empire relations, with deterministic Colony-presence/hostile-combat-Fleet blockade production before Settler arrival/final Food;
+- Colony Ship production through semantic Construction, installed-drive persistence, original Fuel Cell ranges, deterministic strategic transit before Construction, explicit colonization and authoritative second-Colony creation/ship consumption;
 - semantic Population relocation / Settlers sharing the same Freighter pool, including same-system movement, interstellar reservation, ETA and resolution;
 - generic single-project Construction with technology-gated Buildings and Freighter Fleet production;
 - modeled Treasury settlement before Research;
 - normalized Technology Fields/RP costs, Pre-Warp/Average/Advanced starts, breakthrough resolution, race-aware multi-application research, project switching and Hyper-Advanced repeat fields;
 - authoritative external Technology grants with verified Uncreative fixed-choice repair.
 
-Major engine systems still missing include active conquest/assimilation and Android/Native/custom-race Population extensions, complete Economy categories/pollution, strategic fleet movement/colonization, ship design/combat rules, diplomacy, AI behavior and playable UI.
+Major engine systems still missing include active conquest/assimilation and Android/Native/custom-race Population extensions, complete Economy categories/pollution, generic combat-Fleet movement/engagement, Outposts, ship design/combat rules, diplomacy, AI behavior and playable UI.
 
-The immediate implementation focus is the missing original Treasury income/Maintenance categories and deficit/scrap policy whose dependencies are already authoritative. `docs/research/ACTIVE_RESEARCH.md` is the authoritative next-slice handoff, while `docs/slices/HISTORY.md` records closed slices so completed work is not accidentally re-queued.
+No implementation slice is currently open. The latest closed slice completes the first headless Colony Ship build/move/colonize loop and creates a second Colony through authoritative Core/Game/Session transitions. `docs/research/ACTIVE_RESEARCH.md` is the authoritative next-slice handoff; any next objective must begin with a fresh Gate 1 rather than broadening the closed slice.
 ## Guiding architecture
 
 Build the game rules as a deterministic, headless simulation core first. UI, rendering, audio and platform integration should depend on that core rather than contain game rules themselves.

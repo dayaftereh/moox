@@ -26,6 +26,7 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 | Race-aware Population cohorts | Core schema 14 organic cohorts, source-race Economy, exact four-pass Food priority, per-origin Growth/Starvation, heterogeneous capacity and cohort-aware Population transfer implemented | `7c49e90` | `docs/research/POPULATION_COHORTS_2026-08-29.md` |
 | Strategic Fleet/Diplomacy blockade production | Core schema 15 minimal strategic Fleets/directed relations and deterministic Colony-presence + hostile-combat-Fleet system blockade production implemented | `d148502` | `docs/research/FLEET_DIPLOMACY_BLOCKADES_2026-08-29.md` |
 | Treasury Maintenance categories / deficit boundary | Six original Maintenance buckets and staged deficit policy resolved; active-Freighter reservations/usage and surplus-Food whole-BC boundaries implemented without schema changes | `a1ad15b` | `docs/research/TREASURY_MAINTENANCE_DEFICIT_2026-08-29.md` |
+| Colony Ship production / strategic movement / colonization | Core schema 16 Tech-41 Colony Ship Construction, original Fuel ranges, deterministic pre-Construction transit and explicit second-Colony creation/ship consumption implemented | `db9d01e` | `docs/research/COLONY_SHIP_MOVEMENT_COLONIZATION_2026-08-30.md` |
 
 ## Meta workflow
 
@@ -37,6 +38,6 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 
 - `docs/slices/` contains **no** `_OPEN_*.md` marker.
 - The completed rows above have committed runtime/tests and/or explicit closing documentation in Git history.
-- The next queued gameplay slice continues the headless vertical loop toward colony-ship production, strategic movement/colonization and a second colony; it is intentionally **not** marked open until work on that slice actually begins.
+- The Colony Ship build/move/colonize slice is closed in `db9d01e`; no gameplay slice is currently open. The next objective must begin with a fresh Gate 1 from the authoritative second-Colony baseline.
 - Live current status is authoritative in `README.md`, `docs/PROJECT_STATUS.md`, `docs/architecture/README.md`, and `docs/research/ACTIVE_RESEARCH.md`.
 - Historical research documents are evidence checkpoints and are not rewritten merely because a later slice resolved one of their then-deferred items.
