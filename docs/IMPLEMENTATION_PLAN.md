@@ -244,9 +244,9 @@ A private developer-only original-asset viewer may exist for comparison, but ori
 
 ## Recommended immediate next work
 
-1. Complete missing Treasury income/Maintenance categories and the original deficit/scrap policy only as their dependent systems become authoritative.
-2. Continue the first headless vertical game loop toward colony-ship production, strategic movement/colonization and a second colony.
-3. Extend strategic Fleet movement/location beyond the current at-system blockade presence when the movement/colonization slice begins.
+1. Continue the first headless vertical game loop toward colony-ship production, strategic movement/colonization and a second colony.
+2. Extend strategic Fleet movement/location beyond the current at-system blockade presence when the movement/colonization slice begins.
+3. Add canonical Ship command-point, Spy, treaty/Tribute and Leader/Officer systems in their own evidence-driven slices; then wire their already-resolved Treasury buckets and complete original deficit liquidation.
 4. Keep active conquest/assimilation plus Android/Native/custom-race Population extensions as later evidence-driven Population slices rather than reopening the completed organic-cohort core.
 5. Keep the original Hyper selection-screen +1 preview / 20-level list boundary as optional UI-fidelity work, not a strategic-core rule.
 

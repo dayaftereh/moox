@@ -8,7 +8,7 @@ Extend the earlier Treasury settlement evidence by resolving the original six Ma
 
 ## Gate 1 - Checkup + original analysis / reverse engineering
 
-**Status:** Gate 4 QA passed on 2026-08-30; closing commits pending.
+**Status:** closed on 2026-08-30; implementation commit `a1ad15b`.
 
 ### Recovery state
 
@@ -362,3 +362,13 @@ SurplusFoodSold remains a continuous simulation/telemetry quantity. SurplusFoodI
 ### Scope preserved
 
 Negative Treasury remains representable and no automatic Building/Ship/Spy/Leader liquidation was added. Missing original Maintenance/income categories remain deferred until their canonical producer systems exist.
+
+## Gate 4 closure - 2026-08-30
+
+- gofmt: pass
+- go test ./...: pass
+- go vet ./...: pass
+- git diff --check: pass
+- implementation commit: 1ad15b (game: align treasury freighter and food rounding)
+- Core schema remains 15; Economy ruleset schema remains 7
+- complete original deficit liquidation remains explicitly deferred until Ship/Spy/Leader/treaty producer state is authoritative
