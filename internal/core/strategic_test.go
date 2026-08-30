@@ -146,3 +146,87 @@ func TestDiplomaticRelationValidation(t *testing.T) {
 		}
 	})
 }
+
+func TestColonyShipTransitStateRoundTripsInSchema16(t *testing.T) {
+	state := NewSmallFixture(1510)
+	fleetID := state.NewID()
+	state.StrategicFleets = []StrategicFleet{{
+		ID:                  fleetID,
+		EmpireID:            state.Empires[0].ID,
+		Role:                StrategicFleetRoleCivilian,
+		SpecialKind:         StrategicFleetSpecialColonyShip,
+		DestinationSystemID: state.Galaxy.Systems[1].ID,
+		RemainingTurns:      2,
+		FTLSpeed:            3,
+	}}
+	if StateSchemaVersion != 16 || state.SchemaVersion != 16 {
+		t.Fatalf("schema=%d constant=%d want=16", state.SchemaVersion, StateSchemaVersion)
+	}
+	if err := state.Validate(); err != nil {
+		t.Fatal(err)
+	}
+	encoded, err := MarshalState(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := UnmarshalState(encoded)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(state.StrategicFleets, loaded.StrategicFleets) {
+		t.Fatalf("Colony Ship transit changed across roundtrip: want=%+v got=%+v", state.StrategicFleets, loaded.StrategicFleets)
+	}
+}
+
+func TestColonyShipTransitValidation(t *testing.T) {
+	tests := []struct {
+		name  string
+		fleet func(*GameState) StrategicFleet
+	}{
+		{
+			name: "must be civilian",
+			fleet: func(state *GameState) StrategicFleet {
+				return StrategicFleet{ID: state.NewID(), EmpireID: state.Empires[0].ID, Role: StrategicFleetRoleCombat, SpecialKind: StrategicFleetSpecialColonyShip, AtSystemID: state.Galaxy.Systems[0].ID, FTLSpeed: 2}
+			},
+		},
+		{
+			name: "requires installed drive",
+			fleet: func(state *GameState) StrategicFleet {
+				return StrategicFleet{ID: state.NewID(), EmpireID: state.Empires[0].ID, Role: StrategicFleetRoleCivilian, SpecialKind: StrategicFleetSpecialColonyShip, AtSystemID: state.Galaxy.Systems[0].ID}
+			},
+		},
+		{
+			name: "stationary cannot also transit",
+			fleet: func(state *GameState) StrategicFleet {
+				return StrategicFleet{ID: state.NewID(), EmpireID: state.Empires[0].ID, Role: StrategicFleetRoleCivilian, SpecialKind: StrategicFleetSpecialColonyShip, AtSystemID: state.Galaxy.Systems[0].ID, DestinationSystemID: state.Galaxy.Systems[1].ID, RemainingTurns: 1, FTLSpeed: 2}
+			},
+		},
+		{
+			name: "transit requires positive eta",
+			fleet: func(state *GameState) StrategicFleet {
+				return StrategicFleet{ID: state.NewID(), EmpireID: state.Empires[0].ID, Role: StrategicFleetRoleCivilian, SpecialKind: StrategicFleetSpecialColonyShip, DestinationSystemID: state.Galaxy.Systems[1].ID, FTLSpeed: 2}
+			},
+		},
+		{
+			name: "requires current or destination system",
+			fleet: func(state *GameState) StrategicFleet {
+				return StrategicFleet{ID: state.NewID(), EmpireID: state.Empires[0].ID, Role: StrategicFleetRoleCivilian, SpecialKind: StrategicFleetSpecialColonyShip, FTLSpeed: 2}
+			},
+		},
+		{
+			name: "ordinary fleet cannot use semantic transit",
+			fleet: func(state *GameState) StrategicFleet {
+				return StrategicFleet{ID: state.NewID(), EmpireID: state.Empires[0].ID, Role: StrategicFleetRoleCombat, DestinationSystemID: state.Galaxy.Systems[1].ID, RemainingTurns: 1, FTLSpeed: 2}
+			},
+		},
+	}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			state := NewSmallFixture(1520)
+			state.StrategicFleets = []StrategicFleet{test.fleet(state)}
+			if err := state.Validate(); err == nil {
+				t.Fatalf("invalid strategic fleet unexpectedly passed validation: %+v", state.StrategicFleets[0])
+			}
+		})
+	}
+}

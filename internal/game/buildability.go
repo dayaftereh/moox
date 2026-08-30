@@ -2,11 +2,15 @@ package game
 
 import (
 	"fmt"
+	"math"
 	"sort"
 
 	"moox/internal/core"
 )
 
+const ColonyShipTechnologyID = 41
+const ColonyShipProjectID = "colony_ship"
+const ColonyShipBaseCostPP = 500.0
 const FreighterFleetTechnologyID = 69
 const FreighterFleetProjectID = "freighter_fleet"
 const HousingProjectID = "housing"
@@ -37,7 +41,7 @@ func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empir
 	if empire == nil {
 		return nil, fmt.Errorf("unknown empire %d", empireID)
 	}
-	choices := make([]ConstructionChoice, 0, len(buildingChoices)+len(r.PlanetaryTransformations)+2)
+	choices := make([]ConstructionChoice, 0, len(buildingChoices)+len(r.PlanetaryTransformations)+3)
 	for _, choice := range buildingChoices {
 		choices = append(choices, ConstructionChoice{
 			ProjectKind:      core.ConstructionProjectBuilding,
@@ -81,6 +85,14 @@ func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empir
 			ProjectID:   HousingProjectID,
 		})
 	}
+	if empireKnowsTechnology(empire, ColonyShipTechnologyID) {
+		choices = append(choices, ConstructionChoice{
+			ProjectKind:      core.ConstructionProjectColonyShip,
+			ProjectID:        ColonyShipProjectID,
+			ProductionCostPP: r.colonyShipProductionCostPP(empire),
+			TechnologyID:     ColonyShipTechnologyID,
+		})
+	}
 	if empireKnowsTechnology(empire, FreighterFleetTechnologyID) {
 		choices = append(choices, ConstructionChoice{
 			ProjectKind:      core.ConstructionProjectFreighterFleet,
@@ -91,6 +103,16 @@ func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empir
 		})
 	}
 	return choices, nil
+}
+
+func (r *EconomyRules) colonyShipProductionCostPP(empire *core.Empire) float64 {
+	if empire == nil {
+		return ColonyShipBaseCostPP
+	}
+	if modifiers, ok := r.RaceModifiers[empire.RaceID]; ok && modifiers.GovernmentTraitID == "government_feudal" {
+		return math.Ceil((2 * ColonyShipBaseCostPP) / 3)
+	}
+	return ColonyShipBaseCostPP
 }
 
 type BuildingChoice struct {

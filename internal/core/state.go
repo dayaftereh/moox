@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 15
+const StateSchemaVersion = 16
 
 type ID uint64
 
@@ -132,6 +132,7 @@ type ConstructionProjectKind string
 
 const (
 	ConstructionProjectBuilding                ConstructionProjectKind = "building"
+	ConstructionProjectColonyShip              ConstructionProjectKind = "colony_ship"
 	ConstructionProjectFreighterFleet          ConstructionProjectKind = "freighter_fleet"
 	ConstructionProjectHousing                 ConstructionProjectKind = "housing"
 	ConstructionProjectPlanetaryTransformation ConstructionProjectKind = "planetary_transformation"
@@ -472,7 +473,7 @@ func (s *GameState) Validate() error {
 			return fmt.Errorf("colony[%d] has incomplete references", i)
 		}
 		if colony.Construction != nil {
-			if colony.Construction.ProjectKind != ConstructionProjectBuilding && colony.Construction.ProjectKind != ConstructionProjectFreighterFleet && colony.Construction.ProjectKind != ConstructionProjectHousing && colony.Construction.ProjectKind != ConstructionProjectPlanetaryTransformation {
+			if colony.Construction.ProjectKind != ConstructionProjectBuilding && colony.Construction.ProjectKind != ConstructionProjectColonyShip && colony.Construction.ProjectKind != ConstructionProjectFreighterFleet && colony.Construction.ProjectKind != ConstructionProjectHousing && colony.Construction.ProjectKind != ConstructionProjectPlanetaryTransformation {
 				return fmt.Errorf("colony[%d] construction project_kind %q is invalid", i, colony.Construction.ProjectKind)
 			}
 			if colony.Construction.ProjectID == "" {
@@ -480,6 +481,9 @@ func (s *GameState) Validate() error {
 			}
 			if !finiteNonNegative(colony.Construction.ProgressPP) {
 				return fmt.Errorf("colony[%d] construction progress_pp must be finite and non-negative", i)
+			}
+			if colony.Construction.ProjectKind == ConstructionProjectColonyShip && colony.Construction.ProjectID != "colony_ship" {
+				return fmt.Errorf("colony[%d] Colony Ship construction project_id must be %q", i, "colony_ship")
 			}
 			if colony.Construction.ProjectKind == ConstructionProjectHousing {
 				if colony.Construction.ProjectID != "housing" {

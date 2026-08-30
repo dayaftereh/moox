@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"math"
 
 	"moox/internal/core"
 	"moox/internal/protocol"
@@ -393,13 +392,10 @@ func systemForPlanetID(state *core.GameState, planetID core.ID) *core.StarSystem
 }
 
 func populationTransferETA(source, destination core.StarSystem, ftlSpeed int) int {
-	dx := float64(source.X - destination.X)
-	dy := float64(source.Y - destination.Y)
-	distance := math.Hypot(dx, dy)
-	if distance <= 0 {
+	parsecs := strategicDistanceParsecs(source, destination)
+	if parsecs <= 0 {
 		return 0
 	}
-	parsecs := int(math.Ceil(distance / populationTransferCoordinateUnitsParsec))
 	if ftlSpeed < 2 {
 		ftlSpeed = 2
 	}

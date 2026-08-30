@@ -12,11 +12,22 @@ const (
 	StrategicFleetRoleCivilian StrategicFleetRole = "civilian"
 )
 
+type StrategicFleetSpecialKind string
+
+const (
+	StrategicFleetSpecialNone       StrategicFleetSpecialKind = ""
+	StrategicFleetSpecialColonyShip StrategicFleetSpecialKind = "colony_ship"
+)
+
 type StrategicFleet struct {
-	ID         ID                 `json:"id"`
-	EmpireID   ID                 `json:"empire_id"`
-	Role       StrategicFleetRole `json:"role"`
-	AtSystemID ID                 `json:"at_system_id,omitempty"`
+	ID                  ID                        `json:"id"`
+	EmpireID            ID                        `json:"empire_id"`
+	Role                StrategicFleetRole        `json:"role"`
+	SpecialKind         StrategicFleetSpecialKind `json:"special_kind,omitempty"`
+	AtSystemID          ID                        `json:"at_system_id,omitempty"`
+	DestinationSystemID ID                        `json:"destination_system_id,omitempty"`
+	RemainingTurns      int                       `json:"remaining_turns,omitempty"`
+	FTLSpeed            int                       `json:"ftl_speed,omitempty"`
 }
 
 type DiplomaticStance string
@@ -71,10 +82,45 @@ func validateStrategicState(
 		default:
 			return fmt.Errorf("strategic_fleet[%d] role %q is invalid", i, fleet.Role)
 		}
+		switch fleet.SpecialKind {
+		case StrategicFleetSpecialNone:
+			if fleet.DestinationSystemID != 0 || fleet.RemainingTurns != 0 || fleet.FTLSpeed != 0 {
+				return fmt.Errorf("strategic_fleet[%d] ordinary fleet cannot carry semantic transit state yet", i)
+			}
+		case StrategicFleetSpecialColonyShip:
+			if fleet.Role != StrategicFleetRoleCivilian {
+				return fmt.Errorf("strategic_fleet[%d] Colony Ship must be civilian", i)
+			}
+			if fleet.FTLSpeed < 2 {
+				return fmt.Errorf("strategic_fleet[%d] Colony Ship ftl_speed must be at least 2", i)
+			}
+		default:
+			return fmt.Errorf("strategic_fleet[%d] special_kind %q is invalid", i, fleet.SpecialKind)
+		}
+		if fleet.RemainingTurns < 0 || fleet.FTLSpeed < 0 {
+			return fmt.Errorf("strategic_fleet[%d] transit values must be non-negative", i)
+		}
 		if fleet.AtSystemID != 0 {
 			if _, ok := systemIDs[fleet.AtSystemID]; !ok {
 				return fmt.Errorf("strategic_fleet[%d] references unknown star system %d", i, fleet.AtSystemID)
 			}
+			if fleet.DestinationSystemID != 0 || fleet.RemainingTurns != 0 {
+				return fmt.Errorf("strategic_fleet[%d] stationary fleet cannot also be in transit", i)
+			}
+		} else if fleet.DestinationSystemID != 0 {
+			if _, ok := systemIDs[fleet.DestinationSystemID]; !ok {
+				return fmt.Errorf("strategic_fleet[%d] references unknown destination star system %d", i, fleet.DestinationSystemID)
+			}
+			if fleet.SpecialKind != StrategicFleetSpecialColonyShip {
+				return fmt.Errorf("strategic_fleet[%d] only Colony Ships may use semantic transit in schema %d", i, StateSchemaVersion)
+			}
+			if fleet.RemainingTurns <= 0 {
+				return fmt.Errorf("strategic_fleet[%d] in transit requires positive remaining_turns", i)
+			}
+		} else if fleet.SpecialKind == StrategicFleetSpecialColonyShip {
+			return fmt.Errorf("strategic_fleet[%d] Colony Ship requires a current or destination system", i)
+		} else if fleet.RemainingTurns != 0 {
+			return fmt.Errorf("strategic_fleet[%d] locationless fleet cannot have remaining_turns", i)
 		}
 		lastFleetID = fleet.ID
 	}
