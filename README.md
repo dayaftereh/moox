@@ -21,15 +21,27 @@ The short identifier `moox` is reserved for internal technical names where a com
 
 ## Project status
 
-Current snapshot: **2026-08-30**.
+Current snapshot: **2026-08-31**.
 
-Master of Orion X is transitioning from the advanced research/data-normalization phase into the deterministic headless runtime. The repository contains the pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), normalized runtime datasets and the first simulation/session infrastructure.
+Master of Orion X is now actively in deterministic headless runtime development. The repository contains the pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), normalized runtime datasets, authoritative Core/Game/Session infrastructure and a growing set of original-evidence-backed strategic rules.
 
-The game is **not playable yet**, but the first strategic economy/construction/research path now runs through the authoritative session boundary. Population allocation, Food, Production, Research, BC and Construction progress use domain-native `float64` values; Population capacity, Food/Cybernetic sustenance, empire-wide Food/Freighter logistics, starvation and turn-end Population Growth are now materialized as well. Gravity, starting-government and local Morale context layer on top without implicit intermediate rounding. Technology ownership/buildability plus server-derived BuildingChoices and ResearchChoices are shared by future Human UI and AI controllers.
+The game is **not playable yet**, but the first headless strategic expansion loop is complete: a normal Empire can develop its Colony economy/research/construction, build a Colony Ship, move it under Fuel-range/FTL rules and found a second Colony through the authoritative session boundary. Core schema 16 also includes race-aware Population cohorts, Food/Freighter logistics, Population transfer, deterministic system blockades and modeled Treasury settlement. Technology ownership/buildability plus server-derived legal actions remain shared by future Human UI and AI controllers.
 
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
+**Slice state:** all previously started gameplay slices are closed; there is currently **no** `_OPEN_*.md` marker. Six next slices are prepared as `docs/slices/PLANNED_01...06_*.md` specifications with complete Gate 1-4 checklists. The first recommended next slice is **Outpost Ship / Outpost state / supply range**. Planned files do not count as open work until a dated `_OPEN_` marker is created.
+
+### Prepared next-slice queue
+
+| # | Planned slice | Main purpose |
+| ---: | --- | --- |
+| 1 | `PLANNED_01_OUTPOST_SHIP_SUPPLY_RANGE.md` | Outpost Ship build/deploy, authoritative Outpost state and supply extension |
+| 2 | `PLANNED_02_MILITARY_SHIP_CORE_DESIGN_BASELINE.md` | Concrete military Ship/Design state and strategic construction |
+| 3 | `PLANNED_03_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT.md` | Generic combat-Fleet transit, range/speed, merge and split |
+| 4 | `PLANNED_04_COMMAND_POINTS_SHIP_MAINTENANCE.md` | Command-Point capacity/usage and Treasury overage Maintenance |
+| 5 | `PLANNED_05_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md` | Automatic hostile strategic encounters -> deterministic BattleSession handoff |
+| 6 | `PLANNED_06_TACTICAL_SHIP_COMBAT_BASELINE.md` | First narrow deterministic tactical ship-combat vertical slice |
 ### Latest runtime checkpoints
 
 - `db9d01e` - Core schema 16 Colony Ship construction, Fuel-range-checked strategic transit and authoritative second-Colony colonization loop.

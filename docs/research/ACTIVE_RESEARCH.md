@@ -45,11 +45,28 @@ Runtime boundaries now include:
 
 Gate 4 passed `gofmt`, `go test ./... -count=1`, `go vet ./...`, focused Colony Ship/transit/blockade/Population-transfer regressions and `git diff --check`.
 
-## Next queued runtime slice
+## Prepared next-slice queue
 
-No next slice is open yet. Continue from the new second-Colony baseline only through a **fresh Gate 1**. The next objective should be the smallest independently evidenced strategic/economy dependency that advances the headless game loop; generic combat-Fleet movement/engagement and Outpost behavior remain candidates rather than silently expanded scope.
+No gameplay slice is currently open. All previously started slices are closed, and the next six are prepared as planning specifications under `docs/slices/`.
 
-Do not reopen Colony Ship construction/colonization unless new evidence exposes a concrete fidelity defect.
+Recommended order:
+
+1. **Outpost Ship / Outpost state / supply range**
+   `docs/slices/PLANNED_01_OUTPOST_SHIP_SUPPLY_RANGE.md`
+2. **Military Ship core / design baseline**
+   `docs/slices/PLANNED_02_MILITARY_SHIP_CORE_DESIGN_BASELINE.md`
+3. **Generic combat Fleet movement / merge / split**
+   `docs/slices/PLANNED_03_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT.md`
+4. **Command Points / ship overage Maintenance**
+   `docs/slices/PLANNED_04_COMMAND_POINTS_SHIP_MAINTENANCE.md`
+5. **Strategic hostile encounters -> BattleSession handoff**
+   `docs/slices/PLANNED_05_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md`
+6. **Tactical ship combat baseline**
+   `docs/slices/PLANNED_06_TACTICAL_SHIP_COMBAT_BASELINE.md`
+
+The files above already contain Gate 1-4 checklists, dependency notes, scope guards and exit criteria, but **none is active**. Starting one requires a fresh Gate 1 and exactly one dated `_OPEN_*.md` marker. Do not reopen the completed Colony Ship slice unless new evidence exposes a concrete fidelity defect.
+
+The order is deliberately progressive: Outpost extends the current special-ship/supply model; military Ship state then supplies concrete Fleet composition; generic movement enables real strategic combat Fleets; Command Points can then use canonical ships; hostile arrivals can generate BattleSessions; only then does the first tactical-combat rules slice have all required producers/consumers.
 
 ## Later deferred dependencies
 

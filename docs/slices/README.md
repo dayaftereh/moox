@@ -17,6 +17,36 @@ The leading `_OPEN_` is intentional: it is the repository-visible signal that wo
 By default there should be exactly one `_OPEN_*.md` marker. Do not start a later slice while an open marker exists unless parallel work was explicitly intended.
 
 The marker is a compact recovery/checklist file. Long-lived evidence, reverse-engineering findings, architectural decisions and final results belong in a permanent domain document, for example `docs/research/<SLICE>_<DATE>.md`.
+## Planned-slice specifications
+
+Future work may be prepared without opening it. Prepared queue entries use:
+
+```text
+docs/slices/PLANNED_<NN>_<SLUG>.md
+```
+
+`PLANNED_*.md` files are **not** recovery markers. Multiple planned specifications may coexist and none of them counts as active work. They may contain the complete intended Gate 1-4 checklist, dependencies, scope guard and exit criterion so a later chat can start from an explicit contract rather than reconstructing the roadmap.
+
+When a planned slice actually starts:
+
+1. verify there is no existing `_OPEN_*.md` marker;
+2. read the planned specification and current `docs/research/ACTIVE_RESEARCH.md`;
+3. create exactly one dated `_OPEN_<AREA>_<SLUG>_<YYYY-MM-DD>.md` recovery marker referencing the planned specification;
+4. create/update the permanent `docs/research/<SLICE>_<DATE>.md` evidence document during Gate 1;
+5. follow the normal four-gate protocol below.
+
+Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1 always requires a fresh repository checkup and original-evidence review at the time work begins.
+
+### Current prepared queue - 2026-08-31
+
+1. `PLANNED_01_OUTPOST_SHIP_SUPPLY_RANGE.md`
+2. `PLANNED_02_MILITARY_SHIP_CORE_DESIGN_BASELINE.md`
+3. `PLANNED_03_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT.md`
+4. `PLANNED_04_COMMAND_POINTS_SHIP_MAINTENANCE.md`
+5. `PLANNED_05_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md`
+6. `PLANNED_06_TACTICAL_SHIP_COMBAT_BASELINE.md`
+
+The queue order is the current recommendation, not a hard dependency lock. Reprioritization is allowed before a slice is opened if the dependency check still passes.
 
 ## Four gates
 
