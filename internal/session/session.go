@@ -49,15 +49,16 @@ type SeatView struct {
 }
 
 type PlayerView struct {
-	GameID        string                 `json:"game_id"`
-	Revision      uint64                 `json:"revision"`
-	Turn          uint64                 `json:"turn"`
-	Phase         Phase                  `json:"phase"`
-	Seat          SeatView               `json:"seat"`
-	Seats         []SeatView             `json:"seats"`
-	Empire        core.Empire            `json:"empire"`
-	Colonies      []core.Colony          `json:"colonies"`
-	OwnSubmission *protocol.CommandBatch `json:"own_submission,omitempty"`
+	GameID                string                      `json:"game_id"`
+	Revision              uint64                      `json:"revision"`
+	Turn                  uint64                      `json:"turn"`
+	Phase                 Phase                       `json:"phase"`
+	Seat                  SeatView                    `json:"seat"`
+	Seats                 []SeatView                  `json:"seats"`
+	Empire                core.Empire                 `json:"empire"`
+	Colonies              []core.Colony               `json:"colonies"`
+	ColonyBaseResolutions []game.ColonyBaseResolution `json:"colony_base_resolutions,omitempty"`
+	OwnSubmission         *protocol.CommandBatch      `json:"own_submission,omitempty"`
 }
 
 type ObserverSeatView struct {
@@ -67,15 +68,16 @@ type ObserverSeatView struct {
 }
 
 type ObserverView struct {
-	GameID    string                    `json:"game_id"`
-	Revision  uint64                    `json:"revision"`
-	Turn      uint64                    `json:"turn"`
-	Phase     Phase                     `json:"phase"`
-	State     *core.GameState           `json:"state"`
-	Seats     []ObserverSeatView        `json:"seats"`
-	Events    []protocol.DomainEvent    `json:"events"`
-	Battles   []battle.View             `json:"battles"`
-	Telemetry []protocol.DraftTelemetry `json:"draft_telemetry,omitempty"`
+	GameID                string                      `json:"game_id"`
+	Revision              uint64                      `json:"revision"`
+	Turn                  uint64                      `json:"turn"`
+	Phase                 Phase                       `json:"phase"`
+	State                 *core.GameState             `json:"state"`
+	Seats                 []ObserverSeatView          `json:"seats"`
+	Events                []protocol.DomainEvent      `json:"events"`
+	Battles               []battle.View               `json:"battles"`
+	Telemetry             []protocol.DraftTelemetry   `json:"draft_telemetry,omitempty"`
+	ColonyBaseResolutions []game.ColonyBaseResolution `json:"colony_base_resolutions,omitempty"`
 }
 
 type EncounterSpec struct {
@@ -429,6 +431,82 @@ func (s *GameSession) CompleteBattle(battleID uint64, result battle.Result) erro
 	return nil
 }
 
+func (s *GameSession) ResolveColonyBaseCommand(seatID protocol.SeatID, command protocol.Command, resolver *game.EconomyResolver) error {
+	if resolver == nil {
+		return fmt.Errorf("economy resolver must not be nil")
+	}
+	if err := command.Validate(command.Sequence); err != nil {
+		return fmt.Errorf("invalid Colony Base command: %w", err)
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.phase != PhasePostResolution {
+		return fmt.Errorf("cannot resolve Colony Base in phase %q", s.phase)
+	}
+	index := s.seatIndexLocked(seatID)
+	if index < 0 {
+		return fmt.Errorf("unknown seat %d", seatID)
+	}
+
+	stateInput, err := cloneState(s.state)
+	if err != nil {
+		return err
+	}
+	events, err := resolver.ResolveColonyBaseCommand(stateInput, s.seats[index].seat.EmpireID, seatID, command)
+	if err != nil {
+		return fmt.Errorf("resolve Colony Base command: %w", err)
+	}
+	if len(events) == 0 {
+		return fmt.Errorf("Colony Base command returned no events")
+	}
+	if err := stateInput.Validate(); err != nil {
+		return fmt.Errorf("Colony Base command returned invalid state: %w", err)
+	}
+	for _, event := range events {
+		if event.Kind == "" {
+			return fmt.Errorf("Colony Base command returned event with empty kind")
+		}
+		if len(event.Data) > 0 && !json.Valid(event.Data) {
+			return fmt.Errorf("Colony Base event %q has invalid JSON data", event.Kind)
+		}
+		if event.SeatID != seatID || event.CommandSequence != command.Sequence {
+			return fmt.Errorf("Colony Base event %q authority=%d/%d want=%d/%d", event.Kind, event.SeatID, event.CommandSequence, seatID, command.Sequence)
+		}
+	}
+	committed, err := cloneState(stateInput)
+	if err != nil {
+		return err
+	}
+
+	s.state = committed
+	s.revision++
+	for _, event := range events {
+		s.events = append(s.events, protocol.DomainEvent{
+			SchemaVersion:   protocol.EventSchemaVersion,
+			Sequence:        s.nextEventSequence,
+			Turn:            s.state.Turn,
+			Revision:        s.revision,
+			Scope:           protocol.EventScopeStrategic,
+			Kind:            event.Kind,
+			SeatID:          event.SeatID,
+			CommandSequence: event.CommandSequence,
+			Data:            append(json.RawMessage(nil), event.Data...),
+		})
+		s.nextEventSequence++
+	}
+	return nil
+}
+
+func (s *GameSession) ColonyBaseResolutions(seatID protocol.SeatID) ([]game.ColonyBaseResolution, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	index := s.seatIndexLocked(seatID)
+	if index < 0 {
+		return nil, fmt.Errorf("unknown seat %d", seatID)
+	}
+	return game.PendingColonyBaseResolutions(s.state, s.seats[index].seat.EmpireID)
+}
 func (s *GameSession) CompleteResearchField(empireID core.ID, resolver *game.EconomyResolver) error {
 	if resolver == nil {
 		return fmt.Errorf("economy resolver must not be nil")
@@ -526,6 +604,13 @@ func (s *GameSession) CompleteTurn() error {
 	defer s.mu.Unlock()
 	if s.phase != PhasePostResolution {
 		return fmt.Errorf("cannot complete strategic turn in phase %q", s.phase)
+	}
+	pending, err := game.PendingColonyBaseResolutions(s.state, 0)
+	if err != nil {
+		return fmt.Errorf("project pending Colony Base resolutions: %w", err)
+	}
+	if len(pending) != 0 {
+		return fmt.Errorf("cannot complete strategic turn with %d pending Colony Base resolution(s)", len(pending))
 	}
 	s.state.AdvanceTurn()
 	s.revision++
@@ -635,6 +720,11 @@ func (s *GameSession) PlayerView(seatID protocol.SeatID) (PlayerView, error) {
 			view.Colonies = append(view.Colonies, colony)
 		}
 	}
+	resolutions, err := game.PendingColonyBaseResolutions(s.state, seat.seat.EmpireID)
+	if err != nil {
+		return PlayerView{}, err
+	}
+	view.ColonyBaseResolutions = resolutions
 	if seat.submission != nil {
 		clone := protocol.CloneCommandBatch(*seat.submission)
 		view.OwnSubmission = &clone
@@ -657,6 +747,11 @@ func (s *GameSession) ObserverView() (ObserverView, error) {
 		State:    state,
 		Battles:  s.battleViewsLocked(),
 	}
+	resolutions, err := game.PendingColonyBaseResolutions(state, 0)
+	if err != nil {
+		return ObserverView{}, err
+	}
+	view.ColonyBaseResolutions = resolutions
 	view.Seats = make([]ObserverSeatView, len(s.seats))
 	for i := range s.seats {
 		view.Seats[i] = ObserverSeatView{Seat: s.seats[i].seat, Submitted: s.seats[i].submission != nil}

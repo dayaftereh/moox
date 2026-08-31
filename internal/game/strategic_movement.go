@@ -275,22 +275,11 @@ func (r *EconomyResolver) colonizePlanet(state *core.GameState, empireID core.ID
 			return nil, fmt.Errorf("planet %d is already referenced by colony %d", planet.ID, existing.ID)
 		}
 	}
-	if empireByID(state, empireID) == nil {
-		return nil, fmt.Errorf("seat %d references unknown empire %d", seatID, empireID)
+	newColony, _, _, err := r.prepareFoundedColony(state, empireID, planet.ID)
+	if err != nil {
+		return nil, fmt.Errorf("seat %d Colony Ship founding: %w", seatID, err)
 	}
-	newColonyID := state.NextID
-	if newColonyID == 0 {
-		return nil, fmt.Errorf("cannot allocate Colony ID from zero next_id")
-	}
-	newColony := core.Colony{
-		ID:         newColonyID,
-		EmpireID:   empireID,
-		PlanetID:   planet.ID,
-		Population: core.NewAssimilatedPopulation(empireID, 1, 0, 0),
-	}
-	if err := r.recalculateColony(state, &newColony); err != nil {
-		return nil, fmt.Errorf("initialize colony %d on planet %d: %w", newColonyID, planet.ID, err)
-	}
+	newColonyID := newColony.ID
 	colonized, err := NewDomainEvent("empire.planet_colonized", seatID, command.Sequence, PlanetColonizedEvent{
 		EmpireID: empireID, FleetID: fleet.ID, SystemID: targetSystem.ID, PlanetID: planet.ID, ColonyID: newColonyID,
 	})

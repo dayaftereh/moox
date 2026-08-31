@@ -5,15 +5,35 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: **none**.
+- Open slice marker: `docs/slices/_OPEN_COLONY_BASE_SAME_SYSTEM_COLONIZATION_2026-08-31.md`.
 - Latest completed gameplay slice: **Colony Ship production, strategic movement and colonization**.
 - Implementation commit: `db9d01e` (`game: add colony ship colonization loop`).
 - Core `StateSchemaVersion`: **16**.
 - Economy ruleset schema: **7**.
-- Permanent evidence: `docs/research/COLONY_SHIP_MOVEMENT_COLONIZATION_2026-08-30.md`.
-- Previous closed evidence: `docs/research/TREASURY_MAINTENANCE_DEFICIT_2026-08-29.md`.
+- Active permanent evidence: `docs/research/COLONY_BASE_SAME_SYSTEM_COLONIZATION_2026-08-31.md`.
+- Latest closed evidence: `docs/research/COLONY_SHIP_MOVEMENT_COLONIZATION_2026-08-30.md`.
 - Before starting new work, check `docs/slices/_OPEN_*.md`; resume any marker before opening another slice.
 
+## Active slice - Colony Base / same-system colonization
+
+**Gate 3 is complete; Gate 4 is pending.** The accepted implementation is present in the working tree and has not yet been committed/closed.
+
+Implemented runtime boundaries:
+
+- Colony Base remains normal Building 11 / `colony_base`, Tech 40, 200 PP, 0 BC Maintenance;
+- queue/building-choice legality requires at least one empty Planet in the constructing Colony's StarSystem;
+- no target Planet is persisted with Construction;
+- completed Bases are projected as derived `PendingColonyBaseResolutions` from existing Building ownership, so Core remains schema **16**;
+- next-turn completion is blocked until every completed Base is resolved;
+- `colony.colonize_with_base` creates a normal one-founder Colony on a legal same-system Planet, consumes the Base and leaves source Population unchanged;
+- `colony.trash_colony_base` consumes the Base and refunds exactly 100 BC, including when no target remains;
+- Colony Ship and Colony Base share the same normal-Colony founding helper;
+- PlayerView, ObserverView and seat-scoped resolution projection expose authoritative pending decisions;
+- dedicated Colony Base colonize/trash events are replay-stable.
+
+Gate-3 verification is green: focused Colony Base/Colony Ship/Construction/Treasury/session regressions, exact schema-16 round-trip, deterministic replay, `go test ./... -count=1` and `go vet ./...`.
+
+Next step is **Gate 4 only**: final format/diff QA, docs/HISTORY closure, implementation + closing-doc commits, then remove the `_OPEN_` marker. Do not start Slice 02 before this slice is closed.
 ## Closed Colony Ship checkpoint
 
 The first authoritative headless expansion loop is complete:
@@ -47,7 +67,7 @@ Gate 4 passed `gofmt`, `go test ./... -count=1`, `go vet ./...`, focused Colony 
 
 ## Prepared next-slice queue
 
-No gameplay slice is currently open. All previously started slices are closed, and the next seven are prepared as planning specifications under `docs/slices/`.
+Slice 01 **Colony Base / same-system colonization** is now open with Gate 1 complete and Gate 2 pending. The remaining six later slices stay prepared as planning specifications under `docs/slices/`.
 
 Recommended order:
 
@@ -59,7 +79,7 @@ Recommended order:
 6. **Strategic hostile encounters -> BattleSession handoff** - `docs/slices/PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md`
 7. **Tactical ship combat baseline** - `docs/slices/PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md`
 
-The files above already contain Gate 1-4 checklists, dependency notes, scope guards and exit criteria, but **none is active**. Starting one requires a fresh Gate 1 and exactly one dated `_OPEN_*.md` marker.
+The queue files contain Gate 1-4 checklists, dependency notes, scope guards and exit criteria. Slice 01 is active through the single dated `_OPEN_*.md` marker; do not start slices 02-07 until the active slice is closed unless parallel work is explicitly intended.
 
 The order is progressive: Colony Base first closes the currently incorrect generic-Building gap for same-system expansion; Outpost then extends special-ship/supply expansion; military Ship state supplies concrete Fleet composition; generic movement enables real strategic combat Fleets; Command Points can then use canonical ships; hostile arrivals can generate BattleSessions; only then does the first tactical-combat rules slice have all required producers/consumers.
 

@@ -30,7 +30,7 @@ The game is **not playable yet**, but the first headless strategic expansion loo
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** all previously started gameplay slices are closed; there is currently **no** `_OPEN_*.md` marker. Seven next slices are prepared as `docs/slices/PLANNED_01...07_*.md` specifications with complete Gate 1-4 checklists. The first recommended next slice is **Colony Base / same-system colonization**. Planned files do not count as open work until a dated `_OPEN_` marker is created.
+**Slice state:** Slice 01 **Colony Base / same-system colonization** is active. Gate 3 implementation is complete and Gate 4 QA/commit/closure is pending; exactly one `_OPEN_*.md` marker exists. Slices 02-07 remain prepared but unopened.
 
 ### Prepared next-slice queue
 

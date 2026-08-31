@@ -97,6 +97,15 @@ func (r *EconomyResolver) queueBuilding(state *core.GameState, empireID core.ID,
 			return DomainEvent{}, fmt.Errorf("colony %d already owns building %q", colony.ID, payload.BuildingID)
 		}
 	}
+	if payload.BuildingID == ColonyBaseBuildingID {
+		targets, err := colonyBaseTargetPlanetIDs(state, colony)
+		if err != nil {
+			return DomainEvent{}, err
+		}
+		if len(targets) == 0 {
+			return DomainEvent{}, fmt.Errorf("colony %d has no empty same-system planet for %q", colony.ID, ColonyBaseBuildingID)
+		}
+	}
 	if colony.Construction != nil {
 		return DomainEvent{}, fmt.Errorf("colony %d already constructs %q", colony.ID, colony.Construction.ProjectID)
 	}

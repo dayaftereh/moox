@@ -168,6 +168,15 @@ func (r *EconomyRules) AvailableBuildingChoices(state *core.GameState, empireID,
 		if _, known := knownTech[definition.TechnologyID]; !known {
 			continue
 		}
+		if definition.BuildingID == ColonyBaseBuildingID {
+			targets, err := colonyBaseTargetPlanetIDs(state, colony)
+			if err != nil {
+				return nil, err
+			}
+			if len(targets) == 0 {
+				continue
+			}
+		}
 		choices = append(choices, BuildingChoice{
 			BuildingID:       definition.BuildingID,
 			ProductionID:     definition.ProductionID,
