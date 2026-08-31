@@ -1,8 +1,8 @@
-# Planned slice 02 - Military Ship core and design baseline
+# Planned slice 03 - Military Ship core and design baseline
 
 Status: **planned / queued; not open**.
 
-Queue position: **2 of 6**.
+Queue position: **3 of 7**.
 
 This file is a prepared slice specification, not an active `_OPEN_*.md` marker.
 
@@ -21,7 +21,7 @@ The target is a headless strategic baseline in which an Empire can own a persist
 
 ## Dependencies
 
-- planned slice 01 should be closed first unless explicitly reprioritized;
+- planned slice 02 should be closed first unless explicitly reprioritized;
 - normalized hull identities and technology ownership;
 - semantic Construction model;
 - current strategic Fleet owner/location model.

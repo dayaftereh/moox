@@ -1,8 +1,8 @@
-# Planned slice 03 - Generic combat Fleet movement, merge and split
+# Planned slice 04 - Generic combat Fleet movement, merge and split
 
 Status: **planned / queued; not open**.
 
-Queue position: **3 of 6**.
+Queue position: **4 of 7**.
 
 ## Objective
 
@@ -17,8 +17,8 @@ Generalize the strategic transit model from fixed Colony/Outpost special ships t
 
 ## Dependencies
 
-- slice 02 concrete military Ship/Fleet composition;
-- slice 01 supply-origin generalization if Outposts are implemented as planned.
+- slice 03 concrete military Ship/Fleet composition;
+- slice 02 supply-origin generalization if Outposts are implemented as planned.
 
 ## Scope guard
 

@@ -1,8 +1,8 @@
-# Planned slice 05 - Strategic hostile encounters and BattleSession handoff
+# Planned slice 06 - Strategic hostile encounters and BattleSession handoff
 
 Status: **planned / queued; not open**.
 
-Queue position: **5 of 6**.
+Queue position: **6 of 7**.
 
 ## Objective
 
@@ -19,9 +19,9 @@ This slice ends at the battle handoff/lifecycle boundary; it does not yet implem
 
 ## Dependencies
 
-- slice 02 concrete military ships;
-- slice 03 generic combat Fleet movement and arrival;
-- slice 04 is economically adjacent but not necessarily a hard gameplay dependency.
+- slice 03 concrete military ships;
+- slice 04 generic combat Fleet movement and arrival;
+- slice 05 is economically adjacent but not necessarily a hard gameplay dependency.
 
 ## Scope guard
 
@@ -35,7 +35,7 @@ In scope:
 
 Defer:
 
-- tactical movement/fire/damage (slice 06);
+- tactical movement/fire/damage (slice 07);
 - AI combat decisions;
 - planetary bombardment/invasion;
 - retreat results beyond the minimum result vocabulary required for the handoff;

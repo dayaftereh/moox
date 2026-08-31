@@ -1,8 +1,8 @@
-# Planned slice 06 - Tactical ship combat baseline
+# Planned slice 07 - Tactical ship combat baseline
 
 Status: **planned / queued; not open**.
 
-Queue position: **6 of 6**.
+Queue position: **7 of 7**.
 
 ## Objective
 
@@ -19,9 +19,9 @@ This is intentionally a **baseline**, not an attempt to implement every MOO2 wea
 
 ## Dependencies
 
-- slice 02 military design/ship state;
-- slice 03 Fleet composition/movement;
-- slice 05 BattleSession strategic handoff.
+- slice 03 military design/ship state;
+- slice 04 Fleet composition/movement;
+- slice 06 BattleSession strategic handoff.
 
 ## Scope guard
 
@@ -79,7 +79,7 @@ Defer unless Gate 1 proves essential:
 - [ ] Implement hit/damage/destruction layers proven by Gate 1.
 - [ ] Emit deterministic battle events suitable for replay/Observer views.
 - [ ] Produce an authoritative BattleSession result from the tactical engine.
-- [ ] Apply survivor/loss result back to strategic ship/Fleet state through the slice-05 handoff.
+- [ ] Apply survivor/loss result back to strategic ship/Fleet state through the slice-06 handoff.
 - [ ] Add exact fixed-seed tactical fixtures and save/replay tests.
 - [ ] Add rejection tests for explicitly unsupported combat systems.
 

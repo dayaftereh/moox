@@ -30,18 +30,19 @@ The game is **not playable yet**, but the first headless strategic expansion loo
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** all previously started gameplay slices are closed; there is currently **no** `_OPEN_*.md` marker. Six next slices are prepared as `docs/slices/PLANNED_01...06_*.md` specifications with complete Gate 1-4 checklists. The first recommended next slice is **Outpost Ship / Outpost state / supply range**. Planned files do not count as open work until a dated `_OPEN_` marker is created.
+**Slice state:** all previously started gameplay slices are closed; there is currently **no** `_OPEN_*.md` marker. Seven next slices are prepared as `docs/slices/PLANNED_01...07_*.md` specifications with complete Gate 1-4 checklists. The first recommended next slice is **Colony Base / same-system colonization**. Planned files do not count as open work until a dated `_OPEN_` marker is created.
 
 ### Prepared next-slice queue
 
 | # | Planned slice | Main purpose |
 | ---: | --- | --- |
-| 1 | `PLANNED_01_OUTPOST_SHIP_SUPPLY_RANGE.md` | Outpost Ship build/deploy, authoritative Outpost state and supply extension |
-| 2 | `PLANNED_02_MILITARY_SHIP_CORE_DESIGN_BASELINE.md` | Concrete military Ship/Design state and strategic construction |
-| 3 | `PLANNED_03_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT.md` | Generic combat-Fleet transit, range/speed, merge and split |
-| 4 | `PLANNED_04_COMMAND_POINTS_SHIP_MAINTENANCE.md` | Command-Point capacity/usage and Treasury overage Maintenance |
-| 5 | `PLANNED_05_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md` | Automatic hostile strategic encounters -> deterministic BattleSession handoff |
-| 6 | `PLANNED_06_TACTICAL_SHIP_COMBAT_BASELINE.md` | First narrow deterministic tactical ship-combat vertical slice |
+| 1 | `PLANNED_01_COLONY_BASE_SAME_SYSTEM_COLONIZATION.md` | Correct Colony Base special Construction and same-system Colony founding |
+| 2 | `PLANNED_02_OUTPOST_SHIP_SUPPLY_RANGE.md` | Outpost Ship build/deploy, authoritative Outpost state and supply extension |
+| 3 | `PLANNED_03_MILITARY_SHIP_CORE_DESIGN_BASELINE.md` | Concrete military Ship/Design state and strategic construction |
+| 4 | `PLANNED_04_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT.md` | Generic combat-Fleet transit, range/speed, merge and split |
+| 5 | `PLANNED_05_COMMAND_POINTS_SHIP_MAINTENANCE.md` | Command-Point capacity/usage and Treasury overage Maintenance |
+| 6 | `PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md` | Automatic hostile strategic encounters -> deterministic BattleSession handoff |
+| 7 | `PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md` | First narrow deterministic tactical ship-combat vertical slice |
 ### Latest runtime checkpoints
 
 - `db9d01e` - Core schema 16 Colony Ship construction, Fuel-range-checked strategic transit and authoritative second-Colony colonization loop.

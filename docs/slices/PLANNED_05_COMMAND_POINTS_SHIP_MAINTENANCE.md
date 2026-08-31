@@ -1,8 +1,8 @@
-# Planned slice 04 - Command Points and ship overage Maintenance
+# Planned slice 05 - Command Points and ship overage Maintenance
 
 Status: **planned / queued; not open**.
 
-Queue position: **4 of 6**.
+Queue position: **5 of 7**.
 
 ## Objective
 
@@ -19,8 +19,8 @@ Predecessor evidence: `docs/research/TREASURY_MAINTENANCE_DEFICIT_2026-08-29.md`
 
 ## Dependencies
 
-- slice 02 military ship instances/hulls;
-- preferably slice 03 authoritative Fleet composition/movement, although accounting should depend on owned ships rather than location if original evidence says so.
+- slice 03 military ship instances/hulls;
+- preferably slice 04 authoritative Fleet composition/movement, although accounting should depend on owned ships rather than location if original evidence says so.
 
 ## Scope guard
 

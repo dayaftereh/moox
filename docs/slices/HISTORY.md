@@ -38,6 +38,6 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 
 - `docs/slices/` contains **no** `_OPEN_*.md` marker.
 - The completed rows above have committed runtime/tests and/or explicit closing documentation in Git history.
-- The Colony Ship build/move/colonize slice is closed in `db9d01e`; no gameplay slice is currently open. Six `PLANNED_01...06` specifications now prepare the next roadmap, but none counts as open work; the next started objective must still begin with a fresh Gate 1 and exactly one `_OPEN_` marker.
+- The Colony Ship build/move/colonize slice is closed in `db9d01e`; no gameplay slice is currently open. Seven `PLANNED_01...07` specifications now prepare the next roadmap, but none counts as open work; the next started objective must still begin with a fresh Gate 1 and exactly one `_OPEN_` marker.
 - Live current status is authoritative in `README.md`, `docs/PROJECT_STATUS.md`, `docs/architecture/README.md`, and `docs/research/ACTIVE_RESEARCH.md`.
 - Historical research documents are evidence checkpoints and are not rewritten merely because a later slice resolved one of their then-deferred items.

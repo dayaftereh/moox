@@ -1,8 +1,8 @@
-# Planned slice 01 - Outpost Ship, Outpost state and supply range
+# Planned slice 02 - Outpost Ship, Outpost state and supply range
 
 Status: **planned / queued; not open**.
 
-Queue position: **1 of 6**.
+Queue position: **2 of 7**.
 
 This file is a prepared slice specification. It is not an `_OPEN_*.md` recovery marker and does not mean implementation has started.
 

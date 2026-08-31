@@ -47,27 +47,23 @@ Gate 4 passed `gofmt`, `go test ./... -count=1`, `go vet ./...`, focused Colony 
 
 ## Prepared next-slice queue
 
-No gameplay slice is currently open. All previously started slices are closed, and the next six are prepared as planning specifications under `docs/slices/`.
+No gameplay slice is currently open. All previously started slices are closed, and the next seven are prepared as planning specifications under `docs/slices/`.
 
 Recommended order:
 
-1. **Outpost Ship / Outpost state / supply range**
-   `docs/slices/PLANNED_01_OUTPOST_SHIP_SUPPLY_RANGE.md`
-2. **Military Ship core / design baseline**
-   `docs/slices/PLANNED_02_MILITARY_SHIP_CORE_DESIGN_BASELINE.md`
-3. **Generic combat Fleet movement / merge / split**
-   `docs/slices/PLANNED_03_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT.md`
-4. **Command Points / ship overage Maintenance**
-   `docs/slices/PLANNED_04_COMMAND_POINTS_SHIP_MAINTENANCE.md`
-5. **Strategic hostile encounters -> BattleSession handoff**
-   `docs/slices/PLANNED_05_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md`
-6. **Tactical ship combat baseline**
-   `docs/slices/PLANNED_06_TACTICAL_SHIP_COMBAT_BASELINE.md`
+1. **Colony Base / same-system colonization** - `docs/slices/PLANNED_01_COLONY_BASE_SAME_SYSTEM_COLONIZATION.md`
+2. **Outpost Ship / Outpost state / supply range** - `docs/slices/PLANNED_02_OUTPOST_SHIP_SUPPLY_RANGE.md`
+3. **Military Ship core / design baseline** - `docs/slices/PLANNED_03_MILITARY_SHIP_CORE_DESIGN_BASELINE.md`
+4. **Generic combat Fleet movement / merge / split** - `docs/slices/PLANNED_04_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT.md`
+5. **Command Points / ship overage Maintenance** - `docs/slices/PLANNED_05_COMMAND_POINTS_SHIP_MAINTENANCE.md`
+6. **Strategic hostile encounters -> BattleSession handoff** - `docs/slices/PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md`
+7. **Tactical ship combat baseline** - `docs/slices/PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md`
 
-The files above already contain Gate 1-4 checklists, dependency notes, scope guards and exit criteria, but **none is active**. Starting one requires a fresh Gate 1 and exactly one dated `_OPEN_*.md` marker. Do not reopen the completed Colony Ship slice unless new evidence exposes a concrete fidelity defect.
+The files above already contain Gate 1-4 checklists, dependency notes, scope guards and exit criteria, but **none is active**. Starting one requires a fresh Gate 1 and exactly one dated `_OPEN_*.md` marker.
 
-The order is deliberately progressive: Outpost extends the current special-ship/supply model; military Ship state then supplies concrete Fleet composition; generic movement enables real strategic combat Fleets; Command Points can then use canonical ships; hostile arrivals can generate BattleSessions; only then does the first tactical-combat rules slice have all required producers/consumers.
+The order is progressive: Colony Base first closes the currently incorrect generic-Building gap for same-system expansion; Outpost then extends special-ship/supply expansion; military Ship state supplies concrete Fleet composition; generic movement enables real strategic combat Fleets; Command Points can then use canonical ships; hostile arrivals can generate BattleSessions; only then does the first tactical-combat rules slice have all required producers/consumers.
 
+Do not reopen the completed Colony Ship slice unless new evidence exposes a concrete fidelity defect.
 ## Later deferred dependencies
 
 - generic combat-Fleet movement/orders and tactical ship composition;
