@@ -37,7 +37,7 @@ Evidence labels in this document:
 | Symbol | Object-1 offset | VA |
 | --- | ---: | ---: |
 | `Load_Outpost_Ship_Design_` | `0x46586` | `0x56586` |
-| `Best_Warp_Drive_` | `0x46726` | `0x56726` |
+| `Best_Warp_Drive_` | `0x4679E` | `0x5679E` |
 | `Can_Build_Outpost_` | `0x6022D` | `0x7022D` |
 | `Set_Build_Outpost_Button_Flag_` | `0x61DD8` | `0x71DD8` |
 | `Planet_Is_Colonizable_` | `0x614A1` | `0x714A1` |
@@ -55,7 +55,7 @@ Evidence labels in this document:
 | `Ship_Range_` | `0xEF496` | `0xFF496` |
 | `Star_In_Range_Of_Player_Aux1_` | `0xEF4E9` | `0xFF4E9` |
 | `Star_In_Range_Of_Player_` | `0xEF5F8` | `0xFF5F8` |
-| `Update_Player_Ship_Range_` | `0xF034D` | `0x10034D` |
+| `Update_Player_Ship_Range_` | `0xF038C` | `0x10038C` |
 | `Ship_Type_Cost_For_Player_` | `0xD0D98` | `0xE0D98` |
 | `Colony_Can_Build_Product_` | `0xD11BC` | `0xE11BC` |
 

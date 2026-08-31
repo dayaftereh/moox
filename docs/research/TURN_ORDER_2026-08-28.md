@@ -60,7 +60,7 @@ The important original call window is:
 0x13729 -> Make_Scrap_Ships_Dead_          (0xEDF92)
 0x1372E -> Initialize_Reports_             (0xFD81C)
 0x13733 -> Process_Trade_And_Research_Agreements_ (0x101E77)
-0x13738 -> Move_All_Ships_Toward_Stars_    (0xFFEEA)
+0x13738 -> Move_All_Ships_Toward_Stars_    (0x100010)
 0x1373D -> Resolve_Spies_                  (0x10192B)
 0x13742 -> Apply_All_Player_Changes_       (0xE4F49)
 0x13747 -> Apply_All_Colony_Changes_       (0xE3FDC)

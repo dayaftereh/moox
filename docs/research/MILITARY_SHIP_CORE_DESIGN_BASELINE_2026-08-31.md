@@ -51,7 +51,7 @@ Object-1 symbol offsets below use executable object-1 offsets; add `0x10000` for
 | Symbol | object-1 offset | VA |
 | --- | ---: | ---: |
 | `Init_Ship_Designs_` | `0x44FBF` | `0x54FBF` |
-| `Best_Warp_Drive_` | `0x46726` | `0x56726` |
+| `Best_Warp_Drive_` | `0x4679E` | `0x5679E` |
 | `Best_Ship_Shield_` | `0x4679E` | `0x5679E` |
 | `Best_Computer_` | `0x4680D` | `0x5680D` |
 | `Best_Armor_` | `0x4685F` | `0x5685F` |

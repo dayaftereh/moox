@@ -25,12 +25,18 @@ func TestObserverViewPreservesAndIsolatesStrategicBlockadeState(t *testing.T) {
 	state.Empires = append(state.Empires, targetEmpire)
 	state.Colonies = append(state.Colonies, targetColony)
 
+	spec := core.ShipDesignSpec{HullID: "frigate", StrategicPictureID: 0, WarpDriveID: "nuclear_drive", FTLSpeed: 2, ComputerID: "electronic_computer", ArmorID: "titanium_armor", FuelCellID: "standard_fuel_cells", FuelRangeParsecs: 4, HullBaseCostPP: 20, HullSpace: 25, BaseDesignCostPP: 25, ProductionCostPP: 25}
+	designID := state.NewID()
+	state.ShipDesigns = append(state.ShipDesigns, core.ShipDesign{ID: designID, EmpireID: blockaderEmpireID, Revision: 1, Name: "Blockader", Spec: spec})
+	shipID := state.NewID()
+	state.Ships = append(state.Ships, core.Ship{ID: shipID, EmpireID: blockaderEmpireID, SourceDesignID: designID, SourceDesignRevision: 1, Name: "Blockader", Spec: spec})
 	fleetID := state.NewID()
 	state.StrategicFleets = []core.StrategicFleet{{
 		ID:         fleetID,
 		EmpireID:   blockaderEmpireID,
 		Role:       core.StrategicFleetRoleCombat,
 		AtSystemID: state.Galaxy.Systems[1].ID,
+		ShipIDs:    []core.ID{shipID},
 	}}
 	state.DiplomaticRelations = []core.DiplomaticRelation{{
 		FromEmpireID: blockaderEmpireID,

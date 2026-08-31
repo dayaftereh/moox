@@ -124,7 +124,7 @@ Confederation/evolved-government runtime is not yet authoritative and need not b
 
 `Load_Colony_Ship_Design_` VA `0x564CD`:
 
-- calls `Best_Warp_Drive_` VA `0x56726` for the owning player;
+- calls `Best_Warp_Drive_` VA `0x5679E` for the owning player;
 - stores the selected drive byte in the Colony Ship design at `+0x13`;
 - derives drive-dependent design data;
 - computes/stores the final ship cost.
@@ -151,7 +151,7 @@ Trans-Dimensional race modifier    +2
 
 **Evidence level: original-observed.**
 
-`Update_Player_Ship_Range_` VA `0x10034D` selects the best owned Fuel Cell technology and writes the resulting base strategic range to player `+0x324`.
+`Update_Player_Ship_Range_` VA `0x10038C` selects the best owned Fuel Cell technology and writes the resulting base strategic range to player `+0x324`.
 
 The six-record original Fuel table was read directly from the executable's LE data object. Its researched entries are:
 
@@ -221,11 +221,11 @@ status 2 -> +0x65 - 1000
 other    -> +0x65 directly
 ```
 
-`Make_Ships_Move_To_` VA `0xFFD08` writes the packed destination, stores the movement ETA in `+0x6D`, updates the movement/order state and treats Colony/Outpost special ships explicitly.
+`Make_Ships_Move_To_` VA `0xFFDC9` writes the packed destination, stores the movement ETA in `+0x6D`, updates the movement/order state and treats Colony/Outpost special ships explicitly.
 
-`Update_Ship_ETAs_` VA `0x10041C` handles transit statuses 1/2 and repeatedly advances temporary coordinates using the movement-speed input until the destination coordinates are reached, writing the number of required turns to `+0x6D`.
+`Update_Ship_ETAs_` VA `0x100519` handles transit statuses 1/2 and repeatedly advances temporary coordinates using the movement-speed input until the destination coordinates are reached, writing the number of required turns to `+0x6D`.
 
-`Move_All_Ships_Toward_Stars_` VA `0xFFEEA` advances status-1/2 ships, decrements ETA and calls `Make_Ship_Arrive_At_Star_` VA `0xFFDDA` when the destination is reached. Arrival normalizes the record back to stationary-at-star form.
+`Move_All_Ships_Toward_Stars_` VA `0x100010` advances status-1/2 ships, decrements ETA and calls `Make_Ship_Arrive_At_Star_` VA `0xFFEEA` when the destination is reached. Arrival normalizes the record back to stationary-at-star form.
 
 ### What Gate 1 does not claim
 

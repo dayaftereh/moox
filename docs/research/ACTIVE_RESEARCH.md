@@ -5,15 +5,45 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: **none**.
+- Open slice marker: `docs/slices/_OPEN_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT_2026-08-31.md`.
 - Latest completed gameplay slice: **Military Ship core / design baseline**.
 - Implementation commit: `2670d36` (`game: add military ship design baseline`).
-- Core `StateSchemaVersion`: **18**.
+- Core `StateSchemaVersion`: **19**.
 - Economy ruleset schema: **7**.
-- Active permanent evidence: **none**.
+- Active permanent evidence: `docs/research/COMBAT_FLEET_MOVEMENT_MERGE_SPLIT_2026-08-31.md`.
 - Latest closed evidence: `docs/research/MILITARY_SHIP_CORE_DESIGN_BASELINE_2026-08-31.md`.
-- Before starting new work, check `docs/slices/_OPEN_*.md`; no slice is open. Slice 04 Combat Fleet movement / merge / split is the next prepared objective.
+- Before starting new work, check `docs/slices/_OPEN_*.md`; Slice 04 is active with Gates 1-3 complete and Gate 4 pending. Resume it before any later objective.
 
+## Active Slice 04 - Combat Fleet movement, merge and split
+
+**Gates 1-3 are complete; Gate 4 final QA / commit / closure is pending.**
+
+Permanent evidence: `docs/research/COMBAT_FLEET_MOVEMENT_MERGE_SPLIT_2026-08-31.md`.
+
+Gate-1 conclusions:
+
+- original strategic movement operates on an arbitrary selected subset of co-located ships; MOOX must map that to explicit stable Fleet containers;
+- normal in-hyperspace destination changes are technology-gated by Hyperspace Communications, so this slice can reject in-transit split/merge/reroute;
+- current ordinary military movement should derive effective FTL speed from the Empire's current best Warp Drive plus Trans-Dimensional, rather than from stale build-snapshot speeds;
+- current Fleet range similarly uses the Empire's best Fuel Cell and the already-proven Colony/Outpost supply origins; Extended Fuel Tanks remains a future per-Ship modifier boundary;
+- existing `AtSystemID` / `DestinationSystemID` / `RemainingTurns` state can be generalized directly; no second transit model is needed;
+- original selected-subset movement maps cleanly to `move_fleet` with optional `ship_ids` for atomic split+move, plus explicit stationary split/merge commands;
+- Fleet movement/arrival precedes blockade recomputation, so departure removes and arrival can establish blockade in the same resolution;
+- hostile arrival may temporarily materialize stationary co-location/blockade; Slice 06 owns encounter/BattleSession handoff.
+
+Gate 2 accepted the schema-19/API/event contract and Gate 3 now implements it.
+
+Gate-3 runtime result:
+
+- Core schema 19 accepts ordinary concrete combat-Fleet transit and rejects empty/locationless/cached-FTL combat Fleet state;
+- combat movement derives current Empire Warp Drive + Trans-Dimensional speed and current Fuel Cell range while validating every concrete member Ship;
+- `empire.move_fleet` supports deterministic whole-Fleet or selected-subset movement; proper subsets allocate one new Fleet ID and emit `empire.fleet_split` before `empire.fleet_movement_started`;
+- `empire.split_fleet` and `empire.merge_fleets` operate only on owned stationary ordinary combat Fleets and preserve sorted unique non-empty Ship composition;
+- rejected subset movement validates before mutation and does not consume `NextID`;
+- combat transit uses the existing destination/remaining-turn countdown, arrival materializes before blockade recomputation, and no in-transit reroute/split/merge is introduced;
+- schema-19 save/load, Observer `ShipIDs` isolation, identical-session state/event replay, Colony/Outpost compatibility and full repository tests are green.
+
+Gate 4 remains pending; do not delete the OPEN marker or commit/close the slice before its fresh QA pass.
 ## Closed Slice 03 - Military Ship core / design baseline
 
 **Gates 1-4 are complete.** Final Gate 4 gofmt, full tests, vet, focused compatibility regressions and diff checks passed; the implementation is committed and the recovery marker is removed.

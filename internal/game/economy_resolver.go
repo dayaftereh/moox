@@ -136,7 +136,19 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 				}
 				events = append(events, event)
 			case CommandMoveFleet:
-				event, err := r.moveFleet(state, empireID, batch.SeatID, command)
+				movementEvents, err := r.moveFleetEvents(state, empireID, batch.SeatID, command)
+				if err != nil {
+					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
+				}
+				events = append(events, movementEvents...)
+			case CommandSplitFleet:
+				event, err := r.splitFleet(state, empireID, batch.SeatID, command)
+				if err != nil {
+					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
+				}
+				events = append(events, event)
+			case CommandMergeFleets:
+				event, err := r.mergeFleets(state, empireID, batch.SeatID, command)
 				if err != nil {
 					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
 				}

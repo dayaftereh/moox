@@ -15,12 +15,17 @@ func TestStrategicStateRoundTripsAndDefaultsMissingRelationsToNeutral(t *testing
 	state := NewSmallFixture(1501)
 	firstEmpireID := state.Empires[0].ID
 	secondEmpireID := addStrategicTestEmpire(state, "Second Empire")
+	designID := state.NewID()
+	state.ShipDesigns = append(state.ShipDesigns, ShipDesign{ID: designID, EmpireID: firstEmpireID, Revision: 1, Name: "Blockader", Spec: baselineMilitarySpec()})
+	shipID := state.NewID()
+	state.Ships = append(state.Ships, Ship{ID: shipID, EmpireID: firstEmpireID, SourceDesignID: designID, SourceDesignRevision: 1, Name: "Blockader", Spec: baselineMilitarySpec()})
 	fleetID := state.NewID()
 	state.StrategicFleets = []StrategicFleet{{
 		ID:         fleetID,
 		EmpireID:   firstEmpireID,
 		Role:       StrategicFleetRoleCombat,
 		AtSystemID: state.Galaxy.Systems[1].ID,
+		ShipIDs:    []ID{shipID},
 	}}
 	state.DiplomaticRelations = []DiplomaticRelation{{
 		FromEmpireID: firstEmpireID,
@@ -147,7 +152,7 @@ func TestDiplomaticRelationValidation(t *testing.T) {
 	})
 }
 
-func TestColonyShipTransitStateRoundTripsInSchema18(t *testing.T) {
+func TestColonyShipTransitStateRoundTripsInSchema19(t *testing.T) {
 	state := NewSmallFixture(1510)
 	fleetID := state.NewID()
 	state.StrategicFleets = []StrategicFleet{{
@@ -159,8 +164,8 @@ func TestColonyShipTransitStateRoundTripsInSchema18(t *testing.T) {
 		RemainingTurns:      2,
 		FTLSpeed:            3,
 	}}
-	if StateSchemaVersion != 18 || state.SchemaVersion != 18 {
-		t.Fatalf("schema=%d constant=%d want=18", state.SchemaVersion, StateSchemaVersion)
+	if StateSchemaVersion != 19 || state.SchemaVersion != 19 {
+		t.Fatalf("schema=%d constant=%d want=19", state.SchemaVersion, StateSchemaVersion)
 	}
 	if err := state.Validate(); err != nil {
 		t.Fatal(err)

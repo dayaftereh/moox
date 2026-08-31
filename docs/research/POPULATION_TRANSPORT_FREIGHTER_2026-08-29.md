@@ -109,7 +109,7 @@ effective_speed = max(player_ftl_speed, 2)
 eta = min(15, ceil(parsecs / effective_speed))
 ```
 
-`Calc_Player_FTL_Speed_` (`0x57597`) obtains the best Warp Drive through `Best_Warp_Drive_` (`0x56726`). Direct table reads establish:
+`Calc_Player_FTL_Speed_` (`0x575D6`) obtains the best Warp Drive through `Best_Warp_Drive_` (`0x5679E`). Direct table reads establish:
 
 | Technology ID | Stable key | Original FTL speed |
 | ---: | --- | ---: |

@@ -109,8 +109,15 @@ func validateStrategicState(
 		}
 		switch fleet.SpecialKind {
 		case StrategicFleetSpecialNone:
-			if fleet.DestinationSystemID != 0 || fleet.RemainingTurns != 0 || fleet.FTLSpeed != 0 {
-				return fmt.Errorf("strategic_fleet[%d] ordinary fleet cannot carry semantic transit state yet", i)
+			if fleet.Role == StrategicFleetRoleCombat {
+				if len(fleet.ShipIDs) == 0 {
+					return fmt.Errorf("strategic_fleet[%d] combat fleet must contain at least one concrete ship", i)
+				}
+				if fleet.FTLSpeed != 0 {
+					return fmt.Errorf("strategic_fleet[%d] ordinary combat fleet ftl_speed must remain zero; movement speed is derived", i)
+				}
+			} else if fleet.DestinationSystemID != 0 || fleet.RemainingTurns != 0 || fleet.FTLSpeed != 0 {
+				return fmt.Errorf("strategic_fleet[%d] ordinary non-combat fleet cannot carry semantic transit state", i)
 			}
 		case StrategicFleetSpecialColonyShip, StrategicFleetSpecialOutpostShip:
 			if fleet.Role != StrategicFleetRoleCivilian {
@@ -136,14 +143,18 @@ func validateStrategicState(
 			if _, ok := systemIDs[fleet.DestinationSystemID]; !ok {
 				return fmt.Errorf("strategic_fleet[%d] references unknown destination star system %d", i, fleet.DestinationSystemID)
 			}
-			if fleet.SpecialKind != StrategicFleetSpecialColonyShip && fleet.SpecialKind != StrategicFleetSpecialOutpostShip {
-				return fmt.Errorf("strategic_fleet[%d] only fixed Colony/Outpost Ships may use semantic transit in schema %d", i, StateSchemaVersion)
+			fixedSpecial := fleet.SpecialKind == StrategicFleetSpecialColonyShip || fleet.SpecialKind == StrategicFleetSpecialOutpostShip
+			combatTransit := fleet.SpecialKind == StrategicFleetSpecialNone && fleet.Role == StrategicFleetRoleCombat
+			if !fixedSpecial && !combatTransit {
+				return fmt.Errorf("strategic_fleet[%d] fleet kind/role cannot use semantic transit in schema %d", i, StateSchemaVersion)
 			}
 			if fleet.RemainingTurns <= 0 {
 				return fmt.Errorf("strategic_fleet[%d] in transit requires positive remaining_turns", i)
 			}
 		} else if fleet.SpecialKind == StrategicFleetSpecialColonyShip || fleet.SpecialKind == StrategicFleetSpecialOutpostShip {
 			return fmt.Errorf("strategic_fleet[%d] fixed special ship %q requires a current or destination system", i, fleet.SpecialKind)
+		} else if fleet.Role == StrategicFleetRoleCombat && fleet.SpecialKind == StrategicFleetSpecialNone {
+			return fmt.Errorf("strategic_fleet[%d] combat fleet requires a current or destination system", i)
 		} else if fleet.RemainingTurns != 0 {
 			return fmt.Errorf("strategic_fleet[%d] locationless fleet cannot have remaining_turns", i)
 		}

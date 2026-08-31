@@ -58,7 +58,23 @@ func newBlockadeTestFixture(t *testing.T, seed uint64) blockadeTestFixture {
 }
 
 func addBlockadeTestFleet(state *core.GameState, empireID core.ID, role core.StrategicFleetRole, atSystemID core.ID) core.ID {
-	fleetID := state.NewID()
+	fleetID := core.ID(0)
+	if role == core.StrategicFleetRoleCombat {
+		spec := core.ShipDesignSpec{HullID: "frigate", StrategicPictureID: 0, WarpDriveID: "nuclear_drive", FTLSpeed: 2, ComputerID: "electronic_computer", ArmorID: "titanium_armor", FuelCellID: "standard_fuel_cells", FuelRangeParsecs: 4, HullBaseCostPP: 20, HullSpace: 25, BaseDesignCostPP: 25, ProductionCostPP: 25}
+		designID := state.NewID()
+		state.ShipDesigns = append(state.ShipDesigns, core.ShipDesign{ID: designID, EmpireID: empireID, Revision: 1, Name: "Blockade test", Spec: spec})
+		shipID := state.NewID()
+		state.Ships = append(state.Ships, core.Ship{ID: shipID, EmpireID: empireID, SourceDesignID: designID, SourceDesignRevision: 1, Name: "Blockade test", Spec: spec})
+		fleetID = state.NewID()
+		fleet := core.StrategicFleet{ID: fleetID, EmpireID: empireID, Role: role, AtSystemID: atSystemID, ShipIDs: []core.ID{shipID}}
+		if atSystemID == 0 {
+			fleet.DestinationSystemID = state.Galaxy.Systems[0].ID
+			fleet.RemainingTurns = 1
+		}
+		state.StrategicFleets = append(state.StrategicFleets, fleet)
+		return fleetID
+	}
+	fleetID = state.NewID()
 	state.StrategicFleets = append(state.StrategicFleets, core.StrategicFleet{ID: fleetID, EmpireID: empireID, Role: role, AtSystemID: atSystemID})
 	return fleetID
 }

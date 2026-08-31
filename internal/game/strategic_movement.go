@@ -158,63 +158,82 @@ func fixedSpecialShipName(kind core.StrategicFleetSpecialKind) (string, bool) {
 	}
 }
 
-func (r *EconomyResolver) moveFleet(state *core.GameState, empireID core.ID, seatID protocol.SeatID, command protocol.Command) (DomainEvent, error) {
+func (r *EconomyResolver) moveFleetEvents(state *core.GameState, empireID core.ID, seatID protocol.SeatID, command protocol.Command) ([]DomainEvent, error) {
 	payload, err := decodeMoveFleet(command)
 	if err != nil {
-		return DomainEvent{}, err
+		return nil, err
 	}
 	_, fleet := strategicFleetByID(state, payload.FleetID)
 	if fleet == nil {
-		return DomainEvent{}, fmt.Errorf("references unknown strategic fleet %d", payload.FleetID)
+		return nil, fmt.Errorf("references unknown strategic fleet %d", payload.FleetID)
 	}
 	if fleet.EmpireID != empireID {
-		return DomainEvent{}, fmt.Errorf("seat %d cannot move fleet %d owned by empire %d", seatID, fleet.ID, fleet.EmpireID)
+		return nil, fmt.Errorf("seat %d cannot move fleet %d owned by empire %d", seatID, fleet.ID, fleet.EmpireID)
 	}
-	shipName, fixedSpecial := fixedSpecialShipName(fleet.SpecialKind)
-	if !fixedSpecial {
-		return DomainEvent{}, fmt.Errorf("fleet %d is not a movable fixed Colony/Outpost Ship", fleet.ID)
+	if _, fixedSpecial := fixedSpecialShipName(fleet.SpecialKind); !fixedSpecial {
+		if fleet.Role == core.StrategicFleetRoleCombat && fleet.SpecialKind == core.StrategicFleetSpecialNone {
+			return r.moveCombatFleet(state, empireID, seatID, command, payload, fleet)
+		}
+		return nil, fmt.Errorf("fleet %d is not a movable fixed Colony/Outpost Ship or ordinary combat fleet", fleet.ID)
 	}
+	if len(payload.ShipIDs) != 0 {
+		return nil, fmt.Errorf("fixed special fleet %d does not support ship_ids selection", fleet.ID)
+	}
+	shipName, _ := fixedSpecialShipName(fleet.SpecialKind)
 	if fleet.AtSystemID == 0 || fleet.DestinationSystemID != 0 || fleet.RemainingTurns != 0 {
-		return DomainEvent{}, fmt.Errorf("%s fleet %d is not stationary at a star system", shipName, fleet.ID)
+		return nil, fmt.Errorf("%s fleet %d is not stationary at a star system", shipName, fleet.ID)
 	}
 	if fleet.FTLSpeed < 2 {
-		return DomainEvent{}, fmt.Errorf("%s fleet %d has invalid ftl_speed %d", shipName, fleet.ID, fleet.FTLSpeed)
+		return nil, fmt.Errorf("%s fleet %d has invalid ftl_speed %d", shipName, fleet.ID, fleet.FTLSpeed)
 	}
 	source := systemByID(state, fleet.AtSystemID)
 	if source == nil {
-		return DomainEvent{}, fmt.Errorf("fleet %d references unknown source system %d", fleet.ID, fleet.AtSystemID)
+		return nil, fmt.Errorf("fleet %d references unknown source system %d", fleet.ID, fleet.AtSystemID)
 	}
 	destination := systemByID(state, payload.DestinationSystemID)
 	if destination == nil {
-		return DomainEvent{}, fmt.Errorf("references unknown destination star system %d", payload.DestinationSystemID)
+		return nil, fmt.Errorf("references unknown destination star system %d", payload.DestinationSystemID)
 	}
 	if destination.ID == source.ID {
-		return DomainEvent{}, fmt.Errorf("fleet %d is already at star system %d", fleet.ID, source.ID)
+		return nil, fmt.Errorf("fleet %d is already at star system %d", fleet.ID, source.ID)
 	}
 	empire := empireByID(state, empireID)
 	if empire == nil {
-		return DomainEvent{}, fmt.Errorf("seat %d references unknown empire %d", seatID, empireID)
+		return nil, fmt.Errorf("seat %d references unknown empire %d", seatID, empireID)
 	}
 	fuelRange := colonyShipFuelRangeParsecs(*empire)
 	supplyDistance, hasSupply := nearestEmpireSupplyDistanceParsecs(state, empireID, *destination)
 	if !hasSupply || supplyDistance > fuelRange {
-		return DomainEvent{}, fmt.Errorf("destination system %d is outside %s fuel range: nearest supply %d pc, range %d pc", destination.ID, shipName, supplyDistance, fuelRange)
+		return nil, fmt.Errorf("destination system %d is outside %s fuel range: nearest supply %d pc, range %d pc", destination.ID, shipName, supplyDistance, fuelRange)
 	}
 	eta := strategicTravelETA(*source, *destination, fleet.FTLSpeed)
 	if eta < 1 {
-		return DomainEvent{}, fmt.Errorf("invalid strategic ETA %d from system %d to %d", eta, source.ID, destination.ID)
+		return nil, fmt.Errorf("invalid strategic ETA %d from system %d to %d", eta, source.ID, destination.ID)
 	}
 	event, err := NewDomainEvent("empire.fleet_movement_started", seatID, command.Sequence, FleetMovementStartedEvent{
 		FleetID: fleet.ID, EmpireID: fleet.EmpireID, SourceSystemID: source.ID, DestinationSystemID: destination.ID,
 		RemainingTurns: eta, FTLSpeed: fleet.FTLSpeed, FuelRangeParsecs: fuelRange, SupplyDistanceParsecs: supplyDistance,
 	})
 	if err != nil {
-		return DomainEvent{}, err
+		return nil, err
 	}
 	fleet.AtSystemID = 0
 	fleet.DestinationSystemID = destination.ID
 	fleet.RemainingTurns = eta
-	return event, nil
+	return []DomainEvent{event}, nil
+}
+
+// moveFleet keeps the pre-Slice-04 helper shape for focused Colony/Outpost tests.
+// The resolver uses moveFleetEvents so subset combat movement can emit split then move.
+func (r *EconomyResolver) moveFleet(state *core.GameState, empireID core.ID, seatID protocol.SeatID, command protocol.Command) (DomainEvent, error) {
+	events, err := r.moveFleetEvents(state, empireID, seatID, command)
+	if err != nil {
+		return DomainEvent{}, err
+	}
+	if len(events) == 0 {
+		return DomainEvent{}, fmt.Errorf("fleet movement produced no events")
+	}
+	return events[len(events)-1], nil
 }
 
 func (r *EconomyResolver) advanceStrategicFleetTransit(state *core.GameState) ([]DomainEvent, error) {
@@ -224,8 +243,13 @@ func (r *EconomyResolver) advanceStrategicFleetTransit(state *core.GameState) ([
 		if fleet.DestinationSystemID == 0 {
 			continue
 		}
-		if _, fixedSpecial := fixedSpecialShipName(fleet.SpecialKind); !fixedSpecial || fleet.AtSystemID != 0 || fleet.RemainingTurns <= 0 || fleet.FTLSpeed < 2 {
-			return nil, fmt.Errorf("strategic fleet %d has invalid fixed special-ship transit state", fleet.ID)
+		if fleet.AtSystemID != 0 || fleet.RemainingTurns <= 0 {
+			return nil, fmt.Errorf("strategic fleet %d has invalid transit state", fleet.ID)
+		}
+		_, fixedSpecial := fixedSpecialShipName(fleet.SpecialKind)
+		combatTransit := fleet.Role == core.StrategicFleetRoleCombat && fleet.SpecialKind == core.StrategicFleetSpecialNone && fleet.FTLSpeed == 0 && len(fleet.ShipIDs) > 0
+		if (!fixedSpecial || fleet.FTLSpeed < 2) && !combatTransit {
+			return nil, fmt.Errorf("strategic fleet %d has invalid transit kind/drive state", fleet.ID)
 		}
 		destination := systemByID(state, fleet.DestinationSystemID)
 		if destination == nil {
