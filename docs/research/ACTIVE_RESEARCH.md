@@ -5,18 +5,18 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: `docs/slices/_OPEN_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT_2026-08-31.md`.
-- Latest completed gameplay slice: **Military Ship core / design baseline**.
-- Implementation commit: `2670d36` (`game: add military ship design baseline`).
+- Open slice marker: **none**.
+- Latest completed gameplay slice: **Combat Fleet movement / merge / split**.
+- Implementation commit: `f297480` (`game: add combat fleet movement`).
 - Core `StateSchemaVersion`: **19**.
 - Economy ruleset schema: **7**.
-- Active permanent evidence: `docs/research/COMBAT_FLEET_MOVEMENT_MERGE_SPLIT_2026-08-31.md`.
-- Latest closed evidence: `docs/research/MILITARY_SHIP_CORE_DESIGN_BASELINE_2026-08-31.md`.
-- Before starting new work, check `docs/slices/_OPEN_*.md`; Slice 04 is active with Gates 1-3 complete and Gate 4 pending. Resume it before any later objective.
+- Active permanent evidence: **none**.
+- Latest closed evidence: `docs/research/COMBAT_FLEET_MOVEMENT_MERGE_SPLIT_2026-08-31.md`.
+- Before starting new work, check `docs/slices/_OPEN_*.md`; no slice is active. Slice 05 **Command Points / ship maintenance** is the next prepared objective.
 
-## Active Slice 04 - Combat Fleet movement, merge and split
+## Closed Slice 04 - Combat Fleet movement, merge and split
 
-**Gates 1-3 are complete; Gate 4 final QA / commit / closure is pending.**
+**Gates 1-4 are complete.** Final Gate 4 gofmt, full tests, vet, focused compatibility regressions and diff checks passed; the implementation is committed and the recovery marker is removed.
 
 Permanent evidence: `docs/research/COMBAT_FLEET_MOVEMENT_MERGE_SPLIT_2026-08-31.md`.
 
@@ -43,7 +43,7 @@ Gate-3 runtime result:
 - combat transit uses the existing destination/remaining-turn countdown, arrival materializes before blockade recomputation, and no in-transit reroute/split/merge is introduced;
 - schema-19 save/load, Observer `ShipIDs` isolation, identical-session state/event replay, Colony/Outpost compatibility and full repository tests are green.
 
-Gate 4 remains pending; do not delete the OPEN marker or commit/close the slice before its fresh QA pass.
+Gate 4 closure: fresh repository/session check found no foreign writer and exactly one expected OPEN marker. `gofmt` on changed Go files, `go test ./... -count=1`, `go vet ./...`, focused CombatFleet/Strategic/Military/ColonyShip/Outpost/Blockade/Observer/Save/Load/Replay regressions and `git diff --check` all passed. Gameplay/evidence commit: `f297480`. The OPEN marker is removed in the closing documentation commit. No push was performed. Next prepared objective: Slice 05 **Command Points / ship maintenance**.
 ## Closed Slice 03 - Military Ship core / design baseline
 
 **Gates 1-4 are complete.** Final Gate 4 gofmt, full tests, vet, focused compatibility regressions and diff checks passed; the implementation is committed and the recovery marker is removed.

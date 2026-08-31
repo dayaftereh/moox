@@ -2,9 +2,9 @@
 
 Date: 2026-08-31
 
-Status: **Gates 1-3 complete; Gate 4 pending**
+Status: **closed; Gates 1-4 complete**
 
-Open marker: `docs/slices/_OPEN_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT_2026-08-31.md`
+Recovery marker removed at Gate 4 closure: `docs/slices/_OPEN_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT_2026-08-31.md`
 
 Planned slice: `docs/slices/PLANNED_04_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT.md`
 
@@ -678,3 +678,27 @@ git diff --check
 ```
 
 The final full repository run passed all packages. Gate 4 remains responsible for a fresh conflict check, final gofmt/test/vet/focused-regression/diff QA, commits and slice closure.
+
+## Gate 4 closure
+
+Fresh Gate-4 verification found no foreign writer, `main` still based on `7fd43f4` plus the Slice-04 work, and exactly one expected Slice-04 OPEN marker.
+
+Final QA passed:
+
+```text
+gofmt -w <all changed Go files>
+go test ./... -count=1
+go vet ./...
+go test ./internal/core ./internal/game ./internal/session -run "(CombatFleet|Strategic|Military|ColonyShip|Outpost|Blockade|Observer|Save|Load|Replay)" -count=1
+git diff --check
+```
+
+The focused coverage includes composition-preserving split/merge, rejected subset-move atomicity, schema-19 save/load, Observer isolation and deterministic replay, so no Ship instance duplication/loss is left across the supported Slice-04 paths.
+
+Gameplay, tests, permanent evidence and the Gate-3 recovery state are committed as:
+
+```text
+f297480 game: add combat fleet movement
+```
+
+The closing documentation commit removes the OPEN marker, marks this slice closed in live status/HISTORY and promotes Slice 05 **Command Points / ship maintenance** as the next prepared objective. No push was performed.

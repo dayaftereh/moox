@@ -25,22 +25,23 @@ Current snapshot: **2026-08-31**.
 
 Master of Orion X is now actively in deterministic headless runtime development. The repository contains the pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), normalized runtime datasets, authoritative Core/Game/Session infrastructure and a growing set of original-evidence-backed strategic rules.
 
-The game is **not playable yet**, but the deterministic headless strategic surface now includes normal colonization, Outpost expansion and the first concrete military-ship construction baseline. A normal Empire can develop its Colony economy/research/construction, build Colony and Outpost Ships, move fixed civilian special ships under original Fuel-range/installed-FTL rules, deploy supply-extending Outposts, create an arbitrary number of current Frigate designs, construct a concrete design snapshot and materialize it in a one-Ship combat Fleet. Core schema 18 also includes race-aware Population cohorts, Food/Freighter logistics, Population transfer, deterministic system blockades and modeled Treasury settlement. Technology ownership/buildability plus server-derived legal actions remain shared by future Human UI and AI controllers.
+The game is **not playable yet**, but the deterministic headless strategic surface now includes normal colonization, Outpost expansion, concrete military-ship construction and generic combat-Fleet movement. A normal Empire can develop its Colony economy/research/construction, build Colony and Outpost Ships, move fixed civilian special ships under original Fuel-range/installed-FTL rules, deploy supply-extending Outposts, create an arbitrary number of current Frigate designs, construct concrete Ship snapshots, and move/split/merge their combat Fleets with deterministic transit and arrival-driven blockade state. Core schema 19 also includes race-aware Population cohorts, Food/Freighter logistics, Population transfer and modeled Treasury settlement. Technology ownership/buildability plus server-derived legal actions remain shared by future Human UI and AI controllers.
 
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slice 03 **Military Ship core / design baseline** is closed. Core schema 18 persists an unbounded ID-based design catalog, concrete built-Ship snapshots and combat-Fleet `ShipIDs`; final Gate 4 gofmt/test/vet/focused-regression/diff QA passed. No slice is open; Slice 04 **Combat Fleet movement / merge / split** is the next prepared objective.
+**Slice state:** no active slice. Slice 04 **Combat Fleet movement / merge / split** is closed after Gate 4. Core schema 19 now provides deterministic whole/subset combat-Fleet movement, explicit stationary split/merge, current-Empire strategic speed/range derivation, semantic transit/arrival and arrival-driven blockade state. Gameplay commit: `f297480`. Next prepared objective: Slice 05 **Command Points / ship maintenance**.
 
 ### Prepared slice queue
 
 | Slice | Planned slice | Main purpose |
 | ---: | --- | --- |
-| 4 | `PLANNED_04_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT.md` | Generic combat-Fleet transit, range/speed, merge and split |
 | 5 | `PLANNED_05_COMMAND_POINTS_SHIP_MAINTENANCE.md` | Command-Point capacity/usage and Treasury overage Maintenance |
 | 6 | `PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md` | Automatic hostile strategic encounters -> deterministic BattleSession handoff |
 | 7 | `PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md` | First narrow deterministic tactical ship-combat vertical slice |
 ### Latest runtime checkpoints
+
+- 297480 - Core schema 19 combat-Fleet whole/subset movement, stationary split/merge, current-Empire speed/range derivation, deterministic transit/arrival, save/load and replay coverage.
 
 - `7c7284e` - Core schema 17 Outpost Ship construction/transit/deployment, Planet-linked Outpost supply origins and same-owner Outpost-to-Colony replacement.
 
