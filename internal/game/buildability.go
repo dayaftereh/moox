@@ -11,6 +11,9 @@ import (
 const ColonyShipTechnologyID = 41
 const ColonyShipProjectID = "colony_ship"
 const ColonyShipBaseCostPP = 500.0
+const OutpostShipTechnologyID = 109
+const OutpostShipProjectID = "outpost_ship"
+const OutpostShipBaseCostPP = 100.0
 const FreighterFleetTechnologyID = 69
 const FreighterFleetProjectID = "freighter_fleet"
 const HousingProjectID = "housing"
@@ -93,6 +96,14 @@ func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empir
 			TechnologyID:     ColonyShipTechnologyID,
 		})
 	}
+	if empireKnowsTechnology(empire, OutpostShipTechnologyID) {
+		choices = append(choices, ConstructionChoice{
+			ProjectKind:      core.ConstructionProjectOutpostShip,
+			ProjectID:        OutpostShipProjectID,
+			ProductionCostPP: r.outpostShipProductionCostPP(empire),
+			TechnologyID:     OutpostShipTechnologyID,
+		})
+	}
 	if empireKnowsTechnology(empire, FreighterFleetTechnologyID) {
 		choices = append(choices, ConstructionChoice{
 			ProjectKind:      core.ConstructionProjectFreighterFleet,
@@ -113,6 +124,16 @@ func (r *EconomyRules) colonyShipProductionCostPP(empire *core.Empire) float64 {
 		return math.Ceil((2 * ColonyShipBaseCostPP) / 3)
 	}
 	return ColonyShipBaseCostPP
+}
+
+func (r *EconomyRules) outpostShipProductionCostPP(empire *core.Empire) float64 {
+	if empire == nil {
+		return OutpostShipBaseCostPP
+	}
+	if modifiers, ok := r.RaceModifiers[empire.RaceID]; ok && modifiers.GovernmentTraitID == "government_feudal" {
+		return math.Ceil((2 * OutpostShipBaseCostPP) / 3)
+	}
+	return OutpostShipBaseCostPP
 }
 
 type BuildingChoice struct {

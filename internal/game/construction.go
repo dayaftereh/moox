@@ -41,6 +41,19 @@ type ColonyShipCompletedEvent struct {
 	FTLSpeed int     `json:"ftl_speed"`
 }
 
+type OutpostShipQueuedEvent struct {
+	ColonyID         core.ID `json:"colony_id"`
+	ProductionCostPP float64 `json:"production_cost_pp"`
+}
+
+type OutpostShipCompletedEvent struct {
+	ColonyID core.ID `json:"colony_id"`
+	EmpireID core.ID `json:"empire_id"`
+	FleetID  core.ID `json:"fleet_id"`
+	SystemID core.ID `json:"system_id"`
+	FTLSpeed int     `json:"ftl_speed"`
+}
+
 type HousingQueuedEvent struct {
 	ColonyID core.ID `json:"colony_id"`
 }
@@ -292,6 +305,38 @@ func (r *EconomyResolver) advanceConstruction(state *core.GameState) ([]DomainEv
 				return nil, err
 			}
 			events = append(events, completed)
+		case core.ConstructionProjectOutpostShip:
+			if projectID != OutpostShipProjectID {
+				return nil, fmt.Errorf("colony %d completed unknown Outpost Ship project %q", colony.ID, projectID)
+			}
+			empire := empireByID(state, colony.EmpireID)
+			if empire == nil {
+				return nil, fmt.Errorf("colony %d references unknown empire %d", colony.ID, colony.EmpireID)
+			}
+			system := systemForPlanetID(state, colony.PlanetID)
+			if system == nil {
+				return nil, fmt.Errorf("colony %d planet %d is not assigned to a star system", colony.ID, colony.PlanetID)
+			}
+			ftlSpeed := r.Rules.populationTransferFTLSpeed(*empire)
+			if ftlSpeed < 2 {
+				return nil, fmt.Errorf("empire %d cannot complete Outpost Ship without an installed strategic drive", empire.ID)
+			}
+			fleet := core.StrategicFleet{
+				ID:          state.NewID(),
+				EmpireID:    empire.ID,
+				Role:        core.StrategicFleetRoleCivilian,
+				SpecialKind: core.StrategicFleetSpecialOutpostShip,
+				AtSystemID:  system.ID,
+				FTLSpeed:    ftlSpeed,
+			}
+			state.StrategicFleets = append(state.StrategicFleets, fleet)
+			completed, err := NewDomainEvent("colony.outpost_ship_completed", 0, 0, OutpostShipCompletedEvent{
+				ColonyID: colony.ID, EmpireID: empire.ID, FleetID: fleet.ID, SystemID: system.ID, FTLSpeed: fleet.FTLSpeed,
+			})
+			if err != nil {
+				return nil, err
+			}
+			events = append(events, completed)
 		case core.ConstructionProjectFreighterFleet:
 			empire := empireByID(state, colony.EmpireID)
 			if empire == nil {
@@ -344,6 +389,18 @@ func (r *EconomyResolver) constructionProjectCostPP(state *core.GameState, colon
 			return 0, fmt.Errorf("colony %d references unknown empire %d", colony.ID, colony.EmpireID)
 		}
 		return r.Rules.colonyShipProductionCostPP(empire), nil
+	case core.ConstructionProjectOutpostShip:
+		if project.ProjectID != OutpostShipProjectID {
+			return 0, fmt.Errorf("constructs unknown Outpost Ship project %q", project.ProjectID)
+		}
+		if state == nil || colony == nil {
+			return 0, fmt.Errorf("Outpost Ship construction requires authoritative colony state")
+		}
+		empire := empireByID(state, colony.EmpireID)
+		if empire == nil {
+			return 0, fmt.Errorf("colony %d references unknown empire %d", colony.ID, colony.EmpireID)
+		}
+		return r.Rules.outpostShipProductionCostPP(empire), nil
 	case core.ConstructionProjectFreighterFleet:
 		if project.ProjectID != FreighterFleetProjectID {
 			return 0, fmt.Errorf("constructs unknown Freighter Fleet project %q", project.ProjectID)
@@ -436,6 +493,34 @@ func (r *EconomyResolver) queueColonyShip(state *core.GameState, empireID core.I
 	colony.Construction = &core.ConstructionState{ProjectKind: core.ConstructionProjectColonyShip, ProjectID: ColonyShipProjectID}
 	return NewDomainEvent("colony.colony_ship_queued", seatID, command.Sequence, ColonyShipQueuedEvent{
 		ColonyID: colony.ID, ProductionCostPP: r.Rules.colonyShipProductionCostPP(empire),
+	})
+}
+
+func (r *EconomyResolver) queueOutpostShip(state *core.GameState, empireID core.ID, seatID protocol.SeatID, command protocol.Command) (DomainEvent, error) {
+	payload, err := decodeQueueOutpostShip(command)
+	if err != nil {
+		return DomainEvent{}, err
+	}
+	colony := colonyByID(state, payload.ColonyID)
+	if colony == nil {
+		return DomainEvent{}, fmt.Errorf("references unknown colony %d", payload.ColonyID)
+	}
+	if colony.EmpireID != empireID {
+		return DomainEvent{}, fmt.Errorf("seat %d cannot queue Outpost Ship on colony %d owned by empire %d", seatID, colony.ID, colony.EmpireID)
+	}
+	empire := empireByID(state, empireID)
+	if empire == nil {
+		return DomainEvent{}, fmt.Errorf("seat %d references unknown empire %d", seatID, empireID)
+	}
+	if !empireKnowsTechnology(empire, OutpostShipTechnologyID) {
+		return DomainEvent{}, fmt.Errorf("empire %d does not know Technology %d required for Outpost Ship", empireID, OutpostShipTechnologyID)
+	}
+	if colony.Construction != nil {
+		return DomainEvent{}, fmt.Errorf("colony %d already constructs %s %q", colony.ID, colony.Construction.ProjectKind, colony.Construction.ProjectID)
+	}
+	colony.Construction = &core.ConstructionState{ProjectKind: core.ConstructionProjectOutpostShip, ProjectID: OutpostShipProjectID}
+	return NewDomainEvent("colony.outpost_ship_queued", seatID, command.Sequence, OutpostShipQueuedEvent{
+		ColonyID: colony.ID, ProductionCostPP: r.Rules.outpostShipProductionCostPP(empire),
 	})
 }
 

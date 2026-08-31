@@ -123,13 +123,10 @@ func strategicFleetByID(state *core.GameState, id core.ID) (int, *core.Strategic
 func nearestEmpireSupplyDistanceParsecs(state *core.GameState, empireID core.ID, destination core.StarSystem) (int, bool) {
 	nearest := 0
 	found := false
-	for _, colony := range state.Colonies {
-		if colony.EmpireID != empireID {
-			continue
-		}
-		supply := systemForPlanetID(state, colony.PlanetID)
+	considerPlanet := func(planetID core.ID) {
+		supply := systemForPlanetID(state, planetID)
 		if supply == nil {
-			continue
+			return
 		}
 		distance := strategicDistanceParsecs(*supply, destination)
 		if !found || distance < nearest {
@@ -137,7 +134,28 @@ func nearestEmpireSupplyDistanceParsecs(state *core.GameState, empireID core.ID,
 			found = true
 		}
 	}
+	for _, colony := range state.Colonies {
+		if colony.EmpireID == empireID {
+			considerPlanet(colony.PlanetID)
+		}
+	}
+	for _, outpost := range state.Outposts {
+		if outpost.EmpireID == empireID {
+			considerPlanet(outpost.PlanetID)
+		}
+	}
 	return nearest, found
+}
+
+func fixedSpecialShipName(kind core.StrategicFleetSpecialKind) (string, bool) {
+	switch kind {
+	case core.StrategicFleetSpecialColonyShip:
+		return "Colony Ship", true
+	case core.StrategicFleetSpecialOutpostShip:
+		return "Outpost Ship", true
+	default:
+		return "", false
+	}
 }
 
 func (r *EconomyResolver) moveFleet(state *core.GameState, empireID core.ID, seatID protocol.SeatID, command protocol.Command) (DomainEvent, error) {
@@ -152,14 +170,15 @@ func (r *EconomyResolver) moveFleet(state *core.GameState, empireID core.ID, sea
 	if fleet.EmpireID != empireID {
 		return DomainEvent{}, fmt.Errorf("seat %d cannot move fleet %d owned by empire %d", seatID, fleet.ID, fleet.EmpireID)
 	}
-	if fleet.SpecialKind != core.StrategicFleetSpecialColonyShip {
-		return DomainEvent{}, fmt.Errorf("fleet %d is not a Colony Ship", fleet.ID)
+	shipName, fixedSpecial := fixedSpecialShipName(fleet.SpecialKind)
+	if !fixedSpecial {
+		return DomainEvent{}, fmt.Errorf("fleet %d is not a movable fixed Colony/Outpost Ship", fleet.ID)
 	}
 	if fleet.AtSystemID == 0 || fleet.DestinationSystemID != 0 || fleet.RemainingTurns != 0 {
-		return DomainEvent{}, fmt.Errorf("Colony Ship fleet %d is not stationary at a star system", fleet.ID)
+		return DomainEvent{}, fmt.Errorf("%s fleet %d is not stationary at a star system", shipName, fleet.ID)
 	}
 	if fleet.FTLSpeed < 2 {
-		return DomainEvent{}, fmt.Errorf("Colony Ship fleet %d has invalid ftl_speed %d", fleet.ID, fleet.FTLSpeed)
+		return DomainEvent{}, fmt.Errorf("%s fleet %d has invalid ftl_speed %d", shipName, fleet.ID, fleet.FTLSpeed)
 	}
 	source := systemByID(state, fleet.AtSystemID)
 	if source == nil {
@@ -179,7 +198,7 @@ func (r *EconomyResolver) moveFleet(state *core.GameState, empireID core.ID, sea
 	fuelRange := colonyShipFuelRangeParsecs(*empire)
 	supplyDistance, hasSupply := nearestEmpireSupplyDistanceParsecs(state, empireID, *destination)
 	if !hasSupply || supplyDistance > fuelRange {
-		return DomainEvent{}, fmt.Errorf("destination system %d is outside Colony Ship fuel range: nearest supply %d pc, range %d pc", destination.ID, supplyDistance, fuelRange)
+		return DomainEvent{}, fmt.Errorf("destination system %d is outside %s fuel range: nearest supply %d pc, range %d pc", destination.ID, shipName, supplyDistance, fuelRange)
 	}
 	eta := strategicTravelETA(*source, *destination, fleet.FTLSpeed)
 	if eta < 1 {
@@ -205,8 +224,8 @@ func (r *EconomyResolver) advanceStrategicFleetTransit(state *core.GameState) ([
 		if fleet.DestinationSystemID == 0 {
 			continue
 		}
-		if fleet.SpecialKind != core.StrategicFleetSpecialColonyShip || fleet.AtSystemID != 0 || fleet.RemainingTurns <= 0 || fleet.FTLSpeed < 2 {
-			return nil, fmt.Errorf("strategic fleet %d has invalid Colony Ship transit state", fleet.ID)
+		if _, fixedSpecial := fixedSpecialShipName(fleet.SpecialKind); !fixedSpecial || fleet.AtSystemID != 0 || fleet.RemainingTurns <= 0 || fleet.FTLSpeed < 2 {
+			return nil, fmt.Errorf("strategic fleet %d has invalid fixed special-ship transit state", fleet.ID)
 		}
 		destination := systemByID(state, fleet.DestinationSystemID)
 		if destination == nil {
@@ -292,11 +311,25 @@ func (r *EconomyResolver) colonizePlanet(state *core.GameState, empireID core.ID
 	if err != nil {
 		return nil, err
 	}
-	if allocated := state.NewID(); allocated != newColonyID {
-		return nil, fmt.Errorf("allocated Colony ID %d does not match expected next_id %d", allocated, newColonyID)
+	convertedOutpostID := planet.OutpostID
+	var converted *DomainEvent
+	if convertedOutpostID != 0 {
+		event, err := NewDomainEvent("empire.outpost_converted", seatID, command.Sequence, OutpostConvertedEvent{
+			EmpireID: empireID, OutpostID: convertedOutpostID, PlanetID: planet.ID, ColonyID: newColonyID,
+		})
+		if err != nil {
+			return nil, err
+		}
+		converted = &event
 	}
-	planet.ColonyID = newColonyID
-	state.Colonies = append(state.Colonies, newColony)
+	if _, err := commitFoundedColony(state, empireID, planet, newColony); err != nil {
+		return nil, err
+	}
 	state.StrategicFleets = append(state.StrategicFleets[:fleetIndex], state.StrategicFleets[fleetIndex+1:]...)
-	return []DomainEvent{colonized, consumed}, nil
+	events := []DomainEvent{colonized}
+	if converted != nil {
+		events = append(events, *converted)
+	}
+	events = append(events, consumed)
+	return events, nil
 }

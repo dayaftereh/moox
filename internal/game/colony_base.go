@@ -186,6 +186,17 @@ func colonyBaseTargetPlanetIDs(state *core.GameState, source *core.Colony) ([]co
 		if planet.ColonyID != 0 || colonyReferencesPlanet(state, planet.ID) {
 			continue
 		}
+		if planet.OutpostID != 0 {
+			_, outpost := outpostByID(state, planet.OutpostID)
+			if outpost == nil {
+				return nil, fmt.Errorf("planet %d references unknown outpost %d", planet.ID, planet.OutpostID)
+			}
+			if outpost.EmpireID != source.EmpireID {
+				continue
+			}
+		} else if outpostReferencesPlanet(state, planet.ID) {
+			return nil, fmt.Errorf("planet %d is referenced by an Outpost but has no outpost_id link", planet.ID)
+		}
 		targets = append(targets, planet.ID)
 	}
 	return targets, nil
@@ -302,15 +313,29 @@ func (r *EconomyResolver) colonizeWithBase(state *core.GameState, empireID core.
 	if err != nil {
 		return nil, err
 	}
-	if allocated := state.NewID(); allocated != newColony.ID {
-		return nil, fmt.Errorf("allocated Colony ID %d does not match expected next_id %d", allocated, newColony.ID)
+	convertedOutpostID := planet.OutpostID
+	var converted *DomainEvent
+	if convertedOutpostID != 0 {
+		event, err := NewDomainEvent("empire.outpost_converted", seatID, command.Sequence, OutpostConvertedEvent{
+			EmpireID: empireID, OutpostID: convertedOutpostID, PlanetID: planet.ID, ColonyID: newColony.ID,
+		})
+		if err != nil {
+			return nil, err
+		}
+		converted = &event
 	}
-	planet.ColonyID = newColony.ID
 	if !removeColonyBuilding(source, ColonyBaseBuildingID) {
 		return nil, fmt.Errorf("source colony %d lost %q during Colony Base colonization", source.ID, ColonyBaseBuildingID)
 	}
-	state.Colonies = append(state.Colonies, newColony)
-	return []DomainEvent{generic, baseEvent}, nil
+	if _, err := commitFoundedColony(state, empireID, planet, newColony); err != nil {
+		return nil, err
+	}
+	events := []DomainEvent{generic}
+	if converted != nil {
+		events = append(events, *converted)
+	}
+	events = append(events, baseEvent)
+	return events, nil
 }
 
 func (r *EconomyResolver) trashColonyBase(state *core.GameState, empireID core.ID, seatID protocol.SeatID, command protocol.Command) (DomainEvent, error) {
@@ -364,6 +389,17 @@ func (r *EconomyResolver) prepareFoundedColony(state *core.GameState, empireID, 
 	}
 	if colonyReferencesPlanet(state, planet.ID) {
 		return core.Colony{}, nil, nil, fmt.Errorf("planet %d is already referenced by a colony", planet.ID)
+	}
+	if planet.OutpostID != 0 {
+		_, outpost := outpostByID(state, planet.OutpostID)
+		if outpost == nil {
+			return core.Colony{}, nil, nil, fmt.Errorf("planet %d references unknown outpost %d", planet.ID, planet.OutpostID)
+		}
+		if outpost.EmpireID != empireID {
+			return core.Colony{}, nil, nil, fmt.Errorf("planet %d has outpost %d owned by empire %d", planet.ID, outpost.ID, outpost.EmpireID)
+		}
+	} else if outpostReferencesPlanet(state, planet.ID) {
+		return core.Colony{}, nil, nil, fmt.Errorf("planet %d is referenced by an Outpost but has no outpost_id link", planet.ID)
 	}
 	newColonyID := state.NextID
 	if newColonyID == 0 {

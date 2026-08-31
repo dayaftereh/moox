@@ -12,6 +12,7 @@ import (
 
 const CommandMoveFleet = "empire.move_fleet"
 const CommandColonizePlanet = "empire.colonize_planet"
+const CommandDeployOutpost = "fleet.deploy_outpost"
 
 type MoveFleetPayload struct {
 	FleetID             core.ID `json:"fleet_id"`
@@ -86,6 +87,39 @@ func decodeColonizePlanet(command protocol.Command) (ColonizePlanetPayload, erro
 }
 
 func validateColonizePlanetPayload(payload ColonizePlanetPayload) error {
+	if payload.FleetID == 0 {
+		return fmt.Errorf("fleet_id must be non-zero")
+	}
+	if payload.PlanetID == 0 {
+		return fmt.Errorf("planet_id must be non-zero")
+	}
+	return nil
+}
+
+type DeployOutpostPayload struct {
+	FleetID  core.ID `json:"fleet_id"`
+	PlanetID core.ID `json:"planet_id"`
+}
+
+func NewDeployOutpostCommand(sequence uint32, payload DeployOutpostPayload) (protocol.Command, error) {
+	if err := validateDeployOutpostPayload(payload); err != nil {
+		return protocol.Command{}, err
+	}
+	return protocol.NewCommand(sequence, CommandDeployOutpost, payload)
+}
+
+func decodeDeployOutpost(command protocol.Command) (DeployOutpostPayload, error) {
+	var payload DeployOutpostPayload
+	if err := decodeStrictCommandPayload(command, CommandDeployOutpost, &payload); err != nil {
+		return DeployOutpostPayload{}, err
+	}
+	if err := validateDeployOutpostPayload(payload); err != nil {
+		return DeployOutpostPayload{}, err
+	}
+	return payload, nil
+}
+
+func validateDeployOutpostPayload(payload DeployOutpostPayload) error {
 	if payload.FleetID == 0 {
 		return fmt.Errorf("fleet_id must be non-zero")
 	}

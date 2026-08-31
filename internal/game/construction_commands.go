@@ -12,6 +12,7 @@ import (
 
 const CommandQueueBuilding = "colony.queue_building"
 const CommandQueueColonyShip = "colony.queue_colony_ship"
+const CommandQueueOutpostShip = "colony.queue_outpost_ship"
 const CommandQueueFreighterFleet = "colony.queue_freighter_fleet"
 const CommandQueueHousing = "colony.queue_housing"
 const CommandQueuePlanetaryTransformation = "colony.queue_planetary_transformation"
@@ -154,6 +155,28 @@ func decodeQueueColonyShip(command protocol.Command) (QueueColonyShipPayload, er
 	}
 	if payload.ColonyID == 0 {
 		return QueueColonyShipPayload{}, fmt.Errorf("colony_id must be non-zero")
+	}
+	return payload, nil
+}
+
+type QueueOutpostShipPayload struct {
+	ColonyID core.ID `json:"colony_id"`
+}
+
+func NewQueueOutpostShipCommand(sequence uint32, payload QueueOutpostShipPayload) (protocol.Command, error) {
+	if payload.ColonyID == 0 {
+		return protocol.Command{}, fmt.Errorf("colony_id must be non-zero")
+	}
+	return protocol.NewCommand(sequence, CommandQueueOutpostShip, payload)
+}
+
+func decodeQueueOutpostShip(command protocol.Command) (QueueOutpostShipPayload, error) {
+	var payload QueueOutpostShipPayload
+	if err := decodeStrictCommandPayload(command, CommandQueueOutpostShip, &payload); err != nil {
+		return QueueOutpostShipPayload{}, err
+	}
+	if payload.ColonyID == 0 {
+		return QueueOutpostShipPayload{}, fmt.Errorf("colony_id must be non-zero")
 	}
 	return payload, nil
 }

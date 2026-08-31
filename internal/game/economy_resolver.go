@@ -93,6 +93,12 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
 				}
 				events = append(events, event)
+			case CommandQueueOutpostShip:
+				event, err := r.queueOutpostShip(state, empireID, batch.SeatID, command)
+				if err != nil {
+					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
+				}
+				events = append(events, event)
 			case CommandQueueHousing:
 				event, err := r.queueHousing(state, empireID, batch.SeatID, command)
 				if err != nil {
@@ -129,6 +135,12 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
 				}
 				events = append(events, colonizationEvents...)
+			case CommandDeployOutpost:
+				outpostEvents, err := r.deployOutpost(state, empireID, batch.SeatID, command)
+				if err != nil {
+					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
+				}
+				events = append(events, outpostEvents...)
 			case CommandSelectResearch:
 				event, err := r.selectResearch(state, empireID, batch.SeatID, command)
 				if err != nil {

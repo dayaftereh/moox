@@ -15,8 +15,9 @@ const (
 type StrategicFleetSpecialKind string
 
 const (
-	StrategicFleetSpecialNone       StrategicFleetSpecialKind = ""
-	StrategicFleetSpecialColonyShip StrategicFleetSpecialKind = "colony_ship"
+	StrategicFleetSpecialNone        StrategicFleetSpecialKind = ""
+	StrategicFleetSpecialColonyShip  StrategicFleetSpecialKind = "colony_ship"
+	StrategicFleetSpecialOutpostShip StrategicFleetSpecialKind = "outpost_ship"
 )
 
 type StrategicFleet struct {
@@ -87,12 +88,12 @@ func validateStrategicState(
 			if fleet.DestinationSystemID != 0 || fleet.RemainingTurns != 0 || fleet.FTLSpeed != 0 {
 				return fmt.Errorf("strategic_fleet[%d] ordinary fleet cannot carry semantic transit state yet", i)
 			}
-		case StrategicFleetSpecialColonyShip:
+		case StrategicFleetSpecialColonyShip, StrategicFleetSpecialOutpostShip:
 			if fleet.Role != StrategicFleetRoleCivilian {
-				return fmt.Errorf("strategic_fleet[%d] Colony Ship must be civilian", i)
+				return fmt.Errorf("strategic_fleet[%d] fixed special ship %q must be civilian", i, fleet.SpecialKind)
 			}
 			if fleet.FTLSpeed < 2 {
-				return fmt.Errorf("strategic_fleet[%d] Colony Ship ftl_speed must be at least 2", i)
+				return fmt.Errorf("strategic_fleet[%d] fixed special ship %q ftl_speed must be at least 2", i, fleet.SpecialKind)
 			}
 		default:
 			return fmt.Errorf("strategic_fleet[%d] special_kind %q is invalid", i, fleet.SpecialKind)
@@ -111,14 +112,14 @@ func validateStrategicState(
 			if _, ok := systemIDs[fleet.DestinationSystemID]; !ok {
 				return fmt.Errorf("strategic_fleet[%d] references unknown destination star system %d", i, fleet.DestinationSystemID)
 			}
-			if fleet.SpecialKind != StrategicFleetSpecialColonyShip {
-				return fmt.Errorf("strategic_fleet[%d] only Colony Ships may use semantic transit in schema %d", i, StateSchemaVersion)
+			if fleet.SpecialKind != StrategicFleetSpecialColonyShip && fleet.SpecialKind != StrategicFleetSpecialOutpostShip {
+				return fmt.Errorf("strategic_fleet[%d] only fixed Colony/Outpost Ships may use semantic transit in schema %d", i, StateSchemaVersion)
 			}
 			if fleet.RemainingTurns <= 0 {
 				return fmt.Errorf("strategic_fleet[%d] in transit requires positive remaining_turns", i)
 			}
-		} else if fleet.SpecialKind == StrategicFleetSpecialColonyShip {
-			return fmt.Errorf("strategic_fleet[%d] Colony Ship requires a current or destination system", i)
+		} else if fleet.SpecialKind == StrategicFleetSpecialColonyShip || fleet.SpecialKind == StrategicFleetSpecialOutpostShip {
+			return fmt.Errorf("strategic_fleet[%d] fixed special ship %q requires a current or destination system", i, fleet.SpecialKind)
 		} else if fleet.RemainingTurns != 0 {
 			return fmt.Errorf("strategic_fleet[%d] locationless fleet cannot have remaining_turns", i)
 		}

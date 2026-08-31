@@ -208,12 +208,12 @@ func TestTrashColonyBaseRefundsOneHundredBCEvenWithoutTarget(t *testing.T) {
 	}
 }
 
-func TestPendingColonyBaseResolutionSurvivesSchema16RoundTrip(t *testing.T) {
+func TestPendingColonyBaseResolutionSurvivesSchema17RoundTrip(t *testing.T) {
 	state := core.NewSmallFixture(7004)
 	targetID := addSameSystemColonyBaseTarget(state)
 	state.Colonies[0].Buildings = append(state.Colonies[0].Buildings, ColonyBaseBuildingID)
-	if state.SchemaVersion != core.StateSchemaVersion || core.StateSchemaVersion != 16 {
-		t.Fatalf("schema=%d constant=%d want=16", state.SchemaVersion, core.StateSchemaVersion)
+	if state.SchemaVersion != core.StateSchemaVersion || core.StateSchemaVersion != 17 {
+		t.Fatalf("schema=%d constant=%d want=17", state.SchemaVersion, core.StateSchemaVersion)
 	}
 	before, err := PendingColonyBaseResolutions(state, state.Empires[0].ID)
 	if err != nil {
@@ -232,7 +232,7 @@ func TestPendingColonyBaseResolutionSurvivesSchema16RoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !reflect.DeepEqual(after, before) {
-		t.Fatalf("pending Colony Base changed across schema-16 round trip: before=%+v after=%+v", before, after)
+		t.Fatalf("pending Colony Base changed across schema-17 round trip: before=%+v after=%+v", before, after)
 	}
 	if len(after) != 1 || len(after[0].TargetPlanetIDs) != 1 || after[0].TargetPlanetIDs[0] != targetID {
 		t.Fatalf("round-tripped pending Colony Base=%+v", after)
@@ -242,7 +242,7 @@ func TestPendingColonyBaseResolutionSurvivesSchema16RoundTrip(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !reflect.DeepEqual(reencoded, encoded) {
-		t.Fatalf("schema-16 bytes changed after Colony Base round trip\nfirst=%s\nsecond=%s", encoded, reencoded)
+		t.Fatalf("schema-17 bytes changed after Colony Base round trip\nfirst=%s\nsecond=%s", encoded, reencoded)
 	}
 }
 

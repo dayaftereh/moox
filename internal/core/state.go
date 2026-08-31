@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 16
+const StateSchemaVersion = 17
 
 type ID uint64
 
@@ -18,6 +18,7 @@ type GameState struct {
 	Galaxy              Galaxy               `json:"galaxy"`
 	Empires             []Empire             `json:"empires"`
 	Colonies            []Colony             `json:"colonies"`
+	Outposts            []Outpost            `json:"outposts,omitempty"`
 	StrategicFleets     []StrategicFleet     `json:"strategic_fleets,omitempty"`
 	DiplomaticRelations []DiplomaticRelation `json:"diplomatic_relations,omitempty"`
 	PopulationTransfers []PopulationTransfer `json:"population_transfers,omitempty"`
@@ -47,6 +48,13 @@ type Planet struct {
 	GravityID string `json:"gravity_id"`
 	ClimateID string `json:"climate_id"`
 	ColonyID  ID     `json:"colony_id,omitempty"`
+	OutpostID ID     `json:"outpost_id,omitempty"`
+}
+
+type Outpost struct {
+	ID       ID `json:"id"`
+	EmpireID ID `json:"empire_id"`
+	PlanetID ID `json:"planet_id"`
 }
 
 type Empire struct {
@@ -133,6 +141,7 @@ type ConstructionProjectKind string
 const (
 	ConstructionProjectBuilding                ConstructionProjectKind = "building"
 	ConstructionProjectColonyShip              ConstructionProjectKind = "colony_ship"
+	ConstructionProjectOutpostShip             ConstructionProjectKind = "outpost_ship"
 	ConstructionProjectFreighterFleet          ConstructionProjectKind = "freighter_fleet"
 	ConstructionProjectHousing                 ConstructionProjectKind = "housing"
 	ConstructionProjectPlanetaryTransformation ConstructionProjectKind = "planetary_transformation"
@@ -258,6 +267,9 @@ func (s *GameState) Validate() error {
 	systemIDs := make(map[ID]struct{})
 	empireIDs := make(map[ID]struct{})
 	colonyIDs := make(map[ID]struct{})
+	outpostIDs := make(map[ID]struct{})
+	colonyPlanetIDs := make(map[ID]ID)
+	outpostPlanetIDs := make(map[ID]ID)
 	checkID := func(id ID, label string) error {
 		if id == 0 {
 			return fmt.Errorf("%s has zero id", label)
@@ -473,7 +485,7 @@ func (s *GameState) Validate() error {
 			return fmt.Errorf("colony[%d] has incomplete references", i)
 		}
 		if colony.Construction != nil {
-			if colony.Construction.ProjectKind != ConstructionProjectBuilding && colony.Construction.ProjectKind != ConstructionProjectColonyShip && colony.Construction.ProjectKind != ConstructionProjectFreighterFleet && colony.Construction.ProjectKind != ConstructionProjectHousing && colony.Construction.ProjectKind != ConstructionProjectPlanetaryTransformation {
+			if colony.Construction.ProjectKind != ConstructionProjectBuilding && colony.Construction.ProjectKind != ConstructionProjectColonyShip && colony.Construction.ProjectKind != ConstructionProjectOutpostShip && colony.Construction.ProjectKind != ConstructionProjectFreighterFleet && colony.Construction.ProjectKind != ConstructionProjectHousing && colony.Construction.ProjectKind != ConstructionProjectPlanetaryTransformation {
 				return fmt.Errorf("colony[%d] construction project_kind %q is invalid", i, colony.Construction.ProjectKind)
 			}
 			if colony.Construction.ProjectID == "" {
@@ -484,6 +496,9 @@ func (s *GameState) Validate() error {
 			}
 			if colony.Construction.ProjectKind == ConstructionProjectColonyShip && colony.Construction.ProjectID != "colony_ship" {
 				return fmt.Errorf("colony[%d] Colony Ship construction project_id must be %q", i, "colony_ship")
+			}
+			if colony.Construction.ProjectKind == ConstructionProjectOutpostShip && colony.Construction.ProjectID != "outpost_ship" {
+				return fmt.Errorf("colony[%d] Outpost Ship construction project_id must be %q", i, "outpost_ship")
 			}
 			if colony.Construction.ProjectKind == ConstructionProjectHousing {
 				if colony.Construction.ProjectID != "housing" {
@@ -616,10 +631,37 @@ func (s *GameState) Validate() error {
 		if _, ok := planetIDs[colony.PlanetID]; !ok {
 			return fmt.Errorf("colony[%d] references unknown planet %d", i, colony.PlanetID)
 		}
+		if previous, exists := colonyPlanetIDs[colony.PlanetID]; exists {
+			return fmt.Errorf("colony[%d] shares planet %d with colony %d", i, colony.PlanetID, previous)
+		}
+		colonyPlanetIDs[colony.PlanetID] = colony.ID
 		if err := checkID(colony.ID, fmt.Sprintf("colony[%d]", i)); err != nil {
 			return err
 		}
 		colonyIDs[colony.ID] = struct{}{}
+	}
+	for i := range s.Outposts {
+		outpost := &s.Outposts[i]
+		if outpost.EmpireID == 0 || outpost.PlanetID == 0 {
+			return fmt.Errorf("outpost[%d] has incomplete references", i)
+		}
+		if _, ok := empireIDs[outpost.EmpireID]; !ok {
+			return fmt.Errorf("outpost[%d] references unknown empire %d", i, outpost.EmpireID)
+		}
+		if _, ok := planetIDs[outpost.PlanetID]; !ok {
+			return fmt.Errorf("outpost[%d] references unknown planet %d", i, outpost.PlanetID)
+		}
+		if colonyID, occupied := colonyPlanetIDs[outpost.PlanetID]; occupied {
+			return fmt.Errorf("outpost[%d] shares planet %d with colony %d", i, outpost.PlanetID, colonyID)
+		}
+		if previous, exists := outpostPlanetIDs[outpost.PlanetID]; exists {
+			return fmt.Errorf("outpost[%d] shares planet %d with outpost %d", i, outpost.PlanetID, previous)
+		}
+		if err := checkID(outpost.ID, fmt.Sprintf("outpost[%d]", i)); err != nil {
+			return err
+		}
+		outpostPlanetIDs[outpost.PlanetID] = outpost.ID
+		outpostIDs[outpost.ID] = struct{}{}
 	}
 	for i := range s.Empires {
 		if capital := s.Empires[i].Capital; capital != 0 {
@@ -630,10 +672,29 @@ func (s *GameState) Validate() error {
 	}
 	for si := range s.Galaxy.Systems {
 		for pi := range s.Galaxy.Systems[si].Planets {
-			if colonyID := s.Galaxy.Systems[si].Planets[pi].ColonyID; colonyID != 0 {
+			planet := &s.Galaxy.Systems[si].Planets[pi]
+			if planet.ColonyID != 0 && planet.OutpostID != 0 {
+				return fmt.Errorf("system[%d] planet[%d] cannot contain both colony %d and outpost %d", si, pi, planet.ColonyID, planet.OutpostID)
+			}
+			if colonyID := planet.ColonyID; colonyID != 0 {
 				if _, ok := colonyIDs[colonyID]; !ok {
 					return fmt.Errorf("system[%d] planet[%d] references unknown colony %d", si, pi, colonyID)
 				}
+				if expected := colonyPlanetIDs[planet.ID]; expected != colonyID {
+					return fmt.Errorf("system[%d] planet[%d] colony link %d does not match colony on planet %d", si, pi, colonyID, expected)
+				}
+			} else if expected := colonyPlanetIDs[planet.ID]; expected != 0 {
+				return fmt.Errorf("system[%d] planet[%d] is missing reciprocal colony link %d", si, pi, expected)
+			}
+			if outpostID := planet.OutpostID; outpostID != 0 {
+				if _, ok := outpostIDs[outpostID]; !ok {
+					return fmt.Errorf("system[%d] planet[%d] references unknown outpost %d", si, pi, outpostID)
+				}
+				if expected := outpostPlanetIDs[planet.ID]; expected != outpostID {
+					return fmt.Errorf("system[%d] planet[%d] outpost link %d does not match outpost on planet %d", si, pi, outpostID, expected)
+				}
+			} else if expected := outpostPlanetIDs[planet.ID]; expected != 0 {
+				return fmt.Errorf("system[%d] planet[%d] is missing reciprocal outpost link %d", si, pi, expected)
 			}
 		}
 	}
