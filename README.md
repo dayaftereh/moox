@@ -30,13 +30,12 @@ The game is **not playable yet**, but the deterministic headless strategic surfa
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slice 03 **Military Ship core / design baseline** is active with **Gate 3 complete and Gate 4 pending**. Core schema 18 now persists an unbounded ID-based design catalog, concrete built-Ship snapshots and combat-Fleet `ShipIDs`; the complete repository test suite is green and exactly one `_OPEN_*.md` marker remains. Slices 04-07 remain prepared but unopened.
+**Slice state:** Slice 03 **Military Ship core / design baseline** is closed. Core schema 18 persists an unbounded ID-based design catalog, concrete built-Ship snapshots and combat-Fleet `ShipIDs`; final Gate 4 gofmt/test/vet/focused-regression/diff QA passed. No slice is open; Slice 04 **Combat Fleet movement / merge / split** is the next prepared objective.
 
-### Active / prepared slice queue
+### Prepared slice queue
 
 | Slice | Planned slice | Main purpose |
 | ---: | --- | --- |
-| 3 | `PLANNED_03_MILITARY_SHIP_CORE_DESIGN_BASELINE.md` | Concrete military Ship/Design state and strategic construction |
 | 4 | `PLANNED_04_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT.md` | Generic combat-Fleet transit, range/speed, merge and split |
 | 5 | `PLANNED_05_COMMAND_POINTS_SHIP_MAINTENANCE.md` | Command-Point capacity/usage and Treasury overage Maintenance |
 | 6 | `PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md` | Automatic hostile strategic encounters -> deterministic BattleSession handoff |

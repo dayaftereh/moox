@@ -2,9 +2,9 @@
 
 Date: 2026-08-31
 
-Status: **Gate 3 complete; Gate 4 pending**
+Status: **closed; Gates 1-4 complete**
 
-Active marker: `docs/slices/_OPEN_MILITARY_SHIP_CORE_DESIGN_BASELINE_2026-08-31.md`
+Recovery marker: removed at Gate 4 closure
 
 Planned slice: `docs/slices/PLANNED_03_MILITARY_SHIP_CORE_DESIGN_BASELINE.md`
 
@@ -539,3 +539,12 @@ git diff --check
 ```
 
 Gate 4 remains intentionally open for a fresh conflict check, final gofmt/test/vet/focused compatibility pass, staged diff verification, documentation/HISTORY review, implementation commit and closing documentation commit that removes the `_OPEN_` marker.
+## Gate 4 closure
+
+- Final gofmt verification passed for all changed Go files.
+- go test ./... -count=1 passed.
+- go vet ./... passed.
+- Focused Military/ShipDesign/Construction/StrategicFleet/ColonyShip/Outpost/Blockade/Observer/Save/Load regressions passed.
+- Working and staged git diff --check passed.
+- Gameplay implementation commit: 2670d36 (game: add military ship design baseline).
+- Recovery marker removed in the closing documentation commit; Slice 04 is the next prepared objective.

@@ -5,18 +5,18 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: `docs/slices/_OPEN_MILITARY_SHIP_CORE_DESIGN_BASELINE_2026-08-31.md`.
-- Latest completed gameplay slice: **Outpost Ship / Outpost state / supply range**.
-- Implementation commit: `7c7284e` (`game: add outpost ship supply expansion`).
+- Open slice marker: **none**.
+- Latest completed gameplay slice: **Military Ship core / design baseline**.
+- Implementation commit: `2670d36` (`game: add military ship design baseline`).
 - Core `StateSchemaVersion`: **18**.
 - Economy ruleset schema: **7**.
-- Active permanent evidence: `docs/research/MILITARY_SHIP_CORE_DESIGN_BASELINE_2026-08-31.md`.
-- Latest closed evidence: `docs/research/OUTPOST_SHIP_SUPPLY_RANGE_2026-08-31.md`.
-- Before starting new work, check `docs/slices/_OPEN_*.md`; Slice 03 is now active and must be resumed before any later objective.
+- Active permanent evidence: **none**.
+- Latest closed evidence: `docs/research/MILITARY_SHIP_CORE_DESIGN_BASELINE_2026-08-31.md`.
+- Before starting new work, check `docs/slices/_OPEN_*.md`; no slice is open. Slice 04 Combat Fleet movement / merge / split is the next prepared objective.
 
-## Active slice - Military Ship core / design baseline
+## Closed Slice 03 - Military Ship core / design baseline
 
-**Gate 3 is complete; Gate 4 is pending.** Do not open Slice 04 or remove the current `_OPEN_` marker before final QA/commit closure.
+**Gates 1-4 are complete.** Final Gate 4 gofmt, full tests, vet, focused compatibility regressions and diff checks passed; the implementation is committed and the recovery marker is removed.
 
 Current runtime boundaries:
 
@@ -42,7 +42,7 @@ go test ./... -count=1
 git diff --check
 ```
 
-All temporary Gate-3 reverse-engineering/editor artifacts were removed. Gate 4 must still perform a fresh session/repository conflict check, final gofmt/test/vet/focused compatibility regressions, working/staged diff checks, documentation/HISTORY review, implementation commit and closing documentation commit that deletes the marker.
+All temporary Gate-3 reverse-engineering/editor artifacts were removed. Gate 4 then passed the fresh session/repository conflict check, final gofmt/test/vet/focused compatibility regressions and working/staged diff checks; implementation commit `2670d36` is recorded and the closing documentation removes the recovery marker.
 ## Closed Outpost Ship / supply-range checkpoint
 
 Slice 02 **Outpost Ship / Outpost state / supply range** is closed. Gate 4 passed and the runtime/tests/evidence are committed in `7c7284e`.
@@ -109,7 +109,7 @@ Gate 4 passed `gofmt`, `go test ./... -count=1`, `go vet ./...`, focused Colony 
 
 ## Prepared next-slice queue
 
-Slice 03 **Military Ship core / design baseline** is active with Gate 3 complete and Gate 4 pending. Slices 04-07 remain prepared planning specifications.
+Slice 03 **Military Ship core / design baseline** is closed. Slices 04-07 remain prepared planning specifications, with Slice 04 next.
 
 Recommended later order:
 
@@ -118,7 +118,7 @@ Recommended later order:
 - **Slice 06 - Strategic hostile encounters -> BattleSession handoff** - `docs/slices/PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md`
 - **Slice 07 - Tactical ship combat baseline** - `docs/slices/PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md`
 
-Do not start slices 04-07 while Slice 03 remains active unless parallel work is explicitly intended.
+No slice is currently open. Start Slice 04 only with a fresh repository/session check and a new dated `_OPEN_` marker.
 ## Later deferred dependencies
 
 - generic combat-Fleet movement/orders and tactical ship composition;
