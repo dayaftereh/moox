@@ -28,6 +28,7 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 | Treasury Maintenance categories / deficit boundary | Six original Maintenance buckets and staged deficit policy resolved; active-Freighter reservations/usage and surplus-Food whole-BC boundaries implemented without schema changes | `a1ad15b` | `docs/research/TREASURY_MAINTENANCE_DEFICIT_2026-08-29.md` |
 | Colony Ship production / strategic movement / colonization | Core schema 16 Tech-41 Colony Ship Construction, original Fuel ranges, deterministic pre-Construction transit and explicit second-Colony creation/ship consumption implemented | `db9d01e` | `docs/research/COLONY_SHIP_MOVEMENT_COLONIZATION_2026-08-30.md` |
 | Colony Base / same-system colonization | Building 11 / Tech 40 same-system buildability, mandatory post-Production colonize-or-trash resolution, 100 BC refund and shared normal-Colony founding implemented without schema change | `261e418` | `docs/research/COLONY_BASE_SAME_SYSTEM_COLONIZATION_2026-08-31.md` |
+| Outpost Ship / Outpost state / supply range | Core schema 17 dedicated Outposts, Tech-109 Outpost Ship construction/transit/deployment, Colony+Outpost supply origins and same-owner Outpost-to-Colony replacement implemented | `7c7284e` | `docs/research/OUTPOST_SHIP_SUPPLY_RANGE_2026-08-31.md` |
 
 ## Meta workflow
 
@@ -39,7 +40,7 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 
 - `docs/slices/` contains **no** `_OPEN_*.md` marker.
 - The completed rows above have committed runtime/tests and/or explicit closing documentation in Git history.
-- The Colony Base / same-system colonization slice is closed with implementation commit `261e418`; no gameplay slice is currently open.
-- Six remaining `PLANNED_02...07` specifications prepare the next roadmap. Slice 02 Outpost Ship / supply range is the recommended next objective, but it must still begin with a fresh Gate 1 and exactly one dated `_OPEN_` marker.
+- Slice 02 Outpost Ship / Outpost state / supply range is closed with implementation commit `7c7284e`; no gameplay slice is currently open.
+- Five remaining `PLANNED_03...07` specifications prepare the next roadmap. Slice 03 Military Ship core / design baseline is the recommended next objective and must begin with a fresh Gate 1 plus exactly one dated `_OPEN_` marker.
 - Live current status is authoritative in `README.md`, `docs/PROJECT_STATUS.md`, `docs/architecture/README.md`, and `docs/research/ACTIVE_RESEARCH.md`.
 - Historical research documents are evidence checkpoints and are not rewritten merely because a later slice resolved one of their then-deferred items.

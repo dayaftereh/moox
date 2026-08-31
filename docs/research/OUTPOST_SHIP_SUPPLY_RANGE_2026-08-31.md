@@ -499,3 +499,26 @@ git diff --check
 ```
 
 The full repository test run is green. Gate 4 remains intentionally open for the final fresh check, `go vet ./...`, repeated focused/full QA, staged diff verification, commits, HISTORY/status closure and marker removal.
+
+## Gate 4 closure - complete
+
+Final Gate 4 was executed after a fresh repository/session conflict check. No foreign active writer existed, exactly one Outpost slice marker was present and temporary Gate-3 editor files were absent.
+
+Final verification passed:
+
+```text
+gofmt -l over every modified/untracked Go file -> no output
+go test ./... -count=1 -> PASS
+go vet ./... -> PASS
+go test ./internal/core ./internal/game ./internal/session -run "(Outpost|ColonyShip|ColonyBase|SupplyRange|StrategicFleet)" -count=1 -> PASS
+git diff --check -> PASS
+git diff --cached --check -> PASS
+```
+
+Gameplay/runtime/tests/evidence were committed as:
+
+```text
+7c7284e game: add outpost ship supply expansion
+```
+
+The slice is therefore closed. The `_OPEN_OUTPOST_SHIP_SUPPLY_RANGE_2026-08-31.md` recovery marker is removed by the closing documentation commit, and Slice 03 Military Ship core / design baseline becomes the next prepared objective.

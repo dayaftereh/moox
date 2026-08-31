@@ -30,19 +30,20 @@ The game is **not playable yet**, but the deterministic headless strategic expan
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slice 02 **Outpost Ship / Outpost state / supply range** is active with **Gate 3 complete and Gate 4 pending**. Core schema 17 and the Outpost build/move/deploy/supply/conversion implementation are green under the full Go test suite; exactly one `_OPEN_*.md` marker remains. Slices 03-07 remain prepared but unopened.
+**Slice state:** Slice 02 **Outpost Ship / Outpost state / supply range** is closed. Gate 4 passed and implementation is committed in `7c7284e`; there is no `_OPEN_*.md` marker. Slice 03 **Military Ship core / design baseline** is the next prepared objective, with Slices 04-07 still queued.
 
-### Active / prepared slice queue
+### Prepared next-slice queue
 
 | Slice | Planned slice | Main purpose |
 | ---: | --- | --- |
-| 2 | `PLANNED_02_OUTPOST_SHIP_SUPPLY_RANGE.md` | Outpost Ship build/deploy, authoritative Outpost state and supply extension |
 | 3 | `PLANNED_03_MILITARY_SHIP_CORE_DESIGN_BASELINE.md` | Concrete military Ship/Design state and strategic construction |
 | 4 | `PLANNED_04_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT.md` | Generic combat-Fleet transit, range/speed, merge and split |
 | 5 | `PLANNED_05_COMMAND_POINTS_SHIP_MAINTENANCE.md` | Command-Point capacity/usage and Treasury overage Maintenance |
 | 6 | `PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md` | Automatic hostile strategic encounters -> deterministic BattleSession handoff |
 | 7 | `PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md` | First narrow deterministic tactical ship-combat vertical slice |
 ### Latest runtime checkpoints
+
+- `7c7284e` - Core schema 17 Outpost Ship construction/transit/deployment, Planet-linked Outpost supply origins and same-owner Outpost-to-Colony replacement.
 
 - `261e418` - Colony Base same-system buildability, post-resolution colonize/trash flow, 100 BC refund, shared founding helper and schema-16 replay/save coverage.
 - `db9d01e` - Core schema 16 Colony Ship construction, Fuel-range-checked strategic transit and authoritative second-Colony colonization loop.

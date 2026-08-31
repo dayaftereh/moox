@@ -39,15 +39,15 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 ### Current prepared queue - 2026-08-31
 
-1. `PLANNED_02_OUTPOST_SHIP_SUPPLY_RANGE.md`
-2. `PLANNED_03_MILITARY_SHIP_CORE_DESIGN_BASELINE.md`
-3. `PLANNED_04_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT.md`
-4. `PLANNED_05_COMMAND_POINTS_SHIP_MAINTENANCE.md`
-5. `PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md`
-6. `PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md`
+No gameplay slice is currently open.
+
+1. `PLANNED_03_MILITARY_SHIP_CORE_DESIGN_BASELINE.md`
+2. `PLANNED_04_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT.md`
+3. `PLANNED_05_COMMAND_POINTS_SHIP_MAINTENANCE.md`
+4. `PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md`
+5. `PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md`
 
 The queue order is the current recommendation, not a hard dependency lock. Reprioritization is allowed before a slice is opened if the dependency check still passes.
-
 ## Four gates
 
 Every slice uses the same four gates.

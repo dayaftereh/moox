@@ -1,10 +1,10 @@
 # Planned slice 02 - Outpost Ship, Outpost state and supply range
 
-Status: **planned / queued; not open**.
+Status: **closed / implemented in `7c7284e`**.
 
 Queue position: **2 of 7**.
 
-This file is a prepared slice specification. It is not an `_OPEN_*.md` recovery marker and does not mean implementation has started.
+This file is the preserved planning contract for the completed slice. Runtime/tests/evidence were committed in `7c7284e`; the dated `_OPEN_` recovery marker was removed during Gate 4 closure.
 
 ## Objective
 
