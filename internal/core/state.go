@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 17
+const StateSchemaVersion = 18
 
 type ID uint64
 
@@ -19,6 +19,8 @@ type GameState struct {
 	Empires             []Empire             `json:"empires"`
 	Colonies            []Colony             `json:"colonies"`
 	Outposts            []Outpost            `json:"outposts,omitempty"`
+	ShipDesigns         []ShipDesign         `json:"ship_designs,omitempty"`
+	Ships               []Ship               `json:"ships,omitempty"`
 	StrategicFleets     []StrategicFleet     `json:"strategic_fleets,omitempty"`
 	DiplomaticRelations []DiplomaticRelation `json:"diplomatic_relations,omitempty"`
 	PopulationTransfers []PopulationTransfer `json:"population_transfers,omitempty"`
@@ -142,15 +144,18 @@ const (
 	ConstructionProjectBuilding                ConstructionProjectKind = "building"
 	ConstructionProjectColonyShip              ConstructionProjectKind = "colony_ship"
 	ConstructionProjectOutpostShip             ConstructionProjectKind = "outpost_ship"
+	ConstructionProjectMilitaryShip            ConstructionProjectKind = "military_ship"
 	ConstructionProjectFreighterFleet          ConstructionProjectKind = "freighter_fleet"
 	ConstructionProjectHousing                 ConstructionProjectKind = "housing"
 	ConstructionProjectPlanetaryTransformation ConstructionProjectKind = "planetary_transformation"
 )
 
 type ConstructionState struct {
-	ProjectKind ConstructionProjectKind `json:"project_kind"`
-	ProjectID   string                  `json:"project_id"`
-	ProgressPP  float64                 `json:"progress_pp"`
+	ProjectKind        ConstructionProjectKind `json:"project_kind"`
+	ProjectID          string                  `json:"project_id"`
+	ProgressPP         float64                 `json:"progress_pp"`
+	ShipDesignID       ID                      `json:"ship_design_id,omitempty"`
+	ShipDesignRevision uint32                  `json:"ship_design_revision,omitempty"`
 }
 
 // ColonyEconomy stores domain-native continuous resource output. Values are
@@ -469,7 +474,30 @@ func (s *GameState) Validate() error {
 		}
 		empireIDs[empire.ID] = struct{}{}
 	}
-	if err := validateStrategicState(s, empireIDs, systemIDs, checkID); err != nil {
+	ships, err := validateMilitaryState(s, empireIDs, checkID)
+	if err != nil {
+		return err
+	}
+	for i := range s.Colonies {
+		construction := s.Colonies[i].Construction
+		if construction == nil || construction.ProjectKind != ConstructionProjectMilitaryShip {
+			continue
+		}
+		designFound := false
+		for _, design := range s.ShipDesigns {
+			if design.ID == construction.ShipDesignID {
+				designFound = true
+				if design.EmpireID != s.Colonies[i].EmpireID || construction.ShipDesignRevision != design.Revision {
+					return fmt.Errorf("colony[%d] military construction references incompatible design %d revision %d", i, construction.ShipDesignID, construction.ShipDesignRevision)
+				}
+				break
+			}
+		}
+		if !designFound {
+			return fmt.Errorf("colony[%d] military construction references unknown design %d", i, construction.ShipDesignID)
+		}
+	}
+	if err := validateStrategicState(s, empireIDs, systemIDs, ships, checkID); err != nil {
 		return err
 	}
 	for si := range s.Galaxy.Systems {
@@ -485,7 +513,7 @@ func (s *GameState) Validate() error {
 			return fmt.Errorf("colony[%d] has incomplete references", i)
 		}
 		if colony.Construction != nil {
-			if colony.Construction.ProjectKind != ConstructionProjectBuilding && colony.Construction.ProjectKind != ConstructionProjectColonyShip && colony.Construction.ProjectKind != ConstructionProjectOutpostShip && colony.Construction.ProjectKind != ConstructionProjectFreighterFleet && colony.Construction.ProjectKind != ConstructionProjectHousing && colony.Construction.ProjectKind != ConstructionProjectPlanetaryTransformation {
+			if colony.Construction.ProjectKind != ConstructionProjectBuilding && colony.Construction.ProjectKind != ConstructionProjectColonyShip && colony.Construction.ProjectKind != ConstructionProjectOutpostShip && colony.Construction.ProjectKind != ConstructionProjectMilitaryShip && colony.Construction.ProjectKind != ConstructionProjectFreighterFleet && colony.Construction.ProjectKind != ConstructionProjectHousing && colony.Construction.ProjectKind != ConstructionProjectPlanetaryTransformation {
 				return fmt.Errorf("colony[%d] construction project_kind %q is invalid", i, colony.Construction.ProjectKind)
 			}
 			if colony.Construction.ProjectID == "" {
@@ -499,6 +527,13 @@ func (s *GameState) Validate() error {
 			}
 			if colony.Construction.ProjectKind == ConstructionProjectOutpostShip && colony.Construction.ProjectID != "outpost_ship" {
 				return fmt.Errorf("colony[%d] Outpost Ship construction project_id must be %q", i, "outpost_ship")
+			}
+			if colony.Construction.ProjectKind == ConstructionProjectMilitaryShip {
+				if colony.Construction.ProjectID != "military_ship" || colony.Construction.ShipDesignID == 0 || colony.Construction.ShipDesignRevision == 0 {
+					return fmt.Errorf("colony[%d] military Ship construction requires project_id %q and positive design id/revision", i, "military_ship")
+				}
+			} else if colony.Construction.ShipDesignID != 0 || colony.Construction.ShipDesignRevision != 0 {
+				return fmt.Errorf("colony[%d] non-military construction cannot reference a ship design", i)
 			}
 			if colony.Construction.ProjectKind == ConstructionProjectHousing {
 				if colony.Construction.ProjectID != "housing" {

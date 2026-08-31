@@ -19,13 +19,16 @@ const FreighterFleetProjectID = "freighter_fleet"
 const HousingProjectID = "housing"
 
 type ConstructionChoice struct {
-	ProjectKind      core.ConstructionProjectKind `json:"project_kind"`
-	ProjectID        string                       `json:"project_id"`
-	ProductionCostPP float64                      `json:"production_cost_pp"`
-	TechnologyID     int                          `json:"technology_id,omitempty"`
-	ProductionID     int                          `json:"production_id,omitempty"`
-	MaintenanceBC    int                          `json:"maintenance_bc,omitempty"`
-	FreightersAdded  int                          `json:"freighters_added,omitempty"`
+	ProjectKind        core.ConstructionProjectKind `json:"project_kind"`
+	ProjectID          string                       `json:"project_id"`
+	ProductionCostPP   float64                      `json:"production_cost_pp"`
+	TechnologyID       int                          `json:"technology_id,omitempty"`
+	ProductionID       int                          `json:"production_id,omitempty"`
+	MaintenanceBC      int                          `json:"maintenance_bc,omitempty"`
+	FreightersAdded    int                          `json:"freighters_added,omitempty"`
+	ShipDesignID       core.ID                      `json:"ship_design_id,omitempty"`
+	ShipDesignRevision uint32                       `json:"ship_design_revision,omitempty"`
+	ShipDesignName     string                       `json:"ship_design_name,omitempty"`
 }
 
 func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empireID, colonyID core.ID) ([]ConstructionChoice, error) {
@@ -44,7 +47,7 @@ func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empir
 	if empire == nil {
 		return nil, fmt.Errorf("unknown empire %d", empireID)
 	}
-	choices := make([]ConstructionChoice, 0, len(buildingChoices)+len(r.PlanetaryTransformations)+3)
+	choices := make([]ConstructionChoice, 0, len(buildingChoices)+len(r.PlanetaryTransformations)+len(state.ShipDesigns)+3)
 	for _, choice := range buildingChoices {
 		choices = append(choices, ConstructionChoice{
 			ProjectKind:      core.ConstructionProjectBuilding,
@@ -102,6 +105,15 @@ func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empir
 			ProjectID:        OutpostShipProjectID,
 			ProductionCostPP: r.outpostShipProductionCostPP(empire),
 			TechnologyID:     OutpostShipTechnologyID,
+		})
+	}
+	for _, design := range state.ShipDesigns {
+		if design.EmpireID != empireID {
+			continue
+		}
+		choices = append(choices, ConstructionChoice{
+			ProjectKind: core.ConstructionProjectMilitaryShip, ProjectID: MilitaryShipProjectID, ProductionCostPP: float64(design.Spec.ProductionCostPP),
+			ShipDesignID: design.ID, ShipDesignRevision: design.Revision, ShipDesignName: design.Name,
 		})
 	}
 	if empireKnowsTechnology(empire, FreighterFleetTechnologyID) {

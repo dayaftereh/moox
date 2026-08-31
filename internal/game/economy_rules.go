@@ -127,6 +127,12 @@ type EconomyRules struct {
 	GeneralResearchFieldIDs                       map[int]struct{}
 	HyperAdvancedResearchFieldIDs                 map[int]struct{}
 	HyperAdvancedCostIncrementRP                  float64
+	ShipHulls                                     map[string]ruleset.ShipHull
+	ShipDrives                                    []ruleset.ShipDrive
+	ShipComputers                                 []ruleset.ShipComputer
+	ShipArmors                                    []ruleset.ShipArmor
+	ShipShields                                   []ruleset.ShipShield
+	ShipFuelCells                                 []ruleset.ShipFuelCell
 }
 
 func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
@@ -154,6 +160,13 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	}
 	if err := technologies.Validate(); err != nil {
 		return nil, fmt.Errorf("validate technologies: %w", err)
+	}
+	shipHulls, err := ruleset.LoadShipHulls(filepath.Join(rulesetDir, "ship_hulls.json"))
+	if err != nil {
+		return nil, fmt.Errorf("load ship hulls: %w", err)
+	}
+	if err := shipHulls.Validate(); err != nil {
+		return nil, fmt.Errorf("validate ship hulls: %w", err)
 	}
 	races, err := ruleset.LoadRaces(filepath.Join(rulesetDir, "races.json"))
 	if err != nil {
@@ -239,6 +252,45 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		technologyStrategicAvailable[technology.TechnologyID] = technology.StrategicCombatAvailable
 		technologyAIClassByID[technology.TechnologyID] = technology.AIClass
 		technologyIDsByField[technology.TechFieldID] = append(technologyIDsByField[technology.TechFieldID], technology.TechnologyID)
+	}
+	shipHullDefinitions := make(map[string]ruleset.ShipHull, len(shipHulls.Hulls))
+	for _, hull := range shipHulls.Hulls {
+		shipHullDefinitions[hull.ID] = hull
+	}
+	checkShipComponentTechnology := func(componentID string, technologyID int) error {
+		key, ok := technologyKeyByID[technologyID]
+		if !ok {
+			return fmt.Errorf("ship component %q references unknown technology %d", componentID, technologyID)
+		}
+		if key != componentID {
+			return fmt.Errorf("ship component %q technology %d normalizes as %q", componentID, technologyID, key)
+		}
+		return nil
+	}
+	for _, drive := range shipHulls.MandatoryComponents.Drives {
+		if err := checkShipComponentTechnology(drive.ID, drive.TechnologyID); err != nil {
+			return nil, err
+		}
+	}
+	for _, computer := range shipHulls.MandatoryComponents.Computers {
+		if err := checkShipComponentTechnology(computer.ID, computer.TechnologyID); err != nil {
+			return nil, err
+		}
+	}
+	for _, armor := range shipHulls.MandatoryComponents.Armors {
+		if err := checkShipComponentTechnology(armor.ID, armor.TechnologyID); err != nil {
+			return nil, err
+		}
+	}
+	for _, shield := range shipHulls.MandatoryComponents.Shields {
+		if err := checkShipComponentTechnology(shield.ID, shield.TechnologyID); err != nil {
+			return nil, err
+		}
+	}
+	for _, fuel := range shipHulls.MandatoryComponents.FuelCells {
+		if err := checkShipComponentTechnology(fuel.ID, fuel.TechnologyID); err != nil {
+			return nil, err
+		}
 	}
 	technologyAIClasses := make(map[int]TechnologyAIClassDefinition, len(technologies.AIResearch.TechnologyClasses))
 	for _, class := range technologies.AIResearch.TechnologyClasses {
@@ -421,6 +473,12 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		GeneralResearchFieldIDs:                       generalResearchFieldIDs,
 		HyperAdvancedResearchFieldIDs:                 hyperAdvancedResearchFieldIDs,
 		HyperAdvancedCostIncrementRP:                  float64(technologies.HyperAdvanced.CostIncrementRP),
+		ShipHulls:                                     shipHullDefinitions,
+		ShipDrives:                                    append([]ruleset.ShipDrive(nil), shipHulls.MandatoryComponents.Drives...),
+		ShipComputers:                                 append([]ruleset.ShipComputer(nil), shipHulls.MandatoryComponents.Computers...),
+		ShipArmors:                                    append([]ruleset.ShipArmor(nil), shipHulls.MandatoryComponents.Armors...),
+		ShipShields:                                   append([]ruleset.ShipShield(nil), shipHulls.MandatoryComponents.Shields...),
+		ShipFuelCells:                                 append([]ruleset.ShipFuelCell(nil), shipHulls.MandatoryComponents.FuelCells...),
 	}
 	for _, climate := range planetClasses.Climates {
 		rules.ClimateFoodPerFarmer[climate.ID] = float64(climate.BaseFoodPerFarmer)

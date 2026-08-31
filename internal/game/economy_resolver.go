@@ -81,6 +81,12 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 					return Resolution{}, err
 				}
 				events = append(events, event)
+			case CommandSaveMilitaryDesign:
+				event, err := r.saveMilitaryDesign(state, empireID, batch.SeatID, command)
+				if err != nil {
+					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
+				}
+				events = append(events, event)
 			case CommandQueueBuilding:
 				event, err := r.queueBuilding(state, empireID, batch.SeatID, command)
 				if err != nil {
@@ -95,6 +101,12 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 				events = append(events, event)
 			case CommandQueueOutpostShip:
 				event, err := r.queueOutpostShip(state, empireID, batch.SeatID, command)
+				if err != nil {
+					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
+				}
+				events = append(events, event)
+			case CommandQueueMilitaryShip:
+				event, err := r.queueMilitaryShip(state, empireID, batch.SeatID, command)
 				if err != nil {
 					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
 				}

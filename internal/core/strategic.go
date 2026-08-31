@@ -29,6 +29,7 @@ type StrategicFleet struct {
 	DestinationSystemID ID                        `json:"destination_system_id,omitempty"`
 	RemainingTurns      int                       `json:"remaining_turns,omitempty"`
 	FTLSpeed            int                       `json:"ftl_speed,omitempty"`
+	ShipIDs             []ID                      `json:"ship_ids,omitempty"`
 }
 
 type DiplomaticStance string
@@ -65,9 +66,11 @@ func validateStrategicState(
 	state *GameState,
 	empireIDs map[ID]struct{},
 	systemIDs map[ID]struct{},
+	ships map[ID]Ship,
 	checkID func(ID, string) error,
 ) error {
 	lastFleetID := ID(0)
+	assignedShips := make(map[ID]ID, len(ships))
 	for i, fleet := range state.StrategicFleets {
 		if i > 0 && fleet.ID <= lastFleetID {
 			return fmt.Errorf("strategic fleets must be strictly ascending by id")
@@ -82,6 +85,27 @@ func validateStrategicState(
 		case StrategicFleetRoleCombat, StrategicFleetRoleCivilian:
 		default:
 			return fmt.Errorf("strategic_fleet[%d] role %q is invalid", i, fleet.Role)
+		}
+		if fleet.Role != StrategicFleetRoleCombat && len(fleet.ShipIDs) != 0 {
+			return fmt.Errorf("strategic_fleet[%d] non-combat fleet cannot contain concrete military ships", i)
+		}
+		lastShipID := ID(0)
+		for shipIndex, shipID := range fleet.ShipIDs {
+			if shipIndex > 0 && shipID <= lastShipID {
+				return fmt.Errorf("strategic_fleet[%d] ship ids must be strictly ascending", i)
+			}
+			ship, ok := ships[shipID]
+			if !ok {
+				return fmt.Errorf("strategic_fleet[%d] references unknown ship %d", i, shipID)
+			}
+			if ship.EmpireID != fleet.EmpireID {
+				return fmt.Errorf("strategic_fleet[%d] ship %d owner %d differs from fleet owner %d", i, shipID, ship.EmpireID, fleet.EmpireID)
+			}
+			if previousFleet, exists := assignedShips[shipID]; exists {
+				return fmt.Errorf("ship %d is assigned to both fleet %d and fleet %d", shipID, previousFleet, fleet.ID)
+			}
+			assignedShips[shipID] = fleet.ID
+			lastShipID = shipID
 		}
 		switch fleet.SpecialKind {
 		case StrategicFleetSpecialNone:
@@ -124,6 +148,11 @@ func validateStrategicState(
 			return fmt.Errorf("strategic_fleet[%d] locationless fleet cannot have remaining_turns", i)
 		}
 		lastFleetID = fleet.ID
+	}
+	for shipID := range ships {
+		if _, assigned := assignedShips[shipID]; !assigned {
+			return fmt.Errorf("ship %d is not assigned to a strategic combat fleet", shipID)
+		}
 	}
 
 	var previous DiplomaticRelation

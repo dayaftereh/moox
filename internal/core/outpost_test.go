@@ -5,18 +5,18 @@ import (
 	"testing"
 )
 
-func TestOutpostStateRoundTripsDeterministicallyInSchema17(t *testing.T) {
+func TestOutpostStateRoundTripsDeterministicallyInSchema18(t *testing.T) {
 	state := NewSmallFixture(1710)
 	target := &state.Galaxy.Systems[1].Planets[0]
 	outpostID := state.NewID()
 	state.Outposts = append(state.Outposts, Outpost{ID: outpostID, EmpireID: state.Empires[0].ID, PlanetID: target.ID})
 	target.OutpostID = outpostID
 
-	if StateSchemaVersion != 17 || state.SchemaVersion != 17 {
-		t.Fatalf("schema=%d constant=%d want=17", state.SchemaVersion, StateSchemaVersion)
+	if StateSchemaVersion != 18 || state.SchemaVersion != 18 {
+		t.Fatalf("schema=%d constant=%d want=18", state.SchemaVersion, StateSchemaVersion)
 	}
 	if err := state.Validate(); err != nil {
-		t.Fatalf("schema-17 Outpost state invalid: %v", err)
+		t.Fatalf("schema-18 Outpost state invalid: %v", err)
 	}
 	encoded, err := MarshalState(state)
 	if err != nil {
@@ -37,7 +37,7 @@ func TestOutpostStateRoundTripsDeterministicallyInSchema17(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !bytes.Equal(encoded, reencoded) {
-		t.Fatalf("schema-17 Outpost bytes changed across round trip\nfirst=%s\nsecond=%s", encoded, reencoded)
+		t.Fatalf("schema-18 Outpost bytes changed across round trip\nfirst=%s\nsecond=%s", encoded, reencoded)
 	}
 }
 

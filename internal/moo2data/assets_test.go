@@ -313,28 +313,37 @@ func writeKnownAssetTestArchives(t *testing.T, root string) {
 func syntheticAssetShipHulls() *ruleset.ShipHullsFile {
 	file := &ruleset.ShipHullsFile{SchemaVersion: ruleset.ShipHullsSchemaVersion, Ruleset: "moo2-1.31"}
 	specs := []struct {
-		id       string
-		pictures []int
+		id        string
+		baseCost  int
+		baseSpace int
+		pictures  []int
 	}{
-		{id: "frigate", pictures: []int{0, 1, 2, 3, 4, 5, 6, 7}},
-		{id: "destroyer", pictures: []int{8, 9, 10, 11, 12, 13, 14, 15}},
-		{id: "cruiser", pictures: []int{16, 17, 18, 19, 20, 21, 22, 23}},
-		{id: "battleship", pictures: []int{24, 25, 26, 27, 28, 29, 30, 31}},
-		{id: "titan", pictures: []int{32, 33, 34, 35, 36, 37, 38, 39}},
-		{id: "doom_star", pictures: []int{43}},
+		{id: "frigate", baseCost: 20, baseSpace: 25, pictures: []int{0, 1, 2, 3, 4, 5, 6, 7}},
+		{id: "destroyer", baseCost: 70, baseSpace: 60, pictures: []int{8, 9, 10, 11, 12, 13, 14, 15}},
+		{id: "cruiser", baseCost: 250, baseSpace: 120, pictures: []int{16, 17, 18, 19, 20, 21, 22, 23}},
+		{id: "battleship", baseCost: 600, baseSpace: 250, pictures: []int{24, 25, 26, 27, 28, 29, 30, 31}},
+		{id: "titan", baseCost: 1500, baseSpace: 500, pictures: []int{32, 33, 34, 35, 36, 37, 38, 39}},
+		{id: "doom_star", baseCost: 4000, baseSpace: 1200, pictures: []int{43}},
 	}
 	for sizeIndex, spec := range specs {
 		file.Hulls = append(file.Hulls, ruleset.ShipHull{
-			ID:                       spec.id,
-			SizeIndex:                sizeIndex,
-			NameKey:                  "ship_hull." + spec.id + ".name",
-			NameSource:               ruleset.FieldProvenance{SourceID: "test-techname"},
-			StrategicPictureIDs:      spec.pictures,
-			PictureLogicVerification: "test",
-			PictureLogicSource:       ruleset.FieldProvenance{SourceID: "test-picture-logic"},
-			StrategicAssetKey:        "ship_hull." + spec.id + ".strategic",
-			TacticalAssetKey:         "ship_hull." + spec.id + ".tactical",
+			ID: spec.id, SizeIndex: sizeIndex, NameKey: "ship_hull." + spec.id + ".name",
+			NameSource: ruleset.FieldProvenance{SourceID: "test-techname"},
+			BaseCostPP: spec.baseCost, BaseSpace: spec.baseSpace, RuntimeSource: ruleset.FieldProvenance{SourceID: "test-runtime"},
+			StrategicPictureIDs: spec.pictures, PictureLogicVerification: "test",
+			PictureLogicSource: ruleset.FieldProvenance{SourceID: "test-picture-logic"},
+			StrategicAssetKey:  "ship_hull." + spec.id + ".strategic", TacticalAssetKey: "ship_hull." + spec.id + ".tactical",
 		})
+	}
+	zeros := []int{0, 0, 0, 0, 0, 0}
+	for i := 0; i < 6; i++ {
+		file.MandatoryComponents.Drives = append(file.MandatoryComponents.Drives, ruleset.ShipDrive{ID: fmt.Sprintf("drive_%d", i+1), ComponentIndex: i + 1, TechnologyID: 100 + i, FTLSpeed: i + 2, SpaceByHull: append([]int(nil), zeros...), CostByHullPP: append([]int(nil), zeros...), Source: ruleset.FieldProvenance{SourceID: "test-runtime"}})
+		file.MandatoryComponents.Armors = append(file.MandatoryComponents.Armors, ruleset.ShipArmor{ID: fmt.Sprintf("armor_%d", i+1), ComponentIndex: i + 1, TechnologyID: 200 + i, Source: ruleset.FieldProvenance{SourceID: "test-runtime"}})
+	}
+	for i := 0; i < 5; i++ {
+		file.MandatoryComponents.Computers = append(file.MandatoryComponents.Computers, ruleset.ShipComputer{ID: fmt.Sprintf("computer_%d", i+1), ComponentIndex: i + 1, TechnologyID: 300 + i, CostByHullPP: []int{5, 15, 50, 125, 300, 800}, Source: ruleset.FieldProvenance{SourceID: "test-runtime"}})
+		file.MandatoryComponents.Shields = append(file.MandatoryComponents.Shields, ruleset.ShipShield{ID: fmt.Sprintf("shield_%d", i+1), ComponentIndex: i + 1, TechnologyID: 400 + i, SpaceByHull: []int{5, 10, 20, 50, 100, 200}, CostByHullPP: []int{3, 5, 10, 25, 50, 100}, Source: ruleset.FieldProvenance{SourceID: "test-runtime"}})
+		file.MandatoryComponents.FuelCells = append(file.MandatoryComponents.FuelCells, ruleset.ShipFuelCell{ID: fmt.Sprintf("fuel_%d", i+1), ComponentIndex: i + 1, TechnologyID: 500 + i, RangeParsecs: 4 + i, Source: ruleset.FieldProvenance{SourceID: "test-runtime"}})
 	}
 	return file
 }

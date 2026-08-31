@@ -1,0 +1,115 @@
+package core
+
+import "fmt"
+
+// ShipDesignSpec is the authoritative supported design snapshot. It deliberately
+// contains only the strategic mandatory-equipment subset implemented before the
+// tactical weapon/special-system slices.
+type ShipDesignSpec struct {
+	HullID             string `json:"hull_id"`
+	StrategicPictureID int    `json:"strategic_picture_id"`
+	WarpDriveID        string `json:"warp_drive_id"`
+	FTLSpeed           int    `json:"ftl_speed"`
+	ComputerID         string `json:"computer_id"`
+	ArmorID            string `json:"armor_id"`
+	ShieldID           string `json:"shield_id,omitempty"`
+	FuelCellID         string `json:"fuel_cell_id"`
+	FuelRangeParsecs   int    `json:"fuel_range_parsecs"`
+	HullBaseCostPP     int    `json:"hull_base_cost_pp"`
+	HullSpace          int    `json:"hull_space"`
+	SpaceUsed          int    `json:"space_used"`
+	BaseDesignCostPP   int    `json:"base_design_cost_pp"`
+	ProductionCostPP   int    `json:"production_cost_pp"`
+}
+
+type ShipDesign struct {
+	ID       ID             `json:"id"`
+	EmpireID ID             `json:"empire_id"`
+	Revision uint32         `json:"revision"`
+	Name     string         `json:"name"`
+	Spec     ShipDesignSpec `json:"spec"`
+}
+
+type Ship struct {
+	ID                   ID             `json:"id"`
+	EmpireID             ID             `json:"empire_id"`
+	SourceDesignID       ID             `json:"source_design_id"`
+	SourceDesignRevision uint32         `json:"source_design_revision"`
+	Name                 string         `json:"name"`
+	Spec                 ShipDesignSpec `json:"spec"`
+}
+
+func validateShipDesignSpec(spec ShipDesignSpec, label string) error {
+	if spec.HullID == "" || spec.WarpDriveID == "" || spec.ComputerID == "" || spec.ArmorID == "" || spec.FuelCellID == "" {
+		return fmt.Errorf("%s has incomplete mandatory equipment", label)
+	}
+	if spec.StrategicPictureID < 0 || spec.FTLSpeed < 2 || spec.FuelRangeParsecs <= 0 {
+		return fmt.Errorf("%s has invalid strategic picture/drive/fuel values", label)
+	}
+	if spec.HullBaseCostPP <= 0 || spec.HullSpace <= 0 || spec.SpaceUsed < 0 || spec.SpaceUsed > spec.HullSpace {
+		return fmt.Errorf("%s has invalid hull cost/space values", label)
+	}
+	if spec.BaseDesignCostPP < spec.HullBaseCostPP || spec.ProductionCostPP <= 0 {
+		return fmt.Errorf("%s has invalid design production cost", label)
+	}
+	return nil
+}
+
+func validateMilitaryState(state *GameState, empireIDs map[ID]struct{}, checkID func(ID, string) error) (map[ID]Ship, error) {
+	designs := make(map[ID]ShipDesign, len(state.ShipDesigns))
+	lastDesignID := ID(0)
+	for i, design := range state.ShipDesigns {
+		label := fmt.Sprintf("ship_design[%d]", i)
+		if i > 0 && design.ID <= lastDesignID {
+			return nil, fmt.Errorf("ship designs must be strictly ascending by id")
+		}
+		if err := checkID(design.ID, label); err != nil {
+			return nil, err
+		}
+		if _, ok := empireIDs[design.EmpireID]; !ok {
+			return nil, fmt.Errorf("%s references unknown empire %d", label, design.EmpireID)
+		}
+		if design.Revision == 0 || design.Name == "" {
+			return nil, fmt.Errorf("%s requires positive revision and name", label)
+		}
+		if err := validateShipDesignSpec(design.Spec, label); err != nil {
+			return nil, err
+		}
+		designs[design.ID] = design
+		lastDesignID = design.ID
+	}
+
+	ships := make(map[ID]Ship, len(state.Ships))
+	lastShipID := ID(0)
+	for i, ship := range state.Ships {
+		label := fmt.Sprintf("ship[%d]", i)
+		if i > 0 && ship.ID <= lastShipID {
+			return nil, fmt.Errorf("ships must be strictly ascending by id")
+		}
+		if err := checkID(ship.ID, label); err != nil {
+			return nil, err
+		}
+		if _, ok := empireIDs[ship.EmpireID]; !ok {
+			return nil, fmt.Errorf("%s references unknown empire %d", label, ship.EmpireID)
+		}
+		design, ok := designs[ship.SourceDesignID]
+		if !ok {
+			return nil, fmt.Errorf("%s references unknown source design %d", label, ship.SourceDesignID)
+		}
+		if design.EmpireID != ship.EmpireID {
+			return nil, fmt.Errorf("%s owner %d differs from source design owner %d", label, ship.EmpireID, design.EmpireID)
+		}
+		if ship.SourceDesignRevision == 0 || ship.SourceDesignRevision > design.Revision {
+			return nil, fmt.Errorf("%s source revision %d is invalid for current design revision %d", label, ship.SourceDesignRevision, design.Revision)
+		}
+		if ship.Name == "" {
+			return nil, fmt.Errorf("%s requires a name", label)
+		}
+		if err := validateShipDesignSpec(ship.Spec, label); err != nil {
+			return nil, err
+		}
+		ships[ship.ID] = ship
+		lastShipID = ship.ID
+	}
+	return ships, nil
+}

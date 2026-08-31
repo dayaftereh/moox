@@ -25,14 +25,14 @@ Current snapshot: **2026-08-31**.
 
 Master of Orion X is now actively in deterministic headless runtime development. The repository contains the pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), normalized runtime datasets, authoritative Core/Game/Session infrastructure and a growing set of original-evidence-backed strategic rules.
 
-The game is **not playable yet**, but the deterministic headless strategic expansion surface now includes both normal colonization and Outpost expansion. A normal Empire can develop its Colony economy/research/construction, build Colony and Outpost Ships, move fixed civilian special ships under original Fuel-range/installed-FTL rules, found a second Colony, deploy a Planet-linked Outpost that immediately extends supply, and replace a same-owner Outpost when founding a Colony. Core schema 17 also includes race-aware Population cohorts, Food/Freighter logistics, Population transfer, deterministic system blockades and modeled Treasury settlement. Technology ownership/buildability plus server-derived legal actions remain shared by future Human UI and AI controllers.
+The game is **not playable yet**, but the deterministic headless strategic surface now includes normal colonization, Outpost expansion and the first concrete military-ship construction baseline. A normal Empire can develop its Colony economy/research/construction, build Colony and Outpost Ships, move fixed civilian special ships under original Fuel-range/installed-FTL rules, deploy supply-extending Outposts, create an arbitrary number of current Frigate designs, construct a concrete design snapshot and materialize it in a one-Ship combat Fleet. Core schema 18 also includes race-aware Population cohorts, Food/Freighter logistics, Population transfer, deterministic system blockades and modeled Treasury settlement. Technology ownership/buildability plus server-derived legal actions remain shared by future Human UI and AI controllers.
 
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slice 02 **Outpost Ship / Outpost state / supply range** is closed. Gate 4 passed and implementation is committed in `7c7284e`; there is no `_OPEN_*.md` marker. Slice 03 **Military Ship core / design baseline** is the next prepared objective, with Slices 04-07 still queued.
+**Slice state:** Slice 03 **Military Ship core / design baseline** is active with **Gate 3 complete and Gate 4 pending**. Core schema 18 now persists an unbounded ID-based design catalog, concrete built-Ship snapshots and combat-Fleet `ShipIDs`; the complete repository test suite is green and exactly one `_OPEN_*.md` marker remains. Slices 04-07 remain prepared but unopened.
 
-### Prepared next-slice queue
+### Active / prepared slice queue
 
 | Slice | Planned slice | Main purpose |
 | ---: | --- | --- |

@@ -212,6 +212,8 @@ func (r *EconomyResolver) advanceConstruction(state *core.GameState) ([]DomainEv
 		}
 		projectKind := colony.Construction.ProjectKind
 		projectID := colony.Construction.ProjectID
+		shipDesignID := colony.Construction.ShipDesignID
+		shipDesignRevision := colony.Construction.ShipDesignRevision
 		if projectKind == core.ConstructionProjectHousing {
 			if projectID != HousingProjectID || math.Abs(colony.Construction.ProgressPP) > populationEpsilon {
 				return nil, fmt.Errorf("colony %d has invalid Housing construction state", colony.ID)
@@ -337,6 +339,19 @@ func (r *EconomyResolver) advanceConstruction(state *core.GameState) ([]DomainEv
 				return nil, err
 			}
 			events = append(events, completed)
+		case core.ConstructionProjectMilitaryShip:
+			if projectID != MilitaryShipProjectID {
+				return nil, fmt.Errorf("colony %d completed unknown military Ship project %q", colony.ID, projectID)
+			}
+			design, err := militaryConstructionDesign(state, colony.EmpireID, shipDesignID, shipDesignRevision)
+			if err != nil {
+				return nil, fmt.Errorf("colony %d military Ship completion: %w", colony.ID, err)
+			}
+			completed, err := completeMilitaryShip(state, colony, design)
+			if err != nil {
+				return nil, err
+			}
+			events = append(events, completed)
 		case core.ConstructionProjectFreighterFleet:
 			empire := empireByID(state, colony.EmpireID)
 			if empire == nil {
@@ -401,6 +416,18 @@ func (r *EconomyResolver) constructionProjectCostPP(state *core.GameState, colon
 			return 0, fmt.Errorf("colony %d references unknown empire %d", colony.ID, colony.EmpireID)
 		}
 		return r.Rules.outpostShipProductionCostPP(empire), nil
+	case core.ConstructionProjectMilitaryShip:
+		if project.ProjectID != MilitaryShipProjectID {
+			return 0, fmt.Errorf("constructs unknown military Ship project %q", project.ProjectID)
+		}
+		if state == nil || colony == nil {
+			return 0, fmt.Errorf("military Ship construction requires authoritative colony state")
+		}
+		design, err := militaryConstructionDesign(state, colony.EmpireID, project.ShipDesignID, project.ShipDesignRevision)
+		if err != nil {
+			return 0, err
+		}
+		return float64(design.Spec.ProductionCostPP), nil
 	case core.ConstructionProjectFreighterFleet:
 		if project.ProjectID != FreighterFleetProjectID {
 			return 0, fmt.Errorf("constructs unknown Freighter Fleet project %q", project.ProjectID)

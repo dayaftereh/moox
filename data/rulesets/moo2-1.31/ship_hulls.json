@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "ruleset": "moo2-1.31",
   "sources": [
     {
@@ -17,6 +17,13 @@
       "description": "Orion2.exe 1.31 Auto_Design_Ship_ object 1 range 0x51731..0x5175A uses Random_(8), size_index\u003c\u003c3 and -1 for sizes 0..4, producing eight picture IDs per size; size 5 is hard-coded to picture ID 43. Code range SHA-256 is verified before normalization.",
       "archive": "Orion2.exe",
       "sha256": "7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5"
+    },
+    {
+      "id": "moo2-1.31-orion2-ship-design-tables",
+      "type": "original-observed",
+      "description": "Orion2.exe 1.31 LE object 2 ship-design tables: hull cost/space records and mandatory drive/computer/armor/shield/fuel component records used by Total_Design_Cost_, Design_Template_Costs_ and Design_Template_Space_Requirements_. Offsets in field provenance are object-2-relative offsets.",
+      "archive": "Orion2.exe",
+      "sha256": "7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5"
     }
   ],
   "hulls": [
@@ -27,6 +34,12 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-ship-hull-names",
         "offset": 8372
+      },
+      "base_cost_pp": 20,
+      "base_space": 25,
+      "runtime_source": {
+        "source_id": "moo2-1.31-orion2-ship-design-tables",
+        "offset": 32798
       },
       "strategic_picture_ids": [
         0,
@@ -53,6 +66,12 @@
         "source_id": "moo2-1.31-techname-ship-hull-names",
         "offset": 8380
       },
+      "base_cost_pp": 70,
+      "base_space": 60,
+      "runtime_source": {
+        "source_id": "moo2-1.31-orion2-ship-design-tables",
+        "offset": 32834
+      },
       "strategic_picture_ids": [
         8,
         9,
@@ -77,6 +96,12 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-ship-hull-names",
         "offset": 8390
+      },
+      "base_cost_pp": 250,
+      "base_space": 120,
+      "runtime_source": {
+        "source_id": "moo2-1.31-orion2-ship-design-tables",
+        "offset": 32870
       },
       "strategic_picture_ids": [
         16,
@@ -103,6 +128,12 @@
         "source_id": "moo2-1.31-techname-ship-hull-names",
         "offset": 8398
       },
+      "base_cost_pp": 600,
+      "base_space": 250,
+      "runtime_source": {
+        "source_id": "moo2-1.31-orion2-ship-design-tables",
+        "offset": 32906
+      },
       "strategic_picture_ids": [
         24,
         25,
@@ -127,6 +158,12 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-ship-hull-names",
         "offset": 8409
+      },
+      "base_cost_pp": 1500,
+      "base_space": 500,
+      "runtime_source": {
+        "source_id": "moo2-1.31-orion2-ship-design-tables",
+        "offset": 32942
       },
       "strategic_picture_ids": [
         32,
@@ -153,6 +190,12 @@
         "source_id": "moo2-1.31-techname-ship-hull-names",
         "offset": 8415
       },
+      "base_cost_pp": 4000,
+      "base_space": 1200,
+      "runtime_source": {
+        "source_id": "moo2-1.31-orion2-ship-design-tables",
+        "offset": 32978
+      },
       "strategic_picture_ids": [
         43
       ],
@@ -163,5 +206,493 @@
       "strategic_asset_key": "ship_hull.doom_star.strategic",
       "tactical_asset_key": "ship_hull.doom_star.tactical"
     }
-  ]
+  ],
+  "mandatory_components": {
+    "drives": [
+      {
+        "id": "nuclear_drive",
+        "component_index": 1,
+        "technology_id": 120,
+        "ftl_speed": 2,
+        "space_by_hull": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "cost_by_hull_pp": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 32420
+        }
+      },
+      {
+        "id": "fusion_drive",
+        "component_index": 2,
+        "technology_id": 72,
+        "ftl_speed": 3,
+        "space_by_hull": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "cost_by_hull_pp": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 32466
+        }
+      },
+      {
+        "id": "ion_drive",
+        "component_index": 3,
+        "technology_id": 96,
+        "ftl_speed": 4,
+        "space_by_hull": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "cost_by_hull_pp": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 32512
+        }
+      },
+      {
+        "id": "anti_matter_drive",
+        "component_index": 4,
+        "technology_id": 11,
+        "ftl_speed": 5,
+        "space_by_hull": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "cost_by_hull_pp": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 32558
+        }
+      },
+      {
+        "id": "hyper_drive",
+        "component_index": 5,
+        "technology_id": 88,
+        "ftl_speed": 6,
+        "space_by_hull": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "cost_by_hull_pp": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 32604
+        }
+      },
+      {
+        "id": "interphased_drive",
+        "component_index": 6,
+        "technology_id": 95,
+        "ftl_speed": 7,
+        "space_by_hull": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "cost_by_hull_pp": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 32650
+        }
+      }
+    ],
+    "computers": [
+      {
+        "id": "electronic_computer",
+        "component_index": 1,
+        "technology_id": 58,
+        "cost_by_hull_pp": [
+          5,
+          15,
+          50,
+          125,
+          300,
+          800
+        ],
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 32264
+        }
+      },
+      {
+        "id": "optronic_computer",
+        "component_index": 2,
+        "technology_id": 122,
+        "cost_by_hull_pp": [
+          5,
+          15,
+          50,
+          125,
+          300,
+          800
+        ],
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 32286
+        }
+      },
+      {
+        "id": "positronic_computer",
+        "component_index": 3,
+        "technology_id": 143,
+        "cost_by_hull_pp": [
+          5,
+          15,
+          50,
+          125,
+          300,
+          800
+        ],
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 32308
+        }
+      },
+      {
+        "id": "cybertronic_computer",
+        "component_index": 4,
+        "technology_id": 44,
+        "cost_by_hull_pp": [
+          5,
+          15,
+          50,
+          125,
+          300,
+          800
+        ],
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 32330
+        }
+      },
+      {
+        "id": "moleculartronic_computer",
+        "component_index": 5,
+        "technology_id": 110,
+        "cost_by_hull_pp": [
+          5,
+          15,
+          50,
+          125,
+          300,
+          800
+        ],
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 32352
+        }
+      }
+    ],
+    "armors": [
+      {
+        "id": "titanium_armor",
+        "component_index": 1,
+        "technology_id": 187,
+        "cost_percent": 0,
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 30285
+        }
+      },
+      {
+        "id": "tritanium_armor",
+        "component_index": 2,
+        "technology_id": 191,
+        "cost_percent": 0,
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 30300
+        }
+      },
+      {
+        "id": "zortrium_armor",
+        "component_index": 3,
+        "technology_id": 203,
+        "cost_percent": 0,
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 30315
+        }
+      },
+      {
+        "id": "neutronium_armor",
+        "component_index": 4,
+        "technology_id": 117,
+        "cost_percent": 0,
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 30330
+        }
+      },
+      {
+        "id": "adamantium_armor",
+        "component_index": 5,
+        "technology_id": 2,
+        "cost_percent": 0,
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 30345
+        }
+      },
+      {
+        "id": "xentronium_armor",
+        "component_index": 6,
+        "technology_id": 201,
+        "cost_percent": 0,
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 30360
+        }
+      }
+    ],
+    "shields": [
+      {
+        "id": "class_i_shield",
+        "component_index": 1,
+        "technology_id": 33,
+        "space_by_hull": [
+          5,
+          10,
+          20,
+          50,
+          100,
+          200
+        ],
+        "cost_by_hull_pp": [
+          3,
+          5,
+          10,
+          25,
+          50,
+          100
+        ],
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 30434
+        }
+      },
+      {
+        "id": "class_iii_shield",
+        "component_index": 2,
+        "technology_id": 34,
+        "space_by_hull": [
+          5,
+          10,
+          20,
+          50,
+          100,
+          200
+        ],
+        "cost_by_hull_pp": [
+          3,
+          5,
+          10,
+          25,
+          50,
+          100
+        ],
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 30493
+        }
+      },
+      {
+        "id": "class_v_shield",
+        "component_index": 3,
+        "technology_id": 35,
+        "space_by_hull": [
+          5,
+          10,
+          20,
+          50,
+          100,
+          200
+        ],
+        "cost_by_hull_pp": [
+          3,
+          5,
+          10,
+          25,
+          50,
+          100
+        ],
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 30552
+        }
+      },
+      {
+        "id": "class_vii_shield",
+        "component_index": 4,
+        "technology_id": 36,
+        "space_by_hull": [
+          5,
+          10,
+          20,
+          50,
+          100,
+          200
+        ],
+        "cost_by_hull_pp": [
+          3,
+          5,
+          10,
+          25,
+          50,
+          100
+        ],
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 30611
+        }
+      },
+      {
+        "id": "class_x_shield",
+        "component_index": 5,
+        "technology_id": 37,
+        "space_by_hull": [
+          5,
+          10,
+          20,
+          50,
+          100,
+          200
+        ],
+        "cost_by_hull_pp": [
+          3,
+          5,
+          10,
+          25,
+          50,
+          100
+        ],
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 30670
+        }
+      }
+    ],
+    "fuel_cells": [
+      {
+        "id": "standard_fuel_cells",
+        "component_index": 1,
+        "technology_id": 167,
+        "range_parsecs": 4,
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 32754
+        }
+      },
+      {
+        "id": "deuterium_fuel_cells",
+        "component_index": 2,
+        "technology_id": 51,
+        "range_parsecs": 6,
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 32764
+        }
+      },
+      {
+        "id": "iridium_fuel_cells",
+        "component_index": 3,
+        "technology_id": 98,
+        "range_parsecs": 9,
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 32774
+        }
+      },
+      {
+        "id": "urridium_fuel_cells",
+        "component_index": 4,
+        "technology_id": 194,
+        "range_parsecs": 12,
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 32784
+        }
+      },
+      {
+        "id": "thorium_fuel_cells",
+        "component_index": 5,
+        "technology_id": 184,
+        "range_parsecs": 255,
+        "source": {
+          "source_id": "moo2-1.31-orion2-ship-design-tables",
+          "offset": 32794
+        }
+      }
+    ]
+  }
 }

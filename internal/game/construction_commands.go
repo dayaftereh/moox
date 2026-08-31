@@ -13,6 +13,7 @@ import (
 const CommandQueueBuilding = "colony.queue_building"
 const CommandQueueColonyShip = "colony.queue_colony_ship"
 const CommandQueueOutpostShip = "colony.queue_outpost_ship"
+const CommandQueueMilitaryShip = "colony.queue_military_ship"
 const CommandQueueFreighterFleet = "colony.queue_freighter_fleet"
 const CommandQueueHousing = "colony.queue_housing"
 const CommandQueuePlanetaryTransformation = "colony.queue_planetary_transformation"
@@ -209,4 +210,37 @@ func decodeQueueFreighterFleet(command protocol.Command) (QueueFreighterFleetPay
 		return QueueFreighterFleetPayload{}, fmt.Errorf("colony_id must be non-zero")
 	}
 	return payload, nil
+}
+
+type QueueMilitaryShipPayload struct {
+	ColonyID     core.ID `json:"colony_id"`
+	ShipDesignID core.ID `json:"ship_design_id"`
+}
+
+func NewQueueMilitaryShipCommand(sequence uint32, payload QueueMilitaryShipPayload) (protocol.Command, error) {
+	if err := validateQueueMilitaryShipPayload(payload); err != nil {
+		return protocol.Command{}, err
+	}
+	return protocol.NewCommand(sequence, CommandQueueMilitaryShip, payload)
+}
+
+func decodeQueueMilitaryShip(command protocol.Command) (QueueMilitaryShipPayload, error) {
+	var payload QueueMilitaryShipPayload
+	if err := decodeStrictCommandPayload(command, CommandQueueMilitaryShip, &payload); err != nil {
+		return QueueMilitaryShipPayload{}, err
+	}
+	if err := validateQueueMilitaryShipPayload(payload); err != nil {
+		return QueueMilitaryShipPayload{}, err
+	}
+	return payload, nil
+}
+
+func validateQueueMilitaryShipPayload(payload QueueMilitaryShipPayload) error {
+	if payload.ColonyID == 0 {
+		return fmt.Errorf("colony_id must be non-zero")
+	}
+	if payload.ShipDesignID == 0 {
+		return fmt.Errorf("ship_design_id must be non-zero")
+	}
+	return nil
 }
