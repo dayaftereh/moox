@@ -30,13 +30,12 @@ The game is **not playable yet**, but the first headless strategic expansion loo
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slice 01 **Colony Base / same-system colonization** is active. Gate 3 implementation is complete and Gate 4 QA/commit/closure is pending; exactly one `_OPEN_*.md` marker exists. Slices 02-07 remain prepared but unopened.
+**Slice state:** Slice 01 **Colony Base / same-system colonization** is closed. No `_OPEN_*.md` marker exists. Slices 02-07 remain prepared; Slice 02 **Outpost Ship / Outpost state / supply range** is the recommended next objective.
 
 ### Prepared next-slice queue
 
-| # | Planned slice | Main purpose |
+| Slice | Planned slice | Main purpose |
 | ---: | --- | --- |
-| 1 | `PLANNED_01_COLONY_BASE_SAME_SYSTEM_COLONIZATION.md` | Correct Colony Base special Construction and same-system Colony founding |
 | 2 | `PLANNED_02_OUTPOST_SHIP_SUPPLY_RANGE.md` | Outpost Ship build/deploy, authoritative Outpost state and supply extension |
 | 3 | `PLANNED_03_MILITARY_SHIP_CORE_DESIGN_BASELINE.md` | Concrete military Ship/Design state and strategic construction |
 | 4 | `PLANNED_04_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT.md` | Generic combat-Fleet transit, range/speed, merge and split |
@@ -45,6 +44,7 @@ Development slices follow `docs/slices/README.md`. Before starting a new slice, 
 | 7 | `PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md` | First narrow deterministic tactical ship-combat vertical slice |
 ### Latest runtime checkpoints
 
+- `261e418` - Colony Base same-system buildability, post-resolution colonize/trash flow, 100 BC refund, shared founding helper and schema-16 replay/save coverage.
 - `db9d01e` - Core schema 16 Colony Ship construction, Fuel-range-checked strategic transit and authoritative second-Colony colonization loop.
 - `d148502` - Core schema 15 strategic Fleets/directed relations and deterministic system-blockade production before Settler arrival/final Food.
 

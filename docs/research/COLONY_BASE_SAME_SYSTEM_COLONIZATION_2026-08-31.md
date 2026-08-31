@@ -2,7 +2,7 @@
 
 Date: 2026-08-31
 
-Status: **Gate 3 complete; Gate 4 pending**
+Status: **Gate 4 complete; slice closed**
 
 Active marker: `docs/slices/_OPEN_COLONY_BASE_SAME_SYSTEM_COLONIZATION_2026-08-31.md`
 
@@ -284,7 +284,7 @@ The fidelity-first implementation proposal is:
 Gate 2 was explicitly accepted on 2026-08-31. Gate 3 is complete; Gate 4 QA/commit/closure is pending.
 ## Gate 3 implementation result
 
-Status: **complete; Gate 4 pending**.
+Status: **Gate 3 complete**.
 
 The accepted Gate-2 contract is now implemented without changing Core persistence schema.
 
@@ -367,3 +367,15 @@ Gate-3 QA completed successfully with:
 - `go vet ./...`.
 
 Gate 4 remains responsible for final `gofmt`/`git diff --check`, permanent HISTORY/handoff closure, commits, and deletion of the active `_OPEN_` marker.
+## Gate 4 closure
+
+Status: **complete**.
+
+- Final `gofmt` passed on all touched Go files.
+- `go test ./... -count=1` passed across the repository.
+- `go vet ./...` passed across the repository.
+- Focused Colony Base / Colony Ship / Building-choice regressions passed.
+- `git diff --check` and staged `git diff --cached --check` passed.
+- Runtime/tests/evidence were committed as `261e418` (`game: add colony base colonization flow`).
+- Core `StateSchemaVersion` remains **16**.
+- The dated `_OPEN_` marker is removed by the closing documentation commit; no gameplay slice remains open.

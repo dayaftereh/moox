@@ -5,35 +5,32 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: `docs/slices/_OPEN_COLONY_BASE_SAME_SYSTEM_COLONIZATION_2026-08-31.md`.
-- Latest completed gameplay slice: **Colony Ship production, strategic movement and colonization**.
-- Implementation commit: `db9d01e` (`game: add colony ship colonization loop`).
+- Open slice marker: **none**.
+- Latest completed gameplay slice: **Colony Base / same-system colonization**.
+- Implementation commit: `261e418` (`game: add colony base colonization flow`).
 - Core `StateSchemaVersion`: **16**.
 - Economy ruleset schema: **7**.
-- Active permanent evidence: `docs/research/COLONY_BASE_SAME_SYSTEM_COLONIZATION_2026-08-31.md`.
-- Latest closed evidence: `docs/research/COLONY_SHIP_MOVEMENT_COLONIZATION_2026-08-30.md`.
+- Active permanent evidence: **none; no gameplay slice is open**.
+- Latest closed evidence: `docs/research/COLONY_BASE_SAME_SYSTEM_COLONIZATION_2026-08-31.md`.
 - Before starting new work, check `docs/slices/_OPEN_*.md`; resume any marker before opening another slice.
 
-## Active slice - Colony Base / same-system colonization
+## Closed Colony Base checkpoint
 
-**Gate 3 is complete; Gate 4 is pending.** The accepted implementation is present in the working tree and has not yet been committed/closed.
+Slice 01 **Colony Base / same-system colonization** is closed. Gate 4 passed and the runtime/tests/evidence are committed in `261e418`.
 
-Implemented runtime boundaries:
+Closed runtime boundaries:
 
-- Colony Base remains normal Building 11 / `colony_base`, Tech 40, 200 PP, 0 BC Maintenance;
-- queue/building-choice legality requires at least one empty Planet in the constructing Colony's StarSystem;
-- no target Planet is persisted with Construction;
-- completed Bases are projected as derived `PendingColonyBaseResolutions` from existing Building ownership, so Core remains schema **16**;
-- next-turn completion is blocked until every completed Base is resolved;
-- `colony.colonize_with_base` creates a normal one-founder Colony on a legal same-system Planet, consumes the Base and leaves source Population unchanged;
-- `colony.trash_colony_base` consumes the Base and refunds exactly 100 BC, including when no target remains;
-- Colony Ship and Colony Base share the same normal-Colony founding helper;
-- PlayerView, ObserverView and seat-scoped resolution projection expose authoritative pending decisions;
-- dedicated Colony Base colonize/trash events are replay-stable.
+- Colony Base remains normal Building 11 / `colony_base`, Tech 40, 200 PP and 0 BC Maintenance;
+- buildability and direct queue validation require at least one empty Planet in the source Colony's StarSystem;
+- Construction persists no target Planet; completed Bases are derived from Building ownership;
+- `colony.colonize_with_base` creates a normal same-system Colony, consumes the Base and leaves source Population unchanged;
+- `colony.trash_colony_base` consumes the Base and refunds exactly 100 BC, including targetless completed Bases;
+- `CompleteTurn` is blocked until all completed Colony Bases are resolved;
+- Colony Ship and Colony Base share one deterministic normal-Colony founding helper;
+- PlayerView/ObserverView expose authority-correct pending resolution state;
+- Core schema remains **16**, with exact save/load reconstruction and deterministic replay coverage.
 
-Gate-3 verification is green: focused Colony Base/Colony Ship/Construction/Treasury/session regressions, exact schema-16 round-trip, deterministic replay, `go test ./... -count=1` and `go vet ./...`.
-
-Next step is **Gate 4 only**: final format/diff QA, docs/HISTORY closure, implementation + closing-doc commits, then remove the `_OPEN_` marker. Do not start Slice 02 before this slice is closed.
+Gate 4 passed `gofmt`, `go test ./... -count=1`, `go vet ./...`, focused Colony Base/Colony Ship/Building-choice regressions and both working-tree/staged `git diff --check`.
 ## Closed Colony Ship checkpoint
 
 The first authoritative headless expansion loop is complete:
@@ -67,23 +64,18 @@ Gate 4 passed `gofmt`, `go test ./... -count=1`, `go vet ./...`, focused Colony 
 
 ## Prepared next-slice queue
 
-Slice 01 **Colony Base / same-system colonization** is now open with Gate 1 complete and Gate 2 pending. The remaining six later slices stay prepared as planning specifications under `docs/slices/`.
+Slice 01 **Colony Base / same-system colonization** is closed. Six later slices remain prepared as planning specifications under `docs/slices/`.
 
-Recommended order:
+Recommended next order:
 
-1. **Colony Base / same-system colonization** - `docs/slices/PLANNED_01_COLONY_BASE_SAME_SYSTEM_COLONIZATION.md`
-2. **Outpost Ship / Outpost state / supply range** - `docs/slices/PLANNED_02_OUTPOST_SHIP_SUPPLY_RANGE.md`
-3. **Military Ship core / design baseline** - `docs/slices/PLANNED_03_MILITARY_SHIP_CORE_DESIGN_BASELINE.md`
-4. **Generic combat Fleet movement / merge / split** - `docs/slices/PLANNED_04_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT.md`
-5. **Command Points / ship overage Maintenance** - `docs/slices/PLANNED_05_COMMAND_POINTS_SHIP_MAINTENANCE.md`
-6. **Strategic hostile encounters -> BattleSession handoff** - `docs/slices/PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md`
-7. **Tactical ship combat baseline** - `docs/slices/PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md`
+- **Slice 02 - Outpost Ship / Outpost state / supply range** - `docs/slices/PLANNED_02_OUTPOST_SHIP_SUPPLY_RANGE.md`
+- **Slice 03 - Military Ship core / design baseline** - `docs/slices/PLANNED_03_MILITARY_SHIP_CORE_DESIGN_BASELINE.md`
+- **Slice 04 - Generic combat Fleet movement / merge / split** - `docs/slices/PLANNED_04_COMBAT_FLEET_MOVEMENT_MERGE_SPLIT.md`
+- **Slice 05 - Command Points / ship overage Maintenance** - `docs/slices/PLANNED_05_COMMAND_POINTS_SHIP_MAINTENANCE.md`
+- **Slice 06 - Strategic hostile encounters -> BattleSession handoff** - `docs/slices/PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md`
+- **Slice 07 - Tactical ship combat baseline** - `docs/slices/PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md`
 
-The queue files contain Gate 1-4 checklists, dependency notes, scope guards and exit criteria. Slice 01 is active through the single dated `_OPEN_*.md` marker; do not start slices 02-07 until the active slice is closed unless parallel work is explicitly intended.
-
-The order is progressive: Colony Base first closes the currently incorrect generic-Building gap for same-system expansion; Outpost then extends special-ship/supply expansion; military Ship state supplies concrete Fleet composition; generic movement enables real strategic combat Fleets; Command Points can then use canonical ships; hostile arrivals can generate BattleSessions; only then does the first tactical-combat rules slice have all required producers/consumers.
-
-Do not reopen the completed Colony Ship slice unless new evidence exposes a concrete fidelity defect.
+The next started objective should be Slice 02 unless priorities change. It still begins with a fresh Gate 1 and exactly one dated `_OPEN_` marker.
 ## Later deferred dependencies
 
 - generic combat-Fleet movement/orders and tactical ship composition;
