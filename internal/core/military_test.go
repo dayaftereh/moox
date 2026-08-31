@@ -23,7 +23,7 @@ func baselineMilitarySpec() ShipDesignSpec {
 	}
 }
 
-func TestMilitaryStateAllowsMoreThanSixDesignsAndRoundTripsSchema19(t *testing.T) {
+func TestMilitaryStateAllowsMoreThanSixDesignsAndRoundTripsSchema20(t *testing.T) {
 	state := NewSmallFixture(1801)
 	empireID := state.Empires[0].ID
 	for i := 0; i < 8; i++ {
@@ -40,11 +40,11 @@ func TestMilitaryStateAllowsMoreThanSixDesignsAndRoundTripsSchema19(t *testing.T
 	state.StrategicFleets = append(state.StrategicFleets, StrategicFleet{
 		ID: fleetID, EmpireID: empireID, Role: StrategicFleetRoleCombat, AtSystemID: state.Galaxy.Systems[0].ID, ShipIDs: []ID{shipID},
 	})
-	if StateSchemaVersion != 19 || state.SchemaVersion != 19 {
-		t.Fatalf("schema=%d constant=%d want=19", state.SchemaVersion, StateSchemaVersion)
+	if StateSchemaVersion != 20 || state.SchemaVersion != 20 {
+		t.Fatalf("schema=%d constant=%d want=20", state.SchemaVersion, StateSchemaVersion)
 	}
 	if err := state.Validate(); err != nil {
-		t.Fatalf("schema19 military state invalid: %v", err)
+		t.Fatalf("schema20 military state invalid: %v", err)
 	}
 	encoded, err := MarshalState(state)
 	if err != nil {
@@ -65,7 +65,7 @@ func TestMilitaryStateAllowsMoreThanSixDesignsAndRoundTripsSchema19(t *testing.T
 		t.Fatal(err)
 	}
 	if !bytes.Equal(encoded, reencoded) {
-		t.Fatalf("schema19 military bytes changed across round trip")
+		t.Fatalf("schema20 military bytes changed across round trip")
 	}
 }
 

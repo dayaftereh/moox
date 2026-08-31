@@ -7,7 +7,7 @@ import (
 	"moox/internal/core"
 )
 
-func TestCombatFleetTransitRoundTripsSchema19(t *testing.T) {
+func TestCombatFleetTransitRoundTripsSchema20(t *testing.T) {
 	rules := loadColonyShipRules(t)
 	resolver, err := NewEconomyResolver(rules)
 	if err != nil {
@@ -33,11 +33,11 @@ func TestCombatFleetTransitRoundTripsSchema19(t *testing.T) {
 	if _, err := resolver.moveFleetEvents(state, empire.ID, 1, command); err != nil {
 		t.Fatal(err)
 	}
-	if core.StateSchemaVersion != 19 || state.SchemaVersion != 19 {
-		t.Fatalf("schema=%d constant=%d want=19", state.SchemaVersion, core.StateSchemaVersion)
+	if core.StateSchemaVersion != 20 || state.SchemaVersion != 20 {
+		t.Fatalf("schema=%d constant=%d want=20", state.SchemaVersion, core.StateSchemaVersion)
 	}
 	if err := state.Validate(); err != nil {
-		t.Fatalf("schema19 combat transit invalid before save: %v", err)
+		t.Fatalf("schema20 combat transit invalid before save: %v", err)
 	}
 
 	encoded, err := core.MarshalState(state)

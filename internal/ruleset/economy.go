@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const EconomySchemaVersion = 7
+const EconomySchemaVersion = 8
 
 type EconomyFile struct {
 	SchemaVersion            int                        `json:"schema_version"`
@@ -20,6 +20,7 @@ type EconomyFile struct {
 	GovernmentModifiers      []GovernmentEconomyRule    `json:"government_modifiers"`
 	Population               PopulationEconomyRule      `json:"population"`
 	FoodLogistics            FoodLogisticsEconomyRule   `json:"food_logistics"`
+	CommandPoints            CommandPointsEconomyRule   `json:"command_points"`
 	Morale                   MoraleEconomyRule          `json:"morale"`
 }
 
@@ -116,6 +117,35 @@ type FoodLogisticsEconomyRule struct {
 	CyberneticStarvationPopulationPerPPShortage   float64  `json:"cybernetic_starvation_population_per_pp_shortage"`
 	MinimumPopulationAfterStarvation              float64  `json:"minimum_population_after_starvation"`
 	SourceIDs                                     []string `json:"source_ids"`
+}
+
+type CommandPointsEconomyRule struct {
+	BaseCapacity              int                              `json:"base_capacity"`
+	FixedSpecialShipPoints    int                              `json:"fixed_special_ship_points"`
+	WarlordPointsPerColony    int                              `json:"warlord_points_per_colony"`
+	StandardOverageBCPerPoint float64                          `json:"standard_overage_bc_per_point"`
+	Stations                  []CommandPointStationRule        `json:"stations"`
+	Communications            []CommandPointCommunicationsRule `json:"communications"`
+	Imperium                  CommandPointImperiumRule         `json:"imperium"`
+	SourceIDs                 []string                         `json:"source_ids"`
+}
+
+type CommandPointStationRule struct {
+	BuildingID string `json:"building_id"`
+	Points     int    `json:"points"`
+}
+
+type CommandPointCommunicationsRule struct {
+	TechnologyID int `json:"technology_id"`
+	Points       int `json:"points_per_station"`
+}
+
+type CommandPointImperiumRule struct {
+	TechnologyID              int    `json:"technology_id"`
+	RequiredGovernmentTraitID string `json:"required_government_trait_id"`
+	BonusNumerator            int    `json:"bonus_numerator"`
+	BonusDenominator          int    `json:"bonus_denominator"`
+	Rounding                  string `json:"rounding"`
 }
 
 type GravityPenaltyRule struct {
@@ -235,6 +265,9 @@ func (f *EconomyFile) Validate() error {
 		return err
 	}
 	if err := f.validateFoodLogistics(sources); err != nil {
+		return err
+	}
+	if err := f.validateCommandPoints(sources); err != nil {
 		return err
 	}
 	if len(f.GravityPenalties) != 9 {
@@ -396,6 +429,49 @@ func (f *EconomyFile) validateFoodLogistics(sources map[string]struct{}) error {
 	for _, sourceID := range l.SourceIDs {
 		if _, ok := sources[sourceID]; !ok {
 			return fmt.Errorf("food logistics rule references unknown source %q", sourceID)
+		}
+	}
+	return nil
+}
+
+func (f *EconomyFile) validateCommandPoints(sources map[string]struct{}) error {
+	rule := f.CommandPoints
+	if rule.BaseCapacity <= 0 || rule.FixedSpecialShipPoints <= 0 || rule.WarlordPointsPerColony <= 0 || rule.StandardOverageBCPerPoint < 0 {
+		return fmt.Errorf("command points scalar values are invalid")
+	}
+	if len(rule.Stations) == 0 || len(rule.Communications) == 0 {
+		return fmt.Errorf("command points station/communications rules are required")
+	}
+	seenStations := make(map[string]struct{}, len(rule.Stations))
+	for index, station := range rule.Stations {
+		if station.BuildingID == "" || station.Points <= 0 {
+			return fmt.Errorf("command_points.stations[%d] is invalid", index)
+		}
+		if _, exists := seenStations[station.BuildingID]; exists {
+			return fmt.Errorf("duplicate command point station %q", station.BuildingID)
+		}
+		seenStations[station.BuildingID] = struct{}{}
+	}
+	seenTech := make(map[int]struct{}, len(rule.Communications))
+	for index, communication := range rule.Communications {
+		if communication.TechnologyID <= 0 || communication.Points <= 0 {
+			return fmt.Errorf("command_points.communications[%d] is invalid", index)
+		}
+		if _, exists := seenTech[communication.TechnologyID]; exists {
+			return fmt.Errorf("duplicate command point communications technology %d", communication.TechnologyID)
+		}
+		seenTech[communication.TechnologyID] = struct{}{}
+	}
+	imperium := rule.Imperium
+	if imperium.TechnologyID <= 0 || imperium.RequiredGovernmentTraitID == "" || imperium.BonusNumerator <= 0 || imperium.BonusDenominator <= 0 || imperium.Rounding != "floor" {
+		return fmt.Errorf("command points imperium rule is invalid")
+	}
+	if len(rule.SourceIDs) == 0 {
+		return fmt.Errorf("command points rule has no sources")
+	}
+	for _, sourceID := range rule.SourceIDs {
+		if _, ok := sources[sourceID]; !ok {
+			return fmt.Errorf("command points rule references unknown source %q", sourceID)
 		}
 	}
 	return nil

@@ -185,6 +185,11 @@ func (r *EconomyRules) AvailableBuildingChoices(state *core.GameState, empireID,
 	for _, buildingID := range colony.Buildings {
 		owned[buildingID] = struct{}{}
 	}
+	_, ownedCommandStationTier, err := colonyCommandStation(colony)
+	if err != nil {
+		return nil, err
+	}
+
 	knownTech := make(map[int]struct{}, len(empire.KnownTechnologyIDs))
 	for _, technologyID := range empire.KnownTechnologyIDs {
 		knownTech[technologyID] = struct{}{}
@@ -196,6 +201,9 @@ func (r *EconomyRules) AvailableBuildingChoices(state *core.GameState, empireID,
 			continue
 		}
 		if _, exists := owned[definition.BuildingID]; exists {
+			continue
+		}
+		if tier := commandStationTier(definition.BuildingID); tier != 0 && ownedCommandStationTier >= tier {
 			continue
 		}
 		if _, known := knownTech[definition.TechnologyID]; !known {

@@ -30,6 +30,7 @@ type RaceEconomyModifiers struct {
 	Cybernetic                 bool
 	Lithovore                  bool
 	FantasticTraders           bool
+	Warlord                    bool
 	TransDimensional           bool
 	Creative                   bool
 	Uncreative                 bool
@@ -62,6 +63,19 @@ type PlanetaryTransformationDefinition struct {
 	AllowedClimateIDs     map[string]struct{}
 	ResultClimateBySource map[string]string
 	BarrenOrbitRule       *BarrenOrbitTransformationRule
+}
+
+type CommandPointRules struct {
+	BaseCapacity                       int
+	FixedSpecialShipPoints             int
+	WarlordPointsPerColony             int
+	StandardOverageBCPerPoint          float64
+	StationPoints                      map[string]int
+	CommunicationsPointsByTechnologyID map[int]int
+	ImperiumTechnologyID               int
+	ImperiumRequiredGovernmentTraitID  string
+	ImperiumBonusNumerator             int
+	ImperiumBonusDenominator           int
 }
 
 type EconomyRules struct {
@@ -102,6 +116,7 @@ type EconomyRules struct {
 	CyberneticStarvationPopulationPerFoodShortage float64
 	CyberneticStarvationPopulationPerPPShortage   float64
 	MinimumPopulationAfterStarvation              float64
+	CommandPoints                                 CommandPointRules
 	GravityPenaltyPercent                         map[string]int
 	GovernmentModifiers                           map[string]GovernmentEconomyModifier
 	MoraleBarracksPenaltyPercent                  int
@@ -410,6 +425,24 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		generalResearchFieldIDs[fieldID] = struct{}{}
 	}
 
+	commandPointStations := make(map[string]int, len(economy.CommandPoints.Stations))
+	for _, station := range economy.CommandPoints.Stations {
+		if _, ok := buildingDefinitions[station.BuildingID]; !ok {
+			return nil, fmt.Errorf("command point station references unknown building %q", station.BuildingID)
+		}
+		commandPointStations[station.BuildingID] = station.Points
+	}
+	commandPointCommunications := make(map[int]int, len(economy.CommandPoints.Communications))
+	for _, communication := range economy.CommandPoints.Communications {
+		if _, ok := technologyKeyByID[communication.TechnologyID]; !ok {
+			return nil, fmt.Errorf("command point communications references unknown technology %d", communication.TechnologyID)
+		}
+		commandPointCommunications[communication.TechnologyID] = communication.Points
+	}
+	if _, ok := technologyKeyByID[economy.CommandPoints.Imperium.TechnologyID]; !ok {
+		return nil, fmt.Errorf("command point Imperium references unknown technology %d", economy.CommandPoints.Imperium.TechnologyID)
+	}
+
 	rules := &EconomyRules{
 		ClimateFoodPerFarmer:                          make(map[string]float64, len(planetClasses.Climates)),
 		MineralIndustryPerWorker:                      make(map[string]float64, len(planetClasses.MineralClasses)),
@@ -448,37 +481,49 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		CyberneticStarvationPopulationPerFoodShortage: economy.FoodLogistics.CyberneticStarvationPopulationPerFoodShortage,
 		CyberneticStarvationPopulationPerPPShortage:   economy.FoodLogistics.CyberneticStarvationPopulationPerPPShortage,
 		MinimumPopulationAfterStarvation:              economy.FoodLogistics.MinimumPopulationAfterStarvation,
-		GravityPenaltyPercent:                         gravityPenalties,
-		GovernmentModifiers:                           governmentModifiers,
-		MoraleBarracksPenaltyPercent:                  economy.Morale.BarracksPenaltyPercent,
-		MoraleBarracksGovernments:                     moraleBarracksGovernments,
-		MoraleBarracksBuildingIDs:                     moraleBarracksBuildingIDs,
-		MoraleBuildingBonusPercent:                    moraleBuildingBonusPercent,
-		KnownBuildingIDs:                              buildingIDs,
-		BuildingDefinitions:                           buildingDefinitions,
-		TechnologyFieldCostsRP:                        technologyFieldCosts,
-		TechnologyFieldPreviousID:                     technologyFieldPreviousID,
-		TechnologyFieldNextID:                         technologyFieldNextID,
-		TechnologyFieldAIGroup:                        technologyFieldAIGroup,
-		TechnologyIDsByField:                          technologyIDsByField,
-		TechnologyFieldByID:                           technologyFieldByID,
-		TechnologyKeyByID:                             technologyKeyByID,
-		TechnologyNameKeyByID:                         technologyNameKeyByID,
-		TechnologyStrategicAvailable:                  technologyStrategicAvailable,
-		TechnologyAIClassByID:                         technologyAIClassByID,
-		TechnologyAIClasses:                           technologyAIClasses,
-		TechnologyAIFieldGroupValues:                  technologyAIFieldGroupValues,
-		NewGameAlwaysKnownFieldID:                     technologies.NewGameStart.AlwaysKnownTechFieldID,
-		NewGameStagedKnownFieldIDs:                    append([]int(nil), technologies.NewGameStart.StagedKnownTechFieldIDs...),
-		GeneralResearchFieldIDs:                       generalResearchFieldIDs,
-		HyperAdvancedResearchFieldIDs:                 hyperAdvancedResearchFieldIDs,
-		HyperAdvancedCostIncrementRP:                  float64(technologies.HyperAdvanced.CostIncrementRP),
-		ShipHulls:                                     shipHullDefinitions,
-		ShipDrives:                                    append([]ruleset.ShipDrive(nil), shipHulls.MandatoryComponents.Drives...),
-		ShipComputers:                                 append([]ruleset.ShipComputer(nil), shipHulls.MandatoryComponents.Computers...),
-		ShipArmors:                                    append([]ruleset.ShipArmor(nil), shipHulls.MandatoryComponents.Armors...),
-		ShipShields:                                   append([]ruleset.ShipShield(nil), shipHulls.MandatoryComponents.Shields...),
-		ShipFuelCells:                                 append([]ruleset.ShipFuelCell(nil), shipHulls.MandatoryComponents.FuelCells...),
+		CommandPoints: CommandPointRules{
+			BaseCapacity:                       economy.CommandPoints.BaseCapacity,
+			FixedSpecialShipPoints:             economy.CommandPoints.FixedSpecialShipPoints,
+			WarlordPointsPerColony:             economy.CommandPoints.WarlordPointsPerColony,
+			StandardOverageBCPerPoint:          economy.CommandPoints.StandardOverageBCPerPoint,
+			StationPoints:                      commandPointStations,
+			CommunicationsPointsByTechnologyID: commandPointCommunications,
+			ImperiumTechnologyID:               economy.CommandPoints.Imperium.TechnologyID,
+			ImperiumRequiredGovernmentTraitID:  economy.CommandPoints.Imperium.RequiredGovernmentTraitID,
+			ImperiumBonusNumerator:             economy.CommandPoints.Imperium.BonusNumerator,
+			ImperiumBonusDenominator:           economy.CommandPoints.Imperium.BonusDenominator,
+		},
+		GravityPenaltyPercent:         gravityPenalties,
+		GovernmentModifiers:           governmentModifiers,
+		MoraleBarracksPenaltyPercent:  economy.Morale.BarracksPenaltyPercent,
+		MoraleBarracksGovernments:     moraleBarracksGovernments,
+		MoraleBarracksBuildingIDs:     moraleBarracksBuildingIDs,
+		MoraleBuildingBonusPercent:    moraleBuildingBonusPercent,
+		KnownBuildingIDs:              buildingIDs,
+		BuildingDefinitions:           buildingDefinitions,
+		TechnologyFieldCostsRP:        technologyFieldCosts,
+		TechnologyFieldPreviousID:     technologyFieldPreviousID,
+		TechnologyFieldNextID:         technologyFieldNextID,
+		TechnologyFieldAIGroup:        technologyFieldAIGroup,
+		TechnologyIDsByField:          technologyIDsByField,
+		TechnologyFieldByID:           technologyFieldByID,
+		TechnologyKeyByID:             technologyKeyByID,
+		TechnologyNameKeyByID:         technologyNameKeyByID,
+		TechnologyStrategicAvailable:  technologyStrategicAvailable,
+		TechnologyAIClassByID:         technologyAIClassByID,
+		TechnologyAIClasses:           technologyAIClasses,
+		TechnologyAIFieldGroupValues:  technologyAIFieldGroupValues,
+		NewGameAlwaysKnownFieldID:     technologies.NewGameStart.AlwaysKnownTechFieldID,
+		NewGameStagedKnownFieldIDs:    append([]int(nil), technologies.NewGameStart.StagedKnownTechFieldIDs...),
+		GeneralResearchFieldIDs:       generalResearchFieldIDs,
+		HyperAdvancedResearchFieldIDs: hyperAdvancedResearchFieldIDs,
+		HyperAdvancedCostIncrementRP:  float64(technologies.HyperAdvanced.CostIncrementRP),
+		ShipHulls:                     shipHullDefinitions,
+		ShipDrives:                    append([]ruleset.ShipDrive(nil), shipHulls.MandatoryComponents.Drives...),
+		ShipComputers:                 append([]ruleset.ShipComputer(nil), shipHulls.MandatoryComponents.Computers...),
+		ShipArmors:                    append([]ruleset.ShipArmor(nil), shipHulls.MandatoryComponents.Armors...),
+		ShipShields:                   append([]ruleset.ShipShield(nil), shipHulls.MandatoryComponents.Shields...),
+		ShipFuelCells:                 append([]ruleset.ShipFuelCell(nil), shipHulls.MandatoryComponents.FuelCells...),
 	}
 	for _, climate := range planetClasses.Climates {
 		rules.ClimateFoodPerFarmer[climate.ID] = float64(climate.BaseFoodPerFarmer)
@@ -530,6 +575,8 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 				researchModifiers.Lithovore = true
 			case "fantastic_traders":
 				modifiers.FantasticTraders = true
+			case "warlord":
+				modifiers.Warlord = true
 			case "trans_dimensional":
 				modifiers.TransDimensional = true
 			case "creative":

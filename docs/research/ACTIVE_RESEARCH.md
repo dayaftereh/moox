@@ -5,15 +5,33 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: **none**.
+- Open slice marker: `docs/slices/_OPEN_COMMAND_POINTS_SHIP_MAINTENANCE_2026-08-31.md`.
 - Latest completed gameplay slice: **Combat Fleet movement / merge / split**.
 - Implementation commit: `f297480` (`game: add combat fleet movement`).
-- Core `StateSchemaVersion`: **19**.
+- Core `StateSchemaVersion`: **20**.
 - Economy ruleset schema: **7**.
-- Active permanent evidence: **none**.
+- Active permanent evidence: `docs/research/COMMAND_POINTS_SHIP_MAINTENANCE_2026-08-31.md`.
 - Latest closed evidence: `docs/research/COMBAT_FLEET_MOVEMENT_MERGE_SPLIT_2026-08-31.md`.
-- Before starting new work, check `docs/slices/_OPEN_*.md`; no slice is active. Slice 05 **Command Points / ship maintenance** is the next prepared objective.
+- Before starting new work, check `docs/slices/_OPEN_*.md`; Slice 05 **Command Points / ship Maintenance** is active with Gates 1-3 complete and Gate 4 pending. Resume it before any later objective.
 
+## Active Slice 05 - Command Points and ship Maintenance
+
+**Gates 1-3 are complete; Gate 4 is pending.** Core schema 20 / economy schema 8 Command Points and ship-overage Maintenance are implemented and the full repository suite is green.
+
+Permanent evidence: `docs/research/COMMAND_POINTS_SHIP_MAINTENANCE_2026-08-31.md`.
+
+Gate-1 conclusions:
+
+- military Ship CP usage is authoritative hull `SizeIndex + 1` (Frigate 1 through Doom Star 6);
+- fixed Colony/Outpost special ships consume 1 CP each, including while in normal transit; Population-transfer Settlers/Freighters are not original troop Transports and do not acquire fake CP usage;
+- original generated capacity starts at 5, adds Star Base/Battlestation/Star Fortress +1/+2/+3, strongest known Communications +1/+2/+3 per station, Warlord +2 per owned Colony, then Imperium adds `floor(capacity/2)`;
+- an original officer-derived capacity source exists but remains zero/deferred because MOOX has no Leader subsystem;
+- player-facing overage Maintenance is exactly 10 BC per excess CP; the separate original NPC/difficulty `12 - global setting` branch remains deferred;
+- original scrap/dead cleanup precedes Maintenance and current-turn ship Production completes after Maintenance, so a newly completed Ship first affects CP Maintenance on the following settlement;
+- current MOOX permits multiple orbital station tiers on one Colony, while original HELP proves Battlestation/Star Fortress replace lower tiers; Gate 2 should decide the proposed narrow station-family replacement dependency;
+- proposed implementation is Core schema 20 + materialized Empire `{capacity, used}`, Treasury ship-command Maintenance, economy ruleset schema 8 Command-Point constants/producers, no ship-hulls schema bump, and no new player command.
+
+Gate 3 implemented the accepted contract: materialized CP/Treasury snapshots, original-derived capacity/usage rules, station-family replacement, transactional all-Empire Treasury prevalidation, pre-Construction timing, schema-20 save/load, Observer isolation and deterministic replay. Full repository tests pass. Resume at Gate 4 for fresh vet/final QA, commits and closure; do not start Slice 06 first.
 ## Closed Slice 04 - Combat Fleet movement, merge and split
 
 **Gates 1-4 are complete.** Final Gate 4 gofmt, full tests, vet, focused compatibility regressions and diff checks passed; the implementation is committed and the recovery marker is removed.

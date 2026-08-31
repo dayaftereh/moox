@@ -127,7 +127,7 @@ func TestCombatFleetSubsetMoveSplitsBeforeMovementAndUsesDerivedProfile(t *testi
 		t.Fatalf("moving split fleet=%+v", *movingFleet)
 	}
 	if err := state.Validate(); err != nil {
-		t.Fatalf("schema19 subset transit invalid: %v", err)
+		t.Fatalf("schema20 subset transit invalid: %v", err)
 	}
 }
 

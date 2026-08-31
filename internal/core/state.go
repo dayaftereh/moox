@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 19
+const StateSchemaVersion = 20
 
 type ID uint64
 
@@ -65,6 +65,7 @@ type Empire struct {
 	RaceID                    string                       `json:"race_id"`
 	Capital                   ID                           `json:"capital_colony_id,omitempty"`
 	Freighters                int                          `json:"freighters"`
+	CommandPoints             EmpireCommandPoints          `json:"command_points"`
 	Treasury                  EmpireTreasuryState          `json:"treasury"`
 	FoodLogistics             EmpireFoodLogistics          `json:"food_logistics"`
 	UncreativeResearchChoices []FixedResearchChoice        `json:"uncreative_research_choices,omitempty"`
@@ -84,6 +85,11 @@ type HyperAdvancedResearchLevel struct {
 	CompletedLevels int `json:"completed_levels"`
 }
 
+type EmpireCommandPoints struct {
+	Capacity int `json:"capacity"`
+	Used     int `json:"used"`
+}
+
 type EmpireTreasuryState struct {
 	BalanceBC                 float64 `json:"balance_bc"`
 	TaxIncomeBC               float64 `json:"tax_income_bc"`
@@ -91,6 +97,7 @@ type EmpireTreasuryState struct {
 	GrossIncomeBC             float64 `json:"gross_income_bc"`
 	BuildingMaintenanceBC     float64 `json:"building_maintenance_bc"`
 	FreighterOperatingCostBC  float64 `json:"freighter_operating_cost_bc"`
+	ShipCommandMaintenanceBC  float64 `json:"ship_command_maintenance_bc"`
 	TotalModeledMaintenanceBC float64 `json:"total_modeled_maintenance_bc"`
 	NetModeledIncomeBC        float64 `json:"net_modeled_income_bc"`
 }
@@ -330,6 +337,9 @@ func (s *GameState) Validate() error {
 		if empire.Freighters < 0 {
 			return fmt.Errorf("empire[%d] freighters must be non-negative", i)
 		}
+		if empire.CommandPoints.Capacity < 0 || empire.CommandPoints.Used < 0 {
+			return fmt.Errorf("empire[%d] command points must be non-negative", i)
+		}
 		for _, item := range []struct {
 			label string
 			value float64
@@ -340,6 +350,7 @@ func (s *GameState) Validate() error {
 			{"treasury.gross_income_bc", empire.Treasury.GrossIncomeBC},
 			{"treasury.building_maintenance_bc", empire.Treasury.BuildingMaintenanceBC},
 			{"treasury.freighter_operating_cost_bc", empire.Treasury.FreighterOperatingCostBC},
+			{"treasury.ship_command_maintenance_bc", empire.Treasury.ShipCommandMaintenanceBC},
 			{"treasury.total_modeled_maintenance_bc", empire.Treasury.TotalModeledMaintenanceBC},
 			{"treasury.net_modeled_income_bc", empire.Treasury.NetModeledIncomeBC},
 		} {

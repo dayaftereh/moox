@@ -122,8 +122,8 @@ func TestGameSessionCombatFleetSubsetMoveObserverIsolationAndDeterministicReplay
 	if !reflect.DeepEqual(viewA.Events, viewB.Events) {
 		t.Fatalf("identical combat Fleet sessions diverged in events:\nA=%+v\nB=%+v", viewA.Events, viewB.Events)
 	}
-	if core.StateSchemaVersion != 19 || viewA.State.SchemaVersion != 19 {
-		t.Fatalf("observer schema=%d constant=%d want=19", viewA.State.SchemaVersion, core.StateSchemaVersion)
+	if core.StateSchemaVersion != 20 || viewA.State.SchemaVersion != 20 {
+		t.Fatalf("observer schema=%d constant=%d want=20", viewA.State.SchemaVersion, core.StateSchemaVersion)
 	}
 
 	splitIndex := observerEventIndex(viewA, "empire.fleet_split")

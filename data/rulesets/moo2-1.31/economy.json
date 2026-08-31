@@ -1,5 +1,5 @@
 {
-    "schema_version":  7,
+    "schema_version":  8,
     "ruleset":  "moo2-1.31",
     "sources":  [
                     {
@@ -94,6 +94,12 @@
                         "description":  "Direct Orion2.exe 1.31 disassembly of Player_Effective_Climate_, Planet_Max_Population_For_Player_, Colony_Race_Pop_Limit_, Add_Building_ and Remove_Building_ proves Advanced City Planning +5, Biospheres +2, capacity stacking and Terraforming/Gaia physical-climate transitions.",
                         "archive":  "Orion2.exe",
                         "sha256":  "7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5"
+                    },
+                    {
+                        "id":  "moo2-1.31-command-points-ship-maintenance",
+                        "type":  "original-derived",
+                        "description":  "Direct HELP.LBX Command Points Window/Table plus Orion2.exe 1.31 Compute_Player_Maintenance_ and turn-order analysis proves Command-Point usage/capacity, station/communications/Warlord/Imperium modifiers and player ship-overage Maintenance; permanent evidence is docs/research/COMMAND_POINTS_SHIP_MAINTENANCE_2026-08-31.md.",
+                        "archive":  "HELP.LBX / Orion2.exe"
                     }
                 ],
     "base_research_per_scientist":  {
@@ -239,6 +245,32 @@
                                                ],
                                "source_id":  "strategywiki-moo2-economy-calculations"
                            },
+    "command_points":  {
+                           "base_capacity":  5,
+                           "fixed_special_ship_points":  1,
+                           "warlord_points_per_colony":  2,
+                           "standard_overage_bc_per_point":  10.0,
+                           "stations":  [
+                                            { "building_id": "star_base", "points": 1 },
+                                            { "building_id": "battlestation", "points": 2 },
+                                            { "building_id": "star_fortress", "points": 3 }
+                                        ],
+                           "communications":  [
+                                                  { "technology_id": 180, "points_per_station": 1 },
+                                                  { "technology_id": 176, "points_per_station": 2 },
+                                                  { "technology_id": 91, "points_per_station": 3 }
+                                              ],
+                           "imperium":  {
+                                            "technology_id":  92,
+                                            "required_government_trait_id":  "government_dictatorship",
+                                            "bonus_numerator":  1,
+                                            "bonus_denominator":  2,
+                                            "rounding":  "floor"
+                                        },
+                           "source_ids":  [
+                                              "moo2-1.31-command-points-ship-maintenance"
+                                          ]
+                       },
     "gravity_penalties":  [
                               {
                                   "race_gravity_id":  "low_g",

@@ -263,7 +263,9 @@ func (r *EconomyResolver) advanceConstruction(state *core.GameState) ([]DomainEv
 		colony.Construction = nil
 		switch projectKind {
 		case core.ConstructionProjectBuilding:
-			colony.Buildings = append(colony.Buildings, projectID)
+			if err := applyCompletedCommandStation(colony, projectID); err != nil {
+				return nil, err
+			}
 			completed, err := NewDomainEvent("colony.building_completed", 0, 0, BuildingCompletedEvent{ColonyID: colony.ID, BuildingID: projectID})
 			if err != nil {
 				return nil, err
