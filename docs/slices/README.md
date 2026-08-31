@@ -41,13 +41,12 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- none. Slice 04 **Combat Fleet movement / merge / split** closed on 2026-08-31; its recovery marker was removed after Gate 4.
+- none; Slice 05 closed on 2026-08-31.
 
 Prepared queue:
 
-1. `PLANNED_05_COMMAND_POINTS_SHIP_MAINTENANCE.md`
-2. `PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md`
-3. `PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md`
+1. `PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md`
+2. `PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md`
 
 The queue order is the current recommendation, not a hard dependency lock. Reprioritization is allowed before a later slice is opened if the dependency check still passes.
 ## Four gates

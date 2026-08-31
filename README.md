@@ -30,9 +30,9 @@ The game is **not playable yet**, but the deterministic headless strategic surfa
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** no active slice. Slice 04 **Combat Fleet movement / merge / split** is closed after Gate 4. Core schema 19 now provides deterministic whole/subset combat-Fleet movement, explicit stationary split/merge, current-Empire strategic speed/range derivation, semantic transit/arrival and arrival-driven blockade state. Gameplay commit: `f297480`. Next prepared objective: Slice 05 **Command Points / ship maintenance**.
+**Slice state:** Slice 05 **Command Points / ship Maintenance** is **closed**. Core schema 20 and economy schema 8 now implement the original-derived Command-Point/ship-overage Maintenance baseline, station-family replacement, transactional settlement and deterministic persistence/session coverage. Gate 4 passed gofmt, focused accounting/compatibility regressions, full tests, vet and diff checks. No gameplay slice is open; the next prepared objective is Slice 06 **Strategic hostile encounters / BattleSession handoff**.
 
-### Prepared slice queue
+### Active / prepared slice queue
 
 | Slice | Planned slice | Main purpose |
 | ---: | --- | --- |

@@ -2,7 +2,7 @@
 
 Date: 2026-08-31
 
-Status: **Gates 1-3 complete; Gate 4 pending**
+Status: **closed; Gates 1-4 complete**
 
 Open marker: `docs/slices/_OPEN_COMMAND_POINTS_SHIP_MAINTENANCE_2026-08-31.md`
 
@@ -792,7 +792,7 @@ These are not omissions from the accepted contract; they are explicit later depe
 
 Gates 1-2 are complete. The original 1.31 evidence is sufficient and the implementation contract above is accepted. Gate 3 is the next step.
 
-**Gates 1-3 are complete. Gate 4 owns fresh final QA, commits and slice closure.**
+**Gates 1-4 are complete. Slice 05 is closed.**
 
 ## Gate 3 implementation
 
@@ -939,3 +939,30 @@ A final fresh formatting/focused/full-suite/diff pass is run again before Gate-3
 ### Deferrals preserved
 
 No Leader/Officer CP or Officer Maintenance, original troop Transport CP, NPC/difficulty `12 - global[0x21CB0]` rate, automatic deficit liquidation/scrapping, tactical station behavior or hostile-battle destruction timing was implemented.
+
+## Gate 4 closure
+
+Fresh Gate-4 verification passed on 2026-08-31:
+
+```text
+gofmt changed/untracked Go files
+go test ./internal/core ./internal/ruleset ./internal/game ./internal/session -run '(CommandPoint|CommandStation|Treasury|Military|CombatFleet|ColonyShip|Outpost|Construction|Observer|Save|Load|Replay)' -count=1
+go test ./... -count=1
+go vet ./...
+git diff --check
+```
+
+The focused original-accounting fixtures also passed explicitly for committed CP values, station/Communications/Warlord/Imperium capacity including odd-value floor behavior, 10 BC/excess-CP Treasury accounting, pre-Construction Ship/station timing, Fleet split/merge/movement invariance and legal Outpost Ship consumption. The schema-20 compatibility diff was reviewed to ensure older Slice-03/04 persistence tests only changed their expected schema number/name and retained their gameplay assertions.
+
+Gameplay/data/evidence commit: `16afe0b` (`game: add command point maintenance`).
+
+Final composition/integrity review confirms:
+
+- every concrete owned Ship contributes exactly one hull-derived CP term independent of Fleet container operations;
+- fixed Colony/Outpost special Fleets contribute exactly 1 CP while extant and drop out when legally consumed;
+- Population transfers/Freighters remain excluded;
+- invalid hull or impossible multiple-station-tier state aborts all-Empire Treasury settlement before the first mutation;
+- Star Base/Battlestation/Star Fortress replacement leaves at most one command-station tier after legal completion;
+- current-turn Construction still cannot retroactively alter the already-settled CP/Treasury snapshot.
+
+No push was performed. Leader/Officer CP, original troop Transport, NPC/difficulty overage rate, deficit liquidation, tactical station behavior and hostile-battle destruction timing remain deferred.

@@ -1,6 +1,6 @@
 # Planned slice 05 - Command Points and ship overage Maintenance
 
-Status: **planned / queued; not open**.
+Status: **closed; Gates 1-4 complete**.
 
 Queue position: **5 of 7**.
 
@@ -40,48 +40,48 @@ Defer:
 
 ## Gate 1 - Checkup + original analysis / reverse engineering
 
-- [ ] Re-check Treasury evidence and current settlement order.
-- [ ] Create permanent Command-Point evidence document.
-- [ ] Verify original per-hull/per-ship Command-Point consumption.
-- [ ] Verify Empire base Command-Point capacity.
-- [ ] Verify capacity producers/modifiers: Star Base/Battlestation/Star Fortress, technologies, race/government effects and any difficulty modifiers, adding only directly proven dependencies.
-- [ ] Verify whether special civilian ships consume Command Points.
-- [ ] Verify exact overage Maintenance formula, sign, rounding/truncation and caps.
-- [ ] Verify timing relative to Construction completion, ship loss/scrap and Treasury settlement.
-- [ ] Verify whether ships in transit/reserve/special locations count differently.
-- [ ] Resolve materialized Treasury snapshot fields/events needed for auditability.
-- [ ] Present findings and narrow implementation proposal; stop before implementation.
+- [x] Re-check Treasury evidence and current settlement order.
+- [x] Create permanent Command-Point evidence document.
+- [x] Verify original per-hull/per-ship Command-Point consumption.
+- [x] Verify Empire base Command-Point capacity.
+- [x] Verify capacity producers/modifiers: Star Base/Battlestation/Star Fortress, technologies, race/government effects and any difficulty modifiers, adding only directly proven dependencies.
+- [x] Verify whether special civilian ships consume Command Points.
+- [x] Verify exact overage Maintenance formula, sign, rounding/truncation and caps.
+- [x] Verify timing relative to Construction completion, ship loss/scrap and Treasury settlement.
+- [x] Verify whether ships in transit/reserve/special locations count differently.
+- [x] Resolve materialized Treasury snapshot fields/events needed for auditability.
+- [x] Present findings and narrow implementation proposal; stop before implementation.
 
 ## Gate 2 - Implementation decision
 
-- [ ] Decide where per-ship Command-Point cost lives (hull/design/ship instance).
-- [ ] Decide Empire capacity/usage derived vs persisted fields.
-- [ ] Decide which proven capacity producers are safe to model in this slice.
-- [ ] Decide Treasury snapshot extension and schema/ruleset version impact.
-- [ ] Decide exact resolution timing within the existing strategic turn.
-- [ ] Decide legal-action/Observer/replay exposure.
-- [ ] Preserve explicit deferral of full deficit liquidation.
+- [x] Decide where per-ship Command-Point cost lives (hull/design/ship instance).
+- [x] Decide Empire capacity/usage derived vs persisted fields.
+- [x] Decide which proven capacity producers are safe to model in this slice.
+- [x] Decide Treasury snapshot extension and schema/ruleset version impact.
+- [x] Decide exact resolution timing within the existing strategic turn.
+- [x] Decide legal-action/Observer/replay exposure.
+- [x] Preserve explicit deferral of full deficit liquidation.
 
 ## Gate 3 - Implementation
 
-- [ ] Add normalized Command-Point values/producers proven in Gate 1.
-- [ ] Derive authoritative Empire capacity and usage.
-- [ ] Compute overage Maintenance using exact original rounding/timing.
-- [ ] Integrate the bucket into Treasury settlement/materialized snapshot.
-- [ ] Add events/Observer projection as required.
-- [ ] Add tests below/at/above capacity and around whole-BC boundaries.
-- [ ] Add construction/combat-loss timing regressions if those transitions affect same-turn cost.
-- [ ] Verify existing Food/Freighter/Building Maintenance remains unchanged.
+- [x] Add normalized Command-Point values/producers proven in Gate 1.
+- [x] Derive authoritative Empire capacity and usage.
+- [x] Compute overage Maintenance using exact original rounding/timing.
+- [x] Integrate the bucket into Treasury settlement/materialized snapshot.
+- [x] Add events/Observer projection as required.
+- [x] Add tests below/at/above capacity and around whole-BC boundaries.
+- [x] Add construction/combat-loss timing regressions if those transitions affect same-turn cost.
+- [x] Verify existing Food/Freighter/Building Maintenance remains unchanged.
 
 ## Gate 4 - Follow-up QA + commit + close
 
-- [ ] `gofmt` changed Go files.
-- [ ] `go test ./... -count=1`.
-- [ ] `go vet ./...`.
-- [ ] `git diff --check`.
-- [ ] Run focused Treasury/Command-Point/ship construction/Fleet regressions.
-- [ ] Compare fixed original-reference accounting fixtures at rounding boundaries.
-- [ ] Update evidence/status/HISTORY and close marker.
+- [x] `gofmt` changed Go files.
+- [x] `go test ./... -count=1`.
+- [x] `go vet ./...`.
+- [x] `git diff --check`.
+- [x] Run focused Treasury/Command-Point/ship construction/Fleet regressions.
+- [x] Compare fixed original-reference accounting fixtures at rounding boundaries.
+- [x] Update evidence/status/HISTORY and close marker.
 
 ## Exit criterion
 
