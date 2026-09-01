@@ -12,7 +12,19 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Economy ruleset schema: **8**.
 - Active permanent evidence: **none**.
 - Latest closed evidence: `docs/research/TACTICAL_SHIP_COMBAT_BASELINE_2026-09-01.md`.
-- Before starting new work, check `docs/slices/_OPEN_*.md`; there is currently no open slice. Select and prepare the next objective before creating a new marker.
+- Before starting new work, check `docs/slices/_OPEN_*.md`; there is currently no open slice. The next prepared objective is Slice 08 **Authoritative server, web HMI and transport baseline**.
+
+## Prepared next-slice queue - 2026-09-01
+
+Accepted application direction: `docs/architecture/ADR-0004-authoritative-server-web-client.md`. The primary product topology is an authoritative Go game server plus browser-first web HMI over HTTP/WebSocket; Wails v3 is optional one-click native packaging only and must not bypass the server gameplay contract.
+
+1. Slice 08 - **Authoritative server, web HMI and transport baseline** (`PLANNED_08_SERVER_WEB_HMI_TRANSPORT_BASELINE.md`).
+2. Slice 09 - **New Game and galaxy generation baseline** (`PLANNED_09_NEW_GAME_GALAXY_GENERATION_BASELINE.md`).
+3. Slice 10 - **Diplomacy, war and peace baseline** (`PLANNED_10_DIPLOMACY_WAR_PEACE_BASELINE.md`).
+4. Slice 11 - **Troop Transport, invasion and conquest baseline** (`PLANNED_11_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE.md`).
+5. Slice 12 - **Empire elimination and first headless victory loop** (`PLANNED_12_EMPIRE_ELIMINATION_FIRST_HEADLESS_VICTORY_LOOP.md`).
+
+Roadmap milestone: Slice 12 should prove the first complete deterministic match lifecycle from a real New Game through war/conquest to an authoritative winner. Re-audit and number the next fidelity/depth tranche only after that milestone.
 
 ## Closed Slice 07 - Tactical ship combat baseline
 
@@ -229,9 +241,9 @@ Runtime boundaries now include:
 
 Gate 4 passed `gofmt`, `go test ./... -count=1`, `go vet ./...`, focused Colony Ship/transit/blockade/Population-transfer regressions and `git diff --check`.
 
-## Prepared next-slice queue
+## Historical prepared-queue checkpoint (before Slice 04)
 
-Slice 03 **Military Ship core / design baseline** is closed. Slices 04-07 remain prepared planning specifications, with Slice 04 next.
+The following block is retained as historical context from the pre-Slice04 handoff; all listed slices 04-07 are now closed.
 
 Recommended later order:
 

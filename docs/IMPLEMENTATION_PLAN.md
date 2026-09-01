@@ -1,12 +1,12 @@
 # MOOX Implementation Plan
 
-## Current position - 2026-08-30
+## Current position - 2026-09-01
 
 MOOX is actively inside the deterministic headless runtime. The authoritative `GameSession` boundary now executes a substantial first strategic Economy/Research/Construction path rather than only infrastructure.
 
 Implemented/established runtime baseline includes:
 
-- deterministic pure-Go Core state, seeded serializable RNG, stable IDs and exact schema-16 JSON round trips;
+- deterministic pure-Go Core state, seeded serializable RNG, stable IDs and strict schema-21 JSON round trips;
 - authoritative Session/Command/Event/Observer architecture with Human/AI-shared legal-action projections;
 - domain-native `float64` cohort Population quantities, Food, PP, RP, BC and Construction progress (`ADR-0003`);
 - base/contextual Colony Economy with Gravity, starting-government and local Morale layers;
@@ -20,9 +20,9 @@ Implemented/established runtime baseline includes:
 - normalized Technology Fields/RP costs, Pre-Warp/Average/Advanced starts, breakthrough resolution, race-aware multi-application research, project switching and Hyper-Advanced repeat fields;
 - authoritative external Technology grants with verified Uncreative fixed-choice repair.
 
-Major engine systems still missing include active conquest/assimilation and Android/Native/custom-race Population extensions, complete Economy categories/pollution, generic combat-Fleet movement/engagement, Outposts, ship design/combat rules, diplomacy, AI behavior and playable UI.
+The principal blockers to a first complete match lifecycle are now narrower: authoritative server/web HMI transport, real deterministic New Game/galaxy generation, intentional war/peace diplomacy, Troop Transport/invasion/Colony conquest and an authoritative elimination/victory loop. Broader tactical depth, complete Economy/pollution, race/customization extensions, leaders/espionage, AI and endgame fidelity remain important post-milestone work.
 
-No implementation slice is currently open. The latest closed slice completes the first headless Colony Ship build/move/colonize loop and creates a second Colony through authoritative Core/Game/Session transitions. `docs/research/ACTIVE_RESEARCH.md` is the authoritative next-slice handoff; any next objective must begin with a fresh Gate 1 rather than broadening the closed slice.
+No implementation slice is currently open. Slices 01-07 are closed. The prepared queue is Slice 08 server/web transport, Slice 09 New Game/galaxy, Slice 10 war/peace diplomacy, Slice 11 invasion/conquest and Slice 12 first elimination/victory loop. `docs/research/ACTIVE_RESEARCH.md` remains the authoritative next-slice handoff and Slice 08 must begin with a fresh Gate 1.
 ## Guiding architecture
 
 Build the game rules as a deterministic, headless simulation core first. UI, rendering, audio and platform integration should depend on that core rather than contain game rules themselves.
@@ -41,7 +41,7 @@ moox/
   data/          MOOX-owned normalized rules/content
 ```
 
-Architecture decision ADR-0001 selects a Go-first core with Wails v3 as the planned application shell. Core simulation, persistence, analyzers and developer tools remain Wails-independent and target pure-Go builds with `CGO_ENABLED=0`.
+ADR-0004 selects an authoritative Go game server plus browser-first HTTP/WebSocket HMI as the primary application topology. Wails v3 is optional native packaging only and must consume the same server contract rather than expose gameplay bypasses. ADR-0001's pure-Go/Wails-independent core boundary remains valid; Core simulation, persistence, analyzers and developer tools continue to target pure-Go builds with `CGO_ENABLED=0`.
 
 ## Phase 0 - Research baseline
 
@@ -251,4 +251,4 @@ A private developer-only original-asset viewer may exist for comparison, but ori
 4. Keep active conquest/assimilation plus Android/Native/custom-race Population extensions as later evidence-driven Population slices rather than reopening the completed organic-cohort core.
 5. Keep the original Hyper selection-screen +1 preview / 20-level list boundary as optional UI-fidelity work, not a strategic-core rule.
 
-Do not reopen closed Research/Economy slices listed in `docs/slices/HISTORY.md` unless contradictory original evidence or a concrete runtime regression requires it. Wails v3 remains the planned application shell; transports/UI must continue to consume the same canonical Session/legal-action surfaces rather than owning gameplay rules.
+Do not reopen closed Research/Economy slices listed in `docs/slices/HISTORY.md` unless contradictory original evidence or a concrete runtime regression requires it. ADR-0004 makes the server/web contract primary; browser, optional Wails wrapper, AI and other transports must continue to consume the same canonical Session/legal-action surfaces rather than owning gameplay rules.

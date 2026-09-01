@@ -1,7 +1,7 @@
 # ADR-0001: Go core with Wails v3 application shell
 
 Date: 2026-08-26
-Status: Accepted as project direction; exact Wails mobile/build details remain implementation-level decisions.
+Status: Partially superseded by `ADR-0004-authoritative-server-web-client.md`: the pure-Go/Wails-independent core boundary remains accepted, while Wails is no longer the primary application/UI architecture.
 
 ## Decision
 

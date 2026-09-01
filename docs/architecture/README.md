@@ -1,68 +1,74 @@
 # MOOX Architecture
 
-Status: architecture checkpoint agreed on 2026-08-27.
+Status: architecture checkpoint updated on 2026-09-01; ADR-0004 makes the authoritative Go server + web client the primary application topology.
 
 This document is the central runtime-architecture overview for MOOX. More focused decisions and contracts remain in the other files in this directory.
 
 ## Goals
 
-MOOX is designed as a portable, deterministic game engine with multiple interchangeable front ends and controllers.
+MOOX is designed as a portable, deterministic, server-authoritative game engine with multiple interchangeable clients and controllers.
 
 The main goals are:
 
-- keep all game rules and simulation logic in Go and independent from the UI;
-- use Wails v3 as the desktop application shell, not as the game-engine boundary;
-- support local single-player and multiplayer from the same simulation model;
-- allow multiple players to plan their strategic turns in parallel;
-- make the server authoritative for all state changes;
-- support human players, built-in AI, remote AI and future MCP-controlled AI through the same command model;
+- keep all game rules and simulation logic in Go and independent from UI/transport code;
+- make one authoritative Go game server the only gameplay mutation boundary;
+- make a normal browser/web client the primary HMI for local and remote use;
+- use HTTP for authoritative requests/commands/projections and WebSocket for revision/lifecycle notifications;
+- keep HTTP projection/revision state as the resynchronization source of truth after reconnect or missed WebSocket delivery;
+- retain Wails v3 only as an optional native one-click wrapper around the same local server/web client contract;
+- support local single-player and multiplayer from the same simulation/session model;
+- allow multiple players to plan strategic turns in parallel;
+- support human players, built-in AI, remote AI and future MCP-controlled AI through the same command/session authority model;
 - make tactical battles isolated child sessions of the strategic game;
-- provide an observer/debug view that can inspect the complete game and command/event history;
-- preserve deterministic replay, save/load and testability.
+- allow 2D or future 3D rendering without moving tactical authority into the frontend;
+- preserve deterministic replay, save/load, observer/debug visibility and headless testability.
 
 ## Layered architecture
 
 ```text
-                         +----------------------+
-                         |      Wails v3 UI     |
-                         |   desktop frontend   |
-                         +----------+-----------+
-                                    |
-                            Application API
-                                    |
-             +----------------------+----------------------+
-             |                                             |
-      Player / Game API                              Observer API
-             |                                             |
-             +----------------------+----------------------+
-                                    |
-                         +----------v-----------+
-                         |      GameSession      |
-                         | authoritative host    |
-                         +----------+-----------+
-                                    |
-                     Commands       |       Events
-                                    v
-                         +----------------------+
-                         | Deterministic Core   |
-                         | rules + GameState    |
-                         +----------+-----------+
-                                    |
-                         +----------v-----------+
-                         | Normalized rulesets  |
-                         +----------------------+
+ Browser / PWA             Optional Wails native shell
+       |                           |
+       +-----------+---------------+
+                   |
+             HTTP + WebSocket
+                   |
+        +----------v-----------+
+        |  MOOX Game Server    |
+        | authoritative host   |
+        +----------+-----------+
+                   |
+        Application / adapters
+                   |
+        +----------v-----------+
+        |     GameSession      |
+        |   BattleSession      |
+        +----------+-----------+
+                   |
+            Commands / Events
+                   |
+        +----------v-----------+
+        | Deterministic Core   |
+        | rules + GameState    |
+        +----------+-----------+
+                   |
+        +----------v-----------+
+        | Normalized rulesets  |
+        +----------------------+
+```
 
-Other adapters use the same application/game boundary:
+The browser frontend never owns authoritative game rules. HTTP/WebSocket handlers adapt existing Session/Protocol use cases; they do not reimplement validation. A missed WebSocket notification must be recoverable by fetching a fresh authoritative projection/revision over HTTP.
 
-- remote HTTP/WebSocket transport;
-- headless/dedicated server;
+Wails is not a separate gameplay frontend contract. If shipped, it starts/hosts the same local server and opens the same web HMI, while native-only helpers are limited to platform conveniences such as window/file/tray integration.
+
+Other controllers/adapters reuse the same authoritative application/session boundary:
+
+- headless/dedicated server deployments;
 - built-in AI;
 - external AI agent API;
 - MCP adapter for LLM-based players;
 - observer/debug tooling.
-```
 
-The frontend never owns authoritative game rules. Wails is an adapter around the Go application layer. A headless server, remote client or AI must be able to drive the same game without importing frontend code.
+Accepted decision: `ADR-0004-authoritative-server-web-client.md`.
 
 ## Runtime package direction
 

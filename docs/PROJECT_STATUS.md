@@ -10,7 +10,7 @@ Master of Orion X is now in **Phase 1 deterministic runtime development**, build
 
 The project is no longer an empty bootstrap repository: it has a pure-Go Master of Orion II 1.31 analyzer, verified original-file parsers, normalized runtime datasets, localization keys, a private reference-extraction pipeline and substantial semantic graphics mapping derived from original 1.31 data/executable behavior.
 
-The game is **not playable yet**, but the deterministic core and multiplayer/session boundary now exist. The repository has deterministic state/RNG/save-load plus versioned command batches, an atomic transport-independent strategic resolver contract, authoritative session phases, parallel seat submissions, player/observer projections, observer-only draft telemetry and minimal parallel tactical battle sessions. Large areas remain incomplete, especially generic combat-Fleet movement/engagement, Outposts, combat rules, diplomacy, AI behavior, application UI and broader Economy/Technology effects; the implemented strategic Economy/Research/Construction command path is summarized below.
+The game is **not yet a complete match lifecycle**, but the deterministic core is now substantially beyond the original skeleton: Economy/Research/Construction, Colonies/Outposts, concrete military Ships/Fleets, strategic movement, Command Points, hostile encounter/BattleSession handoff and one exact tactical ship-combat vertical slice are implemented. The largest blockers to a first complete game are now the application transport/HMI, real New Game/galaxy generation, intentional war/peace diplomacy, invasion/Colony conquest and a first authoritative victory/elimination loop; AI and broad MOO2 fidelity remain later depth work.
 
 ## Current repository / tool baseline
 
@@ -19,10 +19,22 @@ The game is **not playable yet**, but the deterministic core and multiplayer/ses
 | Branch | `main` |
 | Go module | `moox`, Go `1.26` |
 | Analyzer | `moox-analyze 0.22.0` |
-| Core architecture | Go-first, deterministic/headless core; Wails v3 planned only as application shell |
+| Core architecture | authoritative Go game server + browser-first HTTP/WebSocket HMI; Wails v3 optional one-click native wrapper only (`ADR-0004`) |
 | CGO policy | core/analyzer/tooling kept pure Go / `CGO_ENABLED=0` where possible |
 | Original gameplay baseline | Master of Orion II 1.31 |
 | Research workflow | `docs/WORKING_RULES.md` + `docs/research/ACTIVE_RESEARCH.md` + `tools/research-preflight.ps1` |
+
+## Prepared roadmap to first complete match lifecycle
+
+Slices 01-07 are closed. No slice is currently open. The accepted next queue is:
+
+1. Slice 08 - authoritative server, web HMI and HTTP/WebSocket transport baseline.
+2. Slice 09 - deterministic New Game and galaxy generation baseline.
+3. Slice 10 - diplomacy / war / peace baseline.
+4. Slice 11 - Troop Transport, invasion and Colony conquest baseline.
+5. Slice 12 - Empire elimination and first deterministic headless victory loop.
+
+Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 12 is the next major milestone: a real generated game can progress through war/conquest to an authoritative winner. The next fidelity/depth tranche will be re-audited and numbered after that milestone.
 
 Important recent checkpoints:
 
@@ -192,7 +204,7 @@ The first meaningful game loop remains:
 8. colonize,
 9. save and reload exactly the same state.
 
-UI work comes after this loop is stable; Wails v3 is already the planned application shell, so UI-framework selection is no longer an open architectural decision.
+The next prepared work intentionally establishes the application boundary before further gameplay expansion: Slice 08 implements the authoritative Go server + browser-first HTTP/WebSocket HMI contract from ADR-0004. Wails remains optional packaging only; presentation framework choices must not create a second gameplay authority path.
 
 ## Where to look
 
