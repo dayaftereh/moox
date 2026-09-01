@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"moox/internal/battle"
 	"moox/internal/core"
 	"moox/internal/protocol"
 )
@@ -51,11 +52,13 @@ type EncounterSide struct {
 }
 
 type Encounter struct {
-	SystemID          core.ID           `json:"system_id"`
-	Attacker          EncounterSide     `json:"attacker"`
-	Defender          EncounterSide     `json:"defender"`
-	DefenderColonyIDs []core.ID         `json:"defender_colony_ids,omitempty"`
-	Participants      []protocol.SeatID `json:"participants"`
+	SystemID                  core.ID              `json:"system_id"`
+	Attacker                  EncounterSide        `json:"attacker"`
+	Defender                  EncounterSide        `json:"defender"`
+	DefenderColonyIDs         []core.ID            `json:"defender_colony_ids,omitempty"`
+	Participants              []protocol.SeatID    `json:"participants"`
+	Tactical                  *battle.TacticalSpec `json:"tactical,omitempty"`
+	TacticalUnsupportedReason string               `json:"tactical_unsupported_reason,omitempty"`
 }
 
 type EncounterOutcome struct {
@@ -78,7 +81,7 @@ type Resolver interface {
 
 // EncounterResolver extends a normal strategic Resolver with the in-memory
 // continuation needed when the strategic turn pauses at the encounter boundary.
-// Core State remains schema-stable; active encounter lifecycle is session state.
+// Active encounter lifecycle remains session state.
 type EncounterResolver interface {
 	Resolver
 	ResumeAfterEncounters(ctx ResolveContext, state *core.GameState, outcomes []EncounterOutcome) (Resolution, error)

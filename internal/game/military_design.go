@@ -17,10 +17,11 @@ const (
 )
 
 type SaveMilitaryDesignPayload struct {
-	DesignID           core.ID `json:"design_id,omitempty"`
-	Name               string  `json:"name"`
-	HullID             string  `json:"hull_id"`
-	StrategicPictureID int     `json:"strategic_picture_id"`
+	DesignID           core.ID                `json:"design_id,omitempty"`
+	Name               string                 `json:"name"`
+	HullID             string                 `json:"hull_id"`
+	StrategicPictureID int                    `json:"strategic_picture_id"`
+	Weapons            []core.ShipWeaponMount `json:"weapons,omitempty"`
 }
 
 type MilitaryDesignSavedEvent struct {
@@ -56,6 +57,23 @@ func validateSaveMilitaryDesignPayload(payload SaveMilitaryDesignPayload) error 
 	if payload.StrategicPictureID < 0 {
 		return fmt.Errorf("strategic_picture_id must be non-negative")
 	}
+	if err := validateBaselineMilitaryWeapons(payload.Weapons); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateBaselineMilitaryWeapons(weapons []core.ShipWeaponMount) error {
+	if len(weapons) == 0 {
+		return nil
+	}
+	if len(weapons) != 1 {
+		return fmt.Errorf("Slice 07 military design supports zero or one weapon mount")
+	}
+	mount := weapons[0]
+	if mount.Slot != 0 || mount.WeaponID != "laser_cannon" || mount.Count != 1 {
+		return fmt.Errorf("Slice 07 military design supports only slot 0 laser_cannon count 1")
+	}
 	return nil
 }
 
@@ -81,7 +99,7 @@ func (r *EconomyResolver) saveMilitaryDesign(state *core.GameState, empireID cor
 		return DomainEvent{}, fmt.Errorf("seat %d references unknown empire %d", seatID, empireID)
 	}
 	name := strings.TrimSpace(payload.Name)
-	spec, err := r.Rules.clearedMilitaryDesignSpec(empire, payload.HullID, payload.StrategicPictureID)
+	spec, err := r.Rules.clearedMilitaryDesignSpec(empire, payload.HullID, payload.StrategicPictureID, payload.Weapons)
 	if err != nil {
 		return DomainEvent{}, err
 	}
@@ -119,9 +137,12 @@ func (r *EconomyResolver) saveMilitaryDesign(state *core.GameState, empireID cor
 	return NewDomainEvent(kind, seatID, command.Sequence, MilitaryDesignSavedEvent{Design: design, Created: created})
 }
 
-func (r *EconomyRules) clearedMilitaryDesignSpec(empire *core.Empire, hullID string, strategicPictureID int) (core.ShipDesignSpec, error) {
+func (r *EconomyRules) clearedMilitaryDesignSpec(empire *core.Empire, hullID string, strategicPictureID int, weapons []core.ShipWeaponMount) (core.ShipDesignSpec, error) {
 	if empire == nil {
 		return core.ShipDesignSpec{}, fmt.Errorf("empire must not be nil")
+	}
+	if err := validateBaselineMilitaryWeapons(weapons); err != nil {
+		return core.ShipDesignSpec{}, err
 	}
 	if hullID != SupportedMilitaryHullID {
 		return core.ShipDesignSpec{}, fmt.Errorf("military design hull %q is not supported in the current slice; only %q is available", hullID, SupportedMilitaryHullID)
@@ -173,8 +194,23 @@ func (r *EconomyRules) clearedMilitaryDesignSpec(empire *core.Empire, hullID str
 		spaceUsed += shield.SpaceByHull[index]
 		shieldID = shield.ID
 	}
+	weaponSnapshot := append([]core.ShipWeaponMount(nil), weapons...)
+	if len(weaponSnapshot) == 1 {
+		if r.TacticalCombat == nil {
+			return core.ShipDesignSpec{}, fmt.Errorf("tactical combat rules are unavailable")
+		}
+		weapon := r.TacticalCombat.Weapon
+		if weapon.ID != weaponSnapshot[0].WeaponID || weapon.TechnologyID != 100 {
+			return core.ShipDesignSpec{}, fmt.Errorf("tactical rules do not define the supported Laser Cannon")
+		}
+		if !empireKnowsTechnology(empire, weapon.TechnologyID) {
+			return core.ShipDesignSpec{}, fmt.Errorf("empire %d has no Laser Cannon technology %d", empire.ID, weapon.TechnologyID)
+		}
+		spaceUsed += weapon.BaseSpace
+		baseCost += weapon.BaseCostPP
+	}
 	if spaceUsed > hull.BaseSpace {
-		return core.ShipDesignSpec{}, fmt.Errorf("cleared military design uses %d space but hull %q has only %d", spaceUsed, hull.ID, hull.BaseSpace)
+		return core.ShipDesignSpec{}, fmt.Errorf("military design uses %d space but hull %q has only %d", spaceUsed, hull.ID, hull.BaseSpace)
 	}
 	productionCost := militaryShipProductionCostPP(empire, baseCost, r.RaceModifiers)
 	return core.ShipDesignSpec{
@@ -192,6 +228,7 @@ func (r *EconomyRules) clearedMilitaryDesignSpec(empire *core.Empire, hullID str
 		SpaceUsed:          spaceUsed,
 		BaseDesignCostPP:   baseCost,
 		ProductionCostPP:   productionCost,
+		Weapons:            weaponSnapshot,
 	}, nil
 }
 
@@ -327,13 +364,15 @@ func completeMilitaryShip(state *core.GameState, colony *core.Colony, design *co
 	if system == nil {
 		return DomainEvent{}, fmt.Errorf("colony %d planet %d is not assigned to a star system", colony.ID, colony.PlanetID)
 	}
+	shipSpec := design.Spec
+	shipSpec.Weapons = append([]core.ShipWeaponMount(nil), design.Spec.Weapons...)
 	ship := core.Ship{
 		ID:                   state.NewID(),
 		EmpireID:             colony.EmpireID,
 		SourceDesignID:       design.ID,
 		SourceDesignRevision: design.Revision,
 		Name:                 design.Name,
-		Spec:                 design.Spec,
+		Spec:                 shipSpec,
 	}
 	fleet := core.StrategicFleet{
 		ID:         state.NewID(),

@@ -208,12 +208,12 @@ func TestTrashColonyBaseRefundsOneHundredBCEvenWithoutTarget(t *testing.T) {
 	}
 }
 
-func TestPendingColonyBaseResolutionSurvivesSchema20RoundTrip(t *testing.T) {
+func TestPendingColonyBaseResolutionSurvivesSchema21RoundTrip(t *testing.T) {
 	state := core.NewSmallFixture(7004)
 	targetID := addSameSystemColonyBaseTarget(state)
 	state.Colonies[0].Buildings = append(state.Colonies[0].Buildings, ColonyBaseBuildingID)
-	if state.SchemaVersion != core.StateSchemaVersion || core.StateSchemaVersion != 20 {
-		t.Fatalf("schema=%d constant=%d want=20", state.SchemaVersion, core.StateSchemaVersion)
+	if state.SchemaVersion != core.StateSchemaVersion || core.StateSchemaVersion != 21 {
+		t.Fatalf("schema=%d constant=%d want=21", state.SchemaVersion, core.StateSchemaVersion)
 	}
 	before, err := PendingColonyBaseResolutions(state, state.Empires[0].ID)
 	if err != nil {

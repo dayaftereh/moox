@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 20
+const StateSchemaVersion = 21
 
 type ID uint64
 

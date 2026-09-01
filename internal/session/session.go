@@ -81,11 +81,13 @@ type ObserverView struct {
 }
 
 type EncounterSpec struct {
-	SystemID          core.ID            `json:"system_id,omitempty"`
-	Attacker          game.EncounterSide `json:"attacker,omitempty"`
-	Defender          game.EncounterSide `json:"defender,omitempty"`
-	DefenderColonyIDs []core.ID          `json:"defender_colony_ids,omitempty"`
-	Participants      []protocol.SeatID  `json:"participants"`
+	SystemID                  core.ID              `json:"system_id,omitempty"`
+	Attacker                  game.EncounterSide   `json:"attacker,omitempty"`
+	Defender                  game.EncounterSide   `json:"defender,omitempty"`
+	DefenderColonyIDs         []core.ID            `json:"defender_colony_ids,omitempty"`
+	Participants              []protocol.SeatID    `json:"participants"`
+	Tactical                  *battle.TacticalSpec `json:"tactical,omitempty"`
+	TacticalUnsupportedReason string               `json:"tactical_unsupported_reason,omitempty"`
 }
 
 type GameSession struct {
@@ -268,7 +270,7 @@ func (s *GameSession) ResolveStrategic(resolver game.Resolver) error {
 	for i := range resolution.Encounters {
 		encounters[i] = encounterSpecFromGame(resolution.Encounters[i])
 	}
-	preparedBattles, err := s.prepareEncountersLocked(encounters)
+	preparedBattles, err := s.prepareEncountersLocked(committed, encounters)
 	if err != nil {
 		return err
 	}
@@ -304,11 +306,13 @@ func cloneResolveContext(ctx game.ResolveContext) game.ResolveContext {
 func encounterSpecFromGame(encounter game.Encounter) EncounterSpec {
 	cloned := game.CloneEncounter(encounter)
 	return EncounterSpec{
-		SystemID:          cloned.SystemID,
-		Attacker:          cloned.Attacker,
-		Defender:          cloned.Defender,
-		DefenderColonyIDs: cloned.DefenderColonyIDs,
-		Participants:      cloned.Participants,
+		SystemID:                  cloned.SystemID,
+		Attacker:                  cloned.Attacker,
+		Defender:                  cloned.Defender,
+		DefenderColonyIDs:         cloned.DefenderColonyIDs,
+		Participants:              cloned.Participants,
+		Tactical:                  cloned.Tactical,
+		TacticalUnsupportedReason: cloned.TacticalUnsupportedReason,
 	}
 }
 
@@ -399,7 +403,7 @@ func (s *GameSession) beginEncountersLocked(specs []EncounterSpec) ([]battle.Vie
 	}
 	s.encounterResolver = nil
 	s.encounterContext = game.ResolveContext{}
-	prepared, err := s.prepareEncountersLocked(specs)
+	prepared, err := s.prepareEncountersLocked(s.state, specs)
 	if err != nil {
 		return nil, err
 	}
@@ -407,9 +411,12 @@ func (s *GameSession) beginEncountersLocked(specs []EncounterSpec) ([]battle.Vie
 	return s.battleViewsLocked(), nil
 }
 
-func (s *GameSession) prepareEncountersLocked(specs []EncounterSpec) ([]*battle.Session, error) {
+func (s *GameSession) prepareEncountersLocked(state *core.GameState, specs []EncounterSpec) ([]*battle.Session, error) {
 	if len(specs) == 0 {
 		return nil, nil
+	}
+	if state == nil {
+		return nil, fmt.Errorf("encounter preparation state is nil")
 	}
 	created := make([]*battle.Session, 0, len(specs))
 	seenSystems := make(map[core.ID]struct{}, len(specs))
@@ -428,17 +435,25 @@ func (s *GameSession) prepareEncountersLocked(specs []EncounterSpec) ([]*battle.
 			}
 			seenSystems[encounter.SystemID] = struct{}{}
 		}
+		if err := validateEncounterTacticalSnapshot(state, encounter); err != nil {
+			return nil, fmt.Errorf("encounter[%d]: %w", i, err)
+		}
 		id := s.nextBattleID + uint64(i)
 		spec := battle.Spec{
-			ID:                id,
-			GameID:            s.gameID,
-			StrategicTurn:     s.state.Turn,
-			SystemID:          encounter.SystemID,
-			Attacker:          battleSideFromGame(encounter.Attacker),
-			Defender:          battleSideFromGame(encounter.Defender),
-			DefenderColonyIDs: append([]core.ID(nil), encounter.DefenderColonyIDs...),
-			Participants:      append([]protocol.SeatID(nil), encounter.Participants...),
-			Seed:              battle.DeriveSeed(s.state.Seed, s.state.Turn, id),
+			ID:                        id,
+			GameID:                    s.gameID,
+			StrategicTurn:             state.Turn,
+			SystemID:                  encounter.SystemID,
+			Attacker:                  battleSideFromGame(encounter.Attacker),
+			Defender:                  battleSideFromGame(encounter.Defender),
+			DefenderColonyIDs:         append([]core.ID(nil), encounter.DefenderColonyIDs...),
+			Participants:              append([]protocol.SeatID(nil), encounter.Participants...),
+			Seed:                      battle.DeriveSeed(state.Seed, state.Turn, id),
+			TacticalUnsupportedReason: encounter.TacticalUnsupportedReason,
+		}
+		if encounter.Tactical != nil {
+			tactical := battle.CloneTacticalSpec(*encounter.Tactical)
+			spec.Tactical = &tactical
 		}
 		child, err := battle.NewSession(spec)
 		if err != nil {
@@ -450,6 +465,38 @@ func (s *GameSession) prepareEncountersLocked(specs []EncounterSpec) ([]*battle.
 		created = append(created, child)
 	}
 	return created, nil
+}
+
+func validateEncounterTacticalSnapshot(state *core.GameState, encounter EncounterSpec) error {
+	if encounter.Tactical == nil {
+		return nil
+	}
+	for _, tacticalShip := range encounter.Tactical.Ships {
+		var strategic *core.Ship
+		for i := range state.Ships {
+			if state.Ships[i].ID == tacticalShip.ShipID {
+				strategic = &state.Ships[i]
+				break
+			}
+		}
+		if strategic == nil {
+			return fmt.Errorf("tactical Ship %d is absent from the prepared strategic state", tacticalShip.ShipID)
+		}
+		if strategic.EmpireID != tacticalShip.EmpireID || strategic.Spec.HullID != tacticalShip.HullID || strategic.Spec.WarpDriveID != tacticalShip.WarpDriveID || strategic.Spec.ComputerID != tacticalShip.ComputerID || strategic.Spec.ArmorID != tacticalShip.ArmorID || strategic.Spec.ShieldID != "" || strategic.Spec.FuelCellID != "standard_fuel_cells" {
+			return fmt.Errorf("tactical Ship %d snapshot differs from prepared strategic Ship equipment", tacticalShip.ShipID)
+		}
+		if len(strategic.Spec.Weapons) != len(tacticalShip.Weapons) {
+			return fmt.Errorf("tactical Ship %d weapon snapshot differs from prepared strategic Ship", tacticalShip.ShipID)
+		}
+		for j := range strategic.Spec.Weapons {
+			mount := strategic.Spec.Weapons[j]
+			weapon := tacticalShip.Weapons[j]
+			if mount.Slot != weapon.Slot || mount.WeaponID != weapon.WeaponID || mount.Count != weapon.Count {
+				return fmt.Errorf("tactical Ship %d weapon slot %d differs from prepared strategic Ship", tacticalShip.ShipID, weapon.Slot)
+			}
+		}
+	}
+	return nil
 }
 
 func battleSideFromGame(side game.EncounterSide) battle.Side {
@@ -473,13 +520,19 @@ func gameSideFromBattle(side battle.Side) game.EncounterSide {
 }
 
 func gameEncounterFromBattleSpec(spec battle.Spec) game.Encounter {
-	return game.Encounter{
-		SystemID:          spec.SystemID,
-		Attacker:          gameSideFromBattle(spec.Attacker),
-		Defender:          gameSideFromBattle(spec.Defender),
-		DefenderColonyIDs: append([]core.ID(nil), spec.DefenderColonyIDs...),
-		Participants:      append([]protocol.SeatID(nil), spec.Participants...),
+	out := game.Encounter{
+		SystemID:                  spec.SystemID,
+		Attacker:                  gameSideFromBattle(spec.Attacker),
+		Defender:                  gameSideFromBattle(spec.Defender),
+		DefenderColonyIDs:         append([]core.ID(nil), spec.DefenderColonyIDs...),
+		Participants:              append([]protocol.SeatID(nil), spec.Participants...),
+		TacticalUnsupportedReason: spec.TacticalUnsupportedReason,
 	}
+	if spec.Tactical != nil {
+		tactical := battle.CloneTacticalSpec(*spec.Tactical)
+		out.Tactical = &tactical
+	}
+	return out
 }
 
 func (s *GameSession) commitPreparedEncountersLocked(created []*battle.Session) {
@@ -497,6 +550,43 @@ func (s *GameSession) commitPreparedEncountersLocked(created []*battle.Session) 
 		s.appendEventLocked(protocol.EventScopeBattle, "battle_created", 0, child.View().Spec)
 	}
 	s.appendEventLocked(protocol.EventScopeSession, "phase_changed", 0, map[string]any{"phase": s.phase})
+}
+
+func (s *GameSession) SubmitBattleCommand(battleID uint64, seatID protocol.SeatID, command protocol.Command) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.phase != PhaseEncounters {
+		return fmt.Errorf("cannot submit tactical command in phase %q", s.phase)
+	}
+	child := s.battleByIDLocked(battleID)
+	if child == nil {
+		return fmt.Errorf("unknown battle %d", battleID)
+	}
+	prepared, err := child.PrepareCommand(seatID, command)
+	if err != nil {
+		return err
+	}
+	candidate := prepared.Result()
+	if candidate == nil {
+		return child.CommitPreparedCommand(prepared)
+	}
+	if s.encounterResolver == nil {
+		if err := child.CommitPreparedCommand(prepared); err != nil {
+			return err
+		}
+		if !s.allBattlesCompletedLocked() {
+			return nil
+		}
+		for _, completed := range s.battles {
+			s.appendEventLocked(protocol.EventScopeBattle, "battle_completed", 0, completed.View())
+		}
+		s.phase = PhasePostResolution
+		s.appendEventLocked(protocol.EventScopeSession, "phase_changed", 0, map[string]any{"phase": s.phase})
+		return nil
+	}
+	return s.commitStagedBattleCandidateLocked(child, battleID, *candidate, func() error {
+		return child.CommitPreparedCommand(prepared)
+	})
 }
 
 func (s *GameSession) CompleteBattle(battleID uint64, result battle.Result) error {
@@ -535,6 +625,15 @@ func (s *GameSession) completeStagedBattleLocked(child *battle.Session, battleID
 	if err != nil {
 		return err
 	}
+	return s.commitStagedBattleCandidateLocked(child, battleID, normalized, func() error {
+		return child.Complete(normalized)
+	})
+}
+
+func (s *GameSession) commitStagedBattleCandidateLocked(child *battle.Session, battleID uint64, normalized battle.Result, commitChild func() error) error {
+	if commitChild == nil {
+		return fmt.Errorf("battle candidate commit callback is nil")
+	}
 	active := 0
 	for _, current := range s.battles {
 		if current.View().Phase == battle.PhaseActive {
@@ -542,7 +641,7 @@ func (s *GameSession) completeStagedBattleLocked(child *battle.Session, battleID
 		}
 	}
 	if active > 1 {
-		return child.Complete(normalized)
+		return commitChild()
 	}
 	if active != 1 {
 		return fmt.Errorf("encounter wave has no active final battle")
@@ -571,14 +670,14 @@ func (s *GameSession) completeStagedBattleLocked(child *battle.Session, battleID
 	for i := range resolution.Encounters {
 		nextSpecs[i] = encounterSpecFromGame(resolution.Encounters[i])
 	}
-	preparedNext, err := s.prepareEncountersLocked(nextSpecs)
+	preparedNext, err := s.prepareEncountersLocked(committed, nextSpecs)
 	if err != nil {
 		return err
 	}
 
 	// All strategic continuation and next-wave preparation succeeded on clones.
 	// Only now may the final child and authoritative strategic state mutate.
-	if err := child.Complete(normalized); err != nil {
+	if err := commitChild(); err != nil {
 		return err
 	}
 	s.state = committed

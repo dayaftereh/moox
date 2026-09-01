@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "ruleset": "moo2-1.31",
+  "initiative": {
+    "beam_offense_divisor": 10
+  },
+  "rng": {
+    "multiplier": 1103515245,
+    "increment": 12345
+  },
+  "beam": {
+    "base_hit_threshold": 40,
+    "max_hit_threshold": 95,
+    "effective_roll_cap": 100,
+    "to_hit_range_modifiers": [0, 0, -10, -20, -30, -40, -55, -70, -85],
+    "damage_range_modifiers": [0, 0, -10, -20, -30, -40, -50, -60, -65]
+  },
+  "weapon": {
+    "id": "laser_cannon",
+    "technology_id": 100,
+    "kind": "beam",
+    "base_space": 10,
+    "base_cost_pp": 5,
+    "min_damage": 1,
+    "max_damage": 4
+  },
+  "frigate": {
+    "hull_id": "frigate",
+    "armor_id": "titanium_armor",
+    "fuel_cell_id": "standard_fuel_cells",
+    "armor_hits": 4,
+    "structure": 4
+  },
+  "drives": [
+    {
+      "drive_id": "nuclear_drive",
+      "min_speed": 10,
+      "max_speed": 20
+    },
+    {
+      "drive_id": "fusion_drive",
+      "min_speed": 12,
+      "max_speed": 22
+    }
+  ],
+  "computer": {
+    "computer_id": "electronic_computer",
+    "beam_offense": 25
+  }
+}

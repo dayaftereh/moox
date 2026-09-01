@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 
+	"moox/internal/battle"
 	"moox/internal/core"
 	"moox/internal/protocol"
 )
@@ -55,13 +56,19 @@ func cloneEncounterSide(side EncounterSide) EncounterSide {
 }
 
 func CloneEncounter(encounter Encounter) Encounter {
-	return Encounter{
-		SystemID:          encounter.SystemID,
-		Attacker:          cloneEncounterSide(encounter.Attacker),
-		Defender:          cloneEncounterSide(encounter.Defender),
-		DefenderColonyIDs: append([]core.ID(nil), encounter.DefenderColonyIDs...),
-		Participants:      append([]protocol.SeatID(nil), encounter.Participants...),
+	out := Encounter{
+		SystemID:                  encounter.SystemID,
+		Attacker:                  cloneEncounterSide(encounter.Attacker),
+		Defender:                  cloneEncounterSide(encounter.Defender),
+		DefenderColonyIDs:         append([]core.ID(nil), encounter.DefenderColonyIDs...),
+		Participants:              append([]protocol.SeatID(nil), encounter.Participants...),
+		TacticalUnsupportedReason: encounter.TacticalUnsupportedReason,
 	}
+	if encounter.Tactical != nil {
+		tactical := battle.CloneTacticalSpec(*encounter.Tactical)
+		out.Tactical = &tactical
+	}
+	return out
 }
 
 func (r *EconomyResolver) prepareEncounterBoundary(ctx ResolveContext, state *core.GameState) ([]DomainEvent, []Encounter, error) {
@@ -163,6 +170,12 @@ func (r *EconomyResolver) prepareEncounterBoundary(ctx ResolveContext, state *co
 					DefenderColonyIDs: append([]core.ID(nil), defender.colonyIDs...),
 					Participants:      participants,
 				}
+				tactical, unsupportedReason, err := tacticalMetadataForEncounter(state, candidate, r.Rules.TacticalCombat)
+				if err != nil {
+					return nil, nil, err
+				}
+				candidate.Tactical = tactical
+				candidate.TacticalUnsupportedReason = unsupportedReason
 				chosen = &candidate
 				break
 			}

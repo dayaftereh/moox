@@ -26,15 +26,17 @@ type Side struct {
 }
 
 type Spec struct {
-	ID                uint64            `json:"id"`
-	GameID            string            `json:"game_id"`
-	StrategicTurn     uint64            `json:"strategic_turn"`
-	SystemID          core.ID           `json:"system_id,omitempty"`
-	Attacker          Side              `json:"attacker,omitempty"`
-	Defender          Side              `json:"defender,omitempty"`
-	DefenderColonyIDs []core.ID         `json:"defender_colony_ids,omitempty"`
-	Participants      []protocol.SeatID `json:"participants"`
-	Seed              uint64            `json:"seed"`
+	ID                        uint64            `json:"id"`
+	GameID                    string            `json:"game_id"`
+	StrategicTurn             uint64            `json:"strategic_turn"`
+	SystemID                  core.ID           `json:"system_id,omitempty"`
+	Attacker                  Side              `json:"attacker,omitempty"`
+	Defender                  Side              `json:"defender,omitempty"`
+	DefenderColonyIDs         []core.ID         `json:"defender_colony_ids,omitempty"`
+	Participants              []protocol.SeatID `json:"participants"`
+	Seed                      uint64            `json:"seed"`
+	Tactical                  *TacticalSpec     `json:"tactical,omitempty"`
+	TacticalUnsupportedReason string            `json:"tactical_unsupported_reason,omitempty"`
 }
 
 type Result struct {
@@ -45,16 +47,19 @@ type Result struct {
 }
 
 type View struct {
-	Spec   Spec    `json:"spec"`
-	Phase  Phase   `json:"phase"`
-	Result *Result `json:"result,omitempty"`
+	Spec     Spec          `json:"spec"`
+	Phase    Phase         `json:"phase"`
+	Result   *Result       `json:"result,omitempty"`
+	Tactical *TacticalView `json:"tactical,omitempty"`
 }
 
 type Session struct {
-	mu     sync.RWMutex
-	spec   Spec
-	phase  Phase
-	result *Result
+	mu               sync.RWMutex
+	spec             Spec
+	phase            Phase
+	result           *Result
+	tactical         *tacticalRuntime
+	tacticalRevision uint64
 }
 
 func NewSession(spec Spec) (*Session, error) {
@@ -92,6 +97,9 @@ func validateSpec(spec Spec) error {
 
 	strategic := spec.SystemID != 0 || spec.Attacker.EmpireID != 0 || spec.Defender.EmpireID != 0
 	if !strategic {
+		if spec.Tactical != nil || spec.TacticalUnsupportedReason != "" {
+			return fmt.Errorf("non-strategic battle cannot carry tactical encounter metadata")
+		}
 		return nil
 	}
 	if spec.SystemID == 0 {
@@ -117,6 +125,11 @@ func validateSpec(spec Spec) error {
 	}
 	if err := validateSortedUniqueIDs("defender colony ids", spec.DefenderColonyIDs, false); err != nil {
 		return err
+	}
+	if spec.Tactical != nil {
+		if err := validateTacticalSpec(spec); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -163,6 +176,13 @@ func (s *Session) Start() error {
 	if s.phase != PhasePending {
 		return fmt.Errorf("cannot start battle in phase %q", s.phase)
 	}
+	if s.spec.Tactical != nil {
+		runtime, err := newTacticalRuntime(*s.spec.Tactical)
+		if err != nil {
+			return err
+		}
+		s.tactical = &runtime
+	}
 	s.phase = PhaseActive
 	return nil
 }
@@ -176,6 +196,9 @@ func (s *Session) ValidateResult(result Result) (Result, error) {
 	if s.phase != PhaseActive {
 		return Result{}, fmt.Errorf("cannot complete battle in phase %q", s.phase)
 	}
+	if s.spec.Tactical != nil {
+		return Result{}, fmt.Errorf("tactical-enabled battle results must be produced by tactical commands")
+	}
 	return normalizeResult(s.spec, result)
 }
 
@@ -184,6 +207,9 @@ func (s *Session) Complete(result Result) error {
 	defer s.mu.Unlock()
 	if s.phase != PhaseActive {
 		return fmt.Errorf("cannot complete battle in phase %q", s.phase)
+	}
+	if s.spec.Tactical != nil {
+		return fmt.Errorf("tactical-enabled battle results must be produced by tactical commands")
 	}
 	normalized, err := normalizeResult(s.spec, result)
 	if err != nil {
@@ -260,6 +286,9 @@ func (s *Session) View() View {
 		result.DestroyedShipIDs = append([]core.ID(nil), s.result.DestroyedShipIDs...)
 		view.Result = &result
 	}
+	if s.tactical != nil {
+		view.Tactical = &TacticalView{State: cloneTacticalState(s.tactical.state), Events: cloneTacticalEvents(s.tactical.events)}
+	}
 	return view
 }
 
@@ -269,6 +298,10 @@ func cloneSpec(spec Spec) Spec {
 	out.DefenderColonyIDs = append([]core.ID(nil), spec.DefenderColonyIDs...)
 	out.Attacker = cloneSide(spec.Attacker)
 	out.Defender = cloneSide(spec.Defender)
+	if spec.Tactical != nil {
+		tactical := cloneTacticalSpec(*spec.Tactical)
+		out.Tactical = &tactical
+	}
 	return out
 }
 

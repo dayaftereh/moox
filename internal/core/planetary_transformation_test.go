@@ -12,8 +12,8 @@ func TestPlanetaryTransformationStateRoundTripsInCurrentSchema(t *testing.T) {
 		ProjectID:   "terraforming",
 		ProgressPP:  123.5,
 	}
-	if StateSchemaVersion != 20 || state.SchemaVersion != 20 {
-		t.Fatalf("schema=%d constant=%d want=20", state.SchemaVersion, StateSchemaVersion)
+	if StateSchemaVersion != 21 || state.SchemaVersion != 21 {
+		t.Fatalf("schema=%d constant=%d want=21", state.SchemaVersion, StateSchemaVersion)
 	}
 	if err := state.Validate(); err != nil {
 		t.Fatal(err)

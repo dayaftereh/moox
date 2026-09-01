@@ -1,0 +1,706 @@
+package battle
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"sort"
+
+	"moox/internal/core"
+	"moox/internal/protocol"
+)
+
+const (
+	CommandFireBeam        = "battle.fire_beam"
+	CommandEndActivation   = "battle.end_activation"
+	TacticalOutcomeVictory = "tactical_victory"
+
+	BaselineTacticalRNGState uint32 = 0x001500BD
+)
+
+type TacticalRulesSnapshot struct {
+	SchemaVersion                int    `json:"schema_version"`
+	InitiativeBeamOffenseDivisor int    `json:"initiative_beam_offense_divisor"`
+	RNGMultiplier                uint32 `json:"rng_multiplier"`
+	RNGIncrement                 uint32 `json:"rng_increment"`
+	BeamBaseHitThreshold         int    `json:"beam_base_hit_threshold"`
+	BeamMaxHitThreshold          int    `json:"beam_max_hit_threshold"`
+	BeamEffectiveRollCap         int    `json:"beam_effective_roll_cap"`
+	BeamToHitRangeModifiers      []int  `json:"beam_to_hit_range_modifiers"`
+	BeamDamageRangeModifiers     []int  `json:"beam_damage_range_modifiers"`
+}
+
+type TacticalWeaponSpec struct {
+	Slot      int    `json:"slot"`
+	WeaponID  string `json:"weapon_id"`
+	Count     int    `json:"count"`
+	MinDamage int    `json:"min_damage"`
+	MaxDamage int    `json:"max_damage"`
+}
+
+type TacticalShipSpec struct {
+	ShipID             core.ID              `json:"ship_id"`
+	EmpireID           core.ID              `json:"empire_id"`
+	SeatID             protocol.SeatID      `json:"seat_id"`
+	X                  int                  `json:"x"`
+	Y                  int                  `json:"y"`
+	HullID             string               `json:"hull_id"`
+	WarpDriveID        string               `json:"warp_drive_id"`
+	ComputerID         string               `json:"computer_id"`
+	ArmorID            string               `json:"armor_id"`
+	Weapons            []TacticalWeaponSpec `json:"weapons,omitempty"`
+	CurrentCombatSpeed int                  `json:"current_combat_speed"`
+	BeamOffense        int                  `json:"beam_offense"`
+	BeamDefense        int                  `json:"beam_defense"`
+	ArmorMax           int                  `json:"armor_max"`
+	StructureMax       int                  `json:"structure_max"`
+}
+
+type TacticalSpec struct {
+	Rules             TacticalRulesSnapshot `json:"rules"`
+	InitiativeEnabled bool                  `json:"initiative_enabled"`
+	InitialRNGState   uint32                `json:"initial_rng_state"`
+	Ships             []TacticalShipSpec    `json:"ships"`
+}
+
+type TacticalWeaponState struct {
+	Slot  int  `json:"slot"`
+	Ready bool `json:"ready"`
+}
+
+type TacticalShipState struct {
+	ShipID          core.ID               `json:"ship_id"`
+	ArmorCurrent    int                   `json:"armor_current"`
+	StructureDamage int                   `json:"structure_damage"`
+	Weapons         []TacticalWeaponState `json:"weapons,omitempty"`
+	Destroyed       bool                  `json:"destroyed"`
+}
+
+type TacticalState struct {
+	Round               uint32              `json:"round"`
+	InitiativeOrder     []core.ID           `json:"initiative_order"`
+	ActiveShipID        core.ID             `json:"active_ship_id"`
+	NextCommandSequence uint32              `json:"next_command_sequence"`
+	RNGState            uint32              `json:"rng_state"`
+	Ships               []TacticalShipState `json:"ships"`
+}
+
+type TacticalEvent struct {
+	Sequence        uint64          `json:"sequence"`
+	Kind            string          `json:"kind"`
+	SeatID          protocol.SeatID `json:"seat_id,omitempty"`
+	CommandSequence uint32          `json:"command_sequence,omitempty"`
+	Data            json.RawMessage `json:"data,omitempty"`
+}
+
+type TacticalView struct {
+	State  TacticalState   `json:"state"`
+	Events []TacticalEvent `json:"events"`
+}
+
+type FireBeamPayload struct {
+	ShipID       core.ID `json:"ship_id"`
+	TargetShipID core.ID `json:"target_ship_id"`
+	WeaponSlot   int     `json:"weapon_slot"`
+}
+
+type EndActivationPayload struct {
+	ShipID core.ID `json:"ship_id"`
+}
+
+type tacticalRuntime struct {
+	state             TacticalState
+	events            []TacticalEvent
+	nextEventSequence uint64
+}
+
+type PreparedCommand struct {
+	baseRevision uint64
+	runtime      tacticalRuntime
+	result       *Result
+}
+
+func (p *PreparedCommand) Result() *Result {
+	if p == nil || p.result == nil {
+		return nil
+	}
+	out := *p.result
+	out.WinnerSeats = append([]protocol.SeatID(nil), p.result.WinnerSeats...)
+	out.DestroyedShipIDs = append([]core.ID(nil), p.result.DestroyedShipIDs...)
+	return &out
+}
+
+func NewFireBeamCommand(sequence uint32, payload FireBeamPayload) (protocol.Command, error) {
+	return protocol.NewCommand(sequence, CommandFireBeam, payload)
+}
+
+func NewEndActivationCommand(sequence uint32, payload EndActivationPayload) (protocol.Command, error) {
+	return protocol.NewCommand(sequence, CommandEndActivation, payload)
+}
+
+func validateTacticalSpec(spec Spec) error {
+	if spec.Tactical == nil {
+		return nil
+	}
+	if spec.SystemID == 0 || len(spec.Participants) != 2 {
+		return fmt.Errorf("tactical battle requires a two-seat strategic battle")
+	}
+	if spec.TacticalUnsupportedReason != "" {
+		return fmt.Errorf("tactical spec and unsupported reason are mutually exclusive")
+	}
+	t := spec.Tactical
+	if !t.InitiativeEnabled {
+		return fmt.Errorf("Slice 07 tactical fixture requires initiative")
+	}
+	if t.InitialRNGState != BaselineTacticalRNGState {
+		return fmt.Errorf("Slice 07 tactical fixture requires initial RNG state 0x%08X", BaselineTacticalRNGState)
+	}
+	if err := validateBaselineRules(t.Rules); err != nil {
+		return err
+	}
+	if len(spec.Attacker.ShipIDs) != 1 || len(spec.Defender.ShipIDs) != 1 || len(t.Ships) != 2 {
+		return fmt.Errorf("Slice 07 tactical fixture requires exactly one combat Ship per side")
+	}
+	if len(spec.Attacker.CivilianFleetIDs) != 0 || len(spec.Defender.CivilianFleetIDs) != 0 || len(spec.DefenderColonyIDs) != 0 {
+		return fmt.Errorf("Slice 07 tactical fixture does not support civilian or colony context")
+	}
+	if t.Ships[0].ShipID >= t.Ships[1].ShipID {
+		return fmt.Errorf("tactical ships must be strictly ascending by strategic ship id")
+	}
+	byID := map[core.ID]TacticalShipSpec{t.Ships[0].ShipID: t.Ships[0], t.Ships[1].ShipID: t.Ships[1]}
+	attacker, ok := byID[spec.Attacker.ShipIDs[0]]
+	if !ok {
+		return fmt.Errorf("tactical snapshot is missing attacker ship %d", spec.Attacker.ShipIDs[0])
+	}
+	defender, ok := byID[spec.Defender.ShipIDs[0]]
+	if !ok {
+		return fmt.Errorf("tactical snapshot is missing defender ship %d", spec.Defender.ShipIDs[0])
+	}
+	if attacker.EmpireID != spec.Attacker.EmpireID || attacker.SeatID != spec.Attacker.SeatID || defender.EmpireID != spec.Defender.EmpireID || defender.SeatID != spec.Defender.SeatID {
+		return fmt.Errorf("tactical ship authority does not match strategic sides")
+	}
+	if err := validateBaselineAttacker(attacker); err != nil {
+		return err
+	}
+	if err := validateBaselineDefender(defender); err != nil {
+		return err
+	}
+	return nil
+}
+
+func validateBaselineRules(r TacticalRulesSnapshot) error {
+	if r.SchemaVersion != 1 || r.InitiativeBeamOffenseDivisor != 10 || r.RNGMultiplier != 0x41C64E6D || r.RNGIncrement != 0x3039 || r.BeamBaseHitThreshold != 40 || r.BeamMaxHitThreshold != 95 || r.BeamEffectiveRollCap != 100 {
+		return fmt.Errorf("unsupported Slice 07 tactical rule constants")
+	}
+	wantHit := []int{0, 0, -10, -20, -30, -40, -55, -70, -85}
+	wantDamage := []int{0, 0, -10, -20, -30, -40, -50, -60, -65}
+	if !equalInts(r.BeamToHitRangeModifiers, wantHit) || !equalInts(r.BeamDamageRangeModifiers, wantDamage) {
+		return fmt.Errorf("unsupported Slice 07 Beam range tables")
+	}
+	return nil
+}
+
+func validateBaselineAttacker(s TacticalShipSpec) error {
+	if s.X != 10 || s.Y != 10 || s.HullID != "frigate" || s.WarpDriveID != "fusion_drive" || s.ComputerID != "electronic_computer" || s.ArmorID != "titanium_armor" || s.CurrentCombatSpeed != 22 || s.BeamOffense != 25 || s.BeamDefense != 0 || s.ArmorMax != 4 || s.StructureMax != 4 {
+		return fmt.Errorf("attacker is outside the Slice 07 tactical fixture")
+	}
+	if len(s.Weapons) != 1 {
+		return fmt.Errorf("Slice 07 attacker requires exactly one Laser mount")
+	}
+	w := s.Weapons[0]
+	if w.Slot != 0 || w.WeaponID != "laser_cannon" || w.Count != 1 || w.MinDamage != 1 || w.MaxDamage != 4 {
+		return fmt.Errorf("attacker weapon is outside the Slice 07 Laser fixture")
+	}
+	return nil
+}
+
+func validateBaselineDefender(s TacticalShipSpec) error {
+	if s.X != 11 || s.Y != 10 || s.HullID != "frigate" || s.WarpDriveID != "nuclear_drive" || s.ComputerID != "electronic_computer" || s.ArmorID != "titanium_armor" || s.CurrentCombatSpeed != 20 || s.BeamOffense != 25 || s.BeamDefense != 0 || s.ArmorMax != 4 || s.StructureMax != 4 || len(s.Weapons) != 0 {
+		return fmt.Errorf("defender is outside the Slice 07 tactical fixture")
+	}
+	return nil
+}
+
+func equalInts(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func newTacticalRuntime(spec TacticalSpec) (tacticalRuntime, error) {
+	r := tacticalRuntime{
+		state: TacticalState{
+			Round:               1,
+			NextCommandSequence: 1,
+			RNGState:            spec.InitialRNGState,
+			Ships:               make([]TacticalShipState, len(spec.Ships)),
+		},
+		nextEventSequence: 1,
+	}
+	for i, ship := range spec.Ships {
+		state := TacticalShipState{ShipID: ship.ShipID, ArmorCurrent: ship.ArmorMax, Weapons: make([]TacticalWeaponState, len(ship.Weapons))}
+		for j, weapon := range ship.Weapons {
+			state.Weapons[j] = TacticalWeaponState{Slot: weapon.Slot, Ready: true}
+		}
+		r.state.Ships[i] = state
+	}
+	r.recomputeInitiative(spec)
+	if len(r.state.InitiativeOrder) == 0 {
+		return tacticalRuntime{}, fmt.Errorf("tactical battle has no live ships")
+	}
+	r.state.ActiveShipID = r.state.InitiativeOrder[0]
+	if err := r.appendEvent("round_started", 0, 0, map[string]any{"round": r.state.Round, "initiative_order": r.state.InitiativeOrder, "active_ship_id": r.state.ActiveShipID}); err != nil {
+		return tacticalRuntime{}, err
+	}
+	return r, nil
+}
+
+func (r *tacticalRuntime) recomputeInitiative(spec TacticalSpec) {
+	type item struct {
+		id    core.ID
+		value int
+	}
+	items := make([]item, 0, len(spec.Ships))
+	for _, ship := range spec.Ships {
+		state := r.shipState(ship.ShipID)
+		if state == nil || state.Destroyed {
+			continue
+		}
+		items = append(items, item{id: ship.ShipID, value: ship.CurrentCombatSpeed + ship.BeamOffense/spec.Rules.InitiativeBeamOffenseDivisor})
+	}
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].value != items[j].value {
+			return items[i].value > items[j].value
+		}
+		return items[i].id < items[j].id
+	})
+	r.state.InitiativeOrder = r.state.InitiativeOrder[:0]
+	for _, item := range items {
+		r.state.InitiativeOrder = append(r.state.InitiativeOrder, item.id)
+	}
+}
+
+func (r *tacticalRuntime) appendEvent(kind string, seatID protocol.SeatID, commandSequence uint32, data any) error {
+	var raw json.RawMessage
+	if data != nil {
+		encoded, err := json.Marshal(data)
+		if err != nil {
+			return err
+		}
+		raw = encoded
+	}
+	r.events = append(r.events, TacticalEvent{Sequence: r.nextEventSequence, Kind: kind, SeatID: seatID, CommandSequence: commandSequence, Data: raw})
+	r.nextEventSequence++
+	return nil
+}
+
+func (r *tacticalRuntime) shipState(id core.ID) *TacticalShipState {
+	for i := range r.state.Ships {
+		if r.state.Ships[i].ShipID == id {
+			return &r.state.Ships[i]
+		}
+	}
+	return nil
+}
+
+func tacticalShipSpec(spec TacticalSpec, id core.ID) *TacticalShipSpec {
+	for i := range spec.Ships {
+		if spec.Ships[i].ShipID == id {
+			return &spec.Ships[i]
+		}
+	}
+	return nil
+}
+
+func weaponSpec(ship TacticalShipSpec, slot int) *TacticalWeaponSpec {
+	for i := range ship.Weapons {
+		if ship.Weapons[i].Slot == slot {
+			return &ship.Weapons[i]
+		}
+	}
+	return nil
+}
+
+func weaponState(ship *TacticalShipState, slot int) *TacticalWeaponState {
+	if ship == nil {
+		return nil
+	}
+	for i := range ship.Weapons {
+		if ship.Weapons[i].Slot == slot {
+			return &ship.Weapons[i]
+		}
+	}
+	return nil
+}
+
+func (s *Session) PrepareCommand(seatID protocol.SeatID, command protocol.Command) (*PreparedCommand, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	if s.phase != PhaseActive {
+		return nil, fmt.Errorf("cannot submit tactical command in phase %q", s.phase)
+	}
+	if s.spec.Tactical == nil || s.tactical == nil {
+		if s.spec.TacticalUnsupportedReason != "" {
+			return nil, fmt.Errorf("tactical combat unsupported: %s", s.spec.TacticalUnsupportedReason)
+		}
+		return nil, fmt.Errorf("battle %d has no tactical command surface", s.spec.ID)
+	}
+	if err := command.Validate(s.tactical.state.NextCommandSequence); err != nil {
+		return nil, err
+	}
+	prepared := &PreparedCommand{baseRevision: s.tacticalRevision, runtime: cloneTacticalRuntime(*s.tactical)}
+	var result *Result
+	var err error
+	switch command.Kind {
+	case CommandFireBeam:
+		var payload FireBeamPayload
+		if err = decodeBattlePayload(command, &payload); err == nil {
+			result, err = prepareFireBeam(s.spec, &prepared.runtime, seatID, command.Sequence, payload)
+		}
+	case CommandEndActivation:
+		var payload EndActivationPayload
+		if err = decodeBattlePayload(command, &payload); err == nil {
+			err = prepareEndActivation(s.spec, &prepared.runtime, seatID, command.Sequence, payload)
+		}
+	default:
+		err = fmt.Errorf("unsupported tactical command %q", command.Kind)
+	}
+	if err != nil {
+		return nil, err
+	}
+	prepared.runtime.state.NextCommandSequence++
+	if result != nil {
+		normalized, err := normalizeResult(s.spec, *result)
+		if err != nil {
+			return nil, err
+		}
+		prepared.result = &normalized
+	}
+	return prepared, nil
+}
+
+func decodeBattlePayload(command protocol.Command, dst any) error {
+	decoder := json.NewDecoder(bytes.NewReader(command.Payload))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(dst); err != nil {
+		return fmt.Errorf("decode %s payload: %w", command.Kind, err)
+	}
+	if decoder.More() {
+		return fmt.Errorf("decode %s payload: trailing JSON values", command.Kind)
+	}
+	var extra any
+	if err := decoder.Decode(&extra); err == nil {
+		return fmt.Errorf("decode %s payload: trailing JSON value", command.Kind)
+	}
+	return nil
+}
+
+func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, commandSequence uint32, payload FireBeamPayload) (*Result, error) {
+	active := tacticalShipSpec(*spec.Tactical, r.state.ActiveShipID)
+	if active == nil {
+		return nil, fmt.Errorf("active tactical ship %d is missing from spec", r.state.ActiveShipID)
+	}
+	if seatID == 0 || active.SeatID != seatID {
+		return nil, fmt.Errorf("seat %d does not control active ship %d", seatID, r.state.ActiveShipID)
+	}
+	if payload.ShipID != r.state.ActiveShipID {
+		return nil, fmt.Errorf("fire ship %d is not active ship %d", payload.ShipID, r.state.ActiveShipID)
+	}
+	targetSpec := tacticalShipSpec(*spec.Tactical, payload.TargetShipID)
+	targetState := r.shipState(payload.TargetShipID)
+	if targetSpec == nil || targetState == nil || targetState.Destroyed {
+		return nil, fmt.Errorf("target ship %d is not a live tactical ship", payload.TargetShipID)
+	}
+	if targetSpec.EmpireID == active.EmpireID {
+		return nil, fmt.Errorf("target ship %d is not an opponent", payload.TargetShipID)
+	}
+	weapon := weaponSpec(*active, payload.WeaponSlot)
+	activeState := r.shipState(active.ShipID)
+	ready := weaponState(activeState, payload.WeaponSlot)
+	if weapon == nil || ready == nil {
+		return nil, fmt.Errorf("ship %d has no weapon slot %d", active.ShipID, payload.WeaponSlot)
+	}
+	if !ready.Ready {
+		return nil, fmt.Errorf("ship %d weapon slot %d is not ready", active.ShipID, payload.WeaponSlot)
+	}
+	if weapon.WeaponID != "laser_cannon" || weapon.Count != 1 || weapon.MinDamage != 1 || weapon.MaxDamage != 4 {
+		return nil, fmt.Errorf("weapon slot %d is outside the Slice 07 Laser fixture", payload.WeaponSlot)
+	}
+
+	rangeIndex := tacticalRangeIndex(active.X, active.Y, targetSpec.X, targetSpec.Y)
+	if rangeIndex < 0 || rangeIndex >= len(spec.Tactical.Rules.BeamToHitRangeModifiers) {
+		return nil, fmt.Errorf("Beam range index %d is outside the evidenced table", rangeIndex)
+	}
+	rawRoll, err := r.random(100, spec.Tactical.Rules)
+	if err != nil {
+		return nil, err
+	}
+	rangeHitModifier := spec.Tactical.Rules.BeamToHitRangeModifiers[rangeIndex]
+	threshold := spec.Tactical.Rules.BeamBaseHitThreshold - rangeHitModifier
+	if threshold > spec.Tactical.Rules.BeamMaxHitThreshold {
+		threshold = spec.Tactical.Rules.BeamMaxHitThreshold
+	}
+	effectiveRoll := rawRoll
+	if rawRoll > spec.Tactical.Rules.BeamMaxHitThreshold {
+		effectiveRoll = spec.Tactical.Rules.BeamEffectiveRollCap
+	} else {
+		effectiveRoll += active.BeamOffense - targetSpec.BeamDefense
+		if effectiveRoll > spec.Tactical.Rules.BeamEffectiveRollCap {
+			effectiveRoll = spec.Tactical.Rules.BeamEffectiveRollCap
+		}
+	}
+	hit := effectiveRoll >= threshold
+	damage := 0
+	selectionRoll := 0
+	layer := ""
+	beforeArmor, afterArmor := targetState.ArmorCurrent, targetState.ArmorCurrent
+	beforeStructure, afterStructure := targetState.StructureDamage, targetState.StructureDamage
+	if hit {
+		damage = beamDamage(*weapon, spec.Tactical.Rules.BeamDamageRangeModifiers[rangeIndex], effectiveRoll, threshold, spec.Tactical.Rules.BeamEffectiveRollCap)
+		selectionRoll, err = r.random(100, spec.Tactical.Rules)
+		if err != nil {
+			return nil, err
+		}
+		if targetState.ArmorCurrent > 0 {
+			if damage > targetState.ArmorCurrent {
+				return nil, fmt.Errorf("unsupported tactical damage overflow from Armor into internal systems")
+			}
+			layer = "armor"
+			targetState.ArmorCurrent -= damage
+			afterArmor = targetState.ArmorCurrent
+		} else {
+			if selectionRoll != 100 {
+				return nil, fmt.Errorf("unsupported tactical internal subsystem selection roll %d", selectionRoll)
+			}
+			layer = "structure"
+			targetState.StructureDamage += damage
+			if targetState.StructureDamage > targetSpec.StructureMax {
+				targetState.StructureDamage = targetSpec.StructureMax
+			}
+			afterStructure = targetState.StructureDamage
+		}
+	}
+	ready.Ready = false
+	if err := r.appendEvent("beam_fired", seatID, commandSequence, map[string]any{
+		"ship_id": active.ShipID, "target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
+		"range_index": rangeIndex, "raw_hit_roll": rawRoll, "effective_hit_roll": effectiveRoll,
+		"threshold": threshold, "hit": hit, "damage": damage,
+	}); err != nil {
+		return nil, err
+	}
+	if hit {
+		if err := r.appendEvent("battle_damage_applied", seatID, commandSequence, map[string]any{
+			"target_ship_id": targetSpec.ShipID, "layer": layer, "damage": damage, "selection_roll": selectionRoll,
+			"armor_before": beforeArmor, "armor_after": afterArmor,
+			"structure_damage_before": beforeStructure, "structure_damage_after": afterStructure,
+		}); err != nil {
+			return nil, err
+		}
+	}
+	if hit && targetState.StructureDamage >= targetSpec.StructureMax {
+		targetState.Destroyed = true
+		if err := r.appendEvent("ship_destroyed", seatID, commandSequence, map[string]any{"ship_id": targetSpec.ShipID}); err != nil {
+			return nil, err
+		}
+		winner := remainingWinner(spec, r)
+		if winner != 0 {
+			if err := r.appendEvent("winner_determined", seatID, commandSequence, map[string]any{"winner_seat": winner}); err != nil {
+				return nil, err
+			}
+			return &Result{WinnerSeat: winner, Outcome: TacticalOutcomeVictory, DestroyedShipIDs: []core.ID{targetSpec.ShipID}}, nil
+		}
+	}
+	return nil, nil
+}
+
+func prepareEndActivation(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, commandSequence uint32, payload EndActivationPayload) error {
+	active := tacticalShipSpec(*spec.Tactical, r.state.ActiveShipID)
+	if active == nil {
+		return fmt.Errorf("active tactical ship %d is missing from spec", r.state.ActiveShipID)
+	}
+	if seatID == 0 || active.SeatID != seatID {
+		return fmt.Errorf("seat %d does not control active ship %d", seatID, r.state.ActiveShipID)
+	}
+	if payload.ShipID != r.state.ActiveShipID {
+		return fmt.Errorf("end-activation ship %d is not active ship %d", payload.ShipID, r.state.ActiveShipID)
+	}
+	if err := r.appendEvent("activation_ended", seatID, commandSequence, map[string]any{"ship_id": payload.ShipID, "round": r.state.Round}); err != nil {
+		return err
+	}
+	currentIndex := -1
+	for i, id := range r.state.InitiativeOrder {
+		if id == r.state.ActiveShipID {
+			currentIndex = i
+			break
+		}
+	}
+	for i := currentIndex + 1; i < len(r.state.InitiativeOrder); i++ {
+		state := r.shipState(r.state.InitiativeOrder[i])
+		if state != nil && !state.Destroyed {
+			r.state.ActiveShipID = state.ShipID
+			return nil
+		}
+	}
+	r.state.Round++
+	for i := range r.state.Ships {
+		if r.state.Ships[i].Destroyed {
+			continue
+		}
+		for j := range r.state.Ships[i].Weapons {
+			r.state.Ships[i].Weapons[j].Ready = true
+		}
+	}
+	r.recomputeInitiative(*spec.Tactical)
+	if len(r.state.InitiativeOrder) == 0 {
+		return fmt.Errorf("new tactical round has no live ships")
+	}
+	r.state.ActiveShipID = r.state.InitiativeOrder[0]
+	return r.appendEvent("round_started", 0, 0, map[string]any{"round": r.state.Round, "initiative_order": r.state.InitiativeOrder, "active_ship_id": r.state.ActiveShipID})
+}
+
+func tacticalRangeIndex(ax, ay, bx, by int) int {
+	dx := absInt(ax - bx)
+	dy := absInt(ay - by)
+	major, minor := dx, dy
+	if dy > dx {
+		major, minor = dy, dx
+	}
+	raw := major + minor/2
+	return (raw + 2) / 3
+}
+
+func absInt(v int) int {
+	if v < 0 {
+		return -v
+	}
+	return v
+}
+
+func beamDamage(weapon TacticalWeaponSpec, rangeModifier, effectiveRoll, threshold, rollCap int) int {
+	multiplier := 100 + rangeModifier
+	minDamage := weapon.MinDamage * multiplier / 100
+	maxDamage := weapon.MaxDamage * multiplier / 100
+	if maxDamage < minDamage {
+		maxDamage = minDamage
+	}
+	if maxDamage <= minDamage || rollCap <= threshold {
+		return minDamage
+	}
+	damage := minDamage + ((effectiveRoll-threshold)*(maxDamage-minDamage+1))/(rollCap-threshold)
+	if damage > maxDamage {
+		damage = maxDamage
+	}
+	if damage < minDamage {
+		damage = minDamage
+	}
+	return damage
+}
+
+func (r *tacticalRuntime) random(n uint32, rules TacticalRulesSnapshot) (int, error) {
+	if n == 0 {
+		return 0, fmt.Errorf("tactical Random requires positive bound")
+	}
+	q := ^uint32(0) / n
+	if q == 0 {
+		return 0, fmt.Errorf("tactical Random bound %d is too large", n)
+	}
+	cutoff := q * n
+	for {
+		r.state.RNGState = r.state.RNGState*rules.RNGMultiplier + rules.RNGIncrement
+		if r.state.RNGState < cutoff {
+			return int(r.state.RNGState/q) + 1, nil
+		}
+	}
+}
+
+func remainingWinner(spec Spec, r *tacticalRuntime) protocol.SeatID {
+	seatAlive := make(map[protocol.SeatID]bool)
+	for _, ship := range spec.Tactical.Ships {
+		state := r.shipState(ship.ShipID)
+		if state != nil && !state.Destroyed {
+			seatAlive[ship.SeatID] = true
+		}
+	}
+	if len(seatAlive) != 1 {
+		return 0
+	}
+	for seat := range seatAlive {
+		return seat
+	}
+	return 0
+}
+
+func (s *Session) CommitPreparedCommand(prepared *PreparedCommand) error {
+	if prepared == nil {
+		return fmt.Errorf("prepared tactical command is nil")
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.phase != PhaseActive {
+		return fmt.Errorf("cannot commit tactical command in phase %q", s.phase)
+	}
+	if s.tactical == nil {
+		return fmt.Errorf("battle has no tactical runtime")
+	}
+	if s.tacticalRevision != prepared.baseRevision {
+		return fmt.Errorf("stale prepared tactical command")
+	}
+	runtime := cloneTacticalRuntime(prepared.runtime)
+	s.tactical = &runtime
+	s.tacticalRevision++
+	if prepared.result != nil {
+		result := *prepared.result
+		result.WinnerSeats = append([]protocol.SeatID(nil), prepared.result.WinnerSeats...)
+		result.DestroyedShipIDs = append([]core.ID(nil), prepared.result.DestroyedShipIDs...)
+		s.result = &result
+		s.phase = PhaseCompleted
+	}
+	return nil
+}
+
+func cloneTacticalSpec(spec TacticalSpec) TacticalSpec {
+	out := spec
+	out.Rules.BeamToHitRangeModifiers = append([]int(nil), spec.Rules.BeamToHitRangeModifiers...)
+	out.Rules.BeamDamageRangeModifiers = append([]int(nil), spec.Rules.BeamDamageRangeModifiers...)
+	out.Ships = make([]TacticalShipSpec, len(spec.Ships))
+	for i := range spec.Ships {
+		out.Ships[i] = spec.Ships[i]
+		out.Ships[i].Weapons = append([]TacticalWeaponSpec(nil), spec.Ships[i].Weapons...)
+	}
+	return out
+}
+
+func cloneTacticalState(state TacticalState) TacticalState {
+	out := state
+	out.InitiativeOrder = append([]core.ID(nil), state.InitiativeOrder...)
+	out.Ships = make([]TacticalShipState, len(state.Ships))
+	for i := range state.Ships {
+		out.Ships[i] = state.Ships[i]
+		out.Ships[i].Weapons = append([]TacticalWeaponState(nil), state.Ships[i].Weapons...)
+	}
+	return out
+}
+
+func cloneTacticalEvents(events []TacticalEvent) []TacticalEvent {
+	out := make([]TacticalEvent, len(events))
+	for i := range events {
+		out[i] = events[i]
+		out[i].Data = append(json.RawMessage(nil), events[i].Data...)
+	}
+	return out
+}
+
+func cloneTacticalRuntime(r tacticalRuntime) tacticalRuntime {
+	return tacticalRuntime{state: cloneTacticalState(r.state), events: cloneTacticalEvents(r.events), nextEventSequence: r.nextEventSequence}
+}
+
+// CloneTacticalSpec returns a detached immutable tactical battle snapshot.
+func CloneTacticalSpec(spec TacticalSpec) TacticalSpec {
+	return cloneTacticalSpec(spec)
+}

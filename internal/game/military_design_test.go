@@ -1,6 +1,7 @@
 package game
 
 import (
+	"reflect"
 	"testing"
 
 	"moox/internal/core"
@@ -51,7 +52,7 @@ func TestSaveMilitaryDesignCreatesOriginalBasedClearedFrigate(t *testing.T) {
 		BaseDesignCostPP:   25,
 		ProductionCostPP:   25,
 	}
-	if design.Spec != want {
+	if !reflect.DeepEqual(design.Spec, want) {
 		t.Fatalf("cleared Frigate spec=%+v want=%+v", design.Spec, want)
 	}
 	if err := state.Validate(); err != nil {
@@ -235,5 +236,122 @@ func TestMilitaryDesignRejectsUnsupportedHullAndPicture(t *testing.T) {
 	wrongPicture, _ := NewSaveMilitaryDesignCommand(2, SaveMilitaryDesignPayload{Name: "Bad picture", HullID: "frigate", StrategicPictureID: 8})
 	if _, err := resolver.saveMilitaryDesign(state, empire.ID, 1, wrongPicture); err == nil {
 		t.Fatal("Frigate design with non-Frigate picture unexpectedly accepted")
+	}
+}
+
+func TestSaveMilitaryDesignSupportsOneStandardLaser(t *testing.T) {
+	rules := loadColonyShipRules(t)
+	resolver, err := NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := core.NewSmallFixture(0xB702)
+	empire := &state.Empires[0]
+	addBaselineMilitaryTechnologies(empire)
+	addColonyShipTestTechnology(empire, 100)
+	command, err := NewSaveMilitaryDesignCommand(1, SaveMilitaryDesignPayload{
+		Name: "Laser Frigate", HullID: SupportedMilitaryHullID, StrategicPictureID: 0,
+		Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.saveMilitaryDesign(state, empire.ID, 1, command); err != nil {
+		t.Fatal(err)
+	}
+	design := state.ShipDesigns[len(state.ShipDesigns)-1]
+	if !reflect.DeepEqual(design.Spec.Weapons, []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1}}) {
+		t.Fatalf("weapons=%+v", design.Spec.Weapons)
+	}
+	if design.Spec.SpaceUsed != 10 || design.Spec.BaseDesignCostPP != 30 || design.Spec.ProductionCostPP != 30 {
+		t.Fatalf("armed costs space=%d base=%d production=%d", design.Spec.SpaceUsed, design.Spec.BaseDesignCostPP, design.Spec.ProductionCostPP)
+	}
+	if err := state.Validate(); err != nil {
+		t.Fatalf("armed design state invalid: %v", err)
+	}
+}
+
+func TestSaveMilitaryDesignLaserRequiresTechnologyWithoutMutation(t *testing.T) {
+	rules := loadColonyShipRules(t)
+	resolver, err := NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := core.NewSmallFixture(0xB703)
+	empire := &state.Empires[0]
+	addBaselineMilitaryTechnologies(empire)
+	beforeNextID := state.NextID
+	command, err := NewSaveMilitaryDesignCommand(1, SaveMilitaryDesignPayload{
+		Name: "Illegal Laser", HullID: SupportedMilitaryHullID, StrategicPictureID: 0,
+		Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.saveMilitaryDesign(state, empire.ID, 1, command); err == nil {
+		t.Fatal("expected missing Laser technology to reject")
+	}
+	if len(state.ShipDesigns) != 0 || state.NextID != beforeNextID {
+		t.Fatalf("failed armed save mutated state: designs=%d next_id=%d want=%d", len(state.ShipDesigns), state.NextID, beforeNextID)
+	}
+}
+
+func TestSaveMilitaryDesignRejectsUnsupportedWeaponSurface(t *testing.T) {
+	cases := []SaveMilitaryDesignPayload{
+		{Name: "wrong slot", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 1, WeaponID: "laser_cannon", Count: 1}}},
+		{Name: "wrong id", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "nuclear_missile", Count: 1}}},
+		{Name: "wrong count", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 2}}},
+		{Name: "two mounts", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1}, {Slot: 1, WeaponID: "laser_cannon", Count: 1}}},
+	}
+	for _, payload := range cases {
+		payload.StrategicPictureID = 0
+		if _, err := NewSaveMilitaryDesignCommand(1, payload); err == nil {
+			t.Fatalf("expected unsupported weapon payload to reject: %+v", payload.Weapons)
+		}
+	}
+}
+
+func TestBuiltMilitaryShipKeepsWeaponSnapshotAcrossDesignRevision(t *testing.T) {
+	rules := loadColonyShipRules(t)
+	resolver, err := NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := core.NewSmallFixture(0xB704)
+	empire := &state.Empires[0]
+	addBaselineMilitaryTechnologies(empire)
+	addColonyShipTestTechnology(empire, 100)
+	command, err := NewSaveMilitaryDesignCommand(1, SaveMilitaryDesignPayload{
+		Name: "Armed", HullID: SupportedMilitaryHullID, StrategicPictureID: 0,
+		Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.saveMilitaryDesign(state, empire.ID, 1, command); err != nil {
+		t.Fatal(err)
+	}
+	designID := state.ShipDesigns[0].ID
+	if _, err := completeMilitaryShip(state, &state.Colonies[0], &state.ShipDesigns[0]); err != nil {
+		t.Fatal(err)
+	}
+	if len(state.Ships) != 1 || len(state.Ships[0].Spec.Weapons) != 1 {
+		t.Fatalf("built armed Ship=%+v", state.Ships)
+	}
+	update, err := NewSaveMilitaryDesignCommand(2, SaveMilitaryDesignPayload{DesignID: designID, Name: "Unarmed revision", HullID: SupportedMilitaryHullID, StrategicPictureID: 0})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.saveMilitaryDesign(state, empire.ID, 1, update); err != nil {
+		t.Fatal(err)
+	}
+	if len(state.ShipDesigns[0].Spec.Weapons) != 0 {
+		t.Fatalf("updated design remains armed: %+v", state.ShipDesigns[0].Spec.Weapons)
+	}
+	if !reflect.DeepEqual(state.Ships[0].Spec.Weapons, []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1}}) || state.Ships[0].SourceDesignRevision != 1 {
+		t.Fatalf("built Ship weapon snapshot changed: %+v", state.Ships[0])
+	}
+	if err := state.Validate(); err != nil {
+		t.Fatalf("revised design/built Ship state invalid: %v", err)
 	}
 }

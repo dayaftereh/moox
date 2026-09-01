@@ -2,24 +2,32 @@ package core
 
 import "fmt"
 
-// ShipDesignSpec is the authoritative supported design snapshot. It deliberately
-// contains only the strategic mandatory-equipment subset implemented before the
-// tactical weapon/special-system slices.
+// ShipWeaponMount is the persisted authoritative weapon identity carried by a
+// design and by every built Ship snapshot. Slice 07 deliberately supports only
+// the structural slot/id/count subset; weapon modifiers remain future work.
+type ShipWeaponMount struct {
+	Slot     int    `json:"slot"`
+	WeaponID string `json:"weapon_id"`
+	Count    int    `json:"count"`
+}
+
+// ShipDesignSpec is the authoritative supported design snapshot.
 type ShipDesignSpec struct {
-	HullID             string `json:"hull_id"`
-	StrategicPictureID int    `json:"strategic_picture_id"`
-	WarpDriveID        string `json:"warp_drive_id"`
-	FTLSpeed           int    `json:"ftl_speed"`
-	ComputerID         string `json:"computer_id"`
-	ArmorID            string `json:"armor_id"`
-	ShieldID           string `json:"shield_id,omitempty"`
-	FuelCellID         string `json:"fuel_cell_id"`
-	FuelRangeParsecs   int    `json:"fuel_range_parsecs"`
-	HullBaseCostPP     int    `json:"hull_base_cost_pp"`
-	HullSpace          int    `json:"hull_space"`
-	SpaceUsed          int    `json:"space_used"`
-	BaseDesignCostPP   int    `json:"base_design_cost_pp"`
-	ProductionCostPP   int    `json:"production_cost_pp"`
+	HullID             string            `json:"hull_id"`
+	StrategicPictureID int               `json:"strategic_picture_id"`
+	WarpDriveID        string            `json:"warp_drive_id"`
+	FTLSpeed           int               `json:"ftl_speed"`
+	ComputerID         string            `json:"computer_id"`
+	ArmorID            string            `json:"armor_id"`
+	ShieldID           string            `json:"shield_id,omitempty"`
+	FuelCellID         string            `json:"fuel_cell_id"`
+	FuelRangeParsecs   int               `json:"fuel_range_parsecs"`
+	HullBaseCostPP     int               `json:"hull_base_cost_pp"`
+	HullSpace          int               `json:"hull_space"`
+	SpaceUsed          int               `json:"space_used"`
+	BaseDesignCostPP   int               `json:"base_design_cost_pp"`
+	ProductionCostPP   int               `json:"production_cost_pp"`
+	Weapons            []ShipWeaponMount `json:"weapons,omitempty"`
 }
 
 type ShipDesign struct {
@@ -51,6 +59,22 @@ func validateShipDesignSpec(spec ShipDesignSpec, label string) error {
 	}
 	if spec.BaseDesignCostPP < spec.HullBaseCostPP || spec.ProductionCostPP <= 0 {
 		return fmt.Errorf("%s has invalid design production cost", label)
+	}
+	if len(spec.Weapons) > 8 {
+		return fmt.Errorf("%s has %d weapon mounts, maximum is 8", label, len(spec.Weapons))
+	}
+	previousSlot := -1
+	for i, mount := range spec.Weapons {
+		if mount.Slot < 0 || mount.Slot > 7 {
+			return fmt.Errorf("%s weapon[%d] slot %d is outside 0..7", label, i, mount.Slot)
+		}
+		if i > 0 && mount.Slot <= previousSlot {
+			return fmt.Errorf("%s weapon mounts must be strictly ascending by slot", label)
+		}
+		if mount.WeaponID == "" || mount.Count <= 0 {
+			return fmt.Errorf("%s weapon[%d] requires weapon_id and positive count", label, i)
+		}
+		previousSlot = mount.Slot
 	}
 	return nil
 }

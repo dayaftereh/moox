@@ -148,6 +148,7 @@ type EconomyRules struct {
 	ShipArmors                                    []ruleset.ShipArmor
 	ShipShields                                   []ruleset.ShipShield
 	ShipFuelCells                                 []ruleset.ShipFuelCell
+	TacticalCombat                                *ruleset.TacticalCombatFile
 }
 
 func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
@@ -182,6 +183,13 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	}
 	if err := shipHulls.Validate(); err != nil {
 		return nil, fmt.Errorf("validate ship hulls: %w", err)
+	}
+	tacticalCombat, err := ruleset.LoadTacticalCombat(filepath.Join(rulesetDir, "tactical_combat.json"))
+	if err != nil {
+		return nil, fmt.Errorf("load tactical combat: %w", err)
+	}
+	if err := tacticalCombat.Validate(); err != nil {
+		return nil, fmt.Errorf("validate tactical combat: %w", err)
 	}
 	races, err := ruleset.LoadRaces(filepath.Join(rulesetDir, "races.json"))
 	if err != nil {
@@ -442,6 +450,9 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	if _, ok := technologyKeyByID[economy.CommandPoints.Imperium.TechnologyID]; !ok {
 		return nil, fmt.Errorf("command point Imperium references unknown technology %d", economy.CommandPoints.Imperium.TechnologyID)
 	}
+	if err := validateTacticalCombatReferences(tacticalCombat, technologyKeyByID, shipHullDefinitions, shipHulls.MandatoryComponents); err != nil {
+		return nil, fmt.Errorf("validate tactical combat references: %w", err)
+	}
 
 	rules := &EconomyRules{
 		ClimateFoodPerFarmer:                          make(map[string]float64, len(planetClasses.Climates)),
@@ -524,6 +535,7 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		ShipArmors:                    append([]ruleset.ShipArmor(nil), shipHulls.MandatoryComponents.Armors...),
 		ShipShields:                   append([]ruleset.ShipShield(nil), shipHulls.MandatoryComponents.Shields...),
 		ShipFuelCells:                 append([]ruleset.ShipFuelCell(nil), shipHulls.MandatoryComponents.FuelCells...),
+		TacticalCombat:                tacticalCombat,
 	}
 	for _, climate := range planetClasses.Climates {
 		rules.ClimateFoodPerFarmer[climate.ID] = float64(climate.BaseFoodPerFarmer)

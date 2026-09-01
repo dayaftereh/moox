@@ -5,12 +5,12 @@ import (
 	"testing"
 )
 
-func TestCommandPointSnapshotValidationSchema20(t *testing.T) {
+func TestCommandPointSnapshotValidationSchema21(t *testing.T) {
 	state := NewSmallFixture(0xA530)
 	state.Empires[0].CommandPoints = EmpireCommandPoints{Capacity: 5, Used: 6}
 	state.Empires[0].Treasury.ShipCommandMaintenanceBC = 10
 	if err := state.Validate(); err != nil {
-		t.Fatalf("valid schema20 Command Point snapshot rejected: %v", err)
+		t.Fatalf("valid schema21 Command Point snapshot rejected: %v", err)
 	}
 
 	state.Empires[0].CommandPoints.Capacity = -1
