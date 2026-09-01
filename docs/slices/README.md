@@ -41,15 +41,14 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- none; Slices 01-07 are closed.
+- `PLANNED_08_SERVER_WEB_HMI_TRANSPORT_BASELINE.md` -> `_OPEN_SERVER_WEB_HMI_TRANSPORT_BASELINE_2026-09-01.md`, Gates 1-3 complete / Gate 4 pending.
 
 Prepared queue:
 
-1. `PLANNED_08_SERVER_WEB_HMI_TRANSPORT_BASELINE.md` - authoritative Go server + HTTP/WebSocket + browser HMI; Wails optional wrapper only.
-2. `PLANNED_09_NEW_GAME_GALAXY_GENERATION_BASELINE.md` - deterministic real New Game / two-Empire galaxy generation.
-3. `PLANNED_10_DIPLOMACY_WAR_PEACE_BASELINE.md` - first authoritative war/peace lifecycle and attack authorization.
-4. `PLANNED_11_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE.md` - Transport, invasion, Colony capture and conquered Population handoff.
-5. `PLANNED_12_EMPIRE_ELIMINATION_FIRST_HEADLESS_VICTORY_LOOP.md` - first deterministic end-to-end match from New Game to conquest winner.
+1. `PLANNED_09_NEW_GAME_GALAXY_GENERATION_BASELINE.md` - deterministic real New Game / two-Empire galaxy generation.
+2. `PLANNED_10_DIPLOMACY_WAR_PEACE_BASELINE.md` - first authoritative war/peace lifecycle and attack authorization.
+3. `PLANNED_11_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE.md` - Transport, invasion, Colony capture and conquered Population handoff.
+4. `PLANNED_12_EMPIRE_ELIMINATION_FIRST_HEADLESS_VICTORY_LOOP.md` - first deterministic end-to-end match from New Game to conquest winner.
 
 Milestone: after Slice 12, re-audit the remaining fidelity/depth backlog before numbering the next tranche.
 

@@ -1,0 +1,128 @@
+package main
+
+import (
+	"context"
+	"errors"
+	"flag"
+	"fmt"
+	"io/fs"
+	"log"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"path/filepath"
+	"strings"
+	"time"
+
+	"moox/internal/app"
+	"moox/internal/core"
+	"moox/internal/game"
+	"moox/internal/server"
+	"moox/internal/session"
+)
+
+const demoGameID = "demo"
+
+func main() {
+	var (
+		addr                  = flag.String("addr", "127.0.0.1:8080", "HTTP listen address")
+		rulesDir              = flag.String("rules", filepath.Join("data", "rulesets", "moo2-1.31"), "normalized ruleset directory")
+		webDir                = flag.String("web", filepath.Join("web", "dist"), "built web asset directory; omitted if index.html is absent")
+		enableObserver        = flag.Bool("enable-observer", false, "enable privileged observer snapshot endpoint")
+		allowInsecureNonLocal = flag.Bool("insecure-allow-nonloopback", false, "UNSAFE: allow unauthenticated direct non-loopback binding")
+	)
+	flag.Parse()
+
+	if !*allowInsecureNonLocal && !isLoopbackAddress(*addr) {
+		log.Fatalf("refusing non-loopback listen address %q without -insecure-allow-nonloopback; use a trusted VPN/reverse proxy/auth/TLS boundary for remote exposure", *addr)
+	}
+
+	host, err := newDemoHost(*rulesDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+	assets := optionalWebFS(*webDir)
+	handler, err := server.NewHandler(server.Config{Host: host, StaticFS: assets, ObserverEnabled: *enableObserver})
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	listener, err := net.Listen("tcp", *addr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer listener.Close()
+
+	httpServer := &http.Server{
+		Handler:           handler,
+		ReadHeaderTimeout: 5 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+	go func() {
+		<-ctx.Done()
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := httpServer.Shutdown(shutdownCtx); err != nil {
+			log.Printf("HTTP shutdown: %v", err)
+		}
+	}()
+
+	log.Printf("MOOX development server listening on http://%s (game=%s observer=%t)", listener.Addr(), demoGameID, *enableObserver)
+	if assets == nil {
+		log.Printf("web assets not found at %s; API/WS only (use Vite dev server or build web/)", *webDir)
+	}
+	if err := httpServer.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Fatal(err)
+	}
+}
+
+func newDemoHost(rulesDir string) (*app.Host, error) {
+	rules, err := game.LoadEconomyRules(rulesDir)
+	if err != nil {
+		return nil, fmt.Errorf("load rules: %w", err)
+	}
+	resolver, err := game.NewEconomyResolver(rules)
+	if err != nil {
+		return nil, fmt.Errorf("create economy resolver: %w", err)
+	}
+	state := core.NewSmallFixture(0x8008)
+	gameSession, err := session.NewGameSession(demoGameID, state, []session.Seat{{
+		ID:         1,
+		EmpireID:   state.Empires[0].ID,
+		Name:       "Developer",
+		Controller: session.ControllerLocalHuman,
+	}})
+	if err != nil {
+		return nil, fmt.Errorf("create demo session: %w", err)
+	}
+	host := app.NewHost()
+	if err := host.Register(app.Registration{Session: gameSession, Resolver: resolver, ImmediateResolver: resolver}); err != nil {
+		return nil, fmt.Errorf("register demo session: %w", err)
+	}
+	return host, nil
+}
+
+func optionalWebFS(dir string) fs.FS {
+	if strings.TrimSpace(dir) == "" {
+		return nil
+	}
+	if info, err := os.Stat(filepath.Join(dir, "index.html")); err != nil || info.IsDir() {
+		return nil
+	}
+	return os.DirFS(dir)
+}
+
+func isLoopbackAddress(addr string) bool {
+	host, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		return false
+	}
+	if strings.EqualFold(host, "localhost") {
+		return true
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
+}

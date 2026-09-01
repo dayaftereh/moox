@@ -5,24 +5,50 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: **none**.
+- Open slice marker: `docs/slices/_OPEN_SERVER_WEB_HMI_TRANSPORT_BASELINE_2026-09-01.md`.
 - Latest completed gameplay slice: **Tactical ship combat baseline**.
 - Implementation commit: `889f977` (`game: add tactical ship combat baseline`).
 - Core `StateSchemaVersion`: **21**.
 - Economy ruleset schema: **8**.
-- Active permanent evidence: **none**.
+- Active permanent evidence: `docs/research/SERVER_WEB_HMI_TRANSPORT_BASELINE_2026-09-01.md`.
 - Latest closed evidence: `docs/research/TACTICAL_SHIP_COMBAT_BASELINE_2026-09-01.md`.
-- Before starting new work, check `docs/slices/_OPEN_*.md`; there is currently no open slice. The next prepared objective is Slice 08 **Authoritative server, web HMI and transport baseline**.
+- Slice 08 **Authoritative server, web HMI and transport baseline** is active with Gates 1-3 complete / Gate 4 pending; resume Gate 4 before any later planned slice.
+
+## Active Slice 08 - Authoritative server, web HMI and transport baseline
+
+**Gates 1-3 are complete; Gate 4 is pending.**
+
+Permanent evidence: `docs/research/SERVER_WEB_HMI_TRANSPORT_BASELINE_2026-09-01.md`.
+Implemented application guide: `docs/architecture/WEB_APPLICATION.md`.
+
+Gate-3 implementation handoff:
+
+- `internal/session` exposes lightweight `Status()` plus participant-only detached `PlayerBattleViews(seatID)`; player transport never filters privileged `ObserverView`.
+- `internal/app` hosts registered GameSessions, owns Resolver dependencies, schema-1 player/observer snapshots, mutation receipts, application `change_sequence`, newest-invalidation subscriber fan-out and automatic server-owned phase progression.
+- Game revision, Battle command/runtime sequencing and application `change_sequence` remain deliberately distinct. A partial Seat submission can advance only application sequence; rejected operations advance none.
+- `internal/server` implements the accepted `/api/v1` HTTP surface with standard `net/http`, strict/bounded JSON decoding, same-origin mutation checks, observer opt-in, schema-1 error mapping, static SPA serving and `github.com/coder/websocket v1.8.15` notification-only WebSocket streaming.
+- WebSocket emits only `snapshot_invalidated`; fresh HTTP snapshots remain source of truth after normal invalidation or reconnect.
+- `cmd/moox-server` is a loopback-first standalone host with explicit unsafe non-loopback override, graceful shutdown and an explicit deterministic `demo` fixture until Slice 09 provides real New Game generation.
+- `web/` is React + strict TypeScript + Vite, using native `fetch`/`WebSocket`. It discovers the hosted game, shows Game/turn/phase/revision/change sequence, Empire/Colonies/participant Battles, submits a real `colony.assign_population` CommandBatch and refetches after invalidation/reconnect.
+- transport tests prove real Population assignment, WS invalidation/HTTP resync, error/origin/observer boundaries, SPA/API fallback separation, accepted real `battle.fire_beam` through the Battle endpoint, and byte-identical final Observer state between direct Session execution and HTTP-hosted execution.
+- production frontend build and a real standalone server were exercised together; headless Chrome rendered the loaded HMI with the WebSocket connected and the demo strategic data/form visible. The temporary test listener was stopped afterward.
+- no gameplay/schema expansion occurred: Core21, command1, event1, economy8, ship-hulls3 and tactical-combat1 remain the boundaries.
+
+Gate-4 resume:
+
+1. Re-run changed-Go gofmt check, focused transport/session/app/server/cmd tests, full `go test ./... -count=1`, `go vet ./...`, `npm run build` and `git diff --check`.
+2. Re-check loopback/headless/no-Wails dependency, ignored generated web files, exact one OPEN marker and no stale Gate-3-pending live documentation.
+3. Commit implementation/data/evidence, then close the Slice in README/PROJECT_STATUS/ACTIVE_RESEARCH/HISTORY, remove the OPEN marker and create the closing docs commit.
+4. Do not push unless explicitly requested.
 
 ## Prepared next-slice queue - 2026-09-01
 
 Accepted application direction: `docs/architecture/ADR-0004-authoritative-server-web-client.md`. The primary product topology is an authoritative Go game server plus browser-first web HMI over HTTP/WebSocket; Wails v3 is optional one-click native packaging only and must not bypass the server gameplay contract.
 
-1. Slice 08 - **Authoritative server, web HMI and transport baseline** (`PLANNED_08_SERVER_WEB_HMI_TRANSPORT_BASELINE.md`).
-2. Slice 09 - **New Game and galaxy generation baseline** (`PLANNED_09_NEW_GAME_GALAXY_GENERATION_BASELINE.md`).
-3. Slice 10 - **Diplomacy, war and peace baseline** (`PLANNED_10_DIPLOMACY_WAR_PEACE_BASELINE.md`).
-4. Slice 11 - **Troop Transport, invasion and conquest baseline** (`PLANNED_11_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE.md`).
-5. Slice 12 - **Empire elimination and first headless victory loop** (`PLANNED_12_EMPIRE_ELIMINATION_FIRST_HEADLESS_VICTORY_LOOP.md`).
+1. Slice 09 - **New Game and galaxy generation baseline** (`PLANNED_09_NEW_GAME_GALAXY_GENERATION_BASELINE.md`).
+2. Slice 10 - **Diplomacy, war and peace baseline** (`PLANNED_10_DIPLOMACY_WAR_PEACE_BASELINE.md`).
+3. Slice 11 - **Troop Transport, invasion and conquest baseline** (`PLANNED_11_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE.md`).
+4. Slice 12 - **Empire elimination and first headless victory loop** (`PLANNED_12_EMPIRE_ELIMINATION_FIRST_HEADLESS_VICTORY_LOOP.md`).
 
 Roadmap milestone: Slice 12 should prove the first complete deterministic match lifecycle from a real New Game through war/conquest to an authoritative winner. Re-audit and number the next fidelity/depth tranche only after that milestone.
 

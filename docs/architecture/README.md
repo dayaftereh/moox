@@ -72,7 +72,7 @@ Accepted decision: `ADR-0004-authoritative-server-web-client.md`.
 
 ## Runtime package direction
 
-The intended runtime split is:
+The implemented runtime split after Slice 08 is:
 
 ```text
 internal/core
@@ -82,31 +82,38 @@ internal/game
     strategic commands, validation, resolution and domain events
 
 internal/session
-    GameSession, seats, turn phases, submissions, reconnect/session lifecycle
+    GameSession, seats, turn phases, submissions and player/observer projections
 
 internal/protocol
-    versioned commands, events, PlayerView, ObserverView and transport DTOs
+    versioned commands, events and transport-neutral envelopes
 
 internal/battle
     tactical BattleSession state and combat commands/resolution
 
-internal/agent
-    common controller boundary for built-in and external AI
+internal/app
+    hosted-game registry, automatic server-owned phase driver, player/observer snapshot envelopes,
+    non-authoritative change_sequence and invalidation subscribers
 
 internal/server
-    remote multiplayer transport and session hosting
+    net/http API, WebSocket invalidation stream, transport validation/error mapping and SPA assets
+
+cmd/moox-server
+    loopback-first standalone server and deterministic development fixture bootstrap
+
+web
+    React + TypeScript + Vite browser presentation and user interaction only
+
+internal/agent
+    future/common controller boundary for built-in and external AI
 
 internal/mcp
-    optional MCP adapter over the normal agent/game API
+    optional MCP adapter over the normal application/game API
 
-app/services
-    Wails v3 application services
-
-frontend
-    presentation and user interaction only
+optional future Wails shell
+    starts the same local server and loads the same web URL; native conveniences only
 ```
 
-These package names are architectural targets. They may be introduced incrementally as the engine grows.
+The authoritative application topology and local workflow are documented in `WEB_APPLICATION.md`. Wails is no longer a privileged application-service layer and must never bypass the HTTP/WebSocket gameplay contract.
 
 ## Authoritative state
 
@@ -466,6 +473,8 @@ Network transports, Wails services and MCP remain adapters to this boundary and 
 - `ADR-0001-go-wails-v3.md` - Go/Wails v3 portability and layer-boundary decision.
 - `ADR-0002-research-float64.md` - historical first RP-native `float64` decision; superseded for general numeric policy by ADR-0003.
 - `ADR-0003-domain-native-float64.md` - canonical continuous-quantity and explicit rounding-boundary policy.
+- `ADR-0004-authoritative-server-web-client.md` - authoritative Go server, browser-first HTTP/WebSocket client and optional Wails wrapper decision.
+- `WEB_APPLICATION.md` - implemented Slice-08 server/web runtime, API/revision/security model and local development workflow.
 - `CORE.md` - deterministic core-state, RNG and save/load contract.
 - `SESSION_PROTOCOL.md` - concrete implemented session/command/observer contract.
 - `ASSET_PIPELINE.md` - normalized asset pipeline.

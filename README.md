@@ -25,20 +25,23 @@ Current snapshot: **2026-09-01**.
 
 Master of Orion X is now actively in deterministic headless runtime development. The repository contains the pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), normalized runtime datasets, authoritative Core/Game/Session infrastructure and a growing set of original-evidence-backed strategic rules.
 
-The game does not yet provide a complete match lifecycle, but the deterministic headless surface now includes Economy/Research/Construction, colonization and Outposts, concrete military Ships/Fleets, movement/split/merge, Command Points, hostile strategic encounters and the first exact tactical ship-combat vertical slice. Core schema 21 persists weapon snapshots. The next prepared tranche targets the remaining blockers to a first complete playable loop: server/web HMI transport, real deterministic New Game/galaxy generation, war/peace diplomacy, invasion/Colony conquest and Empire elimination/victory.
+The game does not yet provide a complete match lifecycle, but the deterministic runtime now includes Economy/Research/Construction, colonization and Outposts, concrete military Ships/Fleets, movement/split/merge, Command Points, hostile strategic encounters, the first exact tactical ship-combat vertical slice, and an authoritative browser-first application boundary. Slice 08 Gate 3 adds the Go hosted-game/server layers, HTTP/WebSocket transport, standalone loopback server and React/Vite HMI proof. The remaining blockers to the first complete match are real deterministic New Game/galaxy generation, war/peace diplomacy, invasion/Colony conquest and Empire elimination/victory.
 
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slice 07 **Tactical ship combat baseline** is closed. There is currently no open slice marker. The next prepared objective is Slice 08 **Authoritative server, web HMI and transport baseline**, followed by Slices 09-12 through real New Game, war/peace, conquest and the first headless victory loop.
+**Slice state:** Slice 08 **Authoritative server, web HMI and transport baseline** is active with **Gates 1-3 complete / Gate 4 pending**. The authoritative Go host/server, HTTP/WebSocket transport, standalone `moox-server` and React/Vite architecture-proof HMI are implemented and integration-tested; Gate 4 remains the fresh final QA/commit/closure step.
 
 ### Active / prepared slice queue
 
-| Slice | Planned slice | Main purpose |
+| Slice | Status | Main purpose |
 | ---: | --- | --- |
-| 5 | `PLANNED_05_COMMAND_POINTS_SHIP_MAINTENANCE.md` | Command-Point capacity/usage and Treasury overage Maintenance |
-| 6 | `PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md` | Automatic hostile strategic encounters -> deterministic BattleSession handoff |
-| 7 | `PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md` | First narrow deterministic tactical ship-combat vertical slice |
+| 8 | **active; Gates 1-3 complete / Gate 4 pending** | Authoritative Go server + HTTP/WebSocket + browser HMI; Wails optional wrapper only |
+| 9 | planned | Deterministic real New Game / two-Empire galaxy generation |
+| 10 | planned | Diplomacy / war / peace baseline and attack authorization |
+| 11 | planned | Troop Transport, invasion, Colony capture and conquered Population handoff |
+| 12 | planned | First deterministic end-to-end match from New Game to conquest winner |
+
 ### Latest runtime checkpoints
 
 - 297480 - Core schema 19 combat-Fleet whole/subset movement, stationary split/merge, current-Empire speed/range derivation, deterministic transit/arrival, save/load and replay coverage.
@@ -88,6 +91,7 @@ The active runtime follows a domain-native numeric architecture: continuous quan
 - docs/architecture/README.md - runtime architecture overview for parallel turns, authoritative sessions, battles, observer and AI.
 - docs/architecture/ADR-0001-go-wails-v3.md - historical Go/Wails portability decision; its pure-Go core boundary remains valid while the Wails-first application direction is superseded.
 - docs/architecture/ADR-0004-authoritative-server-web-client.md - accepted authoritative Go server + web-first HMI + optional Wails wrapper decision.
+- docs/architecture/WEB_APPLICATION.md - implemented Slice-08 server/web runtime, local development workflow, API/revision/security model and optional Wails packaging boundary.
 - docs/architecture/CORE.md - deterministic headless simulation state, RNG and save/load contract.
 - docs/architecture/SESSION_PROTOCOL.md - implemented session, command, observer and battle-boundary contract.
 - `reference/README.md` - policy for locally supplied original-game files.

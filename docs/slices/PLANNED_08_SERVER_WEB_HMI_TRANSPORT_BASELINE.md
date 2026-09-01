@@ -1,6 +1,6 @@
 # Planned slice 08 - Authoritative server, web HMI and transport baseline
 
-Status: **planned / queued; not open**.
+Status: **active; Gates 1-3 complete / Gate 4 pending**.
 
 Queue position: **8 of 12**.
 
@@ -54,36 +54,36 @@ Defer unless Gate 2 deliberately includes a tiny proof:
 
 ## Gate 1 - Checkup + architecture/transport analysis
 
-- [ ] Re-check Git/session state and confirm no open slice/foreign writer.
-- [ ] Re-read ADR-0004, `internal/protocol`, GameSession/BattleSession and Observer boundaries.
-- [ ] Inventory every currently public use case that a remote player/observer must invoke or read.
-- [ ] Prove which existing revisions/events are sufficient for reconnect/resync and identify any missing transport-neutral projection method.
-- [ ] Evaluate standard-library vs selected HTTP/router/WebSocket dependencies and record the dependency/security trade-off.
-- [ ] Define local-development bind defaults and the boundary for remote authentication/TLS without pretending production auth is solved.
-- [ ] Evaluate browser frontend stack/build embedding choices and choose the smallest durable baseline.
-- [ ] Verify that an optional Wails shell can consume the same HTTP/WebSocket client contract without direct gameplay calls.
-- [ ] Produce permanent architecture/transport evidence and present the exact Gate-2 contract before implementation.
+- [x] Re-check Git/session state and confirm no open slice/foreign writer.
+- [x] Re-read ADR-0004, `internal/protocol`, GameSession/BattleSession and Observer boundaries.
+- [x] Inventory every currently public use case that a remote player/observer must invoke or read.
+- [x] Prove which existing revisions/events are sufficient for reconnect/resync and identify any missing transport-neutral projection method.
+- [x] Evaluate standard-library vs selected HTTP/router/WebSocket dependencies and record the dependency/security trade-off.
+- [x] Define local-development bind defaults and the boundary for remote authentication/TLS without pretending production auth is solved.
+- [x] Evaluate browser frontend stack/build embedding choices and choose the smallest durable baseline.
+- [x] Verify that an optional Wails shell can consume the same HTTP/WebSocket client contract without direct gameplay calls.
+- [x] Produce permanent architecture/transport evidence and present the exact Gate-2 contract before implementation.
 
 ## Gate 2 - Implementation decision
 
-- [ ] Accept API versioning and endpoint/resource model.
-- [ ] Accept HTTP command/result/error envelope and mapping to existing protocol/session errors.
-- [ ] Accept WebSocket message vocabulary, revision semantics and reconnect/resync behavior.
-- [ ] Accept player/observer authority/authentication boundary for local baseline.
-- [ ] Accept frontend framework/build/static-asset approach.
-- [ ] Accept package/executable boundaries and dependency policy.
-- [ ] Accept optional Wails-wrapper contract and explicit non-gameplay native surface.
-- [ ] Freeze compatibility requirements for existing headless tests/CLI/analyzer.
+- [x] Accept API versioning and endpoint/resource model.
+- [x] Accept HTTP command/result/error envelope and mapping to existing protocol/session errors.
+- [x] Accept WebSocket message vocabulary, revision semantics and reconnect/resync behavior.
+- [x] Accept player/observer authority/authentication boundary for local baseline.
+- [x] Accept frontend framework/build/static-asset approach.
+- [x] Accept package/executable boundaries and dependency policy.
+- [x] Accept optional Wails-wrapper contract and explicit non-gameplay native surface.
+- [x] Freeze compatibility requirements for existing headless tests/CLI/analyzer.
 
 ## Gate 3 - Implementation
 
-- [ ] Implement the agreed Go server/application adapter and `cmd/moox-server` or equivalent.
-- [ ] Implement versioned HTTP projection/command endpoints without duplicating gameplay rules.
-- [ ] Implement WebSocket revision/lifecycle notifications and reconnect/resync behavior.
-- [ ] Implement the minimal browser HMI proving remote session observation and at least one authoritative command flow.
-- [ ] Add transport authority/revision/error/reconnect tests.
-- [ ] Add deterministic integration coverage proving HTTP/WS adapter behavior does not change core/session replay results.
-- [ ] Document local run/development workflow and optional Wails packaging boundary.
+- [x] Implement the agreed Go server/application adapter and `cmd/moox-server` or equivalent.
+- [x] Implement versioned HTTP projection/command endpoints without duplicating gameplay rules.
+- [x] Implement WebSocket revision/lifecycle notifications and reconnect/resync behavior.
+- [x] Implement the minimal browser HMI proving remote session observation and at least one authoritative command flow.
+- [x] Add transport authority/revision/error/reconnect tests.
+- [x] Add deterministic integration coverage proving HTTP/WS adapter behavior does not change core/session replay results.
+- [x] Document local run/development workflow and optional Wails packaging boundary.
 
 ## Gate 4 - Follow-up QA + commit + close
 

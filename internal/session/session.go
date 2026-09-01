@@ -48,6 +48,13 @@ type SeatView struct {
 	Submitted bool `json:"submitted"`
 }
 
+type Status struct {
+	GameID   string `json:"game_id"`
+	Revision uint64 `json:"revision"`
+	Turn     uint64 `json:"turn"`
+	Phase    Phase  `json:"phase"`
+}
+
 type PlayerView struct {
 	GameID                string                      `json:"game_id"`
 	Revision              uint64                      `json:"revision"`
@@ -992,6 +999,39 @@ func (s *GameSession) BuildingChoices(seatID protocol.SeatID, colonyID core.ID, 
 	}
 	return rules.AvailableBuildingChoices(s.state, s.seats[index].seat.EmpireID, colonyID)
 }
+func (s *GameSession) Status() Status {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	return Status{
+		GameID:   s.gameID,
+		Revision: s.revision,
+		Turn:     s.state.Turn,
+		Phase:    s.phase,
+	}
+}
+
+func (s *GameSession) PlayerBattleViews(seatID protocol.SeatID) ([]battle.View, error) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	if s.seatIndexLocked(seatID) < 0 {
+		return nil, fmt.Errorf("unknown seat %d", seatID)
+	}
+	views := make([]battle.View, 0, len(s.battles))
+	for _, child := range s.battles {
+		view := child.View()
+		if containsSeatID(view.Spec.Participants, seatID) {
+			views = append(views, view)
+		}
+	}
+	sort.Slice(views, func(i, j int) bool { return views[i].Spec.ID < views[j].Spec.ID })
+	return views, nil
+}
+
+func containsSeatID(seats []protocol.SeatID, seatID protocol.SeatID) bool {
+	index := sort.Search(len(seats), func(i int) bool { return seats[i] >= seatID })
+	return index < len(seats) && seats[index] == seatID
+}
+
 func (s *GameSession) PlayerView(seatID protocol.SeatID) (PlayerView, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
