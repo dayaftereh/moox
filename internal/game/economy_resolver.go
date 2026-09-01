@@ -219,29 +219,71 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 		return Resolution{}, err
 	}
 	events = append(events, constructionEvents...)
-	// Original 1.31 recomputes strategic blockades after the first Colony pass and
-	// immediately before Settler movement. Rebuild the derived system blockade state
-	// here so Population-transfer arrivals and the final Food snapshot consume the same
-	// current Fleet/Diplomacy result.
-	if err := recomputeSystemBlockades(state); err != nil {
-		return Resolution{}, err
-	}
-	populationTransferEvents, err := r.advancePopulationTransfers(state)
+	boundaryEvents, encounters, err := r.prepareEncounterBoundary(ctx, state)
 	if err != nil {
 		return Resolution{}, err
 	}
-	events = append(events, populationTransferEvents...)
+	events = append(events, boundaryEvents...)
+	if len(encounters) != 0 {
+		return Resolution{State: state, Events: events, Encounters: encounters}, nil
+	}
+	postEvents, err := r.finishPostEncounter(state)
+	if err != nil {
+		return Resolution{}, err
+	}
+	events = append(events, postEvents...)
+	return Resolution{State: state, Events: events}, nil
+}
+
+func (r *EconomyResolver) ResumeAfterEncounters(ctx ResolveContext, state *core.GameState, outcomes []EncounterOutcome) (Resolution, error) {
+	if r == nil || r.Rules == nil {
+		return Resolution{}, fmt.Errorf("economy resolver has no rules")
+	}
+	if state == nil {
+		return Resolution{}, fmt.Errorf("game state must not be nil")
+	}
+	events, err := r.applyEncounterOutcomes(state, outcomes)
+	if err != nil {
+		return Resolution{}, err
+	}
+	boundaryEvents, encounters, err := r.prepareEncounterBoundary(ctx, state)
+	if err != nil {
+		return Resolution{}, err
+	}
+	events = append(events, boundaryEvents...)
+	if len(encounters) != 0 {
+		return Resolution{State: state, Events: events, Encounters: encounters}, nil
+	}
+	postEvents, err := r.finishPostEncounter(state)
+	if err != nil {
+		return Resolution{}, err
+	}
+	events = append(events, postEvents...)
+	return Resolution{State: state, Events: events}, nil
+}
+
+func (r *EconomyResolver) finishPostEncounter(state *core.GameState) ([]DomainEvent, error) {
+	// Original 1.31 recomputes strategic blockades after combat and immediately
+	// before Settler movement. Encounter waves must be exhausted before entering
+	// this continuation so battle casualties and retreats affect both systems.
+	if err := recomputeSystemBlockades(state); err != nil {
+		return nil, err
+	}
+	events, err := r.advancePopulationTransfers(state)
+	if err != nil {
+		return nil, err
+	}
 	// Recalculate the next-state local economy only after the original-order
 	// apply phases, then rematerialize logistics without emitting a second turn event.
 	for i := range state.Colonies {
 		if err := r.recalculateColony(state, &state.Colonies[i]); err != nil {
-			return Resolution{}, err
+			return nil, err
 		}
 	}
 	if _, err := r.materializeFoodLogistics(state, false); err != nil {
-		return Resolution{}, err
+		return nil, err
 	}
-	return Resolution{State: state, Events: events}, nil
+	return events, nil
 }
 
 func (r *EconomyResolver) recalculateColony(state *core.GameState, colony *core.Colony) error {

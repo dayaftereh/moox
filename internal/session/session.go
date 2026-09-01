@@ -81,7 +81,11 @@ type ObserverView struct {
 }
 
 type EncounterSpec struct {
-	Participants []protocol.SeatID `json:"participants"`
+	SystemID          core.ID            `json:"system_id,omitempty"`
+	Attacker          game.EncounterSide `json:"attacker,omitempty"`
+	Defender          game.EncounterSide `json:"defender,omitempty"`
+	DefenderColonyIDs []core.ID          `json:"defender_colony_ids,omitempty"`
+	Participants      []protocol.SeatID  `json:"participants"`
 }
 
 type GameSession struct {
@@ -97,6 +101,8 @@ type GameSession struct {
 	nextTelemetrySeq  uint64
 	battles           []*battle.Session
 	nextBattleID      uint64
+	encounterResolver game.EncounterResolver
+	encounterContext  game.ResolveContext
 }
 
 func NewGameSession(gameID string, state *core.GameState, seats []Seat) (*GameSession, error) {
@@ -237,15 +243,76 @@ func (s *GameSession) ResolveStrategic(resolver game.Resolver) error {
 	for i := range s.seats {
 		batches[i] = protocol.CloneCommandBatch(*s.seats[i].submission)
 	}
-
-	ctx := game.ResolveContext{Seats: make([]game.SeatAuthority, len(s.seats))}
-	for i := range s.seats {
-		ctx.Seats[i] = game.SeatAuthority{SeatID: s.seats[i].seat.ID, EmpireID: s.seats[i].seat.EmpireID}
-	}
+	ctx := s.resolveContextLocked()
 	resolution, err := resolver.Resolve(ctx, stateInput, batches)
 	if err != nil {
 		return fmt.Errorf("resolve strategic turn: %w", err)
 	}
+	if err := s.validateStrategicResolutionLocked(resolution); err != nil {
+		return err
+	}
+
+	var staged game.EncounterResolver
+	if len(resolution.Encounters) != 0 {
+		var ok bool
+		staged, ok = resolver.(game.EncounterResolver)
+		if !ok {
+			return fmt.Errorf("strategic resolver returned encounters without staged encounter continuation support")
+		}
+	}
+	committed, err := cloneState(resolution.State)
+	if err != nil {
+		return err
+	}
+	encounters := make([]EncounterSpec, len(resolution.Encounters))
+	for i := range resolution.Encounters {
+		encounters[i] = encounterSpecFromGame(resolution.Encounters[i])
+	}
+	preparedBattles, err := s.prepareEncountersLocked(encounters)
+	if err != nil {
+		return err
+	}
+
+	// Everything above is validation/preparation only. From this point onward the
+	// pre-encounter resolution can be committed atomically to the authoritative session.
+	s.state = committed
+	s.revision++
+	s.appendResolvedEventsLocked(resolution.Events)
+	if len(preparedBattles) != 0 {
+		s.encounterResolver = staged
+		s.encounterContext = cloneResolveContext(ctx)
+	} else {
+		s.encounterResolver = nil
+		s.encounterContext = game.ResolveContext{}
+	}
+	s.commitPreparedEncountersLocked(preparedBattles)
+	return nil
+}
+
+func (s *GameSession) resolveContextLocked() game.ResolveContext {
+	ctx := game.ResolveContext{Seats: make([]game.SeatAuthority, len(s.seats))}
+	for i := range s.seats {
+		ctx.Seats[i] = game.SeatAuthority{SeatID: s.seats[i].seat.ID, EmpireID: s.seats[i].seat.EmpireID}
+	}
+	return ctx
+}
+
+func cloneResolveContext(ctx game.ResolveContext) game.ResolveContext {
+	return game.ResolveContext{Seats: append([]game.SeatAuthority(nil), ctx.Seats...)}
+}
+
+func encounterSpecFromGame(encounter game.Encounter) EncounterSpec {
+	cloned := game.CloneEncounter(encounter)
+	return EncounterSpec{
+		SystemID:          cloned.SystemID,
+		Attacker:          cloned.Attacker,
+		Defender:          cloned.Defender,
+		DefenderColonyIDs: cloned.DefenderColonyIDs,
+		Participants:      cloned.Participants,
+	}
+}
+
+func (s *GameSession) validateStrategicResolutionLocked(resolution game.Resolution) error {
 	if resolution.State == nil {
 		return fmt.Errorf("strategic resolver returned nil state")
 	}
@@ -258,30 +325,16 @@ func (s *GameSession) ResolveStrategic(resolver game.Resolver) error {
 	if resolution.State.Seed != s.state.Seed {
 		return fmt.Errorf("strategic resolver changed immutable game seed")
 	}
-
-	committed, err := cloneState(resolution.State)
-	if err != nil {
-		return err
-	}
 	for _, event := range resolution.Events {
 		if err := s.validateResolvedEventLocked(event); err != nil {
 			return err
 		}
 	}
-	encounters := make([]EncounterSpec, len(resolution.Encounters))
-	for i := range resolution.Encounters {
-		encounters[i] = EncounterSpec{Participants: append([]protocol.SeatID(nil), resolution.Encounters[i].Participants...)}
-	}
-	preparedBattles, err := s.prepareEncountersLocked(encounters)
-	if err != nil {
-		return err
-	}
+	return nil
+}
 
-	// Everything above is validation/preparation only. From this point onward the
-	// resolution can be committed atomically to the authoritative session.
-	s.state = committed
-	s.revision++
-	for _, event := range resolution.Events {
+func (s *GameSession) appendResolvedEventsLocked(events []game.DomainEvent) {
+	for _, event := range events {
 		s.events = append(s.events, protocol.DomainEvent{
 			SchemaVersion:   protocol.EventSchemaVersion,
 			Sequence:        s.nextEventSequence,
@@ -295,10 +348,7 @@ func (s *GameSession) ResolveStrategic(resolver game.Resolver) error {
 		})
 		s.nextEventSequence++
 	}
-	s.commitPreparedEncountersLocked(preparedBattles)
-	return nil
 }
-
 func (s *GameSession) validateResolvedEventLocked(event game.DomainEvent) error {
 	if event.Kind == "" {
 		return fmt.Errorf("strategic resolver returned event with empty kind")
@@ -347,6 +397,8 @@ func (s *GameSession) beginEncountersLocked(specs []EncounterSpec) ([]battle.Vie
 	if len(s.battles) != 0 {
 		return nil, fmt.Errorf("encounters already exist for turn %d", s.state.Turn)
 	}
+	s.encounterResolver = nil
+	s.encounterContext = game.ResolveContext{}
 	prepared, err := s.prepareEncountersLocked(specs)
 	if err != nil {
 		return nil, err
@@ -360,6 +412,7 @@ func (s *GameSession) prepareEncountersLocked(specs []EncounterSpec) ([]*battle.
 		return nil, nil
 	}
 	created := make([]*battle.Session, 0, len(specs))
+	seenSystems := make(map[core.ID]struct{}, len(specs))
 	for i, encounter := range specs {
 		if len(encounter.Participants) < 2 {
 			return nil, fmt.Errorf("encounter[%d] requires at least two participants", i)
@@ -369,13 +422,23 @@ func (s *GameSession) prepareEncountersLocked(specs []EncounterSpec) ([]*battle.
 				return nil, fmt.Errorf("encounter[%d] references unknown seat %d", i, seatID)
 			}
 		}
+		if encounter.SystemID != 0 {
+			if _, duplicate := seenSystems[encounter.SystemID]; duplicate {
+				return nil, fmt.Errorf("encounter wave contains multiple battles for system %d", encounter.SystemID)
+			}
+			seenSystems[encounter.SystemID] = struct{}{}
+		}
 		id := s.nextBattleID + uint64(i)
 		spec := battle.Spec{
-			ID:            id,
-			GameID:        s.gameID,
-			StrategicTurn: s.state.Turn,
-			Participants:  append([]protocol.SeatID(nil), encounter.Participants...),
-			Seed:          battle.DeriveSeed(s.state.Seed, s.state.Turn, id),
+			ID:                id,
+			GameID:            s.gameID,
+			StrategicTurn:     s.state.Turn,
+			SystemID:          encounter.SystemID,
+			Attacker:          battleSideFromGame(encounter.Attacker),
+			Defender:          battleSideFromGame(encounter.Defender),
+			DefenderColonyIDs: append([]core.ID(nil), encounter.DefenderColonyIDs...),
+			Participants:      append([]protocol.SeatID(nil), encounter.Participants...),
+			Seed:              battle.DeriveSeed(s.state.Seed, s.state.Turn, id),
 		}
 		child, err := battle.NewSession(spec)
 		if err != nil {
@@ -389,9 +452,41 @@ func (s *GameSession) prepareEncountersLocked(specs []EncounterSpec) ([]*battle.
 	return created, nil
 }
 
+func battleSideFromGame(side game.EncounterSide) battle.Side {
+	return battle.Side{
+		EmpireID:         side.EmpireID,
+		SeatID:           side.SeatID,
+		CombatFleetIDs:   append([]core.ID(nil), side.CombatFleetIDs...),
+		ShipIDs:          append([]core.ID(nil), side.ShipIDs...),
+		CivilianFleetIDs: append([]core.ID(nil), side.CivilianFleetIDs...),
+	}
+}
+
+func gameSideFromBattle(side battle.Side) game.EncounterSide {
+	return game.EncounterSide{
+		EmpireID:         side.EmpireID,
+		SeatID:           side.SeatID,
+		CombatFleetIDs:   append([]core.ID(nil), side.CombatFleetIDs...),
+		ShipIDs:          append([]core.ID(nil), side.ShipIDs...),
+		CivilianFleetIDs: append([]core.ID(nil), side.CivilianFleetIDs...),
+	}
+}
+
+func gameEncounterFromBattleSpec(spec battle.Spec) game.Encounter {
+	return game.Encounter{
+		SystemID:          spec.SystemID,
+		Attacker:          gameSideFromBattle(spec.Attacker),
+		Defender:          gameSideFromBattle(spec.Defender),
+		DefenderColonyIDs: append([]core.ID(nil), spec.DefenderColonyIDs...),
+		Participants:      append([]protocol.SeatID(nil), spec.Participants...),
+	}
+}
+
 func (s *GameSession) commitPreparedEncountersLocked(created []*battle.Session) {
 	if len(created) == 0 {
 		s.phase = PhasePostResolution
+		s.encounterResolver = nil
+		s.encounterContext = game.ResolveContext{}
 		s.appendEventLocked(protocol.EventScopeSession, "phase_changed", 0, map[string]any{"phase": s.phase})
 		return
 	}
@@ -403,6 +498,7 @@ func (s *GameSession) commitPreparedEncountersLocked(created []*battle.Session) 
 	}
 	s.appendEventLocked(protocol.EventScopeSession, "phase_changed", 0, map[string]any{"phase": s.phase})
 }
+
 func (s *GameSession) CompleteBattle(battleID uint64, result battle.Result) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -413,24 +509,126 @@ func (s *GameSession) CompleteBattle(battleID uint64, result battle.Result) erro
 	if child == nil {
 		return fmt.Errorf("unknown battle %d", battleID)
 	}
+	if s.encounterResolver == nil {
+		return s.completeLegacyBattleLocked(child, result)
+	}
+	return s.completeStagedBattleLocked(child, battleID, result)
+}
+
+func (s *GameSession) completeLegacyBattleLocked(child *battle.Session, result battle.Result) error {
 	if err := child.Complete(result); err != nil {
 		return err
 	}
 	if !s.allBattlesCompletedLocked() {
 		return nil
 	}
-
-	// As with turn submissions, authoritative completion events are emitted in
-	// battle-ID order, not wall-clock completion order.
 	for _, completed := range s.battles {
-		view := completed.View()
-		s.appendEventLocked(protocol.EventScopeBattle, "battle_completed", 0, view)
+		s.appendEventLocked(protocol.EventScopeBattle, "battle_completed", 0, completed.View())
 	}
 	s.phase = PhasePostResolution
 	s.appendEventLocked(protocol.EventScopeSession, "phase_changed", 0, map[string]any{"phase": s.phase})
 	return nil
 }
 
+func (s *GameSession) completeStagedBattleLocked(child *battle.Session, battleID uint64, result battle.Result) error {
+	normalized, err := child.ValidateResult(result)
+	if err != nil {
+		return err
+	}
+	active := 0
+	for _, current := range s.battles {
+		if current.View().Phase == battle.PhaseActive {
+			active++
+		}
+	}
+	if active > 1 {
+		return child.Complete(normalized)
+	}
+	if active != 1 {
+		return fmt.Errorf("encounter wave has no active final battle")
+	}
+
+	outcomes, err := s.encounterOutcomesWithCandidateLocked(battleID, normalized)
+	if err != nil {
+		return err
+	}
+	stateInput, err := cloneState(s.state)
+	if err != nil {
+		return err
+	}
+	resolution, err := s.encounterResolver.ResumeAfterEncounters(cloneResolveContext(s.encounterContext), stateInput, outcomes)
+	if err != nil {
+		return fmt.Errorf("resume strategic encounters: %w", err)
+	}
+	if err := s.validateStrategicResolutionLocked(resolution); err != nil {
+		return err
+	}
+	committed, err := cloneState(resolution.State)
+	if err != nil {
+		return err
+	}
+	nextSpecs := make([]EncounterSpec, len(resolution.Encounters))
+	for i := range resolution.Encounters {
+		nextSpecs[i] = encounterSpecFromGame(resolution.Encounters[i])
+	}
+	preparedNext, err := s.prepareEncountersLocked(nextSpecs)
+	if err != nil {
+		return err
+	}
+
+	// All strategic continuation and next-wave preparation succeeded on clones.
+	// Only now may the final child and authoritative strategic state mutate.
+	if err := child.Complete(normalized); err != nil {
+		return err
+	}
+	s.state = committed
+	s.revision++
+	for _, completed := range s.battles {
+		s.appendEventLocked(protocol.EventScopeBattle, "battle_completed", 0, completed.View())
+	}
+	s.appendResolvedEventsLocked(resolution.Events)
+
+	if len(preparedNext) != 0 {
+		s.battles = preparedNext
+		s.nextBattleID += uint64(len(preparedNext))
+		for _, next := range s.battles {
+			s.appendEventLocked(protocol.EventScopeBattle, "battle_created", 0, next.View().Spec)
+		}
+		// Remain in PhaseEncounters; no transient PostResolution phase is emitted.
+		return nil
+	}
+
+	s.encounterResolver = nil
+	s.encounterContext = game.ResolveContext{}
+	s.phase = PhasePostResolution
+	s.appendEventLocked(protocol.EventScopeSession, "phase_changed", 0, map[string]any{"phase": s.phase})
+	return nil
+}
+
+func (s *GameSession) encounterOutcomesWithCandidateLocked(candidateBattleID uint64, candidate battle.Result) ([]game.EncounterOutcome, error) {
+	ordered := append([]*battle.Session(nil), s.battles...)
+	sort.Slice(ordered, func(i, j int) bool { return ordered[i].View().Spec.ID < ordered[j].View().Spec.ID })
+	outcomes := make([]game.EncounterOutcome, 0, len(ordered))
+	for _, child := range ordered {
+		view := child.View()
+		result := view.Result
+		if view.Spec.ID == candidateBattleID {
+			copyResult := candidate
+			result = &copyResult
+		}
+		if result == nil {
+			return nil, fmt.Errorf("battle %d has no completed result for encounter wave", view.Spec.ID)
+		}
+		outcomes = append(outcomes, game.EncounterOutcome{
+			BattleID:         view.Spec.ID,
+			Encounter:        gameEncounterFromBattleSpec(view.Spec),
+			WinnerSeat:       result.WinnerSeat,
+			Outcome:          result.Outcome,
+			DestroyedShipIDs: append([]core.ID(nil), result.DestroyedShipIDs...),
+		})
+	}
+	return outcomes, nil
+}
 func (s *GameSession) ResolveColonyBaseCommand(seatID protocol.SeatID, command protocol.Command, resolver *game.EconomyResolver) error {
 	if resolver == nil {
 		return fmt.Errorf("economy resolver must not be nil")
@@ -618,6 +816,8 @@ func (s *GameSession) CompleteTurn() error {
 		s.seats[i].submission = nil
 	}
 	s.battles = nil
+	s.encounterResolver = nil
+	s.encounterContext = game.ResolveContext{}
 	s.telemetry = nil
 	s.phase = PhasePlanning
 	s.appendEventLocked(protocol.EventScopeSession, "turn_advanced", 0, map[string]any{"turn": s.state.Turn})
