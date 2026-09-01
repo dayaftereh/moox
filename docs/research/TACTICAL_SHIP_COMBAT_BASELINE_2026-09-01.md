@@ -2,7 +2,7 @@
 
 Date: 2026-09-01
 
-Status: **Gates 1-3 complete; Gate 4 pending**
+Status: **Gates 1-4 complete; slice closed**
 
 Planned slice: `docs/slices/PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md`
 
@@ -694,7 +694,7 @@ The evidence is strong enough for Gate 2 to decide the first tactical state/weap
 **Stop here for Gate 2 acceptance/revision before tactical gameplay implementation.**
 ## Gate 2 accepted implementation contract
 
-Status: **Gates 1-3 complete; Gate 4 pending**
+Status: **Gates 1-4 complete; slice closed**
 
 Gate 2 accepts the Gate-1 canonical fixture and fixes the following implementation contract. These are architecture decisions for MOOX; original-MOO2 facts remain those evidenced above.
 
@@ -1100,7 +1100,7 @@ It explicitly does **not** accept a fake tactical-only weapon, arbitrary RNG ini
 
 ## Gate 3 implementation evidence
 
-Status: **complete on 2026-09-01; Gate 4 final QA/commit/closure pending**.
+Status: **Gates 1-4 complete; slice closed**
 
 Gate 3 implemented exactly the accepted Gate-2 vertical slice without adding any deferred tactical family.
 
@@ -1163,3 +1163,31 @@ Pre-handoff verification passed:
 Gate 3 does **not** implement deployment changes, movement/turning, facing, shields/recharge, non-Laser or multiple/modified weapon batteries, missiles/torpedoes/bombs/fighters/point-defense, generic internal subsystem damage, repair/regeneration, specials, retreat/capture/self-destruct/stasis, Colony/planet/station combat, race/leader/nonzero-crew tactical bonuses, NPC/monster/Antaran tactical variants, full weapon-design/miniaturization or active mid-battle process-restart persistence.
 
 **Gate 3 is complete. Stop before Gate 4 final QA, commits and slice closure.**
+
+
+## Gate 4 final QA and closure
+
+Gate 4 completed on 2026-09-01.
+
+Gameplay/data/evidence commit: `889f977` (`game: add tactical ship combat baseline`).
+
+Fresh Gate-4 verification on the committed implementation boundary:
+
+- changed Slice-07 Go files: gofmt-clean;
+- focused Core/Ruleset/Game/Battle/Session regressions: **PASS**, including fixed-seed tactical combat, command rollback, strategic encounter handoff, parallel BattleSession ordering, weapon snapshots and CombatFleet/CommandPoint compatibility;
+- deferred-family scan: no movement/turning/facing, missiles/torpedoes/bombs/fighters, repair/regeneration, capture/stasis/self-destruct, generic shield combat, Colony/station combat, leaders/crew or monster/Antaran tactical implementation was added; Colony/shield references are explicit support guards/rejections only;
+- supported tactical command surface remains exactly `battle.fire_beam` and `battle.end_activation`;
+- `go test ./... -count=1`: **PASS all packages**;
+- `go vet ./...`: **PASS**;
+- `git diff --check`: **PASS**;
+- wall-clock-independent parallel completion is covered by the real two-system regression: Battle 2 may finish first, but global completion remains Battle-ID order 1,2;
+- strategic reconciliation is covered by the real EconomyResolver regression: the destroyed defender concrete Ship and now-empty Fleet are removed while the winning attacker survives; terminal continuation failure remains retryable without child or strategic mutation.
+
+Final schema boundary remains:
+
+- Core state schema: **21**;
+- economy ruleset schema: **8**;
+- ship-hulls ruleset schema: **3**;
+- tactical-combat ruleset schema: **1**.
+
+Slice 07 is closed after this Gate-4 documentation/HISTORY handoff. Unsupported tactical families remain explicit follow-up work rather than being approximated here.

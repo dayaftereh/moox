@@ -1,6 +1,6 @@
 # Planned slice 07 - Tactical ship combat baseline
 
-Status: **planned / queued; not open**.
+Status: **closed; Gates 1-4 complete**.
 
 Queue position: **7 of 7**.
 
@@ -48,51 +48,53 @@ Defer unless Gate 1 proves essential:
 
 ## Gate 1 - Checkup + original analysis / reverse engineering
 
-- [ ] Re-check `internal/battle`, military design state and encounter handoff.
-- [ ] Create permanent tactical-baseline evidence document.
-- [ ] Choose a canonical minimal original MOO2 1.31 combat fixture whose rules can be proven independently.
-- [ ] Verify tactical turn/initiative order for that fixture.
-- [ ] Verify deployment/position coordinates and movement/facing only as required by the fixture.
-- [ ] Verify the selected weapon's range, firing eligibility, hit-chance RNG ownership and damage calculation.
-- [ ] Verify the minimum shield/armor/structure interaction needed for the fixture.
-- [ ] Verify ship destruction and battle-victory termination semantics.
-- [ ] Verify Battle RNG seed/stream ownership and whether the current infrastructure seed must be replaced/augmented by original-derived RNG semantics.
-- [ ] Verify how tactical survivors/losses map back to strategic ship/Fleet state.
-- [ ] Explicitly list every combat family deferred from the first baseline.
-- [ ] Present Gate-1 evidence and a very narrow deterministic implementation contract; stop before implementation.
+- [x] Re-check `internal/battle`, military design state and encounter handoff.
+- [x] Create permanent tactical-baseline evidence document.
+- [x] Choose a canonical minimal original MOO2 1.31 combat fixture whose rules can be proven independently.
+- [x] Verify tactical turn/initiative order for that fixture.
+- [x] Verify deployment/position coordinates and movement/facing only as required by the fixture.
+- [x] Verify the selected weapon's range, firing eligibility, hit-chance RNG ownership and damage calculation.
+- [x] Verify the minimum shield/armor/structure interaction needed for the fixture.
+- [x] Verify ship destruction and battle-victory termination semantics.
+- [x] Verify Battle RNG seed/stream ownership and whether the current infrastructure seed must be replaced/augmented by original-derived RNG semantics.
+- [x] Verify how tactical survivors/losses map back to strategic ship/Fleet state.
+- [x] Explicitly list every combat family deferred from the first baseline.
+- [x] Present Gate-1 evidence and a very narrow deterministic implementation contract; stop before implementation.
 
 ## Gate 2 - Implementation decision
 
-- [ ] Accept exact first tactical fixture and supported weapon/system subset.
-- [ ] Decide tactical Core state model: combatants, positions, facing, HP layers and turn state.
-- [ ] Decide battle command/event API and authority model.
-- [ ] Decide RNG stream ownership/replay strategy.
-- [ ] Decide how tactical snapshots/reference identities relate to strategic Ship instances.
-- [ ] Decide result/loss application back into strategic state.
-- [ ] Decide what remains hard-rejected rather than silently approximated.
+- [x] Accept exact first tactical fixture and supported weapon/system subset.
+- [x] Decide tactical Core state model: combatants, positions, facing, HP layers and turn state.
+- [x] Decide battle command/event API and authority model.
+- [x] Decide RNG stream ownership/replay strategy.
+- [x] Decide how tactical snapshots/reference identities relate to strategic Ship instances.
+- [x] Decide result/loss application back into strategic state.
+- [x] Decide what remains hard-rejected rather than silently approximated.
 
 ## Gate 3 - Implementation
 
-- [ ] Implement deterministic tactical state for the accepted fixture.
-- [ ] Implement turn/initiative and legal action validation.
-- [ ] Implement selected movement/firing path only.
-- [ ] Implement hit/damage/destruction layers proven by Gate 1.
-- [ ] Emit deterministic battle events suitable for replay/Observer views.
-- [ ] Produce an authoritative BattleSession result from the tactical engine.
-- [ ] Apply survivor/loss result back to strategic ship/Fleet state through the slice-06 handoff.
-- [ ] Add exact fixed-seed tactical fixtures and save/replay tests.
-- [ ] Add rejection tests for explicitly unsupported combat systems.
+- [x] Implement deterministic tactical state for the accepted fixture.
+- [x] Implement turn/initiative and legal action validation.
+- [x] Implement selected movement/firing path only.
+- [x] Implement hit/damage/destruction layers proven by Gate 1.
+- [x] Emit deterministic battle events suitable for replay/Observer views.
+- [x] Produce an authoritative BattleSession result from the tactical engine.
+- [x] Apply survivor/loss result back to strategic ship/Fleet state through the slice-06 handoff.
+- [x] Add exact fixed-seed tactical fixtures and save/replay tests.
+- [x] Add rejection tests for explicitly unsupported combat systems.
 
 ## Gate 4 - Follow-up QA + commit + close
 
-- [ ] `gofmt` changed Go files.
-- [ ] `go test ./... -count=1`.
-- [ ] `go vet ./...`.
-- [ ] `git diff --check`.
-- [ ] Run focused battle/session/strategic handoff and fixed-seed combat regressions.
-- [ ] Verify tactical result order/replay is independent of wall-clock execution.
-- [ ] Verify strategic ship losses/survivors round-trip exactly.
-- [ ] Update evidence/status/HISTORY and close marker.
+- [x] `gofmt` changed Go files.
+- [x] `go test ./... -count=1`.
+- [x] `go vet ./...`.
+- [x] `git diff --check`.
+- [x] Run focused battle/session/strategic handoff and fixed-seed combat regressions.
+- [x] Verify tactical result order/replay is independent of wall-clock execution.
+- [x] Verify strategic ship losses/survivors round-trip exactly.
+- [x] Update evidence/status/HISTORY and close marker.
+
+Gameplay/data/evidence commit: `889f977` (`game: add tactical ship combat baseline`).
 
 ## Exit criterion
 

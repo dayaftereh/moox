@@ -1,6 +1,6 @@
 # Master of Orion X project status
 
-Snapshot: **2026-08-31**
+Snapshot: **2026-09-01**
 
 This document is the high-level status page for Master of Orion X. Detailed reverse-engineering evidence remains in `docs/research/`; the single active investigation is tracked in `docs/research/ACTIVE_RESEARCH.md`.
 
@@ -213,4 +213,6 @@ Uncreative fidelity checkpoint: docs/research/UNCREATIVE_INITIAL_SELECTION_2026-
 
 Hyper-Advanced fidelity checkpoint: `docs/research/HYPER_ADVANCED_RESEARCH_2026-08-28.md` records the original per-player counters, `+10000 RP` dynamic strategic cost, repeat completion semantics and the deliberately-unreproduced UI preview off-by-one.
 
-Slice 06 **Strategic hostile encounters / BattleSession handoff** is closed. Gameplay/evidence commit `096fd0a` implements the staged encounter continuation after Fleet transit + Construction and before Blockades/transfers, deterministic directed-hostile Empire-aggregate BattleSession waves, explicit attacker/defender Fleet/Ship/civilian/Colony identity, singular validated battle results, atomic final-wave commit/retry semantics, concrete casualty cleanup, civilian-only overrun and closest-other-owned-Colony retreat/destruction. Core schema 20/economy schema 8 remain unchanged. Gate 4 passed gofmt, focused CombatFleet/Blockade/Encounter/BattleSession ordering regressions, full `go test ./... -count=1`, `go vet ./...` and diff checks. No slice is currently open; Slice 07 **Tactical ship combat baseline** is the next prepared objective.
+Slice 06 **Strategic hostile encounters / BattleSession handoff** is closed. Gameplay/evidence commit `096fd0a` implements the staged encounter continuation after Fleet transit + Construction and before Blockades/transfers, deterministic directed-hostile Empire-aggregate BattleSession waves, explicit attacker/defender Fleet/Ship/civilian/Colony identity, singular validated battle results, atomic final-wave commit/retry semantics, concrete casualty cleanup, civilian-only overrun and closest-other-owned-Colony retreat/destruction. Core schema 20/economy schema 8 remain unchanged. Gate 4 passed gofmt, focused CombatFleet/Blockade/Encounter/BattleSession ordering regressions, full `go test ./... -count=1`, `go vet ./...` and diff checks. Slice 07 **Tactical ship combat baseline** is now closed; gameplay/data/evidence commit `889f977` completed the narrow tactical baseline, and no later slice is open.
+
+Slice 07 **Tactical ship combat baseline** is closed. Gameplay/data/evidence commit `889f977` advances Core to schema21 with persistent weapon snapshots and adds tactical ruleset schema1 plus the exact Fusion-Laser-Frigate vs unarmed Nuclear-Frigate deterministic BattleSession path. Gate 4 re-ran focused battle/session/strategic handoff and fixed-seed regressions, verified wall-clock-independent Battle-ID ordering and exact strategic casualty reconciliation, then passed full `go test ./... -count=1`, `go vet ./...` and diff checks. No tactical scope beyond the accepted Slice-07 fixture was added.

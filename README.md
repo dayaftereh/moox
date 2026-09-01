@@ -30,7 +30,7 @@ The game is **not playable yet**, but the deterministic headless strategic surfa
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slice 06 **Strategic hostile encounters / BattleSession handoff** is **closed**. Gameplay/evidence commit `096fd0a` adds the staged post-Construction/pre-Blockade encounter boundary, deterministic BattleSession waves, explicit strategic side/result identity, atomic result reconciliation, concrete casualties, civilian-only overrun and original-backed losing-side retreat. Core schema remains 20 and economy schema remains 8. Gate 4 passed focused Fleet/Blockade/Encounter/BattleSession regressions, full `go test ./... -count=1`, `go vet ./...` and diff checks. No slice is currently open; **Slice 07 Tactical ship combat baseline** is the next prepared objective.
+**Slice state:** Slice 07 **Tactical ship combat baseline** is closed. Gameplay/data/evidence commit `889f977` adds Core schema21 weapon snapshots, tactical schema1, the exact deterministic one-Laser BattleSession baseline and atomic Slice-06 strategic casualty reconciliation. Gate 4 passed focused regressions, full tests, vet and diff checks. There is currently no open slice marker; choose the next objective from the live handoff before starting new implementation.
 
 ### Active / prepared slice queue
 

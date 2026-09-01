@@ -6,14 +6,32 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 
 - Branch: `main`.
 - Open slice marker: **none**.
-- Latest completed gameplay slice: **Strategic hostile encounters / BattleSession handoff**.
-- Implementation commit: `096fd0a` (`game: add strategic encounter battle handoff`).
-- Core `StateSchemaVersion`: **20**.
+- Latest completed gameplay slice: **Tactical ship combat baseline**.
+- Implementation commit: `889f977` (`game: add tactical ship combat baseline`).
+- Core `StateSchemaVersion`: **21**.
 - Economy ruleset schema: **8**.
 - Active permanent evidence: **none**.
-- Latest closed evidence: `docs/research/STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF_2026-08-31.md`.
-- Before starting new work, check `docs/slices/_OPEN_*.md`; no slice is currently open. The next prepared objective is Slice 07 **Tactical ship combat baseline**.
+- Latest closed evidence: `docs/research/TACTICAL_SHIP_COMBAT_BASELINE_2026-09-01.md`.
+- Before starting new work, check `docs/slices/_OPEN_*.md`; there is currently no open slice. Select and prepare the next objective before creating a new marker.
 
+## Closed Slice 07 - Tactical ship combat baseline
+
+**Gates 1-4 are complete.** Gameplay/data/evidence commit `889f977` implements the deliberately narrow original-derived tactical ship-combat baseline on top of the Slice-06 encounter handoff.
+
+Delivered baseline:
+
+- Core schema **21** persists structural weapon-mount identity on ShipDesign/built Ship snapshots while preserving immutable built-Ship equipment across later design revision.
+- `empire.save_military_design` remains unarmed-compatible and adds only the accepted one-slot standard Laser surface with technology, space and cost enforcement.
+- tactical ruleset schema **1** contains the evidenced initiative, exact original uint32 RNG, Beam/Laser, Frigate, Nuclear/Fusion and Electronic-Computer facts; economy schema8 and ship-hulls schema3 remain unchanged.
+- the exact supported 1-vs-1 strategic fixture freezes a self-contained TacticalSpec and executes `battle.fire_beam` / `battle.end_activation` with BattleSession-local round, initiative, command sequence, Armor/Structure, readiness, destruction and deterministic local events.
+- the golden fixture consumes RNG values `100,19,100,100`, ends at `0xFD95EBB9`, applies Armor4->0 then Structure0->4 and yields `tactical_victory`.
+- rejected or deferred tactical actions are transactional; unsupported strategic encounters remain explicit lifecycle/manual-result Battles rather than approximated.
+- terminal tactical results reuse the Slice-06 cloned strategic continuation, including retry-safe failure semantics, concrete defender Ship/empty-Fleet cleanup and stable Battle-ID completion order across independent parallel systems.
+- Gate 4 re-ran focused battle/session/strategic handoff and fixed-seed regressions, verified wall-clock-independent ordering and strategic loss reconciliation, and passed full `go test ./... -count=1`, `go vet ./...`, changed-file gofmt and `git diff --check`.
+
+Permanent evidence: `docs/research/TACTICAL_SHIP_COMBAT_BASELINE_2026-09-01.md`.
+
+There is no active slice after this closure. Choose and prepare the next objective before opening a new recovery marker.
 ## Closed Slice 06 - Strategic hostile encounters / BattleSession handoff
 
 **Gates 1-4 are complete.** Gameplay/evidence commit `096fd0a` implements strategic hostile encounter production, staged BattleSession waves, casualty/retreat reconciliation and post-battle continuation; Core schema 20/economy schema 8 remain unchanged. Gate 4 passed focused strategic regressions, full tests, vet and diff checks.
@@ -222,7 +240,7 @@ Recommended later order:
 - **Slice 06 - Strategic hostile encounters -> BattleSession handoff** - `docs/slices/PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md`
 - **Slice 07 - Tactical ship combat baseline** - `docs/slices/PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md`
 
-No slice is currently open. Start Slice 07 only with a fresh repository/session check and a new dated `_OPEN_` marker.
+Slice 06 is closed. Slice 07 has since closed via gameplay/data/evidence commit `889f977`; no later slice is currently open.
 ## Later deferred dependencies
 
 - tactical ship combat state/commands, weapon resolution and tactical positioning;

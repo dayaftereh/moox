@@ -41,11 +41,11 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- none; Slice 06 closed on 2026-09-01.
+- none; Slice 07 Tactical ship combat baseline is closed.
 
 Prepared queue:
 
-1. `PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md`
+- none; select the next objective through docs/research/ACTIVE_RESEARCH.md before opening a new slice.
 
 The queue order is the current recommendation, not a hard dependency lock. Reprioritization is allowed before a later slice is opened if the dependency check still passes.
 ## Four gates
