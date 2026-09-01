@@ -37,16 +37,15 @@ When a planned slice actually starts:
 
 Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1 always requires a fresh repository checkup and original-evidence review at the time work begins.
 
-### Current active / prepared queue - 2026-08-31
+### Current active / prepared queue - 2026-09-01
 
 Active:
 
-- none; Slice 05 closed on 2026-08-31.
+- none; Slice 06 closed on 2026-09-01.
 
 Prepared queue:
 
-1. `PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md`
-2. `PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md`
+1. `PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md`
 
 The queue order is the current recommendation, not a hard dependency lock. Reprioritization is allowed before a later slice is opened if the dependency check still passes.
 ## Four gates

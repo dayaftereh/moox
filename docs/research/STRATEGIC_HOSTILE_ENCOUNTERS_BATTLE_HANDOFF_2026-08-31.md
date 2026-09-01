@@ -2,11 +2,11 @@
 
 Date: 2026-08-31
 
-Status: **Gates 1-3 complete; Gate 4 pending**
+Status: **closed; Gates 1-4 complete**
 
 Planned slice: `docs/slices/PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md`
 
-Recovery marker: `docs/slices/_OPEN_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF_2026-08-31.md`
+Recovery marker: **removed at Gate 4 closure**.
 
 ## Objective
 
@@ -850,7 +850,7 @@ Gate 1 now has direct evidence for the original trigger boundary, stationary/new
 
 The key architecture correction is that MOOX cannot continue to resolve Blockades/transfers before awaiting BattleSession results. The existing child-battle lifecycle is reusable, but the strategic resolver must become a pre-encounter / encounter-wave / post-encounter continuation.
 
-**Gates 1-3 are complete. Gate 4 owns fresh final QA, commits and slice closure.**
+**Gates 1-4 are complete. Slice 06 is closed.**
 
 ## Gate 3 implementation
 
@@ -1068,3 +1068,18 @@ git diff --check
 ### Deferrals preserved
 
 Gate 3 did not add tactical movement/fire/damage, neutral sneak-attack/war-declaration UI/semantics, NPC/monster unseated combat, station/Colony-only space battle, bombardment/invasion, ground combat, Hyperspace Flux retreat destruction, detailed tactical retreat choice/officers, or durable active-GameSession process-restart serialization.
+
+## Gate 4 closure
+
+Gate 4 was completed on 2026-09-01.
+
+- Gameplay/evidence commit: `096fd0a` (`game: add strategic encounter battle handoff`).
+- Core `StateSchemaVersion` remains **20**.
+- Economy ruleset schema remains **8**.
+- No tactical damage/weapon/bombardment/invasion implementation was added.
+- Focused CombatFleet/hostility/Blockade/Encounter/BattleSession and parallel replay-order regressions passed.
+- `go test ./... -count=1` passed.
+- `go vet ./...` passed.
+- `git diff --check` and tracked/untracked whitespace checks passed.
+- The Slice-06 `_OPEN_` recovery marker is removed by the closing documentation commit.
+- Next prepared objective: Slice 07 **Tactical ship combat baseline**.

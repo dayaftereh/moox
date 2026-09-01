@@ -5,15 +5,71 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: none.
-- Latest completed gameplay slice: **Command Points / ship Maintenance**.
-- Implementation commit: `16afe0b` (`game: add command point maintenance`).
+- Open slice marker: **none**.
+- Latest completed gameplay slice: **Strategic hostile encounters / BattleSession handoff**.
+- Implementation commit: `096fd0a` (`game: add strategic encounter battle handoff`).
 - Core `StateSchemaVersion`: **20**.
 - Economy ruleset schema: **8**.
-- Active permanent evidence: none.
-- Latest closed evidence: `docs/research/COMMAND_POINTS_SHIP_MAINTENANCE_2026-08-31.md`.
-- Before starting new work, check `docs/slices/_OPEN_*.md`; no gameplay slice is open. Slice 06 **Strategic hostile encounters / BattleSession handoff** is the next prepared objective.
+- Active permanent evidence: **none**.
+- Latest closed evidence: `docs/research/STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF_2026-08-31.md`.
+- Before starting new work, check `docs/slices/_OPEN_*.md`; no slice is currently open. The next prepared objective is Slice 07 **Tactical ship combat baseline**.
 
+## Closed Slice 06 - Strategic hostile encounters / BattleSession handoff
+
+**Gates 1-4 are complete.** Gameplay/evidence commit `096fd0a` implements strategic hostile encounter production, staged BattleSession waves, casualty/retreat reconciliation and post-battle continuation; Core schema 20/economy schema 8 remain unchanged. Gate 4 passed focused strategic regressions, full tests, vet and diff checks.
+
+Permanent evidence: `docs/research/STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF_2026-08-31.md`.
+
+Gate-1 conclusions:
+
+- corrected Watcom symbol parsing places `Next_Turn_Calc_` at VA `0x136B3`, `Search_For_Battles_` at `0xE9D62`, `Move_All_Ships_Toward_Stars_` at `0xFFEEA`; future RE must read each current symbol address from the four bytes before its record header, not the trailing next-symbol value;
+- original `Next_Turn_Calc_` does movement -> player/colony changes/Production -> `Search_For_Battles_` -> later `Compute_Blockades_` -> `Move_Settlers_`, so the MOOX encounter boundary belongs after Fleet transit + Construction and before blockade/population transfers;
+- combat search scans all stationary Ships at real stars, so already-stationary hostile co-location and same-turn arrivals are both eligible;
+- original sides aggregate all same-owner Ships at a star; MOOX must aggregate all same-Empire combat Fleet containers/ShipIDs into one side rather than create Fleet-pair cross products;
+- 3+ Empire systems resolve as sequential attacker/target pairs, while independent systems are safe candidates for MOOX parallel BattleSession waves;
+- original battle-star/attacker order is RNG-driven and local humans choose targets; Gate 1 recommends canonical stable ordering for current already-hostile MOOX rather than copying only the RNG fragment without attack-choice/sneak-war semantics;
+- current `hostile` directed relations are the safe automatic-attack subset; neutral sneak attacks/war declarations remain deferred;
+- Colony/Transport/Outpost Ships are noncombat assets. Unescorted civilian-only targets are destroyed without a fake tactical battle; civilians accompanying a losing combat side retreat with it;
+- original losing survivors are marked retreating, then moved toward the closest other owned Colony star before Blockades are computed; if retreat cannot be established they are destroyed;
+- current `battle.Result{WinnerSeats, Outcome}` is therefore too weak for a correct strategic resume. Gate 2 must accept a minimum winner/post-battle-disposition contract; tactical damage remains Slice 07;
+- original Colony/orbital defense is a valid combat target, but MOOX lacks a tactical station model. Carry Colony context for Fleet-vs-Fleet handoff; defer colony/station-only battles, bombardment and invasion;
+- newly arrived Colony/Outpost special Ships pass through combat search before later human colonization/outpost opportunity discovery;
+- current `GameSession` commits a fully resolved State before entering `PhaseEncounters`; Slice 06 requires a pre-encounter / encounter-wave / post-encounter continuation instead so Blockades/transfers wait for battle results;
+- no durable GameSession/BattleSession persistence exists today; Gate 1 recommends deterministic replay/Observer recovery only, not pretending active-battle disk saves exist.
+
+Proposed Gate-2 shape: keep Core schema 20, split strategic resolution after Construction, generate one pair per System per wave using enhanced System/attacker/defender/Fleet/Ship/civilian IDs, apply results atomically in Battle-ID order, re-evaluate multi-party Systems, then run Blockades/transfers. Normal battle results require one winner and may carry destroyed Ship IDs; surviving loser assets perform the directly proven minimum retreat. Civilian-only overrun auto-resolves; station-only combat remains deferred.
+
+Accepted Gate-2 contract:
+
+- keep Core schema 20 and economy schema 8; no persisted Core encounter/retreat object;
+- retain the existing one-shot `Resolver` for compatibility and add a staged `EncounterResolver` continuation for real encounter waves; `EconomyResolver` implements it and GameSession may retain that continuation in memory only while encounters are active;
+- split the turn after Fleet transit + Construction and before Blockades/transfers; if no BattleSession is needed, run post-encounter work immediately, otherwise freeze the pre-post-resolution State in `PhaseEncounters`;
+- encounter sides aggregate all same-Empire stationary combat Fleet IDs/Ship IDs and separate Colony/Outpost civilian Fleet IDs; explicit attacker/defender Empire+Seat identity, System ID and sorted defender Colony IDs are part of the Battle Spec;
+- only directed `hostile` relations auto-attack; canonical order is System ID, attacker Empire ID, defender Empire ID; all participants must have real Seats;
+- at most one Battle per System per wave; independent Systems may run in parallel; completed waves apply in Battle-ID order and contested Systems are re-derived before the next wave;
+- current-wave IDs are frozen references into the Core State; no duplicate tactical Ship snapshot/HP model is added in Slice 06;
+- supported Battle result has exactly one winner, non-empty Outcome metadata and optional sorted unique destroyed concrete Ship IDs restricted to that Battle Spec;
+- the final outstanding result of a wave is validated without mutating the child, then continuation/next-wave preparation runs on cloned State; only successful preparation commits the final result, strategic changes and next wave atomically;
+- destroyed concrete Ships are removed from `GameState.Ships` and Fleet ShipIDs; empty combat Fleets are removed;
+- surviving loser combat/civilian Fleets retreat to the closest other owned Colony System by squared coordinate distance, tie lowest System ID; if no destination or movement cannot be established for an asset, that asset is removed rather than trying a second destination;
+- unescorted civilian-only target Fleets can be immediately overrun only when no defender combat Fleet and no defender Colony are present; defender Colony suppresses fake civilian/station auto-combat;
+- Fleet-vs-Fleet battles may carry defender Colony context but no synthetic station tactical unit, bombardment, invasion or ownership change;
+- no-encounter turn commits normally; encounter turn commits the frozen pre-encounter State then one revision per completed wave, with final wave + post-encounter continuation allowed as one atomic revision;
+- Observer/replay must preserve Battle Specs/IDs/seeds and stable event order; durable active-battle process-restart persistence remains deferred.
+
+Gate-3 minimum tests include no-encounter compatibility, stationary and same-turn-arrival encounters, newly constructed Ship participation, same-Empire Fleet aggregation, directed/reciprocal hostility ordering, independent-system parallel waves, three-Empire sequential waves, wall-clock completion independence, atomic invalid-final-result retry, destroyed Ship/Fleet cleanup, deterministic retreat/destruction, civilian overrun/Colony suppression, Colony context, post-battle Blockade/transfer timing, Observer isolation and identical replay.
+
+Gate-3 implementation now in tree:
+
+- `EconomyResolver.Resolve` freezes the turn after Fleet transit + Construction and before Blockades/transfers when a BattleSession wave is required; `ResumeAfterEncounters` applies outcomes, re-derives follow-up waves and only then executes post-encounter Blockades/transfers/economy materialization;
+- stationary same-Empire Fleet containers aggregate into directed attacker/defender sides with sorted Fleet/Ship/civilian IDs and defender Colony context; directed `hostile` only, canonical System/attacker/defender order, one Battle/System/wave;
+- civilian-only Colony/Outpost Fleets may be overrun immediately only without defender combat Fleet/Colony; Colony-only/station-only combat remains deferred;
+- `battle.Spec` now preserves strategic side context and `battle.Result` normalizes to exactly one winner with optional validated `DestroyedShipIDs`; `ValidateResult` is pure;
+- GameSession retains an in-memory staged continuation, commits parallel results only in Battle-ID order and prepares the final continuation/next wave on cloned State before atomically completing the final child;
+- casualties remove concrete Ships/empty Fleets; surviving loser combat and fixed-special civilian Fleets retreat to the closest other owned Colony System by squared distance/tie-lowest-SystemID or are destroyed if retreat cannot be established;
+- same-turn arrival and military Construction participate before combat; Blockade and Population-transfer work waits until the final wave; Observer BattleSpecs are detached and identical real sessions replay identical State/events/battles;
+- focused strategic encounter tests, `go test ./... -count=1` and `git diff --check` pass. Gate 4 still owns fresh `go vet ./...`, final diff review, commits and closure.
+Slice 06 is closed. Start Slice 07 only with a fresh repository/session check and a new dated `_OPEN_` marker.
 ## Closed Slice 05 - Command Points and ship Maintenance
 
 **Gates 1-4 are complete.** Gate 4 passed fresh gofmt, focused original-accounting/compatibility regressions, full tests, vet and diff checks; implementation commit `16afe0b` is recorded and the recovery marker is removed.
@@ -166,13 +222,11 @@ Recommended later order:
 - **Slice 06 - Strategic hostile encounters -> BattleSession handoff** - `docs/slices/PLANNED_06_STRATEGIC_HOSTILE_ENCOUNTERS_BATTLE_HANDOFF.md`
 - **Slice 07 - Tactical ship combat baseline** - `docs/slices/PLANNED_07_TACTICAL_SHIP_COMBAT_BASELINE.md`
 
-No slice is currently open. Start Slice 04 only with a fresh repository/session check and a new dated `_OPEN_` marker.
+No slice is currently open. Start Slice 07 only with a fresh repository/session check and a new dated `_OPEN_` marker.
 ## Later deferred dependencies
 
-- generic combat-Fleet movement/orders and tactical ship composition;
+- tactical ship combat state/commands, weapon resolution and tactical positioning;
 - Transport/troop movement and invasion;
-- hostile-system engagement before colonization;
-- Ship command-point capacity/usage and overage Maintenance;
 - Spy state/Maintenance;
 - trade/research/Tribute treaty economics;
 - Officer/Leader state, Maintenance and economic bonuses;
