@@ -1,6 +1,6 @@
 # Slice 08 research - authoritative server, web HMI and transport baseline
 
-Status: **Gates 1-3 complete; Gate 4 pending**
+Status: **closed; Gates 1-4 complete**
 Date: 2026-09-01
 
 ## Accepted architecture baseline
@@ -835,3 +835,21 @@ Gate 4 repeated the Slice-08 verification independently before any commit:
 - `git diff --check`: **PASS**.
 
 The implementation is therefore ready for the Gate-4 implementation/evidence commit, followed by closing documentation/HISTORY and OPEN-marker removal.
+
+
+## Gate 4 closure
+
+Slice 08 closed on 2026-09-01 after a fresh Gate-4 QA pass.
+
+Implementation/data/evidence commit: `9315111` (`app: add authoritative web server baseline`).
+
+Gate-4 closure actions:
+
+- all seven Gate-4 checklist items completed;
+- final architecture/status/HISTORY handoff updated;
+- Slice-08 `_OPEN_` recovery marker removed in the closing documentation commit;
+- no new gameplay or persisted schema was added during closure;
+- next prepared objective is Slice 09 `PLANNED_09_NEW_GAME_GALAXY_GENERATION_BASELINE.md`;
+- no push was performed.
+
+The closed Slice-08 behavior is now the application baseline for later slices: authoritative Go Session/Game/Battle rules remain below `internal/app`/`internal/server`, browser state is recovered from HTTP snapshots, WebSocket remains invalidation-only, standalone binding remains loopback-first and Wails remains optional packaging rather than an authority path.

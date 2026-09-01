@@ -5,41 +5,35 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: `docs/slices/_OPEN_SERVER_WEB_HMI_TRANSPORT_BASELINE_2026-09-01.md`.
-- Latest completed gameplay slice: **Tactical ship combat baseline**.
-- Implementation commit: `889f977` (`game: add tactical ship combat baseline`).
+- Open slice marker: **none**.
+- Latest completed implementation slice: **Slice 08 - Authoritative server, web HMI and transport baseline**.
+- Slice-08 implementation/data/evidence commit: `9315111` (`app: add authoritative web server baseline`).
+- Latest completed gameplay slice: **Slice 07 - Tactical ship combat baseline** (`889f977`).
 - Core `StateSchemaVersion`: **21**.
 - Economy ruleset schema: **8**.
-- Active permanent evidence: `docs/research/SERVER_WEB_HMI_TRANSPORT_BASELINE_2026-09-01.md`.
-- Latest closed evidence: `docs/research/TACTICAL_SHIP_COMBAT_BASELINE_2026-09-01.md`.
-- Slice 08 **Authoritative server, web HMI and transport baseline** is active with Gates 1-3 complete / Gate 4 pending; resume Gate 4 before any later planned slice.
+- Latest closed evidence: `docs/research/SERVER_WEB_HMI_TRANSPORT_BASELINE_2026-09-01.md`.
+- No implementation slice is currently active.
+- Next prepared objective: `docs/slices/PLANNED_09_NEW_GAME_GALAXY_GENERATION_BASELINE.md`.
 
-## Active Slice 08 - Authoritative server, web HMI and transport baseline
+## No active slice - Slice 08 closed
 
-**Gates 1-3 are complete; Gate 4 is pending.**
+Slice 08 is closed after all four gates. The authoritative application baseline is now implemented and committed.
+
+Closed result:
+
+- `internal/session` exposes transport-neutral lightweight Status and participant-only Battle projections.
+- `internal/app` owns hosted-game registration, server-owned phase driving, application `change_sequence`, snapshot envelopes and invalidation subscriptions without becoming gameplay authority.
+- `internal/server` exposes the versioned HTTP API and notification-only WebSocket transport with bounded JSON, same-origin mutation checks, Observer opt-in and static SPA serving.
+- `cmd/moox-server` is a loopback-first standalone host; its Slice-08 bootstrap is the explicit deterministic `demo` fixture until Slice 09 replaces fixture-only startup with real New Game generation.
+- `web/` is the React/TypeScript/Vite browser proof using native `fetch`/`WebSocket`, HTTP snapshots as source of truth and a real `colony.assign_population` command path.
+- fresh Gate-4 QA passed changed/new gofmt, focused transport/session regressions, full `go test ./... -count=1`, `go vet ./...`, `npm run build`, standalone/headless Chrome runtime proof and `git diff --check`.
+- Wails remains optional packaging only; no native/direct gameplay authority path exists.
+- persisted gameplay schemas remain Core21 / Command1 / Event1 / Economy8 / Ship-Hulls3 / Tactical1.
 
 Permanent evidence: `docs/research/SERVER_WEB_HMI_TRANSPORT_BASELINE_2026-09-01.md`.
-Implemented application guide: `docs/architecture/WEB_APPLICATION.md`.
+Application guide: `docs/architecture/WEB_APPLICATION.md`.
 
-Gate-3 implementation handoff:
-
-- `internal/session` exposes lightweight `Status()` plus participant-only detached `PlayerBattleViews(seatID)`; player transport never filters privileged `ObserverView`.
-- `internal/app` hosts registered GameSessions, owns Resolver dependencies, schema-1 player/observer snapshots, mutation receipts, application `change_sequence`, newest-invalidation subscriber fan-out and automatic server-owned phase progression.
-- Game revision, Battle command/runtime sequencing and application `change_sequence` remain deliberately distinct. A partial Seat submission can advance only application sequence; rejected operations advance none.
-- `internal/server` implements the accepted `/api/v1` HTTP surface with standard `net/http`, strict/bounded JSON decoding, same-origin mutation checks, observer opt-in, schema-1 error mapping, static SPA serving and `github.com/coder/websocket v1.8.15` notification-only WebSocket streaming.
-- WebSocket emits only `snapshot_invalidated`; fresh HTTP snapshots remain source of truth after normal invalidation or reconnect.
-- `cmd/moox-server` is a loopback-first standalone host with explicit unsafe non-loopback override, graceful shutdown and an explicit deterministic `demo` fixture until Slice 09 provides real New Game generation.
-- `web/` is React + strict TypeScript + Vite, using native `fetch`/`WebSocket`. It discovers the hosted game, shows Game/turn/phase/revision/change sequence, Empire/Colonies/participant Battles, submits a real `colony.assign_population` CommandBatch and refetches after invalidation/reconnect.
-- transport tests prove real Population assignment, WS invalidation/HTTP resync, error/origin/observer boundaries, SPA/API fallback separation, accepted real `battle.fire_beam` through the Battle endpoint, and byte-identical final Observer state between direct Session execution and HTTP-hosted execution.
-- production frontend build and a real standalone server were exercised together; headless Chrome rendered the loaded HMI with the WebSocket connected and the demo strategic data/form visible. The temporary test listener was stopped afterward.
-- no gameplay/schema expansion occurred: Core21, command1, event1, economy8, ship-hulls3 and tactical-combat1 remain the boundaries.
-
-Gate-4 resume:
-
-1. Re-run changed-Go gofmt check, focused transport/session/app/server/cmd tests, full `go test ./... -count=1`, `go vet ./...`, `npm run build` and `git diff --check`.
-2. Re-check loopback/headless/no-Wails dependency, ignored generated web files, exact one OPEN marker and no stale Gate-3-pending live documentation.
-3. Commit implementation/data/evidence, then close the Slice in README/PROJECT_STATUS/ACTIVE_RESEARCH/HISTORY, remove the OPEN marker and create the closing docs commit.
-4. Do not push unless explicitly requested.
+Next action: start Slice 09 only when work actually begins. At that time run a fresh Gate 1, inspect the repository/original New Game evidence and create exactly one dated `_OPEN_` marker. Do not create it during Slice-08 closure.
 
 ## Prepared next-slice queue - 2026-09-01
 

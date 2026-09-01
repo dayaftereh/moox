@@ -26,9 +26,9 @@ The game is **not yet a complete match lifecycle**, but the deterministic runtim
 
 ## Prepared roadmap to first complete match lifecycle
 
-Slices 01-07 are closed. Slice 08 **Authoritative server, web HMI and transport baseline** is active with Gates 1-3 complete / Gate 4 pending. The accepted queue is:
+Slices 01-08 are closed. No implementation slice is currently open. The roadmap state is:
 
-1. Slice 08 - **active, Gates 1-3 complete / Gate 4 pending** - authoritative server, web HMI and HTTP/WebSocket transport baseline.
+1. Slice 08 - **closed** - authoritative server, web HMI and HTTP/WebSocket transport baseline (`9315111`).
 2. Slice 09 - deterministic New Game and galaxy generation baseline.
 3. Slice 10 - diplomacy / war / peace baseline.
 4. Slice 11 - Troop Transport, invasion and Colony conquest baseline.
@@ -204,7 +204,7 @@ The first meaningful game loop remains:
 8. colonize,
 9. save and reload exactly the same state.
 
-Slice 08 Gate 3 now implements the ADR-0004 application boundary: `internal/app`, `internal/server`, `cmd/moox-server` and the React/Vite `web/` HMI all consume the existing Session/Protocol authority model. Wails remains optional packaging only; presentation/native layers must not create a second gameplay authority path. Gate 4 remains the fresh final QA/commit/closure step.
+Slice 08 is closed: `internal/app`, `internal/server`, `cmd/moox-server` and the React/Vite `web/` HMI implement the ADR-0004 application boundary over the existing Session/Protocol authority model. Wails remains optional packaging only. The next prepared objective is Slice 09 deterministic New Game / galaxy generation baseline; it has not been opened yet.
 
 ## Where to look
 

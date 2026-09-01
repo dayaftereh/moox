@@ -41,7 +41,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- `PLANNED_08_SERVER_WEB_HMI_TRANSPORT_BASELINE.md` -> `_OPEN_SERVER_WEB_HMI_TRANSPORT_BASELINE_2026-09-01.md`, Gates 1-3 complete / Gate 4 pending.
+- **none**. Slice 08 is closed; no `_OPEN_*.md` marker should remain.
 
 Prepared queue:
 

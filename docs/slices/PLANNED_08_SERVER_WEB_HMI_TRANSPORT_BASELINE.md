@@ -1,10 +1,10 @@
 # Planned slice 08 - Authoritative server, web HMI and transport baseline
 
-Status: **active; Gates 1-3 complete / Gate 4 pending**.
+Status: **closed; Gates 1-4 complete**.
 
 Queue position: **8 of 12**.
 
-This file is a prepared slice specification. It is not an `_OPEN_*.md` recovery marker and does not mean implementation has started.
+This file is the closed Slice-08 specification. Permanent implementation evidence lives in `docs/research/SERVER_WEB_HMI_TRANSPORT_BASELINE_2026-09-01.md` and the completed-slice audit is recorded in `docs/slices/HISTORY.md`.
 
 ## Objective
 
@@ -87,13 +87,13 @@ Defer unless Gate 2 deliberately includes a tiny proof:
 
 ## Gate 4 - Follow-up QA + commit + close
 
-- [ ] Run formatter/linter/build checks for Go and the selected web toolchain.
-- [ ] Run focused HTTP/WebSocket authority/revision/reconnect regressions.
-- [ ] Run full Go tests and vet.
-- [ ] Verify headless server starts without Wails/native GUI dependencies.
-- [ ] Verify browser HMI can operate against a remote/loopback server using the same contract.
-- [ ] Verify no direct frontend/Wails gameplay bypass was introduced.
-- [ ] Run `git diff --check`, update architecture/status/HISTORY and close the marker.
+- [x] Run formatter/linter/build checks for Go and the selected web toolchain.
+- [x] Run focused HTTP/WebSocket authority/revision/reconnect regressions.
+- [x] Run full Go tests and vet.
+- [x] Verify headless server starts without Wails/native GUI dependencies.
+- [x] Verify browser HMI can operate against a remote/loopback server using the same contract.
+- [x] Verify no direct frontend/Wails gameplay bypass was introduced.
+- [x] Run `git diff --check`, update architecture/status/HISTORY and close the marker.
 
 ## Exit criterion
 

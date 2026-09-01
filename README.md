@@ -30,19 +30,21 @@ The game does not yet provide a complete match lifecycle, but the deterministic 
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slice 08 **Authoritative server, web HMI and transport baseline** is active with **Gates 1-3 complete / Gate 4 pending**. The authoritative Go host/server, HTTP/WebSocket transport, standalone `moox-server` and React/Vite architecture-proof HMI are implemented and integration-tested; Gate 4 remains the fresh final QA/commit/closure step.
+**Slice state:** Slice 08 **Authoritative server, web HMI and transport baseline** is **closed**. No implementation slice is currently open. The next prepared objective is Slice 09 **Deterministic New Game / galaxy generation baseline**; start it only with a fresh Gate 1 and a new `_OPEN_` marker.
 
-### Active / prepared slice queue
+### Current / prepared slice queue
 
 | Slice | Status | Main purpose |
 | ---: | --- | --- |
-| 8 | **active; Gates 1-3 complete / Gate 4 pending** | Authoritative Go server + HTTP/WebSocket + browser HMI; Wails optional wrapper only |
+| 8 | **closed** | Authoritative Go server + HTTP/WebSocket + browser HMI; implementation commit `9315111` |
 | 9 | planned | Deterministic real New Game / two-Empire galaxy generation |
 | 10 | planned | Diplomacy / war / peace baseline and attack authorization |
 | 11 | planned | Troop Transport, invasion, Colony capture and conquered Population handoff |
 | 12 | planned | First deterministic end-to-end match from New Game to conquest winner |
 
 ### Latest runtime checkpoints
+
+- `9315111` - authoritative hosted-game/server layer, HTTP/WebSocket transport, standalone loopback server and React/Vite HMI baseline.
 
 - 297480 - Core schema 19 combat-Fleet whole/subset movement, stationary split/merge, current-Empire speed/range derivation, deterministic transit/arrival, save/load and replay coverage.
 
