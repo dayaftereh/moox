@@ -149,6 +149,7 @@ type EconomyRules struct {
 	ShipShields                                   []ruleset.ShipShield
 	ShipFuelCells                                 []ruleset.ShipFuelCell
 	TacticalCombat                                *ruleset.TacticalCombatFile
+	NewGameGalaxy                                 *ruleset.NewGameGalaxyFile
 }
 
 func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
@@ -183,6 +184,13 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	}
 	if err := shipHulls.Validate(); err != nil {
 		return nil, fmt.Errorf("validate ship hulls: %w", err)
+	}
+	newGameGalaxy, err := ruleset.LoadNewGameGalaxy(filepath.Join(rulesetDir, "new_game_galaxy.json"))
+	if err != nil {
+		return nil, fmt.Errorf("load new game galaxy: %w", err)
+	}
+	if err := newGameGalaxy.Validate(); err != nil {
+		return nil, fmt.Errorf("validate new game galaxy: %w", err)
 	}
 	tacticalCombat, err := ruleset.LoadTacticalCombat(filepath.Join(rulesetDir, "tactical_combat.json"))
 	if err != nil {
@@ -536,6 +544,7 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		ShipShields:                   append([]ruleset.ShipShield(nil), shipHulls.MandatoryComponents.Shields...),
 		ShipFuelCells:                 append([]ruleset.ShipFuelCell(nil), shipHulls.MandatoryComponents.FuelCells...),
 		TacticalCombat:                tacticalCombat,
+		NewGameGalaxy:                 newGameGalaxy,
 	}
 	for _, climate := range planetClasses.Climates {
 		rules.ClimateFoodPerFarmer[climate.ID] = float64(climate.BaseFoodPerFarmer)

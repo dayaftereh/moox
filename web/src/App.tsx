@@ -2,6 +2,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 're
 import {
   aggregatePopulation,
   assignPopulation,
+  createGame,
   getPlayerSnapshot,
   listGames,
   streamURL,
@@ -19,6 +20,11 @@ type AssignmentDraft = {
 
 function App() {
   const [games, setGames] = useState<GameSummary[]>([])
+  const [newGameID, setNewGameID] = useState('game-1')
+  const [newGameSeed, setNewGameSeed] = useState('0x8009')
+  const [humanName, setHumanName] = useState('Human')
+  const [darlokName, setDarlokName] = useState('Darlok')
+  const [creatingGame, setCreatingGame] = useState(false)
   const [gameID, setGameID] = useState('')
   const [seatID, setSeatID] = useState(1)
   const [snapshot, setSnapshot] = useState<PlayerSnapshot | null>(null)
@@ -130,6 +136,38 @@ function App() {
     [assignment],
   )
 
+  async function submitNewGame(event: FormEvent) {
+    event.preventDefault()
+    setCreatingGame(true)
+    setError('')
+    try {
+      const created = await createGame({
+        schema_version: 1,
+        game_id: newGameID,
+        seed: newGameSeed,
+        settings: {
+          galaxy_size: 'small',
+          galaxy_age: 'normal',
+          technology_level: 'average',
+          strategic_combat: false,
+          players: [
+            { seat_id: 1, empire_name: humanName, race_id: 'human' },
+            { seat_id: 2, empire_name: darlokName, race_id: 'darlok' },
+          ],
+        },
+      })
+      const available = await listGames()
+      setGames(available)
+      setSnapshot(null)
+      setGameID(created.game.game_id)
+      setSeatID(created.players[0]?.seat_id ?? 1)
+      setStatus(`Created ${created.game.game_id} from seed ${newGameSeed}.`)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : String(reason))
+    } finally {
+      setCreatingGame(false)
+    }
+  }
   async function submitAssignment(event: FormEvent) {
     event.preventDefault()
     if (!snapshot || !firstColony) return
@@ -161,6 +199,42 @@ function App() {
         <div className="connection" aria-live="polite">{status}</div>
       </header>
 
+      <form className="panel new-game" onSubmit={submitNewGame}>
+        <div className="section-heading">
+          <div>
+            <p className="eyebrow">Slice 09</p>
+            <h2>New Game</h2>
+          </div>
+          <p className="muted">Same seed + same settings reproduces the same deterministic starting galaxy.</p>
+        </div>
+        <div className="new-game-grid">
+          <label>
+            Game ID
+            <input value={newGameID} onChange={(event) => setNewGameID(event.target.value)} required />
+          </label>
+          <label>
+            Seed
+            <input value={newGameSeed} onChange={(event) => setNewGameSeed(event.target.value)} required placeholder="0x8009 or decimal" />
+          </label>
+          <label>
+            Galaxy
+            <input value="Small / Normal" disabled />
+          </label>
+          <label>
+            Technology / Combat
+            <input value="Average / Tactical" disabled />
+          </label>
+          <label>
+            Human Empire
+            <input value={humanName} onChange={(event) => setHumanName(event.target.value)} required />
+          </label>
+          <label>
+            Darlok Empire
+            <input value={darlokName} onChange={(event) => setDarlokName(event.target.value)} required />
+          </label>
+        </div>
+        <button type="submit" disabled={creatingGame}>{creatingGame ? 'Creating...' : 'Create deterministic game'}</button>
+      </form>
       <section className="panel controls">
         <label>
           Hosted game

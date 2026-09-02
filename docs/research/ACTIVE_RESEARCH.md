@@ -5,35 +5,37 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: **none**.
-- Latest completed implementation slice: **Slice 08 - Authoritative server, web HMI and transport baseline**.
-- Slice-08 implementation/data/evidence commit: `9315111` (`app: add authoritative web server baseline`).
-- Latest completed gameplay slice: **Slice 07 - Tactical ship combat baseline** (`889f977`).
+- Open slice marker: `docs/slices/_OPEN_NEW_GAME_GALAXY_GENERATION_BASELINE_2026-09-02.md`.
+- Active implementation slice: **Slice 09 - Deterministic New Game / galaxy generation baseline**.
+- Starting HEAD: `c41d425` (`docs: close server web hmi transport slice`).
+- Slice 08 is closed; implementation/data/evidence commit `9315111`.
 - Core `StateSchemaVersion`: **21**.
 - Economy ruleset schema: **8**.
-- Latest closed evidence: `docs/research/SERVER_WEB_HMI_TRANSPORT_BASELINE_2026-09-01.md`.
-- No implementation slice is currently active.
-- Next prepared objective: `docs/slices/PLANNED_09_NEW_GAME_GALAXY_GENERATION_BASELINE.md`.
+- Active permanent evidence: `docs/research/NEW_GAME_GALAXY_GENERATION_BASELINE_2026-09-02.md`.
+- Gate state: **Gate 3 complete / Gate 4 QA + commit + close pending**.
+- No Slice-09 gameplay implementation has started.
 
-## No active slice - Slice 08 closed
+## Active Slice 09 - Deterministic New Game / galaxy generation baseline
 
-Slice 08 is closed after all four gates. The authoritative application baseline is now implemented and committed.
+Gate 1 has been opened from a clean repository and is now the sole active slice.
 
-Closed result:
+Objective: replace fixture-only startup with the first authoritative deterministic `NewGame(seed, settings)` path that creates a minimal playable two-Empire/small-galaxy state and feeds it through the Slice-08 server/web application boundary.
 
-- `internal/session` exposes transport-neutral lightweight Status and participant-only Battle projections.
-- `internal/app` owns hosted-game registration, server-owned phase driving, application `change_sequence`, snapshot envelopes and invalidation subscriptions without becoming gameplay authority.
-- `internal/server` exposes the versioned HTTP API and notification-only WebSocket transport with bounded JSON, same-origin mutation checks, Observer opt-in and static SPA serving.
-- `cmd/moox-server` is a loopback-first standalone host; its Slice-08 bootstrap is the explicit deterministic `demo` fixture until Slice 09 replaces fixture-only startup with real New Game generation.
-- `web/` is the React/TypeScript/Vite browser proof using native `fetch`/`WebSocket`, HTTP snapshots as source of truth and a real `colony.assign_population` command path.
-- fresh Gate-4 QA passed changed/new gofmt, focused transport/session regressions, full `go test ./... -count=1`, `go vet ./...`, `npm run build`, standalone/headless Chrome runtime proof and `git diff --check`.
-- Wails remains optional packaging only; no native/direct gameplay authority path exists.
-- persisted gameplay schemas remain Core21 / Command1 / Event1 / Economy8 / Ship-Hulls3 / Tactical1.
+Gate-1 work to perform before any implementation:
 
-Permanent evidence: `docs/research/SERVER_WEB_HMI_TRANSPORT_BASELINE_2026-09-01.md`.
-Application guide: `docs/architecture/WEB_APPLICATION.md`.
+- re-check `core.NewSmallFixture` and all current production/test state constructors;
+- inventory normalized star/system/planet/race/technology/start-state data already available in the repository;
+- identify original MOO2 1.31 New Game entry points and RNG ownership;
+- prove the selected small-galaxy star-count/coordinate constraints and random-stream consumption;
+- prove star/system/planet generation ordering;
+- prove Homeworld/start-player placement, spacing/tie behavior and collision handling;
+- prove selected start-level Empire/Colony/Population/Treasury/Research/Fleet inventory;
+- separate original evidence from deliberate MOOX settings simplifications;
+- propose the exact Gate-2 `NewGame(seed, settings)` state/settings/generation contract and stop for acceptance.
 
-Next action: start Slice 09 only when work actually begins. At that time run a fresh Gate 1, inspect the repository/original New Game evidence and create exactly one dated `_OPEN_` marker. Do not create it during Slice-08 closure.
+Permanent evidence: `docs/research/NEW_GAME_GALAXY_GENERATION_BASELINE_2026-09-02.md`.
+
+Do not begin Gate 3 implementation while Gate 1/2 are incomplete.
 
 ## Prepared next-slice queue - 2026-09-01
 

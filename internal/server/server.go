@@ -60,6 +60,7 @@ func NewHandler(cfg Config) (http.Handler, error) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", server.handleHealth)
 	mux.HandleFunc("GET /api/v1/games", server.handleGames)
+	mux.HandleFunc("POST /api/v1/games", server.handleCreateGame)
 	mux.HandleFunc("GET /api/v1/games/{gameID}/seats/{seatID}/snapshot", server.handlePlayerSnapshot)
 	mux.HandleFunc("GET /api/v1/games/{gameID}/observer/snapshot", server.handleObserverSnapshot)
 	mux.HandleFunc("POST /api/v1/games/{gameID}/turn-submissions", server.handleTurnSubmission)

@@ -17,6 +17,7 @@ const SchemaVersion = 1
 var (
 	ErrNotFound        = errors.New("not found")
 	ErrSessionRejected = errors.New("session rejected")
+	ErrGameExists      = errors.New("game already exists")
 )
 
 type GameSummary struct {
@@ -66,8 +67,11 @@ type Registration struct {
 }
 
 type Host struct {
-	mu    sync.RWMutex
-	games map[string]*hostedGame
+	mu                       sync.RWMutex
+	games                    map[string]*hostedGame
+	newGameRules             *game.EconomyRules
+	newGameResolver          game.Resolver
+	newGameImmediateResolver *game.EconomyResolver
 }
 
 type hostedGame struct {
@@ -112,7 +116,7 @@ func (h *Host) Register(reg Registration) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	if _, exists := h.games[status.GameID]; exists {
-		return fmt.Errorf("game %q already registered", status.GameID)
+		return fmt.Errorf("%w: game %q", ErrGameExists, status.GameID)
 	}
 	h.games[status.GameID] = &hostedGame{
 		session:           reg.Session,

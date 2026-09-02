@@ -1,3 +1,34 @@
+export type NewGamePlayer = {
+  seat_id: number
+  empire_id: number
+  race_id: string
+  name: string
+}
+
+export type NewGameSettings = {
+  galaxy_size: 'small'
+  galaxy_age: 'normal'
+  technology_level: 'average'
+  strategic_combat: false
+  players: Array<{
+    seat_id: number
+    empire_name: string
+    race_id: 'human' | 'darlok'
+  }>
+}
+
+export type CreateGameRequest = {
+  schema_version: 1
+  game_id: string
+  seed: string
+  settings: NewGameSettings
+}
+
+export type CreateGameResponse = {
+  schema_version: number
+  game: GameSummary
+  players: NewGamePlayer[]
+}
 export type GameSummary = {
   schema_version: number
   game_id: string
@@ -90,6 +121,13 @@ type APIError = {
   }
 }
 
+export async function createGame(request: CreateGameRequest): Promise<CreateGameResponse> {
+  return requestJSON<CreateGameResponse>('/api/v1/games', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(request),
+  })
+}
 export async function listGames(signal?: AbortSignal): Promise<GameSummary[]> {
   return requestJSON<GameSummary[]>('/api/v1/games', { signal })
 }

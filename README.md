@@ -25,12 +25,12 @@ Current snapshot: **2026-09-01**.
 
 Master of Orion X is now actively in deterministic headless runtime development. The repository contains the pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), normalized runtime datasets, authoritative Core/Game/Session infrastructure and a growing set of original-evidence-backed strategic rules.
 
-The game does not yet provide a complete match lifecycle, but the deterministic runtime now includes Economy/Research/Construction, colonization and Outposts, concrete military Ships/Fleets, movement/split/merge, Command Points, hostile strategic encounters, the first exact tactical ship-combat vertical slice, and an authoritative browser-first application boundary. Slice 08 Gate 3 adds the Go hosted-game/server layers, HTTP/WebSocket transport, standalone loopback server and React/Vite HMI proof. The remaining blockers to the first complete match are real deterministic New Game/galaxy generation, war/peace diplomacy, invasion/Colony conquest and Empire elimination/victory.
+The game does not yet provide a complete match lifecycle, but the deterministic runtime now includes Economy/Research/Construction, colonization and Outposts, concrete military Ships/Fleets, movement/split/merge, Command Points, hostile strategic encounters, the first exact tactical ship-combat vertical slice, and an authoritative browser-first application boundary. Slice 08 Gate 3 adds the Go hosted-game/server layers, HTTP/WebSocket transport, standalone loopback server and React/Vite HMI proof. Slice 09 now adds deterministic New Game/galaxy generation and the authoritative create-game flow. The remaining blockers to the first complete match are war/peace diplomacy, invasion/Colony conquest and Empire elimination/victory.
 
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slice 08 **Authoritative server, web HMI and transport baseline** is **closed**. No implementation slice is currently open. The next prepared objective is Slice 09 **Deterministic New Game / galaxy generation baseline**; start it only with a fresh Gate 1 and a new `_OPEN_` marker.
+**Slice state:** Slice 09 **Deterministic New Game / galaxy generation baseline** is active with **Gate 3 complete / Gate 4 QA + commit + close pending**. Exactly one Slice-09 `_OPEN_` marker is present; Gates 1-3 are complete; Gate 4 final QA, commit and close are next.
 
 ### Current / prepared slice queue
 

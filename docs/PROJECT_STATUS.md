@@ -10,7 +10,7 @@ Master of Orion X is now in **Phase 1 deterministic runtime development**, build
 
 The project is no longer an empty bootstrap repository: it has a pure-Go Master of Orion II 1.31 analyzer, verified original-file parsers, normalized runtime datasets, localization keys, a private reference-extraction pipeline and substantial semantic graphics mapping derived from original 1.31 data/executable behavior.
 
-The game is **not yet a complete match lifecycle**, but the deterministic runtime is now substantially beyond the original skeleton: Economy/Research/Construction, Colonies/Outposts, concrete military Ships/Fleets, strategic movement, Command Points, hostile encounter/BattleSession handoff, one exact tactical ship-combat vertical slice and the first authoritative browser-first application boundary are implemented. Slice 08 Gate 3 adds a transport-neutral hosted-game layer, HTTP/WebSocket server, loopback standalone executable and React/Vite HMI proof. The largest remaining blockers to a first complete game are real New Game/galaxy generation, intentional war/peace diplomacy, invasion/Colony conquest and a first authoritative victory/elimination loop; AI and broad MOO2 fidelity remain later depth work.
+The game is **not yet a complete match lifecycle**, but the deterministic runtime is now substantially beyond the original skeleton: Economy/Research/Construction, Colonies/Outposts, concrete military Ships/Fleets, strategic movement, Command Points, hostile encounter/BattleSession handoff, one exact tactical ship-combat vertical slice and the first authoritative browser-first application boundary are implemented. Slice 08 Gate 3 adds a transport-neutral hosted-game layer, HTTP/WebSocket server, loopback standalone executable and React/Vite HMI proof. The largest remaining blockers to a first complete game are intentional war/peace diplomacy, invasion/Colony conquest and a first authoritative victory/elimination loop; AI and broad MOO2 fidelity remain later depth work.
 
 ## Current repository / tool baseline
 
@@ -26,10 +26,10 @@ The game is **not yet a complete match lifecycle**, but the deterministic runtim
 
 ## Prepared roadmap to first complete match lifecycle
 
-Slices 01-08 are closed. No implementation slice is currently open. The roadmap state is:
+Slices 01-08 are closed. Slice 09 **Deterministic New Game / galaxy generation baseline** is active with Gate 3 complete / Gate 4 QA + commit + close pending. The roadmap state is:
 
 1. Slice 08 - **closed** - authoritative server, web HMI and HTTP/WebSocket transport baseline (`9315111`).
-2. Slice 09 - deterministic New Game and galaxy generation baseline.
+2. Slice 09 - **active, Gate 3 complete / Gate 4 QA + commit + close pending** - deterministic New Game and galaxy generation baseline.
 3. Slice 10 - diplomacy / war / peace baseline.
 4. Slice 11 - Troop Transport, invasion and Colony conquest baseline.
 5. Slice 12 - Empire elimination and first deterministic headless victory loop.
@@ -204,7 +204,7 @@ The first meaningful game loop remains:
 8. colonize,
 9. save and reload exactly the same state.
 
-Slice 08 is closed: `internal/app`, `internal/server`, `cmd/moox-server` and the React/Vite `web/` HMI implement the ADR-0004 application boundary over the existing Session/Protocol authority model. Wails remains optional packaging only. The next prepared objective is Slice 09 deterministic New Game / galaxy generation baseline; it has not been opened yet.
+Slice 08 is closed. Slice 09 is active with Gate 3 complete: deterministic Small/Normal/Average/Tactical New Game generation, Human+Darlok starts, authoritative GameSession/app/server creation and the browser New Game flow are implemented and regression-green. Gate 4 final QA, commit and close are next.
 
 ## Where to look
 
