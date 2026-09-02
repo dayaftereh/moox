@@ -1,6 +1,6 @@
 # Slice 09 research - New Game / galaxy generation baseline
 
-Status: **Gate 4 QA complete; implementation commit + close pending**
+Status: **closed; Gates 1-4 complete**
 Opened: 2026-09-02
 
 ## Objective
@@ -17,7 +17,7 @@ The selected first target remains the prepared Slice-09 scope: a directly eviden
 - Existing `_OPEN_*.md` markers before Slice 09: 0.
 - Slice 08 is closed and provides the authoritative application/server transport boundary.
 - Core `StateSchemaVersion`: 21 at open.
-- No Slice-09 gameplay implementation has started.
+- At Gate-1 open, no Slice-09 gameplay implementation had started.
 
 ## Gate-1 questions
 
@@ -348,7 +348,7 @@ The body-type/size/mineral/gravity/climate tables remain original-derived; **orb
 - selected candidates are shuffled repeatedly;
 - `Randomize_Home_Worlds_` further randomizes which selected home star belongs to each player.
 
-For two players, the original intent is therefore unequivocally **well-separated candidate stars plus randomized assignment**, not Ã¢â‚¬Å“first two starsÃ¢â‚¬Â.
+For two players, the original intent is therefore unequivocally **well-separated candidate stars plus randomized assignment**, not ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“first two starsÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â.
 
 The exact distance metric is tied to the original scaled map coordinate system that Gate 2 deliberately does not claim to reproduce numerically.
 
@@ -831,3 +831,6 @@ Gate 4 repeated the Slice-09 proof independently before closure:
 - frontend authority scan found no browser-side RNG or `GameState` implementation; New Game creation calls the server and gameplay remains revision-bound CommandBatches;
 - standalone runtime proof started the production server with `games=0`, served the built HMI, and managed Chrome created default `game-1` from `0x8009`; the browser then displayed the server snapshot at Turn 1 / planning, Human Empire ID 2, Seat 1 `local_human`, Population total 8;
 - final changed/new Go files were gofmt'd; `go test ./... -count=1`, `go vet ./...`, `npm run build` and `git diff --check` all pass. Diff-check diagnostics are LF/CRLF conversion notices only.
+## Slice closure - 2026-09-02
+
+Slice 09 is closed. Implementation/data/evidence commit: `a5f3c13` (`game: add deterministic new game galaxy baseline`). Gate 4 completed the repeated golden/determinism/session/server/browser authority QA and the permanent status/HISTORY handoff. The next prepared objective is Slice 10 diplomacy / war / peace; no later implementation slice is opened by this closure.

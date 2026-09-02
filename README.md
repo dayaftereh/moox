@@ -30,23 +30,25 @@ The game does not yet provide a complete match lifecycle, but the deterministic 
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slice 09 **Deterministic New Game / galaxy generation baseline** is active with **Gate 3 complete / Gate 4 QA + commit + close pending**. Exactly one Slice-09 `_OPEN_` marker is present; Gates 1-3 are complete; Gate 4 final QA, commit and close are next.
+**Slice state:** Slice 09 **Deterministic New Game / galaxy generation baseline** is **closed** with implementation/data/evidence commit `a5f3c13`. No `_OPEN_` slice marker remains; Slice 10 diplomacy / war / peace is the next prepared objective.
 
 ### Current / prepared slice queue
 
 | Slice | Status | Main purpose |
 | ---: | --- | --- |
 | 8 | **closed** | Authoritative Go server + HTTP/WebSocket + browser HMI; implementation commit `9315111` |
-| 9 | planned | Deterministic real New Game / two-Empire galaxy generation |
+| 9 | **closed** | Deterministic real New Game / two-Empire galaxy generation; implementation commit `a5f3c13` |
 | 10 | planned | Diplomacy / war / peace baseline and attack authorization |
 | 11 | planned | Troop Transport, invasion, Colony capture and conquered Population handoff |
 | 12 | planned | First deterministic end-to-end match from New Game to conquest winner |
 
 ### Latest runtime checkpoints
 
+- `a5f3c13` - deterministic New Game/Small galaxy generation, two Human+Darlok starts, authoritative create-game API and browser New Game flow.
+
 - `9315111` - authoritative hosted-game/server layer, HTTP/WebSocket transport, standalone loopback server and React/Vite HMI baseline.
 
-- 297480 - Core schema 19 combat-Fleet whole/subset movement, stationary split/merge, current-Empire speed/range derivation, deterministic transit/arrival, save/load and replay coverage.
+- `f297480` - Core schema 19 combat-Fleet whole/subset movement, stationary split/merge, current-Empire speed/range derivation, deterministic transit/arrival, save/load and replay coverage.
 
 - `7c7284e` - Core schema 17 Outpost Ship construction/transit/deployment, Planet-linked Outpost supply origins and same-owner Outpost-to-Colony replacement.
 

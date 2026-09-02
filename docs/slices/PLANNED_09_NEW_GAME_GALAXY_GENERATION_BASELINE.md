@@ -1,10 +1,10 @@
 # Planned slice 09 - New Game and galaxy generation baseline
 
-Status: **active; Gate 4 QA complete / implementation commit + close pending**.
+Status: **closed; Gates 1-4 complete**.
 
 Queue position: **9 of 12**.
 
-This specification is active under `docs/slices/_OPEN_NEW_GAME_GALAXY_GENERATION_BASELINE_2026-09-02.md`. Gates 1-3 are complete: the frozen New Game contract is implemented and regression-green. Gate 4 final QA, commit and close are pending.
+This specification is closed. Gates 1-4 are complete; implementation/data/evidence is committed as `a5f3c13`, permanent evidence is recorded under `docs/research/NEW_GAME_GALAXY_GENERATION_BASELINE_2026-09-02.md`, and no Slice-09 `_OPEN_` marker remains.
 
 ## Objective
 
@@ -99,7 +99,7 @@ Defer:
 - [x] Verify identical seed/settings produce byte/semantic-identical state and IDs.
 - [x] Verify generated games pass Core validation and can execute at least one real strategic turn.
 - [x] Run full tests/vet/web integration checks and `git diff --check`.
-- [ ] Update evidence/status/HISTORY and close marker.
+- [x] Update evidence/status/HISTORY and close marker.
 
 ## Exit criterion
 

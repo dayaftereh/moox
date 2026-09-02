@@ -5,46 +5,41 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: `docs/slices/_OPEN_NEW_GAME_GALAXY_GENERATION_BASELINE_2026-09-02.md`.
-- Active implementation slice: **Slice 09 - Deterministic New Game / galaxy generation baseline**.
-- Starting HEAD: `c41d425` (`docs: close server web hmi transport slice`).
-- Slice 08 is closed; implementation/data/evidence commit `9315111`.
+- Open slice marker: **none**.
+- Active implementation slice: **none**.
+- Slices 01-09 are closed.
+- Slice 09 implementation/data/evidence commit: `a5f3c13` (`game: add deterministic new game galaxy baseline`).
 - Core `StateSchemaVersion`: **21**.
 - Economy ruleset schema: **8**.
-- Active permanent evidence: `docs/research/NEW_GAME_GALAXY_GENERATION_BASELINE_2026-09-02.md`.
-- Gate state: **Gate 3 complete / Gate 4 QA + commit + close pending**.
-- No Slice-09 gameplay implementation has started.
+- Slice-09 permanent evidence: `docs/research/NEW_GAME_GALAXY_GENERATION_BASELINE_2026-09-02.md`.
+- Next prepared objective: **Slice 10 - Diplomacy, war and peace baseline**.
 
-## Active Slice 09 - Deterministic New Game / galaxy generation baseline
+## Closed Slice 09 - Deterministic New Game / galaxy generation baseline
 
-Gate 1 has been opened from a clean repository and is now the sole active slice.
+**Gates 1-4 are complete.** Slice 09 replaces production fixture bootstrap with an authoritative deterministic `NewGame(seed, settings)` path for the frozen Small / Normal / Average / Tactical two-player Human+Darlok baseline.
 
-Objective: replace fixture-only startup with the first authoritative deterministic `NewGame(seed, settings)` path that creates a minimal playable two-Empire/small-galaxy state and feeds it through the Slice-08 server/web application boundary.
+Delivered baseline:
 
-Gate-1 work to perform before any implementation:
-
-- re-check `core.NewSmallFixture` and all current production/test state constructors;
-- inventory normalized star/system/planet/race/technology/start-state data already available in the repository;
-- identify original MOO2 1.31 New Game entry points and RNG ownership;
-- prove the selected small-galaxy star-count/coordinate constraints and random-stream consumption;
-- prove star/system/planet generation ordering;
-- prove Homeworld/start-player placement, spacing/tie behavior and collision handling;
-- prove selected start-level Empire/Colony/Population/Treasury/Research/Fleet inventory;
-- separate original evidence from deliberate MOOX settings simplifications;
-- propose the exact Gate-2 `NewGame(seed, settings)` state/settings/generation contract and stop for acceptance.
+- original-derived galaxy generation tables normalized into `data/rulesets/moo2-1.31/new_game_galaxy.json`;
+- one shared New Game RNG owner and stable generation/ID order;
+- deterministic 20-star Small galaxy plus planet/Homeworld/start-state generation;
+- legal Human+Darlok Colonies, Population, Research, Treasury and starting Fleets;
+- generated state validated through a real two-seat `GameSession` and Turn 1 -> Turn 2 strategic cycle;
+- authoritative `POST /api/v1/games` creation with string uint64 seed, stable error mapping and atomic duplicate rejection;
+- production server starts empty; legacy fixture startup is explicit development-only `-demo-fixture`;
+- browser New Game form uses the server-authoritative create path and existing snapshot/CommandBatch flow;
+- golden seed `0x8009` state SHA-256: `1d89bf9e8a5ce47c81a481ad669916d727357587dfc40e46904b9503ba314a89`;
+- Gate 4 passed repeated golden/determinism tests, byte-identical equal-seed JSON state, generated strategic-turn integration, frontend authority scan, standalone server + managed Chrome runtime proof, full Go tests/vet/web build and diff checks.
 
 Permanent evidence: `docs/research/NEW_GAME_GALAXY_GENERATION_BASELINE_2026-09-02.md`.
 
-Do not begin Gate 3 implementation while Gate 1/2 are incomplete.
-
-## Prepared next-slice queue - 2026-09-01
+## Prepared next-slice queue - 2026-09-02
 
 Accepted application direction: `docs/architecture/ADR-0004-authoritative-server-web-client.md`. The primary product topology is an authoritative Go game server plus browser-first web HMI over HTTP/WebSocket; Wails v3 is optional one-click native packaging only and must not bypass the server gameplay contract.
 
-1. Slice 09 - **New Game and galaxy generation baseline** (`PLANNED_09_NEW_GAME_GALAXY_GENERATION_BASELINE.md`).
-2. Slice 10 - **Diplomacy, war and peace baseline** (`PLANNED_10_DIPLOMACY_WAR_PEACE_BASELINE.md`).
-3. Slice 11 - **Troop Transport, invasion and conquest baseline** (`PLANNED_11_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE.md`).
-4. Slice 12 - **Empire elimination and first headless victory loop** (`PLANNED_12_EMPIRE_ELIMINATION_FIRST_HEADLESS_VICTORY_LOOP.md`).
+1. Slice 10 - **Diplomacy, war and peace baseline** (`PLANNED_10_DIPLOMACY_WAR_PEACE_BASELINE.md`).
+2. Slice 11 - **Troop Transport, invasion and conquest baseline** (`PLANNED_11_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE.md`).
+3. Slice 12 - **Empire elimination and first headless victory loop** (`PLANNED_12_EMPIRE_ELIMINATION_FIRST_HEADLESS_VICTORY_LOOP.md`).
 
 Roadmap milestone: Slice 12 should prove the first complete deterministic match lifecycle from a real New Game through war/conquest to an authoritative winner. Re-audit and number the next fidelity/depth tranche only after that milestone.
 

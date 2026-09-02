@@ -1,8 +1,8 @@
 # Master of Orion X project status
 
-Snapshot: **2026-09-01**
+Snapshot: **2026-09-02**
 
-This document is the high-level status page for Master of Orion X. Detailed reverse-engineering evidence remains in `docs/research/`; the single active investigation is tracked in `docs/research/ACTIVE_RESEARCH.md`.
+This document is the high-level status page for Master of Orion X. Detailed reverse-engineering evidence remains in `docs/research/`; the live handoff and next prepared objective are tracked in `docs/research/ACTIVE_RESEARCH.md`.
 
 ## Executive summary
 
@@ -10,7 +10,7 @@ Master of Orion X is now in **Phase 1 deterministic runtime development**, build
 
 The project is no longer an empty bootstrap repository: it has a pure-Go Master of Orion II 1.31 analyzer, verified original-file parsers, normalized runtime datasets, localization keys, a private reference-extraction pipeline and substantial semantic graphics mapping derived from original 1.31 data/executable behavior.
 
-The game is **not yet a complete match lifecycle**, but the deterministic runtime is now substantially beyond the original skeleton: Economy/Research/Construction, Colonies/Outposts, concrete military Ships/Fleets, strategic movement, Command Points, hostile encounter/BattleSession handoff, one exact tactical ship-combat vertical slice and the first authoritative browser-first application boundary are implemented. Slice 08 Gate 3 adds a transport-neutral hosted-game layer, HTTP/WebSocket server, loopback standalone executable and React/Vite HMI proof. The largest remaining blockers to a first complete game are intentional war/peace diplomacy, invasion/Colony conquest and a first authoritative victory/elimination loop; AI and broad MOO2 fidelity remain later depth work.
+The game is **not yet a complete match lifecycle**, but the deterministic runtime is now substantially beyond the original skeleton: Economy/Research/Construction, Colonies/Outposts, concrete military Ships/Fleets, strategic movement, Command Points, hostile encounter/BattleSession handoff, one exact tactical ship-combat vertical slice, the first authoritative browser-first application boundary and deterministic New Game/Small-galaxy creation are implemented. Slice 08 adds the hosted-game/server/web boundary; Slice 09 adds the authoritative deterministic New Game path through that boundary. The largest remaining blockers to a first complete game are intentional war/peace diplomacy, invasion/Colony conquest and a first authoritative victory/elimination loop; AI and broad MOO2 fidelity remain later depth work.
 
 ## Current repository / tool baseline
 
@@ -26,10 +26,10 @@ The game is **not yet a complete match lifecycle**, but the deterministic runtim
 
 ## Prepared roadmap to first complete match lifecycle
 
-Slices 01-08 are closed. Slice 09 **Deterministic New Game / galaxy generation baseline** is active with Gate 3 complete / Gate 4 QA + commit + close pending. The roadmap state is:
+Slices 01-09 are closed. No implementation slice is currently open. The roadmap state is:
 
 1. Slice 08 - **closed** - authoritative server, web HMI and HTTP/WebSocket transport baseline (`9315111`).
-2. Slice 09 - **active, Gate 3 complete / Gate 4 QA + commit + close pending** - deterministic New Game and galaxy generation baseline.
+2. Slice 09 - **closed** - deterministic New Game and galaxy generation baseline (`a5f3c13`).
 3. Slice 10 - diplomacy / war / peace baseline.
 4. Slice 11 - Troop Transport, invasion and Colony conquest baseline.
 5. Slice 12 - Empire elimination and first deterministic headless victory loop.
@@ -204,7 +204,7 @@ The first meaningful game loop remains:
 8. colonize,
 9. save and reload exactly the same state.
 
-Slice 08 is closed. Slice 09 is active with Gate 3 complete: deterministic Small/Normal/Average/Tactical New Game generation, Human+Darlok starts, authoritative GameSession/app/server creation and the browser New Game flow are implemented and regression-green. Gate 4 final QA, commit and close are next.
+Slice 08 is closed. Slice 09 is closed: deterministic Small/Normal/Average/Tactical New Game generation, Human+Darlok starts, authoritative GameSession/app/server creation and the browser New Game flow are implemented and Gate-4 regression-green. Implementation/data/evidence commit `a5f3c13`; Slice 10 diplomacy / war / peace is the next prepared objective.
 
 ## Where to look
 

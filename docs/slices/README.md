@@ -37,11 +37,11 @@ When a planned slice actually starts:
 
 Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1 always requires a fresh repository checkup and original-evidence review at the time work begins.
 
-### Current active / prepared queue - 2026-09-01
+### Current active / prepared queue - 2026-09-02
 
 Active:
 
-- `PLANNED_09_NEW_GAME_GALAXY_GENERATION_BASELINE.md` -> `_OPEN_NEW_GAME_GALAXY_GENERATION_BASELINE_2026-09-02.md`, Gate 3 complete / Gate 4 QA + commit + close pending.
+- none. Slice 09 is closed with implementation/data/evidence commit `a5f3c13`; no `_OPEN_*.md` marker remains.
 
 Prepared queue:
 
