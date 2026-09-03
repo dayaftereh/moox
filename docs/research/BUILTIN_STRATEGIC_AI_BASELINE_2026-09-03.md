@@ -4,7 +4,7 @@ Date: **2026-09-03**
 
 Slice: **13 - Built-in strategic AI baseline**
 
-Status: **Gate 1 complete; Gate 2 contract proposed; no AI implementation yet**.
+Status: **Gates 1-3 complete; Gate 2 frozen by user approval; Gate 4 independent QA pending**.
 
 Starting HEAD: `3dc5455` (`docs: audit post-milestone fidelity backlog`)
 
@@ -358,4 +358,70 @@ For all-AI regression and future automation, add an explicit Host automation ent
 
 ### Gate 2 status
 
-The design review is complete and the contract above is the **freeze candidate**. Gate 2 remains unaccepted until the user explicitly approves this contract. No Gate-3 AI implementation is authorized yet.
+The design review contract above was **explicitly accepted by the user on 2026-09-03** and is frozen for Slice 13. Gate 3 implementation follows that contract; broader AI/tactical/race work remains deferred.
+
+## Gate 3 implementation results - 2026-09-03
+
+Gate 3 now implements the first legal autonomous strategic controller over the already-supported MOOX lifecycle. The implementation preserves the Gate-2 no-cheat boundary: the planner never receives ObserverView or mutable GameState and never writes authoritative state directly.
+
+### Player-safe decision surface
+
+- Added a deep-cloned PlayerDecisionView / StrategicView in Session authority.
+- Own Empire/Colonies/Ships/ShipDesigns/Fleets/Outposts/transfers are projected directly.
+- Foreign strategic presence is reduced to symmetric Colony/Outpost/Fleet contact identity/location; enemy Treasury, Research state/progress, population jobs, construction queues, Ship composition, unpublished submissions and observer telemetry are absent.
+- Galaxy geometry is shared, while occupancy IDs and blockade internals are stripped from the raw Galaxy projection and represented only through safe contacts.
+- Added deterministic DecisionCatalog sections for Research, Construction, authoritative Population/economy previews, Fleet movement (including legal combat subset moves), Colonization, Outpost deployment, current war/peace actions, Colony Base, participant Battle actions and Invasion.
+
+### Deterministic baseline_v1 planner
+
+- Added internal/ai as a pure policy package with PolicyVersion baseline_v1 and no private RNG.
+- Research prioritizes the expansion-range chain 51 -> 106 -> 98 -> 108 -> 194 when available.
+- Population policy chooses only server-projected assignments and keeps Food safe before optimizing Research/Production.
+- Expansion consumes legal Colony/Outpost targets and server-authoritative movement choices; it does not reproduce fuel/supply formulas.
+- Military policy creates/uses supported combat and Troop Transport assets, declares war only through normal Diplomacy commands, and invades using the authoritative InvasionOpportunity.
+- Tactical policy selects the first server-validated Beam action for supported Slice-07 1-vs-1 tactical encounters.
+
+### Host/controller lifecycle
+
+- hostedGame records controller identity and drives builtin_ai seats at Planning, PostResolution, Encounters and Invasion boundaries.
+- AI actions invoke the same public GameSession mutators used underneath human Host calls; there is no recursive Host.Submit* call and no direct GameState/revision/event write.
+- Due selected Research is settled controller-neutrally in stable Empire-ID order during PostResolution using the existing CompleteResearchField path.
+- Added Host.AdvanceAutomation: an all-builtin game advances by at most one strategic turn per call, making long autonomous tests bounded and observable.
+- CreateGame and HTTP New Game accept optional per-seat controller assignments; omitted assignments remain local_human for backward compatibility.
+
+### Tactical scope findings preserved rather than widened
+
+The first live AI-vs-AI run exposed three existing Slice-07 Tactical scope guards: multiple combat Ships, civilian Fleet context and Colony/planet-defense context. Slice 13 deliberately did **not** broaden Tactical Combat. Instead baseline_v1 uses existing legal strategic movement/splitting to keep the canonical liveness path inside the already-supported strategic/invasion contract:
+
+- combat Fleet moves may use an authoritative one-Ship subset, relying on existing deterministic split semantics;
+- starting Colony Ships are staged away from home before the conquest phase;
+- starting combat Fleets patrol away from the capital so the final Colony can be taken without pretending that unsupported Colony-defense Tactical exists;
+- combat movement precedes Troop Transport movement, preventing unsupported civilian Battle context;
+- the actual Tactical AI action path remains separately regression-tested with a supported 1-vs-1 fixture.
+
+This is a Slice-13 baseline policy accommodation, not a claim that those Tactical contexts are complete.
+
+### Autonomous completion proof
+
+A real NewGame with seed 0x8009, current Small/Normal/Average/Tactical Human+Darlok content and both seats ControllerBuiltinAI now completes without direct post-NewGame state mutation. The diagnostic run completed at **Turn 430 / Revision 871** with:
+
+- Result kind: conquest;
+- Winner Empire: 2 (Human);
+- Winner Seat: 1;
+- Eliminated Empire IDs: [3].
+
+The committed integration regression runs the complete autonomous match twice and requires exact completed-session snapshot bytes. That includes authoritative state, result and event history. The exact replay test is green.
+
+### Gate-3 regressions added
+
+- complete canonical AI-vs-AI match twice with exact completed bytes and <=1000-turn liveness cap;
+- Human-vs-builtin-AI automatic progression back to each Human Planning boundary, repeated exactly;
+- controller-neutral Research completion event presence;
+- DecisionView no-cheat, deterministic-byte and deep-copy invariants;
+- authoritative DecisionCatalog non-mutation/determinism and food-safe Population preview;
+- pure planner deterministic/non-mutating behavior;
+- supported Tactical Battle action catalog + planner selection;
+- HTTP New Game controller assignment projection;
+- Invasion behavior is exercised inside the complete autonomous conquest match.
+
+Gate 3 is complete. Gate 4 must independently rerun the broad QA matrix before final closure.

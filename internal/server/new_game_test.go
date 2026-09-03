@@ -9,6 +9,7 @@ import (
 	"moox/internal/app"
 	"moox/internal/game"
 	"moox/internal/protocol"
+	"moox/internal/session"
 )
 
 func newNewGameServer(t *testing.T) (*httptest.Server, *app.Host) {
@@ -78,6 +79,25 @@ func TestHTTPCreateGameThenPlayerSnapshot(t *testing.T) {
 	getJSON(t, server.URL+"/api/v1/games", &games)
 	if len(games) != 1 || games[0].GameID != "seeded" {
 		t.Fatalf("games=%+v", games)
+	}
+}
+
+func TestHTTPCreateGameAcceptsBuiltinAIControllerAssignment(t *testing.T) {
+	server, _ := newNewGameServer(t)
+	defer server.Close()
+	request := serverNewGameRequest("human-ai", "0x8009")
+	request.Controllers = []app.PlayerControllerSpec{{SeatID: 2, Controller: session.ControllerBuiltinAI}}
+	var created newGameResponse
+	postJSON(t, server.URL+"/api/v1/games", request, "", http.StatusCreated, &created)
+	var human app.PlayerSnapshot
+	getJSON(t, server.URL+"/api/v1/games/human-ai/seats/1/snapshot", &human)
+	if human.View.Seat.Seat.Controller != session.ControllerLocalHuman {
+		t.Fatalf("human controller=%q", human.View.Seat.Seat.Controller)
+	}
+	var computer app.PlayerSnapshot
+	getJSON(t, server.URL+"/api/v1/games/human-ai/seats/2/snapshot", &computer)
+	if computer.View.Seat.Seat.Controller != session.ControllerBuiltinAI {
+		t.Fatalf("AI controller=%q", computer.View.Seat.Seat.Controller)
 	}
 }
 

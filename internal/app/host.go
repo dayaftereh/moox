@@ -6,6 +6,7 @@ import (
 	"sort"
 	"sync"
 
+	"moox/internal/ai"
 	"moox/internal/battle"
 	"moox/internal/game"
 	"moox/internal/protocol"
@@ -81,6 +82,7 @@ type hostedGame struct {
 	resolver          game.Resolver
 	immediateResolver *game.EconomyResolver
 	seats             []protocol.SeatID
+	seatInfo          map[protocol.SeatID]session.Seat
 	changeSequence    uint64
 	nextSubscriberID  uint64
 	subscribers       map[uint64]chan Notification
@@ -109,8 +111,10 @@ func (h *Host) Register(reg Registration) error {
 		return fmt.Errorf("read session seats: %w", err)
 	}
 	seats := make([]protocol.SeatID, len(observer.Seats))
+	seatInfo := make(map[protocol.SeatID]session.Seat, len(observer.Seats))
 	for i := range observer.Seats {
 		seats[i] = observer.Seats[i].Seat.ID
+		seatInfo[observer.Seats[i].Seat.ID] = observer.Seats[i].Seat
 	}
 	sort.Slice(seats, func(i, j int) bool { return seats[i] < seats[j] })
 
@@ -124,6 +128,7 @@ func (h *Host) Register(reg Registration) error {
 		resolver:          reg.Resolver,
 		immediateResolver: reg.ImmediateResolver,
 		seats:             seats,
+		seatInfo:          seatInfo,
 		changeSequence:    1,
 		nextSubscriberID:  1,
 		subscribers:       make(map[uint64]chan Notification),
@@ -238,6 +243,19 @@ func (h *Host) SubmitBattleCommand(gameID string, battleID uint64, seatID protoc
 	})
 }
 
+// AdvanceAutomation drives a game whose active empires are all controlled by
+// built-in AI through at most one strategic turn. It is intentionally bounded
+// so callers/tests retain control over long-running autonomous matches.
+func (h *Host) AdvanceAutomation(gameID string) (Receipt, error) {
+	hosted, err := h.lookup(gameID)
+	if err != nil {
+		return Receipt{}, err
+	}
+	return hosted.mutate("automation", 0, "automation_advanced", func() error {
+		return hosted.requireAllActiveBuiltin()
+	})
+}
+
 func (h *Host) Subscribe(gameID string) (<-chan Notification, func(), error) {
 	hosted, err := h.lookup(gameID)
 	if err != nil {
@@ -315,10 +333,47 @@ func (g *hostedGame) mutate(scope string, battleID uint64, reason string, fn fun
 }
 
 func (g *hostedGame) driveToInteractiveBoundary() error {
-	for step := 0; step < 16; step++ {
+	startingTurn := g.session.Status().Turn
+	for step := 0; step < 1024; step++ {
 		status := g.session.Status()
+		if status.Phase == session.PhasePlanning && status.Turn > startingTurn {
+			return nil
+		}
 		switch status.Phase {
-		case session.PhasePlanning, session.PhaseEncounters, session.PhaseInvasionDecisions, session.PhaseCompleted:
+		case session.PhasePlanning:
+			progressed, humanPending, err := g.drivePlanningControllers(status)
+			if err != nil {
+				return err
+			}
+			if humanPending {
+				return nil
+			}
+			if !progressed {
+				return fmt.Errorf("automatic planning made no progress")
+			}
+		case session.PhaseEncounters:
+			progressed, humanPending, err := g.driveEncounterControllers(status)
+			if err != nil {
+				return err
+			}
+			if humanPending {
+				return nil
+			}
+			if !progressed {
+				return fmt.Errorf("built-in AI cannot progress active encounter")
+			}
+		case session.PhaseInvasionDecisions:
+			progressed, humanPending, err := g.driveInvasionControllers(status)
+			if err != nil {
+				return err
+			}
+			if humanPending {
+				return nil
+			}
+			if !progressed {
+				return fmt.Errorf("built-in AI cannot progress invasion decision")
+			}
+		case session.PhaseCompleted:
 			return nil
 		case session.PhaseStrategicResolution:
 			if g.resolver == nil {
@@ -328,15 +383,17 @@ func (g *hostedGame) driveToInteractiveBoundary() error {
 				return fmt.Errorf("drive strategic resolution: %w", err)
 			}
 		case session.PhasePostResolution:
-			pending, err := g.hasPendingImmediateDecision()
+			progressed, humanPending, err := g.drivePostResolutionControllers(status)
 			if err != nil {
 				return err
 			}
-			if pending {
+			if humanPending {
 				return nil
 			}
-			if err := g.session.CompleteTurn(); err != nil {
-				return fmt.Errorf("complete turn: %w", err)
+			if !progressed {
+				if err := g.session.CompleteTurn(); err != nil {
+					return fmt.Errorf("complete turn: %w", err)
+				}
 			}
 		default:
 			return fmt.Errorf("unsupported session phase %q", status.Phase)
@@ -345,17 +402,205 @@ func (g *hostedGame) driveToInteractiveBoundary() error {
 	return fmt.Errorf("automatic phase driver exceeded step limit")
 }
 
-func (g *hostedGame) hasPendingImmediateDecision() (bool, error) {
+func (g *hostedGame) drivePlanningControllers(status session.Status) (bool, bool, error) {
+	humanPending := false
 	for _, seatID := range g.seats {
-		pending, err := g.session.ColonyBaseResolutions(seatID)
-		if err != nil {
-			return false, fmt.Errorf("project pending immediate decisions for seat %d: %w", seatID, err)
+		seat := g.seatInfo[seatID]
+		if statusHasEliminatedEmpire(status, seat) {
+			continue
 		}
-		if len(pending) != 0 {
-			return true, nil
+		player, err := g.session.PlayerView(seatID)
+		if err != nil {
+			return false, false, fmt.Errorf("project planning seat %d: %w", seatID, err)
+		}
+		if player.Seat.Submitted {
+			continue
+		}
+		if seat.Controller != session.ControllerBuiltinAI {
+			humanPending = true
+			continue
+		}
+		view, decision, err := g.builtinDecisionWithView(seatID)
+		if err != nil {
+			return false, false, err
+		}
+		switch decision.Kind {
+		case ai.ActionImmediate:
+			if decision.Command == nil || !game.IsDiplomacyCommand(decision.Command.Kind) {
+				return false, false, fmt.Errorf("builtin AI seat %d returned invalid planning immediate action", seatID)
+			}
+			if err := g.session.ResolveDiplomacyCommand(seatID, view.Revision, *decision.Command); err != nil {
+				return false, false, fmt.Errorf("builtin AI seat %d diplomacy: %w", seatID, err)
+			}
+			return true, false, nil
+		case ai.ActionSubmitTurn:
+			if decision.Batch == nil {
+				return false, false, fmt.Errorf("builtin AI seat %d returned nil turn batch", seatID)
+			}
+			if err := g.session.SubmitTurn(*decision.Batch); err != nil {
+				return false, false, fmt.Errorf("builtin AI seat %d submit turn: %w", seatID, err)
+			}
+			return true, false, nil
+		default:
+			return false, false, fmt.Errorf("builtin AI seat %d returned planning action %q", seatID, decision.Kind)
 		}
 	}
-	return false, nil
+	return false, humanPending, nil
+}
+
+func (g *hostedGame) drivePostResolutionControllers(status session.Status) (bool, bool, error) {
+	if g.immediateResolver != nil && g.immediateResolver.Rules != nil {
+		due, err := g.session.DueResearchEmpireIDs(g.immediateResolver.Rules)
+		if err != nil {
+			return false, false, fmt.Errorf("project due research: %w", err)
+		}
+		if len(due) != 0 {
+			if err := g.session.CompleteResearchField(due[0], g.immediateResolver); err != nil {
+				return false, false, fmt.Errorf("complete due research for empire %d: %w", due[0], err)
+			}
+			return true, false, nil
+		}
+	}
+	humanPending := false
+	for _, seatID := range g.seats {
+		seat := g.seatInfo[seatID]
+		if statusHasEliminatedEmpire(status, seat) {
+			continue
+		}
+		pending, err := g.session.ColonyBaseResolutions(seatID)
+		if err != nil {
+			return false, false, fmt.Errorf("project pending immediate decisions for seat %d: %w", seatID, err)
+		}
+		if len(pending) == 0 {
+			continue
+		}
+		if seat.Controller != session.ControllerBuiltinAI {
+			humanPending = true
+			continue
+		}
+		if g.immediateResolver == nil {
+			return false, false, fmt.Errorf("builtin AI colony-base resolution requires immediate resolver")
+		}
+		view, decision, err := g.builtinDecisionWithView(seatID)
+		if err != nil {
+			return false, false, err
+		}
+		if decision.Kind != ai.ActionColonyBase || decision.Command == nil {
+			return false, false, fmt.Errorf("builtin AI seat %d returned colony-base action %q", seatID, decision.Kind)
+		}
+		if err := g.session.ResolveColonyBaseCommand(seatID, view.Revision, *decision.Command, g.immediateResolver); err != nil {
+			return false, false, fmt.Errorf("builtin AI seat %d colony-base resolution: %w", seatID, err)
+		}
+		return true, false, nil
+	}
+	return false, humanPending, nil
+}
+
+func (g *hostedGame) driveEncounterControllers(status session.Status) (bool, bool, error) {
+	for _, seatID := range g.seats {
+		seat := g.seatInfo[seatID]
+		if statusHasEliminatedEmpire(status, seat) || seat.Controller != session.ControllerBuiltinAI {
+			continue
+		}
+		_, decision, err := g.builtinDecisionWithView(seatID)
+		if err != nil {
+			return false, false, err
+		}
+		if decision.Kind == ai.ActionBattle && decision.Command != nil {
+			if err := g.session.SubmitBattleCommand(decision.BattleID, seatID, *decision.Command); err != nil {
+				return false, false, fmt.Errorf("builtin AI seat %d battle %d: %w", seatID, decision.BattleID, err)
+			}
+			return true, false, nil
+		}
+	}
+	for _, seatID := range g.seats {
+		seat := g.seatInfo[seatID]
+		if statusHasEliminatedEmpire(status, seat) || seat.Controller == session.ControllerBuiltinAI {
+			continue
+		}
+		views, err := g.session.PlayerBattleViews(seatID)
+		if err != nil {
+			return false, false, fmt.Errorf("project participant battles for seat %d: %w", seatID, err)
+		}
+		for _, view := range views {
+			if view.Phase == battle.PhaseActive {
+				return false, true, nil
+			}
+		}
+	}
+	return false, false, nil
+}
+
+func (g *hostedGame) driveInvasionControllers(status session.Status) (bool, bool, error) {
+	for _, seatID := range g.seats {
+		seat := g.seatInfo[seatID]
+		if statusHasEliminatedEmpire(status, seat) {
+			continue
+		}
+		player, err := g.session.PlayerView(seatID)
+		if err != nil {
+			return false, false, fmt.Errorf("project invasion seat %d: %w", seatID, err)
+		}
+		if player.Invasion == nil {
+			continue
+		}
+		if seat.Controller != session.ControllerBuiltinAI {
+			return false, true, nil
+		}
+		view, decision, err := g.builtinDecisionWithView(seatID)
+		if err != nil {
+			return false, false, err
+		}
+		if decision.Kind != ai.ActionInvasion || decision.Command == nil {
+			return false, false, fmt.Errorf("builtin AI seat %d returned invasion action %q", seatID, decision.Kind)
+		}
+		if err := g.session.ResolveInvasionCommand(seatID, view.Revision, *decision.Command); err != nil {
+			return false, false, fmt.Errorf("builtin AI seat %d invasion: %w", seatID, err)
+		}
+		return true, false, nil
+	}
+	return false, false, nil
+}
+
+func (g *hostedGame) builtinDecisionWithView(seatID protocol.SeatID) (session.PlayerDecisionView, ai.Action, error) {
+	if g.immediateResolver == nil {
+		return session.PlayerDecisionView{}, ai.Action{}, fmt.Errorf("builtin AI seat %d requires immediate economy resolver", seatID)
+	}
+	view, err := g.session.DecisionView(seatID, g.immediateResolver)
+	if err != nil {
+		return session.PlayerDecisionView{}, ai.Action{}, fmt.Errorf("project builtin AI seat %d decision view: %w", seatID, err)
+	}
+	decision, err := ai.Plan(view)
+	if err != nil {
+		return session.PlayerDecisionView{}, ai.Action{}, fmt.Errorf("plan builtin AI seat %d: %w", seatID, err)
+	}
+	return view, decision, nil
+}
+
+func (g *hostedGame) requireAllActiveBuiltin() error {
+	status := g.session.Status()
+	if status.Phase == session.PhaseCompleted {
+		return fmt.Errorf("game %q is completed", status.GameID)
+	}
+	for _, seatID := range g.seats {
+		seat := g.seatInfo[seatID]
+		if statusHasEliminatedEmpire(status, seat) {
+			continue
+		}
+		if seat.Controller != session.ControllerBuiltinAI {
+			return fmt.Errorf("seat %d controller %q is not builtin_ai", seatID, seat.Controller)
+		}
+	}
+	return nil
+}
+
+func statusHasEliminatedEmpire(status session.Status, seat session.Seat) bool {
+	for _, eliminated := range status.EliminatedEmpireIDs {
+		if eliminated == seat.EmpireID {
+			return true
+		}
+	}
+	return false
 }
 
 func (g *hostedGame) publish(notification Notification) {

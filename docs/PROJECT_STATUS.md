@@ -26,20 +26,20 @@ The deterministic runtime now has its **first complete supported headless match 
 
 ## Post-milestone prepared roadmap
 
-Slices 01-12 are closed. No implementation slice is currently open and there are zero `_OPEN_` markers. Slice 12 Empire elimination / first deterministic headless victory loop closed at implementation/evidence commit `90b83d8`, completing the first supported deterministic headless match lifecycle. The roadmap state is:
+Slices 01-12 are closed. Slice 13 is currently open with exactly one `_OPEN_` marker; Gates 1-3 are complete and Gate 4 independent QA/closure is next. Its deterministic `baseline_v1` built-in AI completes the canonical `0x8009` AI-vs-AI match by conquest (diagnostic baseline: Turn 430 / Revision 871) without direct post-NewGame state mutation. The roadmap state is:
 
 1. Slice 08 - **closed** - authoritative server, web HMI and HTTP/WebSocket transport baseline (`9315111`).
 2. Slice 09 - **closed** - deterministic New Game and galaxy generation baseline (`a5f3c13`).
 3. Slice 10 - **closed** - diplomacy / war / peace baseline.
 4. Slice 11 - **closed, Gates 1-4 complete** - Troop Transport, invasion and Colony conquest baseline (`5b363ce`).
 5. Slice 12 - **closed** - Empire elimination and first deterministic headless victory loop (`90b83d8`).
-6. Slice 13 - **prepared** - built-in strategic AI baseline.
+6. Slice 13 - **open; Gates 1-3 complete, Gate 4 pending** - built-in strategic AI baseline.
 7. Slice 14 - **prepared** - live GameSession save/resume baseline.
 8. Slice 15 - **prepared** - playable browser strategic HMI loop.
 9. Slice 16 - **prepared** - New Game + preset-race breadth.
 10. Slice 17 - **prepared** - military ship design component/weapon breadth.
 
-Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. The post-Slice-12 fidelity/depth audit is complete and prepares Slices 13-17. The next recommended objective is Slice 13 Built-in strategic AI; the next product milestone is a saveable Human-vs-built-in-AI browser match after Slices 13-15.
+Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 13 has implemented the built-in strategic AI baseline through Gate 3; Gate 4 QA/closure is next. Slices 14-17 remain prepared, and the next product milestone remains a saveable Human-vs-built-in-AI browser match after Slices 13-15.
 
 Important recent checkpoints:
 

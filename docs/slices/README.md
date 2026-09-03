@@ -41,15 +41,14 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **none** - Slices 01-12 are closed; there is no `_OPEN_*.md` marker.
+- `PLANNED_13_BUILTIN_STRATEGIC_AI_BASELINE.md` - **open; Gates 1-3 complete, Gate 4 independent QA/closure pending**. Recovery marker: `_OPEN_BUILTIN_STRATEGIC_AI_BASELINE_2026-09-03.md`.
 
 Prepared queue:
 
-1. `PLANNED_13_BUILTIN_STRATEGIC_AI_BASELINE.md` - deterministic rules-legal built-in AI over the current complete lifecycle.
-2. `PLANNED_14_LIVE_GAMESESSION_SAVE_RESUME_BASELINE.md` - versioned in-progress save/resume at stable session boundaries.
-3. `PLANNED_15_PLAYABLE_BROWSER_STRATEGIC_HMI_LOOP.md` - first saveable Human-vs-AI playable browser match.
-4. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - widen narrow New Game settings and preset-race support.
-5. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for later tactical depth.
+1. `PLANNED_14_LIVE_GAMESESSION_SAVE_RESUME_BASELINE.md` - versioned in-progress save/resume at stable session boundaries.
+2. `PLANNED_15_PLAYABLE_BROWSER_STRATEGIC_HMI_LOOP.md` - first saveable Human-vs-AI playable browser match.
+3. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - widen narrow New Game settings and preset-race support.
+4. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for later tactical depth.
 
 Milestone after Slice 15: a human can start, save/resume and finish the supported Human-vs-built-in-AI match from the browser. Re-audit after Slice 17 before numbering Tactical/Diplomacy/Spies/Leaders/alternative-victory depth.
 

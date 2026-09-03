@@ -1,6 +1,6 @@
 # Open slice 13 - Built-in strategic AI baseline
 
-Status: **Gate 2 design review complete; contract approval pending; no AI implementation yet**.
+Status: **Gate 3 implementation complete; Gate 4 independent QA / final commit / closure pending**.
 
 Opened: **2026-09-03**
 
@@ -13,8 +13,8 @@ Starting HEAD: `3dc5455` (`docs: audit post-milestone fidelity backlog`)
 ## Gate state
 
 - [x] Gate 1: repository/controller audit + original-AI evidence + deterministic no-cheat AI contract.
-- [ ] Gate 2: accept/freeze exact AI visibility/decision/lifecycle contract.
-- [ ] Gate 3: implementation + deterministic AI-driven match regressions.
+- [x] Gate 2: accept/freeze exact AI visibility/decision/lifecycle contract.
+- [x] Gate 3: implementation + deterministic AI-driven match regressions.
 - [ ] Gate 4: independent QA + commits + close.
 
 ## Scope guard

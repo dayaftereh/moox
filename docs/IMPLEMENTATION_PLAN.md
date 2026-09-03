@@ -22,7 +22,7 @@ Implemented/established runtime baseline includes:
 
 The first supported deterministic headless match lifecycle is now complete through Slice 12: authoritative server/web transport, deterministic New Game, war/peace, Troop Transport/invasion/Colony conquest and zero-Colony conquest victory are connected end-to-end. Broader tactical depth, complete Economy/pollution, race/customization extensions, leaders/espionage, AI, alternative victory families and endgame fidelity remain important post-milestone work.
 
-No implementation slice is currently open. Slices 01-12 are closed. The post-Slice-12 audit is complete and prepares Slices 13-17; Slice 13 Built-in strategic AI is next and must begin with a fresh Gate 1. `docs/research/ACTIVE_RESEARCH.md` remains the authoritative handoff.
+Slice 13 **Built-in strategic AI baseline** is currently open. Gates 1-3 are complete: `baseline_v1` now drives deterministic no-cheat AI through player-safe DecisionView/DecisionCatalog and Host automation, and the canonical `0x8009` AI-vs-AI match completes exactly/reproducibly. Gate 4 independent QA/closure is next. Slices 14-17 remain prepared and unopened. `docs/research/ACTIVE_RESEARCH.md` remains the authoritative handoff.
 ## Guiding architecture
 
 Build the game rules as a deterministic, headless simulation core first. UI, rendering, audio and platform integration should depend on that core rather than contain game rules themselves.

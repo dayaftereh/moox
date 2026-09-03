@@ -1,6 +1,6 @@
 # Planned slice 13 - Built-in strategic AI baseline
 
-Status: **open; Gate 2 design review complete; contract approval pending**.
+Status: **open; Gate 3 implementation complete; Gate 4 independent QA pending**.
 
 Queue position: **13 of 17**.
 
@@ -50,17 +50,17 @@ Defer:
 
 ## Gate 2 - Implementation decision
 
-- [ ] Freeze AI determinism/no-cheat contract.
-- [ ] Freeze supported decisions and intentionally deferred systems.
-- [ ] Freeze AI lifecycle integration point and event/revision behavior.
-- [ ] Freeze canonical AI-vs-AI and human-vs-AI regressions.
+- [x] Freeze AI determinism/no-cheat contract.
+- [x] Freeze supported decisions and intentionally deferred systems.
+- [x] Freeze AI lifecycle integration point and event/revision behavior.
+- [x] Freeze canonical AI-vs-AI and human-vs-AI regressions.
 
 ## Gate 3 - Implementation
 
-- [ ] Implement built-in AI command producer/driver.
-- [ ] Integrate all supported stable decision boundaries.
-- [ ] Add deterministic legal-action and atomic-failure regressions.
-- [ ] Prove at least one AI-driven game reaches authoritative completion without direct state mutation.
+- [x] Implement built-in AI command producer/driver.
+- [x] Integrate all supported stable decision boundaries.
+- [x] Add deterministic legal-action and atomic-failure regressions.
+- [x] Prove at least one AI-driven game reaches authoritative completion without direct state mutation.
 
 ## Gate 4 - Follow-up QA + commit + close
 

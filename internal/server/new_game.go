@@ -12,10 +12,11 @@ import (
 )
 
 type newGameRequest struct {
-	SchemaVersion int                  `json:"schema_version"`
-	GameID        string               `json:"game_id"`
-	Seed          string               `json:"seed"`
-	Settings      game.NewGameSettings `json:"settings"`
+	SchemaVersion int                        `json:"schema_version"`
+	GameID        string                     `json:"game_id"`
+	Seed          string                     `json:"seed"`
+	Settings      game.NewGameSettings       `json:"settings"`
+	Controllers   []app.PlayerControllerSpec `json:"controllers,omitempty"`
 }
 
 type newGameResponse struct {
@@ -46,7 +47,7 @@ func (s *apiServer) handleCreateGame(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, http.StatusBadRequest, "bad_request", err.Error())
 		return
 	}
-	created, err := s.host.CreateGame(app.CreateGameRequest{GameID: request.GameID, Seed: seed, Settings: request.Settings})
+	created, err := s.host.CreateGame(app.CreateGameRequest{GameID: request.GameID, Seed: seed, Settings: request.Settings, Controllers: request.Controllers})
 	if err != nil {
 		switch {
 		case errors.Is(err, game.ErrInvalidNewGameSettings):

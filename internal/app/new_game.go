@@ -5,13 +5,20 @@ import (
 	"strings"
 
 	"moox/internal/game"
+	"moox/internal/protocol"
 	"moox/internal/session"
 )
 
+type PlayerControllerSpec struct {
+	SeatID     protocol.SeatID        `json:"seat_id"`
+	Controller session.ControllerType `json:"controller"`
+}
+
 type CreateGameRequest struct {
-	GameID   string
-	Seed     uint64
-	Settings game.NewGameSettings
+	GameID      string
+	Seed        uint64
+	Settings    game.NewGameSettings
+	Controllers []PlayerControllerSpec
 }
 
 type CreateGameResult struct {
@@ -63,13 +70,34 @@ func (h *Host) CreateGame(request CreateGameRequest) (CreateGameResult, error) {
 	if err != nil {
 		return CreateGameResult{}, err
 	}
+	controllers := make(map[protocol.SeatID]session.ControllerType, len(request.Controllers))
+	for _, controller := range request.Controllers {
+		if controller.SeatID == 0 {
+			return CreateGameResult{}, fmt.Errorf("controller seat ID must be non-zero")
+		}
+		if _, exists := controllers[controller.SeatID]; exists {
+			return CreateGameResult{}, fmt.Errorf("duplicate controller assignment for seat %d", controller.SeatID)
+		}
+		controllers[controller.SeatID] = controller.Controller
+	}
 	seats := make([]session.Seat, len(generated.Players))
+	seenControllerSeats := make(map[protocol.SeatID]struct{}, len(generated.Players))
 	for i, player := range generated.Players {
+		controller := session.ControllerLocalHuman
+		if configured, ok := controllers[player.SeatID]; ok {
+			controller = configured
+			seenControllerSeats[player.SeatID] = struct{}{}
+		}
 		seats[i] = session.Seat{
 			ID:         player.SeatID,
 			EmpireID:   player.EmpireID,
 			Name:       player.Name,
-			Controller: session.ControllerLocalHuman,
+			Controller: controller,
+		}
+	}
+	for seatID := range controllers {
+		if _, ok := seenControllerSeats[seatID]; !ok {
+			return CreateGameResult{}, fmt.Errorf("controller assignment references unknown generated seat %d", seatID)
 		}
 	}
 	gameSession, err := session.NewGameSession(gameID, generated.State, seats)
