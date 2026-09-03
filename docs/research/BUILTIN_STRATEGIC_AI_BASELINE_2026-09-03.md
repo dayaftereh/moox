@@ -4,7 +4,7 @@ Date: **2026-09-03**
 
 Slice: **13 - Built-in strategic AI baseline**
 
-Status: **Gates 1-3 complete; Gate 2 frozen by user approval; Gate 4 independent QA pending**.
+Status: **closed; Gates 1-4 complete on 2026-09-03**.
 
 Starting HEAD: `3dc5455` (`docs: audit post-milestone fidelity backlog`)
 
@@ -425,3 +425,20 @@ The committed integration regression runs the complete autonomous match twice an
 - Invasion behavior is exercised inside the complete autonomous conquest match.
 
 Gate 3 is complete. Gate 4 must independently rerun the broad QA matrix before final closure.
+
+## Gate 4 independent QA and closure - 2026-09-03
+
+Gate 4 was executed from a fresh ASH write/QA session against clean HEAD `371aa0c`, with exactly one Slice-13 OPEN marker and no pre-existing workspace changes. The independent checks all passed:
+
+- canonical AI-vs-AI exact replay plus Human-vs-AI automatic-turn determinism: `go test ./internal/app -run 'TestBuiltinAICanonicalNewGameCompletesAndReplaysExactly|TestHumanVsBuiltinAIAutomaticTurnsAreExact' -count=2`;
+- no-cheat/deep-copy DecisionView, authoritative DecisionCatalog and Tactical/planner guards repeated with `-count=2`;
+- full repository Go regression: `go test ./... -count=1` PASS, including `internal/session` in 43.706 s;
+- static analysis: `go vet ./...` PASS;
+- production Web HMI build: `npm run build` in `web` PASS (TypeScript + Vite);
+- workspace/whitespace: `git diff --check` PASS and the tree was clean before closure documentation.
+
+The exact app regression itself runs the full autonomous canonical match twice and requires byte-identical completed snapshots containing authoritative result and event history. Gate 4 then repeats that regression twice more through `-count=2`, providing four complete autonomous canonical executions during this QA invocation.
+
+No Tactical scope was widened during QA. The Slice-07 limitations documented in Gate 3 remain explicit deferred work rather than hidden special cases.
+
+Gate 4 is complete. Slice 13 is closed; Slice 14 Live GameSession save/resume remains prepared and unopened until a fresh Gate 1 is explicitly started.

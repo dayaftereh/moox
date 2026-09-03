@@ -1,6 +1,6 @@
 # Planned slice 13 - Built-in strategic AI baseline
 
-Status: **open; Gate 3 implementation complete; Gate 4 independent QA pending**.
+Status: **closed; Gates 1-4 complete on 2026-09-03**.
 
 Queue position: **13 of 17**.
 
@@ -64,6 +64,6 @@ Defer:
 
 ## Gate 4 - Follow-up QA + commit + close
 
-- [ ] Repeat AI games and compare exact result/event history.
-- [ ] Run full tests/vet/web checks and `git diff --check`.
-- [ ] Update evidence/status/HISTORY and close marker.
+- [x] Repeat AI games and compare exact result/event history.
+- [x] Run full tests/vet/web checks and `git diff --check`.
+- [x] Update evidence/status/HISTORY and close marker.

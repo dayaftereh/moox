@@ -41,7 +41,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- `PLANNED_13_BUILTIN_STRATEGIC_AI_BASELINE.md` - **open; Gates 1-3 complete, Gate 4 independent QA/closure pending**. Recovery marker: `_OPEN_BUILTIN_STRATEGIC_AI_BASELINE_2026-09-03.md`.
+- **none** - Slices 01-13 are closed; there is no `_OPEN_*.md` marker.
 
 Prepared queue:
 
