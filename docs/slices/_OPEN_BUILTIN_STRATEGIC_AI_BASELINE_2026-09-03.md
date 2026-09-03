@@ -1,6 +1,6 @@
 # Open slice 13 - Built-in strategic AI baseline
 
-Status: **Gate 1 complete; Gate 2 approval pending; no AI implementation yet**.
+Status: **Gate 2 design review complete; contract approval pending; no AI implementation yet**.
 
 Opened: **2026-09-03**
 

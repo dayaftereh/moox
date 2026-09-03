@@ -271,20 +271,91 @@ Run a scripted human seat against the built-in AI through Host surfaces and veri
 
 Construct participant Battle and Invasion fixtures where an AI seat is required to act; verify the AI advances each boundary using only player-visible inputs and normal Host mutations.
 
-## Gate-2 contract proposed
+## Gate 2 design review - 2026-09-03
 
-Approve all of the following before Gate 3 implementation:
+The Gate-1 contract was re-checked against the actual Host locking/change-sequence model before freezing it. One important refinement is required: a built-in AI action must **not recursively call public `Host.Submit*` methods from inside `hostedGame.mutate()`**, because those methods reacquire the same hosted-game mutex and would make receipt/change-sequence semantics ambiguous. The correct authority boundary is therefore:
 
-1. Slice 13 implements **MOOX baseline AI v1**, not exact original MOO2 AI parity.
-2. Average/no-bonus economy rules remain unchanged; difficulty bonuses/personality fidelity are deferred.
-3. Built-in AI receives only a shared player-safe StrategicView + DecisionCatalog + participant Battle/Invasion projections; never ObserverView or mutable GameState.
-4. Until a sensor/fog system exists, strategic contacts are symmetrically visible to human and AI, while enemy economic/research/queue internals remain hidden.
-5. Authoritative Go queries enumerate Research/construction/movement/colonization/outpost legality; AI ranks legal options instead of duplicating rule formulas.
-6. The AI planner is deterministic, versioned (`baseline_v1`) and has no private RNG in this slice.
-7. App/Host orchestration dispatches AI choices through the same `SubmitTurn`, `SubmitImmediateCommand` and `SubmitBattleCommand` mutation paths as humans.
-8. Due already-selected Research completion becomes deterministic Host progression for all controllers; it is not an AI-only mutation.
-9. Baseline strategic policy is the bounded Research/Expansion/War/Tactical/Invasion policy documented above.
-10. Canonical AI-vs-AI `0x8009` must finish within 1000 turns and reproduce exact completed bytes across repeated runs; Human-vs-AI plus boundary/no-cheat tests are required.
-11. Exact MOO2 personalities, difficulty cheats/bonuses, stronger modern AI, broader races/settings, treaty/trade/espionage/leaders and deep tactical strategy remain deferred.
+- `internal/ai` owns pure deterministic policy only;
+- `internal/app` / `hostedGame` owns controller orchestration;
+- orchestration invokes the same **public `GameSession` mutators and validators** that back human Host calls (`SubmitTurn`, `ResolveDiplomacyCommand`, `ResolveColonyBaseCommand`, `SubmitBattleCommand`, `ResolveInvasionCommand`);
+- orchestration never edits `GameState`, Battle runtime, Treasury, Research or revisions directly;
+- existing Host `mutate()` semantics remain the outer transaction: one initiating human/automation operation may contain automatic resolver/AI substeps and returns/publishes the final interactive-boundary revision in one Host change-sequence update.
 
-Gate 1 is complete when this contract is presented for approval. No Gate-3 AI implementation is authorized by this document alone.
+This preserves human-equivalent game authority without Host re-entrancy.
+
+### Player-safe projection and DecisionCatalog ownership
+
+The safe projection belongs with Session authority, not inside the AI package. Gate 3 should add a player-facing decision snapshot that can later be reused unchanged by Slice 15 HMI:
+
+- strategic geometry/IDs required to target commands;
+- own Colonies, Outposts, Ships, ShipDesigns, Strategic Fleets and transfers;
+- symmetric public strategic contacts for the current no-fog baseline;
+- Diplomacy, pending Colony Base, Invasion and participant Battle state;
+- **no** enemy Treasury, Research state/progress, population assignment, construction queue, unpublished submissions or observer telemetry.
+
+A Session/rules-backed `DecisionCatalog` enumerates authoritative legal options. It must include at least:
+
+- available Research choices;
+- available Construction choices per owned Colony;
+- server-projected Population-management choices/economic previews sufficient for the baseline AI to avoid duplicating food/output formulas;
+- legal Fleet destinations;
+- legal Colony Ship colonization targets;
+- legal Outpost deployment targets;
+- legal immediate Diplomacy actions from the currently supported war/peace model;
+- legal Colony Base resolution actions;
+- legal Battle actions for the active participant/Ship using BattleSession validation;
+- legal Invasion/decline options from the projected opportunity.
+
+The catalog may inspect authoritative state internally. The planner may not.
+
+### Automatic-controller lifecycle
+
+The existing `hostedGame.driveToInteractiveBoundary()` is the correct integration concept and should be extended, rather than creating an independent parallel game loop.
+
+At `planning`:
+
+- built-in seats without a submission are planned/submitted in stable Seat-ID order;
+- if any active human seat is still unsubmitted, stop at the human boundary;
+- if all active seats are AI or have submitted, continue through normal strategic resolution.
+
+At `post_resolution`:
+
+- settle due already-selected Research in stable Empire-ID order using existing `CompleteResearchField`; each completion keeps its normal Session revision/event;
+- resolve pending Colony Base choices if their owner is built-in AI;
+- if a human decision remains, stop;
+- otherwise `CompleteTurn()` normally.
+
+At `encounters` / tactical Battles:
+
+- if the currently required participant action belongs to built-in AI, choose one legal catalog action and submit it through `GameSession.SubmitBattleCommand`;
+- if a human action is required, stop.
+
+At `invasion_decisions`:
+
+- act only when the attacker is built-in AI; otherwise stop for the human.
+
+At `completed`: stop permanently.
+
+For Human-vs-AI, these automatic substeps remain grouped inside the initiating Host mutation and the existing one-change-sequence/final-revision receipt model. Session revisions/events still record the individual authoritative state transitions.
+
+For all-AI regression and future automation, add an explicit Host automation entrypoint that advances **at most one strategic turn (or until completion / a non-AI boundary)** per call. The canonical AI-vs-AI test calls that entrypoint repeatedly, which avoids a single unbounded Register/HTTP operation.
+
+## Gate-2 contract proposed for approval
+
+1. **AI identity:** Slice 13 implements `baseline_v1`, a MOOX deterministic legal AI baseline, not exact original MOO2 AI parity.
+2. **No difficulty cheats:** Average/no-bonus economy remains unchanged. Original difficulty bonuses, personalities and hidden AI rules are deferred.
+3. **No-cheat input:** Built-in AI receives only the shared player-safe strategic/decision projection plus participant Battle/Invasion data. It never receives `ObserverView` or mutable `*core.GameState`.
+4. **Visibility baseline:** Until exploration/sensor/fog state exists, strategic contacts are symmetrically visible to Human and AI; enemy economic/Research/queue/submission internals remain hidden.
+5. **Rules stay authoritative:** Session/rules code generates the `DecisionCatalog` for Research, Construction, Population previews, movement, colonization, Outposts, Diplomacy, Colony Base, Battle and Invasion. AI ranks legal options; it does not duplicate rule formulas.
+6. **Pure deterministic planner:** `internal/ai` is versioned `baseline_v1`, uses stable tie-breaking, mutates no input and has no private RNG in Slice 13.
+7. **Host orchestration without re-entrancy:** `internal/app` drives built-in controllers under the hosted-game lifecycle and invokes public `GameSession` command mutators directly; it does not recursively call public Host endpoints and never directly mutates state/revision/event internals.
+8. **Controller-neutral Research settlement:** due already-selected Research is deterministic Host progression for every controller in PostResolution, stable by Empire ID, before turn completion; Humans and AI only choose the next Research project through normal planning commands.
+9. **Transaction semantics:** one initiating Host mutation may contain automatic AI/resolver substeps and produces one final Host change-sequence notification/receipt, preserving current Host behavior; individual Session revisions/events remain authoritative. An explicit bounded automation entrypoint advances at most one all-AI strategic turn per call.
+10. **Baseline policy:** deterministic Research/range-first expansion, food-safe population management, legal construction/Colonization/Outpost supply extension, military+Transport readiness, bounded war/peace policy, first-legal tactical Beam action, and invade-with-all-eligible-transports behavior as documented in Gate 1.
+11. **Canonical liveness fixture:** real `NewGame(0x8009)`, current Small/Normal/Average/Tactical Human+Darlok content, both seats `ControllerBuiltinAI`, no post-NewGame direct state mutation, hard cap **1000 strategic turns**, authoritative conquest completion required.
+12. **Exact determinism:** repeat the canonical AI-vs-AI run from the same seed and require exact completed snapshot/result/event-history bytes; add pure-planner determinism, no-cheat projection, Human-vs-AI authority, Research settlement, Battle and Invasion boundary regressions.
+13. **Explicitly deferred:** exact MOO2 personalities/difficulty advantages, modern stronger AI/search, broader races/settings, treaty/trade/espionage/leaders, sensor/fog fidelity and deeper tactical strategy.
+
+### Gate 2 status
+
+The design review is complete and the contract above is the **freeze candidate**. Gate 2 remains unaccepted until the user explicitly approves this contract. No Gate-3 AI implementation is authorized yet.

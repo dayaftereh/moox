@@ -1,6 +1,6 @@
 # Planned slice 13 - Built-in strategic AI baseline
 
-Status: **open; Gate 1 complete; Gate 2 approval pending**.
+Status: **open; Gate 2 design review complete; contract approval pending**.
 
 Queue position: **13 of 17**.
 

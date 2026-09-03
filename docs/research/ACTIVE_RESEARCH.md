@@ -6,7 +6,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 
 - Branch: `main`.
 - Open slice marker: `docs/slices/_OPEN_BUILTIN_STRATEGIC_AI_BASELINE_2026-09-03.md`.
-- Active implementation slice: **Slice 13 Gate 1 complete; Gate 2 approval pending; implementation not yet authorized**.
+- Active implementation slice: **Slice 13 Gate 2 design review complete; freeze candidate awaiting approval; implementation not yet authorized**.
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
@@ -14,7 +14,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Prepared tranche: Slices **13-17**; none is open.
-- Current objective: **Slice 13 Gate 2 approval - freeze the player-safe StrategicView/DecisionCatalog, deterministic baseline_v1 policy, Host AI driver and exact AI-vs-AI regression contract before implementation**.
+- Current objective: **Slice 13 Gate 2 approval - accept the reviewed 13-point player-safe DecisionCatalog / baseline_v1 / Host-controller / exact AI-vs-AI contract before Gate 3 implementation**.
 
 
 ## Post-Slice-12 fidelity/depth audit - complete
