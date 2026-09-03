@@ -1,6 +1,6 @@
 # Planned slice 13 - Built-in strategic AI baseline
 
-Status: **planned / queued; not open**.
+Status: **open; Gate 1 complete; Gate 2 approval pending**.
 
 Queue position: **13 of 17**.
 
@@ -40,13 +40,13 @@ Defer:
 
 ## Gate 1 - Checkup + evidence/architecture audit
 
-- [ ] Re-check repo/session/controller/command surfaces and canonical Slice-12 match.
-- [ ] Inventory every stable boundary that can require a seat decision.
-- [ ] Inspect available original AI evidence and separate proven original behavior from MOOX baseline policy.
-- [ ] Define deterministic AI input visibility and no-cheat contract.
-- [ ] Define minimal legal-action/query gaps that must be exposed by Go authority rather than recomputed by AI.
-- [ ] Define AI-vs-AI completion fixture/turn cap and failure diagnostics.
-- [ ] Present exact Gate-2 AI contract before implementation.
+- [x] Re-check repo/session/controller/command surfaces and canonical Slice-12 match.
+- [x] Inventory every stable boundary that can require a seat decision.
+- [x] Inspect available original AI evidence and separate proven original behavior from MOOX baseline policy.
+- [x] Define deterministic AI input visibility and no-cheat contract.
+- [x] Define minimal legal-action/query gaps that must be exposed by Go authority rather than recomputed by AI.
+- [x] Define AI-vs-AI completion fixture/turn cap and failure diagnostics.
+- [x] Present exact Gate-2 AI contract before implementation.
 
 ## Gate 2 - Implementation decision
 
