@@ -23,7 +23,7 @@ func baselineMilitarySpec() ShipDesignSpec {
 	}
 }
 
-func TestMilitaryStateAllowsMoreThanSixDesignsAndRoundTripsSchema22(t *testing.T) {
+func TestMilitaryStateAllowsMoreThanSixDesignsAndRoundTripsSchema23(t *testing.T) {
 	state := NewSmallFixture(1801)
 	empireID := state.Empires[0].ID
 	for i := 0; i < 8; i++ {
@@ -40,7 +40,7 @@ func TestMilitaryStateAllowsMoreThanSixDesignsAndRoundTripsSchema22(t *testing.T
 	state.StrategicFleets = append(state.StrategicFleets, StrategicFleet{
 		ID: fleetID, EmpireID: empireID, Role: StrategicFleetRoleCombat, AtSystemID: state.Galaxy.Systems[0].ID, ShipIDs: []ID{shipID},
 	})
-	if StateSchemaVersion != 22 || state.SchemaVersion != 22 {
+	if StateSchemaVersion != 23 || state.SchemaVersion != 23 {
 		t.Fatalf("schema=%d constant=%d want=22", state.SchemaVersion, StateSchemaVersion)
 	}
 	if err := state.Validate(); err != nil {

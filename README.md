@@ -30,7 +30,7 @@ The game does not yet provide a complete match lifecycle, but the deterministic 
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slices **01-10 are closed**. There is **no active `_OPEN_` slice marker**. The next prepared objective is Slice 11 **Troop Transport, invasion and conquest baseline**; it is planned/queued and not open.
+**Slice state:** Slices **01-10 are closed**. Slice 11 **Troop Transport, invasion and conquest baseline** is **active; Gates 1-3 complete / Gate 4 QA + commit + close ready** with exactly one `_OPEN_` marker. The frozen Core23 Transport/invasion/conquest baseline is implemented and regression-green.
 
 ### Current / prepared slice queue
 
@@ -39,7 +39,7 @@ Development slices follow `docs/slices/README.md`. Before starting a new slice, 
 | 8 | **closed** | Authoritative Go server + HTTP/WebSocket + browser HMI; implementation commit `9315111` |
 | 9 | **closed** | Deterministic real New Game / two-Empire galaxy generation; implementation commit `a5f3c13` |
 | 10 | **closed** | Diplomacy / war / peace baseline and attack authorization |
-| 11 | planned | Troop Transport, invasion, Colony capture and conquered Population handoff |
+| 11 | **active, Gates 1-3 complete / Gate 4 ready** | Troop Transport, invasion, Colony capture and conquered Population handoff |
 | 12 | planned | First deterministic end-to-end match from New Game to conquest winner |
 
 ### Latest runtime checkpoints

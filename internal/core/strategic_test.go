@@ -148,7 +148,7 @@ func TestDiplomaticRelationValidation(t *testing.T) {
 	})
 }
 
-func TestColonyShipTransitStateRoundTripsInSchema22(t *testing.T) {
+func TestColonyShipTransitStateRoundTripsInSchema23(t *testing.T) {
 	state := NewSmallFixture(1510)
 	fleetID := state.NewID()
 	state.StrategicFleets = []StrategicFleet{{
@@ -160,7 +160,7 @@ func TestColonyShipTransitStateRoundTripsInSchema22(t *testing.T) {
 		RemainingTurns:      2,
 		FTLSpeed:            3,
 	}}
-	if StateSchemaVersion != 22 || state.SchemaVersion != 22 {
+	if StateSchemaVersion != 23 || state.SchemaVersion != 23 {
 		t.Fatalf("schema=%d constant=%d want=22", state.SchemaVersion, StateSchemaVersion)
 	}
 	if err := state.Validate(); err != nil {

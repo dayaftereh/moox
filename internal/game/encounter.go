@@ -219,7 +219,7 @@ func buildEncounterPresence(state *core.GameState) (map[core.ID]map[core.ID]*enc
 			}
 			entry.side.CombatFleetIDs = append(entry.side.CombatFleetIDs, fleet.ID)
 			entry.side.ShipIDs = append(entry.side.ShipIDs, fleet.ShipIDs...)
-		case fleet.Role == core.StrategicFleetRoleCivilian && (fleet.SpecialKind == core.StrategicFleetSpecialColonyShip || fleet.SpecialKind == core.StrategicFleetSpecialOutpostShip):
+		case fleet.Role == core.StrategicFleetRoleCivilian && (fleet.SpecialKind == core.StrategicFleetSpecialColonyShip || fleet.SpecialKind == core.StrategicFleetSpecialOutpostShip || fleet.SpecialKind == core.StrategicFleetSpecialTroopTransport):
 			entry.side.CivilianFleetIDs = append(entry.side.CivilianFleetIDs, fleet.ID)
 		}
 	}
@@ -464,7 +464,7 @@ func (r *EconomyResolver) establishBattleRetreat(state *core.GameState, fleet *c
 		fleet.RemainingTurns = eta
 		fleet.FTLSpeed = 0
 		return eta, true
-	case fleet.Role == core.StrategicFleetRoleCivilian && (fleet.SpecialKind == core.StrategicFleetSpecialColonyShip || fleet.SpecialKind == core.StrategicFleetSpecialOutpostShip):
+	case fleet.Role == core.StrategicFleetRoleCivilian && (fleet.SpecialKind == core.StrategicFleetSpecialColonyShip || fleet.SpecialKind == core.StrategicFleetSpecialOutpostShip || fleet.SpecialKind == core.StrategicFleetSpecialTroopTransport):
 		eta := strategicTravelETA(source, destination, fleet.FTLSpeed)
 		if eta < 1 {
 			return 0, false

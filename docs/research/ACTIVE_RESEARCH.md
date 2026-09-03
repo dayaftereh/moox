@@ -5,15 +5,21 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: **none**.
-- Active implementation slice: **none; Slices 01-10 are closed**.
+- Open slice marker: `docs/slices/_OPEN_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE_2026-09-03.md`.
+- Active implementation slice: **Slice 11 - Troop Transport / invasion / conquest baseline; Gates 1-3 complete / Gate 4 ready**.
 - Slices 01-10 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
-- Core `StateSchemaVersion`: **22**.
+- Core `StateSchemaVersion`: **23**.
 - Economy ruleset schema: **8**.
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
-- Current objective: **Slice 11 Troop Transport / invasion / conquest baseline is prepared but not open**.
+- Current objective: **Slice 11 Gate 4 - independent final QA, HISTORY/status closure, commits and OPEN-marker removal**.
 
+
+## Active Slice 11 - Troop Transport / invasion / conquest baseline
+
+Gates 1-3 are complete from starting HEAD `f353a05`; Gate 4 is ready. Core23 now persists standing Infantry and fixed `troop_transport`; Transport is baseline-buildable at 100 PP / Feudal 67 PP, consumes 1 CP at normal settlement, uses existing strategic transit and remains a civilian Encounter asset. Session now exposes the server-authoritative `invasion_decisions` boundary with canonical opportunity/handled keys and revision-bound `invasion.invade|decline`. The narrow original-evidenced Infantry/Militia d100 resolver, failure/survivor packing, Colony ownership/cohort/Construction/Capital handoff and post-conquest Blockade/Population-transfer/Economy/Food continuation are implemented. Deterministic success/failure, atomicity, Core23 save/load/replay, declared-war + transit-arrival + capture, HTTP and React proof are green. Current seed `0x8009` Core23 state hash: `83614740b216409877b03c536a16328c7fa7031867f58dbeb70857a8953f5762`. Gate 4 must independently QA and close; no commit/push yet.
+
+Permanent evidence: `docs/research/TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE_2026-09-03.md`.
 ## Closed Slice 10 - Diplomacy / war / peace baseline
 
 Slice 10 is closed. Core22 implements reciprocal `peace|war`, directional pending peace offers, revision-bound pre-first-submission `declare_war|offer_peace|accept_peace`, deterministic diplomacy events and player-safe projections. `MayAttackEmpire` is the shared war-only blockade/encounter authority. HTTP and React proof cover Human war declaration -> peace offer -> Darlok acceptance, while timing tests prove neutral same-system suppression, war activation, accepted-peace suppression with Fleets retained and rejection after Battle materialization. Gate 4 independently repeated focused regressions, exact replay/save-load, authority scans and full Go/Web QA. Implementation/evidence commit: `b91f65e`. Automatic peace expiry, sneak attacks, treaties, AI and espionage remain deferred.

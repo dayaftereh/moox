@@ -15,9 +15,10 @@ const (
 type StrategicFleetSpecialKind string
 
 const (
-	StrategicFleetSpecialNone        StrategicFleetSpecialKind = ""
-	StrategicFleetSpecialColonyShip  StrategicFleetSpecialKind = "colony_ship"
-	StrategicFleetSpecialOutpostShip StrategicFleetSpecialKind = "outpost_ship"
+	StrategicFleetSpecialNone           StrategicFleetSpecialKind = ""
+	StrategicFleetSpecialColonyShip     StrategicFleetSpecialKind = "colony_ship"
+	StrategicFleetSpecialOutpostShip    StrategicFleetSpecialKind = "outpost_ship"
+	StrategicFleetSpecialTroopTransport StrategicFleetSpecialKind = "troop_transport"
 )
 
 type StrategicFleet struct {
@@ -138,7 +139,7 @@ func validateStrategicState(
 			} else if fleet.DestinationSystemID != 0 || fleet.RemainingTurns != 0 || fleet.FTLSpeed != 0 {
 				return fmt.Errorf("strategic_fleet[%d] ordinary non-combat fleet cannot carry semantic transit state", i)
 			}
-		case StrategicFleetSpecialColonyShip, StrategicFleetSpecialOutpostShip:
+		case StrategicFleetSpecialColonyShip, StrategicFleetSpecialOutpostShip, StrategicFleetSpecialTroopTransport:
 			if fleet.Role != StrategicFleetRoleCivilian {
 				return fmt.Errorf("strategic_fleet[%d] fixed special ship %q must be civilian", i, fleet.SpecialKind)
 			}
@@ -162,7 +163,7 @@ func validateStrategicState(
 			if _, ok := systemIDs[fleet.DestinationSystemID]; !ok {
 				return fmt.Errorf("strategic_fleet[%d] references unknown destination star system %d", i, fleet.DestinationSystemID)
 			}
-			fixedSpecial := fleet.SpecialKind == StrategicFleetSpecialColonyShip || fleet.SpecialKind == StrategicFleetSpecialOutpostShip
+			fixedSpecial := fleet.SpecialKind == StrategicFleetSpecialColonyShip || fleet.SpecialKind == StrategicFleetSpecialOutpostShip || fleet.SpecialKind == StrategicFleetSpecialTroopTransport
 			combatTransit := fleet.SpecialKind == StrategicFleetSpecialNone && fleet.Role == StrategicFleetRoleCombat
 			if !fixedSpecial && !combatTransit {
 				return fmt.Errorf("strategic_fleet[%d] fleet kind/role cannot use semantic transit in schema %d", i, StateSchemaVersion)
@@ -170,7 +171,7 @@ func validateStrategicState(
 			if fleet.RemainingTurns <= 0 {
 				return fmt.Errorf("strategic_fleet[%d] in transit requires positive remaining_turns", i)
 			}
-		} else if fleet.SpecialKind == StrategicFleetSpecialColonyShip || fleet.SpecialKind == StrategicFleetSpecialOutpostShip {
+		} else if fleet.SpecialKind == StrategicFleetSpecialColonyShip || fleet.SpecialKind == StrategicFleetSpecialOutpostShip || fleet.SpecialKind == StrategicFleetSpecialTroopTransport {
 			return fmt.Errorf("strategic_fleet[%d] fixed special ship %q requires a current or destination system", i, fleet.SpecialKind)
 		} else if fleet.Role == StrategicFleetRoleCombat && fleet.SpecialKind == StrategicFleetSpecialNone {
 			return fmt.Errorf("strategic_fleet[%d] combat fleet requires a current or destination system", i)

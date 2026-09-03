@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 22
+const StateSchemaVersion = 23
 
 type ID uint64
 
@@ -133,11 +133,16 @@ type ResearchState struct {
 	TechnologyIDs []int                 `json:"technology_ids"`
 	ProgressRP    float64               `json:"progress_rp"`
 }
+type ColonyGroundForces struct {
+	Infantry int `json:"infantry,omitempty"`
+}
+
 type Colony struct {
 	ID                 ID                       `json:"id"`
 	EmpireID           ID                       `json:"empire_id"`
 	PlanetID           ID                       `json:"planet_id"`
 	Population         PopulationState          `json:"population"`
+	GroundForces       ColonyGroundForces       `json:"ground_forces,omitempty"`
 	Buildings          []string                 `json:"buildings,omitempty"`
 	Economy            ColonyEconomy            `json:"economy"`
 	EconomyContext     ColonyEconomyContext     `json:"economy_context"`
@@ -152,6 +157,7 @@ const (
 	ConstructionProjectBuilding                ConstructionProjectKind = "building"
 	ConstructionProjectColonyShip              ConstructionProjectKind = "colony_ship"
 	ConstructionProjectOutpostShip             ConstructionProjectKind = "outpost_ship"
+	ConstructionProjectTroopTransport          ConstructionProjectKind = "troop_transport"
 	ConstructionProjectMilitaryShip            ConstructionProjectKind = "military_ship"
 	ConstructionProjectFreighterFleet          ConstructionProjectKind = "freighter_fleet"
 	ConstructionProjectHousing                 ConstructionProjectKind = "housing"
@@ -524,8 +530,11 @@ func (s *GameState) Validate() error {
 		if colony.EmpireID == 0 || colony.PlanetID == 0 {
 			return fmt.Errorf("colony[%d] has incomplete references", i)
 		}
+		if colony.GroundForces.Infantry < 0 {
+			return fmt.Errorf("colony[%d] ground infantry must be non-negative", i)
+		}
 		if colony.Construction != nil {
-			if colony.Construction.ProjectKind != ConstructionProjectBuilding && colony.Construction.ProjectKind != ConstructionProjectColonyShip && colony.Construction.ProjectKind != ConstructionProjectOutpostShip && colony.Construction.ProjectKind != ConstructionProjectMilitaryShip && colony.Construction.ProjectKind != ConstructionProjectFreighterFleet && colony.Construction.ProjectKind != ConstructionProjectHousing && colony.Construction.ProjectKind != ConstructionProjectPlanetaryTransformation {
+			if colony.Construction.ProjectKind != ConstructionProjectBuilding && colony.Construction.ProjectKind != ConstructionProjectColonyShip && colony.Construction.ProjectKind != ConstructionProjectOutpostShip && colony.Construction.ProjectKind != ConstructionProjectTroopTransport && colony.Construction.ProjectKind != ConstructionProjectMilitaryShip && colony.Construction.ProjectKind != ConstructionProjectFreighterFleet && colony.Construction.ProjectKind != ConstructionProjectHousing && colony.Construction.ProjectKind != ConstructionProjectPlanetaryTransformation {
 				return fmt.Errorf("colony[%d] construction project_kind %q is invalid", i, colony.Construction.ProjectKind)
 			}
 			if colony.Construction.ProjectID == "" {
@@ -536,6 +545,9 @@ func (s *GameState) Validate() error {
 			}
 			if colony.Construction.ProjectKind == ConstructionProjectColonyShip && colony.Construction.ProjectID != "colony_ship" {
 				return fmt.Errorf("colony[%d] Colony Ship construction project_id must be %q", i, "colony_ship")
+			}
+			if colony.Construction.ProjectKind == ConstructionProjectTroopTransport && colony.Construction.ProjectID != "troop_transport" {
+				return fmt.Errorf("colony[%d] troop transport project_id must be troop_transport", i)
 			}
 			if colony.Construction.ProjectKind == ConstructionProjectOutpostShip && colony.Construction.ProjectID != "outpost_ship" {
 				return fmt.Errorf("colony[%d] Outpost Ship construction project_id must be %q", i, "outpost_ship")
@@ -714,6 +726,11 @@ func (s *GameState) Validate() error {
 		if capital := s.Empires[i].Capital; capital != 0 {
 			if _, ok := colonyIDs[capital]; !ok {
 				return fmt.Errorf("empire[%d] references unknown capital colony %d", i, capital)
+			}
+			for ci := range s.Colonies {
+				if s.Colonies[ci].ID == capital && s.Colonies[ci].EmpireID != s.Empires[i].ID {
+					return fmt.Errorf("empire[%d] capital colony %d is owned by empire %d", i, capital, s.Colonies[ci].EmpireID)
+				}
 			}
 		}
 	}

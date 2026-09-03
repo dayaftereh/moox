@@ -19,7 +19,7 @@ func newCombatTransitState(seed uint64) (*GameState, ID) {
 	return state, shipID
 }
 
-func TestCombatFleetTransitValidationAndRoundTripSchema22(t *testing.T) {
+func TestCombatFleetTransitValidationAndRoundTripSchema23(t *testing.T) {
 	state, shipID := newCombatTransitState(1920)
 	fleetID := state.NewID()
 	state.StrategicFleets = []StrategicFleet{{
@@ -30,7 +30,7 @@ func TestCombatFleetTransitValidationAndRoundTripSchema22(t *testing.T) {
 		RemainingTurns:      2,
 		ShipIDs:             []ID{shipID},
 	}}
-	if StateSchemaVersion != 22 || state.SchemaVersion != 22 {
+	if StateSchemaVersion != 23 || state.SchemaVersion != 23 {
 		t.Fatalf("schema=%d constant=%d want=22", state.SchemaVersion, StateSchemaVersion)
 	}
 	if err := state.Validate(); err != nil {

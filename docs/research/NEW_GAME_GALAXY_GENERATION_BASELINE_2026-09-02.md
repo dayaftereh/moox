@@ -837,3 +837,9 @@ Slice 09 is closed. Implementation/data/evidence commit: `a5f3c13` (`game: add d
 ### Core22 serialization addendum - Slice 10 Gate 3, 2026-09-03
 
 Slice 09 closed under Core schema 21 with the historical seed `0x8009` full-state SHA-256 `1d89bf9e8a5ce47c81a481ad669916d727357587dfc40e46904b9503ba314a89`. Slice 10 Gate 3 advances the authoritative state schema to 22 for diplomacy. The same canonical seed/settings now serialize to SHA-256 `8effff679109cd10a427f1c80b83047dc0d2fa8e5e4871a67235a486dbc2fc68`; this fingerprint change is schema/state-shape driven, while the deterministic New Game generation contract remains unchanged and continues to be regression-tested.
+
+### Core23 serialization addendum - Slice 11 Gate 3, 2026-09-03
+
+Slice 09 closed under Core schema 21 with historical seed `0x8009` SHA-256 `1d89bf9e8a5ce47c81a481ad669916d727357587dfc40e46904b9503ba314a89`. Slice 10 then advanced to Core22 for diplomacy, producing the historical Core22 fingerprint `8effff679109cd10a427f1c80b83047dc0d2fa8e5e4871a67235a486dbc2fc68` for the same canonical seed/settings.
+
+Slice 11 Gate 3 advances the authoritative state schema to **23** for persisted Colony standing Infantry plus the Troop Transport/conquest state vocabulary. The same canonical New Game now serializes to SHA-256 `83614740b216409877b03c536a16328c7fa7031867f58dbeb70857a8953f5762`. New Game still starts with zero standing Infantry and no Troop Transports; the fingerprint change is therefore a schema-version/state-shape serialization change, not a change to the Slice-09 galaxy/start-generation rules. The Core23 fingerprint is pinned in `internal/game/new_game_test.go` and the full repository regression suite is green.

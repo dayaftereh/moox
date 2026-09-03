@@ -105,6 +105,12 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
 				}
 				events = append(events, event)
+			case CommandQueueTroopTransport:
+				event, err := r.queueTroopTransport(state, empireID, batch.SeatID, command)
+				if err != nil {
+					return Resolution{}, fmt.Errorf("seat %d command %d: %w", batch.SeatID, command.Sequence, err)
+				}
+				events = append(events, event)
 			case CommandQueueMilitaryShip:
 				event, err := r.queueMilitaryShip(state, empireID, batch.SeatID, command)
 				if err != nil {
@@ -227,6 +233,13 @@ func (r *EconomyResolver) Resolve(ctx ResolveContext, state *core.GameState, bat
 	if len(encounters) != 0 {
 		return Resolution{State: state, Events: events, Encounters: encounters}, nil
 	}
+	invasion, err := r.prepareInvasionBoundary(ctx, state)
+	if err != nil {
+		return Resolution{}, err
+	}
+	if invasion != nil {
+		return Resolution{State: state, Events: events, Invasion: invasion}, nil
+	}
 	postEvents, err := r.finishPostEncounter(state)
 	if err != nil {
 		return Resolution{}, err
@@ -245,6 +258,13 @@ func (r *EconomyResolver) ResumeAfterEncounters(ctx ResolveContext, state *core.
 	events, err := r.applyEncounterOutcomes(state, outcomes)
 	if err != nil {
 		return Resolution{}, err
+	}
+	invasion, err := r.prepareInvasionBoundary(ctx, state)
+	if err != nil {
+		return Resolution{}, err
+	}
+	if invasion != nil {
+		return Resolution{State: state, Events: events, Invasion: invasion}, nil
 	}
 	boundaryEvents, encounters, err := r.prepareEncounterBoundary(ctx, state)
 	if err != nil {

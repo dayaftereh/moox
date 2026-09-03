@@ -54,6 +54,9 @@ export type Colony = {
   population: {
     cohorts?: PopulationCohort[]
   }
+  ground_forces?: {
+    infantry?: number
+  }
 }
 
 export type DiplomaticStance = 'neutral' | 'peace' | 'war'
@@ -66,6 +69,17 @@ export type DiplomacyView = {
 }
 
 export type DiplomacyCommandKind = 'diplomacy.declare_war' | 'diplomacy.offer_peace' | 'diplomacy.accept_peace'
+
+export type InvasionOpportunity = {
+  system_id: number
+  colony_id: number
+  attacker_empire_id: number
+  defender_empire_id: number
+  attacker_seat_id: number
+  eligible_transport_fleet_ids: number[]
+}
+
+export type InvasionAction = 'invade' | 'decline'
 
 export type PlayerView = {
   game_id: string
@@ -97,6 +111,7 @@ export type PlayerView = {
   }
   colonies: Colony[]
   diplomacy?: DiplomacyView[]
+  invasion?: InvasionOpportunity
 }
 
 export type BattleView = {
@@ -196,6 +211,26 @@ export async function submitDiplomacy(snapshot: PlayerSnapshot, seatID: number, 
   const payload = kind === 'diplomacy.accept_peace'
     ? { from_empire_id: otherEmpireID }
     : { target_empire_id: otherEmpireID }
+  return requestJSON<Receipt>(`/api/v1/games/${encodeURIComponent(snapshot.view.game_id)}/immediate-commands`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      schema_version: 1,
+      seat_id: seatID,
+      base_revision: snapshot.view.revision,
+      command: { schema_version: 1, sequence: 1, kind, payload },
+    }),
+  })
+}
+
+
+export async function submitInvasion(snapshot: PlayerSnapshot, seatID: number, action: InvasionAction): Promise<Receipt> {
+  const invasion = snapshot.view.invasion
+  if (!invasion) throw new Error('No invasion opportunity is available')
+  const kind = action === 'invade' ? 'invasion.invade' : 'invasion.decline'
+  const payload = action === 'invade'
+    ? { colony_id: invasion.colony_id, transport_fleet_ids: invasion.eligible_transport_fleet_ids }
+    : { colony_id: invasion.colony_id }
   return requestJSON<Receipt>(`/api/v1/games/${encodeURIComponent(snapshot.view.game_id)}/immediate-commands`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

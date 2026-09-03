@@ -101,7 +101,7 @@ func (r *EconomyRules) deriveEmpireCommandPoints(state *core.GameState, empire *
 			continue
 		}
 		switch fleet.SpecialKind {
-		case core.StrategicFleetSpecialColonyShip, core.StrategicFleetSpecialOutpostShip:
+		case core.StrategicFleetSpecialColonyShip, core.StrategicFleetSpecialOutpostShip, core.StrategicFleetSpecialTroopTransport:
 			used += r.CommandPoints.FixedSpecialShipPoints
 		}
 	}

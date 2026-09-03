@@ -23,7 +23,7 @@ func baselineWeaponTestSpec() ShipDesignSpec {
 	}
 }
 
-func TestShipWeaponMountValidationAndSchema22RoundTrip(t *testing.T) {
+func TestShipWeaponMountValidationAndSchema23RoundTrip(t *testing.T) {
 	for _, tc := range []struct {
 		name    string
 		weapons []ShipWeaponMount
@@ -52,7 +52,7 @@ func TestShipWeaponMountValidationAndSchema22RoundTrip(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if loaded.SchemaVersion != 22 || !reflect.DeepEqual(loaded.ShipDesigns[0].Spec.Weapons, spec.Weapons) {
+			if loaded.SchemaVersion != 23 || !reflect.DeepEqual(loaded.ShipDesigns[0].Spec.Weapons, spec.Weapons) {
 				t.Fatalf("weapon round-trip schema=%d weapons=%+v want=%+v", loaded.SchemaVersion, loaded.ShipDesigns[0].Spec.Weapons, spec.Weapons)
 			}
 		})

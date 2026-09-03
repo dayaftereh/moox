@@ -15,7 +15,8 @@ type SeatAuthority struct {
 }
 
 type ResolveContext struct {
-	Seats []SeatAuthority
+	Seats            []SeatAuthority
+	HandledInvasions []InvasionHandledKey
 }
 
 func (c ResolveContext) EmpireForSeat(seatID protocol.SeatID) (core.ID, bool) {
@@ -73,6 +74,7 @@ type Resolution struct {
 	State      *core.GameState
 	Events     []DomainEvent
 	Encounters []Encounter
+	Invasion   *InvasionOpportunity
 }
 
 type Resolver interface {
@@ -85,6 +87,11 @@ type Resolver interface {
 type EncounterResolver interface {
 	Resolver
 	ResumeAfterEncounters(ctx ResolveContext, state *core.GameState, outcomes []EncounterOutcome) (Resolution, error)
+}
+
+type InvasionResolver interface {
+	ResolveInvasionCommand(ctx ResolveContext, state *core.GameState, opportunity InvasionOpportunity, seatID protocol.SeatID, command protocol.Command) ([]DomainEvent, error)
+	ResumeAfterInvasion(ctx ResolveContext, state *core.GameState) (Resolution, error)
 }
 
 type ResolverFunc func(ctx ResolveContext, state *core.GameState, batches []protocol.CommandBatch) (Resolution, error)

@@ -122,7 +122,7 @@ func TestGameSessionCombatFleetSubsetMoveObserverIsolationAndDeterministicReplay
 	if !reflect.DeepEqual(viewA.Events, viewB.Events) {
 		t.Fatalf("identical combat Fleet sessions diverged in events:\nA=%+v\nB=%+v", viewA.Events, viewB.Events)
 	}
-	if core.StateSchemaVersion != 22 || viewA.State.SchemaVersion != 22 {
+	if core.StateSchemaVersion != 23 || viewA.State.SchemaVersion != 23 {
 		t.Fatalf("observer schema=%d constant=%d want=22", viewA.State.SchemaVersion, core.StateSchemaVersion)
 	}
 

@@ -3,6 +3,7 @@ import {
   aggregatePopulation,
   assignPopulation,
   submitDiplomacy,
+  submitInvasion,
   createGame,
   getPlayerSnapshot,
   listGames,
@@ -34,6 +35,7 @@ function App() {
   const [status, setStatus] = useState('Connecting to MOOX server...')
   const [error, setError] = useState('')
   const [diplomacyBusy, setDiplomacyBusy] = useState(false)
+  const [invasionBusy, setInvasionBusy] = useState(false)
   const [lastNotification, setLastNotification] = useState<Notification | null>(null)
   const reconnectTimer = useRef<number | null>(null)
 
@@ -206,6 +208,21 @@ function App() {
     }
   }
 
+  async function runInvasion(action: 'invade' | 'decline') {
+    if (!snapshot?.view.invasion) return
+    setInvasionBusy(true)
+    setError('')
+    try {
+      const receipt = await submitInvasion(snapshot, seatID, action)
+      setStatus(`Invasion ${action} accepted: change ${receipt.change_sequence}, game revision ${receipt.game_revision}`)
+      await loadSnapshot()
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause))
+    } finally {
+      setInvasionBusy(false)
+    }
+  }
+
   const diplomacyClosed = snapshot?.view.phase !== 'planning' || Boolean(snapshot?.view.seats.some((seat) => seat.submitted))
 
 
@@ -291,6 +308,24 @@ function App() {
                 <div><dt>Seat</dt><dd>{snapshot.view.seat.seat.id} / {snapshot.view.seat.seat.controller}</dd></div>
               </dl>
             </article>
+
+            {snapshot.view.invasion && (
+              <article className="panel">
+                <h2>Invasion</h2>
+                <p>
+                  Colony #{snapshot.view.invasion.colony_id} in system #{snapshot.view.invasion.system_id} — defender empire #{snapshot.view.invasion.defender_empire_id}.
+                </p>
+                <p className="muted">Eligible Troop Transports: {snapshot.view.invasion.eligible_transport_fleet_ids.join(', ')}</p>
+                <div className="actions">
+                  <button type="button" disabled={invasionBusy || snapshot.view.phase !== 'invasion_decisions'} onClick={() => void runInvasion('invade')}>
+                    Invade with all {snapshot.view.invasion.eligible_transport_fleet_ids.length} transport(s)
+                  </button>
+                  <button type="button" disabled={invasionBusy || snapshot.view.phase !== 'invasion_decisions'} onClick={() => void runInvasion('decline')}>
+                    Decline invasion
+                  </button>
+                </div>
+              </article>
+            )}
 
             <article className="panel">
               <h2>Diplomacy</h2>

@@ -14,6 +14,8 @@ const ColonyShipBaseCostPP = 500.0
 const OutpostShipTechnologyID = 109
 const OutpostShipProjectID = "outpost_ship"
 const OutpostShipBaseCostPP = 100.0
+const TroopTransportProjectID = "troop_transport"
+const TroopTransportBaseCostPP = 100.0
 const FreighterFleetTechnologyID = 69
 const FreighterFleetProjectID = "freighter_fleet"
 const HousingProjectID = "housing"
@@ -47,7 +49,7 @@ func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empir
 	if empire == nil {
 		return nil, fmt.Errorf("unknown empire %d", empireID)
 	}
-	choices := make([]ConstructionChoice, 0, len(buildingChoices)+len(r.PlanetaryTransformations)+len(state.ShipDesigns)+3)
+	choices := make([]ConstructionChoice, 0, len(buildingChoices)+len(r.PlanetaryTransformations)+len(state.ShipDesigns)+4)
 	for _, choice := range buildingChoices {
 		choices = append(choices, ConstructionChoice{
 			ProjectKind:      core.ConstructionProjectBuilding,
@@ -107,6 +109,11 @@ func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empir
 			TechnologyID:     OutpostShipTechnologyID,
 		})
 	}
+	choices = append(choices, ConstructionChoice{
+		ProjectKind:      core.ConstructionProjectTroopTransport,
+		ProjectID:        TroopTransportProjectID,
+		ProductionCostPP: r.troopTransportProductionCostPP(empire),
+	})
 	for _, design := range state.ShipDesigns {
 		if design.EmpireID != empireID {
 			continue
@@ -146,6 +153,16 @@ func (r *EconomyRules) outpostShipProductionCostPP(empire *core.Empire) float64 
 		return math.Ceil((2 * OutpostShipBaseCostPP) / 3)
 	}
 	return OutpostShipBaseCostPP
+}
+
+func (r *EconomyRules) troopTransportProductionCostPP(empire *core.Empire) float64 {
+	if empire == nil {
+		return TroopTransportBaseCostPP
+	}
+	if modifiers, ok := r.RaceModifiers[empire.RaceID]; ok && modifiers.GovernmentTraitID == "government_feudal" {
+		return math.Ceil((2 * TroopTransportBaseCostPP) / 3)
+	}
+	return TroopTransportBaseCostPP
 }
 
 type BuildingChoice struct {

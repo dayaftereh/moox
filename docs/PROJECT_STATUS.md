@@ -26,12 +26,12 @@ The game is **not yet a complete match lifecycle**, but the deterministic runtim
 
 ## Prepared roadmap to first complete match lifecycle
 
-Slices 01-10 are closed. There is no active slice marker. Slice 11 **Troop Transport, invasion and Colony conquest baseline** is the next prepared objective but remains planned/queued and not open. The roadmap state is:
+Slices 01-10 are closed. Slice 11 **Troop Transport, invasion and Colony conquest baseline** is active with Gates 1-3 complete / Gate 4 QA + commit + close ready and exactly one open marker. Core23 Transport/invasion/conquest is implemented and regression-green. The roadmap state is:
 
 1. Slice 08 - **closed** - authoritative server, web HMI and HTTP/WebSocket transport baseline (`9315111`).
 2. Slice 09 - **closed** - deterministic New Game and galaxy generation baseline (`a5f3c13`).
 3. Slice 10 - **closed** - diplomacy / war / peace baseline.
-4. Slice 11 - Troop Transport, invasion and Colony conquest baseline.
+4. Slice 11 - **active, Gates 1-3 complete / Gate 4 ready** - Troop Transport, invasion and Colony conquest baseline.
 5. Slice 12 - Empire elimination and first deterministic headless victory loop.
 
 Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 12 is the next major milestone: a real generated game can progress through war/conquest to an authoritative winner. The next fidelity/depth tranche will be re-audited and numbered after that milestone.

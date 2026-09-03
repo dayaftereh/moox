@@ -13,6 +13,7 @@ import (
 const CommandQueueBuilding = "colony.queue_building"
 const CommandQueueColonyShip = "colony.queue_colony_ship"
 const CommandQueueOutpostShip = "colony.queue_outpost_ship"
+const CommandQueueTroopTransport = "colony.queue_troop_transport"
 const CommandQueueMilitaryShip = "colony.queue_military_ship"
 const CommandQueueFreighterFleet = "colony.queue_freighter_fleet"
 const CommandQueueHousing = "colony.queue_housing"
@@ -178,6 +179,28 @@ func decodeQueueOutpostShip(command protocol.Command) (QueueOutpostShipPayload, 
 	}
 	if payload.ColonyID == 0 {
 		return QueueOutpostShipPayload{}, fmt.Errorf("colony_id must be non-zero")
+	}
+	return payload, nil
+}
+
+type QueueTroopTransportPayload struct {
+	ColonyID core.ID `json:"colony_id"`
+}
+
+func NewQueueTroopTransportCommand(sequence uint32, payload QueueTroopTransportPayload) (protocol.Command, error) {
+	if payload.ColonyID == 0 {
+		return protocol.Command{}, fmt.Errorf("colony_id must be non-zero")
+	}
+	return protocol.NewCommand(sequence, CommandQueueTroopTransport, payload)
+}
+
+func decodeQueueTroopTransport(command protocol.Command) (QueueTroopTransportPayload, error) {
+	var payload QueueTroopTransportPayload
+	if err := decodeStrictCommandPayload(command, CommandQueueTroopTransport, &payload); err != nil {
+		return QueueTroopTransportPayload{}, err
+	}
+	if payload.ColonyID == 0 {
+		return QueueTroopTransportPayload{}, fmt.Errorf("colony_id must be non-zero")
 	}
 	return payload, nil
 }

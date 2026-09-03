@@ -5,14 +5,14 @@ import (
 	"testing"
 )
 
-func TestOutpostStateRoundTripsDeterministicallyInSchema22(t *testing.T) {
+func TestOutpostStateRoundTripsDeterministicallyInSchema23(t *testing.T) {
 	state := NewSmallFixture(1710)
 	target := &state.Galaxy.Systems[1].Planets[0]
 	outpostID := state.NewID()
 	state.Outposts = append(state.Outposts, Outpost{ID: outpostID, EmpireID: state.Empires[0].ID, PlanetID: target.ID})
 	target.OutpostID = outpostID
 
-	if StateSchemaVersion != 22 || state.SchemaVersion != 22 {
+	if StateSchemaVersion != 23 || state.SchemaVersion != 23 {
 		t.Fatalf("schema=%d constant=%d want=22", state.SchemaVersion, StateSchemaVersion)
 	}
 	if err := state.Validate(); err != nil {

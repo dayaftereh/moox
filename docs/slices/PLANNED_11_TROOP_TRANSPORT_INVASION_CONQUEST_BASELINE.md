@@ -1,6 +1,6 @@
 # Planned slice 11 - Troop Transport, invasion and conquest baseline
 
-Status: **planned / queued; not open**.
+Status: **active; Gates 1-3 complete / Gate 4 QA + commit + close ready**.
 
 Queue position: **11 of 12**.
 
@@ -52,43 +52,43 @@ Defer:
 
 ## Gate 1 - Checkup + original analysis / reverse engineering
 
-- [ ] Re-check Colony ownership, Population cohorts/assimilation, special Ship construction and Fleet transit.
-- [ ] Create permanent invasion/conquest evidence document.
-- [ ] Identify original Transport/troop representation, build cost/capacity and movement participation.
-- [ ] Verify invasion timing relative to space combat, blockade and turn settlement.
-- [ ] Verify minimum ground-combat attacker/defender strength, RNG and casualty semantics for a canonical fixture.
-- [ ] Verify Colony ownership-transfer sequence and immediate post-capture state changes.
-- [ ] Verify treatment of native/foreign/conquered Population cohorts and initial assimilation/loyalty state.
-- [ ] Verify Transport consumption/survival after successful/failed invasion.
-- [ ] List every bombardment/ground-tech/race modifier deferred from the baseline.
-- [ ] Present exact Gate-2 state/session/command contract before implementation.
+- [x] Re-check Colony ownership, Population cohorts/assimilation, special Ship construction and Fleet transit.
+- [x] Create permanent invasion/conquest evidence document.
+- [x] Identify original Transport/troop representation, build cost/capacity and movement participation.
+- [x] Verify invasion timing relative to space combat, blockade and turn settlement.
+- [x] Verify minimum ground-combat attacker/defender strength, RNG and casualty semantics for a canonical fixture.
+- [x] Verify Colony ownership-transfer sequence and immediate post-capture state changes.
+- [x] Verify treatment of native/foreign/conquered Population cohorts and initial assimilation/loyalty state.
+- [x] Verify Transport consumption/survival after successful/failed invasion.
+- [x] List every bombardment/ground-tech/race modifier deferred from the baseline.
+- [x] Present exact Gate-2 state/session/command contract before implementation.
 
 ## Gate 2 - Implementation decision
 
-- [ ] Accept Transport/troop persistent state and construction/movement identity.
-- [ ] Accept invasion command/automatic boundary and authority model.
-- [ ] Accept first ground-combat fixture, RNG ownership and result vocabulary.
-- [ ] Accept Colony ownership-transfer and Population assimilation initialization rules.
-- [ ] Accept interaction with existing space BattleSession/encounter continuation.
-- [ ] Accept post-conquest recalculation order and event model.
-- [ ] Freeze deferred bombardment/advanced ground-combat families.
+- [x] Accept Transport/troop persistent state and construction/movement identity.
+- [x] Accept invasion command/automatic boundary and authority model.
+- [x] Accept first ground-combat fixture, RNG ownership and result vocabulary.
+- [x] Accept Colony ownership-transfer and Population assimilation initialization rules.
+- [x] Accept interaction with existing space BattleSession/encounter continuation.
+- [x] Accept post-conquest recalculation order and event model.
+- [x] Freeze deferred bombardment/advanced ground-combat families.
 
 ## Gate 3 - Implementation
 
-- [ ] Implement Transport/troop state, construction and strategic movement.
-- [ ] Implement invasion legality and selected deterministic ground-combat resolution.
-- [ ] Implement casualties, Colony ownership transfer and conquered Population state.
-- [ ] Recalculate strategic/economic derived state after conquest.
-- [ ] Expose command/projection through existing server/web transport.
-- [ ] Add deterministic success/failure, retry/atomicity, save/load and replay tests.
-- [ ] Add integration coverage from declared war + arrival through Colony capture.
+- [x] Implement Transport/troop state, construction and strategic movement.
+- [x] Implement invasion legality and selected deterministic ground-combat resolution.
+- [x] Implement casualties, Colony ownership transfer and conquered Population state.
+- [x] Recalculate strategic/economic derived state after conquest.
+- [x] Expose command/projection through existing server/web transport.
+- [x] Add deterministic success/failure, retry/atomicity, save/load and replay tests.
+- [x] Add integration coverage from declared war + arrival through Colony capture.
 
 ## Gate 4 - Follow-up QA + commit + close
 
-- [ ] Run focused Transport/Fleet/space-encounter/invasion/Population/Economy regressions.
-- [ ] Verify exact ownership and cohort state after conquest round-trips through save/load.
-- [ ] Verify failed/invalid invasion is atomic.
-- [ ] Run full tests/vet/web integration checks and `git diff --check`.
+- [x] Run focused Transport/Fleet/space-encounter/invasion/Population/Economy regressions.
+- [x] Verify exact ownership and cohort state after conquest round-trips through save/load.
+- [x] Verify failed/invalid invasion is atomic.
+- [x] Run full tests/vet/web integration checks and `git diff --check`.
 - [ ] Update evidence/status/HISTORY and close marker.
 
 ## Exit criterion

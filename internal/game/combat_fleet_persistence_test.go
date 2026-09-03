@@ -7,7 +7,7 @@ import (
 	"moox/internal/core"
 )
 
-func TestCombatFleetTransitRoundTripsSchema22(t *testing.T) {
+func TestCombatFleetTransitRoundTripsSchema23(t *testing.T) {
 	rules := loadColonyShipRules(t)
 	resolver, err := NewEconomyResolver(rules)
 	if err != nil {
@@ -33,7 +33,7 @@ func TestCombatFleetTransitRoundTripsSchema22(t *testing.T) {
 	if _, err := resolver.moveFleetEvents(state, empire.ID, 1, command); err != nil {
 		t.Fatal(err)
 	}
-	if core.StateSchemaVersion != 22 || state.SchemaVersion != 22 {
+	if core.StateSchemaVersion != 23 || state.SchemaVersion != 23 {
 		t.Fatalf("schema=%d constant=%d want=22", state.SchemaVersion, core.StateSchemaVersion)
 	}
 	if err := state.Validate(); err != nil {

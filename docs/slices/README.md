@@ -41,12 +41,11 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- None. Slice 10 is closed; its permanent result is recorded in `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md` and `docs/slices/HISTORY.md`.
+- `PLANNED_11_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE.md` -> `_OPEN_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE_2026-09-03.md`, Gates 1-3 complete / Gate 4 QA + commit + close ready.
 
 Prepared queue:
 
-1. `PLANNED_11_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE.md` - Transport, invasion, Colony capture and conquered Population handoff.
-2. `PLANNED_12_EMPIRE_ELIMINATION_FIRST_HEADLESS_VICTORY_LOOP.md` - first deterministic end-to-end match from New Game to conquest winner.
+1. `PLANNED_12_EMPIRE_ELIMINATION_FIRST_HEADLESS_VICTORY_LOOP.md` - first deterministic end-to-end match from New Game to conquest winner.
 
 Milestone: after Slice 12, re-audit the remaining fidelity/depth backlog before numbering the next tranche.
 

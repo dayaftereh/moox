@@ -2,7 +2,7 @@ package core
 
 import "testing"
 
-func TestDiplomacySchema22ValidationAndRoundTrip(t *testing.T) {
+func TestDiplomacySchema23ValidationAndRoundTrip(t *testing.T) {
 	state := NewSmallFixture(0xD122)
 	first := state.Empires[0].ID
 	second := state.NewID()
@@ -24,7 +24,7 @@ func TestDiplomacySchema22ValidationAndRoundTrip(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if loaded.SchemaVersion != 22 || !loaded.HasDiplomaticPeaceOffer(first, second) || loaded.DiplomaticStanceBetween(second, first) != DiplomaticStanceWar {
+	if loaded.SchemaVersion != 23 || !loaded.HasDiplomaticPeaceOffer(first, second) || loaded.DiplomaticStanceBetween(second, first) != DiplomaticStanceWar {
 		t.Fatalf("roundtrip lost diplomacy: %+v", loaded)
 	}
 
@@ -38,7 +38,7 @@ func TestDiplomacySchema22ValidationAndRoundTrip(t *testing.T) {
 	}
 }
 
-func TestDiplomacySchema22RejectsNonCanonicalState(t *testing.T) {
+func TestDiplomacySchema23RejectsNonCanonicalState(t *testing.T) {
 	makeState := func() (*GameState, ID, ID) {
 		state := NewSmallFixture(0xD123)
 		first := state.Empires[0].ID

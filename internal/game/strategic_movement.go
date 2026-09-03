@@ -153,6 +153,8 @@ func fixedSpecialShipName(kind core.StrategicFleetSpecialKind) (string, bool) {
 		return "Colony Ship", true
 	case core.StrategicFleetSpecialOutpostShip:
 		return "Outpost Ship", true
+	case core.StrategicFleetSpecialTroopTransport:
+		return "Troop Transport", true
 	default:
 		return "", false
 	}
@@ -174,7 +176,7 @@ func (r *EconomyResolver) moveFleetEvents(state *core.GameState, empireID core.I
 		if fleet.Role == core.StrategicFleetRoleCombat && fleet.SpecialKind == core.StrategicFleetSpecialNone {
 			return r.moveCombatFleet(state, empireID, seatID, command, payload, fleet)
 		}
-		return nil, fmt.Errorf("fleet %d is not a movable fixed Colony/Outpost Ship or ordinary combat fleet", fleet.ID)
+		return nil, fmt.Errorf("fleet %d is not a movable fixed support ship or ordinary combat fleet", fleet.ID)
 	}
 	if len(payload.ShipIDs) != 0 {
 		return nil, fmt.Errorf("fixed special fleet %d does not support ship_ids selection", fleet.ID)

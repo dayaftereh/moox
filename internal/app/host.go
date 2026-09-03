@@ -216,6 +216,9 @@ func (h *Host) SubmitImmediateCommand(gameID string, seatID protocol.SeatID, bas
 		if game.IsDiplomacyCommand(command.Kind) {
 			return hosted.session.ResolveDiplomacyCommand(seatID, baseRevision, command)
 		}
+		if game.IsInvasionCommand(command.Kind) {
+			return hosted.session.ResolveInvasionCommand(seatID, baseRevision, command)
+		}
 		if hosted.immediateResolver == nil {
 			return fmt.Errorf("immediate command resolver is not configured")
 		}
@@ -311,7 +314,7 @@ func (g *hostedGame) driveToInteractiveBoundary() error {
 	for step := 0; step < 16; step++ {
 		status := g.session.Status()
 		switch status.Phase {
-		case session.PhasePlanning, session.PhaseEncounters:
+		case session.PhasePlanning, session.PhaseEncounters, session.PhaseInvasionDecisions:
 			return nil
 		case session.PhaseStrategicResolution:
 			if g.resolver == nil {

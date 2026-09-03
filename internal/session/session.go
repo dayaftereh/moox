@@ -18,6 +18,7 @@ const (
 	PhasePlanning            Phase = "planning"
 	PhaseStrategicResolution Phase = "strategic_resolution"
 	PhaseEncounters          Phase = "encounters"
+	PhaseInvasionDecisions   Phase = "invasion_decisions"
 	PhasePostResolution      Phase = "post_resolution"
 )
 
@@ -72,6 +73,7 @@ type PlayerView struct {
 	Empire                core.Empire                 `json:"empire"`
 	Colonies              []core.Colony               `json:"colonies"`
 	Diplomacy             []DiplomacyView             `json:"diplomacy,omitempty"`
+	Invasion              *game.InvasionOpportunity   `json:"invasion,omitempty"`
 	ColonyBaseResolutions []game.ColonyBaseResolution `json:"colony_base_resolutions,omitempty"`
 	OwnSubmission         *protocol.CommandBatch      `json:"own_submission,omitempty"`
 }
@@ -93,6 +95,7 @@ type ObserverView struct {
 	Battles               []battle.View               `json:"battles"`
 	Telemetry             []protocol.DraftTelemetry   `json:"draft_telemetry,omitempty"`
 	ColonyBaseResolutions []game.ColonyBaseResolution `json:"colony_base_resolutions,omitempty"`
+	Invasion              *game.InvasionOpportunity   `json:"invasion,omitempty"`
 }
 
 type EncounterSpec struct {
@@ -120,6 +123,8 @@ type GameSession struct {
 	nextBattleID      uint64
 	encounterResolver game.EncounterResolver
 	encounterContext  game.ResolveContext
+	invasion          *game.InvasionOpportunity
+	handledInvasions  []game.InvasionHandledKey
 }
 
 func NewGameSession(gameID string, state *core.GameState, seats []Seat) (*GameSession, error) {
@@ -269,12 +274,18 @@ func (s *GameSession) ResolveStrategic(resolver game.Resolver) error {
 		return err
 	}
 
+	needsContinuation := len(resolution.Encounters) != 0 || resolution.Invasion != nil
 	var staged game.EncounterResolver
-	if len(resolution.Encounters) != 0 {
+	if needsContinuation {
 		var ok bool
 		staged, ok = resolver.(game.EncounterResolver)
 		if !ok {
-			return fmt.Errorf("strategic resolver returned encounters without staged encounter continuation support")
+			return fmt.Errorf("strategic resolver returned staged continuation without encounter support")
+		}
+		if resolution.Invasion != nil {
+			if _, ok := resolver.(game.InvasionResolver); !ok {
+				return fmt.Errorf("strategic resolver returned invasion without invasion continuation support")
+			}
 		}
 	}
 	committed, err := cloneState(resolution.State)
@@ -291,23 +302,31 @@ func (s *GameSession) ResolveStrategic(resolver game.Resolver) error {
 	}
 
 	// Everything above is validation/preparation only. From this point onward the
-	// pre-encounter resolution can be committed atomically to the authoritative session.
+	// strategic boundary can be committed atomically to the authoritative session.
 	s.state = committed
 	s.revision++
 	s.appendResolvedEventsLocked(resolution.Events)
-	if len(preparedBattles) != 0 {
+	if needsContinuation {
 		s.encounterResolver = staged
 		s.encounterContext = cloneResolveContext(ctx)
 	} else {
 		s.encounterResolver = nil
 		s.encounterContext = game.ResolveContext{}
 	}
+	if resolution.Invasion != nil {
+		s.battles = nil
+		s.invasion = game.CloneInvasionOpportunity(resolution.Invasion)
+		s.phase = PhaseInvasionDecisions
+		s.appendEventLocked(protocol.EventScopeSession, "phase_changed", 0, map[string]any{"phase": s.phase})
+		return nil
+	}
+	s.invasion = nil
 	s.commitPreparedEncountersLocked(preparedBattles)
 	return nil
 }
 
 func (s *GameSession) resolveContextLocked() game.ResolveContext {
-	ctx := game.ResolveContext{Seats: make([]game.SeatAuthority, len(s.seats))}
+	ctx := game.ResolveContext{Seats: make([]game.SeatAuthority, len(s.seats)), HandledInvasions: append([]game.InvasionHandledKey(nil), s.handledInvasions...)}
 	for i := range s.seats {
 		ctx.Seats[i] = game.SeatAuthority{SeatID: s.seats[i].seat.ID, EmpireID: s.seats[i].seat.EmpireID}
 	}
@@ -315,7 +334,7 @@ func (s *GameSession) resolveContextLocked() game.ResolveContext {
 }
 
 func cloneResolveContext(ctx game.ResolveContext) game.ResolveContext {
-	return game.ResolveContext{Seats: append([]game.SeatAuthority(nil), ctx.Seats...)}
+	return game.ResolveContext{Seats: append([]game.SeatAuthority(nil), ctx.Seats...), HandledInvasions: append([]game.InvasionHandledKey(nil), ctx.HandledInvasions...)}
 }
 
 func encounterSpecFromGame(encounter game.Encounter) EncounterSpec {
@@ -343,6 +362,12 @@ func (s *GameSession) validateStrategicResolutionLocked(resolution game.Resoluti
 	}
 	if resolution.State.Seed != s.state.Seed {
 		return fmt.Errorf("strategic resolver changed immutable game seed")
+	}
+	if len(resolution.Encounters) != 0 && resolution.Invasion != nil {
+		return fmt.Errorf("strategic resolver returned encounters and invasion at the same boundary")
+	}
+	if err := s.validateInvasionOpportunityLocked(resolution.State, resolution.Invasion); err != nil {
+		return fmt.Errorf("strategic resolver returned invalid invasion: %w", err)
 	}
 	for _, event := range resolution.Events {
 		if err := s.validateResolvedEventLocked(event); err != nil {
@@ -551,6 +576,7 @@ func gameEncounterFromBattleSpec(spec battle.Spec) game.Encounter {
 }
 
 func (s *GameSession) commitPreparedEncountersLocked(created []*battle.Session) {
+	s.invasion = nil
 	if len(created) == 0 {
 		s.phase = PhasePostResolution
 		s.encounterResolver = nil
@@ -690,7 +716,7 @@ func (s *GameSession) commitStagedBattleCandidateLocked(child *battle.Session, b
 		return err
 	}
 
-	// All strategic continuation and next-wave preparation succeeded on clones.
+	// All strategic continuation and next-boundary preparation succeeded on clones.
 	// Only now may the final child and authoritative strategic state mutate.
 	if err := commitChild(); err != nil {
 		return err
@@ -702,7 +728,15 @@ func (s *GameSession) commitStagedBattleCandidateLocked(child *battle.Session, b
 	}
 	s.appendResolvedEventsLocked(resolution.Events)
 
+	if resolution.Invasion != nil {
+		s.battles = nil
+		s.invasion = game.CloneInvasionOpportunity(resolution.Invasion)
+		s.phase = PhaseInvasionDecisions
+		s.appendEventLocked(protocol.EventScopeSession, "phase_changed", 0, map[string]any{"phase": s.phase})
+		return nil
+	}
 	if len(preparedNext) != 0 {
+		s.invasion = nil
 		s.battles = preparedNext
 		s.nextBattleID += uint64(len(preparedNext))
 		for _, next := range s.battles {
@@ -712,6 +746,7 @@ func (s *GameSession) commitStagedBattleCandidateLocked(child *battle.Session, b
 		return nil
 	}
 
+	s.invasion = nil
 	s.encounterResolver = nil
 	s.encounterContext = game.ResolveContext{}
 	s.phase = PhasePostResolution
@@ -965,6 +1000,8 @@ func (s *GameSession) CompleteTurn() error {
 		s.seats[i].submission = nil
 	}
 	s.battles = nil
+	s.invasion = nil
+	s.handledInvasions = nil
 	s.encounterResolver = nil
 	s.encounterContext = game.ResolveContext{}
 	s.telemetry = nil
@@ -1118,6 +1155,9 @@ func (s *GameSession) PlayerView(seatID protocol.SeatID) (PlayerView, error) {
 		return PlayerView{}, err
 	}
 	view.ColonyBaseResolutions = resolutions
+	if s.invasion != nil && s.invasion.AttackerSeatID == seatID {
+		view.Invasion = game.CloneInvasionOpportunity(s.invasion)
+	}
 	if seat.submission != nil {
 		clone := protocol.CloneCommandBatch(*seat.submission)
 		view.OwnSubmission = &clone
@@ -1140,6 +1180,7 @@ func (s *GameSession) ObserverView() (ObserverView, error) {
 		State:    state,
 		Battles:  s.battleViewsLocked(),
 	}
+	view.Invasion = game.CloneInvasionOpportunity(s.invasion)
 	resolutions, err := game.PendingColonyBaseResolutions(state, 0)
 	if err != nil {
 		return ObserverView{}, err
