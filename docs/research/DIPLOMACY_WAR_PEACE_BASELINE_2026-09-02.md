@@ -1,6 +1,6 @@
 # Slice 10 research - Diplomacy, war and peace baseline
 
-Status: **Gate 3 complete; Gate 4 QA/closure ready**
+Status: **closed; Gates 1-4 complete**
 Opened: 2026-09-02
 Starting HEAD: `9b2641d` (`docs: close deterministic new game slice`)
 
@@ -648,3 +648,16 @@ Gate 4 independently repeated and extended the Gate-3 proof before any commit.
 - Full repository QA passed again: `go test ./... -count=1`, `go vet ./...`, `npm --prefix web run build`, `git diff --check`.
 
 No Gate-4 defect was found. The implementation is ready to commit; final Slice closure remains documentation/HISTORY/marker work only.
+## Slice-10 closure - 2026-09-03
+
+Slice 10 **Diplomacy / war / peace baseline** is closed after Gate-4 independent QA.
+
+- Implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
+- Core state schema: **22**.
+- Gate-4 focused regressions: five consecutive runs green.
+- Deterministic diplomacy replay: ten consecutive runs green with byte-identical Core22 state and DeepEqual event stream.
+- Full final QA: `go test ./... -count=1`, `go vet ./...`, `npm --prefix web run build`, `git diff --check` all green.
+- Authority scan: zero unexpected production diplomacy-state touches outside the approved Core/query/validation and Game resolver surfaces; browser mutation remains server-authoritative.
+- No push was performed during the slice.
+
+The Slice-10 `_OPEN_` recovery marker is removed by the closing documentation commit. The next prepared objective is `PLANNED_11_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE.md`; it remains **planned / queued; not open**.

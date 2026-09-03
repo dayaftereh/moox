@@ -1,6 +1,6 @@
 # Planned slice 10 - Diplomacy, war and peace baseline
 
-Status: **active; Gates 1-3 complete / Gate 4 QA + commit + close ready**.
+Status: **closed; Gates 1-4 complete**.
 
 Queue position: **10 of 12**.
 
@@ -84,7 +84,7 @@ Defer:
 - [x] Verify peace/war state survives save/load/replay exactly.
 - [x] Verify no hidden UI/network authority bypass exists.
 - [x] Run full tests/vet/web integration checks and `git diff --check`.
-- [ ] Update evidence/status/HISTORY and close marker.
+- [x] Update evidence/status/HISTORY and close marker.
 
 ## Exit criterion
 
