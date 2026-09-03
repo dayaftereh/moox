@@ -10,7 +10,7 @@ Master of Orion X is now in **Phase 1 deterministic runtime development**, build
 
 The project is no longer an empty bootstrap repository: it has a pure-Go Master of Orion II 1.31 analyzer, verified original-file parsers, normalized runtime datasets, localization keys, a private reference-extraction pipeline and substantial semantic graphics mapping derived from original 1.31 data/executable behavior.
 
-The game is **not yet a complete match lifecycle**, but the deterministic runtime is now substantially beyond the original skeleton: Economy/Research/Construction, Colonies/Outposts, concrete military Ships/Fleets, strategic movement, Command Points, hostile encounter/BattleSession handoff, one exact tactical ship-combat vertical slice, the first authoritative browser-first application boundary and deterministic New Game/Small-galaxy creation are implemented. Slice 08 adds the hosted-game/server/web boundary; Slice 09 adds the authoritative deterministic New Game path through that boundary. The largest remaining blockers to a first complete game are intentional war/peace diplomacy, invasion/Colony conquest and a first authoritative victory/elimination loop; AI and broad MOO2 fidelity remain later depth work.
+The deterministic runtime now has its **first complete supported headless match lifecycle**. Slice 12 connects the existing New Game, Economy/Research/Construction, expansion, diplomacy/war, Fleet movement, tactical/encounter authority and invasion/Colony conquest paths to authoritative zero-Colony Empire elimination and an immutable conquest winner in `session.PhaseCompleted`. The canonical seed `0x8009` is played end-to-end using public application/session commands and exact replay/save-load verification. This does not mean broad MOO2 fidelity is complete: alternative victory families, deeper tactical/economy systems, AI, leaders/espionage and endgame presentation remain post-milestone work.
 
 ## Current repository / tool baseline
 
@@ -26,7 +26,7 @@ The game is **not yet a complete match lifecycle**, but the deterministic runtim
 
 ## Prepared roadmap to first complete match lifecycle
 
-Slices 01-11 are closed. No implementation slice is currently open and there are zero `_OPEN_` markers. Slice 11 Troop Transport / invasion / Colony conquest closed at implementation/evidence commit `5b363ce`; Slice 12 Empire elimination / first deterministic headless victory loop is the next prepared milestone and must start with a fresh Gate 1. The roadmap state is:
+Slices 01-12 are closed. No implementation slice is currently open and there are zero `_OPEN_` markers. Slice 12 Empire elimination / first deterministic headless victory loop closed at implementation/evidence commit `90b83d8`, completing the first supported deterministic headless match lifecycle. The roadmap state is:
 
 1. Slice 08 - **closed** - authoritative server, web HMI and HTTP/WebSocket transport baseline (`9315111`).
 2. Slice 09 - **closed** - deterministic New Game and galaxy generation baseline (`a5f3c13`).
@@ -34,7 +34,7 @@ Slices 01-11 are closed. No implementation slice is currently open and there are
 4. Slice 11 - **closed, Gates 1-4 complete** - Troop Transport, invasion and Colony conquest baseline (`5b363ce`).
 5. Slice 12 - Empire elimination and first deterministic headless victory loop.
 
-Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 12 is the next major milestone: a real generated game can progress through war/conquest to an authoritative winner. The next fidelity/depth tranche will be re-audited and numbered after that milestone.
+Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 12 has now delivered the first complete supported New-Game-to-conquest-winner lifecycle. The next work item is the promised fidelity/depth backlog re-audit before a new numbered tranche is prepared.
 
 Important recent checkpoints:
 
@@ -204,7 +204,7 @@ The first meaningful game loop remains:
 8. colonize,
 9. save and reload exactly the same state.
 
-Slice 08 is closed. Slice 09 is closed: deterministic Small/Normal/Average/Tactical New Game generation, Human+Darlok starts, authoritative GameSession/app/server creation and the browser New Game flow are implemented and Gate-4 regression-green. Implementation/data/evidence commit `a5f3c13`. Slice 10 diplomacy / war / peace is also closed at implementation/evidence commit `b91f65e`: Core22 reciprocal peace/war plus directional peace offers, revision-bound server-authoritative diplomacy commands, shared war-only attack authorization, player/web projections and deterministic timing/replay regressions are complete. Slice 11 troop transport / invasion / conquest is closed at implementation/evidence commit `5b363ce`; Slice 12 Empire elimination / first deterministic headless victory loop is the next prepared objective.
+Slice 08 is closed. Slice 09 is closed: deterministic Small/Normal/Average/Tactical New Game generation, Human+Darlok starts, authoritative GameSession/app/server creation and the browser New Game flow are implemented and Gate-4 regression-green. Implementation/data/evidence commit `a5f3c13`. Slice 10 diplomacy / war / peace is closed at implementation/evidence commit `b91f65e`. Slice 11 troop transport / invasion / conquest is closed at implementation/evidence commit `5b363ce`. Slice 12 Empire elimination / first deterministic headless victory loop is closed at implementation/evidence commit `90b83d8`; the next objective is a post-milestone fidelity/depth backlog audit before numbering further slices.
 
 ## Where to look
 

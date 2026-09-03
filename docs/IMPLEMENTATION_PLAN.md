@@ -20,9 +20,9 @@ Implemented/established runtime baseline includes:
 - normalized Technology Fields/RP costs, Pre-Warp/Average/Advanced starts, breakthrough resolution, race-aware multi-application research, project switching and Hyper-Advanced repeat fields;
 - authoritative external Technology grants with verified Uncreative fixed-choice repair.
 
-The principal blockers to a first complete match lifecycle are now narrower: authoritative server/web HMI transport, real deterministic New Game/galaxy generation, intentional war/peace diplomacy, Troop Transport/invasion/Colony conquest and an authoritative elimination/victory loop. Broader tactical depth, complete Economy/pollution, race/customization extensions, leaders/espionage, AI and endgame fidelity remain important post-milestone work.
+The first supported deterministic headless match lifecycle is now complete through Slice 12: authoritative server/web transport, deterministic New Game, war/peace, Troop Transport/invasion/Colony conquest and zero-Colony conquest victory are connected end-to-end. Broader tactical depth, complete Economy/pollution, race/customization extensions, leaders/espionage, AI, alternative victory families and endgame fidelity remain important post-milestone work.
 
-No implementation slice is currently open. Slices 01-11 are closed. Slice 12 Empire elimination / first deterministic headless victory loop is the next prepared objective and must begin with a fresh Gate 1. `docs/research/ACTIVE_RESEARCH.md` remains the authoritative next-slice handoff.
+No implementation slice is currently open. Slices 01-12 are closed; Slice 12 implementation/evidence commit is `90b83d8`. The next objective is to re-audit and prioritize the remaining fidelity/depth backlog before numbering the next slice tranche. `docs/research/ACTIVE_RESEARCH.md` remains the authoritative handoff.
 ## Guiding architecture
 
 Build the game rules as a deterministic, headless simulation core first. UI, rendering, audio and platform integration should depend on that core rather than contain game rules themselves.

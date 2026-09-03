@@ -5,19 +5,24 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: `docs/slices/_OPEN_EMPIRE_ELIMINATION_FIRST_HEADLESS_VICTORY_LOOP_2026-09-03.md`.
-- Active implementation slice: **Slice 12; Gates 1-3 complete, Gate 4 QA complete; implementation/evidence commit + closure pending**.
-- Slices 01-10 are closed.
+- Open slice marker: **none**.
+- Active implementation slice: **none; Slices 01-12 are closed**.
+- Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
 - Economy ruleset schema: **8**.
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
-- Current objective: **Slice 12 Gate 4 closure - commit independently verified elimination/completed-session/headless-victory milestone, then remove the OPEN marker**.
+- Current objective: **post-Slice-12 fidelity/depth backlog re-audit; prioritize and number the next tranche before opening another implementation slice**.
 
 
+## Closed Slice 12 - Empire elimination / first headless victory loop
+
+Slice 12 is closed with Gates 1-4 complete. A real canonical `NewGame(0x8009)` now plays through public Research, Colony/Outpost expansion, war, Fleet movement, Troop Transport invasion and final Colony conquest to deterministic zero-Colony Empire elimination and an immutable `conquest` winner in `session.PhaseCompleted`. Remaining off-system loser Fleets/Outposts do not delay elimination and are cleaned deterministically. Completed sessions are read-only for gameplay while preserving Player/Observer/HTTP/WebSocket/reconnect and versioned exact snapshot access. The React HMI projects the same result. The complete match runs twice byte-identically in the canonical regression, and the implementation also fixed the long-run Population Cohort capacity clamp exposed by the first full match attempt. Implementation/evidence commit: `90b83d8`.
+
+Permanent evidence: `docs/research/EMPIRE_ELIMINATION_FIRST_HEADLESS_VICTORY_LOOP_2026-09-03.md`.
 ## Closed Slice 11 - Troop Transport / invasion / conquest baseline
 
-Slice 11 is closed with Gates 1-4 complete. Core23 standing Infantry, fixed Troop Transport, server-authoritative invasion decisions, deterministic Ground Combat, Colony conquest/cohort/Capital handoff, post-conquest strategic/economic continuation, HTTP authority and minimal React proof are implemented and independently Gate-4 verified. Implementation/evidence commit: `5b363ce`. Current canonical New-Game seed `0x8009` Core23 state hash remains `83614740b216409877b03c536a16328c7fa7031867f58dbeb70857a8953f5762`. There is no open implementation slice; Slice 12 is next and must begin at Gate 1.
+Slice 11 is closed with Gates 1-4 complete. Core23 standing Infantry, fixed Troop Transport, server-authoritative invasion decisions, deterministic Ground Combat, Colony conquest/cohort/Capital handoff, post-conquest strategic/economic continuation, HTTP authority and minimal React proof are implemented and independently Gate-4 verified. Implementation/evidence commit: `5b363ce`. Current canonical New-Game seed `0x8009` Core23 state hash remains `83614740b216409877b03c536a16328c7fa7031867f58dbeb70857a8953f5762`. Slice 12 subsequently closed the first supported deterministic headless match lifecycle.
 
 Permanent evidence: `docs/research/TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE_2026-09-03.md`.
 ## Closed Slice 10 - Diplomacy / war / peace baseline

@@ -223,3 +223,9 @@ Independent follow-up execution after the final lifecycle hardening passed:
 - `git diff --check` PASS (only Git line-ending conversion warnings, no whitespace errors).
 
 Gate 4 functional QA is complete. Remaining closure work is documentation/HISTORY synchronization, implementation/evidence commit, OPEN-marker removal and final clean-repository verification. No push is part of this closure.
+
+## Final closure
+
+Slice 12 is **closed with Gates 1-4 complete**. The QA-passed implementation/evidence baseline is commit `90b83d8` (`game: add empire elimination headless victory loop`). The `_OPEN_` marker is removed in the documentation closure commit. No push is part of this closure.
+
+This closes the first supported deterministic headless 4X match lifecycle in MOOX. The next activity is deliberately a fresh fidelity/depth backlog audit rather than automatically opening Slice 13.

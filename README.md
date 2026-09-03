@@ -25,12 +25,12 @@ Current snapshot: **2026-09-01**.
 
 Master of Orion X is now actively in deterministic headless runtime development. The repository contains the pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), normalized runtime datasets, authoritative Core/Game/Session infrastructure and a growing set of original-evidence-backed strategic rules.
 
-The game does not yet provide a complete match lifecycle, but the deterministic runtime now includes Economy/Research/Construction, colonization and Outposts, concrete military Ships/Fleets, movement/split/merge, Command Points, hostile strategic encounters, the first exact tactical ship-combat vertical slice, and an authoritative browser-first application boundary. Slice 08 Gate 3 adds the Go hosted-game/server layers, HTTP/WebSocket transport, standalone loopback server and React/Vite HMI proof. Slice 09 now adds deterministic New Game/galaxy generation and the authoritative create-game flow. The remaining blockers to the first complete match are war/peace diplomacy, invasion/Colony conquest and Empire elimination/victory.
+The deterministic runtime now provides its **first complete supported headless match lifecycle**: a real seeded New Game can research/expand, enter war, fight/conquer the opponent's final Colony, eliminate the losing Empire and end the authoritative GameSession with a reproducible conquest winner. The path runs through the browser-first application/server boundary and preserves completed-game HTTP/WebSocket/read/save-replay access. This is a major lifecycle milestone, not full Master of Orion II fidelity: alternative victory families, broader tactical/economy depth, AI, leaders/espionage and endgame presentation remain follow-up work.
 
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slices **01-11 are closed**. No implementation slice is currently open. Slice 12 **Empire elimination and first deterministic headless victory loop** is the next prepared objective; it must begin with a fresh Gate 1. Slice 11 implementation/evidence commit: `5b363ce`.
+**Slice state:** Slices **01-12 are closed** and there is no `_OPEN_` slice marker. Slice 12 **Empire elimination and first deterministic headless victory loop** closed at implementation/evidence commit `90b83d8`. The next step is a fresh post-milestone fidelity/depth backlog audit before numbering the next tranche.
 
 ### Current / prepared slice queue
 

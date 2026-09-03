@@ -1,6 +1,6 @@
 # Planned slice 12 - Empire elimination and first headless victory loop
 
-Status: **planned / queued; not open**.
+Status: **closed; Gates 1-4 complete**.
 
 Queue position: **12 of 12**.
 
@@ -86,7 +86,7 @@ Defer:
 - [x] Verify post-game invalid commands are atomic and do not advance revisions.
 - [x] Verify server/browser projection and reconnect of a completed game.
 - [x] Run full tests/vet/web checks and `git diff --check`.
-- [ ] Update evidence/status/HISTORY and close marker.
+- [x] Update evidence/status/HISTORY and close marker.
 
 ## Exit criterion
 

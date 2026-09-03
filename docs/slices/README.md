@@ -41,13 +41,13 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- `PLANNED_11_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE.md` - **closed; Gates 1-4 complete**, implementation/evidence commit `5b363ce`.
+- **none** - Slices 01-12 are closed; there is no `_OPEN_*.md` marker.
 
 Prepared queue:
 
-1. `PLANNED_12_EMPIRE_ELIMINATION_FIRST_HEADLESS_VICTORY_LOOP.md` - first deterministic end-to-end match from New Game to conquest winner.
+- **none** - Slice 12 closed at implementation/evidence commit `90b83d8` and completed the first supported deterministic end-to-end match lifecycle.
 
-Milestone: after Slice 12, re-audit the remaining fidelity/depth backlog before numbering the next tranche.
+Next planning milestone: re-audit and prioritize the remaining fidelity/depth backlog before numbering the next tranche.
 
 The queue order is the current recommendation, not a hard dependency lock. Reprioritization is allowed before a later slice is opened if the dependency check still passes.
 ## Four gates
