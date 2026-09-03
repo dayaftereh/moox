@@ -41,7 +41,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- `PLANNED_11_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE.md` -> `_OPEN_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE_2026-09-03.md`, Gates 1-3 complete / Gate 4 QA + commit + close ready.
+- `PLANNED_11_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE.md` - **closed; Gates 1-4 complete**, implementation/evidence commit `5b363ce`.
 
 Prepared queue:
 

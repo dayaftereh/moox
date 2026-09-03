@@ -22,7 +22,7 @@ Implemented/established runtime baseline includes:
 
 The principal blockers to a first complete match lifecycle are now narrower: authoritative server/web HMI transport, real deterministic New Game/galaxy generation, intentional war/peace diplomacy, Troop Transport/invasion/Colony conquest and an authoritative elimination/victory loop. Broader tactical depth, complete Economy/pollution, race/customization extensions, leaders/espionage, AI and endgame fidelity remain important post-milestone work.
 
-No implementation slice is currently open. Slices 01-07 are closed. The prepared queue is Slice 08 server/web transport, Slice 09 New Game/galaxy, Slice 10 war/peace diplomacy, Slice 11 invasion/conquest and Slice 12 first elimination/victory loop. `docs/research/ACTIVE_RESEARCH.md` remains the authoritative next-slice handoff and Slice 08 must begin with a fresh Gate 1.
+No implementation slice is currently open. Slices 01-11 are closed. Slice 12 Empire elimination / first deterministic headless victory loop is the next prepared objective and must begin with a fresh Gate 1. `docs/research/ACTIVE_RESEARCH.md` remains the authoritative next-slice handoff.
 ## Guiding architecture
 
 Build the game rules as a deterministic, headless simulation core first. UI, rendering, audio and platform integration should depend on that core rather than contain game rules themselves.

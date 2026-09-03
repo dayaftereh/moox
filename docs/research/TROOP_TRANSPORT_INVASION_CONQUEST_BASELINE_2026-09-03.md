@@ -1,6 +1,6 @@
 # Troop Transport / invasion / conquest baseline - original 1.31 evidence
 
-Status: **Gate 4 independent QA complete; final commit/closure pending**
+Status: **closed; Gates 1-4 complete**
 
 Date: **2026-09-03**
 
@@ -867,3 +867,19 @@ Independent Gate-4 execution passed:
 Code audit reconfirmed candidate-only State/RNG/handled/continuation preparation before authoritative Session commit, assimilated-only Militia, station/remaining-hostile blockers, no attack-authority bypass and no second Treasury/CP settlement in `finishPostEncounter`.
 
 Gate 4 QA is complete. The remaining closure step is documentation/HISTORY synchronization, implementation/evidence commit, OPEN-marker removal and final clean-repository verification. No push is part of this slice closure.
+
+
+## Slice-11 closure - 2026-09-03
+
+Gate 4 is **5/5 complete** and Slice 11 is closed. The independently verified baseline is committed in implementation/evidence commit `5b363ce` (`game: add troop transport invasion conquest baseline`). The single Slice-11 OPEN marker is removed in the documentation closure commit.
+
+Closure invariants:
+
+- Core schema remains **23**;
+- canonical seed `0x8009` Core23 New-Game SHA-256 remains `83614740b216409877b03c536a16328c7fa7031867f58dbeb70857a8953f5762`;
+- full Go tests, vet, web build and diff checks are green;
+- exact conquest save/load/cohort/Capital semantics, failed/invalid atomicity, handled-key reset and no-double-Treasury/CP regressions are green;
+- no deferred bombardment/full-ground-war/AI/elimination families were pulled into the slice;
+- no push was performed.
+
+Next prepared objective: **Slice 12 - Empire elimination and first deterministic headless victory loop**, beginning with a fresh Gate 1.

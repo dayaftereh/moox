@@ -26,12 +26,12 @@ The game is **not yet a complete match lifecycle**, but the deterministic runtim
 
 ## Prepared roadmap to first complete match lifecycle
 
-Slices 01-10 are closed. Slice 11 **Troop Transport, invasion and Colony conquest baseline** is active with Gates 1-3 complete / Gate 4 QA + commit + close ready and exactly one open marker. Core23 Transport/invasion/conquest is implemented and regression-green. The roadmap state is:
+Slices 01-11 are closed. No implementation slice is currently open and there are zero `_OPEN_` markers. Slice 11 Troop Transport / invasion / Colony conquest closed at implementation/evidence commit `5b363ce`; Slice 12 Empire elimination / first deterministic headless victory loop is the next prepared milestone and must start with a fresh Gate 1. The roadmap state is:
 
 1. Slice 08 - **closed** - authoritative server, web HMI and HTTP/WebSocket transport baseline (`9315111`).
 2. Slice 09 - **closed** - deterministic New Game and galaxy generation baseline (`a5f3c13`).
 3. Slice 10 - **closed** - diplomacy / war / peace baseline.
-4. Slice 11 - **active, Gates 1-3 complete / Gate 4 ready** - Troop Transport, invasion and Colony conquest baseline.
+4. Slice 11 - **closed, Gates 1-4 complete** - Troop Transport, invasion and Colony conquest baseline (`5b363ce`).
 5. Slice 12 - Empire elimination and first deterministic headless victory loop.
 
 Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 12 is the next major milestone: a real generated game can progress through war/conquest to an authoritative winner. The next fidelity/depth tranche will be re-audited and numbered after that milestone.
@@ -204,7 +204,7 @@ The first meaningful game loop remains:
 8. colonize,
 9. save and reload exactly the same state.
 
-Slice 08 is closed. Slice 09 is closed: deterministic Small/Normal/Average/Tactical New Game generation, Human+Darlok starts, authoritative GameSession/app/server creation and the browser New Game flow are implemented and Gate-4 regression-green. Implementation/data/evidence commit `a5f3c13`. Slice 10 diplomacy / war / peace is also closed at implementation/evidence commit `b91f65e`: Core22 reciprocal peace/war plus directional peace offers, revision-bound server-authoritative diplomacy commands, shared war-only attack authorization, player/web projections and deterministic timing/replay regressions are complete. Slice 11 troop transport / invasion / conquest is next prepared but not open.
+Slice 08 is closed. Slice 09 is closed: deterministic Small/Normal/Average/Tactical New Game generation, Human+Darlok starts, authoritative GameSession/app/server creation and the browser New Game flow are implemented and Gate-4 regression-green. Implementation/data/evidence commit `a5f3c13`. Slice 10 diplomacy / war / peace is also closed at implementation/evidence commit `b91f65e`: Core22 reciprocal peace/war plus directional peace offers, revision-bound server-authoritative diplomacy commands, shared war-only attack authorization, player/web projections and deterministic timing/replay regressions are complete. Slice 11 troop transport / invasion / conquest is closed at implementation/evidence commit `5b363ce`; Slice 12 Empire elimination / first deterministic headless victory loop is the next prepared objective.
 
 ## Where to look
 

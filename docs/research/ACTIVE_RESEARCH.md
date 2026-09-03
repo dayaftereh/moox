@@ -5,19 +5,19 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: `docs/slices/_OPEN_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE_2026-09-03.md`.
-- Active implementation slice: **Slice 11 - Troop Transport / invasion / conquest baseline; Gates 1-3 complete / Gate 4 ready**.
+- Open slice marker: **none**.
+- Active implementation slice: **none; Slices 01-11 are closed**.
 - Slices 01-10 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
 - Economy ruleset schema: **8**.
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
-- Current objective: **Slice 11 Gate 4 - independent final QA, HISTORY/status closure, commits and OPEN-marker removal**.
+- Current objective: **Slice 12 Gate 1 - Empire elimination and first deterministic headless victory loop; perform fresh research/checkup before implementation**.
 
 
-## Active Slice 11 - Troop Transport / invasion / conquest baseline
+## Closed Slice 11 - Troop Transport / invasion / conquest baseline
 
-Gates 1-3 are complete from starting HEAD `f353a05`; Gate 4 is ready. Core23 now persists standing Infantry and fixed `troop_transport`; Transport is baseline-buildable at 100 PP / Feudal 67 PP, consumes 1 CP at normal settlement, uses existing strategic transit and remains a civilian Encounter asset. Session now exposes the server-authoritative `invasion_decisions` boundary with canonical opportunity/handled keys and revision-bound `invasion.invade|decline`. The narrow original-evidenced Infantry/Militia d100 resolver, failure/survivor packing, Colony ownership/cohort/Construction/Capital handoff and post-conquest Blockade/Population-transfer/Economy/Food continuation are implemented. Deterministic success/failure, atomicity, Core23 save/load/replay, declared-war + transit-arrival + capture, HTTP and React proof are green. Current seed `0x8009` Core23 state hash: `83614740b216409877b03c536a16328c7fa7031867f58dbeb70857a8953f5762`. Gate 4 must independently QA and close; no commit/push yet.
+Slice 11 is closed with Gates 1-4 complete. Core23 standing Infantry, fixed Troop Transport, server-authoritative invasion decisions, deterministic Ground Combat, Colony conquest/cohort/Capital handoff, post-conquest strategic/economic continuation, HTTP authority and minimal React proof are implemented and independently Gate-4 verified. Implementation/evidence commit: `5b363ce`. Current canonical New-Game seed `0x8009` Core23 state hash remains `83614740b216409877b03c536a16328c7fa7031867f58dbeb70857a8953f5762`. There is no open implementation slice; Slice 12 is next and must begin at Gate 1.
 
 Permanent evidence: `docs/research/TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE_2026-09-03.md`.
 ## Closed Slice 10 - Diplomacy / war / peace baseline
@@ -49,7 +49,7 @@ Permanent evidence: `docs/research/NEW_GAME_GALAXY_GENERATION_BASELINE_2026-09-0
 Accepted application direction: `docs/architecture/ADR-0004-authoritative-server-web-client.md`. The primary product topology is an authoritative Go game server plus browser-first web HMI over HTTP/WebSocket; Wails v3 is optional one-click native packaging only and must not bypass the server gameplay contract.
 
 1. Slice 10 - **Diplomacy, war and peace baseline** (`PLANNED_10_DIPLOMACY_WAR_PEACE_BASELINE.md`).
-2. Slice 11 - **Troop Transport, invasion and conquest baseline** (`PLANNED_11_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE.md`).
+2. Slice 11 - **closed, Gates 1-4 complete** (`PLANNED_11_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE.md`, implementation/evidence `5b363ce`).
 3. Slice 12 - **Empire elimination and first headless victory loop** (`PLANNED_12_EMPIRE_ELIMINATION_FIRST_HEADLESS_VICTORY_LOOP.md`).
 
 Roadmap milestone: Slice 12 should prove the first complete deterministic match lifecycle from a real New Game through war/conquest to an authoritative winner. Re-audit and number the next fidelity/depth tranche only after that milestone.

@@ -1,6 +1,6 @@
 # Planned slice 11 - Troop Transport, invasion and conquest baseline
 
-Status: **active; Gates 1-3 complete / Gate 4 QA + commit + close ready**.
+Status: **closed; Gates 1-4 complete**.
 
 Queue position: **11 of 12**.
 
@@ -89,7 +89,7 @@ Defer:
 - [x] Verify exact ownership and cohort state after conquest round-trips through save/load.
 - [x] Verify failed/invalid invasion is atomic.
 - [x] Run full tests/vet/web integration checks and `git diff --check`.
-- [ ] Update evidence/status/HISTORY and close marker.
+- [x] Update evidence/status/HISTORY and close marker.
 
 ## Exit criterion
 
