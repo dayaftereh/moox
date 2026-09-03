@@ -1,6 +1,6 @@
 # Planned slice 14 - Live GameSession save / resume baseline
 
-Status: **planned / queued; not open**.
+Status: **open; Gate 1 complete; Gate 2 approval pending**.
 
 Queue position: **14 of 17**.
 
@@ -34,13 +34,13 @@ Defer:
 
 ## Gate 1 - Checkup + persistence audit
 
-- [ ] Inventory all GameSession/hosted-game mutable state that affects future determinism.
-- [ ] Define stable saveable phases and explicit unsaveable boundaries.
-- [ ] Reconcile Core23 serialization and completed-session snapshot formats.
-- [ ] Define schema/version/migration policy and canonical byte ordering.
-- [ ] Define server save/load authority and reconnect semantics.
-- [ ] Define mid-match AI save/resume exact-continuation fixture.
-- [ ] Present Gate-2 persistence contract.
+- [x] Inventory all GameSession/hosted-game mutable state that affects future determinism.
+- [x] Define stable saveable phases and explicit unsaveable boundaries.
+- [x] Reconcile Core23 serialization and completed-session snapshot formats.
+- [x] Define schema/version/migration policy and canonical byte ordering.
+- [x] Define server save/load authority and reconnect semantics.
+- [x] Define mid-match AI save/resume exact-continuation fixture.
+- [x] Present Gate-2 persistence contract.
 
 ## Gate 2 - Implementation decision
 

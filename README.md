@@ -30,7 +30,7 @@ The deterministic runtime now provides its **first complete supported headless m
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slices **01-13 are closed** and there is no `_OPEN_` slice marker. Slice 13 **Built-in strategic AI baseline** passed independent Gate-4 QA; permanent evidence is in `docs/research/BUILTIN_STRATEGIC_AI_BASELINE_2026-09-03.md`. Slices **14-17 remain prepared but not open**; Slice 14 **Live GameSession save/resume baseline** is the next recommended objective and must begin with a fresh Gate 1.
+**Slice state:** Slices **01-13 are closed**. Slice 14 **Live GameSession save/resume baseline** is open with exactly one `_OPEN_` marker; Gate 1 is complete and Gate 2 approval is pending. Permanent evidence is in `docs/research/LIVE_GAMESESSION_SAVE_RESUME_BASELINE_2026-09-03.md`. Slices **15-17 remain prepared and not open**.
 
 ### Current / prepared slice queue
 

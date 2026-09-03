@@ -441,4 +441,4 @@ The exact app regression itself runs the full autonomous canonical match twice a
 
 No Tactical scope was widened during QA. The Slice-07 limitations documented in Gate 3 remain explicit deferred work rather than hidden special cases.
 
-Gate 4 is complete. Slice 13 is closed; Slice 14 Live GameSession save/resume remains prepared and unopened until a fresh Gate 1 is explicitly started.
+Gate 4 is complete. Slice 13 is closed. At the time of Slice-13 closure, Slice 14 Live GameSession save/resume was still prepared/unopened and required a fresh Gate 1 before work could begin.
