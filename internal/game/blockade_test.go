@@ -82,11 +82,7 @@ func addBlockadeTestFleet(state *core.GameState, empireID core.ID, role core.Str
 func TestRecomputeSystemBlockadesUsesColonyPresenceCombatFleetAndDirectedHostility(t *testing.T) {
 	fixture := newBlockadeTestFixture(t, 1601)
 	addBlockadeTestFleet(fixture.state, fixture.blockaderEmpireID, core.StrategicFleetRoleCombat, fixture.targetSystemID)
-	fixture.state.DiplomaticRelations = []core.DiplomaticRelation{{
-		FromEmpireID: fixture.blockaderEmpireID,
-		ToEmpireID:   fixture.targetEmpireID,
-		Stance:       core.DiplomaticStanceHostile,
-	}}
+	fixture.state.DiplomaticRelations = reciprocalWarRelations(fixture.blockaderEmpireID, fixture.targetEmpireID)
 	if err := fixture.state.Validate(); err != nil {
 		t.Fatal(err)
 	}
@@ -115,11 +111,7 @@ func TestRecomputeSystemBlockadesIgnoresCivilianTransitAndSelfPresence(t *testin
 		t.Run(test.name, func(t *testing.T) {
 			fixture := newBlockadeTestFixture(t, uint64(1610+i))
 			addBlockadeTestFleet(fixture.state, fixture.blockaderEmpireID, test.role, test.atSystemID(fixture))
-			fixture.state.DiplomaticRelations = []core.DiplomaticRelation{{
-				FromEmpireID: fixture.blockaderEmpireID,
-				ToEmpireID:   fixture.targetEmpireID,
-				Stance:       core.DiplomaticStanceHostile,
-			}}
+			fixture.state.DiplomaticRelations = reciprocalWarRelations(fixture.blockaderEmpireID, fixture.targetEmpireID)
 			if err := recomputeSystemBlockades(fixture.state); err != nil {
 				t.Fatal(err)
 			}
@@ -153,11 +145,7 @@ func TestRecomputeSystemBlockadesSortsTargetsCombinesBlockadersAndClearsStaleSta
 	fixture.state.Empires = append(fixture.state.Empires, core.Empire{ID: thirdBlockaderID, Name: "Third Blockader", RaceID: "human"})
 	addBlockadeTestFleet(fixture.state, fixture.blockaderEmpireID, core.StrategicFleetRoleCombat, fixture.targetSystemID)
 	addBlockadeTestFleet(fixture.state, thirdBlockaderID, core.StrategicFleetRoleCombat, fixture.targetSystemID)
-	fixture.state.DiplomaticRelations = []core.DiplomaticRelation{
-		{FromEmpireID: fixture.blockaderEmpireID, ToEmpireID: fixture.targetEmpireID, Stance: core.DiplomaticStanceHostile},
-		{FromEmpireID: fixture.blockaderEmpireID, ToEmpireID: secondTargetID, Stance: core.DiplomaticStanceHostile},
-		{FromEmpireID: thirdBlockaderID, ToEmpireID: fixture.targetEmpireID, Stance: core.DiplomaticStanceHostile},
-	}
+	fixture.state.DiplomaticRelations = warRelations([2]core.ID{fixture.blockaderEmpireID, fixture.targetEmpireID}, [2]core.ID{fixture.blockaderEmpireID, secondTargetID}, [2]core.ID{thirdBlockaderID, fixture.targetEmpireID})
 	if err := fixture.state.Validate(); err != nil {
 		t.Fatal(err)
 	}
@@ -189,11 +177,7 @@ func TestResolveRecomputesBlockadesBeforeFinalFoodSnapshot(t *testing.T) {
 	}
 	fixture := newBlockadeTestFixture(t, 1630)
 	addBlockadeTestFleet(fixture.state, fixture.blockaderEmpireID, core.StrategicFleetRoleCombat, fixture.targetSystemID)
-	fixture.state.DiplomaticRelations = []core.DiplomaticRelation{{
-		FromEmpireID: fixture.blockaderEmpireID,
-		ToEmpireID:   fixture.targetEmpireID,
-		Stance:       core.DiplomaticStanceHostile,
-	}}
+	fixture.state.DiplomaticRelations = reciprocalWarRelations(fixture.blockaderEmpireID, fixture.targetEmpireID)
 
 	result, err := resolver.Resolve(ResolveContext{}, fixture.state, nil)
 	if err != nil {
@@ -243,11 +227,7 @@ func TestResolveRecomputesBlockadesBeforePopulationTransferArrival(t *testing.T)
 	}
 	fixture := newBlockadeTestFixture(t, 1640)
 	addBlockadeTestFleet(fixture.state, fixture.blockaderEmpireID, core.StrategicFleetRoleCombat, fixture.targetSystemID)
-	fixture.state.DiplomaticRelations = []core.DiplomaticRelation{{
-		FromEmpireID: fixture.blockaderEmpireID,
-		ToEmpireID:   fixture.targetEmpireID,
-		Stance:       core.DiplomaticStanceHostile,
-	}}
+	fixture.state.DiplomaticRelations = reciprocalWarRelations(fixture.blockaderEmpireID, fixture.targetEmpireID)
 	fixture.state.PopulationTransfers = []core.PopulationTransfer{{
 		ID:                  fixture.state.NewID(),
 		EmpireID:            fixture.targetEmpireID,

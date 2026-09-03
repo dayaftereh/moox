@@ -41,7 +41,7 @@ func recomputeSystemBlockades(state *core.GameState) error {
 				if targetEmpireID == fleet.EmpireID {
 					continue
 				}
-				if state.DiplomaticStanceBetween(fleet.EmpireID, targetEmpireID) == core.DiplomaticStanceHostile {
+				if state.MayAttackEmpire(fleet.EmpireID, targetEmpireID) {
 					blockedOwners[targetEmpireID] = struct{}{}
 				}
 			}

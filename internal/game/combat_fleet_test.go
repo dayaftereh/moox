@@ -214,7 +214,7 @@ func TestCombatFleetArrivalDrivesSameResolutionBlockade(t *testing.T) {
 	destination.X = source.X + 30 // 1 pc, ETA 1 with Fusion.
 	destination.Y = source.Y
 	fleetID, _ := addCombatFleetTestFleet(state, empire.ID, source.ID, 1)
-	state.DiplomaticRelations = []core.DiplomaticRelation{{FromEmpireID: empire.ID, ToEmpireID: fixture.targetEmpireID, Stance: core.DiplomaticStanceHostile}}
+	state.DiplomaticRelations = reciprocalWarRelations(empire.ID, fixture.targetEmpireID)
 	command, err := NewMoveFleetCommand(1, MoveFleetPayload{FleetID: fleetID, DestinationSystemID: destination.ID})
 	if err != nil {
 		t.Fatal(err)

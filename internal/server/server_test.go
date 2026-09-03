@@ -360,7 +360,7 @@ func newTacticalServerFixture(t *testing.T) (*httptest.Server, core.ID, core.ID)
 		core.StrategicFleet{ID: state.NewID(), EmpireID: attackerEmpireID, Role: core.StrategicFleetRoleCombat, AtSystemID: systemID, ShipIDs: []core.ID{attackerShipID}},
 		core.StrategicFleet{ID: state.NewID(), EmpireID: defenderEmpireID, Role: core.StrategicFleetRoleCombat, AtSystemID: systemID, ShipIDs: []core.ID{defenderShipID}},
 	)
-	state.DiplomaticRelations = []core.DiplomaticRelation{{FromEmpireID: attackerEmpireID, ToEmpireID: defenderEmpireID, Stance: core.DiplomaticStanceHostile}}
+	state.DiplomaticRelations = reciprocalWarRelations(attackerEmpireID, defenderEmpireID)
 	if err := state.Validate(); err != nil {
 		t.Fatal(err)
 	}

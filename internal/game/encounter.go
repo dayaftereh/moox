@@ -97,7 +97,7 @@ func (r *EconomyResolver) prepareEncounterBoundary(ctx ResolveContext, state *co
 				continue
 			}
 			for _, defenderID := range empireIDs {
-				if defenderID == attackerID || state.DiplomaticStanceBetween(attackerID, defenderID) != core.DiplomaticStanceHostile {
+				if defenderID == attackerID || !state.MayAttackEmpire(attackerID, defenderID) {
 					continue
 				}
 				defender := byEmpire[defenderID]
@@ -142,7 +142,7 @@ func (r *EconomyResolver) prepareEncounterBoundary(ctx ResolveContext, state *co
 				continue
 			}
 			for _, defenderID := range empireIDs {
-				if defenderID == attackerID || state.DiplomaticStanceBetween(attackerID, defenderID) != core.DiplomaticStanceHostile {
+				if defenderID == attackerID || !state.MayAttackEmpire(attackerID, defenderID) {
 					continue
 				}
 				defender := byEmpire[defenderID]

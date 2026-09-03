@@ -5,26 +5,27 @@ import (
 	"math"
 )
 
-const StateSchemaVersion = 21
+const StateSchemaVersion = 22
 
 type ID uint64
 
 type GameState struct {
-	SchemaVersion       int                  `json:"schema_version"`
-	Seed                uint64               `json:"seed"`
-	RNGState            uint64               `json:"rng_state"`
-	Turn                uint64               `json:"turn"`
-	NextID              ID                   `json:"next_id"`
-	Galaxy              Galaxy               `json:"galaxy"`
-	Empires             []Empire             `json:"empires"`
-	Colonies            []Colony             `json:"colonies"`
-	Outposts            []Outpost            `json:"outposts,omitempty"`
-	ShipDesigns         []ShipDesign         `json:"ship_designs,omitempty"`
-	Ships               []Ship               `json:"ships,omitempty"`
-	StrategicFleets     []StrategicFleet     `json:"strategic_fleets,omitempty"`
-	DiplomaticRelations []DiplomaticRelation `json:"diplomatic_relations,omitempty"`
-	PopulationTransfers []PopulationTransfer `json:"population_transfers,omitempty"`
-	Events              []Event              `json:"events"`
+	SchemaVersion         int                    `json:"schema_version"`
+	Seed                  uint64                 `json:"seed"`
+	RNGState              uint64                 `json:"rng_state"`
+	Turn                  uint64                 `json:"turn"`
+	NextID                ID                     `json:"next_id"`
+	Galaxy                Galaxy                 `json:"galaxy"`
+	Empires               []Empire               `json:"empires"`
+	Colonies              []Colony               `json:"colonies"`
+	Outposts              []Outpost              `json:"outposts,omitempty"`
+	ShipDesigns           []ShipDesign           `json:"ship_designs,omitempty"`
+	Ships                 []Ship                 `json:"ships,omitempty"`
+	StrategicFleets       []StrategicFleet       `json:"strategic_fleets,omitempty"`
+	DiplomaticRelations   []DiplomaticRelation   `json:"diplomatic_relations,omitempty"`
+	DiplomaticPeaceOffers []DiplomaticPeaceOffer `json:"diplomatic_peace_offers,omitempty"`
+	PopulationTransfers   []PopulationTransfer   `json:"population_transfers,omitempty"`
+	Events                []Event                `json:"events"`
 }
 
 type Galaxy struct {

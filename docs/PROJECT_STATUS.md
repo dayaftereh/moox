@@ -26,11 +26,11 @@ The game is **not yet a complete match lifecycle**, but the deterministic runtim
 
 ## Prepared roadmap to first complete match lifecycle
 
-Slices 01-09 are closed. No implementation slice is currently open. The roadmap state is:
+Slices 01-09 are closed. Slice 10 **Diplomacy / war / peace baseline** is active with Gates 1-3 complete / Gate 4 QA + commit + close ready. The roadmap state is:
 
 1. Slice 08 - **closed** - authoritative server, web HMI and HTTP/WebSocket transport baseline (`9315111`).
 2. Slice 09 - **closed** - deterministic New Game and galaxy generation baseline (`a5f3c13`).
-3. Slice 10 - diplomacy / war / peace baseline.
+3. Slice 10 - **active, Gates 1-3 complete / Gate 4 ready** - diplomacy / war / peace baseline.
 4. Slice 11 - Troop Transport, invasion and Colony conquest baseline.
 5. Slice 12 - Empire elimination and first deterministic headless victory loop.
 
@@ -204,7 +204,7 @@ The first meaningful game loop remains:
 8. colonize,
 9. save and reload exactly the same state.
 
-Slice 08 is closed. Slice 09 is closed: deterministic Small/Normal/Average/Tactical New Game generation, Human+Darlok starts, authoritative GameSession/app/server creation and the browser New Game flow are implemented and Gate-4 regression-green. Implementation/data/evidence commit `a5f3c13`; Slice 10 diplomacy / war / peace is the next prepared objective.
+Slice 08 is closed. Slice 09 is closed: deterministic Small/Normal/Average/Tactical New Game generation, Human+Darlok starts, authoritative GameSession/app/server creation and the browser New Game flow are implemented and Gate-4 regression-green. Implementation/data/evidence commit `a5f3c13`; Slice 10 diplomacy / war / peace is now active with Gates 1-3 complete; the frozen v1 contract is implemented and Gate 4 final QA/closure is next.
 
 ## Where to look
 

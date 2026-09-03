@@ -337,9 +337,7 @@ func newRealEncounterFixture(seed uint64) realEncounterFixture {
 
 	addSessionEncounterCombatFleet(state, attacker.ID, battleSystem.ID)
 	defenderFleetID, defenderShipID := addSessionEncounterCombatFleet(state, defenderEmpireID, battleSystem.ID)
-	state.DiplomaticRelations = []core.DiplomaticRelation{{
-		FromEmpireID: attacker.ID, ToEmpireID: defenderEmpireID, Stance: core.DiplomaticStanceHostile,
-	}}
+	state.DiplomaticRelations = reciprocalWarRelations(attacker.ID, defenderEmpireID)
 	return realEncounterFixture{
 		state: state,
 		seats: []Seat{

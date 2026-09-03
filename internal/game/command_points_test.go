@@ -333,7 +333,7 @@ func TestCommandPointsShipAndStationCompletionApplyNextSettlement(t *testing.T) 
 	}
 }
 
-func TestCommandPointSnapshotRoundTripsSchema21(t *testing.T) {
+func TestCommandPointSnapshotRoundTripsSchema22(t *testing.T) {
 	_, resolver := commandPointTestResolver(t)
 	state := core.NewSmallFixture(0xA50F)
 	state.Colonies[0].Buildings = []string{"star_base"}
@@ -348,7 +348,7 @@ func TestCommandPointSnapshotRoundTripsSchema21(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if loaded.SchemaVersion != 21 || loaded.Empires[0].CommandPoints != state.Empires[0].CommandPoints || loaded.Empires[0].Treasury != state.Empires[0].Treasury {
+	if loaded.SchemaVersion != 22 || loaded.Empires[0].CommandPoints != state.Empires[0].CommandPoints || loaded.Empires[0].Treasury != state.Empires[0].Treasury {
 		t.Fatalf("round-trip changed CP/Treasury: before=%+v/%+v after=%+v/%+v", state.Empires[0].CommandPoints, state.Empires[0].Treasury, loaded.Empires[0].CommandPoints, loaded.Empires[0].Treasury)
 	}
 }

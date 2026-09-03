@@ -17,8 +17,8 @@ func TestPopulationCohortsRoundTripDeterministically(t *testing.T) {
 	}}
 	state.Colonies[0].Population.Normalize()
 
-	if StateSchemaVersion != 21 || state.SchemaVersion != 21 {
-		t.Fatalf("schema=%d constant=%d want=21", state.SchemaVersion, StateSchemaVersion)
+	if StateSchemaVersion != 22 || state.SchemaVersion != 22 {
+		t.Fatalf("schema=%d constant=%d want=22", state.SchemaVersion, StateSchemaVersion)
 	}
 	if got := state.Colonies[0].Population.Total(); got != 4 {
 		t.Fatalf("total=%g want=4", got)

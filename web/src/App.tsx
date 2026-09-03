@@ -2,10 +2,12 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 're
 import {
   aggregatePopulation,
   assignPopulation,
+  submitDiplomacy,
   createGame,
   getPlayerSnapshot,
   listGames,
   streamURL,
+  type DiplomacyCommandKind,
   type GameSummary,
   type Notification,
   type PlayerSnapshot,
@@ -31,6 +33,7 @@ function App() {
   const [assignment, setAssignment] = useState<AssignmentDraft>({ farmers: '0', workers: '0', scientists: '0' })
   const [status, setStatus] = useState('Connecting to MOOX server...')
   const [error, setError] = useState('')
+  const [diplomacyBusy, setDiplomacyBusy] = useState(false)
   const [lastNotification, setLastNotification] = useState<Notification | null>(null)
   const reconnectTimer = useRef<number | null>(null)
 
@@ -188,6 +191,24 @@ function App() {
     }
   }
 
+  async function runDiplomacy(kind: DiplomacyCommandKind, otherEmpireID: number) {
+    if (!snapshot) return
+    setDiplomacyBusy(true)
+    setError('')
+    try {
+      const receipt = await submitDiplomacy(snapshot, seatID, kind, otherEmpireID)
+      setStatus(`Diplomacy accepted: change ${receipt.change_sequence}, game revision ${receipt.game_revision}`)
+      await loadSnapshot(snapshot.view.game_id, seatID)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : String(reason))
+    } finally {
+      setDiplomacyBusy(false)
+    }
+  }
+
+  const diplomacyClosed = snapshot?.view.phase !== 'planning' || Boolean(snapshot?.view.seats.some((seat) => seat.submitted))
+
+
   return (
     <main className="shell">
       <header className="hero">
@@ -270,6 +291,29 @@ function App() {
                 <div><dt>Seat</dt><dd>{snapshot.view.seat.seat.id} / {snapshot.view.seat.seat.controller}</dd></div>
               </dl>
             </article>
+
+            <article className="panel">
+              <h2>Diplomacy</h2>
+              {(snapshot.view.diplomacy ?? []).length === 0 ? <p className="muted">No other empires are available.</p> : (
+                <div>
+                  {(snapshot.view.diplomacy ?? []).map((relation) => {
+                    const otherSeat = snapshot.view.seats.find((candidate) => candidate.seat.empire_id === relation.other_empire_id)
+                    const disabled = diplomacyBusy || diplomacyClosed
+                    return (
+                      <div key={relation.other_empire_id}>
+                        <p><strong>{otherSeat?.seat.name ?? `Empire ${relation.other_empire_id}`}</strong> · {relation.stance}</p>
+                        {relation.incoming_peace_offer && <button type="button" disabled={disabled} onClick={() => void runDiplomacy('diplomacy.accept_peace', relation.other_empire_id)}>Accept peace</button>}
+                        {relation.stance === 'war' && !relation.incoming_peace_offer && !relation.outgoing_peace_offer && <button type="button" disabled={disabled} onClick={() => void runDiplomacy('diplomacy.offer_peace', relation.other_empire_id)}>Offer peace</button>}
+                        {(relation.stance === 'neutral' || relation.stance === 'peace') && <button type="button" disabled={disabled} onClick={() => void runDiplomacy('diplomacy.declare_war', relation.other_empire_id)}>Declare war</button>}
+                        {relation.outgoing_peace_offer && <p className="muted">Peace offer pending.</p>}
+                      </div>
+                    )
+                  })}
+                  {diplomacyClosed && <p className="muted">Diplomacy is available during planning before the first turn submission.</p>}
+                </div>
+              )}
+            </article>
+
 
             <article className="panel">
               <h2>Participant Battles</h2>

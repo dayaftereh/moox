@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestCommandPointSnapshotValidationSchema21(t *testing.T) {
+func TestCommandPointSnapshotValidationSchema22(t *testing.T) {
 	state := NewSmallFixture(0xA530)
 	state.Empires[0].CommandPoints = EmpireCommandPoints{Capacity: 5, Used: 6}
 	state.Empires[0].Treasury.ShipCommandMaintenanceBC = 10

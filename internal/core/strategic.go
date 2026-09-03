@@ -36,13 +36,18 @@ type DiplomaticStance string
 
 const (
 	DiplomaticStanceNeutral DiplomaticStance = "neutral"
-	DiplomaticStanceHostile DiplomaticStance = "hostile"
+	DiplomaticStancePeace   DiplomaticStance = "peace"
+	DiplomaticStanceWar     DiplomaticStance = "war"
 )
 
 type DiplomaticRelation struct {
 	FromEmpireID ID               `json:"from_empire_id"`
 	ToEmpireID   ID               `json:"to_empire_id"`
 	Stance       DiplomaticStance `json:"stance"`
+}
+type DiplomaticPeaceOffer struct {
+	FromEmpireID ID `json:"from_empire_id"`
+	ToEmpireID   ID `json:"to_empire_id"`
 }
 
 func (s *GameState) DiplomaticStanceBetween(fromEmpireID, toEmpireID ID) DiplomaticStance {
@@ -61,7 +66,21 @@ func (s *GameState) DiplomaticStanceBetween(fromEmpireID, toEmpireID ID) Diploma
 	}
 	return DiplomaticStanceNeutral
 }
-
+func (s *GameState) MayAttackEmpire(fromEmpireID, toEmpireID ID) bool {
+	return s != nil && s.DiplomaticStanceBetween(fromEmpireID, toEmpireID) == DiplomaticStanceWar
+}
+func (s *GameState) HasDiplomaticPeaceOffer(fromEmpireID, toEmpireID ID) bool {
+	if s == nil || fromEmpireID == 0 || toEmpireID == 0 || fromEmpireID == toEmpireID {
+		return false
+	}
+	index := sort.Search(len(s.DiplomaticPeaceOffers), func(i int) bool {
+		offer := s.DiplomaticPeaceOffers[i]
+		return offer.FromEmpireID > fromEmpireID || (offer.FromEmpireID == fromEmpireID && offer.ToEmpireID >= toEmpireID)
+	})
+	return index < len(s.DiplomaticPeaceOffers) &&
+		s.DiplomaticPeaceOffers[index].FromEmpireID == fromEmpireID &&
+		s.DiplomaticPeaceOffers[index].ToEmpireID == toEmpireID
+}
 func validateStrategicState(
 	state *GameState,
 	empireIDs map[ID]struct{},
@@ -181,16 +200,51 @@ func validateStrategicState(
 			return fmt.Errorf("diplomatic_relation[%d] references unknown target empire %d", i, relation.ToEmpireID)
 		}
 		switch relation.Stance {
-		case DiplomaticStanceNeutral, DiplomaticStanceHostile:
+		case DiplomaticStancePeace, DiplomaticStanceWar:
 		default:
-			return fmt.Errorf("diplomatic_relation[%d] stance %q is invalid", i, relation.Stance)
+			return fmt.Errorf("diplomatic_relation[%d] stance %q is invalid; neutral relations must be omitted", i, relation.Stance)
 		}
-		if i > 0 {
-			if relation.FromEmpireID < previous.FromEmpireID || (relation.FromEmpireID == previous.FromEmpireID && relation.ToEmpireID <= previous.ToEmpireID) {
-				return fmt.Errorf("diplomatic relations must be strictly ascending by from_empire_id,to_empire_id")
-			}
+		if i > 0 && (relation.FromEmpireID < previous.FromEmpireID || (relation.FromEmpireID == previous.FromEmpireID && relation.ToEmpireID <= previous.ToEmpireID)) {
+			return fmt.Errorf("diplomatic relations must be strictly ascending by from_empire_id,to_empire_id")
 		}
 		previous = relation
+	}
+	for i, relation := range state.DiplomaticRelations {
+		if reverse := state.DiplomaticStanceBetween(relation.ToEmpireID, relation.FromEmpireID); reverse != relation.Stance {
+			return fmt.Errorf("diplomatic_relation[%d] stance %q is not reciprocal (reverse=%q)", i, relation.Stance, reverse)
+		}
+	}
+	var previousOffer DiplomaticPeaceOffer
+	seenOfferPairs := make(map[[2]ID]struct{}, len(state.DiplomaticPeaceOffers))
+	for i, offer := range state.DiplomaticPeaceOffers {
+		if offer.FromEmpireID == 0 || offer.ToEmpireID == 0 {
+			return fmt.Errorf("diplomatic_peace_offer[%d] empire ids must be non-zero", i)
+		}
+		if offer.FromEmpireID == offer.ToEmpireID {
+			return fmt.Errorf("diplomatic_peace_offer[%d] cannot target the same empire", i)
+		}
+		if _, ok := empireIDs[offer.FromEmpireID]; !ok {
+			return fmt.Errorf("diplomatic_peace_offer[%d] references unknown source empire %d", i, offer.FromEmpireID)
+		}
+		if _, ok := empireIDs[offer.ToEmpireID]; !ok {
+			return fmt.Errorf("diplomatic_peace_offer[%d] references unknown target empire %d", i, offer.ToEmpireID)
+		}
+		if i > 0 && (offer.FromEmpireID < previousOffer.FromEmpireID || (offer.FromEmpireID == previousOffer.FromEmpireID && offer.ToEmpireID <= previousOffer.ToEmpireID)) {
+			return fmt.Errorf("diplomatic peace offers must be strictly ascending by from_empire_id,to_empire_id")
+		}
+		if state.DiplomaticStanceBetween(offer.FromEmpireID, offer.ToEmpireID) != DiplomaticStanceWar {
+			return fmt.Errorf("diplomatic_peace_offer[%d] requires war between empires %d and %d", i, offer.FromEmpireID, offer.ToEmpireID)
+		}
+		lo, hi := offer.FromEmpireID, offer.ToEmpireID
+		if hi < lo {
+			lo, hi = hi, lo
+		}
+		pair := [2]ID{lo, hi}
+		if _, exists := seenOfferPairs[pair]; exists {
+			return fmt.Errorf("diplomatic peace offers may contain at most one direction per empire pair %d/%d", lo, hi)
+		}
+		seenOfferPairs[pair] = struct{}{}
+		previousOffer = offer
 	}
 	return nil
 }

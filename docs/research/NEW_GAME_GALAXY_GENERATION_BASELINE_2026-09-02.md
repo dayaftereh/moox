@@ -834,3 +834,6 @@ Gate 4 repeated the Slice-09 proof independently before closure:
 ## Slice closure - 2026-09-02
 
 Slice 09 is closed. Implementation/data/evidence commit: `a5f3c13` (`game: add deterministic new game galaxy baseline`). Gate 4 completed the repeated golden/determinism/session/server/browser authority QA and the permanent status/HISTORY handoff. The next prepared objective is Slice 10 diplomacy / war / peace; no later implementation slice is opened by this closure.
+### Core22 serialization addendum - Slice 10 Gate 3, 2026-09-03
+
+Slice 09 closed under Core schema 21 with the historical seed `0x8009` full-state SHA-256 `1d89bf9e8a5ce47c81a481ad669916d727357587dfc40e46904b9503ba314a89`. Slice 10 Gate 3 advances the authoritative state schema to 22 for diplomacy. The same canonical seed/settings now serialize to SHA-256 `8effff679109cd10a427f1c80b83047dc0d2fa8e5e4871a67235a486dbc2fc68`; this fingerprint change is schema/state-shape driven, while the deterministic New Game generation contract remains unchanged and continues to be regression-tested.

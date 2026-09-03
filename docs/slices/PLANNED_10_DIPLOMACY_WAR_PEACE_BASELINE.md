@@ -1,6 +1,6 @@
 # Planned slice 10 - Diplomacy, war and peace baseline
 
-Status: **planned / queued; not open**.
+Status: **active; Gates 1-3 complete / Gate 4 QA + commit + close ready**.
 
 Queue position: **10 of 12**.
 
@@ -50,40 +50,40 @@ Defer:
 
 ## Gate 1 - Checkup + original analysis / reverse engineering
 
-- [ ] Re-check current directed relation/hostility/blockade/encounter implementation.
-- [ ] Create permanent diplomacy baseline evidence document.
-- [ ] Verify original MOO2 relation states and minimum war/peace transition path.
-- [ ] Verify declare-war timing relative to same-turn movement/encounter processing.
-- [ ] Verify peace timing and whether already-created battles/attacks are cancelled or remain committed.
-- [ ] Verify directed vs symmetric state updates for the selected transitions.
-- [ ] Verify minimum messages/events/history needed for deterministic replay and UI projection.
-- [ ] Identify original attack-authorization/sneak-attack distinction and decide what is included now.
-- [ ] Present exact Gate-2 relation/command/state contract before implementation.
+- [x] Re-check current directed relation/hostility/blockade/encounter implementation.
+- [x] Create permanent diplomacy baseline evidence document.
+- [x] Verify original MOO2 relation states and minimum war/peace transition path.
+- [x] Verify declare-war timing relative to same-turn movement/encounter processing.
+- [x] Verify peace timing and whether already-created battles/attacks are cancelled or remain committed.
+- [x] Verify directed vs symmetric state updates for the selected transitions.
+- [x] Verify minimum messages/events/history needed for deterministic replay and UI projection.
+- [x] Identify original attack-authorization/sneak-attack distinction and decide what is included now.
+- [x] Present exact Gate-2 relation/command/state contract before implementation.
 
 ## Gate 2 - Implementation decision
 
-- [ ] Accept diplomatic state schema and symmetric/directed invariants.
-- [ ] Accept declare-war and peace command payload/authority/sequence semantics.
-- [ ] Accept turn/phase boundary for relation changes.
-- [ ] Accept attack authorization mapping consumed by blockade/encounter logic.
-- [ ] Accept event/history/projection model.
-- [ ] Freeze deferred treaty/espionage/AI families.
+- [x] Accept diplomatic state schema and symmetric/directed invariants.
+- [x] Accept declare-war and peace command payload/authority/sequence semantics.
+- [x] Accept turn/phase boundary for relation changes.
+- [x] Accept attack authorization mapping consumed by blockade/encounter logic.
+- [x] Accept event/history/projection model.
+- [x] Freeze deferred treaty/espionage/AI families.
 
 ## Gate 3 - Implementation
 
-- [ ] Implement accepted diplomatic state/validation changes.
-- [ ] Implement war/peace commands and deterministic events.
-- [ ] Integrate hostility/attack authorization into existing blockade and encounter derivation.
-- [ ] Add player/observer/API projections and web command proof.
-- [ ] Add deterministic transition, replay, same-system timing and invalid-authority tests.
-- [ ] Preserve Slice-06/07 encounter/tactical behavior when war is active.
+- [x] Implement accepted diplomatic state/validation changes.
+- [x] Implement war/peace commands and deterministic events.
+- [x] Integrate hostility/attack authorization into existing blockade and encounter derivation.
+- [x] Add player/observer/API projections and web command proof.
+- [x] Add deterministic transition, replay, same-system timing and invalid-authority tests.
+- [x] Preserve Slice-06/07 encounter/tactical behavior when war is active.
 
 ## Gate 4 - Follow-up QA + commit + close
 
-- [ ] Run focused diplomacy/hostility/blockade/encounter regressions.
-- [ ] Verify peace/war state survives save/load/replay exactly.
-- [ ] Verify no hidden UI/network authority bypass exists.
-- [ ] Run full tests/vet/web integration checks and `git diff --check`.
+- [x] Run focused diplomacy/hostility/blockade/encounter regressions.
+- [x] Verify peace/war state survives save/load/replay exactly.
+- [x] Verify no hidden UI/network authority bypass exists.
+- [x] Run full tests/vet/web integration checks and `git diff --check`.
 - [ ] Update evidence/status/HISTORY and close marker.
 
 ## Exit criterion

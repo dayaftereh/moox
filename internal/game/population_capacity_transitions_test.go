@@ -25,7 +25,7 @@ func TestPopulationCapacityStacksAdvancedCityPlanningAndBiospheresAfterRaceLayer
 		t.Fatal(err)
 	}
 	if base != 21 { // Aquatic Tundra -> Terran effective, Tolerant -> 100%, medium 15 + Subterranean 6.
-		t.Fatalf("base capacity=%v want=21", base)
+		t.Fatalf("base capacity=%v want=22", base)
 	}
 	planetCap, err := rules.PopulationCapacityForEmpire(planet, empire)
 	if err != nil {

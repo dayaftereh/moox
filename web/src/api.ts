@@ -56,6 +56,17 @@ export type Colony = {
   }
 }
 
+export type DiplomaticStance = 'neutral' | 'peace' | 'war'
+
+export type DiplomacyView = {
+  other_empire_id: number
+  stance: DiplomaticStance
+  incoming_peace_offer?: boolean
+  outgoing_peace_offer?: boolean
+}
+
+export type DiplomacyCommandKind = 'diplomacy.declare_war' | 'diplomacy.offer_peace' | 'diplomacy.accept_peace'
+
 export type PlayerView = {
   game_id: string
   revision: number
@@ -70,12 +81,22 @@ export type PlayerView = {
     }
     submitted: boolean
   }
+  seats: Array<{
+    seat: {
+      id: number
+      empire_id: number
+      name: string
+      controller: string
+    }
+    submitted: boolean
+  }>
   empire: {
     id: number
     name: string
     race_id: string
   }
   colonies: Colony[]
+  diplomacy?: DiplomacyView[]
 }
 
 export type BattleView = {
@@ -170,6 +191,23 @@ export async function assignPopulation(
     body: JSON.stringify(body),
   })
 }
+
+export async function submitDiplomacy(snapshot: PlayerSnapshot, seatID: number, kind: DiplomacyCommandKind, otherEmpireID: number): Promise<Receipt> {
+  const payload = kind === 'diplomacy.accept_peace'
+    ? { from_empire_id: otherEmpireID }
+    : { target_empire_id: otherEmpireID }
+  return requestJSON<Receipt>(`/api/v1/games/${encodeURIComponent(snapshot.view.game_id)}/immediate-commands`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      schema_version: 1,
+      seat_id: seatID,
+      base_revision: snapshot.view.revision,
+      command: { schema_version: 1, sequence: 1, kind, payload },
+    }),
+  })
+}
+
 
 export function streamURL(gameID: string): string {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'

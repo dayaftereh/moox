@@ -55,6 +55,13 @@ type Status struct {
 	Phase    Phase  `json:"phase"`
 }
 
+type DiplomacyView struct {
+	OtherEmpireID      core.ID               `json:"other_empire_id"`
+	Stance             core.DiplomaticStance `json:"stance"`
+	IncomingPeaceOffer bool                  `json:"incoming_peace_offer,omitempty"`
+	OutgoingPeaceOffer bool                  `json:"outgoing_peace_offer,omitempty"`
+}
+
 type PlayerView struct {
 	GameID                string                      `json:"game_id"`
 	Revision              uint64                      `json:"revision"`
@@ -64,6 +71,7 @@ type PlayerView struct {
 	Seats                 []SeatView                  `json:"seats"`
 	Empire                core.Empire                 `json:"empire"`
 	Colonies              []core.Colony               `json:"colonies"`
+	Diplomacy             []DiplomacyView             `json:"diplomacy,omitempty"`
 	ColonyBaseResolutions []game.ColonyBaseResolution `json:"colony_base_resolutions,omitempty"`
 	OwnSubmission         *protocol.CommandBatch      `json:"own_submission,omitempty"`
 }
@@ -735,11 +743,11 @@ func (s *GameSession) encounterOutcomesWithCandidateLocked(candidateBattleID uin
 	}
 	return outcomes, nil
 }
-func (s *GameSession) ResolveColonyBaseCommand(seatID protocol.SeatID, command protocol.Command, resolver *game.EconomyResolver) error {
+func (s *GameSession) ResolveColonyBaseCommand(seatID protocol.SeatID, baseRevision uint64, command protocol.Command, resolver *game.EconomyResolver) error {
 	if resolver == nil {
 		return fmt.Errorf("economy resolver must not be nil")
 	}
-	if err := command.Validate(command.Sequence); err != nil {
+	if err := command.Validate(1); err != nil {
 		return fmt.Errorf("invalid Colony Base command: %w", err)
 	}
 
@@ -748,11 +756,13 @@ func (s *GameSession) ResolveColonyBaseCommand(seatID protocol.SeatID, command p
 	if s.phase != PhasePostResolution {
 		return fmt.Errorf("cannot resolve Colony Base in phase %q", s.phase)
 	}
+	if baseRevision != s.revision {
+		return fmt.Errorf("immediate command base revision %d, expected %d", baseRevision, s.revision)
+	}
 	index := s.seatIndexLocked(seatID)
 	if index < 0 {
 		return fmt.Errorf("unknown seat %d", seatID)
 	}
-
 	stateInput, err := cloneState(s.state)
 	if err != nil {
 		return err
@@ -761,41 +771,74 @@ func (s *GameSession) ResolveColonyBaseCommand(seatID protocol.SeatID, command p
 	if err != nil {
 		return fmt.Errorf("resolve Colony Base command: %w", err)
 	}
+	return s.commitImmediateStateLocked(stateInput, seatID, command, events, "Colony Base")
+}
+
+func (s *GameSession) ResolveDiplomacyCommand(seatID protocol.SeatID, baseRevision uint64, command protocol.Command) error {
+	if err := command.Validate(1); err != nil {
+		return fmt.Errorf("invalid diplomacy command: %w", err)
+	}
+	if !game.IsDiplomacyCommand(command.Kind) {
+		return fmt.Errorf("command kind %q is not a diplomacy command", command.Kind)
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.phase != PhasePlanning {
+		return fmt.Errorf("cannot resolve diplomacy in phase %q", s.phase)
+	}
+	if baseRevision != s.revision {
+		return fmt.Errorf("immediate command base revision %d, expected %d", baseRevision, s.revision)
+	}
+	for _, seat := range s.seats {
+		if seat.submission != nil {
+			return fmt.Errorf("diplomacy is closed after the first turn submission")
+		}
+	}
+	index := s.seatIndexLocked(seatID)
+	if index < 0 {
+		return fmt.Errorf("unknown seat %d", seatID)
+	}
+	stateInput, err := cloneState(s.state)
+	if err != nil {
+		return err
+	}
+	events, err := game.ResolveDiplomacyCommand(stateInput, s.seats[index].seat.EmpireID, seatID, command)
+	if err != nil {
+		return fmt.Errorf("resolve diplomacy command: %w", err)
+	}
+	return s.commitImmediateStateLocked(stateInput, seatID, command, events, "diplomacy")
+}
+
+func (s *GameSession) commitImmediateStateLocked(stateInput *core.GameState, seatID protocol.SeatID, command protocol.Command, events []game.DomainEvent, label string) error {
 	if len(events) == 0 {
-		return fmt.Errorf("Colony Base command returned no events")
+		return fmt.Errorf("%s command returned no events", label)
 	}
 	if err := stateInput.Validate(); err != nil {
-		return fmt.Errorf("Colony Base command returned invalid state: %w", err)
+		return fmt.Errorf("%s command returned invalid state: %w", label, err)
 	}
 	for _, event := range events {
 		if event.Kind == "" {
-			return fmt.Errorf("Colony Base command returned event with empty kind")
+			return fmt.Errorf("%s command returned event with empty kind", label)
 		}
 		if len(event.Data) > 0 && !json.Valid(event.Data) {
-			return fmt.Errorf("Colony Base event %q has invalid JSON data", event.Kind)
+			return fmt.Errorf("%s event %q has invalid JSON data", label, event.Kind)
 		}
 		if event.SeatID != seatID || event.CommandSequence != command.Sequence {
-			return fmt.Errorf("Colony Base event %q authority=%d/%d want=%d/%d", event.Kind, event.SeatID, event.CommandSequence, seatID, command.Sequence)
+			return fmt.Errorf("%s event %q authority=%d/%d want=%d/%d", label, event.Kind, event.SeatID, event.CommandSequence, seatID, command.Sequence)
 		}
 	}
 	committed, err := cloneState(stateInput)
 	if err != nil {
 		return err
 	}
-
 	s.state = committed
 	s.revision++
 	for _, event := range events {
 		s.events = append(s.events, protocol.DomainEvent{
-			SchemaVersion:   protocol.EventSchemaVersion,
-			Sequence:        s.nextEventSequence,
-			Turn:            s.state.Turn,
-			Revision:        s.revision,
-			Scope:           protocol.EventScopeStrategic,
-			Kind:            event.Kind,
-			SeatID:          event.SeatID,
-			CommandSequence: event.CommandSequence,
-			Data:            append(json.RawMessage(nil), event.Data...),
+			SchemaVersion: protocol.EventSchemaVersion, Sequence: s.nextEventSequence, Turn: s.state.Turn, Revision: s.revision,
+			Scope: protocol.EventScopeStrategic, Kind: event.Kind, SeatID: event.SeatID, CommandSequence: event.CommandSequence,
+			Data: append(json.RawMessage(nil), event.Data...),
 		})
 		s.nextEventSequence++
 	}
@@ -1058,6 +1101,17 @@ func (s *GameSession) PlayerView(seatID protocol.SeatID) (PlayerView, error) {
 		if colony.EmpireID == seat.seat.EmpireID {
 			view.Colonies = append(view.Colonies, colony)
 		}
+	}
+	for _, other := range s.state.Empires {
+		if other.ID == seat.seat.EmpireID {
+			continue
+		}
+		view.Diplomacy = append(view.Diplomacy, DiplomacyView{
+			OtherEmpireID:      other.ID,
+			Stance:             s.state.DiplomaticStanceBetween(seat.seat.EmpireID, other.ID),
+			IncomingPeaceOffer: s.state.HasDiplomaticPeaceOffer(other.ID, seat.seat.EmpireID),
+			OutgoingPeaceOffer: s.state.HasDiplomaticPeaceOffer(seat.seat.EmpireID, other.ID),
+		})
 	}
 	resolutions, err := game.PendingColonyBaseResolutions(s.state, seat.seat.EmpireID)
 	if err != nil {

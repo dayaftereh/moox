@@ -5,15 +5,20 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: **none**.
-- Active implementation slice: **none**.
+- Open slice marker: `docs/slices/_OPEN_DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
+- Active implementation slice: **Slice 10 - Diplomacy / war / peace baseline; Gates 1-3 complete / Gate 4 ready**.
 - Slices 01-09 are closed.
 - Slice 09 implementation/data/evidence commit: `a5f3c13` (`game: add deterministic new game galaxy baseline`).
 - Core `StateSchemaVersion`: **21**.
 - Economy ruleset schema: **8**.
 - Slice-09 permanent evidence: `docs/research/NEW_GAME_GALAXY_GENERATION_BASELINE_2026-09-02.md`.
-- Next prepared objective: **Slice 10 - Diplomacy, war and peace baseline**.
+- Current objective: **Slice 10 Gate 4 - independent final QA, commit and close**.
 
+## Active Slice 10 - Diplomacy / war / peace baseline
+
+Gates 1-3 are complete from starting HEAD `9b2641d`. Core22 now implements reciprocal `peace|war`, directional pending peace offers, revision-bound pre-first-submission `declare_war|offer_peace|accept_peace`, deterministic diplomacy events and player-safe projections. `MayAttackEmpire` is the shared war-only blockade/encounter authority. HTTP and React proof cover Human war declaration -> peace offer -> Darlok acceptance, while timing tests prove neutral same-system suppression, war activation, accepted-peace suppression with Fleets retained and rejection after Battle materialization. Automatic peace expiry, sneak attacks, treaties, AI and espionage remain out of scope. Gate 4 is next.
+
+Permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 ## Closed Slice 09 - Deterministic New Game / galaxy generation baseline
 
 **Gates 1-4 are complete.** Slice 09 replaces production fixture bootstrap with an authoritative deterministic `NewGame(seed, settings)` path for the frozen Small / Normal / Average / Tactical two-player Human+Darlok baseline.
@@ -28,7 +33,7 @@ Delivered baseline:
 - authoritative `POST /api/v1/games` creation with string uint64 seed, stable error mapping and atomic duplicate rejection;
 - production server starts empty; legacy fixture startup is explicit development-only `-demo-fixture`;
 - browser New Game form uses the server-authoritative create path and existing snapshot/CommandBatch flow;
-- golden seed `0x8009` state SHA-256: `1d89bf9e8a5ce47c81a481ad669916d727357587dfc40e46904b9503ba314a89`;
+- golden seed `0x8009` current Core22 state SHA-256: `8effff679109cd10a427f1c80b83047dc0d2fa8e5e4871a67235a486dbc2fc68`;
 - Gate 4 passed repeated golden/determinism tests, byte-identical equal-seed JSON state, generated strategic-turn integration, frontend authority scan, standalone server + managed Chrome runtime proof, full Go tests/vet/web build and diff checks.
 
 Permanent evidence: `docs/research/NEW_GAME_GALAXY_GENERATION_BASELINE_2026-09-02.md`.

@@ -41,11 +41,10 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- none. Slice 09 is closed with implementation/data/evidence commit `a5f3c13`; no `_OPEN_*.md` marker remains.
+- `PLANNED_10_DIPLOMACY_WAR_PEACE_BASELINE.md` -> `_OPEN_DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`, Gates 1-3 complete / Gate 4 QA + commit + close ready.
 
 Prepared queue:
 
-1. `PLANNED_10_DIPLOMACY_WAR_PEACE_BASELINE.md` - first authoritative war/peace lifecycle and attack authorization.
 2. `PLANNED_11_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE.md` - Transport, invasion, Colony capture and conquered Population handoff.
 3. `PLANNED_12_EMPIRE_ELIMINATION_FIRST_HEADLESS_VICTORY_LOOP.md` - first deterministic end-to-end match from New Game to conquest winner.
 

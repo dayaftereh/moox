@@ -39,6 +39,7 @@ type apiServer struct {
 type commandRequest struct {
 	SchemaVersion int              `json:"schema_version"`
 	SeatID        protocol.SeatID  `json:"seat_id"`
+	BaseRevision  uint64           `json:"base_revision"`
 	Command       protocol.Command `json:"command"`
 }
 
@@ -139,11 +140,11 @@ func (s *apiServer) handleImmediateCommand(w http.ResponseWriter, r *http.Reques
 		writeAPIError(w, http.StatusBadRequest, "bad_request", err.Error())
 		return
 	}
-	if err := validateCommandRequest(request); err != nil {
+	if err := validateImmediateCommandRequest(request); err != nil {
 		writeAPIError(w, http.StatusBadRequest, "bad_request", err.Error())
 		return
 	}
-	receipt, err := s.host.SubmitImmediateCommand(r.PathValue("gameID"), request.SeatID, request.Command)
+	receipt, err := s.host.SubmitImmediateCommand(r.PathValue("gameID"), request.SeatID, request.BaseRevision, request.Command)
 	if err != nil {
 		writeHostError(w, err)
 		return
@@ -210,6 +211,22 @@ func (s *apiServer) handleStream(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func validateImmediateCommandRequest(request commandRequest) error {
+	if request.SchemaVersion != app.SchemaVersion {
+		return fmt.Errorf("unsupported request schema_version %d", request.SchemaVersion)
+	}
+	if request.SeatID == 0 {
+		return fmt.Errorf("seat_id must be non-zero")
+	}
+	if request.BaseRevision == 0 {
+		return fmt.Errorf("base_revision must be non-zero")
+	}
+	if err := request.Command.Validate(1); err != nil {
+		return fmt.Errorf("invalid command: %w", err)
+	}
+	return nil
+}
+
 func validateCommandRequest(request commandRequest) error {
 	if request.SchemaVersion != app.SchemaVersion {
 		return fmt.Errorf("unsupported request schema_version %d", request.SchemaVersion)
@@ -222,7 +239,6 @@ func validateCommandRequest(request commandRequest) error {
 	}
 	return nil
 }
-
 func validateMutationRequest(w http.ResponseWriter, r *http.Request) bool {
 	if !sameOrigin(r) {
 		writeAPIError(w, http.StatusForbidden, "forbidden", "request origin does not match host")

@@ -80,7 +80,7 @@ func makeTacticalStrategicFixture(t *testing.T, systemCount int) (*core.GameStat
 		fixture.attackerFleetIDs = append(fixture.attackerFleetIDs, attackerFleetID)
 		fixture.defenderFleetIDs = append(fixture.defenderFleetIDs, defenderFleetID)
 	}
-	state.DiplomaticRelations = []core.DiplomaticRelation{{FromEmpireID: attackerEmpireID, ToEmpireID: defenderEmpireID, Stance: core.DiplomaticStanceHostile}}
+	state.DiplomaticRelations = reciprocalWarRelations(attackerEmpireID, defenderEmpireID)
 	if err := state.Validate(); err != nil {
 		t.Fatalf("tactical strategic fixture invalid: %v", err)
 	}

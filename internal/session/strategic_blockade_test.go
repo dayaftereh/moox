@@ -38,11 +38,7 @@ func TestObserverViewPreservesAndIsolatesStrategicBlockadeState(t *testing.T) {
 		AtSystemID: state.Galaxy.Systems[1].ID,
 		ShipIDs:    []core.ID{shipID},
 	}}
-	state.DiplomaticRelations = []core.DiplomaticRelation{{
-		FromEmpireID: blockaderEmpireID,
-		ToEmpireID:   targetEmpireID,
-		Stance:       core.DiplomaticStanceHostile,
-	}}
+	state.DiplomaticRelations = reciprocalWarRelations(blockaderEmpireID, targetEmpireID)
 	state.Galaxy.Systems[1].BlockadedEmpireIDs = []core.ID{targetEmpireID}
 
 	s, err := NewGameSession("strategic-blockade", state, []Seat{{
@@ -78,7 +74,7 @@ func TestObserverViewPreservesAndIsolatesStrategicBlockadeState(t *testing.T) {
 	if secondObserver.State.StrategicFleets[0].AtSystemID != state.Galaxy.Systems[1].ID {
 		t.Fatalf("Observer mutation leaked into authoritative Fleet state: %+v", secondObserver.State.StrategicFleets[0])
 	}
-	if secondObserver.State.DiplomaticRelations[0].Stance != core.DiplomaticStanceHostile {
+	if secondObserver.State.DiplomaticRelations[0].Stance != core.DiplomaticStanceWar {
 		t.Fatalf("Observer mutation leaked into authoritative relation state: %+v", secondObserver.State.DiplomaticRelations[0])
 	}
 	if !reflect.DeepEqual(secondObserver.State.Galaxy.Systems[1].BlockadedEmpireIDs, []core.ID{targetEmpireID}) {

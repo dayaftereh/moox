@@ -133,7 +133,7 @@ func TestGameSessionColonyBaseBuildCreatesMandatoryPostResolutionColonization(t 
 		t.Fatal(err)
 	}
 	beforeRevision := isolated.Revision
-	if err := s.ResolveColonyBaseCommand(1, colonize, resolver); err != nil {
+	if err := s.ResolveColonyBaseCommand(1, s.Status().Revision, colonize, resolver); err != nil {
 		t.Fatal(err)
 	}
 	afterColonize, err := s.ObserverView()
@@ -211,7 +211,7 @@ func TestGameSessionColonyBaseTrashRefundResolvesTurnGuard(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err := s.ResolveColonyBaseCommand(1, trash, resolver); err != nil {
+	if err := s.ResolveColonyBaseCommand(1, s.Status().Revision, trash, resolver); err != nil {
 		t.Fatal(err)
 	}
 	after, err := s.ObserverView()

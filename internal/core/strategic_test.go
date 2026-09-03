@@ -27,17 +27,13 @@ func TestStrategicStateRoundTripsAndDefaultsMissingRelationsToNeutral(t *testing
 		AtSystemID: state.Galaxy.Systems[1].ID,
 		ShipIDs:    []ID{shipID},
 	}}
-	state.DiplomaticRelations = []DiplomaticRelation{{
-		FromEmpireID: firstEmpireID,
-		ToEmpireID:   secondEmpireID,
-		Stance:       DiplomaticStanceHostile,
-	}}
+	state.DiplomaticRelations = reciprocalRelations(firstEmpireID, secondEmpireID, DiplomaticStanceWar)
 
-	if got := state.DiplomaticStanceBetween(firstEmpireID, secondEmpireID); got != DiplomaticStanceHostile {
-		t.Fatalf("directed stance=%q want=%q", got, DiplomaticStanceHostile)
+	if got := state.DiplomaticStanceBetween(firstEmpireID, secondEmpireID); got != DiplomaticStanceWar {
+		t.Fatalf("directed stance=%q want=%q", got, DiplomaticStanceWar)
 	}
-	if got := state.DiplomaticStanceBetween(secondEmpireID, firstEmpireID); got != DiplomaticStanceNeutral {
-		t.Fatalf("missing reverse stance=%q want=%q", got, DiplomaticStanceNeutral)
+	if got := state.DiplomaticStanceBetween(secondEmpireID, firstEmpireID); got != DiplomaticStanceWar {
+		t.Fatalf("reciprocal stance=%q want=%q", got, DiplomaticStanceWar)
 	}
 	if err := state.Validate(); err != nil {
 		t.Fatal(err)
@@ -107,7 +103,7 @@ func TestDiplomaticRelationValidation(t *testing.T) {
 
 	t.Run("directed pair cannot target self", func(t *testing.T) {
 		state, first, _ := newState(1506)
-		state.DiplomaticRelations = []DiplomaticRelation{{FromEmpireID: first, ToEmpireID: first, Stance: DiplomaticStanceHostile}}
+		state.DiplomaticRelations = reciprocalRelations(first, first, DiplomaticStanceWar)
 		if err := state.Validate(); err == nil {
 			t.Fatal("expected self diplomatic relation to fail validation")
 		}
@@ -115,7 +111,7 @@ func TestDiplomaticRelationValidation(t *testing.T) {
 
 	t.Run("known source and target", func(t *testing.T) {
 		state, first, _ := newState(1507)
-		state.DiplomaticRelations = []DiplomaticRelation{{FromEmpireID: first, ToEmpireID: 999999, Stance: DiplomaticStanceHostile}}
+		state.DiplomaticRelations = reciprocalRelations(first, 999999, DiplomaticStanceWar)
 		if err := state.Validate(); err == nil {
 			t.Fatal("expected unknown diplomatic target to fail validation")
 		}
@@ -123,7 +119,7 @@ func TestDiplomaticRelationValidation(t *testing.T) {
 
 	t.Run("valid stance", func(t *testing.T) {
 		state, first, second := newState(1508)
-		state.DiplomaticRelations = []DiplomaticRelation{{FromEmpireID: first, ToEmpireID: second, Stance: DiplomaticStance("war")}}
+		state.DiplomaticRelations = []DiplomaticRelation{{FromEmpireID: first, ToEmpireID: second, Stance: DiplomaticStance("hostile")}}
 		if err := state.Validate(); err == nil {
 			t.Fatal("expected unsupported diplomatic stance to fail validation")
 		}
@@ -132,8 +128,8 @@ func TestDiplomaticRelationValidation(t *testing.T) {
 	t.Run("strict pair ordering", func(t *testing.T) {
 		state, first, second := newState(1509)
 		state.DiplomaticRelations = []DiplomaticRelation{
-			{FromEmpireID: second, ToEmpireID: first, Stance: DiplomaticStanceHostile},
-			{FromEmpireID: first, ToEmpireID: second, Stance: DiplomaticStanceHostile},
+			{FromEmpireID: second, ToEmpireID: first, Stance: DiplomaticStanceWar},
+			{FromEmpireID: first, ToEmpireID: second, Stance: DiplomaticStanceWar},
 		}
 		if err := state.Validate(); err == nil {
 			t.Fatal("expected unsorted diplomatic relations to fail validation")
@@ -144,7 +140,7 @@ func TestDiplomaticRelationValidation(t *testing.T) {
 		state, first, second := newState(1510)
 		state.DiplomaticRelations = []DiplomaticRelation{
 			{FromEmpireID: first, ToEmpireID: second, Stance: DiplomaticStanceNeutral},
-			{FromEmpireID: first, ToEmpireID: second, Stance: DiplomaticStanceHostile},
+			{FromEmpireID: first, ToEmpireID: second, Stance: DiplomaticStanceWar},
 		}
 		if err := state.Validate(); err == nil {
 			t.Fatal("expected duplicate diplomatic relation pair to fail validation")
@@ -152,7 +148,7 @@ func TestDiplomaticRelationValidation(t *testing.T) {
 	})
 }
 
-func TestColonyShipTransitStateRoundTripsInSchema21(t *testing.T) {
+func TestColonyShipTransitStateRoundTripsInSchema22(t *testing.T) {
 	state := NewSmallFixture(1510)
 	fleetID := state.NewID()
 	state.StrategicFleets = []StrategicFleet{{
@@ -164,8 +160,8 @@ func TestColonyShipTransitStateRoundTripsInSchema21(t *testing.T) {
 		RemainingTurns:      2,
 		FTLSpeed:            3,
 	}}
-	if StateSchemaVersion != 21 || state.SchemaVersion != 21 {
-		t.Fatalf("schema=%d constant=%d want=21", state.SchemaVersion, StateSchemaVersion)
+	if StateSchemaVersion != 22 || state.SchemaVersion != 22 {
+		t.Fatalf("schema=%d constant=%d want=22", state.SchemaVersion, StateSchemaVersion)
 	}
 	if err := state.Validate(); err != nil {
 		t.Fatal(err)

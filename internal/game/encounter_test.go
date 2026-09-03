@@ -32,9 +32,7 @@ func TestPrepareEncounterBoundaryAggregatesSameEmpireFleetsAndDirection(t *testi
 	firstFleet, firstShips := addCombatFleetTestFleet(state, fixture.blockaderEmpireID, fixture.targetSystemID, 2)
 	secondFleet, secondShips := addCombatFleetTestFleet(state, fixture.blockaderEmpireID, fixture.targetSystemID, 1)
 	defenderFleet, defenderShips := addCombatFleetTestFleet(state, fixture.targetEmpireID, fixture.targetSystemID, 2)
-	state.DiplomaticRelations = []core.DiplomaticRelation{{
-		FromEmpireID: fixture.blockaderEmpireID, ToEmpireID: fixture.targetEmpireID, Stance: core.DiplomaticStanceHostile,
-	}}
+	state.DiplomaticRelations = reciprocalWarRelations(fixture.blockaderEmpireID, fixture.targetEmpireID)
 	rules := loadCommittedEconomyRules(t)
 	resolver, err := NewEconomyResolver(rules)
 	if err != nil {
@@ -79,9 +77,7 @@ func TestPrepareEncounterBoundaryCivilianOnlyOverrunAndColonySuppression(t *test
 		ID: civilianID, EmpireID: fixture.targetEmpireID, Role: core.StrategicFleetRoleCivilian,
 		SpecialKind: core.StrategicFleetSpecialOutpostShip, AtSystemID: attackerSystem, FTLSpeed: 2,
 	})
-	state.DiplomaticRelations = []core.DiplomaticRelation{{
-		FromEmpireID: fixture.blockaderEmpireID, ToEmpireID: fixture.targetEmpireID, Stance: core.DiplomaticStanceHostile,
-	}}
+	state.DiplomaticRelations = reciprocalWarRelations(fixture.blockaderEmpireID, fixture.targetEmpireID)
 	resolver, err := NewEconomyResolver(loadCommittedEconomyRules(t))
 	if err != nil {
 		t.Fatal(err)
@@ -111,9 +107,7 @@ func TestPrepareEncounterBoundaryCivilianOnlyOverrunAndColonySuppression(t *test
 		ID: civilianID, EmpireID: fixture.targetEmpireID, Role: core.StrategicFleetRoleCivilian,
 		SpecialKind: core.StrategicFleetSpecialColonyShip, AtSystemID: fixture.targetSystemID, FTLSpeed: 2,
 	})
-	state.DiplomaticRelations = []core.DiplomaticRelation{{
-		FromEmpireID: fixture.blockaderEmpireID, ToEmpireID: fixture.targetEmpireID, Stance: core.DiplomaticStanceHostile,
-	}}
+	state.DiplomaticRelations = reciprocalWarRelations(fixture.blockaderEmpireID, fixture.targetEmpireID)
 	events, encounters, err = resolver.prepareEncounterBoundary(encounterTestContext(state), state)
 	if err != nil {
 		t.Fatal(err)
@@ -138,9 +132,7 @@ func TestResumeAfterEncountersAppliesCasualtiesRetreatThenPostEncounterWork(t *t
 		ID: civilianFleetID, EmpireID: fixture.targetEmpireID, Role: core.StrategicFleetRoleCivilian,
 		SpecialKind: core.StrategicFleetSpecialOutpostShip, AtSystemID: fixture.targetSystemID, FTLSpeed: 2,
 	})
-	state.DiplomaticRelations = []core.DiplomaticRelation{{
-		FromEmpireID: fixture.blockaderEmpireID, ToEmpireID: fixture.targetEmpireID, Stance: core.DiplomaticStanceHostile,
-	}}
+	state.DiplomaticRelations = reciprocalWarRelations(fixture.blockaderEmpireID, fixture.targetEmpireID)
 	ctx := encounterTestContext(state)
 	resolver, err := NewEconomyResolver(loadCommittedEconomyRules(t))
 	if err != nil {
@@ -211,7 +203,7 @@ func TestResumeAfterEncountersUsesClosestColonyTieBreakAndDestroysWithoutRetreat
 	state.Galaxy.Systems[2].X, state.Galaxy.Systems[2].Y = battleSystem.X+10, battleSystem.Y
 	_, attackerShips := addCombatFleetTestFleet(state, fixture.blockaderEmpireID, battleSystem.ID, 1)
 	defenderFleet, _ := addCombatFleetTestFleet(state, fixture.targetEmpireID, battleSystem.ID, 1)
-	state.DiplomaticRelations = []core.DiplomaticRelation{{FromEmpireID: fixture.blockaderEmpireID, ToEmpireID: fixture.targetEmpireID, Stance: core.DiplomaticStanceHostile}}
+	state.DiplomaticRelations = reciprocalWarRelations(fixture.blockaderEmpireID, fixture.targetEmpireID)
 	ctx := encounterTestContext(state)
 	resolver, err := NewEconomyResolver(loadCommittedEconomyRules(t))
 	if err != nil {
@@ -252,7 +244,7 @@ func TestResumeAfterEncountersUsesClosestColonyTieBreakAndDestroysWithoutRetreat
 	state.Galaxy.Systems[2].Planets[0].ColonyID = 0
 	addCombatFleetTestFleet(state, fixture.blockaderEmpireID, fixture.targetSystemID, 1)
 	defenderFleet, defenderShips := addCombatFleetTestFleet(state, fixture.targetEmpireID, fixture.targetSystemID, 1)
-	state.DiplomaticRelations = []core.DiplomaticRelation{{FromEmpireID: fixture.blockaderEmpireID, ToEmpireID: fixture.targetEmpireID, Stance: core.DiplomaticStanceHostile}}
+	state.DiplomaticRelations = reciprocalWarRelations(fixture.blockaderEmpireID, fixture.targetEmpireID)
 	ctx = encounterTestContext(state)
 	_, encounters, err = resolver.prepareEncounterBoundary(ctx, state)
 	if err != nil || len(encounters) != 1 {
@@ -279,10 +271,7 @@ func TestEncounterWavesArePairwiseWithinOneSystem(t *testing.T) {
 	addCombatFleetTestFleet(state, fixture.blockaderEmpireID, fixture.targetSystemID, 1)
 	addCombatFleetTestFleet(state, fixture.targetEmpireID, fixture.targetSystemID, 1)
 	addCombatFleetTestFleet(state, thirdEmpireID, fixture.targetSystemID, 1)
-	state.DiplomaticRelations = []core.DiplomaticRelation{
-		{FromEmpireID: fixture.blockaderEmpireID, ToEmpireID: fixture.targetEmpireID, Stance: core.DiplomaticStanceHostile},
-		{FromEmpireID: fixture.blockaderEmpireID, ToEmpireID: thirdEmpireID, Stance: core.DiplomaticStanceHostile},
-	}
+	state.DiplomaticRelations = warRelations([2]core.ID{fixture.blockaderEmpireID, fixture.targetEmpireID}, [2]core.ID{fixture.blockaderEmpireID, thirdEmpireID})
 	ctx := encounterTestContext(state)
 	resolver, err := NewEconomyResolver(loadCommittedEconomyRules(t))
 	if err != nil {
@@ -313,7 +302,7 @@ func TestEncounterCasualtiesRemoveEmptyFleetAndRetreatMovementFailureDestroysLos
 	setCombatFleetTestTech(&state.Empires[1])
 	addCombatFleetTestFleet(state, fixture.blockaderEmpireID, fixture.targetSystemID, 1)
 	defenderFleet, defenderShips := addCombatFleetTestFleet(state, fixture.targetEmpireID, fixture.targetSystemID, 1)
-	state.DiplomaticRelations = []core.DiplomaticRelation{{FromEmpireID: fixture.blockaderEmpireID, ToEmpireID: fixture.targetEmpireID, Stance: core.DiplomaticStanceHostile}}
+	state.DiplomaticRelations = reciprocalWarRelations(fixture.blockaderEmpireID, fixture.targetEmpireID)
 	ctx := encounterTestContext(state)
 	resolver, err := NewEconomyResolver(loadCommittedEconomyRules(t))
 	if err != nil {
@@ -342,7 +331,7 @@ func TestEncounterCasualtiesRemoveEmptyFleetAndRetreatMovementFailureDestroysLos
 	setCombatFleetTestTech(&state.Empires[1])
 	addCombatFleetTestFleet(state, fixture.blockaderEmpireID, fixture.targetSystemID, 1)
 	defenderFleet, defenderShips = addCombatFleetTestFleet(state, fixture.targetEmpireID, fixture.targetSystemID, 1)
-	state.DiplomaticRelations = []core.DiplomaticRelation{{FromEmpireID: fixture.blockaderEmpireID, ToEmpireID: fixture.targetEmpireID, Stance: core.DiplomaticStanceHostile}}
+	state.DiplomaticRelations = reciprocalWarRelations(fixture.blockaderEmpireID, fixture.targetEmpireID)
 	ctx = encounterTestContext(state)
 	_, encounters, err = resolver.prepareEncounterBoundary(ctx, state)
 	if err != nil || len(encounters) != 1 {
@@ -381,7 +370,7 @@ func TestPrepareEncounterBoundaryRejectsUnseatedHostileParticipant(t *testing.T)
 	setCombatFleetTestTech(&state.Empires[1])
 	addCombatFleetTestFleet(state, fixture.blockaderEmpireID, fixture.targetSystemID, 1)
 	addCombatFleetTestFleet(state, fixture.targetEmpireID, fixture.targetSystemID, 1)
-	state.DiplomaticRelations = []core.DiplomaticRelation{{FromEmpireID: fixture.blockaderEmpireID, ToEmpireID: fixture.targetEmpireID, Stance: core.DiplomaticStanceHostile}}
+	state.DiplomaticRelations = reciprocalWarRelations(fixture.blockaderEmpireID, fixture.targetEmpireID)
 	resolver, err := NewEconomyResolver(loadCommittedEconomyRules(t))
 	if err != nil {
 		t.Fatal(err)

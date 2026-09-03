@@ -207,16 +207,19 @@ func (h *Host) SubmitTurn(gameID string, batch protocol.CommandBatch) (Receipt, 
 	})
 }
 
-func (h *Host) SubmitImmediateCommand(gameID string, seatID protocol.SeatID, command protocol.Command) (Receipt, error) {
+func (h *Host) SubmitImmediateCommand(gameID string, seatID protocol.SeatID, baseRevision uint64, command protocol.Command) (Receipt, error) {
 	hosted, err := h.lookup(gameID)
 	if err != nil {
 		return Receipt{}, err
 	}
-	if hosted.immediateResolver == nil {
-		return Receipt{}, fmt.Errorf("immediate command resolver is not configured")
-	}
 	return hosted.mutate("session", 0, "immediate_command", func() error {
-		return hosted.session.ResolveColonyBaseCommand(seatID, command, hosted.immediateResolver)
+		if game.IsDiplomacyCommand(command.Kind) {
+			return hosted.session.ResolveDiplomacyCommand(seatID, baseRevision, command)
+		}
+		if hosted.immediateResolver == nil {
+			return fmt.Errorf("immediate command resolver is not configured")
+		}
+		return hosted.session.ResolveColonyBaseCommand(seatID, baseRevision, command, hosted.immediateResolver)
 	})
 }
 
