@@ -30,7 +30,7 @@ The deterministic runtime now provides its **first complete supported headless m
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slices **01-12 are closed** and there is no `_OPEN_` slice marker. Slice 12 **Empire elimination and first deterministic headless victory loop** closed at implementation/evidence commit `90b83d8`. The next step is a fresh post-milestone fidelity/depth backlog audit before numbering the next tranche.
+**Slice state:** Slices **01-12 are closed** and there is no `_OPEN_` slice marker. The post-Slice-12 fidelity/depth audit is complete in `docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md`. Slices **13-17 are prepared but not open**; Slice 13 **Built-in strategic AI baseline** is the next recommended objective and must begin with a fresh Gate 1.
 
 ### Current / prepared slice queue
 

@@ -45,9 +45,13 @@ Active:
 
 Prepared queue:
 
-- **none** - Slice 12 closed at implementation/evidence commit `90b83d8` and completed the first supported deterministic end-to-end match lifecycle.
+1. `PLANNED_13_BUILTIN_STRATEGIC_AI_BASELINE.md` - deterministic rules-legal built-in AI over the current complete lifecycle.
+2. `PLANNED_14_LIVE_GAMESESSION_SAVE_RESUME_BASELINE.md` - versioned in-progress save/resume at stable session boundaries.
+3. `PLANNED_15_PLAYABLE_BROWSER_STRATEGIC_HMI_LOOP.md` - first saveable Human-vs-AI playable browser match.
+4. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - widen narrow New Game settings and preset-race support.
+5. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for later tactical depth.
 
-Next planning milestone: re-audit and prioritize the remaining fidelity/depth backlog before numbering the next tranche.
+Milestone after Slice 15: a human can start, save/resume and finish the supported Human-vs-built-in-AI match from the browser. Re-audit after Slice 17 before numbering Tactical/Diplomacy/Spies/Leaders/alternative-victory depth.
 
 The queue order is the current recommendation, not a hard dependency lock. Reprioritization is allowed before a later slice is opened if the dependency check still passes.
 ## Four gates

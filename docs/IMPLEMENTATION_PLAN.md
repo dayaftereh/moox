@@ -22,7 +22,7 @@ Implemented/established runtime baseline includes:
 
 The first supported deterministic headless match lifecycle is now complete through Slice 12: authoritative server/web transport, deterministic New Game, war/peace, Troop Transport/invasion/Colony conquest and zero-Colony conquest victory are connected end-to-end. Broader tactical depth, complete Economy/pollution, race/customization extensions, leaders/espionage, AI, alternative victory families and endgame fidelity remain important post-milestone work.
 
-No implementation slice is currently open. Slices 01-12 are closed; Slice 12 implementation/evidence commit is `90b83d8`. The next objective is to re-audit and prioritize the remaining fidelity/depth backlog before numbering the next slice tranche. `docs/research/ACTIVE_RESEARCH.md` remains the authoritative handoff.
+No implementation slice is currently open. Slices 01-12 are closed. The post-Slice-12 audit is complete and prepares Slices 13-17; Slice 13 Built-in strategic AI is next and must begin with a fresh Gate 1. `docs/research/ACTIVE_RESEARCH.md` remains the authoritative handoff.
 ## Guiding architecture
 
 Build the game rules as a deterministic, headless simulation core first. UI, rendering, audio and platform integration should depend on that core rather than contain game rules themselves.
@@ -245,10 +245,19 @@ A private developer-only original-asset viewer may exist for comparison, but ori
 
 ## Recommended immediate next work
 
-1. Continue the first headless vertical game loop toward colony-ship production, strategic movement/colonization and a second colony.
-2. Extend strategic Fleet movement/location beyond the current at-system blockade presence when the movement/colonization slice begins.
-3. Add canonical Ship command-point, Spy, treaty/Tribute and Leader/Officer systems in their own evidence-driven slices; then wire their already-resolved Treasury buckets and complete original deficit liquidation.
-4. Keep active conquest/assimilation plus Android/Native/custom-race Population extensions as later evidence-driven Population slices rather than reopening the completed organic-cohort core.
-5. Keep the original Hyper selection-screen +1 preview / 20-level list boundary as optional UI-fidelity work, not a strategic-core rule.
+The post-Slice-12 audit changes the immediate objective from "finish enough rules for a complete match" to "make the proven lifecycle independently playable". Prepared queue:
+
+1. **Slice 13 - Built-in strategic AI baseline.** Deterministic, rules-legal, no-cheat AI consuming the same Session/App command surfaces as human seats.
+2. **Slice 14 - Live GameSession save/resume baseline.** Versioned in-progress persistence at stable interactive boundaries, exact continuation and server import/export surfaces.
+3. **Slice 15 - Playable browser strategic HMI loop.** Human-vs-built-in-AI browser match covering the currently supported strategic commands, live save/load and final result.
+
+Milestone after Slice 15: a human can start, save/resume and finish the supported deterministic single-player game from the browser.
+
+Then widen fidelity/depth:
+
+4. **Slice 16 - New Game + preset-race breadth.** Expand the current Small/Normal/Average/exactly-two/Human+Darlok contract using evidence-backed settings and the 13 normalized preset races.
+5. **Slice 17 - Military ship design component/weapon breadth.** Expand the current one-hull/one-Laser minimal design into a canonical multi-hull/component/multi-weapon model before deeper Tactical Combat.
+
+Keep Tactical Combat depth, treaty/trade diplomacy, Espionage/Leaders, Economy/Population fidelity, full custom Race Designer, Council/Orion/Antaran victories, random events, multiplayer/external AI and presentation unnumbered until the next audit after Slice 17.
 
 Do not reopen closed Research/Economy slices listed in `docs/slices/HISTORY.md` unless contradictory original evidence or a concrete runtime regression requires it. ADR-0004 makes the server/web contract primary; browser, optional Wails wrapper, AI and other transports must continue to consume the same canonical Session/legal-action surfaces rather than owning gameplay rules.

@@ -24,7 +24,7 @@ The deterministic runtime now has its **first complete supported headless match 
 | Original gameplay baseline | Master of Orion II 1.31 |
 | Research workflow | `docs/WORKING_RULES.md` + `docs/research/ACTIVE_RESEARCH.md` + `tools/research-preflight.ps1` |
 
-## Prepared roadmap to first complete match lifecycle
+## Post-milestone prepared roadmap
 
 Slices 01-12 are closed. No implementation slice is currently open and there are zero `_OPEN_` markers. Slice 12 Empire elimination / first deterministic headless victory loop closed at implementation/evidence commit `90b83d8`, completing the first supported deterministic headless match lifecycle. The roadmap state is:
 
@@ -32,9 +32,14 @@ Slices 01-12 are closed. No implementation slice is currently open and there are
 2. Slice 09 - **closed** - deterministic New Game and galaxy generation baseline (`a5f3c13`).
 3. Slice 10 - **closed** - diplomacy / war / peace baseline.
 4. Slice 11 - **closed, Gates 1-4 complete** - Troop Transport, invasion and Colony conquest baseline (`5b363ce`).
-5. Slice 12 - Empire elimination and first deterministic headless victory loop.
+5. Slice 12 - **closed** - Empire elimination and first deterministic headless victory loop (`90b83d8`).
+6. Slice 13 - **prepared** - built-in strategic AI baseline.
+7. Slice 14 - **prepared** - live GameSession save/resume baseline.
+8. Slice 15 - **prepared** - playable browser strategic HMI loop.
+9. Slice 16 - **prepared** - New Game + preset-race breadth.
+10. Slice 17 - **prepared** - military ship design component/weapon breadth.
 
-Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 12 has now delivered the first complete supported New-Game-to-conquest-winner lifecycle. The next work item is the promised fidelity/depth backlog re-audit before a new numbered tranche is prepared.
+Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. The post-Slice-12 fidelity/depth audit is complete and prepares Slices 13-17. The next recommended objective is Slice 13 Built-in strategic AI; the next product milestone is a saveable Human-vs-built-in-AI browser match after Slices 13-15.
 
 Important recent checkpoints:
 
@@ -151,60 +156,58 @@ Slice 04 **Combat Fleet movement / merge / split** is closed after Gate 4 final 
 Slice 05 **Command Points / ship Maintenance** is closed. Core schema 20 persists the last-settlement `CommandPoints {Capacity, Used}` snapshot and Treasury `ShipCommandMaintenanceBC`; economy ruleset schema 8 normalizes the original base/station/Communications/Warlord/Imperium/10-BC-overage rules while military usage remains derived from hull `SizeIndex + 1`. Colony/Outpost special Fleets cost 1 CP, Population transfers/freighters cost none, split/merge/movement preserve usage, and legal special-Ship consumption removes usage. Star Base -> Battlestation -> Star Fortress replacement/buildability is normalized. Treasury precomputes and validates every Empire before any mutation and remains pre-Construction, so new Ships/station upgrades first affect the following settlement. Gate 4 passed gofmt, focused original-accounting/compatibility regressions, `go test ./... -count=1`, `go vet ./...` and diff checks. Gameplay/evidence commit: `16afe0b`. At Slice 05 closure, Slice 06 Strategic hostile encounters / BattleSession handoff was the next prepared objective; Slice 06 is now closed; Slice 07 Tactical ship combat baseline is the next prepared objective. Leader/Transport/NPC-rate/deficit/tactical-station boundaries remain deferred.
 **Phase 1 - deterministic simulation skeleton is active.** `colony.assign_population` now materializes base `Economy`, explicit `EconomyContext`, and `AdjustedEconomy` through a transactional resolver. Gravity, starting-government and local Morale are implemented: Feudal/Dictatorship -20% without Barracks, Holo +20%, Pleasure +30% cumulative, with Unification recording but suppressing Morale. The first single-project colony construction path is implemented: authoritative state now uses generic `project_kind` / `project_id` construction identity while the existing `building` project kind preserves normalized building PP costs/BC maintenance, ownership-validated `colony.queue_building`, domain-native fractional PP progress after Cybernetic sustenance, and observer/replay completion. A completed building cannot retroactively change consumed PP, but it is visible when the post-growth next-state snapshot is recalculated. Technology-gated buildability is now also enforced and `GameSession` can project authority-filtered building choices for the same legal-action surface used by future UI and AI controllers. Original technology-field tables and RP costs are now normalized as well; deterministic Pre-Warp/Average starts materialize known fields/technologies, and confirmed research completion is committed through `GameSession` into the strategic event stream. The standard-field breakthrough curve/RNG/overflow behavior is implemented. The numeric architecture is now generalized beyond Research: Population allocations, Food, Production, Research, BC and Construction progress use domain-native `float64`, preserving fractional values until explicit gameplay-rule rounding. `StateSchemaVersion` is 20; Population persists ordered organic cohorts with origin, loyalty, assimilation state and per-job quantities rather than a second mutable aggregate truth, Construction uses semantic project kind/id, Empire Treasury uses domain-native `float64` balance plus an auditable modeled-income/Maintenance snapshot, interstellar Population transfers are persisted as semantic Settler state, and strategic Fleets plus directed diplomatic stances now provide the canonical inputs for derived system blockades; schema 17 persists Colony Ship and Outpost Ship fixed-special identity, installed FTL speed and semantic destination/ETA transit state, plus dedicated Planet-linked Outpost occupancy and supply state. `ColonyPopulationDynamics` now materializes race-aware capacity, local/post-logistics Food, Production sustenance, Growth and Starvation. Empire state owns a discrete Freighter pool plus materialized transport/cost/surplus-Food accounting. Direct MOO2 1.31 executable analysis now fixes the apply order as Research -> Population Growth/Starvation -> Construction, while both RP and PP are consumed from the already-materialized pre-growth snapshot. `GameSession.ResearchChoices` now exposes race-aware `all`, `choose_one`, `fixed_one`, and Hyper-Advanced `repeat_field` policies. Ordinary races choose one server-validated application, Creative/General fields acquire all, and Uncreative uses a persisted server-fixed application plan. Active-project switching with exact accumulated-RP transfer is implemented. Original Uncreative initial fixed selections now consume the shared New Game RNG during player initialization and exclude TechField 74; Hyper-Advanced repeated-field costs/progression are implemented with `repeat_field`; Advanced start is implemented with a shared New Game RNG, cross-Empire competition weighting and exactly 19 extra grants. Authoritative external Technology grants now use the verified Uncreative post-acquisition repair, preserve incomplete TechFields, consume the authoritative State RNG, and emit strategic Observer/replay events.
 
-## What is not implemented yet
+## Current runtime gaps after Slice 12
 
-The research/data tooling should not be confused with a playable engine. Major missing runtime systems include:
+The project now has a complete supported headless conquest lifecycle, so the remaining gaps are no longer accurately described as one undifferentiated "not implemented" list. The post-milestone audit in `docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md` classifies them as:
 
-- original-faithful galaxy/star/planet generation (the current small galaxy is deterministic test scaffolding),
-- full strategic turn processing beyond the first population/economy resolver,
-- contextual/net colony economy beyond the implemented Gravity/Government/local-Morale layer (broader buildings, empire-wide morale tech, pollution, logistics, maintenance),
-- active conquest/occupation/automatic-assimilation progression plus Android/Native and persisted custom-race Population extensions,
-- runtime producers for Ship command-point, Spy, Tribute and Officer/Leader Treasury categories plus complete original staged deficit liquidation,
-- research progression/effects,
-- strategic fleet movement/colonization,
-- save-format versioning/migrations beyond the current exact state round trip,
-- race-government runtime modifiers,
-- ship designer/components/weapons/specials,
-- tactical combat rules,
-- diplomacy/espionage/leaders,
-- conquest/victory/Antaran/Orion systems,
-- AI,
-- Wails application shell/UI.
+### P0 - independent playability blockers
+
+- **Built-in AI:** `ControllerBuiltinAI` exists, but no runtime AI drives commands yet.
+- **Live save/resume:** exact Core and completed-session snapshots exist, but no in-progress GameSession/hosted-game persistence surface exists.
+- **Playable browser HMI:** the React client proves transport and a few commands, but it is not yet a complete galaxy/colony/research/construction/fleet workflow.
+
+### P1 - high-value runtime breadth
+
+- New Game currently supports only Small galaxy, Normal age, Average technology, Tactical combat, exactly two players and exactly Human+Darlok.
+- The ruleset contains 13 normalized preset races, but New Game exposes only Human/Darlok; full custom Race Designer is not implemented.
+- Military design persistence exists, but current validation deliberately permits only the minimal supported hull with slot 0 / one Laser Cannon.
+- Tactical combat supports the Beam-fire/end-activation vertical slice; movement/facing, additional weapon families, internal-system depth, retreat/boarding and planetary defenses remain later work.
+
+### P2 - fidelity/depth backlog
+
+- treaty/alliance/non-aggression/tribute/technology-trade diplomacy;
+- espionage/sabotage and Leaders/Officers;
+- contextual Building/Pollution/Morale/Maintenance and staged deficit fidelity;
+- occupation/assimilation plus Android/Native/custom-race Population behavior;
+- full custom Race Designer/government/trait interactions;
+- Galactic Council, Orion/Guardian, Antaran/dimensional-gate and other victory families;
+- random events and broader late-game systems.
+
+### P3 - productization / optional transports
+
+- remote/external/MCP AI and full multiplayer lifecycle;
+- independent final art/audio/UI skin/cinematics;
+- optional native/Wails packaging over the same server authority.
 
 ## Next milestones
 
-### Immediate research checkpoint
+### Prepared tranche - Slices 13-17
 
-Treasury Maintenance categories and the deficit/scrap boundary are resolved and preserved in `docs/research/TREASURY_MAINTENANCE_DEFICIT_2026-08-29.md`; the dependency-safe Freighter/surplus-Food corrections are implemented in `a1ad15b`. The Colony Ship production / strategic movement / colonization slice is now closed in `db9d01e`: schema 16 implements Tech-41 construction, installed drive state, original Fuel ranges, deterministic pre-Construction transit, explicit colonization, ship consumption and authoritative second-Colony creation with Core/Game/Session regressions. No new slice is open.
+1. **Slice 13 - Built-in strategic AI baseline:** deterministic rules-legal/no-cheat AI over the current complete lifecycle.
+2. **Slice 14 - Live GameSession save/resume baseline:** versioned in-progress persistence and exact continuation at stable interactive boundaries.
+3. **Slice 15 - Playable browser strategic HMI loop:** Human-vs-built-in-AI strategic gameplay, live save/load and final result through server authority.
+4. **Slice 16 - New Game + preset-race breadth:** widen the current Small/Normal/Average/two-player/Human+Darlok boundary using evidence-backed settings and preset races.
+5. **Slice 17 - Military ship design component/weapon breadth:** expand the current one-Laser minimal design before deeper Tactical Combat.
 
-### Engineering transition
+### Next product milestone
 
-The initial Phase 1 foundation and first strategic command are complete. Preserve the current deterministic/session contract while extending effective colony output in independently proven layers:
+After Slice 15, a human should be able to start, save/resume and finish the supported deterministic single-player match from the browser without any gameplay authority living in React.
 
-1. gravity compatibility and production penalties,
-2. government production/research/income effects,
-3. morale interaction,
-4. building/technology flat and per-population bonuses,
-5. pollution and pollution-control processing,
-6. food consumption, freighters and surplus-food handling.
+### Unnumbered depth after Slice 17
 
-Do not collapse these into one formula until ordering and rounding behavior are evidenced.
+Re-audit before numbering Tactical Combat depth, treaty/trade diplomacy, Espionage/Leaders, Economy/Population fidelity, full custom Race Designer, Council/Orion/Antaran victories, random events, multiplayer/external-AI transports and presentation/native packaging.
 
-### First headless vertical slice
-
-The first meaningful game loop remains:
-
-1. generate a small deterministic galaxy,
-2. create one empire/homeworld,
-3. assign population roles,
-4. process food/production/research/money,
-5. research a technology,
-6. build a colony ship,
-7. move to a second system,
-8. colonize,
-9. save and reload exactly the same state.
-
-Slice 08 is closed. Slice 09 is closed: deterministic Small/Normal/Average/Tactical New Game generation, Human+Darlok starts, authoritative GameSession/app/server creation and the browser New Game flow are implemented and Gate-4 regression-green. Implementation/data/evidence commit `a5f3c13`. Slice 10 diplomacy / war / peace is closed at implementation/evidence commit `b91f65e`. Slice 11 troop transport / invasion / conquest is closed at implementation/evidence commit `5b363ce`. Slice 12 Empire elimination / first deterministic headless victory loop is closed at implementation/evidence commit `90b83d8`; the next objective is a post-milestone fidelity/depth backlog audit before numbering further slices.
+No prepared slice is an active implementation slice until a fresh Gate 1 creates the corresponding `_OPEN_*.md` marker.
 
 ## Where to look
 

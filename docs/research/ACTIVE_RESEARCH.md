@@ -12,9 +12,16 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Core `StateSchemaVersion`: **23**.
 - Economy ruleset schema: **8**.
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
-- Current objective: **post-Slice-12 fidelity/depth backlog re-audit; prioritize and number the next tranche before opening another implementation slice**.
+- Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
+- Prepared tranche: Slices **13-17**; none is open.
+- Current objective: **Slice 13 is the next prepared objective; begin a fresh Gate 1 for the built-in strategic AI baseline only when explicitly started**.
 
 
+## Post-Slice-12 fidelity/depth audit - complete
+
+The milestone re-audit is complete. It found that the largest current blockers are no longer match-lifecycle rules but independent playability: built-in AI, live save/resume and a real browser strategic HMI. It also identified explicit narrow runtime boundaries in New Game (Small/Normal/Average, exactly Human+Darlok) and Ship Design (current one-Laser minimal design). Prepared queue: Slice 13 Built-in AI, Slice 14 live GameSession persistence, Slice 15 playable browser HMI, Slice 16 New Game/preset-race breadth, Slice 17 military design component/weapon breadth. None is open.
+
+Permanent audit: `docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md`.
 ## Closed Slice 12 - Empire elimination / first headless victory loop
 
 Slice 12 is closed with Gates 1-4 complete. A real canonical `NewGame(0x8009)` now plays through public Research, Colony/Outpost expansion, war, Fleet movement, Troop Transport invasion and final Colony conquest to deterministic zero-Colony Empire elimination and an immutable `conquest` winner in `session.PhaseCompleted`. Remaining off-system loser Fleets/Outposts do not delay elimination and are cleaned deterministically. Completed sessions are read-only for gameplay while preserving Player/Observer/HTTP/WebSocket/reconnect and versioned exact snapshot access. The React HMI projects the same result. The complete match runs twice byte-identically in the canonical regression, and the implementation also fixed the long-run Population Cohort capacity clamp exposed by the first full match attempt. Implementation/evidence commit: `90b83d8`.
@@ -57,7 +64,7 @@ Accepted application direction: `docs/architecture/ADR-0004-authoritative-server
 2. Slice 11 - **closed, Gates 1-4 complete** (`PLANNED_11_TROOP_TRANSPORT_INVASION_CONQUEST_BASELINE.md`, implementation/evidence `5b363ce`).
 3. Slice 12 - **Empire elimination and first headless victory loop** (`PLANNED_12_EMPIRE_ELIMINATION_FIRST_HEADLESS_VICTORY_LOOP.md`).
 
-Roadmap milestone: Slice 12 should prove the first complete deterministic match lifecycle from a real New Game through war/conquest to an authoritative winner. Re-audit and number the next fidelity/depth tranche only after that milestone.
+Roadmap milestone achieved by Slice 12. The post-milestone audit now prepares Slices 13-17 toward the next milestone: a saveable Human-vs-built-in-AI browser match, followed by New Game/preset-race and Ship Designer breadth.
 
 ## Closed Slice 07 - Tactical ship combat baseline
 
