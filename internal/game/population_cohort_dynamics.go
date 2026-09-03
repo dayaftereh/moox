@@ -150,6 +150,15 @@ func (r *EconomyResolver) calculateRaceAwarePopulationDynamics(state *core.GameS
 			dynamics.GrowthMultiplier += growthMultiplier * originPopulation / totalPopulation
 		}
 	}
+	remainingCapacity := math.Max(0, dynamics.Capacity-totalPopulation)
+	if dynamics.ProjectedGrowth > remainingCapacity+populationEpsilon && dynamics.ProjectedGrowth > populationEpsilon {
+		scale := remainingCapacity / dynamics.ProjectedGrowth
+		dynamics.ProjectedGrowth = 0
+		for i := range dynamics.Origins {
+			dynamics.Origins[i].ProjectedGrowth *= scale
+			dynamics.ProjectedGrowth += dynamics.Origins[i].ProjectedGrowth
+		}
+	}
 	if len(dynamics.Origins) == 1 {
 		dynamics.GrowthMultiplier = dynamics.Origins[0].GrowthMultiplier
 	}

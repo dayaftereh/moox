@@ -186,7 +186,7 @@ func TestInvasionSessionCaptureCommitsOnceAndProjectsCapturedColony(t *testing.T
 		t.Fatal(err)
 	}
 	after := s.Status()
-	if after.Revision != before.Revision+1 || after.Phase != PhasePostResolution {
+	if after.Revision != before.Revision+2 || after.Phase != PhaseCompleted || after.Result == nil || after.Result.Kind != ResultConquest || after.Result.WinnerEmpireID != attackerID || after.Result.WinnerSeatID != 1 {
 		t.Fatalf("capture status=%+v before=%+v", after, before)
 	}
 	player, err := s.PlayerView(1)
@@ -221,8 +221,8 @@ func TestInvasionSessionCaptureCommitsOnceAndProjectsCapturedColony(t *testing.T
 	if !reflect.DeepEqual(afterAttackerCP, beforeAttackerCP) || !reflect.DeepEqual(afterAttackerTreasury, beforeAttackerTreasury) || !reflect.DeepEqual(afterDefenderCP, beforeDefenderCP) || !reflect.DeepEqual(afterDefenderTreasury, beforeDefenderTreasury) {
 		t.Fatalf("invasion continuation re-settled Treasury/CP attacker=%+v/%+v defender=%+v/%+v", afterAttackerCP, afterAttackerTreasury, afterDefenderCP, afterDefenderTreasury)
 	}
-	if observer.State.DiplomaticStanceBetween(attackerID, defenderID) != core.DiplomaticStanceWar {
-		t.Fatal("capture changed war stance")
+	if observer.State.DiplomaticStanceBetween(attackerID, defenderID) != core.DiplomaticStanceNeutral {
+		t.Fatal("elimination retained defender diplomacy")
 	}
 	resolvedIndex, conqueredIndex := -1, -1
 	for i, event := range observer.Events {
@@ -236,8 +236,8 @@ func TestInvasionSessionCaptureCommitsOnceAndProjectsCapturedColony(t *testing.T
 	if resolvedIndex < 0 || conqueredIndex != resolvedIndex+1 {
 		t.Fatalf("invasion event order resolved=%d conquered=%d", resolvedIndex, conqueredIndex)
 	}
-	if len(s.handledInvasions) != 1 {
-		t.Fatalf("handled invasions=%+v", s.handledInvasions)
+	if len(s.handledInvasions) != 0 || observer.Result == nil || !reflect.DeepEqual(observer.Result.EliminatedEmpireIDs, []core.ID{defenderID}) {
+		t.Fatalf("completed invasion state handled=%+v result=%+v", s.handledInvasions, observer.Result)
 	}
 }
 
@@ -331,8 +331,8 @@ func TestDeclaredWarTransitArrivalFlowsIntoInvasionCapture(t *testing.T) {
 	if captured == nil || captured.EmpireID != attackerID {
 		t.Fatalf("arrival conquest state=%+v", captured)
 	}
-	if view.State.DiplomaticStanceBetween(attackerID, defenderID) != core.DiplomaticStanceWar {
-		t.Fatal("capture ended declared war")
+	if view.Phase != PhaseCompleted || view.Result == nil || view.Result.WinnerEmpireID != attackerID || view.State.DiplomaticStanceBetween(attackerID, defenderID) != core.DiplomaticStanceNeutral {
+		t.Fatalf("arrival conquest did not complete cleanly phase=%q result=%+v stance=%q", view.Phase, view.Result, view.State.DiplomaticStanceBetween(attackerID, defenderID))
 	}
 }
 

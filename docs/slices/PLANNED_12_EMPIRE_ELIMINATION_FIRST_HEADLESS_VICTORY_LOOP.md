@@ -49,43 +49,43 @@ Defer:
 
 ## Gate 1 - Checkup + original analysis / integration audit
 
-- [ ] Re-check completed Slice 08-11 contracts and current GameSession phase/state model.
-- [ ] Create permanent first-victory-loop evidence/integration document.
-- [ ] Verify original MOO2 Empire elimination/end-of-game trigger needed for the narrow conquest fixture.
-- [ ] Verify whether surviving Fleets/Outposts without Colonies delay elimination and under what conditions.
-- [ ] Verify final ownership/turn-settlement ordering relative to victory detection.
-- [ ] Verify minimum final result/winner/loser information needed for player/observer views and replay.
-- [ ] Define a deterministic public-command-only end-to-end scenario from New Game to final conquest.
-- [ ] Inventory remaining systems after this milestone and distinguish completeness/fidelity work from match-lifecycle blockers.
-- [ ] Present the exact Gate-2 game-over/session contract before implementation.
+- [x] Re-check completed Slice 08-11 contracts and current GameSession phase/state model.
+- [x] Create permanent first-victory-loop evidence/integration document.
+- [x] Verify original MOO2 Empire elimination/end-of-game trigger needed for the narrow conquest fixture.
+- [x] Verify whether surviving Fleets/Outposts without Colonies delay elimination and under what conditions.
+- [x] Verify final ownership/turn-settlement ordering relative to victory detection.
+- [x] Verify minimum final result/winner/loser information needed for player/observer views and replay.
+- [x] Define a deterministic public-command-only end-to-end scenario from New Game to final conquest.
+- [x] Inventory remaining systems after this milestone and distinguish completeness/fidelity work from match-lifecycle blockers.
+- [x] Present the exact Gate-2 game-over/session contract before implementation.
 
 ## Gate 2 - Implementation decision
 
-- [ ] Accept first supported victory/elimination predicate.
-- [ ] Accept GameSession completed/game-over state and final winner/result representation.
-- [ ] Accept when victory is evaluated in the strategic/invasion continuation order.
-- [ ] Accept post-game command/read/save/projection behavior.
-- [ ] Accept WebSocket/HTTP game-over notification/projection behavior.
-- [ ] Accept the deterministic end-to-end integration scenario and its fixture/settings.
-- [ ] Freeze Council/Orion/Antaran/score victory families.
+- [x] Accept first supported victory/elimination predicate.
+- [x] Accept GameSession completed/game-over state and final winner/result representation.
+- [x] Accept when victory is evaluated in the strategic/invasion continuation order.
+- [x] Accept post-game command/read/save/projection behavior.
+- [x] Accept WebSocket/HTTP game-over notification/projection behavior.
+- [x] Accept the deterministic end-to-end integration scenario and its fixture/settings.
+- [x] Freeze Council/Orion/Antaran/score victory families.
 
 ## Gate 3 - Implementation
 
-- [ ] Implement authoritative elimination/victory state and validation.
-- [ ] Integrate victory detection after conquest/strategic settlement at the accepted boundary.
-- [ ] Prevent further gameplay mutation after completion while preserving observer/save/replay access.
-- [ ] Expose completed-game result through server/web transport.
-- [ ] Implement the public-command-only deterministic headless match scenario from New Game to winner.
-- [ ] Add save/load/replay and same-seed/same-command exact-result tests.
-- [ ] Record remaining post-milestone roadmap gaps.
+- [x] Implement authoritative elimination/victory state and validation.
+- [x] Integrate victory detection after conquest/strategic settlement at the accepted boundary.
+- [x] Prevent further gameplay mutation after completion while preserving observer/save/replay access.
+- [x] Expose completed-game result through server/web transport.
+- [x] Implement the public-command-only deterministic headless match scenario from New Game to winner.
+- [x] Add save/load/replay and same-seed/same-command exact-result tests.
+- [x] Record remaining post-milestone roadmap gaps.
 
 ## Gate 4 - Follow-up QA + commit + close
 
-- [ ] Re-run full end-to-end match scenario multiple times and compare exact result/event history.
-- [ ] Verify game-over timing and final Colony/Ship/Fleet state are deterministic.
-- [ ] Verify post-game invalid commands are atomic and do not advance revisions.
-- [ ] Verify server/browser projection and reconnect of a completed game.
-- [ ] Run full tests/vet/web checks and `git diff --check`.
+- [x] Re-run full end-to-end match scenario multiple times and compare exact result/event history.
+- [x] Verify game-over timing and final Colony/Ship/Fleet state are deterministic.
+- [x] Verify post-game invalid commands are atomic and do not advance revisions.
+- [x] Verify server/browser projection and reconnect of a completed game.
+- [x] Run full tests/vet/web checks and `git diff --check`.
 - [ ] Update evidence/status/HISTORY and close marker.
 
 ## Exit criterion

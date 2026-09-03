@@ -5,14 +5,14 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: **none**.
-- Active implementation slice: **none; Slices 01-11 are closed**.
+- Open slice marker: `docs/slices/_OPEN_EMPIRE_ELIMINATION_FIRST_HEADLESS_VICTORY_LOOP_2026-09-03.md`.
+- Active implementation slice: **Slice 12; Gates 1-3 complete, Gate 4 QA complete; implementation/evidence commit + closure pending**.
 - Slices 01-10 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
 - Economy ruleset schema: **8**.
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
-- Current objective: **Slice 12 Gate 1 - Empire elimination and first deterministic headless victory loop; perform fresh research/checkup before implementation**.
+- Current objective: **Slice 12 Gate 4 closure - commit independently verified elimination/completed-session/headless-victory milestone, then remove the OPEN marker**.
 
 
 ## Closed Slice 11 - Troop Transport / invasion / conquest baseline

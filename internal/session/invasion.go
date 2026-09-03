@@ -133,8 +133,12 @@ func (s *GameSession) ResolveInvasionCommand(seatID protocol.SeatID, baseRevisio
 	if s.invasion == nil {
 		return fmt.Errorf("invasion decision phase has no pending opportunity")
 	}
-	if s.seatIndexLocked(seatID) < 0 {
+	index := s.seatIndexLocked(seatID)
+	if index < 0 {
 		return fmt.Errorf("unknown seat %d", seatID)
+	}
+	if s.empireEliminatedLocked(s.seats[index].seat.EmpireID) {
+		return fmt.Errorf("seat %d controls eliminated empire %d", seatID, s.seats[index].seat.EmpireID)
 	}
 	resolver, ok := s.encounterResolver.(game.InvasionResolver)
 	if !ok || s.encounterResolver == nil {
@@ -175,6 +179,14 @@ func (s *GameSession) ResolveInvasionCommand(seatID protocol.SeatID, baseRevisio
 	if err != nil {
 		return err
 	}
+	candidatePendingElimination := s.pendingEliminationCheck || containsConquestEvent(immediateEvents)
+	var finalization *conquestFinalization
+	if continuation.Invasion == nil && len(preparedNext) == 0 {
+		finalization, err = s.prepareConquestFinalizationLocked(committed, candidatePendingElimination)
+		if err != nil {
+			return err
+		}
+	}
 
 	// All state, RNG, handled-key and next-boundary work above is candidate-only.
 	s.state = committed
@@ -183,6 +195,7 @@ func (s *GameSession) ResolveInvasionCommand(seatID protocol.SeatID, baseRevisio
 	s.appendResolvedEventsLocked(continuation.Events)
 	s.handledInvasions = candidateHandled
 	s.encounterContext = cloneResolveContext(ctx)
+	s.pendingEliminationCheck = candidatePendingElimination
 
 	if continuation.Invasion != nil {
 		s.battles = nil
@@ -206,7 +219,6 @@ func (s *GameSession) ResolveInvasionCommand(seatID protocol.SeatID, baseRevisio
 	s.battles = nil
 	s.encounterResolver = nil
 	s.encounterContext = game.ResolveContext{}
-	s.phase = PhasePostResolution
-	s.appendEventLocked(protocol.EventScopeSession, "phase_changed", 0, map[string]any{"phase": s.phase})
+	s.commitPostContinuationLocked(finalization)
 	return nil
 }

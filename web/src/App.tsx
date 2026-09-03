@@ -299,6 +299,14 @@ function App() {
             <article className="metric"><span>Change sequence</span><strong>{snapshot.change_sequence}</strong></article>
           </section>
 
+          {snapshot.view.result && (
+            <section className="panel" data-testid="game-completed">
+              <h2>Game completed</h2>
+              <p><strong>Conquest victory</strong> - Empire #{snapshot.view.result.winner_empire_id} / Seat #{snapshot.view.result.winner_seat_id}</p>
+              <p className="muted">Completed on turn {snapshot.view.result.completed_turn} at revision {snapshot.view.result.completed_revision}. Eliminated empire(s): {snapshot.view.result.eliminated_empire_ids.join(', ') || 'none'}.</p>
+            </section>
+          )}
+
           <section className="grid">
             <article className="panel">
               <h2>{snapshot.view.empire.name}</h2>
@@ -313,7 +321,7 @@ function App() {
               <article className="panel">
                 <h2>Invasion</h2>
                 <p>
-                  Colony #{snapshot.view.invasion.colony_id} in system #{snapshot.view.invasion.system_id} — defender empire #{snapshot.view.invasion.defender_empire_id}.
+                  Colony #{snapshot.view.invasion.colony_id} in system #{snapshot.view.invasion.system_id} â€” defender empire #{snapshot.view.invasion.defender_empire_id}.
                 </p>
                 <p className="muted">Eligible Troop Transports: {snapshot.view.invasion.eligible_transport_fleet_ids.join(', ')}</p>
                 <div className="actions">
@@ -336,7 +344,7 @@ function App() {
                     const disabled = diplomacyBusy || diplomacyClosed
                     return (
                       <div key={relation.other_empire_id}>
-                        <p><strong>{otherSeat?.seat.name ?? `Empire ${relation.other_empire_id}`}</strong> · {relation.stance}</p>
+                        <p><strong>{otherSeat?.seat.name ?? `Empire ${relation.other_empire_id}`}</strong> Â· {relation.stance}</p>
                         {relation.incoming_peace_offer && <button type="button" disabled={disabled} onClick={() => void runDiplomacy('diplomacy.accept_peace', relation.other_empire_id)}>Accept peace</button>}
                         {relation.stance === 'war' && !relation.incoming_peace_offer && !relation.outgoing_peace_offer && <button type="button" disabled={disabled} onClick={() => void runDiplomacy('diplomacy.offer_peace', relation.other_empire_id)}>Offer peace</button>}
                         {(relation.stance === 'neutral' || relation.stance === 'peace') && <button type="button" disabled={disabled} onClick={() => void runDiplomacy('diplomacy.declare_war', relation.other_empire_id)}>Declare war</button>}

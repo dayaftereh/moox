@@ -29,6 +29,15 @@ export type CreateGameResponse = {
   game: GameSummary
   players: NewGamePlayer[]
 }
+export type SessionResult = {
+  kind: 'conquest'
+  winner_empire_id: number
+  winner_seat_id: number
+  eliminated_empire_ids: number[]
+  completed_turn: number
+  completed_revision: number
+}
+
 export type GameSummary = {
   schema_version: number
   game_id: string
@@ -36,6 +45,7 @@ export type GameSummary = {
   revision: number
   turn: number
   phase: string
+  result?: SessionResult
 }
 
 export type PopulationCohort = {
@@ -86,6 +96,8 @@ export type PlayerView = {
   revision: number
   turn: number
   phase: string
+  eliminated_empire_ids?: number[]
+  result?: SessionResult
   seat: {
     seat: {
       id: number

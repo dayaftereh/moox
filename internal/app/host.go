@@ -21,12 +21,13 @@ var (
 )
 
 type GameSummary struct {
-	SchemaVersion  int           `json:"schema_version"`
-	GameID         string        `json:"game_id"`
-	ChangeSequence uint64        `json:"change_sequence"`
-	Revision       uint64        `json:"revision"`
-	Turn           uint64        `json:"turn"`
-	Phase          session.Phase `json:"phase"`
+	SchemaVersion  int             `json:"schema_version"`
+	GameID         string          `json:"game_id"`
+	ChangeSequence uint64          `json:"change_sequence"`
+	Revision       uint64          `json:"revision"`
+	Turn           uint64          `json:"turn"`
+	Phase          session.Phase   `json:"phase"`
+	Result         *session.Result `json:"result,omitempty"`
 }
 
 type PlayerSnapshot struct {
@@ -152,6 +153,7 @@ func (h *Host) ListGames() []GameSummary {
 			Revision:       status.Revision,
 			Turn:           status.Turn,
 			Phase:          status.Phase,
+			Result:         status.Result,
 		})
 		hosted.mu.Unlock()
 	}
@@ -289,7 +291,9 @@ func (g *hostedGame) mutate(scope string, battleID uint64, reason string, fn fun
 	driveErr := g.driveToInteractiveBoundary()
 	after := g.session.Status()
 	g.changeSequence++
-	if after.Turn > before.Turn {
+	if after.Phase == session.PhaseCompleted && before.Phase != session.PhaseCompleted {
+		reason = "game_completed"
+	} else if after.Turn > before.Turn {
 		reason = "turn_advanced"
 	}
 	notification := Notification{
@@ -314,7 +318,7 @@ func (g *hostedGame) driveToInteractiveBoundary() error {
 	for step := 0; step < 16; step++ {
 		status := g.session.Status()
 		switch status.Phase {
-		case session.PhasePlanning, session.PhaseEncounters, session.PhaseInvasionDecisions:
+		case session.PhasePlanning, session.PhaseEncounters, session.PhaseInvasionDecisions, session.PhaseCompleted:
 			return nil
 		case session.PhaseStrategicResolution:
 			if g.resolver == nil {

@@ -1,17 +1,23 @@
 package server
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
 	"sort"
+	"strings"
 	"testing"
+	"time"
 
 	"moox/internal/app"
 	"moox/internal/core"
 	"moox/internal/game"
 	"moox/internal/protocol"
 	"moox/internal/session"
+
+	"github.com/coder/websocket"
+	"github.com/coder/websocket/wsjson"
 )
 
 func newInvasionServerFixture(t *testing.T) (*httptest.Server, *session.GameSession, core.ID, core.ID, []core.ID) {
@@ -89,6 +95,42 @@ func newInvasionServerFixture(t *testing.T) (*httptest.Server, *session.GameSess
 	return httptest.NewServer(handler), gameSession, colonyID, attackerID, transports
 }
 
+func TestWebSocketGameCompletedNotificationAndReconnectProjection(t *testing.T) {
+	server, _, colonyID, attackerID, transports := newInvasionServerFixture(t)
+	defer server.Close()
+	var before app.PlayerSnapshot
+	getJSON(t, server.URL+"/api/v1/games/invasion/seats/1/snapshot", &before)
+	wsURL := "ws" + strings.TrimPrefix(server.URL, "http") + "/api/v1/games/invasion/stream"
+	conn, _, err := websocket.Dial(context.Background(), wsURL, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close(websocket.StatusNormalClosure, "")
+
+	command, err := game.NewInvadeCommand(1, game.InvadePayload{ColonyID: colonyID, TransportFleetIDs: transports})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var receipt app.Receipt
+	postJSON(t, server.URL+"/api/v1/games/invasion/immediate-commands", commandRequest{SchemaVersion: app.SchemaVersion, SeatID: 1, BaseRevision: before.View.Revision, Command: command}, "", http.StatusOK, &receipt)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	var note app.Notification
+	if err := wsjson.Read(ctx, conn, &note); err != nil {
+		t.Fatal(err)
+	}
+	if note.Kind != "snapshot_invalidated" || note.Reason != "game_completed" || note.ChangeSequence != receipt.ChangeSequence || note.GameRevision != receipt.GameRevision {
+		t.Fatalf("game-completed notification=%+v receipt=%+v", note, receipt)
+	}
+	_ = conn.Close(websocket.StatusNormalClosure, "reconnect")
+
+	var reconnected app.PlayerSnapshot
+	getJSON(t, server.URL+"/api/v1/games/invasion/seats/1/snapshot", &reconnected)
+	if reconnected.ChangeSequence != note.ChangeSequence || reconnected.View.Revision != note.GameRevision || reconnected.View.Phase != session.PhaseCompleted || reconnected.View.Result == nil || reconnected.View.Result.WinnerEmpireID != attackerID {
+		t.Fatalf("completed reconnect projection note=%+v snapshot=%+v", note, reconnected)
+	}
+}
 func TestHTTPImmediateInvasionCaptureAndRevisionContract(t *testing.T) {
 	server, _, colonyID, attackerID, transports := newInvasionServerFixture(t)
 	defer server.Close()
@@ -110,12 +152,12 @@ func TestHTTPImmediateInvasionCaptureAndRevisionContract(t *testing.T) {
 		t.Fatalf("receipt change_sequence=%d want=%d", receipt.ChangeSequence, attacker.ChangeSequence+1)
 	}
 	if receipt.GameRevision != attacker.View.Revision+2 {
-		t.Fatalf("receipt revision=%d want=%d: invasion commit + automatic turn advance", receipt.GameRevision, attacker.View.Revision+2)
+		t.Fatalf("receipt revision=%d want=%d: invasion commit + elimination/completion boundary", receipt.GameRevision, attacker.View.Revision+2)
 	}
 	attacker = app.PlayerSnapshot{}
 	getJSON(t, server.URL+"/api/v1/games/invasion/seats/1/snapshot", &attacker)
-	if attacker.View.Phase != session.PhasePlanning || attacker.View.Invasion != nil {
-		t.Fatalf("post-capture host-driven view phase/invasion=%q/%+v", attacker.View.Phase, attacker.View.Invasion)
+	if attacker.View.Phase != session.PhaseCompleted || attacker.View.Invasion != nil || attacker.View.Result == nil || attacker.View.Result.Kind != session.ResultConquest || attacker.View.Result.WinnerEmpireID != attackerID {
+		t.Fatalf("post-capture completed view phase/invasion/result=%q/%+v/%+v", attacker.View.Phase, attacker.View.Invasion, attacker.View.Result)
 	}
 	found := false
 	for _, colony := range attacker.View.Colonies {

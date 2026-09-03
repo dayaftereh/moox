@@ -20,6 +20,7 @@ const (
 	PhaseEncounters          Phase = "encounters"
 	PhaseInvasionDecisions   Phase = "invasion_decisions"
 	PhasePostResolution      Phase = "post_resolution"
+	PhaseCompleted           Phase = "completed"
 )
 
 type ControllerType string
@@ -50,10 +51,25 @@ type SeatView struct {
 }
 
 type Status struct {
-	GameID   string `json:"game_id"`
-	Revision uint64 `json:"revision"`
-	Turn     uint64 `json:"turn"`
-	Phase    Phase  `json:"phase"`
+	GameID              string    `json:"game_id"`
+	Revision            uint64    `json:"revision"`
+	Turn                uint64    `json:"turn"`
+	Phase               Phase     `json:"phase"`
+	EliminatedEmpireIDs []core.ID `json:"eliminated_empire_ids,omitempty"`
+	Result              *Result   `json:"result,omitempty"`
+}
+
+type ResultKind string
+
+const ResultConquest ResultKind = "conquest"
+
+type Result struct {
+	Kind                ResultKind      `json:"kind"`
+	WinnerEmpireID      core.ID         `json:"winner_empire_id"`
+	WinnerSeatID        protocol.SeatID `json:"winner_seat_id"`
+	EliminatedEmpireIDs []core.ID       `json:"eliminated_empire_ids"`
+	CompletedTurn       uint64          `json:"completed_turn"`
+	CompletedRevision   uint64          `json:"completed_revision"`
 }
 
 type DiplomacyView struct {
@@ -68,6 +84,8 @@ type PlayerView struct {
 	Revision              uint64                      `json:"revision"`
 	Turn                  uint64                      `json:"turn"`
 	Phase                 Phase                       `json:"phase"`
+	EliminatedEmpireIDs   []core.ID                   `json:"eliminated_empire_ids,omitempty"`
+	Result                *Result                     `json:"result,omitempty"`
 	Seat                  SeatView                    `json:"seat"`
 	Seats                 []SeatView                  `json:"seats"`
 	Empire                core.Empire                 `json:"empire"`
@@ -89,6 +107,8 @@ type ObserverView struct {
 	Revision              uint64                      `json:"revision"`
 	Turn                  uint64                      `json:"turn"`
 	Phase                 Phase                       `json:"phase"`
+	EliminatedEmpireIDs   []core.ID                   `json:"eliminated_empire_ids,omitempty"`
+	Result                *Result                     `json:"result,omitempty"`
 	State                 *core.GameState             `json:"state"`
 	Seats                 []ObserverSeatView          `json:"seats"`
 	Events                []protocol.DomainEvent      `json:"events"`
@@ -109,22 +129,25 @@ type EncounterSpec struct {
 }
 
 type GameSession struct {
-	mu                sync.RWMutex
-	gameID            string
-	revision          uint64
-	phase             Phase
-	state             *core.GameState
-	seats             []seatState
-	events            []protocol.DomainEvent
-	nextEventSequence uint64
-	telemetry         []protocol.DraftTelemetry
-	nextTelemetrySeq  uint64
-	battles           []*battle.Session
-	nextBattleID      uint64
-	encounterResolver game.EncounterResolver
-	encounterContext  game.ResolveContext
-	invasion          *game.InvasionOpportunity
-	handledInvasions  []game.InvasionHandledKey
+	mu                      sync.RWMutex
+	gameID                  string
+	revision                uint64
+	phase                   Phase
+	state                   *core.GameState
+	seats                   []seatState
+	events                  []protocol.DomainEvent
+	nextEventSequence       uint64
+	telemetry               []protocol.DraftTelemetry
+	nextTelemetrySeq        uint64
+	battles                 []*battle.Session
+	nextBattleID            uint64
+	encounterResolver       game.EncounterResolver
+	encounterContext        game.ResolveContext
+	invasion                *game.InvasionOpportunity
+	handledInvasions        []game.InvasionHandledKey
+	eliminatedEmpires       []core.ID
+	result                  *Result
+	pendingEliminationCheck bool
 }
 
 func NewGameSession(gameID string, state *core.GameState, seats []Seat) (*GameSession, error) {
@@ -226,6 +249,9 @@ func (s *GameSession) SubmitTurn(batch protocol.CommandBatch) error {
 	if index < 0 {
 		return fmt.Errorf("unknown seat %d", batch.SeatID)
 	}
+	if s.empireEliminatedLocked(s.seats[index].seat.EmpireID) {
+		return fmt.Errorf("seat %d controls eliminated empire %d", batch.SeatID, s.seats[index].seat.EmpireID)
+	}
 	if s.seats[index].submission != nil {
 		return fmt.Errorf("seat %d already submitted turn %d", batch.SeatID, batch.Turn)
 	}
@@ -239,6 +265,9 @@ func (s *GameSession) SubmitTurn(batch protocol.CommandBatch) error {
 	// Flush accepted turn batches in stable seat order. Transport arrival order is
 	// intentionally not part of the authoritative event history.
 	for i := range s.seats {
+		if s.empireEliminatedLocked(s.seats[i].seat.EmpireID) {
+			continue
+		}
 		s.appendEventLocked(protocol.EventScopeStrategic, "turn_submitted", s.seats[i].seat.ID, *s.seats[i].submission)
 	}
 	s.phase = PhaseStrategicResolution
@@ -261,9 +290,12 @@ func (s *GameSession) ResolveStrategic(resolver game.Resolver) error {
 	if err != nil {
 		return err
 	}
-	batches := make([]protocol.CommandBatch, len(s.seats))
+	batches := make([]protocol.CommandBatch, 0, len(s.seats))
 	for i := range s.seats {
-		batches[i] = protocol.CloneCommandBatch(*s.seats[i].submission)
+		if s.empireEliminatedLocked(s.seats[i].seat.EmpireID) {
+			continue
+		}
+		batches = append(batches, protocol.CloneCommandBatch(*s.seats[i].submission))
 	}
 	ctx := s.resolveContextLocked()
 	resolution, err := resolver.Resolve(ctx, stateInput, batches)
@@ -326,9 +358,12 @@ func (s *GameSession) ResolveStrategic(resolver game.Resolver) error {
 }
 
 func (s *GameSession) resolveContextLocked() game.ResolveContext {
-	ctx := game.ResolveContext{Seats: make([]game.SeatAuthority, len(s.seats)), HandledInvasions: append([]game.InvasionHandledKey(nil), s.handledInvasions...)}
+	ctx := game.ResolveContext{Seats: make([]game.SeatAuthority, 0, len(s.seats)), HandledInvasions: append([]game.InvasionHandledKey(nil), s.handledInvasions...)}
 	for i := range s.seats {
-		ctx.Seats[i] = game.SeatAuthority{SeatID: s.seats[i].seat.ID, EmpireID: s.seats[i].seat.EmpireID}
+		if s.empireEliminatedLocked(s.seats[i].seat.EmpireID) {
+			continue
+		}
+		ctx.Seats = append(ctx.Seats, game.SeatAuthority{SeatID: s.seats[i].seat.ID, EmpireID: s.seats[i].seat.EmpireID})
 	}
 	return ctx
 }
@@ -421,9 +456,12 @@ func (s *GameSession) SubmittedBatches() ([]protocol.CommandBatch, error) {
 	if s.phase != PhaseStrategicResolution {
 		return nil, fmt.Errorf("submitted batches are not ready in phase %q", s.phase)
 	}
-	batches := make([]protocol.CommandBatch, len(s.seats))
+	batches := make([]protocol.CommandBatch, 0, len(s.seats))
 	for i := range s.seats {
-		batches[i] = protocol.CloneCommandBatch(*s.seats[i].submission)
+		if s.empireEliminatedLocked(s.seats[i].seat.EmpireID) {
+			continue
+		}
+		batches = append(batches, protocol.CloneCommandBatch(*s.seats[i].submission))
 	}
 	return batches, nil
 }
@@ -715,6 +753,13 @@ func (s *GameSession) commitStagedBattleCandidateLocked(child *battle.Session, b
 	if err != nil {
 		return err
 	}
+	var finalization *conquestFinalization
+	if resolution.Invasion == nil && len(preparedNext) == 0 {
+		finalization, err = s.prepareConquestFinalizationLocked(committed, s.pendingEliminationCheck)
+		if err != nil {
+			return err
+		}
+	}
 
 	// All strategic continuation and next-boundary preparation succeeded on clones.
 	// Only now may the final child and authoritative strategic state mutate.
@@ -749,8 +794,7 @@ func (s *GameSession) commitStagedBattleCandidateLocked(child *battle.Session, b
 	s.invasion = nil
 	s.encounterResolver = nil
 	s.encounterContext = game.ResolveContext{}
-	s.phase = PhasePostResolution
-	s.appendEventLocked(protocol.EventScopeSession, "phase_changed", 0, map[string]any{"phase": s.phase})
+	s.commitPostContinuationLocked(finalization)
 	return nil
 }
 
@@ -798,6 +842,9 @@ func (s *GameSession) ResolveColonyBaseCommand(seatID protocol.SeatID, baseRevis
 	if index < 0 {
 		return fmt.Errorf("unknown seat %d", seatID)
 	}
+	if s.empireEliminatedLocked(s.seats[index].seat.EmpireID) {
+		return fmt.Errorf("seat %d controls eliminated empire %d", seatID, s.seats[index].seat.EmpireID)
+	}
 	stateInput, err := cloneState(s.state)
 	if err != nil {
 		return err
@@ -833,6 +880,9 @@ func (s *GameSession) ResolveDiplomacyCommand(seatID protocol.SeatID, baseRevisi
 	index := s.seatIndexLocked(seatID)
 	if index < 0 {
 		return fmt.Errorf("unknown seat %d", seatID)
+	}
+	if s.empireEliminatedLocked(s.seats[index].seat.EmpireID) {
+		return fmt.Errorf("seat %d controls eliminated empire %d", seatID, s.seats[index].seat.EmpireID)
 	}
 	stateInput, err := cloneState(s.state)
 	if err != nil {
@@ -898,6 +948,9 @@ func (s *GameSession) CompleteResearchField(empireID core.ID, resolver *game.Eco
 	defer s.mu.Unlock()
 	if s.phase != PhasePostResolution {
 		return fmt.Errorf("cannot complete research in phase %q", s.phase)
+	}
+	if s.empireEliminatedLocked(empireID) {
+		return fmt.Errorf("cannot complete research for eliminated empire %d", empireID)
 	}
 
 	stateInput, err := cloneState(s.state)
@@ -1002,6 +1055,7 @@ func (s *GameSession) CompleteTurn() error {
 	s.battles = nil
 	s.invasion = nil
 	s.handledInvasions = nil
+	s.pendingEliminationCheck = false
 	s.encounterResolver = nil
 	s.encounterContext = game.ResolveContext{}
 	s.telemetry = nil
@@ -1017,8 +1071,12 @@ func (s *GameSession) PublishDraftTelemetry(seatID protocol.SeatID, kind, summar
 	if s.phase != PhasePlanning {
 		return fmt.Errorf("draft telemetry is only accepted during planning")
 	}
-	if s.seatIndexLocked(seatID) < 0 {
+	index := s.seatIndexLocked(seatID)
+	if index < 0 {
 		return fmt.Errorf("unknown seat %d", seatID)
+	}
+	if s.empireEliminatedLocked(s.seats[index].seat.EmpireID) {
+		return fmt.Errorf("seat %d controls eliminated empire %d", seatID, s.seats[index].seat.EmpireID)
 	}
 	if kind == "" {
 		return fmt.Errorf("telemetry kind must not be empty")
@@ -1083,10 +1141,12 @@ func (s *GameSession) Status() Status {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return Status{
-		GameID:   s.gameID,
-		Revision: s.revision,
-		Turn:     s.state.Turn,
-		Phase:    s.phase,
+		GameID:              s.gameID,
+		Revision:            s.revision,
+		Turn:                s.state.Turn,
+		Phase:               s.phase,
+		EliminatedEmpireIDs: append([]core.ID(nil), s.eliminatedEmpires...),
+		Result:              cloneResult(s.result),
 	}
 }
 
@@ -1121,12 +1181,14 @@ func (s *GameSession) PlayerView(seatID protocol.SeatID) (PlayerView, error) {
 	}
 	seat := s.seats[index]
 	view := PlayerView{
-		GameID:   s.gameID,
-		Revision: s.revision,
-		Turn:     s.state.Turn,
-		Phase:    s.phase,
-		Seat:     seatView(seat),
-		Seats:    s.seatViewsLocked(),
+		GameID:              s.gameID,
+		Revision:            s.revision,
+		Turn:                s.state.Turn,
+		Phase:               s.phase,
+		EliminatedEmpireIDs: append([]core.ID(nil), s.eliminatedEmpires...),
+		Result:              cloneResult(s.result),
+		Seat:                seatView(seat),
+		Seats:               s.seatViewsLocked(),
 	}
 	for _, empire := range s.state.Empires {
 		if empire.ID == seat.seat.EmpireID {
@@ -1173,12 +1235,14 @@ func (s *GameSession) ObserverView() (ObserverView, error) {
 		return ObserverView{}, err
 	}
 	view := ObserverView{
-		GameID:   s.gameID,
-		Revision: s.revision,
-		Turn:     s.state.Turn,
-		Phase:    s.phase,
-		State:    state,
-		Battles:  s.battleViewsLocked(),
+		GameID:              s.gameID,
+		Revision:            s.revision,
+		Turn:                s.state.Turn,
+		Phase:               s.phase,
+		EliminatedEmpireIDs: append([]core.ID(nil), s.eliminatedEmpires...),
+		Result:              cloneResult(s.result),
+		State:               state,
+		Battles:             s.battleViewsLocked(),
 	}
 	view.Invasion = game.CloneInvasionOpportunity(s.invasion)
 	resolutions, err := game.PendingColonyBaseResolutions(state, 0)
@@ -1231,8 +1295,15 @@ func (s *GameSession) seatIndexLocked(id protocol.SeatID) int {
 	return -1
 }
 
+func (s *GameSession) empireEliminatedLocked(empireID core.ID) bool {
+	return containsCoreID(s.eliminatedEmpires, empireID)
+}
+
 func (s *GameSession) allSubmittedLocked() bool {
 	for i := range s.seats {
+		if s.empireEliminatedLocked(s.seats[i].seat.EmpireID) {
+			continue
+		}
 		if s.seats[i].submission == nil {
 			return false
 		}
