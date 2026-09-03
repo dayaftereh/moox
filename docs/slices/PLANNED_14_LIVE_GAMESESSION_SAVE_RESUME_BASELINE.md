@@ -1,6 +1,6 @@
 # Planned slice 14 - Live GameSession save / resume baseline
 
-Status: **open; Gate 1 complete; Gate 2 approval pending**.
+Status: **open; Gate 2 design review complete; freeze candidate approval pending**.
 
 Queue position: **14 of 17**.
 
@@ -20,17 +20,20 @@ In scope:
 - a versioned live-session snapshot format;
 - stable save boundaries: Planning and other interactive decision boundaries, plus Completed;
 - GameState, RNG/revision/turn/phase, seats/controllers, submissions where valid, event/telemetry history, Battles, Invasion/handled keys and Result;
-- strict load validation and migration-version rejection baseline;
+- strict load validation, simulation/ruleset compatibility validation and migration-version rejection baseline;
 - Host/App/HTTP save/load or export/import surfaces without gameplay bypasses;
 - exact save -> load -> continue deterministic equality;
-- built-in AI resumes without hidden non-persisted decision state.
+- built-in AI resumes without hidden non-persisted decision state;
+- production EconomyResolver-only persistence baseline with Human/RemoteHuman/BuiltinAI controllers.
 
 Defer:
 
 - save during an in-flight resolver mutation;
 - cloud sync/save browser;
 - backward migrations from hypothetical future formats;
-- original MOO2 SAV binary compatibility.
+- original MOO2 SAV binary compatibility;
+- custom/stateful Resolver persistence;
+- ExternalAI/MCPAI controller checkpoint persistence.
 
 ## Gate 1 - Checkup + persistence audit
 

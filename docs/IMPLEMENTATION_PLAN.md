@@ -22,7 +22,7 @@ Implemented/established runtime baseline includes:
 
 The first supported deterministic headless match lifecycle is now complete through Slice 12: authoritative server/web transport, deterministic New Game, war/peace, Troop Transport/invasion/Colony conquest and zero-Colony conquest victory are connected end-to-end. Broader tactical depth, complete Economy/pollution, race/customization extensions, leaders/espionage, AI, alternative victory families and endgame fidelity remain important post-milestone work.
 
-Slice 14 **Live GameSession save/resume baseline** is currently open. Gate 1 is complete and proposes LiveSnapshot v1 over Core23 plus full Session/Battle continuation state, strict ruleset fingerprinting, stable interactive save boundaries and atomic Host import/restore semantics; Gate 2 approval is pending and no persistence implementation has started. Slices 15-17 remain prepared and unopened. `docs/research/ACTIVE_RESEARCH.md` remains the authoritative handoff.
+Slice 14 **Live GameSession save/resume baseline** is currently open. Gate 2 design review is complete. The reviewed LiveSnapshot v1 freeze candidate adds full Session/Battle continuation state over Core23, simulation compatibility, cross-platform compacted ruleset fingerprinting, production-resolver/controller scope, stable interactive save boundaries and atomic Host import/restore semantics; approval is pending and no persistence implementation has started. Slices 15-17 remain prepared and unopened. `docs/research/ACTIVE_RESEARCH.md` remains the authoritative handoff.
 ## Guiding architecture
 
 Build the game rules as a deterministic, headless simulation core first. UI, rendering, audio and platform integration should depend on that core rather than contain game rules themselves.

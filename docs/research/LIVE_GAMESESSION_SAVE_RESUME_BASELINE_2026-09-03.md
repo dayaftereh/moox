@@ -4,7 +4,7 @@ Date: **2026-09-03**
 
 Slice: **14 - Live GameSession save / resume baseline**
 
-Status: **Gate 1 complete; Gate 2 contract proposed; no persistence implementation yet**.
+Status: **Gate 1 approved; Gate 2 design review complete; reviewed freeze candidate awaiting approval; no persistence implementation yet**.
 
 ## Gate 1 conclusion
 
@@ -154,20 +154,23 @@ The Session keeps both `encounterContext` and canonical `handledInvasions`. They
 
 These values must survive live load exactly.
 
-## Ruleset identity is a required persistence dependency
+## Ruleset and simulation compatibility are persistence dependencies
 
-Gate 1 found a persistence gap not represented in the original Slice-14 draft: `EconomyRules` currently carries **no ruleset ID/version/fingerprint**. `LoadEconomyRules(rulesetDir)` receives a path and loads normalized JSON, but that identity is discarded.
+Gate 1 found that `EconomyRules` carries no explicit ruleset identity. Gate 2 confirms that exact resume needs **two** compatibility guards:
 
-Restoring the same Core23 state against modified rules under the same folder name could change Research, Economy, construction, movement or Tactical continuation while still decoding successfully.
+1. exact authoritative rules data; and
+2. deterministic simulation-code compatibility.
 
-### Proposed rules identity
+A matching ruleset alone is insufficient if Go transition logic changes between save and load. Conversely, a build identifier is too strict because documentation/UI-only commits should not invalidate saves.
 
-Slice 14 should add a deterministic rules identity to loaded `EconomyRules`:
+### Ruleset identity
+
+Slice 14 should add a deterministic identity to rules loaded by `LoadEconomyRules`:
 
 - `id`: normalized base directory name, currently `moo2-1.31`;
-- `sha256`: digest of the actual JSON files consumed by `LoadEconomyRules`.
+- `sha256`: digest over exactly the JSON files consumed by `LoadEconomyRules`.
 
-Loaded rules files today are:
+Loaded authoritative rules files today are:
 
 - `buildings.json`;
 - `economy.json`;
@@ -179,22 +182,42 @@ Loaded rules files today are:
 - `tactical_combat.json`;
 - `technologies.json`.
 
-Proposed fingerprint algorithm:
+Gate 2 refines the Gate-1 raw-file proposal so the fingerprint is stable across Windows/Linux checkout whitespace and line endings:
 
-1. sort those loaded filenames ascending;
-2. SHA-256 each raw file;
-3. build UTF-8 lines `<filename>:<lowercase-file-sha256>\n`;
-4. SHA-256 the complete manifest bytes.
+1. sort the loaded filenames ascending;
+2. read each JSON file and run Go `json.Compact` over its bytes;
+3. SHA-256 the compacted JSON bytes;
+4. build UTF-8 lines `<filename>:<lowercase-file-sha256>\n`;
+5. SHA-256 the complete manifest bytes.
 
-For the current committed `data/rulesets/moo2-1.31` loaded-rule files the Gate-1 probe produced:
+For the current committed `data/rulesets/moo2-1.31` the reviewed algorithm produces:
 
-`771e34863008fb70bf947ee583b2a1a872f96feca564b28501d6ea726fc8bd8c`
+`2e2e9760051845a99092457760cfe78d0e90e20381fecf1072002c2081844f5b`
 
-This is evidence only; Gate 3 must compute it in Go rather than hard-code it.
+This value is evidence only; Gate 3 computes it in Go. The earlier Gate-1 raw-byte probe `771e3486...` is superseded because raw bytes are needlessly sensitive to checkout whitespace/line endings.
 
-A live save must be rejected if either active ruleset ID or fingerprint differs.
+`assets.json` and `README.md` are intentionally excluded because `LoadEconomyRules` does not consume them and they cannot affect authoritative continuation.
 
-`assets.json` is intentionally not in this digest because `LoadEconomyRules` does not consume it and it cannot affect authoritative continuation.
+A live save is rejected unless ruleset ID **and** compacted rules fingerprint match the active Host rules.
+
+### Simulation compatibility
+
+LiveSnapshot v1 adds `simulation_compat_version = 1` independently from `schema_version = 1` and Core23.
+
+This constant represents deterministic continuation semantics implemented in Go, including the built-in AI policy used for automatic controller continuation. Future code changes that can alter the same saved state/rules/controller input into different authoritative commands, RNG consumption, events, revisions, Battle results or final result must increment this compatibility version even if the JSON shape does not change.
+
+A different simulation compatibility version is rejected rather than silently resumed. This avoids tying save compatibility to arbitrary Git commits while still preventing false exact-continuation claims across behavior-changing engine builds.
+
+### Resolver and controller scope for v1
+
+The Gate-1 statement that the production resolver is stateless is correct but must become an explicit v1 support guard:
+
+- export/import/restore is supported only when the hosted strategic resolver is the production `*game.EconomyResolver` and its immediate resolver uses the same validated `EconomyRules` identity;
+- custom/stateful Resolver implementations are rejected by v1 persistence rather than serialized or guessed;
+- supported persisted controller types are `local_human`, `remote_human` and `builtin_ai`;
+- `external_ai` and `mcp_ai` live saves are rejected in v1 because their external/private controller state and connection lifecycle are not part of the snapshot.
+
+This keeps the exact-continuation guarantee honest. Supporting stateful custom resolvers or external/MCP controller checkpoints requires a later versioned persistence extension.
 
 ## Stable save boundaries
 
@@ -217,6 +240,7 @@ The Host already drives a mutation until the next interactive boundary under `ho
 
 4. **`post_resolution` only when an interactive Colony-Base decision is pending**
    - this is the only PostResolution state the current Host deliberately exposes as an interactive stop;
+   - loader validation requires at least one pending Colony-Base resolution **and zero due Research completions under the active rules**, matching the Host boundary ordering;
    - ordinary PostResolution with no pending human decision is auto-driven to CompleteTurn and is not part of the v1 public save contract.
 
 5. **`completed`**
@@ -237,6 +261,7 @@ The Host lock makes the last case unobservable through the supported API. Sessio
 The exact Go field names can be finalized in Gate 2, but the authoritative JSON content should be equivalent to:
 
 - `schema_version = 1`;
+- `simulation_compat_version = 1`;
 - `ruleset`:
   - `id`;
   - `sha256`;
@@ -285,13 +310,13 @@ Live decode must:
 - accept **only** `LiveSnapshotSchemaVersion == 1` in Slice 14;
 - reject old/new versions rather than guessing or silently migrating;
 - call Core23 `GameState.Validate()`;
-- validate ruleset ID/fingerprint before activation;
-- validate Seat IDs/Empire mapping/controller values;
+- validate simulation compatibility plus ruleset ID/fingerprint before activation;
+- validate Seat IDs/Empire mapping/controller values and reject ExternalAI/MCPAI in LiveSnapshot v1;
 - validate all stored submissions against snapshot game/seat/turn and their recorded command schema;
 - validate Session event and telemetry sequence monotonicity plus explicit next counters;
 - validate Battle IDs/spec game/turn/participants, phase/result/tactical invariants, tactical revision/RNG/command/event sequences and next event counter;
 - validate `next_battle_id` is strictly above every created/persisted Battle ID required by history;
-- validate phase-specific Battle/Invasion/Result/continuation invariants;
+- validate phase-specific Battle/Invasion/Result/continuation invariants, including PostResolution pending-Colony-Base plus zero-due-Research requirement;
 - validate sorted unique handled/eliminated IDs and Result consistency;
 - build the replacement `GameSession` completely off to the side before any Host mutation.
 
@@ -342,6 +367,7 @@ Storage-neutral App methods should be equivalent to:
   - available only on a Host configured with authoritative rules/resolvers;
   - decode/validate against active ruleset before touching `h.games`;
   - use embedded GameID;
+  - require the configured production EconomyResolver/rules compatibility contract;
   - conflict if that GameID already exists;
   - register with changeSequence 1;
   - do not auto-drive after load.
@@ -368,7 +394,9 @@ Proposed storage-neutral endpoints:
 - `POST /api/v1/games/import` - import a save as a new hosted Game using embedded GameID;
 - `PUT /api/v1/games/{gameID}/live-snapshot` - atomically restore/replace that existing Game.
 
-All three require persistence API enablement. A later browser Slice can provide file download/upload UX without changing the engine contract.
+All three require persistence API enablement. `cmd/moox-server` exposes a separate `-enable-persistence` flag, default false.
+
+The existing `maxJSONBodyBytes = 1 MiB` remains the command-envelope limit. Live snapshot import/restore uses a separate v1 request cap of **64 MiB** so normal current matches are not constrained by the command limit while malformed/unbounded uploads are still bounded. Oversize snapshot requests return HTTP `413` and do not reach Host mutation. A later browser Slice can provide file download/upload UX without changing the engine contract.
 
 Suggested error families:
 
@@ -397,7 +425,7 @@ After live load the Host simply resumes its normal controller orchestration at t
 
 Use the existing real canonical fixture:
 
-- ruleset `moo2-1.31`;
+- ruleset `moo2-1.31` with reviewed compacted fingerprint `2e2e9760051845a99092457760cfe78d0e90e20381fecf1072002c2081844f5b`;
 - seed `0x8009`;
 - Small / Normal / Average / Tactical;
 - Human + Darlok content;
@@ -466,27 +494,36 @@ At minimum cover:
 - mismatched restore GameID;
 - unsupported `strategic_resolution` save.
 
-## Gate-2 contract proposed for approval
+## Gate-2 contract - reviewed freeze candidate
 
-1. Slice 14 adds a separate **LiveSnapshot v1**; the existing CompletedSnapshot v1 remains compatible and unchanged as a public format.
-2. LiveSnapshot embeds typed **Core23 GameState** and all future-deterministic Session continuation state, not a parallel copy of strategic data.
-3. Persist Seats/controllers/submissions, Session events/telemetry and explicit next counters, Battle snapshots/nextBattleID, encounter context, pending Invasion/handled keys, elimination/result and pending-elimination state.
-4. Battle v1 persists Spec/Phase/Result plus Tactical State, RNG, command sequence, events, next event sequence and Tactical revision.
-5. Resolver/interface pointers, mutexes, Host subscriber state and network/process state are never serialized; production `EconomyResolver` is re-injected after rules validation.
-6. Add rules identity to loaded EconomyRules: directory-base ID plus deterministic SHA-256 over exactly the authoritative JSON files consumed by `LoadEconomyRules`.
-7. A save loads only when **both ruleset ID and fingerprint match** the active Host rules.
-8. Saveable v1 phases are Planning, Encounters, InvasionDecisions, interactive PostResolution with pending Colony-Base decision, and Completed. StrategicResolution/transient non-interactive PostResolution/in-flight mutation are rejected.
-9. Live JSON is compact/canonical, strictly decoded with unknown-field + trailing-data rejection; Slice 14 accepts version 1 only and implements no migrations.
-10. `ExportLiveSnapshot` is read-only and runs under hosted-game lock; it changes neither Session revision/events nor Host ChangeSequence.
-11. `ImportLiveSnapshot` creates a new hosted Game from embedded GameID on a rules-configured Host and starts transport ChangeSequence at 1; it does not auto-drive the restored boundary.
-12. `RestoreLiveSnapshot` validates fully before an atomic existing-game replacement, preserves configured resolvers/subscribers, increments ChangeSequence once and publishes `snapshot_invalidated` reason `game_loaded`; rejected loads change nothing.
-13. Host ChangeSequence/subscriber IDs are transport state and are not persisted; exact Session revision from the save is restored unchanged.
-14. HTTP persistence is a separate privileged capability (`PersistenceEnabled`, default false), not a Seat API. Baseline routes are GET live snapshot, POST import and PUT restore as described above.
-15. Built-in AI persists no private state; controller identity + restored authoritative player-safe state is sufficient for deterministic resume.
-16. Canonical exact proof is uninterrupted `0x8009` AI-vs-AI versus save at Planning Turn 250 -> fresh-Host import -> exact re-export -> continue; final existing completed-snapshot bytes must match uninterrupted bytes exactly.
-17. Gate 3 also requires exact phase fixtures for partial Planning submission, active Tactical Encounter, Invasion decision, interactive PostResolution and Completed, plus malformed/old/rules-mismatch atomic rejection regressions.
-18. Server filesystem save slots, cloud sync, browser file UX, original MOO2 SAV compatibility, future migrations and stateful external/MCP controller connection persistence remain deferred.
+1. Slice 14 adds a separate **LiveSnapshot v1**; existing CompletedSnapshot v1 remains compatible and unchanged as a public format.
+2. LiveSnapshot embeds typed **Core23 GameState** plus all future-deterministic Session/Battle continuation state instead of copying strategic fields into a second model.
+3. LiveSnapshot v1 records both `schema_version = 1` and **`simulation_compat_version = 1`**. A behavior-changing engine/built-in-AI change must bump simulation compatibility even when snapshot JSON shape is unchanged.
+4. Loaded EconomyRules gain a rules identity: normalized directory-base ID plus SHA-256 over a sorted manifest of the **nine JSON files actually consumed by `LoadEconomyRules`**, hashing each after Go `json.Compact`. Current reviewed `moo2-1.31` fingerprint: `2e2e9760051845a99092457760cfe78d0e90e20381fecf1072002c2081844f5b`.
+5. Load requires exact simulation compatibility, ruleset ID and rules fingerprint. No best-effort resume is allowed on mismatch.
+6. Persistence v1 supports only hosted games using the production `*game.EconomyResolver` for strategic continuation with matching immediate EconomyRules. Custom/stateful Resolver implementations are rejected rather than falsely claimed resumable.
+7. Persisted controller types supported by v1 are `local_human`, `remote_human` and `builtin_ai`. `external_ai` and `mcp_ai` saves are rejected because external/private controller state is not persisted.
+8. Persist Seats/controllers/submissions, Session events/telemetry and explicit next counters, Battle snapshots/nextBattleID, encounter context, pending Invasion/handled keys, elimination/result and pending-elimination state.
+9. Battle v1 persists Spec/Phase/Result plus Tactical State, RNG, command sequence, events, explicit next event sequence and Tactical revision. Tactical counters are cross-validated; active Battle children restore without recomputing their initial state from current rules.
+10. Resolver/interface pointers, mutexes, Host subscriber state and network/process state are never serialized. The compatible production resolver is re-injected only after snapshot/rules validation.
+11. Saveable v1 phases are Planning, Encounters, InvasionDecisions, interactive PostResolution with pending Colony-Base decision, and Completed. PostResolution restore additionally requires **zero due Research completions** under the active rules.
+12. StrategicResolution, transient/non-interactive PostResolution and any point inside an in-flight Host mutation/resolver commit are explicitly unsaveable. Host locking makes in-flight states unobservable through supported export.
+13. Live JSON uses compact deterministic struct encoding, stable slice ordering and strict `DisallowUnknownFields` plus single-document/trailing-data rejection. Slice 14 accepts version 1 only and implements no migrations.
+14. Explicit `next_event_sequence`, `next_telemetry_sequence`, `next_battle_id` and Tactical next-event/revision counters are persisted and validated against their histories/invariants; they are not silently reset on load.
+15. `Host.ExportLiveSnapshot(gameID)` runs under hosted-game lock and is read-only: no auto-drive, revision, event or Host ChangeSequence change.
+16. `Host.ImportLiveSnapshot(data)` fully validates against a rules-configured Host, uses embedded GameID, conflicts on an existing ID, registers at transport ChangeSequence 1 and **does not auto-drive** the restored boundary so immediate re-export can be byte-exact.
+17. `Host.RestoreLiveSnapshot(gameID,data)` fully validates before locking/replacing the existing Session, requires embedded/target GameID equality, preserves configured resolvers/subscribers, rebuilds Seat caches, increments existing ChangeSequence once and publishes one `snapshot_invalidated` notification with reason `game_loaded`. Rejection changes nothing.
+18. Host ChangeSequence/subscriber IDs are transport state and are not persisted. Restored Session revision is the saved revision unchanged, including intentional rewind to an older save; clients refetch after `game_loaded`.
+19. HTTP persistence is a separate privileged capability (`PersistenceEnabled`, default false; server flag `-enable-persistence`), never a Seat endpoint. Baseline routes are GET `/api/v1/games/{gameID}/live-snapshot`, POST `/api/v1/games/import`, and PUT `/api/v1/games/{gameID}/live-snapshot`.
+20. Live import/restore uses a dedicated **64 MiB** request cap, separate from the existing 1 MiB command JSON limit. Oversize requests fail with 413 before Host mutation.
+21. Built-in AI persists no private state. `baseline_v1` remains pure; controller identity plus restored authoritative state is sufficient **within the matching simulation compatibility version**.
+22. Canonical exact proof is uninterrupted real `NewGame(0x8009)` AI-vs-AI versus save at Planning Turn 250 -> fresh compatible Host import -> exact live re-export -> continue; final existing CompletedSnapshot bytes must equal the uninterrupted run exactly.
+23. Gate 3 also requires exact phase fixtures for partial Planning submission, active supported Tactical Encounter after at least one command/RNG transition, Invasion decision, interactive PostResolution and Completed.
+24. Malformed/unknown-version/trailing-data, simulation/rules mismatch, unsupported controller/resolver, invalid counter/phase/Battle/Invasion/Result, duplicate import and target GameID mismatch all receive atomic rejection tests; rejected restore preserves Session bytes and Host ChangeSequence.
+25. Server filesystem slots, cloud sync, browser file UX, original MOO2 SAV compatibility, future migrations, custom/stateful resolver persistence and External/MCP controller checkpointing remain deferred.
+
+Gate 2 design review is complete. This 25-point contract supersedes the Gate-1 draft and is the **freeze candidate awaiting explicit approval** before Gate 3 implementation.
 
 ## Gate 1 status
 
-All Gate-1 audit items are complete. The 18-point contract above is the **Gate-2 freeze candidate**. No live-persistence implementation is authorized until Gate 2 is explicitly approved.
+All Gate-1 audit items are complete and were accepted when the user advanced to Gate 2 on 2026-09-03. Gate 2 then refined the contract as documented above. No live-persistence implementation is authorized until the reviewed Gate-2 freeze candidate is explicitly approved.

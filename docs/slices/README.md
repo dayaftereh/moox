@@ -41,7 +41,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- `PLANNED_14_LIVE_GAMESESSION_SAVE_RESUME_BASELINE.md` - **open; Gate 1 complete, Gate 2 approval pending**. Recovery marker: `_OPEN_LIVE_GAMESESSION_SAVE_RESUME_BASELINE_2026-09-03.md`.
+- `PLANNED_14_LIVE_GAMESESSION_SAVE_RESUME_BASELINE.md` - **open; Gate 2 design review complete, freeze approval pending**. Recovery marker: `_OPEN_LIVE_GAMESESSION_SAVE_RESUME_BASELINE_2026-09-03.md`.
 
 Prepared queue:
 

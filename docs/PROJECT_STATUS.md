@@ -26,7 +26,7 @@ The deterministic runtime now has its **first complete supported headless match 
 
 ## Post-milestone prepared roadmap
 
-Slices 01-13 are closed. Slice 14 Live GameSession save/resume is open with exactly one `_OPEN_` marker; Gate 1 persistence audit is complete and Gate 2 approval is pending. Its contract preserves Core23 plus Session/Battle continuation state and binds saves to the exact loaded ruleset fingerprint. The roadmap state is:
+Slices 01-13 are closed. Slice 14 Live GameSession save/resume is open with exactly one `_OPEN_` marker; Gate 2 design review is complete and the reviewed freeze candidate awaits approval. Its contract preserves Core23 plus Session/Battle continuation state and binds saves to both deterministic simulation compatibility and the exact compacted loaded-rules fingerprint. The roadmap state is:
 
 1. Slice 08 - **closed** - authoritative server, web HMI and HTTP/WebSocket transport baseline (`9315111`).
 2. Slice 09 - **closed** - deterministic New Game and galaxy generation baseline (`a5f3c13`).
@@ -34,12 +34,12 @@ Slices 01-13 are closed. Slice 14 Live GameSession save/resume is open with exac
 4. Slice 11 - **closed, Gates 1-4 complete** - Troop Transport, invasion and Colony conquest baseline (`5b363ce`).
 5. Slice 12 - **closed** - Empire elimination and first deterministic headless victory loop (`90b83d8`).
 6. Slice 13 - **closed** - deterministic built-in strategic AI baseline; implementation/evidence commit `371aa0c`.
-7. Slice 14 - **open; Gate 1 complete, Gate 2 approval pending** - live GameSession save/resume baseline.
+7. Slice 14 - **open; Gate 2 design review complete, freeze approval pending** - live GameSession save/resume baseline.
 8. Slice 15 - **prepared** - playable browser strategic HMI loop.
 9. Slice 16 - **prepared** - New Game + preset-race breadth.
 10. Slice 17 - **prepared** - military ship design component/weapon breadth.
 
-Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 14 is now open after its Gate-1 persistence audit; Gate 2 approval is pending. Slices 15-17 remain prepared, and the next product milestone remains a saveable Human-vs-built-in-AI browser match after Slices 13-15.
+Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 14 is open; Gate 2 design review is complete and freeze approval is pending. Slices 15-17 remain prepared, and the next product milestone remains a saveable Human-vs-built-in-AI browser match after Slices 13-15.
 
 Important recent checkpoints:
 

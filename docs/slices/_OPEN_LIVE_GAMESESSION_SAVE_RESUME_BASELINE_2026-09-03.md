@@ -2,7 +2,7 @@
 
 Opened: **2026-09-03**.
 
-Status: **Gate 1 complete; Gate 2 approval pending; no persistence implementation yet**.
+Status: **Gate 2 design review complete; reviewed freeze candidate approval pending; no persistence implementation yet**.
 
 ## Gates
 
