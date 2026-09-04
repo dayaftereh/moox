@@ -26,6 +26,10 @@ In scope:
 - initial design tokens for spacing, typography scale, color roles, elevation, borders and control states;
 - component primitives for buttons, tabs, cards, lists, data rows, resource badges and dialogs;
 - keyboard/focus/accessibility baseline where practical;
+- mandatory **multi-language HMI baseline with German (`de`) and English (`en`)**, switchable at runtime without reload or game-state changes;
+- language-neutral canonical game/session state: locale is presentation preference only and must never affect simulation, saves, replay or command legality;
+- translation-key based UI copy and canonical enum/action labels so later 15.2-15.5 screens inherit localization instead of adding hard-coded player-facing text;
+- persisted local language preference with deterministic fallback (prefer explicit saved choice, then supported browser language, otherwise English);
 - wireframes or screenshot-level mockups for the canonical match journey.
 
 Defer:
@@ -50,20 +54,22 @@ Defer:
 - [ ] Freeze game-shell layout regions and responsive behavior.
 - [ ] Freeze interaction grammar for dialogs, toasts, errors, loading and focus.
 - [ ] Freeze baseline design-token/component API without locking final art direction.
-- [ ] Freeze wireframe acceptance set for canonical workflows.
+- [ ] Freeze i18n contract: `de` + `en`, runtime switch location/behavior, persistence/fallback rules, translation-key naming and untranslated-content policy.
+- [ ] Freeze wireframe acceptance set for canonical workflows in both German and English where text length can change layout.
 
 ## Gate 3 - Implementation
 
 - [ ] Refactor monolithic browser shell into the accepted layout/component structure.
 - [ ] Implement navigation, responsive shell and reusable primitives.
 - [ ] Implement lifecycle/loading/error/invalidation presentation skeletons.
-- [ ] Add component/navigation regressions where useful.
+- [ ] Implement the shared i18n layer, complete German/English shell translations and persistent runtime language switch.
+- [ ] Add component/navigation/i18n regressions where useful.
 - [ ] Keep all gameplay rules and legality server-authoritative.
 
 ## Gate 4 - QA + close
 
 - [ ] Verify every accepted wireframe/navigation path in browser runtime.
-- [ ] Verify responsive/focus/loading/error states at representative phone and desktop viewports.
+- [ ] Verify responsive/focus/loading/error states at representative phone and desktop viewports in both German and English, including long-label overflow.
 - [ ] Run the built UI on `0.0.0.0:7171`, verify it through the current NetBird IP, and keep the managed `moox-ui-review` Chrome session on the same live build for desktop QA.
 - [ ] Run web build plus relevant Go/server regressions and `git diff --check`.
 - [ ] Update evidence/status/HISTORY and close marker.

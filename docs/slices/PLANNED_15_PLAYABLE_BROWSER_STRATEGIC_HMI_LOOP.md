@@ -31,7 +31,7 @@ Slice 15 is deliberately split into five gated sub-slices so functional authorit
 
 ## Epic scope guard
 
-The 15.x family owns browser playability and presentation for already-authoritative gameplay. It must not move rules, legality, costs, target selection, AI policy or deterministic simulation into React.
+The 15.x family owns browser playability and presentation for already-authoritative gameplay. It must not move rules, legality, costs, target selection, AI policy or deterministic simulation into React. From Slice 15.1 onward the browser HMI is also **multi-language by contract**, initially German and English with runtime switching; locale remains presentation-only and all later 15.x UI work must use the shared localization layer rather than hard-coded player-facing strings.
 
 Still deferred beyond the family unless explicitly pulled forward by a sub-slice contract:
 

@@ -264,6 +264,25 @@ After 15.1 Gate 3/4 is green:
 
 The first live baseline preview was successfully started during Gate 1 on `0.0.0.0:7171`; both `http://127.0.0.1:7171/healthz` and `http://100.120.252.216:7171/healthz` returned OK, the NetBird UI returned HTTP 200, and managed Chrome opened the page with title `Master of Orion X`. Current phone URL: `http://100.120.252.216:7171/`.
 
+## Multi-language requirement added before Gate 2
+
+User requirement confirmed on 2026-09-04: the browser HMI must support **German and English from the first structural implementation**, with a runtime language switch. This is intentionally captured before Gate 2 so layout, component APIs and copy handling are localized from the start rather than retrofitted later.
+
+Recommended Gate-2 i18n contract:
+
+- supported locales initially: `de` and `en`;
+- runtime switching must not require restarting/recreating a game and should update the visible shell immediately;
+- language is a **client presentation preference only** and must not alter GameState, command payload semantics, deterministic simulation, live snapshots or completed snapshots;
+- persist explicit user choice locally in the browser;
+- first-run fallback: supported browser language (`de*` -> German, `en*` -> English), otherwise English;
+- all structural/player-facing UI copy introduced by 15.1 uses translation keys, not hard-coded English/German strings inside screen components;
+- canonical server IDs/enums/action kinds remain language-neutral; UI maps them to localized labels;
+- game-defined proper names/user names are not automatically translated unless a later content catalog explicitly provides localized display names;
+- German and English must both be tested on phone and desktop because German labels are often longer and can expose responsive overflow;
+- language switch should live in an always-reachable settings/`More` surface, with an optional compact shortcut if Gate 2 wireframes show sufficient room.
+
+This contract is inherited by Slices 15.2-15.5.
+
 ## Gate 1 conclusion
 
 Gate 1 supports moving to Gate 2 with the following recommended freeze:
@@ -274,4 +293,5 @@ Gate 1 supports moving to Gate 2 with the following recommended freeze:
 - functional dark baseline skin in 15.1, final MOOX visual identity deferred to 15.3;
 - explicit lifecycle/reconnect/error/pending-decision states;
 - diagnostics removed from the primary player flow;
-- live NetBird phone-preview server is a required 15.1 post-implementation acceptance step.
+- live NetBird phone-preview server is a required 15.1 post-implementation acceptance step;
+- German + English runtime localization is mandatory from 15.1 onward, with locale kept entirely outside authoritative game state.

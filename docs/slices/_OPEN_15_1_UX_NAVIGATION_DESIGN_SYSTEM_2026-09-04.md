@@ -4,13 +4,13 @@ Opened: **2026-09-04**
 
 Status: **Gate 1 audit complete; Gate 2 interaction/design-system freeze pending user approval**.
 
-Primary direction: **mobile-first**, with desktop as a required adaptive layout mode.
+Primary direction: **mobile-first**, with desktop as a required adaptive layout mode. **Multi-language is mandatory from this slice onward: German + English with runtime switching and persistent client-side preference.**
 
 Permanent Gate-1 evidence:
 `docs/research/SLICE_15_1_MOBILE_FIRST_UX_GATE1_2026-09-04.md`
 
 - [x] Gate 1: UX/navigation/design-system audit.
-- [ ] Gate 2: freeze interaction/design-system contract.
+- [ ] Gate 2: freeze interaction/design-system + German/English i18n contract.
 - [ ] Gate 3: implement mobile-first shell/navigation/primitives.
 - [ ] Gate 4: independent QA, live NetBird phone preview, commit and close.
 

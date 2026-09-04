@@ -14,7 +14,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Prepared tranche: Slices **13-17**; none is open.
-- Current objective: **Slice 15.1 Gate 2 - freeze the mobile-first information architecture, mobile/desktop shell, navigation, lifecycle/error states, baseline structural design system and NetBird phone-preview acceptance contract before implementation.**
+- Current objective: **Slice 15.1 Gate 2 - freeze the mobile-first information architecture, mobile/desktop shell, navigation, lifecycle/error states, baseline structural design system, mandatory German/English runtime-localization contract and NetBird phone-preview acceptance contract before implementation.**
 
 
 ## Post-Slice-12 fidelity/depth audit - complete
