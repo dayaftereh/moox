@@ -4,7 +4,7 @@ Date: **2026-09-03**
 
 Slice: **14 - Live GameSession save / resume baseline**
 
-Status: **Gate 2 frozen by user approval; Gate 3 implementation complete; Gate 4 independent QA/closure pending**.
+Status: **closed; Gates 1-4 complete**.
 
 ## Gate 1 conclusion
 
@@ -563,4 +563,21 @@ Gate 3 verification performed in the implementation session:
 - `go vet ./...`: PASS;
 - `git diff --check`: PASS before the implementation commit.
 
-Gate 4 remains intentionally independent: repeat the critical exact roundtrips/rejections from a fresh QA session, rerun full Go tests/vet, run the production Web build, run `git diff --check`, update final evidence/HISTORY, remove the OPEN marker and close Slice 14 only if everything remains green.
+Gate 4 was executed independently on 2026-09-04 and passed; final evidence is recorded below.
+
+## Gate 4 independent QA and closure - 2026-09-04
+
+Gate 4 ran in a fresh ASH write session against clean HEAD `fc46a91`, with `main...origin/main [ahead 54]` and exactly one expected Slice-14 OPEN marker.
+
+Independent QA repeated the frozen contract rather than relying on Gate-3 results:
+
+- app persistence exactness/atomicity suite with `-count=2`: PASS, including the real canonical `NewGame(0x8009)` AI-vs-AI save at **Planning Turn 250**, fresh-Host import, byte-identical live re-export and byte-identical final existing CompletedSnapshot;
+- Session/Battle `TestLiveSnapshot*` phase/RNG/continuation suite with `-count=2`: PASS for partial Planning submission, active Tactical after RNG-consuming Beam, Invasion decision, interactive Colony-Base PostResolution, Completed and Tactical-counter rejection;
+- HTTP persistence suite with `-count=2`: PASS for default-disabled privilege and enabled export/import/restore behavior;
+- the contract review found one missing explicit QA assertion: unknown `schema_version` and a partial snapshot missing `next_battle_id` were not directly exercised as existing-game atomic restore failures. Gate 4 added those two rejection assertions only, with no product-logic change, in commit `e6a5e69` (`test: harden live snapshot rejection coverage`); the targeted atomic-restore test passed twice;
+- final `go test ./... -count=1`: PASS, including `internal/session` in **44.693 s**;
+- final `go vet ./...`: PASS;
+- final `npm run build` in `web`: PASS (TypeScript build + Vite 8.2.2 production build, 17 modules transformed, JS 204.00 kB / gzip 63.65 kB);
+- final `git diff --check`: PASS.
+
+All supported LiveSnapshot v1 phases, deterministic continuation claims and malformed/old/partial atomic-rejection requirements are now independently covered. No gameplay/runtime code changed in Gate 4. Slice 14 is closed; the OPEN marker is removed by the closure documentation commit. No push was performed. Next prepared objective: Slice 15 Gate 1 - Playable browser strategic HMI workflow audit.

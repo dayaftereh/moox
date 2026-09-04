@@ -5,8 +5,8 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: `docs/slices/_OPEN_LIVE_GAMESESSION_SAVE_RESUME_BASELINE_2026-09-03.md`.
-- Active implementation slice: **Slice 14 Gate 3 implementation complete; Gate 4 independent QA/closure pending**.
+- Open slice marker: none. Slices 01-14 are closed.
+- Active implementation slice: none. Slice 14 Live GameSession save/resume baseline is closed after Gate 4.
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
@@ -14,12 +14,12 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Prepared tranche: Slices **13-17**; none is open.
-- Current objective: **Slice 14 Gate 4 - independently repeat exact live roundtrips/AI continuation and malformed atomic-rejection checks, run full Go/vet/web QA, document final evidence and close the slice if green.**
+- Current objective: **Slice 15 Gate 1 is the next prepared objective: audit every browser workflow/read surface required for a complete supported Human-vs-built-in-AI strategic match, including save/load/reconnect, before implementation. Slice 15 is prepared but not open.**
 
 
 ## Post-Slice-12 fidelity/depth audit - complete
 
-The milestone re-audit identified independent playability as the main post-lifecycle bottleneck. Slice 13 Built-in AI is closed after independent Gate-4 QA. Slice 14 live GameSession persistence is open with Gate 2 frozen and Gate 3 implementation complete; Gate 4 independent QA/closure is next. Remaining prepared queue: Slice 15 playable browser HMI, Slice 16 New Game/preset-race breadth, Slice 17 military design component/weapon breadth.
+The milestone re-audit identified independent playability as the main post-lifecycle bottleneck. Slices 13 Built-in AI and 14 live GameSession persistence are now closed after independent Gate-4 QA. Remaining prepared queue: Slice 15 playable browser HMI, Slice 16 New Game/preset-race breadth, Slice 17 military design component/weapon breadth. Slice 15 Gate 1 is next when explicitly requested.
 
 Permanent audit: `docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md`.
 ## Closed Slice 12 - Empire elimination / first headless victory loop

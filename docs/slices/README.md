@@ -41,7 +41,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- `PLANNED_14_LIVE_GAMESESSION_SAVE_RESUME_BASELINE.md` - **open; Gate 3 implementation complete, Gate 4 independent QA/closure pending**. Recovery marker: `_OPEN_LIVE_GAMESESSION_SAVE_RESUME_BASELINE_2026-09-03.md`.
+- `PLANNED_14_LIVE_GAMESESSION_SAVE_RESUME_BASELINE.md` - **closed; Gates 1-4 complete**. Implementation: `a2c4ccd`; Gate-4 rejection coverage: `e6a5e69`.
 
 Prepared queue:
 

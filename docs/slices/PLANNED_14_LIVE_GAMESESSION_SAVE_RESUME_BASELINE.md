@@ -1,6 +1,6 @@
 # Planned slice 14 - Live GameSession save / resume baseline
 
-Status: **open; Gate 2 frozen by user approval; Gate 3 implementation complete; Gate 4 independent QA pending**.
+Status: **closed; Gates 1-4 complete**.
 
 Queue position: **14 of 17**.
 
@@ -61,7 +61,7 @@ Defer:
 
 ## Gate 4 - Follow-up QA + commit + close
 
-- [ ] Repeat roundtrip at every supported phase.
-- [ ] Verify malformed/old/partial saves fail atomically.
-- [ ] Run full tests/vet/web checks and `git diff --check`.
-- [ ] Update evidence/status/HISTORY and close marker.
+- [x] Repeat roundtrip at every supported phase.
+- [x] Verify malformed/old/partial saves fail atomically.
+- [x] Run full tests/vet/web checks and `git diff --check`.
+- [x] Update evidence/status/HISTORY and close marker.
