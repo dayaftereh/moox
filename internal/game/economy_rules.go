@@ -79,6 +79,8 @@ type CommandPointRules struct {
 }
 
 type EconomyRules struct {
+	RulesetID                                     string
+	RulesetSHA256                                 string
 	ClimateFoodPerFarmer                          map[string]float64
 	MineralIndustryPerWorker                      map[string]float64
 	RaceModifiers                                 map[string]RaceEconomyModifiers
@@ -153,6 +155,10 @@ type EconomyRules struct {
 }
 
 func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
+	identity, err := loadRulesIdentity(rulesetDir)
+	if err != nil {
+		return nil, fmt.Errorf("load rules identity: %w", err)
+	}
 	planetClasses, err := ruleset.LoadPlanetClasses(filepath.Join(rulesetDir, "planet_classes.json"))
 	if err != nil {
 		return nil, fmt.Errorf("load planet classes: %w", err)
@@ -463,6 +469,8 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	}
 
 	rules := &EconomyRules{
+		RulesetID:                                     identity.ID,
+		RulesetSHA256:                                 identity.SHA256,
 		ClimateFoodPerFarmer:                          make(map[string]float64, len(planetClasses.Climates)),
 		MineralIndustryPerWorker:                      make(map[string]float64, len(planetClasses.MineralClasses)),
 		RaceModifiers:                                 make(map[string]RaceEconomyModifiers, len(races.Races)),

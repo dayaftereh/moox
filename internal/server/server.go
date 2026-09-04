@@ -26,14 +26,16 @@ import (
 const maxJSONBodyBytes int64 = 1 << 20
 
 type Config struct {
-	Host            *app.Host
-	StaticFS        fs.FS
-	ObserverEnabled bool
+	Host               *app.Host
+	StaticFS           fs.FS
+	ObserverEnabled    bool
+	PersistenceEnabled bool
 }
 
 type apiServer struct {
-	host            *app.Host
-	observerEnabled bool
+	host               *app.Host
+	observerEnabled    bool
+	persistenceEnabled bool
 }
 
 type commandRequest struct {
@@ -57,13 +59,16 @@ func NewHandler(cfg Config) (http.Handler, error) {
 	if cfg.Host == nil {
 		return nil, fmt.Errorf("application host must not be nil")
 	}
-	server := &apiServer{host: cfg.Host, observerEnabled: cfg.ObserverEnabled}
+	server := &apiServer{host: cfg.Host, observerEnabled: cfg.ObserverEnabled, persistenceEnabled: cfg.PersistenceEnabled}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", server.handleHealth)
 	mux.HandleFunc("GET /api/v1/games", server.handleGames)
 	mux.HandleFunc("POST /api/v1/games", server.handleCreateGame)
 	mux.HandleFunc("GET /api/v1/games/{gameID}/seats/{seatID}/snapshot", server.handlePlayerSnapshot)
 	mux.HandleFunc("GET /api/v1/games/{gameID}/observer/snapshot", server.handleObserverSnapshot)
+	mux.HandleFunc("GET /api/v1/games/{gameID}/live-snapshot", server.handleLiveSnapshotExport)
+	mux.HandleFunc("POST /api/v1/games/import", server.handleLiveSnapshotImport)
+	mux.HandleFunc("PUT /api/v1/games/{gameID}/live-snapshot", server.handleLiveSnapshotRestore)
 	mux.HandleFunc("POST /api/v1/games/{gameID}/turn-submissions", server.handleTurnSubmission)
 	mux.HandleFunc("POST /api/v1/games/{gameID}/immediate-commands", server.handleImmediateCommand)
 	mux.HandleFunc("POST /api/v1/games/{gameID}/battles/{battleID}/commands", server.handleBattleCommand)
@@ -294,6 +299,16 @@ func writeHostError(w http.ResponseWriter, err error) {
 		writeAPIError(w, http.StatusNotFound, "not_found", err.Error())
 	case errors.Is(err, app.ErrSessionRejected):
 		writeAPIError(w, http.StatusConflict, "session_rejected", err.Error())
+	case errors.Is(err, app.ErrInvalidSave):
+		writeAPIError(w, http.StatusBadRequest, "invalid_save", err.Error())
+	case errors.Is(err, app.ErrRulesetMismatch):
+		writeAPIError(w, http.StatusConflict, "ruleset_mismatch", err.Error())
+	case errors.Is(err, app.ErrGameExists):
+		writeAPIError(w, http.StatusConflict, "game_exists", err.Error())
+	case errors.Is(err, app.ErrGameIDMismatch):
+		writeAPIError(w, http.StatusConflict, "game_id_mismatch", err.Error())
+	case errors.Is(err, app.ErrPersistenceUnsupported):
+		writeAPIError(w, http.StatusConflict, "persistence_unsupported", err.Error())
 	default:
 		writeAPIError(w, http.StatusInternalServerError, "internal_error", "internal server error")
 	}
