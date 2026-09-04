@@ -168,6 +168,24 @@ func TestRestoreLiveSnapshotIsAtomicAndNotifiesExistingSubscribers(t *testing.T)
 	if _, err := host.RestoreLiveSnapshot(gameID, corruptBytes); !errors.Is(err, ErrInvalidSave) {
 		t.Fatalf("counter-corrupt restore error=%v", err)
 	}
+	var schemaMismatch map[string]any
+	if err := json.Unmarshal(baseline, &schemaMismatch); err != nil {
+		t.Fatal(err)
+	}
+	schemaMismatch["schema_version"] = float64(99)
+	schemaMismatchBytes, _ := json.Marshal(schemaMismatch)
+	if _, err := host.RestoreLiveSnapshot(gameID, schemaMismatchBytes); !errors.Is(err, ErrInvalidSave) {
+		t.Fatalf("schema-version restore error=%v", err)
+	}
+	var partial map[string]any
+	if err := json.Unmarshal(baseline, &partial); err != nil {
+		t.Fatal(err)
+	}
+	delete(partial, "next_battle_id")
+	partialBytes, _ := json.Marshal(partial)
+	if _, err := host.RestoreLiveSnapshot(gameID, partialBytes); !errors.Is(err, ErrInvalidSave) {
+		t.Fatalf("partial restore error=%v", err)
+	}
 	afterRejected, err := host.ObserverSnapshot(gameID)
 	if err != nil {
 		t.Fatal(err)
