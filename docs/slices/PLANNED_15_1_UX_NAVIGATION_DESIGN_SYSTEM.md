@@ -1,6 +1,6 @@
 # Planned slice 15.1 - UX architecture / navigation / design system contract
 
-Status: **open; Gates 1-2 complete; Gate 3 implementation active**.
+Status: **open; Gates 1-3 complete; Gate 4 independent QA pending**.
 
 Queue position: **15.1 of Slice-15 family**.
 
@@ -59,12 +59,12 @@ Defer:
 
 ## Gate 3 - Implementation
 
-- [ ] Refactor monolithic browser shell into the accepted layout/component structure.
-- [ ] Implement navigation, responsive shell and reusable primitives.
-- [ ] Implement lifecycle/loading/error/invalidation presentation skeletons.
-- [ ] Implement the shared i18n layer, complete German/English shell translations and persistent runtime language switch.
-- [ ] Add component/navigation/i18n regressions where useful.
-- [ ] Keep all gameplay rules and legality server-authoritative.
+- [x] Refactor monolithic browser shell into the accepted layout/component structure.
+- [x] Implement navigation, responsive shell and reusable primitives.
+- [x] Implement lifecycle/loading/error/invalidation presentation skeletons.
+- [x] Implement the shared i18n layer, complete German/English shell translations and persistent runtime language switch.
+- [x] Add component/navigation/i18n regressions where useful.
+- [x] Keep all gameplay rules and legality server-authoritative.
 
 ## Gate 4 - QA + close
 

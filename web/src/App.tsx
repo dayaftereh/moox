@@ -1,18 +1,23 @@
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   aggregatePopulation,
   assignPopulation,
-  submitDiplomacy,
-  submitInvasion,
   createGame,
   getPlayerSnapshot,
   listGames,
   streamURL,
+  submitDiplomacy,
+  submitInvasion,
   type DiplomacyCommandKind,
+  type DiplomaticStance,
   type GameSummary,
   type Notification,
   type PlayerSnapshot,
 } from './api'
+import { AppShell, LanguageSwitch, StandaloneHeader } from './components/AppShell'
+import { Card, EmptyState, Metric, Notice, PageHeader } from './components/ui'
+import { type TranslationKey, type TranslationVars, useI18n } from './i18n'
+import { type AppRoute, type GameSection, navigate, parseRoute } from './navigation'
 import './styles.css'
 
 type AssignmentDraft = {
@@ -21,7 +26,34 @@ type AssignmentDraft = {
   scientists: string
 }
 
+type StatusMessage = {
+  key: TranslationKey
+  vars?: TranslationVars
+}
+
+type Translator = (key: TranslationKey, vars?: TranslationVars) => string
+
+function localizedPhase(t: Translator, phase: string): string {
+  switch (phase) {
+    case 'planning': return t('phase.planning')
+    case 'encounters': return t('phase.encounters')
+    case 'invasion_decisions': return t('phase.invasion_decisions')
+    case 'strategic_resolution': return t('phase.strategic_resolution')
+    case 'post_resolution': return t('phase.post_resolution')
+    case 'completed': return t('phase.completed')
+    default: return t('phase.unknown', { phase })
+  }
+}
+
+function localizedStance(t: Translator, stance: DiplomaticStance): string {
+  if (stance === 'war') return t('stance.war')
+  if (stance === 'peace') return t('stance.peace')
+  return t('stance.neutral')
+}
+
 function App() {
+  const { t } = useI18n()
+  const [route, setRoute] = useState<AppRoute>(() => parseRoute())
   const [games, setGames] = useState<GameSummary[]>([])
   const [newGameID, setNewGameID] = useState('game-1')
   const [newGameSeed, setNewGameSeed] = useState('0x8009')
@@ -32,12 +64,26 @@ function App() {
   const [seatID, setSeatID] = useState(1)
   const [snapshot, setSnapshot] = useState<PlayerSnapshot | null>(null)
   const [assignment, setAssignment] = useState<AssignmentDraft>({ farmers: '0', workers: '0', scientists: '0' })
-  const [status, setStatus] = useState('Connecting to MOOX server...')
+  const [status, setStatus] = useState<StatusMessage>({ key: 'status.connecting' })
   const [error, setError] = useState('')
   const [diplomacyBusy, setDiplomacyBusy] = useState(false)
   const [invasionBusy, setInvasionBusy] = useState(false)
   const [lastNotification, setLastNotification] = useState<Notification | null>(null)
   const reconnectTimer = useRef<number | null>(null)
+
+  useEffect(() => {
+    const syncRoute = () => setRoute(parseRoute())
+    window.addEventListener('hashchange', syncRoute)
+    if (!window.location.hash) navigate({ kind: 'home' })
+    return () => window.removeEventListener('hashchange', syncRoute)
+  }, [])
+
+  useEffect(() => {
+    if (route.kind === 'game' && route.gameID !== gameID) {
+      setSnapshot(null)
+      setGameID(route.gameID)
+    }
+  }, [route, gameID])
 
   const loadSnapshot = useCallback(async (selectedGameID = gameID, selectedSeatID = seatID, signal?: AbortSignal) => {
     if (!selectedGameID || selectedSeatID <= 0) return
@@ -52,7 +98,7 @@ function App() {
         scientists: String(population.scientists),
       })
     }
-    setStatus(`Snapshot synchronized at change ${next.change_sequence}`)
+    setStatus({ key: 'status.snapshotSynced', vars: { change: next.change_sequence } })
     setError('')
   }, [gameID, seatID])
 
@@ -62,17 +108,20 @@ function App() {
       .then((available) => {
         setGames(available)
         if (available.length === 0) {
-          setStatus('No hosted games are available.')
+          setStatus({ key: 'status.noGames' })
           return
         }
-        const selected = available[0].game_id
+        const routeGame = parseRoute()
+        const selected = routeGame.kind === 'game' && available.some((game) => game.game_id === routeGame.gameID)
+          ? routeGame.gameID
+          : available[0].game_id
         setGameID(selected)
-        setStatus(`Connected to hosted game ${selected}`)
+        setStatus({ key: 'status.connectedGame', vars: { game: selected } })
       })
       .catch((reason: unknown) => {
         if (!controller.signal.aborted) {
           setError(reason instanceof Error ? reason.message : String(reason))
-          setStatus('Unable to discover hosted games.')
+          setStatus({ key: 'status.discoverFailed' })
         }
       })
     return () => controller.abort()
@@ -82,9 +131,7 @@ function App() {
     if (!gameID || seatID <= 0) return
     const controller = new AbortController()
     void loadSnapshot(gameID, seatID, controller.signal).catch((reason: unknown) => {
-      if (!controller.signal.aborted) {
-        setError(reason instanceof Error ? reason.message : String(reason))
-      }
+      if (!controller.signal.aborted) setError(reason instanceof Error ? reason.message : String(reason))
     })
     return () => controller.abort()
   }, [gameID, seatID, loadSnapshot])
@@ -98,11 +145,12 @@ function App() {
       if (disposed) return
       void loadSnapshot(gameID, seatID).catch(() => undefined)
       socket = new WebSocket(streamURL(gameID))
-      socket.onopen = () => setStatus('Live invalidation stream connected.')
+      socket.onopen = () => setStatus({ key: 'status.liveConnected' })
       socket.onmessage = (event) => {
         try {
           const notification = JSON.parse(String(event.data)) as Notification
           setLastNotification(notification)
+          setStatus({ key: 'status.invalidated', vars: { reason: notification.reason } })
           setSnapshot((current) => {
             if (!current || notification.change_sequence > current.change_sequence) {
               void loadSnapshot(gameID, seatID).catch((reason: unknown) => {
@@ -117,7 +165,7 @@ function App() {
       }
       socket.onclose = () => {
         if (!disposed) {
-          setStatus('Live stream disconnected; resynchronizing and retrying...')
+          setStatus({ key: 'status.liveDisconnected' })
           reconnectTimer.current = window.setTimeout(connect, 1000)
         }
       }
@@ -140,6 +188,15 @@ function App() {
     () => Number(assignment.farmers || 0) + Number(assignment.workers || 0) + Number(assignment.scientists || 0),
     [assignment],
   )
+  const diplomacyClosed = snapshot?.view.phase !== 'planning' || Boolean(snapshot?.view.seats.some((seat) => seat.submitted))
+  const statusText = t(status.key, status.vars)
+  const statusTone: 'neutral' | 'success' | 'warning' | 'danger' = error
+    ? 'danger'
+    : status.key === 'status.liveDisconnected'
+      ? 'warning'
+      : ['status.liveConnected', 'status.snapshotSynced', 'status.commandAccepted', 'status.diplomacyAccepted', 'status.invasionAccepted'].includes(status.key)
+        ? 'success'
+        : 'neutral'
 
   async function submitNewGame(event: FormEvent) {
     event.preventDefault()
@@ -161,18 +218,19 @@ function App() {
           ],
         },
       })
-      const available = await listGames()
-      setGames(available)
+      setGames(await listGames())
       setSnapshot(null)
       setGameID(created.game.game_id)
       setSeatID(created.players[0]?.seat_id ?? 1)
-      setStatus(`Created ${created.game.game_id} from seed ${newGameSeed}.`)
+      setStatus({ key: 'status.createdGame', vars: { game: created.game.game_id, seed: newGameSeed } })
+      navigate({ kind: 'game', gameID: created.game.game_id, section: 'galaxy' })
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : String(reason))
     } finally {
       setCreatingGame(false)
     }
   }
+
   async function submitAssignment(event: FormEvent) {
     event.preventDefault()
     if (!snapshot || !firstColony) return
@@ -186,7 +244,7 @@ function App() {
         Number(assignment.workers),
         Number(assignment.scientists),
       )
-      setStatus(`Command accepted: change ${receipt.change_sequence}, game revision ${receipt.game_revision}`)
+      setStatus({ key: 'status.commandAccepted', vars: { change: receipt.change_sequence, revision: receipt.game_revision } })
       await loadSnapshot(snapshot.view.game_id, seatID)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : String(reason))
@@ -199,7 +257,7 @@ function App() {
     setError('')
     try {
       const receipt = await submitDiplomacy(snapshot, seatID, kind, otherEmpireID)
-      setStatus(`Diplomacy accepted: change ${receipt.change_sequence}, game revision ${receipt.game_revision}`)
+      setStatus({ key: 'status.diplomacyAccepted', vars: { change: receipt.change_sequence, revision: receipt.game_revision } })
       await loadSnapshot(snapshot.view.game_id, seatID)
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : String(reason))
@@ -214,7 +272,7 @@ function App() {
     setError('')
     try {
       const receipt = await submitInvasion(snapshot, seatID, action)
-      setStatus(`Invasion ${action} accepted: change ${receipt.change_sequence}, game revision ${receipt.game_revision}`)
+      setStatus({ key: 'status.invasionAccepted', vars: { change: receipt.change_sequence, revision: receipt.game_revision } })
       await loadSnapshot()
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause))
@@ -223,172 +281,331 @@ function App() {
     }
   }
 
-  const diplomacyClosed = snapshot?.view.phase !== 'planning' || Boolean(snapshot?.view.seats.some((seat) => seat.submitted))
+  function enterGame(selectedGameID: string, section: GameSection = 'galaxy') {
+    setGameID(selectedGameID)
+    setSnapshot(null)
+    navigate({ kind: 'game', gameID: selectedGameID, section })
+  }
 
+  function selectHostedGame(selectedGameID: string) {
+    enterGame(selectedGameID, route.kind === 'game' ? route.section : 'galaxy')
+  }
+
+  if (route.kind === 'home') {
+    return (
+      <div className="standalone-shell">
+        <StandaloneHeader />
+        <main className="standalone-content home-content">
+          <section className="home-hero">
+            <p className="eyebrow">{t('menu.eyebrow')}</p>
+            <h1>{t('menu.title')}</h1>
+            <p>{t('menu.subtitle')}</p>
+            <div className="hero-actions">
+              <button type="button" className="button-primary" onClick={() => navigate({ kind: 'new-game' })}>{t('menu.newGame')}</button>
+              {gameID && <button type="button" className="button-secondary" onClick={() => enterGame(gameID)}>{t('menu.resume')}</button>}
+            </div>
+          </section>
+
+          {error && <Notice title={t('state.errorTitle')} tone="danger"><p>{error}</p></Notice>}
+
+          <Card>
+            <div className="card-heading">
+              <div><p className="eyebrow">{t('menu.resume')}</p><h2>{t('menu.hostedGames')}</h2></div>
+              <span className={`connection-dot connection-${statusTone}`} aria-hidden="true" />
+            </div>
+            <p className="muted status-line">{statusText}</p>
+            {games.length === 0 ? (
+              <p className="muted">{t('menu.noGames')}</p>
+            ) : (
+              <div className="session-list">
+                {games.map((game) => (
+                  <button type="button" className="session-row" key={game.game_id} onClick={() => enterGame(game.game_id)}>
+                    <span><strong>{game.game_id}</strong><small>{t('top.turn', { turn: game.turn })} · {localizedPhase(t, game.phase)}</small></span>
+                    <span aria-hidden="true">›</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </Card>
+        </main>
+      </div>
+    )
+  }
+
+  if (route.kind === 'new-game') {
+    return (
+      <div className="standalone-shell">
+        <StandaloneHeader onHome={() => navigate({ kind: 'home' })} />
+        <main className="standalone-content">
+          <PageHeader eyebrow={t('newGame.eyebrow')} title={t('newGame.title')} subtitle={t('newGame.subtitle')} actions={<button type="button" className="button-ghost" onClick={() => navigate({ kind: 'home' })}>{t('common.back')}</button>} />
+          {error && <Notice title={t('state.errorTitle')} tone="danger"><p>{error}</p></Notice>}
+          <Card>
+            <form className="new-game-form" onSubmit={submitNewGame}>
+              <div className="form-grid">
+                <label>{t('newGame.gameId')}<input value={newGameID} onChange={(event) => setNewGameID(event.target.value)} required /></label>
+                <label>{t('newGame.seed')}<input value={newGameSeed} onChange={(event) => setNewGameSeed(event.target.value)} required placeholder={t('newGame.seedPlaceholder')} /></label>
+                <label>{t('newGame.galaxy')}<input value={t('newGame.galaxyValue')} disabled /></label>
+                <label>{t('newGame.techCombat')}<input value={t('newGame.techCombatValue')} disabled /></label>
+                <label>{t('newGame.humanEmpire')}<input value={humanName} onChange={(event) => setHumanName(event.target.value)} required /></label>
+                <label>{t('newGame.darlokEmpire')}<input value={darlokName} onChange={(event) => setDarlokName(event.target.value)} required /></label>
+              </div>
+              <button type="submit" className="button-primary button-wide" disabled={creatingGame}>{creatingGame ? t('newGame.creating') : t('newGame.create')}</button>
+            </form>
+          </Card>
+        </main>
+      </div>
+    )
+  }
+
+  const activeSection = route.section
+  const phaseText = snapshot ? localizedPhase(t, snapshot.view.phase) : undefined
 
   return (
-    <main className="shell">
-      <header className="hero">
-        <div>
-          <p className="eyebrow">Master of Orion X</p>
-          <h1>Authoritative Web HMI</h1>
-          <p className="muted">Slice 08 transport baseline. HTTP is authoritative; WebSocket only invalidates snapshots.</p>
-        </div>
-        <div className="connection" aria-live="polite">{status}</div>
-      </header>
+    <AppShell
+      activeSection={activeSection}
+      gameID={route.gameID}
+      turn={snapshot?.view.turn}
+      phaseLabel={phaseText}
+      status={statusText}
+      statusTone={statusTone}
+      onNavigate={(section) => navigate({ kind: 'game', gameID: route.gameID, section })}
+      onHome={() => navigate({ kind: 'home' })}
+    >
+      {error && <Notice title={t('state.errorTitle')} tone="danger"><p>{error}</p></Notice>}
 
-      <form className="panel new-game" onSubmit={submitNewGame}>
-        <div className="section-heading">
-          <div>
-            <p className="eyebrow">Slice 09</p>
-            <h2>New Game</h2>
+      {snapshot?.view.invasion && (
+        <Card className="priority-card">
+          <p className="eyebrow">{t('invasion.eyebrow')}</p>
+          <h2>{t('invasion.title')}</h2>
+          <p>{t('invasion.details', {
+            colony: snapshot.view.invasion.colony_id,
+            system: snapshot.view.invasion.system_id,
+            defender: snapshot.view.invasion.defender_empire_id,
+          })}</p>
+          <p className="muted">{t('invasion.transports', { count: snapshot.view.invasion.eligible_transport_fleet_ids.length })}</p>
+          <div className="action-row">
+            <button type="button" className="button-primary" disabled={invasionBusy || snapshot.view.phase !== 'invasion_decisions'} onClick={() => void runInvasion('invade')}>{t('invasion.invade')}</button>
+            <button type="button" className="button-secondary" disabled={invasionBusy || snapshot.view.phase !== 'invasion_decisions'} onClick={() => void runInvasion('decline')}>{t('invasion.decline')}</button>
           </div>
-          <p className="muted">Same seed + same settings reproduces the same deterministic starting galaxy.</p>
-        </div>
-        <div className="new-game-grid">
-          <label>
-            Game ID
-            <input value={newGameID} onChange={(event) => setNewGameID(event.target.value)} required />
-          </label>
-          <label>
-            Seed
-            <input value={newGameSeed} onChange={(event) => setNewGameSeed(event.target.value)} required placeholder="0x8009 or decimal" />
-          </label>
-          <label>
-            Galaxy
-            <input value="Small / Normal" disabled />
-          </label>
-          <label>
-            Technology / Combat
-            <input value="Average / Tactical" disabled />
-          </label>
-          <label>
-            Human Empire
-            <input value={humanName} onChange={(event) => setHumanName(event.target.value)} required />
-          </label>
-          <label>
-            Darlok Empire
-            <input value={darlokName} onChange={(event) => setDarlokName(event.target.value)} required />
-          </label>
-        </div>
-        <button type="submit" disabled={creatingGame}>{creatingGame ? 'Creating...' : 'Create deterministic game'}</button>
-      </form>
-      <section className="panel controls">
-        <label>
-          Hosted game
-          <select value={gameID} onChange={(event) => setGameID(event.target.value)}>
-            {games.map((game) => <option key={game.game_id} value={game.game_id}>{game.game_id}</option>)}
-          </select>
-        </label>
-        <label>
-          Development Seat
-          <input type="number" min={1} value={seatID} onChange={(event) => setSeatID(Number(event.target.value))} />
-        </label>
-        <button type="button" onClick={() => void loadSnapshot()} disabled={!gameID}>Refresh snapshot</button>
-      </section>
-
-      {error && <section className="panel error" role="alert">{error}</section>}
-
-      {snapshot && (
-        <>
-          <section className="metrics">
-            <article className="metric"><span>Game</span><strong>{snapshot.view.game_id}</strong></article>
-            <article className="metric"><span>Turn</span><strong>{snapshot.view.turn}</strong></article>
-            <article className="metric"><span>Phase</span><strong>{snapshot.view.phase}</strong></article>
-            <article className="metric"><span>Game revision</span><strong>{snapshot.view.revision}</strong></article>
-            <article className="metric"><span>Change sequence</span><strong>{snapshot.change_sequence}</strong></article>
-          </section>
-
-          {snapshot.view.result && (
-            <section className="panel" data-testid="game-completed">
-              <h2>Game completed</h2>
-              <p><strong>Conquest victory</strong> - Empire #{snapshot.view.result.winner_empire_id} / Seat #{snapshot.view.result.winner_seat_id}</p>
-              <p className="muted">Completed on turn {snapshot.view.result.completed_turn} at revision {snapshot.view.result.completed_revision}. Eliminated empire(s): {snapshot.view.result.eliminated_empire_ids.join(', ') || 'none'}.</p>
-            </section>
-          )}
-
-          <section className="grid">
-            <article className="panel">
-              <h2>{snapshot.view.empire.name}</h2>
-              <dl>
-                <div><dt>Empire ID</dt><dd>{snapshot.view.empire.id}</dd></div>
-                <div><dt>Race</dt><dd>{snapshot.view.empire.race_id}</dd></div>
-                <div><dt>Seat</dt><dd>{snapshot.view.seat.seat.id} / {snapshot.view.seat.seat.controller}</dd></div>
-              </dl>
-            </article>
-
-            {snapshot.view.invasion && (
-              <article className="panel">
-                <h2>Invasion</h2>
-                <p>
-                  Colony #{snapshot.view.invasion.colony_id} in system #{snapshot.view.invasion.system_id} â€” defender empire #{snapshot.view.invasion.defender_empire_id}.
-                </p>
-                <p className="muted">Eligible Troop Transports: {snapshot.view.invasion.eligible_transport_fleet_ids.join(', ')}</p>
-                <div className="actions">
-                  <button type="button" disabled={invasionBusy || snapshot.view.phase !== 'invasion_decisions'} onClick={() => void runInvasion('invade')}>
-                    Invade with all {snapshot.view.invasion.eligible_transport_fleet_ids.length} transport(s)
-                  </button>
-                  <button type="button" disabled={invasionBusy || snapshot.view.phase !== 'invasion_decisions'} onClick={() => void runInvasion('decline')}>
-                    Decline invasion
-                  </button>
-                </div>
-              </article>
-            )}
-
-            <article className="panel">
-              <h2>Diplomacy</h2>
-              {(snapshot.view.diplomacy ?? []).length === 0 ? <p className="muted">No other empires are available.</p> : (
-                <div>
-                  {(snapshot.view.diplomacy ?? []).map((relation) => {
-                    const otherSeat = snapshot.view.seats.find((candidate) => candidate.seat.empire_id === relation.other_empire_id)
-                    const disabled = diplomacyBusy || diplomacyClosed
-                    return (
-                      <div key={relation.other_empire_id}>
-                        <p><strong>{otherSeat?.seat.name ?? `Empire ${relation.other_empire_id}`}</strong> Â· {relation.stance}</p>
-                        {relation.incoming_peace_offer && <button type="button" disabled={disabled} onClick={() => void runDiplomacy('diplomacy.accept_peace', relation.other_empire_id)}>Accept peace</button>}
-                        {relation.stance === 'war' && !relation.incoming_peace_offer && !relation.outgoing_peace_offer && <button type="button" disabled={disabled} onClick={() => void runDiplomacy('diplomacy.offer_peace', relation.other_empire_id)}>Offer peace</button>}
-                        {(relation.stance === 'neutral' || relation.stance === 'peace') && <button type="button" disabled={disabled} onClick={() => void runDiplomacy('diplomacy.declare_war', relation.other_empire_id)}>Declare war</button>}
-                        {relation.outgoing_peace_offer && <p className="muted">Peace offer pending.</p>}
-                      </div>
-                    )
-                  })}
-                  {diplomacyClosed && <p className="muted">Diplomacy is available during planning before the first turn submission.</p>}
-                </div>
-              )}
-            </article>
-
-
-            <article className="panel">
-              <h2>Participant Battles</h2>
-              {snapshot.battles.length === 0 ? <p className="muted">No active participant battles.</p> : (
-                <ul>{snapshot.battles.map((battle) => <li key={battle.spec.id}>Battle {battle.spec.id}: {battle.phase}</li>)}</ul>
-              )}
-            </article>
-          </section>
-
-          {firstColony && (
-            <section className="panel">
-              <h2>Concrete gameplay command</h2>
-              <p className="muted">This form submits the real <code>colony.assign_population</code> command in a revision-bound CommandBatch.</p>
-              <form className="assignment" onSubmit={submitAssignment}>
-                <label>Farmers<input type="number" min="0" step="0.1" value={assignment.farmers} onChange={(event) => setAssignment((draft) => ({ ...draft, farmers: event.target.value }))} /></label>
-                <label>Workers<input type="number" min="0" step="0.1" value={assignment.workers} onChange={(event) => setAssignment((draft) => ({ ...draft, workers: event.target.value }))} /></label>
-                <label>Scientists<input type="number" min="0" step="0.1" value={assignment.scientists} onChange={(event) => setAssignment((draft) => ({ ...draft, scientists: event.target.value }))} /></label>
-                <div className="total">Assigned total: <strong>{Number.isFinite(totalDraft) ? totalDraft : 'invalid'}</strong></div>
-                <button type="submit">Submit turn</button>
-              </form>
-            </section>
-          )}
-
-          <section className="panel">
-            <h2>Latest invalidation</h2>
-            {lastNotification ? (
-              <pre>{JSON.stringify(lastNotification, null, 2)}</pre>
-            ) : <p className="muted">No WebSocket invalidation received in this browser session yet.</p>}
-          </section>
-        </>
+        </Card>
       )}
-    </main>
+
+      {snapshot?.view.result && (
+        <Card className="result-card" as="article">
+          <p className="eyebrow">{t('result.eyebrow')}</p>
+          <h2>{t('result.title')}</h2>
+          <p><strong>{t('result.winner', { empire: snapshot.view.result.winner_empire_id, seat: snapshot.view.result.winner_seat_id })}</strong></p>
+          <p className="muted">{t('result.completed', { turn: snapshot.view.result.completed_turn, revision: snapshot.view.result.completed_revision })}</p>
+          <p className="muted">{t('result.eliminated', { empires: snapshot.view.result.eliminated_empire_ids.join(', ') || t('result.none') })}</p>
+        </Card>
+      )}
+
+      {!snapshot ? (
+        <EmptyState title={t('state.loadingTitle')} body={t('state.loadingBody')} />
+      ) : activeSection === 'galaxy' ? (
+        <GalaxyView snapshot={snapshot} t={t} />
+      ) : activeSection === 'colonies' ? (
+        <ColoniesView snapshot={snapshot} assignment={assignment} setAssignment={setAssignment} totalDraft={totalDraft} onSubmit={submitAssignment} t={t} />
+      ) : activeSection === 'fleets' ? (
+        <FleetsView snapshot={snapshot} t={t} />
+      ) : activeSection === 'research' ? (
+        <ResearchView t={t} />
+      ) : (
+        <MoreView
+          snapshot={snapshot}
+          games={games}
+          gameID={gameID}
+          seatID={seatID}
+          setSeatID={setSeatID}
+          selectHostedGame={selectHostedGame}
+          loadSnapshot={loadSnapshot}
+          diplomacyBusy={diplomacyBusy}
+          diplomacyClosed={Boolean(diplomacyClosed)}
+          runDiplomacy={runDiplomacy}
+          lastNotification={lastNotification}
+          onHome={() => navigate({ kind: 'home' })}
+          t={t}
+        />
+      )}
+    </AppShell>
+  )
+}
+
+function GalaxyView({ snapshot, t }: { snapshot: PlayerSnapshot; t: Translator }) {
+  return (
+    <>
+      <PageHeader eyebrow={t('galaxy.eyebrow')} title={t('galaxy.title')} subtitle={t('galaxy.subtitle')} />
+      <section className="metric-grid">
+        <Metric label={t('metric.game')} value={snapshot.view.game_id} />
+        <Metric label={t('metric.turn')} value={snapshot.view.turn} />
+        <Metric label={t('metric.phase')} value={localizedPhase(t, snapshot.view.phase)} />
+        <Metric label={t('metric.revision')} value={snapshot.view.revision} />
+        <Metric label={t('metric.change')} value={snapshot.change_sequence} />
+      </section>
+      <div className="content-grid content-grid-2">
+        <Card>
+          <p className="eyebrow">{t('galaxy.empire')}</p>
+          <h2>{snapshot.view.empire.name}</h2>
+          <dl className="detail-list">
+            <div><dt>{t('galaxy.empireId')}</dt><dd>{snapshot.view.empire.id}</dd></div>
+            <div><dt>{t('galaxy.race')}</dt><dd>{snapshot.view.empire.race_id}</dd></div>
+            <div><dt>{t('galaxy.seat')}</dt><dd>{snapshot.view.seat.seat.id} · {snapshot.view.seat.seat.controller}</dd></div>
+          </dl>
+        </Card>
+        <Card>
+          <div className="summary-stats">
+            <div><span>{t('galaxy.colonies')}</span><strong>{snapshot.view.colonies.length}</strong></div>
+            <div><span>{t('galaxy.battles')}</span><strong>{snapshot.battles.length}</strong></div>
+            <div><span>{t('galaxy.contacts')}</span><strong>{snapshot.view.diplomacy?.length ?? 0}</strong></div>
+          </div>
+          <p className="muted card-note">{t('galaxy.mapPending')}</p>
+        </Card>
+      </div>
+    </>
+  )
+}
+
+function ColoniesView({ snapshot, assignment, setAssignment, totalDraft, onSubmit, t }: {
+  snapshot: PlayerSnapshot
+  assignment: AssignmentDraft
+  setAssignment: (update: AssignmentDraft | ((current: AssignmentDraft) => AssignmentDraft)) => void
+  totalDraft: number
+  onSubmit: (event: FormEvent) => void
+  t: Translator
+}) {
+  const first = snapshot.view.colonies[0]
+  return (
+    <>
+      <PageHeader eyebrow={t('colonies.eyebrow')} title={t('colonies.title')} subtitle={t('colonies.subtitle')} />
+      {snapshot.view.colonies.length === 0 ? (
+        <EmptyState title={t('colonies.noColonies')} />
+      ) : (
+        <div className="content-grid content-grid-2">
+          {snapshot.view.colonies.map((colony, index) => {
+            const population = aggregatePopulation(colony)
+            return (
+              <Card key={colony.id} className={index === 0 ? 'primary-colony' : ''}>
+                <div className="card-heading">
+                  <div><p className="eyebrow">{t('colonies.planet', { id: colony.planet_id })}</p><h2>{t('colonies.colony', { id: colony.id })}</h2></div>
+                  <span className="badge">{population.farmers + population.workers + population.scientists}</span>
+                </div>
+                <dl className="detail-list compact">
+                  <div><dt>{t('colonies.farmers')}</dt><dd>{population.farmers}</dd></div>
+                  <div><dt>{t('colonies.workers')}</dt><dd>{population.workers}</dd></div>
+                  <div><dt>{t('colonies.scientists')}</dt><dd>{population.scientists}</dd></div>
+                  <div><dt>{t('colonies.infantry')}</dt><dd>{colony.ground_forces?.infantry ?? 0}</dd></div>
+                </dl>
+                {first?.id === colony.id && (
+                  <form className="population-form" onSubmit={onSubmit}>
+                    <h3>{t('colonies.population')}</h3>
+                    <div className="three-fields">
+                      <label>{t('colonies.farmers')}<input type="number" min="0" step="0.1" value={assignment.farmers} onChange={(event) => setAssignment((draft) => ({ ...draft, farmers: event.target.value }))} /></label>
+                      <label>{t('colonies.workers')}<input type="number" min="0" step="0.1" value={assignment.workers} onChange={(event) => setAssignment((draft) => ({ ...draft, workers: event.target.value }))} /></label>
+                      <label>{t('colonies.scientists')}<input type="number" min="0" step="0.1" value={assignment.scientists} onChange={(event) => setAssignment((draft) => ({ ...draft, scientists: event.target.value }))} /></label>
+                    </div>
+                    <div className="form-footer"><span>{t('colonies.assignedTotal')}: <strong>{Number.isFinite(totalDraft) ? totalDraft : t('colonies.invalid')}</strong></span><button type="submit" className="button-primary">{t('colonies.submit')}</button></div>
+                  </form>
+                )}
+              </Card>
+            )
+          })}
+        </div>
+      )}
+    </>
+  )
+}
+
+function FleetsView({ snapshot, t }: { snapshot: PlayerSnapshot; t: Translator }) {
+  return (
+    <>
+      <PageHeader eyebrow={t('fleets.eyebrow')} title={t('fleets.title')} subtitle={t('fleets.subtitle')} />
+      <div className="content-grid content-grid-2">
+        <Card>
+          <h2>{t('fleets.battles')}</h2>
+          {snapshot.battles.length === 0 ? <p className="muted">{t('fleets.noBattles')}</p> : (
+            <div className="list-stack">{snapshot.battles.map((battle) => <div className="list-row" key={battle.spec.id}><span><strong>{t('fleets.battle', { id: battle.spec.id })}</strong><small>{localizedPhase(t, battle.phase)}</small></span><span className="badge">{battle.spec.participants.length}</span></div>)}</div>
+          )}
+        </Card>
+        <EmptyState title={t('fleets.noProjection')} body={t('common.notAvailableYet')} />
+      </div>
+    </>
+  )
+}
+
+function ResearchView({ t }: { t: Translator }) {
+  return (
+    <>
+      <PageHeader eyebrow={t('research.eyebrow')} title={t('research.title')} subtitle={t('research.subtitle')} />
+      <EmptyState title={t('research.pending')} body={t('common.notAvailableYet')} />
+    </>
+  )
+}
+
+function MoreView({ snapshot, games, gameID, seatID, setSeatID, selectHostedGame, loadSnapshot, diplomacyBusy, diplomacyClosed, runDiplomacy, lastNotification, onHome, t }: {
+  snapshot: PlayerSnapshot
+  games: GameSummary[]
+  gameID: string
+  seatID: number
+  setSeatID: (seatID: number) => void
+  selectHostedGame: (gameID: string) => void
+  loadSnapshot: () => Promise<void>
+  diplomacyBusy: boolean
+  diplomacyClosed: boolean
+  runDiplomacy: (kind: DiplomacyCommandKind, otherEmpireID: number) => Promise<void>
+  lastNotification: Notification | null
+  onHome: () => void
+  t: Translator
+}) {
+  return (
+    <>
+      <PageHeader eyebrow={t('more.eyebrow')} title={t('more.title')} subtitle={t('more.subtitle')} />
+      <div className="content-grid content-grid-2">
+        <Card>
+          <h2>{t('more.language')}</h2>
+          <p className="muted">{t('more.languageHint')}</p>
+          <LanguageSwitch />
+        </Card>
+        <Card>
+          <h2>{t('more.gameSession')}</h2>
+          <div className="settings-stack">
+            <label>{t('more.hostedGame')}<select value={gameID} onChange={(event) => selectHostedGame(event.target.value)}>{games.map((game) => <option key={game.game_id} value={game.game_id}>{game.game_id}</option>)}</select></label>
+            <label>{t('more.developmentSeat')}<input type="number" min="1" value={seatID} onChange={(event) => setSeatID(Number(event.target.value))} /></label>
+            <div className="action-row"><button type="button" className="button-secondary" onClick={() => void loadSnapshot()} disabled={!gameID}>{t('more.refreshSnapshot')}</button><button type="button" className="button-ghost" onClick={onHome}>{t('more.mainMenu')}</button></div>
+          </div>
+        </Card>
+        <Card>
+          <h2>{t('more.diplomacy')}</h2>
+          {(snapshot.view.diplomacy ?? []).length === 0 ? <p className="muted">{t('more.noEmpires')}</p> : (
+            <div className="list-stack">
+              {(snapshot.view.diplomacy ?? []).map((relation) => {
+                const otherSeat = snapshot.view.seats.find((candidate) => candidate.seat.empire_id === relation.other_empire_id)
+                const disabled = diplomacyBusy || diplomacyClosed
+                return (
+                  <div className="diplomacy-row" key={relation.other_empire_id}>
+                    <div><strong>{otherSeat?.seat.name ?? t('common.empireFallback', { id: relation.other_empire_id })}</strong><small>{localizedStance(t, relation.stance)}</small></div>
+                    <div className="action-row compact-actions">
+                      {relation.incoming_peace_offer && <button type="button" className="button-secondary" disabled={disabled} onClick={() => void runDiplomacy('diplomacy.accept_peace', relation.other_empire_id)}>{t('more.acceptPeace')}</button>}
+                      {relation.stance === 'war' && !relation.incoming_peace_offer && !relation.outgoing_peace_offer && <button type="button" className="button-secondary" disabled={disabled} onClick={() => void runDiplomacy('diplomacy.offer_peace', relation.other_empire_id)}>{t('more.offerPeace')}</button>}
+                      {(relation.stance === 'neutral' || relation.stance === 'peace') && <button type="button" className="button-danger" disabled={disabled} onClick={() => void runDiplomacy('diplomacy.declare_war', relation.other_empire_id)}>{t('more.declareWar')}</button>}
+                    </div>
+                    {relation.outgoing_peace_offer && <small className="muted">{t('more.peacePending')}</small>}
+                  </div>
+                )
+              })}
+              {diplomacyClosed && <p className="muted">{t('more.diplomacyTiming')}</p>}
+            </div>
+          )}
+        </Card>
+        <Card>
+          <h2>{t('more.diagnostics')}</h2>
+          <p className="muted">{t('more.diagnosticsHint')}</p>
+          <details className="diagnostics">
+            <summary>{t('more.latestInvalidation')}</summary>
+            {lastNotification ? <pre>{JSON.stringify(lastNotification, null, 2)}</pre> : <p className="muted">{t('more.noInvalidation')}</p>}
+          </details>
+        </Card>
+      </div>
+    </>
   )
 }
 

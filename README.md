@@ -30,7 +30,7 @@ The deterministic runtime now provides its **first complete supported headless m
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slices **01-14 are closed**. Slice 15 is the browser-playability parent epic. **Slice 15.1 is open; Gates 1-2 are complete and Gate 3 mobile-first shell/navigation/i18n implementation is active.** Slices 15.2-15.5 and 16-17 remain prepared.
+**Slice state:** Slices **01-14 are closed**. Slice 15 is the browser-playability parent epic. **Slice 15.1 is open; Gates 1-3 are complete and Gate 4 independent QA is pending.** Slices 15.2-15.5 and 16-17 remain prepared.
 
 ### Current / prepared slice queue
 
