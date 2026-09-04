@@ -21,7 +21,7 @@ Slice 15 is deliberately split into five gated sub-slices so functional authorit
 1. **15.1 - UX architecture / navigation / design system contract**
    - screen map, information architecture, navigation, responsive shell, interaction grammar and baseline design tokens.
 2. **15.2 - Functional strategic gameplay HMI**
-   - authoritative browser workflows for galaxy/system/colony/research/fleet/diplomacy/turn control using server-projected legality.
+   - authoritative browser workflows for the accepted 2D Galaxy + star-system dialog, Colony table/detail, location-grouped Fleets, eight-category Research, Diplomacy and turn control using server-projected legality; Espionage is a first-class product area whose missing mechanics must be audited/split rather than faked in React.
 3. **15.3 - MOOX visual identity / graphics / asset pipeline**
    - corporate identity, typography/color/icon language, imagery/model/render strategy, asset provenance and runtime asset integration.
 4. **15.4 - Rich gameplay presentation / battle / persistence UX**
@@ -31,7 +31,7 @@ Slice 15 is deliberately split into five gated sub-slices so functional authorit
 
 ## Epic scope guard
 
-The 15.x family owns browser playability and presentation for already-authoritative gameplay. It must not move rules, legality, costs, target selection, AI policy or deterministic simulation into React. From Slice 15.1 onward the browser HMI is also **multi-language by contract**, initially German and English with runtime switching; locale remains presentation-only and all later 15.x UI work must use the shared localization layer rather than hard-coded player-facing strings.
+The 15.x family owns browser playability and presentation for already-authoritative gameplay. Accepted strategic product areas are **Galaxy, Colonies, Fleets, Research, Diplomacy and Espionage**. Desktop should expose them directly in the left rail; mobile keeps the compact five-slot bottom navigation with Diplomacy/Espionage as first-class entries under `More`. It must not move rules, legality, costs, target selection, AI policy or deterministic simulation into React. From Slice 15.1 onward the browser HMI is also **multi-language by contract**, initially German and English with runtime switching; locale remains presentation-only and all later 15.x UI work must use the shared localization layer rather than hard-coded player-facing strings.
 
 Still deferred beyond the family unless explicitly pulled forward by a sub-slice contract:
 

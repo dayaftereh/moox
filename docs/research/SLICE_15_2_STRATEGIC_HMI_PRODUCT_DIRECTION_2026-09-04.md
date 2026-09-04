@@ -1,0 +1,257 @@
+# Slice 15.2/15.3 accepted strategic HMI product direction
+
+Date: **2026-09-04**
+
+Status: **accepted downstream product direction; implementation belongs to Slice 15.2/15.3, not Slice 15.1 Gate 4**.
+
+## Navigation / information architecture
+
+The Slice-15.1 five-destination mobile shell remains the compact phone baseline. The product-level strategic areas are now:
+
+1. **Galaxy**
+2. **Colonies**
+3. **Fleets**
+4. **Research**
+5. **Diplomacy**
+6. **Espionage**
+
+Desktop:
+
+- the left navigation rail should expose Galaxy, Colonies, Fleets, Research, Diplomacy and Espionage directly;
+- Settings/session/diagnostics remain separate low-priority controls rather than gameplay destinations.
+
+Mobile:
+
+- keep the five-slot bottom bar practical rather than crowding it;
+- Galaxy / Colonies / Fleets / Research remain direct bottom destinations;
+- the fifth `More` destination contains direct first-class entries for Diplomacy and Espionage plus settings/session controls;
+- contextual deep links may take the player directly to Diplomacy/Espionage without changing gameplay semantics.
+
+## Galaxy - primary strategic view
+
+Galaxy is not a dashboard. It is the main **interactive 2D galaxy map**, inspired by the interaction model of classic MOO2 while using original MOOX visuals.
+
+The map must support:
+
+- stars/systems positioned in the authoritative generated galaxy;
+- discovery/known-state presentation;
+- ownership/faction information where player knowledge permits it;
+- own and known foreign fleets;
+- fleet locations and travel routes/targets;
+- pan/zoom on desktop and touch pan/pinch-zoom on phone;
+- tap/click a known star/system to open the star-system dialog;
+- map selection and overlays must remain presentation-only; server projections/legal actions remain authoritative.
+
+## Star-system dialog / system inspection
+
+Clicking/tapping a discovered/known star opens an in-map **star-system dialog** rather than navigating away from the galaxy by default.
+
+The dialog should visually show the system as a miniature orbital scene:
+
+- star/sun in the center;
+- all known orbital bodies arranged clearly around it;
+- habitable/colonizable rocky planets;
+- gas giants;
+- hostile/uninhabitable planets where applicable;
+- asteroid belts where applicable;
+- colony/ownership markers and names where known;
+- player fleets currently present in the system;
+- fleet names and the ships belonging to each visible player fleet;
+- system name prominently visible.
+
+Desktop:
+
+- modal/large overlay on top of the 2D galaxy;
+- enough room to show orbital bodies and a fleet/system information column.
+
+Mobile:
+
+- large dialog/bottom-sheet/full-height overlay is acceptable;
+- orbital scene remains the primary visual focus;
+- fleet/planet details may stack beneath or open as nested sheets;
+- returning closes the system view back to the same galaxy-map position/zoom.
+
+## Planet selection inside the system dialog
+
+A planet/orbital body is selectable when the player's authoritative knowledge allows it.
+
+### Colonizable planet
+
+If the server exposes a legal colonization choice for the selected planet (for example because an eligible Colony Ship is present in the system):
+
+- show a prominent **Colonize / Kolonisieren** action on that planet;
+- the browser must not infer colonization legality from fleet graphics alone; it consumes server-projected legal choices;
+- activating Colonize opens a confirmation dialog naming the target planet/system and the Colony Ship/fleet that will be consumed/used where that information is available;
+- only after explicit confirmation is the authoritative colonization command submitted;
+- on success, refresh authoritative state and offer/open the newly created Colony detail view.
+
+If no legal colonization choice exists, the planet remains read-only and no fake disabled gameplay path should imply that the client owns the rule.
+
+### Existing owned colony
+
+Clicking/tapping a planet that contains one of the player's colonies opens the dedicated **Colony Detail** screen.
+
+The same Colony Detail route must also be reachable from the Colonies table, so Galaxy and Colony management converge on one canonical colony screen.
+
+## Colonies - management table
+
+The primary Colonies screen is a **dense, sortable management table**, not a card gallery.
+
+Each row represents one colony and should eventually expose the high-value at-a-glance information needed to manage many colonies quickly, such as:
+
+- colony / planet / system name;
+- population and capacity;
+- Farmers / Workers / Scientists;
+- food / production / research outputs where authoritative projection supports them;
+- morale/pollution/status where supported;
+- current construction project and progress;
+- warnings/blockers;
+- quick job controls.
+
+Population/job interaction:
+
+- desktop: click controls and drag/drop where practical;
+- phone/tablet: touch drag/drop where reliable;
+- always retain explicit accessible +/- or equivalent tap controls so drag/drop is never the only interaction path;
+- all submitted population assignment remains revision-bound and server-authoritative.
+
+Selecting a colony row opens the canonical Colony Detail screen.
+
+## Colony Detail - full planet management screen
+
+Owned colonies get a complete dedicated screen rather than being edited only inside the table.
+
+The screen should evoke the classic planet-management flow while using the MOOX design language.
+
+Required regions:
+
+### Population/jobs header
+
+At the top, prominently show colony population and the three job groups:
+
+- Farmers;
+- Workers;
+- Scientists.
+
+The player can redistribute population there using the same authoritative assignment mechanics as the table. Desktop drag/click and mobile touch/tap patterns may differ visually but must submit the same server command semantics.
+
+### Planet / colony presentation
+
+The main area should show:
+
+- the planet prominently;
+- planet/system/colony name;
+- relevant environment/size/biome/status information from the player-safe projection;
+- colony ownership/faction identity;
+- contextual economic/status information without duplicating hidden formulas in React.
+
+### Buildings / infrastructure
+
+Show the colony's existing buildings/infrastructure clearly, preferably as an inspectable list/grid with localized names and icons/art assets once Slice 15.3 provides them.
+
+### Construction / build queue
+
+Desktop target:
+
+- construction/current project and build queue on the **right side**, mirroring the fast-management intent of the classic screen;
+- available legal construction choices should be searchable/inspectable and enqueue through authoritative commands.
+
+Mobile target:
+
+- same semantics in a stacked panel, drawer or tab/sheet without losing the planet/job context;
+- current project/progress must remain easy to reach.
+
+The current backend already exposes construction choices/commands for building and strategic ship projects; Slice 15.2 must project the complete player-safe data needed by this screen rather than reimplementing cost/legality in React.
+
+## Fleets
+
+The Fleets area should use **fleet/ship tiles grouped by location**.
+
+Primary grouping:
+
+- one section per star system for fleets currently located there;
+- a separate in-transit grouping for travelling fleets where applicable.
+
+Each group/card should expose:
+
+- fleet name/id;
+- constituent ships with names/classes/role information available to the player;
+- current system or destination;
+- contextual legal movement/colonize/outpost actions;
+- selecting a fleet from Galaxy and selecting the same fleet in Fleets should cross-link to the same underlying fleet identity.
+
+## Research
+
+Research is a visual strategic screen organized around the **eight classic MOO2 research categories**:
+
+1. Construction
+2. Power
+3. Chemistry
+4. Sociology
+5. Computers
+6. Biology
+7. Physics
+8. Force Fields
+
+Each category should be represented visually rather than as a generic form, showing current/progress/available field information and technology imagery once 15.3 assets exist.
+
+The browser must not hard-code Creative/Uncreative research legality. Slice 15.2 should project the legal research selection granularity/options from the authoritative rules/state so the UI can correctly represent whether the player selects a field/category/application or receives all/limited outcomes according to the race traits and current rules.
+
+## Diplomacy
+
+Diplomacy is a first-class strategic area.
+
+Initial implementation can directly expose the already-supported authoritative baseline:
+
+- declare war;
+- offer peace;
+- accept peace;
+- relationship/stance state and pending peace offers.
+
+The presentation should be designed so later diplomacy breadth can grow without changing the primary navigation model.
+
+## Espionage
+
+Espionage is now a first-class planned strategic area, but it must not be faked in React.
+
+Current repository audit on 2026-09-04 found no Spy/Espionage command family in the backend.
+
+Therefore Slice 15.2 Gate 1 must:
+
+1. audit original/research evidence and desired minimum espionage gameplay;
+2. identify required authoritative state, legal actions and command semantics;
+3. decide whether a minimal espionage baseline can safely fit inside 15.2 or needs a dedicated sub-slice/mechanics slice;
+4. keep the UI/navigation slot planned even if the mechanics are implemented one slice later.
+
+Until authoritative mechanics exist, the user-facing production UI must not expose fake actionable espionage controls.
+
+## Visual identity / icon direction
+
+The current **OX** lettermark is accepted as a useful brand element and should remain visible in the shell unless the 15.3 visual-direction gate explicitly replaces it.
+
+Slice 15.3 should explore an original compact MOOX app/product icon that remains legible at phone/favicon sizes, with the preferred concept space combining:
+
+- spacecraft/ship silhouette;
+- star/orbit/space motif;
+- optionally a subtle X/orbit crossing;
+- no dependence on copied original MOO2 art.
+
+The 2D galaxy, star-system orbital dialog, planets, ships/fleet tiles, colony screen/buildings and eight research-category visuals are explicit 15.3 integration targets.
+
+## Authority boundary
+
+All of these views are presentation/orchestration only.
+
+The server remains authoritative for:
+
+- discovered/known information;
+- fleet/system/planet state;
+- colonization eligibility and target choices;
+- Colony population/job legality;
+- construction costs/choices/queue commands;
+- fleet movement/legal targets;
+- research options and Creative/Uncreative behavior;
+- diplomacy;
+- future espionage mechanics.
+
+The UI may optimize interaction and visualization but must not independently derive hidden/legal game outcomes.

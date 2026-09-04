@@ -31,7 +31,7 @@ Defer:
 
 - Slice 16 New Game/preset-race breadth;
 - Slice 17 broad military Ship Designer breadth;
-- unsupported tactical/diplomacy/espionage/leader/victory systems;
+- unsupported tactical, advanced Diplomacy/Espionage, leader and victory breadth beyond the authoritative baselines explicitly accepted by the preceding slices;
 - native packaging and large-scale content production beyond the canonical vertical slice.
 
 ## Gate 1 - Integration readiness audit

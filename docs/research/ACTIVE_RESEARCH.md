@@ -15,6 +15,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-14 are closed**; Slice **15.1 is open**; 15.2-15.5 and 16-17 remain prepared.
 - Current objective: **Slice 15.1 Gate 4 - independently verify the mobile-first/desktop-adaptive shell, DE/EN persistence/overflow behavior, authoritative command preservation and live NetBird preview, then run full QA and close the slice.**
+- Accepted downstream 15.2/15.3 strategic product direction: `docs/research/SLICE_15_2_STRATEGIC_HMI_PRODUCT_DIRECTION_2026-09-04.md` - 2D Galaxy primary view, orbital star-system dialog, legal Colonize confirmation, Colony table + full Colony Detail/build queue, location-grouped Fleets, eight-category Research, first-class Diplomacy and planned Espionage, plus retained OX lettermark / future spacecraft-space icon.
 
 
 ## Post-Slice-12 fidelity/depth audit - complete
