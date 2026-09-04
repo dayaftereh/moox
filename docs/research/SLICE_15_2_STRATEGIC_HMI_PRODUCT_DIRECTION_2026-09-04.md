@@ -255,3 +255,19 @@ The server remains authoritative for:
 - future espionage mechanics.
 
 The UI may optimize interaction and visualization but must not independently derive hidden/legal game outcomes.
+
+## Gate-2 accepted functional refinements - 2026-09-04
+
+The player refined and accepted the functional contract before 15.2 implementation:
+
+- gas giants and asteroid belts become persistent authoritative orbital bodies rather than presentation-only decoration; Outpost Ships must be able to establish legal Outposts on them as in original MOO2;
+- star spectral/class identity is retained for the functional system view, while final artwork remains 15.3;
+- Colony construction becomes a real ordered persistent queue with **no user-visible item-count cap** in MOOX; the original seven-slot limit is deliberately not carried forward;
+- Colony Detail's construction editor uses available-buildables on one side and the ordered queue on the other; normal Colony Detail and Colony table always expose the current build and ETA;
+- Colony-table same-row population moves reassign Farmer/Worker/Scientist jobs, while cross-row moves initiate Population transfer with a server-derived Freighter/ETA confirmation; the destination column is the desired destination job;
+- job changes update Food/PP/RP plus build/research timing immediately through a pure non-mutating authoritative Planning preview; React never owns those formulas;
+- Research ETA uses projected empire-wide RP/turn and changes when Scientist assignments change on any Colony; build ETA changes with projected Workers/PP;
+- the running-game sticky status area permanently surfaces BC balance/net income, Freighters available/total and Command Points used/capacity;
+- Espionage remains first-class in navigation but all actionable mechanics move to prepared **Slice 20 Espionage / Intelligence baseline**; 15.2 must not fake Spy controls.
+
+Permanent Gate-2 authority contract: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE2_2026-09-04.md`.

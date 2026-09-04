@@ -37,11 +37,11 @@ When a planned slice actually starts:
 
 Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1 always requires a fresh repository checkup and original-evidence review at the time work begins.
 
-### Current active / prepared queue - 2026-09-03
+### Current active / prepared queue - 2026-09-04
 
 Active:
 
-- `PLANNED_14_LIVE_GAMESESSION_SAVE_RESUME_BASELINE.md` - **closed; Gates 1-4 complete**. Implementation: `a2c4ccd`; Gate-4 rejection coverage: `e6a5e69`.
+- `PLANNED_15_2_FUNCTIONAL_STRATEGIC_GAMEPLAY_HMI.md` - **open; Gates 1-2 complete, Gate 3 pending**.
 
 Prepared queue:
 
@@ -54,8 +54,9 @@ Prepared queue:
    - `PLANNED_15_6_FULL_BROWSER_VERTICAL_SLICE.md` - final complete-game browser integration, polish and end-to-end QA including the accepted Tactical path.
 2. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - widen narrow New Game settings and preset-race support.
 3. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for broader combat/design fidelity after the first interactive Tactical baseline.
+4. `PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md` - dedicated authoritative Spy/intelligence mechanics and first-class Espionage HMI integration; Slice 20 is intentionally reserved while 18/19 remain unassigned.
 
-Milestone after Slice 15.6: a human can start, save/resume, play the accepted interactive Tactical battle path and finish the supported Human-vs-built-in-AI match from the browser through one coherent MOOX visual/interaction language. Re-audit after Slice 17 before numbering additional Tactical weapon/special/planetary breadth, deeper Diplomacy/Spies/Leaders and alternative-victory depth.
+Milestone after Slice 15.6: a human can start, save/resume, play the accepted interactive Tactical battle path and finish the supported Human-vs-built-in-AI match from the browser through one coherent MOOX visual/interaction language. Re-audit after the prepared Slice 20 Espionage baseline before numbering additional Tactical weapon/special/planetary breadth, deeper Diplomacy/Leaders/post-baseline Espionage and alternative-victory depth.
 
 The queue order is the current recommendation, not a hard dependency lock. Reprioritization is allowed before a later slice is opened if the dependency check still passes.
 ## Four gates

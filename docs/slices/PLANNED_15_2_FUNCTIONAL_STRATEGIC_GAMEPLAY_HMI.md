@@ -1,6 +1,6 @@
 # Planned slice 15.2 - Functional strategic gameplay HMI
 
-Status: **open; Gate 1 complete, Gate 2 pending**.
+Status: **open; Gates 1-2 complete, Gate 3 implementation pending**.
 
 Queue position: **15.2 of Slice-15 family**.
 
@@ -19,17 +19,17 @@ Make the currently authoritative strategic game genuinely operable from the brow
 In scope:
 
 - supported Human-vs-built-in-AI New Game entry using current narrow settings;
-- **Galaxy as the primary interactive 2D map**, including discovered/known systems, player-safe ownership/fleet/travel information, pan/zoom and star selection;
-- an in-map **star-system dialog** with central star, known planets/gas giants/asteroid belts, colony state and present player Fleets/Ships;
+- **Galaxy as the primary interactive 2D map**, using the current no-fog/all-public authoritative system projection, player-safe ownership/fleet/travel information, pan/zoom and star selection;
+- an in-map **star-system dialog** with persistent authoritative star metadata plus normal planets, gas giants and asteroid belts, Colony/Outpost state and present player Fleets/Ships;
 - server-authoritative planet actions from the system dialog, including a **Colonize confirmation flow** only when a legal colonization choice is projected;
 - **Colonies as a sortable management table** with quick population/job controls plus a canonical full **Colony Detail** screen reachable from both the table and owned planets in the star-system dialog;
-- Colony Detail population/jobs header, planet/status presentation, buildings/infrastructure and authoritative construction/current-project/build-queue workflows;
+- Colony Detail population/jobs header, planet/status presentation, buildings/infrastructure and a real ordered authoritative construction queue with no user-visible item-count cap;
 - **Research as a visual eight-category screen** (Construction, Power, Chemistry, Sociology, Computers, Biology, Physics, Force Fields), with Creative/Uncreative behavior driven by projected authoritative legal choices rather than browser rules;
 - **Fleets as ship/fleet tiles grouped by system/location**, plus in-transit grouping, inspection, movement, colonization and Outpost workflows;
 - **Diplomacy as a first-class strategic area** using the existing war/peace baseline;
-- **Espionage as a first-class planned product/navigation area**; Gate 1 must audit missing server mechanics and either freeze a minimal authoritative baseline for 15.2 or split it into a dedicated mechanics/sub-slice rather than fake it in React;
+- **Espionage as a first-class planned product/navigation area**, with actionable mechanics explicitly deferred to prepared Slice 20; 15.2 exposes no fake Spy actions;
 - turn submission/end-turn and bounded built-in-AI driving;
-- server-side read/legal-action additions required by those workflows;
+- server-side read/legal-action additions plus a pure non-mutating Planning-preview surface required for live Food/PP/RP, build/research ETA and Population-transfer/Freighter feedback;
 - player-safe projections only; no React-owned legality, costs, formulas or hidden AI state.
 
 Defer:
@@ -40,7 +40,8 @@ Defer:
 - final complete-game polish and E2E acceptance to 15.6;
 - broader New Game/race options to Slice 16;
 - broad Ship Designer to Slice 17;
-- advanced Diplomacy/Espionage breadth beyond whatever minimal authoritative baseline is explicitly accepted in Gate 2.
+- advanced Diplomacy breadth;
+- actionable Espionage mechanics to prepared Slice 20.
 
 ## Gate 1 - Functional workflow audit
 
@@ -60,24 +61,28 @@ Key Gate-1 findings: reuse the existing player-safe `PlayerDecisionView` as the 
 
 ## Gate 2 - Functional authority freeze
 
-- [ ] Freeze required server read/legal-action additions.
-- [ ] Freeze browser command submission patterns and optimistic/non-optimistic behavior.
-- [ ] Freeze strategic page/panel responsibilities inherited from 15.1, including desktop direct Diplomacy/Espionage entries and the compact mobile `More` grouping.
-- [ ] Freeze 2D Galaxy interaction, star-system dialog, planet selection, Colonize-confirmation and Colony Detail navigation/interaction contracts.
-- [ ] Freeze Colony table/detail, location-grouped Fleet and eight-category Research functional contracts.
-- [ ] Freeze the Espionage scope decision: accepted minimal authoritative baseline or explicit dedicated follow-up sub-slice.
-- [ ] Freeze AI-turn driving and error recovery behavior.
-- [ ] Freeze minimum functional acceptance scenarios.
+- [x] Freeze required server read/legal-action additions.
+- [x] Freeze browser command submission patterns and optimistic/non-optimistic behavior.
+- [x] Freeze strategic page/panel responsibilities inherited from 15.1, including desktop direct Diplomacy/Espionage entries and the compact mobile `More` grouping.
+- [x] Freeze 2D Galaxy interaction, star-system dialog, planet selection, Colonize-confirmation and Colony Detail navigation/interaction contracts.
+- [x] Freeze Colony table/detail, location-grouped Fleet and eight-category Research functional contracts.
+- [x] Freeze the Espionage scope decision: accepted minimal authoritative baseline or explicit dedicated follow-up sub-slice.
+- [x] Freeze AI-turn driving and error recovery behavior.
+- [x] Freeze minimum functional acceptance scenarios.
+
+Gate-2 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE2_2026-09-04.md`.
+
+Gate-2 freeze adds persistent gas-giant/asteroid/star metadata and generalized Outpost targets, a real no-visible-limit construction queue, same-row job vs cross-row Population-transfer table gestures, separate transfer source/destination jobs, a pure Planning preview for live economy/build/research timing, sticky BC/Freighters/Command-Point resources, and explicit Espionage deferral to Slice 20.
 
 ## Gate 3 - Implementation
 
-- [ ] Implement the interactive 2D Galaxy map and in-map star-system dialog with known planets/bodies and present Fleet/Ship information.
-- [ ] Implement server-projected planet actions, Colonize confirmation and post-colonization state refresh/navigation.
-- [ ] Implement the sortable Colonies management table plus canonical Colony Detail jobs/economy/buildings/construction-queue workflows.
+- [ ] Implement persistent star/orbital-body state plus the interactive 2D Galaxy map and in-map system dialog with planets, gas giants, asteroid belts, Outposts and present Fleet/Ship information.
+- [ ] Generalize Outposts to legal orbital bodies; implement server-projected Body/Planet actions, Colonize confirmation and post-resolution state refresh/navigation.
+- [ ] Implement the sortable Colonies management table, same-row job/cross-row Population-transfer gestures, canonical Colony Detail, pure Planning preview and the real ordered construction queue/editor.
 - [ ] Implement location-grouped Fleet/Ship tiles and Fleet inspection/movement flows.
-- [ ] Implement the visual eight-category Research workflow from authoritative options/progress.
-- [ ] Implement movement/colonization/Outpost and first-class Diplomacy workflows; implement Espionage only if Gate 2 freezes an authoritative baseline.
-- [ ] Integrate end-turn and built-in-AI automation through normal Host authority.
+- [ ] Implement normalized eight-category Research plus live authoritative RP/turn and ETA preview.
+- [ ] Implement movement/colonization/Outpost and first-class War/Peace Diplomacy workflows; keep Espionage non-actionable and reserved for Slice 20.
+- [ ] Add the sticky global BC/Freighters/Command-Points strip and integrate end-turn/built-in-AI automation through normal Host authority.
 - [ ] Add browser/server regressions for critical strategic commands.
 
 ## Gate 4 - QA + close

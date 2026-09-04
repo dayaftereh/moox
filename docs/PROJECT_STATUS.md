@@ -37,7 +37,7 @@ Slices 01-14 are closed. Slice 14 Live GameSession save/resume passed independen
 7. Slice 14 - **closed; Gates 1-4 complete** - live GameSession save/resume baseline.
 8. Slice 15 - **prepared parent epic** - playable browser strategic HMI, decomposed into:
    - 15.1 **closed; Gates 1-4 complete** - mobile-first UX architecture / navigation / bilingual design-system shell.
-   - 15.2 **open; Gate 1 complete, Gate 2 pending** - functional strategic gameplay HMI; Gate 1 recommends exposing existing player-safe `PlayerDecisionView` to React and freezes Espionage as a later dedicated mechanics requirement.
+   - 15.2 **open; Gates 1-2 complete, Gate 3 pending** - functional strategic gameplay HMI; Gate 2 freezes DecisionView transport, pure Planning previews, persistent gas-giant/asteroid/star metadata with Outpost targets, a real unbounded-UX construction queue, Colony Population transfer/table behavior, live build/research ETA and sticky strategic resources.
    - 15.3 **prepared** - MOOX visual identity / graphics / asset pipeline.
    - 15.4 **prepared** - rich gameplay decisions / Encounter transitions / persistence UX.
    - 15.5 **prepared** - interactive 2D Tactical Combat: authoritative movement/legal targets plus mouse/touch battlefield on the Slice-07 combat baseline.
@@ -45,7 +45,7 @@ Slices 01-14 are closed. Slice 14 Live GameSession save/resume passed independen
 9. Slice 16 - **prepared** - New Game + preset-race breadth.
 10. Slice 17 - **prepared** - military ship design component/weapon breadth.
 
-Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 15.1 is closed with independent Gate-4 QA complete. The accepted shell is mobile-first, desktop-adaptive, bilingual DE/EN and remains available over the LLO Desktop NetBird interface for review. **Slice 15.2 Gate 1 is complete; Gate 2 must now freeze the functional player-safe read/legal-action contract before implementation.** Slice 16/17 remain independent breadth work after the browser-playability family.
+Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 15.1 is closed with independent Gate-4 QA complete. The accepted shell is mobile-first, desktop-adaptive, bilingual DE/EN and remains available over the LLO Desktop NetBird interface for review. **Slice 15.2 Gates 1-2 are complete; Gate 3 implementation is the active objective.** Slice 16/17 remain independent breadth work after the browser-playability family. **Slice 20 Espionage/Intelligence is reserved/prepared as a dedicated mechanics slice; 15.2 only reserves its navigation area.**
 
 Important recent checkpoints:
 
@@ -204,14 +204,15 @@ The project now has a complete supported headless conquest lifecycle, so the rem
 3. **Slice 15 - Playable browser strategic HMI parent epic:** 15.1 UX/navigation/design system -> 15.2 functional strategic HMI -> 15.3 MOOX visual identity/assets -> 15.4 rich decisions/persistence UX -> 15.5 interactive 2D Tactical Combat -> 15.6 complete browser vertical slice.
 4. **Slice 16 - New Game + preset-race breadth:** widen the current Small/Normal/Average/two-player/Human+Darlok boundary using evidence-backed settings and preset races.
 5. **Slice 17 - Military ship design component/weapon breadth:** expand the current one-Laser minimal design for broader combat/design fidelity beyond the first interactive Slice-15.5 Tactical baseline.
+6. **Slice 20 - Espionage / intelligence baseline:** dedicated server-authoritative Spy acquisition/allocation, Espionage/Sabotage, race/technology modifiers, player-safe projection, AI and first-class browser integration; 18/19 remain intentionally unassigned.
 
 ### Next product milestone
 
 After Slice 15.6, a human should be able to start, save/resume, play the accepted interactive Tactical battle path and finish the supported deterministic single-player match from the browser without any gameplay authority living in React, through a coherent MOOX visual and interaction language.
 
-### Unnumbered depth after Slice 17
+### Unnumbered depth after Slice 20
 
-Re-audit before numbering **additional Tactical breadth beyond Slice 15.5**, treaty/trade diplomacy, deeper Espionage/Leaders, Economy/Population fidelity, full custom Race Designer, Council/Orion/Antaran victories, random events, multiplayer/external-AI transports and presentation/native packaging.
+Re-audit after the prepared Slice-20 Espionage baseline before numbering **additional Tactical breadth beyond Slice 15.5**, treaty/trade diplomacy, deeper post-baseline Espionage/Leaders, Economy/Population fidelity, full custom Race Designer, Council/Orion/Antaran victories, random events, multiplayer/external-AI transports and presentation/native packaging.
 
 No prepared slice is an active implementation slice until a fresh Gate 1 creates the corresponding `_OPEN_*.md` marker.
 
