@@ -36,7 +36,7 @@ Slices 01-14 are closed. Slice 14 Live GameSession save/resume passed independen
 6. Slice 13 - **closed** - deterministic built-in strategic AI baseline; implementation/evidence commit `371aa0c`.
 7. Slice 14 - **closed; Gates 1-4 complete** - live GameSession save/resume baseline.
 8. Slice 15 - **prepared parent epic** - playable browser strategic HMI, decomposed into:
-   - 15.1 **open; Gate 1 complete, Gate 2 pending** - mobile-first UX architecture / navigation / design system contract.
+   - 15.1 **open; Gates 1-2 complete, Gate 3 active** - mobile-first UX architecture / navigation / design system implementation.
    - 15.2 **prepared** - functional strategic gameplay HMI.
    - 15.3 **prepared** - MOOX visual identity / graphics / asset pipeline.
    - 15.4 **prepared** - rich gameplay presentation / battle / persistence UX.
@@ -44,7 +44,7 @@ Slices 01-14 are closed. Slice 14 Live GameSession save/resume passed independen
 9. Slice 16 - **prepared** - New Game + preset-race breadth.
 10. Slice 17 - **prepared** - military ship design component/weapon breadth.
 
-Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 15.1 is now open with Gate 1 complete and a mobile-first Gate 2 UX/design-system freeze pending. Desktop remains a required adaptive layout. After 15.1 implementation/QA, the built UI must be exposed over the LLO Desktop NetBird interface for direct phone review. Slice 16/17 remain independent breadth work after the browser-playability family.
+Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 15.1 is open with Gates 1-2 complete and Gate 3 mobile-first shell/navigation/i18n implementation active. Desktop remains a required adaptive layout. After 15.1 implementation/QA, the built UI must be exposed over the LLO Desktop NetBird interface for direct phone review. Slice 16/17 remain independent breadth work after the browser-playability family.
 
 Important recent checkpoints:
 

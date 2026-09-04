@@ -1,6 +1,6 @@
 # Planned slice 15.1 - UX architecture / navigation / design system contract
 
-Status: **open; Gate 1 audit complete; Gate 2 interaction/design-system freeze pending user approval**.
+Status: **open; Gates 1-2 complete; Gate 3 implementation active**.
 
 Queue position: **15.1 of Slice-15 family**.
 
@@ -50,12 +50,12 @@ Defer:
 
 ## Gate 2 - Interaction/design-system freeze
 
-- [ ] Freeze screen hierarchy and navigation model.
-- [ ] Freeze game-shell layout regions and responsive behavior.
-- [ ] Freeze interaction grammar for dialogs, toasts, errors, loading and focus.
-- [ ] Freeze baseline design-token/component API without locking final art direction.
-- [ ] Freeze i18n contract: `de` + `en`, runtime switch location/behavior, persistence/fallback rules, translation-key naming and untranslated-content policy.
-- [ ] Freeze wireframe acceptance set for canonical workflows in both German and English where text length can change layout.
+- [x] Freeze screen hierarchy and navigation model.
+- [x] Freeze game-shell layout regions and responsive behavior.
+- [x] Freeze interaction grammar for dialogs, toasts, errors, loading and focus.
+- [x] Freeze baseline design-token/component API without locking final art direction.
+- [x] Freeze i18n contract: `de` + `en`, runtime switch location/behavior, persistence/fallback rules, translation-key naming and untranslated-content policy.
+- [x] Freeze wireframe acceptance set for canonical workflows in both German and English where text length can change layout.
 
 ## Gate 3 - Implementation
 

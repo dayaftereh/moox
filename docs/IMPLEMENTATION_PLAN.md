@@ -22,7 +22,7 @@ Implemented/established runtime baseline includes:
 
 The first supported deterministic headless match lifecycle is now complete through Slice 12: authoritative server/web transport, deterministic New Game, war/peace, Troop Transport/invasion/Colony conquest and zero-Colony conquest victory are connected end-to-end. Broader tactical depth, complete Economy/pollution, race/customization extensions, leaders/espionage, AI, alternative victory families and endgame fidelity remain important post-milestone work.
 
-Slice 14 **Live GameSession save/resume baseline** is closed after independent Gate-4 QA. Slice 15 is the parent browser-playability epic. **Slice 15.1 is open: Gate 1 mobile-first UX/navigation/design-system audit is complete and Gate 2 freeze is pending user approval.** Desktop remains a required adaptive layout, and the 15.1 closure acceptance includes a NetBird-hosted phone preview. Slice 16 and Slice 17 remain later independent breadth work. `docs/research/ACTIVE_RESEARCH.md` remains the authoritative handoff.
+Slice 14 **Live GameSession save/resume baseline** is closed after independent Gate-4 QA. Slice 15 is the parent browser-playability epic. **Slice 15.1 is open: Gates 1-2 are complete and Gate 3 mobile-first shell/navigation/i18n implementation is active.** Desktop remains a required adaptive layout, and the 15.1 closure acceptance includes a NetBird-hosted phone preview. Slice 16 and Slice 17 remain later independent breadth work. `docs/research/ACTIVE_RESEARCH.md` remains the authoritative handoff.
 ## Guiding architecture
 
 Build the game rules as a deterministic, headless simulation core first. UI, rendering, audio and platform integration should depend on that core rather than contain game rules themselves.
