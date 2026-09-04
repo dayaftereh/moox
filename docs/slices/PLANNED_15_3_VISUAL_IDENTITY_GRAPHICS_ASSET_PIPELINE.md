@@ -25,6 +25,7 @@ In scope:
 - planet/Colony Detail imagery, buildings/infrastructure presentation rules and construction-queue visual language;
 - race/faction portrait direction for currently supported content;
 - ship/fleet imagery for location-grouped Fleet tiles and star-system presence;
+- Tactical-battle visual assets for Slice 15.5, such as battlefield backgrounds, ship markers/sprites, selection/movement/target overlays and non-authoritative effects;
 - building/infrastructure imagery strategy;
 - visual identity for the eight Research categories (Construction, Power, Chemistry, Sociology, Computers, Biology, Physics, Force Fields);
 - Diplomacy and Espionage icon/presentation language that can scale with future mechanics;
@@ -37,6 +38,7 @@ In scope:
 Defer:
 
 - new gameplay rules or content breadth;
+- interactive Tactical mechanics, movement/target legality and battlefield implementation to Slice 15.5;
 - broad Race Designer / Ship Designer mechanics;
 - expensive cinematic/animated sequences unless explicitly accepted in Gate 2;
 - reuse of copyrighted original-game assets without explicit provenance/license permission.

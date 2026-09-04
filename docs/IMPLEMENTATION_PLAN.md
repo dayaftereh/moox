@@ -253,16 +253,17 @@ The post-Slice-12 audit changes the immediate objective from "finish enough rule
    - **15.1 UX architecture / navigation / design system contract**;
    - **15.2 Functional strategic gameplay HMI**;
    - **15.3 MOOX visual identity / graphics / asset pipeline**;
-   - **15.4 Rich gameplay presentation / battle / persistence UX**;
-   - **15.5 Full browser vertical slice / polish / complete-game QA**.
+   - **15.4 Rich gameplay decisions / persistence UX**;
+   - **15.5 Interactive 2D Tactical Combat** - server-authoritative movement/legal targets plus a mouse/touch battlefield built on the narrow Slice-07 Laser baseline;
+   - **15.6 Full browser vertical slice / polish / complete-game QA**.
 
-Milestone after Slice 15.5: a human can start, save/resume and finish the supported deterministic single-player game from the browser through one coherent MOOX visual/interaction language.
+Milestone after Slice 15.6: a human can start, save/resume, play the accepted interactive Tactical battle path and finish the supported deterministic single-player game from the browser through one coherent MOOX visual/interaction language.
 
 Then widen fidelity/depth:
 
 4. **Slice 16 - New Game + preset-race breadth.** Expand the current Small/Normal/Average/exactly-two/Human+Darlok contract using evidence-backed settings and the 13 normalized preset races.
-5. **Slice 17 - Military ship design component/weapon breadth.** Expand the current one-hull/one-Laser minimal design into a canonical multi-hull/component/multi-weapon model before deeper Tactical Combat.
+5. **Slice 17 - Military ship design component/weapon breadth.** Expand the current one-hull/one-Laser minimal design into a canonical multi-hull/component/multi-weapon model for broader combat/design fidelity beyond the first interactive Slice-15.5 Tactical baseline.
 
-Keep Tactical Combat depth, treaty/trade diplomacy, Espionage/Leaders, Economy/Population fidelity, full custom Race Designer, Council/Orion/Antaran victories, random events, multiplayer/external AI and presentation unnumbered until the next audit after Slice 17.
+Keep **additional Tactical breadth beyond Slice 15.5** (broad weapon/special/facing/retreat/planetary families), treaty/trade diplomacy, deeper Espionage/Leaders, Economy/Population fidelity, full custom Race Designer, Council/Orion/Antaran victories, random events, multiplayer/external AI and presentation unnumbered until the next audit after Slice 17.
 
 Do not reopen closed Research/Economy slices listed in `docs/slices/HISTORY.md` unless contradictory original evidence or a concrete runtime regression requires it. ADR-0004 makes the server/web contract primary; browser, optional Wails wrapper, AI and other transports must continue to consume the same canonical Session/legal-action surfaces rather than owning gameplay rules.

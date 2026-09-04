@@ -15,7 +15,7 @@ The persisted design/Ship snapshot already carries hull, drive, computer, armor,
 ## Dependencies
 
 - Existing Research/technology unlock model.
-- Slice 15.5 browser vertical slice establishes the presentation shell for later design UI, but this slice remains core/server-authoritative first.
+- Slice 15.6 browser vertical slice establishes the presentation shell, including the first interactive Slice-15.5 Tactical baseline, while this slice remains core/server-authoritative first.
 
 ## Scope guard
 

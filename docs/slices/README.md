@@ -49,12 +49,13 @@ Prepared queue:
    - `PLANNED_15_1_UX_NAVIGATION_DESIGN_SYSTEM.md` - UX architecture, navigation, responsive shell and design-system contract.
    - `PLANNED_15_2_FUNCTIONAL_STRATEGIC_GAMEPLAY_HMI.md` - functional authoritative galaxy/colony/research/fleet/diplomacy gameplay HMI.
    - `PLANNED_15_3_VISUAL_IDENTITY_GRAPHICS_ASSET_PIPELINE.md` - MOOX corporate/visual identity plus graphics/image/model asset pipeline.
-   - `PLANNED_15_4_RICH_GAMEPLAY_PERSISTENCE_UX.md` - rich Battle/Invasion/decision presentation plus save/load/reconnect UX.
-   - `PLANNED_15_5_FULL_BROWSER_VERTICAL_SLICE.md` - final complete-game browser integration, polish and end-to-end QA.
+   - `PLANNED_15_4_RICH_GAMEPLAY_PERSISTENCE_UX.md` - rich Encounter/Invasion/decision presentation plus save/load/reconnect UX, stopping before the interactive battlefield.
+   - `PLANNED_15_5_INTERACTIVE_TACTICAL_COMBAT.md` - dedicated interactive 2D Tactical Combat with authoritative movement/legal targets and mouse/touch battlefield.
+   - `PLANNED_15_6_FULL_BROWSER_VERTICAL_SLICE.md` - final complete-game browser integration, polish and end-to-end QA including the accepted Tactical path.
 2. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - widen narrow New Game settings and preset-race support.
-3. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for later tactical depth.
+3. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for broader combat/design fidelity after the first interactive Tactical baseline.
 
-Milestone after Slice 15.5: a human can start, save/resume and finish the supported Human-vs-built-in-AI match from the browser through one coherent MOOX visual/interaction language. Re-audit after Slice 17 before numbering Tactical/Diplomacy/Spies/Leaders/alternative-victory depth.
+Milestone after Slice 15.6: a human can start, save/resume, play the accepted interactive Tactical battle path and finish the supported Human-vs-built-in-AI match from the browser through one coherent MOOX visual/interaction language. Re-audit after Slice 17 before numbering additional Tactical weapon/special/planetary breadth, deeper Diplomacy/Spies/Leaders and alternative-victory depth.
 
 The queue order is the current recommendation, not a hard dependency lock. Reprioritization is allowed before a later slice is opened if the dependency check still passes.
 ## Four gates

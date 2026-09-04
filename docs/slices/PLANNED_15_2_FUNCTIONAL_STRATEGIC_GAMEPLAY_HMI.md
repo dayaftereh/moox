@@ -35,8 +35,9 @@ In scope:
 Defer:
 
 - final visual identity/assets to 15.3;
-- Tactical/Encounter/Invasion/persistence rich presentation to 15.4;
-- final complete-game polish and E2E acceptance to 15.5;
+- Encounter/Invasion/persistence rich presentation to 15.4;
+- interactive Tactical battlefield/mechanics to 15.5;
+- final complete-game polish and E2E acceptance to 15.6;
 - broader New Game/race options to Slice 16;
 - broad Ship Designer to Slice 17;
 - advanced Diplomacy/Espionage breadth beyond whatever minimal authoritative baseline is explicitly accepted in Gate 2.

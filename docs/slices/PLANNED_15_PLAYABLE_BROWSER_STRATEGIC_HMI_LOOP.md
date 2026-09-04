@@ -8,7 +8,7 @@ Queue position: **15 family of 17**.
 
 Turn the transport-proof React HMI into the first genuinely playable, visually coherent browser game for the supported Human-vs-built-in-AI match while keeping all gameplay authority in Go.
 
-Slice 15 is deliberately split into five gated sub-slices so functional authority, UX architecture, visual exploration, rich presentation and final end-to-end acceptance do not collapse into one oversized implementation gate.
+Slice 15 is deliberately split into six gated sub-slices so functional authority, UX architecture, visual exploration, rich decision/persistence presentation, interactive Tactical Combat and final end-to-end acceptance do not collapse into one oversized implementation gate.
 
 ## Dependencies
 
@@ -24,10 +24,12 @@ Slice 15 is deliberately split into five gated sub-slices so functional authorit
    - authoritative browser workflows for the accepted 2D Galaxy + star-system dialog, Colony table/detail, location-grouped Fleets, eight-category Research, Diplomacy and turn control using server-projected legality; Espionage is a first-class product area whose missing mechanics must be audited/split rather than faked in React.
 3. **15.3 - MOOX visual identity / graphics / asset pipeline**
    - corporate identity, typography/color/icon language, imagery/model/render strategy, asset provenance and runtime asset integration.
-4. **15.4 - Rich gameplay presentation / battle / persistence UX**
-   - tactical/encounter/invasion/research/colony decision presentation plus save/load/reconnect/invalidation/error UX.
-5. **15.5 - Full browser vertical slice / polish / complete-game QA**
-   - complete Main Menu -> New Game -> play -> save/reload/resume -> victory path without developer tooling.
+4. **15.4 - Rich gameplay decisions / persistence UX**
+   - Encounter entry/return, invasion/research/colony decision presentation plus save/load/reconnect/invalidation/error UX; the interactive battlefield is explicitly deferred to 15.5.
+5. **15.5 - Interactive 2D tactical combat**
+   - extend the narrow Slice-07 fixed-position Laser baseline with server-authoritative movement/legal targets and a mouse/touch interactive 2D battlefield.
+6. **15.6 - Full browser vertical slice / polish / complete-game QA**
+   - complete Main Menu -> New Game -> strategic play -> save/reload/resume -> interactive Tactical battle -> victory path without developer tooling.
 
 ## Epic scope guard
 
@@ -37,20 +39,20 @@ Still deferred beyond the family unless explicitly pulled forward by a sub-slice
 
 - broader New Game/preset-race breadth from Slice 16;
 - broad military Ship Designer component/weapon breadth from Slice 17;
-- tactical mechanics not already authoritative in Go;
+- tactical breadth beyond the explicit interactive baseline accepted by Slice 15.5;
 - full Race Designer;
 - native/Wails packaging;
 - copyrighted original-game asset reuse without explicit provenance/license permission.
 
 ## Parent milestone acceptance
 
-Slice 15 is complete only when all sub-slices 15.1-15.5 are closed and a human can:
+Slice 15 is complete only when all sub-slices 15.1-15.6 are closed and a human can:
 
 - start the supported Human-vs-built-in-AI game from the browser;
 - understand and execute all currently supported strategic decisions without direct API/dev-tool use;
 - save, reload/reconnect and resume deterministically;
-- resolve supported Encounter/Battle/Invasion/Colony-Base/Research decisions;
+- resolve supported Encounter/Invasion/Colony-Base/Research decisions and play the accepted interactive Tactical Combat path;
 - reach and understand the final result;
 - do so through one coherent MOOX visual/interaction language.
 
-Milestone after **15.5**: first saveable, resumable and finishable Human-vs-built-in-AI MOOX browser vertical slice.
+Milestone after **15.6**: first saveable, resumable and finishable Human-vs-built-in-AI MOOX browser vertical slice with an integrated interactive Tactical Combat path.

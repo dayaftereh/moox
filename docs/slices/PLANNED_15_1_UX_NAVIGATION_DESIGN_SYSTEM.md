@@ -28,7 +28,7 @@ In scope:
 - keyboard/focus/accessibility baseline where practical;
 - mandatory **multi-language HMI baseline with German (`de`) and English (`en`)**, switchable at runtime without reload or game-state changes;
 - language-neutral canonical game/session state: locale is presentation preference only and must never affect simulation, saves, replay or command legality;
-- translation-key based UI copy and canonical enum/action labels so later 15.2-15.5 screens inherit localization instead of adding hard-coded player-facing text;
+- translation-key based UI copy and canonical enum/action labels so later 15.2-15.6 screens inherit localization instead of adding hard-coded player-facing text;
 - persisted local language preference with deterministic fallback (prefer explicit saved choice, then supported browser language, otherwise English);
 - wireframes or screenshot-level mockups for the canonical match journey.
 
@@ -37,7 +37,7 @@ Defer:
 - production graphic assets, portraits, ship art and rich backgrounds to 15.3;
 - full strategic gameplay wiring to 15.2;
 - final rich decision/persistence presentation to 15.4;
-- complete-game polish to 15.5.
+- interactive Tactical Combat to 15.5 and complete-game polish to 15.6.
 
 ## Gate 1 - UX audit
 

@@ -39,8 +39,9 @@ Slices 01-14 are closed. Slice 14 Live GameSession save/resume passed independen
    - 15.1 **open; Gates 1-3 complete, Gate 4 pending** - mobile-first UX architecture / navigation / bilingual design-system shell.
    - 15.2 **prepared** - functional strategic gameplay HMI.
    - 15.3 **prepared** - MOOX visual identity / graphics / asset pipeline.
-   - 15.4 **prepared** - rich gameplay presentation / battle / persistence UX.
-   - 15.5 **prepared** - full browser vertical slice / polish / complete-game QA.
+   - 15.4 **prepared** - rich gameplay decisions / Encounter transitions / persistence UX.
+   - 15.5 **prepared** - interactive 2D Tactical Combat: authoritative movement/legal targets plus mouse/touch battlefield on the Slice-07 combat baseline.
+   - 15.6 **prepared** - full browser vertical slice / polish / complete-game QA.
 9. Slice 16 - **prepared** - New Game + preset-race breadth.
 10. Slice 17 - **prepared** - military ship design component/weapon breadth.
 
@@ -200,17 +201,17 @@ The project now has a complete supported headless conquest lifecycle, so the rem
 
 1. **Slice 13 - Built-in strategic AI baseline:** deterministic rules-legal/no-cheat AI over the current complete lifecycle.
 2. **Slice 14 - Live GameSession save/resume baseline:** versioned in-progress persistence and exact continuation at stable interactive boundaries.
-3. **Slice 15 - Playable browser strategic HMI parent epic:** 15.1 UX/navigation/design system -> 15.2 functional strategic HMI -> 15.3 MOOX visual identity/assets -> 15.4 rich battle/persistence UX -> 15.5 complete browser vertical slice.
+3. **Slice 15 - Playable browser strategic HMI parent epic:** 15.1 UX/navigation/design system -> 15.2 functional strategic HMI -> 15.3 MOOX visual identity/assets -> 15.4 rich decisions/persistence UX -> 15.5 interactive 2D Tactical Combat -> 15.6 complete browser vertical slice.
 4. **Slice 16 - New Game + preset-race breadth:** widen the current Small/Normal/Average/two-player/Human+Darlok boundary using evidence-backed settings and preset races.
-5. **Slice 17 - Military ship design component/weapon breadth:** expand the current one-Laser minimal design before deeper Tactical Combat.
+5. **Slice 17 - Military ship design component/weapon breadth:** expand the current one-Laser minimal design for broader combat/design fidelity beyond the first interactive Slice-15.5 Tactical baseline.
 
 ### Next product milestone
 
-After Slice 15.5, a human should be able to start, save/resume and finish the supported deterministic single-player match from the browser without any gameplay authority living in React, through a coherent MOOX visual and interaction language.
+After Slice 15.6, a human should be able to start, save/resume, play the accepted interactive Tactical battle path and finish the supported deterministic single-player match from the browser without any gameplay authority living in React, through a coherent MOOX visual and interaction language.
 
 ### Unnumbered depth after Slice 17
 
-Re-audit before numbering Tactical Combat depth, treaty/trade diplomacy, Espionage/Leaders, Economy/Population fidelity, full custom Race Designer, Council/Orion/Antaran victories, random events, multiplayer/external-AI transports and presentation/native packaging.
+Re-audit before numbering **additional Tactical breadth beyond Slice 15.5**, treaty/trade diplomacy, deeper Espionage/Leaders, Economy/Population fidelity, full custom Race Designer, Council/Orion/Antaran victories, random events, multiplayer/external-AI transports and presentation/native packaging.
 
 No prepared slice is an active implementation slice until a fresh Gate 1 creates the corresponding `_OPEN_*.md` marker.
 

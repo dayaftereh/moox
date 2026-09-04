@@ -60,7 +60,7 @@ This is not yet a mobile interaction architecture: there is no persistent naviga
 
 ### 1. Long-page dashboard does not scale to gameplay
 
-As 15.2-15.4 add galaxy, colonies, research, fleets, diplomacy, battle, save/load and decisions, one vertically stacked page becomes unusable on a phone.
+As 15.2-15.5 add galaxy, colonies, research, fleets, diplomacy, decisions, save/load and the interactive Tactical battlefield, one vertically stacked page becomes unusable on a phone.
 
 ### 2. Technical state dominates player intent
 
@@ -281,7 +281,7 @@ Recommended Gate-2 i18n contract:
 - German and English must both be tested on phone and desktop because German labels are often longer and can expose responsive overflow;
 - language switch should live in an always-reachable settings/`More` surface, with an optional compact shortcut if Gate 2 wireframes show sufficient room.
 
-This contract is inherited by Slices 15.2-15.5.
+This contract is inherited by Slices 15.2-15.6.
 
 ## Gate 1 conclusion
 
