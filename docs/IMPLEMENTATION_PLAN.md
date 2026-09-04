@@ -22,7 +22,7 @@ Implemented/established runtime baseline includes:
 
 The first supported deterministic headless match lifecycle is now complete through Slice 12: authoritative server/web transport, deterministic New Game, war/peace, Troop Transport/invasion/Colony conquest and zero-Colony conquest victory are connected end-to-end. Broader tactical depth, complete Economy/pollution, race/customization extensions, leaders/espionage, AI, alternative victory families and endgame fidelity remain important post-milestone work.
 
-Slice 14 **Live GameSession save/resume baseline** is closed after independent Gate-4 QA. Implementation commit `a2c4ccd` adds LiveSnapshot v1 with Core23 plus Session/Battle continuation state, simulation compatibility, compacted ruleset fingerprinting, stable interactive save boundaries, production-resolver/controller scope and atomic Host/HTTP import/restore; Gate-4 rejection coverage is hardened in `e6a5e69`. Exact canonical AI save-at-Turn-250 continuation and all supported interactive phase roundtrips are green. Slice 15 **Playable browser strategic HMI loop** Gate 1 is the next prepared objective; Slices 15-17 remain unopened. `docs/research/ACTIVE_RESEARCH.md` remains the authoritative handoff.
+Slice 14 **Live GameSession save/resume baseline** is closed after independent Gate-4 QA. Slice 15 is now a prepared parent epic decomposed into **15.1-15.5** so UX architecture, authoritative gameplay wiring, visual identity/assets, rich persistence/battle presentation and final end-to-end playability can be gated independently. No slice is open. **Slice 15.1 UX architecture / navigation / design system Gate 1** is the next prepared objective; Slice 16 and Slice 17 remain later independent breadth work. `docs/research/ACTIVE_RESEARCH.md` remains the authoritative handoff.
 ## Guiding architecture
 
 Build the game rules as a deterministic, headless simulation core first. UI, rendering, audio and platform integration should depend on that core rather than contain game rules themselves.
@@ -249,9 +249,14 @@ The post-Slice-12 audit changes the immediate objective from "finish enough rule
 
 1. **Slice 13 - Built-in strategic AI baseline.** Deterministic, rules-legal, no-cheat AI consuming the same Session/App command surfaces as human seats.
 2. **Slice 14 - Live GameSession save/resume baseline.** Versioned in-progress persistence at stable interactive boundaries, exact continuation and server import/export surfaces.
-3. **Slice 15 - Playable browser strategic HMI loop.** Human-vs-built-in-AI browser match covering the currently supported strategic commands, live save/load and final result.
+3. **Slice 15 - Playable browser strategic HMI parent epic.** Implemented through the gated 15.x family:
+   - **15.1 UX architecture / navigation / design system contract**;
+   - **15.2 Functional strategic gameplay HMI**;
+   - **15.3 MOOX visual identity / graphics / asset pipeline**;
+   - **15.4 Rich gameplay presentation / battle / persistence UX**;
+   - **15.5 Full browser vertical slice / polish / complete-game QA**.
 
-Milestone after Slice 15: a human can start, save/resume and finish the supported deterministic single-player game from the browser.
+Milestone after Slice 15.5: a human can start, save/resume and finish the supported deterministic single-player game from the browser through one coherent MOOX visual/interaction language.
 
 Then widen fidelity/depth:
 

@@ -14,12 +14,12 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Prepared tranche: Slices **13-17**; none is open.
-- Current objective: **Slice 15 Gate 1 is the next prepared objective: audit every browser workflow/read surface required for a complete supported Human-vs-built-in-AI strategic match, including save/load/reconnect, before implementation. Slice 15 is prepared but not open.**
+- Current objective: **Slice 15.1 Gate 1 is the next prepared objective: audit browser information architecture, complete Human-vs-AI journey, navigation/responsive shell, interaction grammar and baseline design-system primitives before any broad gameplay or art implementation. Slice 15.1 is prepared but not open.**
 
 
 ## Post-Slice-12 fidelity/depth audit - complete
 
-The milestone re-audit identified independent playability as the main post-lifecycle bottleneck. Slices 13 Built-in AI and 14 live GameSession persistence are now closed after independent Gate-4 QA. Remaining prepared queue: Slice 15 playable browser HMI, Slice 16 New Game/preset-race breadth, Slice 17 military design component/weapon breadth. Slice 15 Gate 1 is next when explicitly requested.
+The milestone re-audit identified independent playability as the main post-lifecycle bottleneck. Slices 13 Built-in AI and 14 live GameSession persistence are closed. The former oversized Slice 15 has been decomposed into a five-part browser-playability family: 15.1 UX/navigation/design system, 15.2 functional strategic HMI, 15.3 MOOX visual identity/assets, 15.4 rich gameplay/persistence UX, 15.5 final browser vertical slice. Slice 16 New Game/preset-race breadth and Slice 17 military design breadth remain later independent work. Slice 15.1 Gate 1 is next when explicitly requested.
 
 Permanent audit: `docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md`.
 ## Closed Slice 12 - Empire elimination / first headless victory loop

@@ -15,7 +15,7 @@ Current runtime explicitly accepts only Small galaxy, Normal age, Average techno
 ## Dependencies
 
 - Slice 13 built-in AI.
-- Slice 15 playable browser HMI for user-facing settings.
+- Slice 15.5 completed browser vertical slice for the established user-facing shell; this slice then widens its New Game/race breadth.
 
 ## Scope guard
 

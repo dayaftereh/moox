@@ -1,0 +1,70 @@
+# Planned slice 15.5 - Full browser vertical slice / polish / complete-game QA
+
+Status: **planned / queued; not open**.
+
+Queue position: **15.5 of Slice-15 family**.
+
+## Objective
+
+Integrate and polish Slices 15.1-15.4 into the first complete browser-playable Master of Orion X vertical slice: Main Menu -> New Game -> strategic play -> save/reload/resume -> supported battles/decisions -> victory.
+
+## Dependencies
+
+- Slices 15.1-15.4 closed.
+- Slice 13 built-in AI.
+- Slice 14 live persistence.
+
+## Scope guard
+
+In scope:
+
+- coherent Main Menu / New Game / Resume / active-game / result journey;
+- complete supported Human-vs-built-in-AI playthrough using browser surfaces only;
+- final navigation consistency and visual polish across all implemented screens;
+- loading/performance/runtime-error cleanup that blocks normal play;
+- save/reload/reconnect smoke and recovery paths;
+- representative responsive support for agreed viewports;
+- E2E/browser smoke coverage for the canonical match journey;
+- final authority audit proving React contains presentation/orchestration only.
+
+Defer:
+
+- Slice 16 New Game/preset-race breadth;
+- Slice 17 broad military Ship Designer breadth;
+- unsupported tactical/diplomacy/espionage/leader/victory systems;
+- native packaging and large-scale content production beyond the canonical vertical slice.
+
+## Gate 1 - Integration readiness audit
+
+- [ ] Audit all 15.1-15.4 acceptance evidence and unresolved cross-slice UX seams.
+- [ ] Define the exact canonical browser playthrough and checkpoints from launch to victory.
+- [ ] Identify blockers requiring integration fixes rather than new gameplay scope.
+- [ ] Define performance/responsive/error thresholds for a playable vertical slice.
+- [ ] Define automated/manual browser E2E strategy including save/reload/reconnect.
+- [ ] Present Gate-2 final vertical-slice acceptance contract.
+
+## Gate 2 - Vertical-slice freeze
+
+- [ ] Freeze canonical start-to-victory browser scenario and allowed setup.
+- [ ] Freeze final navigation/polish/performance acceptance thresholds.
+- [ ] Freeze save/reload/reconnect and failure-recovery acceptance cases.
+- [ ] Freeze browser/E2E evidence requirements and no-dev-tool rule.
+
+## Gate 3 - Integration and polish
+
+- [ ] Close cross-screen/navigation/data-refresh seams.
+- [ ] Complete Main Menu/New Game/Resume/result integration.
+- [ ] Fix blocking performance/responsive/runtime-error issues.
+- [ ] Add E2E/smoke automation where practical and deterministic.
+- [ ] Perform complete Human-vs-built-in-AI browser playthroughs without direct API/dev-tool commands.
+
+## Gate 4 - Final milestone QA + close
+
+- [ ] Complete at least one full supported Human-vs-built-in-AI browser game from Main Menu to victory.
+- [ ] Save mid-game, reload/reconnect and finish with authoritative deterministic continuation.
+- [ ] Verify representative responsive/browser-runtime behavior and production asset loading.
+- [ ] Run full Go tests/vet/web build/E2E plus `git diff --check`.
+- [ ] Perform final React authority scan and document milestone evidence.
+- [ ] Update parent Slice-15 milestone, status/HISTORY and close marker.
+
+Milestone on closure: **first saveable, resumable and finishable Human-vs-built-in-AI MOOX browser vertical slice**.

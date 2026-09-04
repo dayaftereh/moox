@@ -35,11 +35,16 @@ Slices 01-14 are closed. Slice 14 Live GameSession save/resume passed independen
 5. Slice 12 - **closed** - Empire elimination and first deterministic headless victory loop (`90b83d8`).
 6. Slice 13 - **closed** - deterministic built-in strategic AI baseline; implementation/evidence commit `371aa0c`.
 7. Slice 14 - **closed; Gates 1-4 complete** - live GameSession save/resume baseline.
-8. Slice 15 - **prepared** - playable browser strategic HMI loop.
+8. Slice 15 - **prepared parent epic** - playable browser strategic HMI, decomposed into:
+   - 15.1 **prepared** - UX architecture / navigation / design system contract.
+   - 15.2 **prepared** - functional strategic gameplay HMI.
+   - 15.3 **prepared** - MOOX visual identity / graphics / asset pipeline.
+   - 15.4 **prepared** - rich gameplay presentation / battle / persistence UX.
+   - 15.5 **prepared** - full browser vertical slice / polish / complete-game QA.
 9. Slice 16 - **prepared** - New Game + preset-race breadth.
 10. Slice 17 - **prepared** - military ship design component/weapon breadth.
 
-Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 14 is closed after independent Gate-4 QA. Slice 15 Gate 1 is the next prepared objective; Slices 15-17 remain unopened, and the next product milestone remains a saveable Human-vs-built-in-AI browser match after Slices 13-15.
+Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 14 is closed after independent Gate-4 QA. Slice 15 has been decomposed into gated sub-slices 15.1-15.5 and remains unopened; **15.1 Gate 1** is next. Slice 16/17 remain independent breadth work after the browser-playability family. The next product milestone is the complete saveable Human-vs-built-in-AI browser vertical slice at 15.5 closure.
 
 Important recent checkpoints:
 
@@ -195,13 +200,13 @@ The project now has a complete supported headless conquest lifecycle, so the rem
 
 1. **Slice 13 - Built-in strategic AI baseline:** deterministic rules-legal/no-cheat AI over the current complete lifecycle.
 2. **Slice 14 - Live GameSession save/resume baseline:** versioned in-progress persistence and exact continuation at stable interactive boundaries.
-3. **Slice 15 - Playable browser strategic HMI loop:** Human-vs-built-in-AI strategic gameplay, live save/load and final result through server authority.
+3. **Slice 15 - Playable browser strategic HMI parent epic:** 15.1 UX/navigation/design system -> 15.2 functional strategic HMI -> 15.3 MOOX visual identity/assets -> 15.4 rich battle/persistence UX -> 15.5 complete browser vertical slice.
 4. **Slice 16 - New Game + preset-race breadth:** widen the current Small/Normal/Average/two-player/Human+Darlok boundary using evidence-backed settings and preset races.
 5. **Slice 17 - Military ship design component/weapon breadth:** expand the current one-Laser minimal design before deeper Tactical Combat.
 
 ### Next product milestone
 
-After Slice 15, a human should be able to start, save/resume and finish the supported deterministic single-player match from the browser without any gameplay authority living in React.
+After Slice 15.5, a human should be able to start, save/resume and finish the supported deterministic single-player match from the browser without any gameplay authority living in React, through a coherent MOOX visual and interaction language.
 
 ### Unnumbered depth after Slice 17
 

@@ -1,12 +1,14 @@
-# Planned slice 15 - Playable browser strategic HMI loop
+# Planned slice 15 - Playable browser strategic HMI epic
 
-Status: **planned / queued; not open**.
+Status: **parent epic / prepared; no direct implementation gate**.
 
-Queue position: **15 of 17**.
+Queue position: **15 family of 17**.
 
 ## Objective
 
-Turn the transport-proof React HMI into the first genuinely playable browser strategic loop for the supported Human-vs-built-in-AI match while keeping all gameplay authority in Go.
+Turn the transport-proof React HMI into the first genuinely playable, visually coherent browser game for the supported Human-vs-built-in-AI match while keeping all gameplay authority in Go.
+
+Slice 15 is deliberately split into five gated sub-slices so functional authority, UX architecture, visual exploration, rich presentation and final end-to-end acceptance do not collapse into one oversized implementation gate.
 
 ## Dependencies
 
@@ -14,55 +16,41 @@ Turn the transport-proof React HMI into the first genuinely playable browser str
 - Slice 13 built-in AI baseline.
 - Slice 14 live save/resume baseline.
 
-## Scope guard
+## Sub-slice sequence
 
-In scope:
+1. **15.1 - UX architecture / navigation / design system contract**
+   - screen map, information architecture, navigation, responsive shell, interaction grammar and baseline design tokens.
+2. **15.2 - Functional strategic gameplay HMI**
+   - authoritative browser workflows for galaxy/system/colony/research/fleet/diplomacy/turn control using server-projected legality.
+3. **15.3 - MOOX visual identity / graphics / asset pipeline**
+   - corporate identity, typography/color/icon language, imagery/model/render strategy, asset provenance and runtime asset integration.
+4. **15.4 - Rich gameplay presentation / battle / persistence UX**
+   - tactical/encounter/invasion/research/colony decision presentation plus save/load/reconnect/invalidation/error UX.
+5. **15.5 - Full browser vertical slice / polish / complete-game QA**
+   - complete Main Menu -> New Game -> play -> save/reload/resume -> victory path without developer tooling.
 
-- supported New Game flow with Human vs built-in AI;
-- usable strategic galaxy/system/fleet presentation;
-- Colony population/jobs/economy/construction interaction;
-- Research selection/progress interaction;
-- Fleet movement/colonization/outpost interaction;
-- war/peace baseline UI;
-- Encounter/Battle/Invasion decision UI for currently supported commands;
-- turn progression, live save/load/resume and completed-game result;
-- reconnect/invalidation behavior through existing HTTP/WebSocket contract;
-- server-projected legal choices/costs/targets; React must not own rule logic.
+## Epic scope guard
 
-Defer:
+The 15.x family owns browser playability and presentation for already-authoritative gameplay. It must not move rules, legality, costs, target selection, AI policy or deterministic simulation into React.
 
-- polished MOO2-style art/layout;
-- full race designer/ship designer screens;
-- broader New Game options from Slice 16;
-- tactical depth beyond currently authoritative commands;
-- native/Wails packaging.
+Still deferred beyond the family unless explicitly pulled forward by a sub-slice contract:
 
-## Gate 1 - HMI workflow audit
+- broader New Game/preset-race breadth from Slice 16;
+- broad military Ship Designer component/weapon breadth from Slice 17;
+- tactical mechanics not already authoritative in Go;
+- full Race Designer;
+- native/Wails packaging;
+- copyrighted original-game asset reuse without explicit provenance/license permission.
 
-- [ ] Map every command/decision required by the canonical supported match to an existing App/Server surface.
-- [ ] Identify missing read/legal-action queries that must be added server-side.
-- [ ] Define minimum galaxy/colony/research/fleet/battle information architecture.
-- [ ] Define browser save/load/reconnect lifecycle.
-- [ ] Define an end-to-end browser regression/smoke strategy.
-- [ ] Present Gate-2 interaction contract and screenshots/wireframe-level structure before implementation.
+## Parent milestone acceptance
 
-## Gate 2 - Implementation decision
+Slice 15 is complete only when all sub-slices 15.1-15.5 are closed and a human can:
 
-- [ ] Freeze page/panel/navigation model.
-- [ ] Freeze authoritative query/command additions.
-- [ ] Freeze error/invalidation/reconnect behavior.
-- [ ] Freeze minimum visual acceptance criteria for a playable match.
+- start the supported Human-vs-built-in-AI game from the browser;
+- understand and execute all currently supported strategic decisions without direct API/dev-tool use;
+- save, reload/reconnect and resume deterministically;
+- resolve supported Encounter/Battle/Invasion/Colony-Base/Research decisions;
+- reach and understand the final result;
+- do so through one coherent MOOX visual/interaction language.
 
-## Gate 3 - Implementation
-
-- [ ] Implement strategic game navigation/presentation.
-- [ ] Implement all supported human command workflows.
-- [ ] Integrate AI turn driving and save/resume.
-- [ ] Add browser-facing regressions for critical commands and completion.
-
-## Gate 4 - Follow-up QA + commit + close
-
-- [ ] Play a complete supported Human-vs-AI game through browser surfaces.
-- [ ] Verify save/reload/reconnect and completion projection.
-- [ ] Run full tests/vet/web checks and `git diff --check`.
-- [ ] Update evidence/status/HISTORY and close marker.
+Milestone after **15.5**: first saveable, resumable and finishable Human-vs-built-in-AI MOOX browser vertical slice.
