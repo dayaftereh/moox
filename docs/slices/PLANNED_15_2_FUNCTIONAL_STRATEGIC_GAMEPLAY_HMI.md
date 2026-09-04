@@ -1,6 +1,6 @@
 # Planned slice 15.2 - Functional strategic gameplay HMI
 
-Status: **planned / queued; not open**.
+Status: **open; Gate 1 complete, Gate 2 pending**.
 
 Queue position: **15.2 of Slice-15 family**.
 
@@ -44,15 +44,19 @@ Defer:
 
 ## Gate 1 - Functional workflow audit
 
-- [ ] Map every strategic command/decision in the canonical match to current App/HTTP surfaces.
-- [ ] Identify missing player-safe reads, legal actions, target catalogs and command envelopes.
-- [ ] Define player-safe projection/read requirements for the 2D Galaxy map, star-system dialog, planet bodies, present Fleets/Ships, Colony table and full Colony Detail screen.
-- [ ] Define the authoritative Colonize confirmation flow and the canonical cross-navigation `Galaxy -> System -> Planet -> Colony Detail` / `Colonies table -> Colony Detail`.
-- [ ] Define minimum Fleet grouping, eight-category Research and first-class Diplomacy data presentation.
-- [ ] Audit Espionage evidence/mechanics and decide whether the minimal authoritative baseline fits 15.2 or requires a dedicated sub-slice before actionable UI.
-- [ ] Define AI-turn driving boundaries and user-visible busy/ready states.
-- [ ] Define functional browser regression strategy for each command family.
-- [ ] Present Gate-2 authoritative HMI contract.
+- [x] Map every strategic command/decision in the canonical match to current App/HTTP surfaces.
+- [x] Identify missing player-safe reads, legal actions, target catalogs and command envelopes.
+- [x] Define player-safe projection/read requirements for the 2D Galaxy map, star-system dialog, planet bodies, present Fleets/Ships, Colony table and full Colony Detail screen.
+- [x] Define the authoritative Colonize confirmation flow and the canonical cross-navigation `Galaxy -> System -> Planet -> Colony Detail` / `Colonies table -> Colony Detail`.
+- [x] Define minimum Fleet grouping, eight-category Research and first-class Diplomacy data presentation.
+- [x] Audit Espionage evidence/mechanics and decide whether the minimal authoritative baseline fits 15.2 or requires a dedicated sub-slice before actionable UI.
+- [x] Define AI-turn driving boundaries and user-visible busy/ready states.
+- [x] Define functional browser regression strategy for each command family.
+- [x] Present Gate-2 authoritative HMI contract.
+
+Gate-1 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE1_2026-09-04.md`.
+
+Key Gate-1 findings: reuse the existing player-safe `PlayerDecisionView` as the HMI legality/read foundation; current baseline has no real fog/discovery state; persistent non-colonizable orbital bodies/star-class metadata and a true ordered construction queue are explicit Gate-2 scope decisions; actionable Espionage requires a dedicated later mechanics slice.
 
 ## Gate 2 - Functional authority freeze
 
