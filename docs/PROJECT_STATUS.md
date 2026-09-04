@@ -36,8 +36,8 @@ Slices 01-14 are closed. Slice 14 Live GameSession save/resume passed independen
 6. Slice 13 - **closed** - deterministic built-in strategic AI baseline; implementation/evidence commit `371aa0c`.
 7. Slice 14 - **closed; Gates 1-4 complete** - live GameSession save/resume baseline.
 8. Slice 15 - **prepared parent epic** - playable browser strategic HMI, decomposed into:
-   - 15.1 **open; Gates 1-3 complete, Gate 4 pending** - mobile-first UX architecture / navigation / bilingual design-system shell.
-   - 15.2 **prepared** - functional strategic gameplay HMI.
+   - 15.1 **closed; Gates 1-4 complete** - mobile-first UX architecture / navigation / bilingual design-system shell.
+   - 15.2 **prepared; next objective, not open** - functional strategic gameplay HMI.
    - 15.3 **prepared** - MOOX visual identity / graphics / asset pipeline.
    - 15.4 **prepared** - rich gameplay decisions / Encounter transitions / persistence UX.
    - 15.5 **prepared** - interactive 2D Tactical Combat: authoritative movement/legal targets plus mouse/touch battlefield on the Slice-07 combat baseline.
@@ -45,7 +45,7 @@ Slices 01-14 are closed. Slice 14 Live GameSession save/resume passed independen
 9. Slice 16 - **prepared** - New Game + preset-race breadth.
 10. Slice 17 - **prepared** - military ship design component/weapon breadth.
 
-Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 15.1 is open with Gates 1-3 complete and Gate 4 independent QA pending. Desktop remains a required adaptive layout. After 15.1 implementation/QA, the built UI must be exposed over the LLO Desktop NetBird interface for direct phone review. Slice 16/17 remain independent breadth work after the browser-playability family.
+Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 15.1 is closed with independent Gate-4 QA complete. The accepted shell is mobile-first, desktop-adaptive, bilingual DE/EN and remains available over the LLO Desktop NetBird interface for review. Slice 15.2 is the next prepared objective. Slice 16/17 remain independent breadth work after the browser-playability family.
 
 Important recent checkpoints:
 

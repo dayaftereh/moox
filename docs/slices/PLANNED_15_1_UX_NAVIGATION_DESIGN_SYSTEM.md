@@ -1,6 +1,6 @@
 # Planned slice 15.1 - UX architecture / navigation / design system contract
 
-Status: **open; Gates 1-3 complete; Gate 4 independent QA pending**.
+Status: **closed; Gates 1-4 complete**.
 
 Queue position: **15.1 of Slice-15 family**.
 
@@ -68,8 +68,12 @@ Defer:
 
 ## Gate 4 - QA + close
 
-- [ ] Verify every accepted wireframe/navigation path in browser runtime.
-- [ ] Verify responsive/focus/loading/error states at representative phone and desktop viewports in both German and English, including long-label overflow.
-- [ ] Run the built UI on `0.0.0.0:7171`, verify it through the current NetBird IP, and keep the managed `moox-ui-review` Chrome session on the same live build for desktop QA.
-- [ ] Run web build plus relevant Go/server regressions and `git diff --check`.
-- [ ] Update evidence/status/HISTORY and close marker.
+- [x] Verify every accepted wireframe/navigation path in browser runtime.
+- [x] Verify responsive/focus/loading/error states at representative phone and desktop viewports in both German and English, including long-label overflow.
+- [x] Run the built UI on `0.0.0.0:7171`, verify it through the current NetBird IP, and keep the managed `moox-ui-review` Chrome session on the same live build for desktop QA.
+- [x] Run web build plus relevant Go/server regressions and `git diff --check`.
+- [x] Update evidence/status/HISTORY and close marker.
+
+Closure evidence: `docs/research/SLICE_15_1_MOBILE_FIRST_UX_GATE4_2026-09-04.md`.
+
+Status: **closed; Gates 1-4 complete**.

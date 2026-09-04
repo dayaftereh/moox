@@ -5,23 +5,24 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: `docs/slices/_OPEN_15_1_UX_NAVIGATION_DESIGN_SYSTEM_2026-09-04.md`.
-- Active implementation slice: **Slice 15.1 Gates 1-3 complete; Gate 4 independent QA pending**.
+- Open slice marker: **none**. Slice 15.1 is closed; do not create a Slice-15.2 marker until that slice actually starts.
+- Active implementation slice: **none**. Slice 15.1 Gates 1-4 are closed.
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
 - Economy ruleset schema: **8**.
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
-- Slices **13-14 are closed**; Slice **15.1 is open**; 15.2-15.6 and 16-17 remain prepared.
-- Current objective: **Slice 15.1 Gate 4 - independently verify the mobile-first/desktop-adaptive shell, DE/EN persistence/overflow behavior, authoritative command preservation and live NetBird preview, then run full QA and close the slice.**
+- Slices **13-14 and 15.1 are closed**; 15.2 is the next prepared objective; 15.2-15.6 and 16-17 are not open.
+- Current objective: **Slice 15.2 Gate 1 - when started, audit the functional strategic gameplay HMI requirements/projections for the accepted 2D Galaxy, star-system dialog, Colony table/detail, location-grouped Fleets, eight-category Research, Diplomacy and planned Espionage.**
+- Slice-15.1 closure evidence: `docs/research/SLICE_15_1_MOBILE_FIRST_UX_GATE4_2026-09-04.md`.
 - Accepted downstream 15.2/15.3 strategic product direction: `docs/research/SLICE_15_2_STRATEGIC_HMI_PRODUCT_DIRECTION_2026-09-04.md` - 2D Galaxy primary view, orbital star-system dialog, legal Colonize confirmation, Colony table + full Colony Detail/build queue, location-grouped Fleets, eight-category Research, first-class Diplomacy and planned Espionage, plus retained OX lettermark / future spacecraft-space icon.
 - Accepted Tactical roadmap amendment: `docs/research/SLICE_15_5_INTERACTIVE_TACTICAL_COMBAT_PRODUCT_DIRECTION_2026-09-04.md` - interactive Tactical is a dedicated Slice 15.5; the former final integration slice moves to 15.6.
 
 
 ## Post-Slice-12 fidelity/depth audit - complete
 
-The milestone re-audit identified independent playability as the main post-lifecycle bottleneck. Slices 13 Built-in AI and 14 live GameSession persistence are closed. Slice 15 is now a six-part browser-playability family: 15.1 UX/navigation/design system, 15.2 functional strategic HMI, 15.3 MOOX visual identity/assets, 15.4 rich gameplay decisions/persistence UX, **15.5 interactive 2D Tactical Combat**, 15.6 final browser vertical slice. Slice 16 New Game/preset-race breadth and Slice 17 military design breadth remain later independent work. Slice 15.1 Gates 1-3 are complete; Gate 4 independent QA is pending.
+The milestone re-audit identified independent playability as the main post-lifecycle bottleneck. Slices 13 Built-in AI and 14 live GameSession persistence are closed. Slice 15 is now a six-part browser-playability family: 15.1 UX/navigation/design system, 15.2 functional strategic HMI, 15.3 MOOX visual identity/assets, 15.4 rich gameplay decisions/persistence UX, **15.5 interactive 2D Tactical Combat**, 15.6 final browser vertical slice. Slice 16 New Game/preset-race breadth and Slice 17 military design breadth remain later independent work. Slice 15.1 Gates 1-4 are complete and the slice is closed.
 
 Permanent audit: `docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md`.
 ## Closed Slice 12 - Empire elimination / first headless victory loop

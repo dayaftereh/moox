@@ -2,7 +2,7 @@
 
 Date: **2026-09-04**
 
-Status: **implemented; Gate 4 independent QA pending**.
+Status: **Gate 3 implemented; Gate 4 subsequently passed and Slice 15.1 is closed.**
 
 ## Implemented structure
 

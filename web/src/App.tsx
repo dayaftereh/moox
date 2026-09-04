@@ -70,6 +70,10 @@ function App() {
   const [invasionBusy, setInvasionBusy] = useState(false)
   const [lastNotification, setLastNotification] = useState<Notification | null>(null)
   const reconnectTimer = useRef<number | null>(null)
+  const activeGameRef = useRef(gameID)
+  const activeSeatRef = useRef(seatID)
+  activeGameRef.current = gameID
+  activeSeatRef.current = seatID
 
   useEffect(() => {
     const syncRoute = () => setRoute(parseRoute())
@@ -81,6 +85,7 @@ function App() {
   useEffect(() => {
     if (route.kind === 'game' && route.gameID !== gameID) {
       setSnapshot(null)
+      setError('')
       setGameID(route.gameID)
     }
   }, [route, gameID])
@@ -88,6 +93,7 @@ function App() {
   const loadSnapshot = useCallback(async (selectedGameID = gameID, selectedSeatID = seatID, signal?: AbortSignal) => {
     if (!selectedGameID || selectedSeatID <= 0) return
     const next = await getPlayerSnapshot(selectedGameID, selectedSeatID, signal)
+    if (selectedGameID !== activeGameRef.current || selectedSeatID !== activeSeatRef.current) return
     setSnapshot(next)
     const firstColony = next.view.colonies[0]
     if (firstColony) {
@@ -401,7 +407,7 @@ function App() {
       )}
 
       {!snapshot ? (
-        <EmptyState title={t('state.loadingTitle')} body={t('state.loadingBody')} />
+        error ? null : <EmptyState title={t('state.loadingTitle')} body={t('state.loadingBody')} />
       ) : activeSection === 'galaxy' ? (
         <GalaxyView snapshot={snapshot} t={t} />
       ) : activeSection === 'colonies' ? (

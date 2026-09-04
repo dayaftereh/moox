@@ -30,7 +30,7 @@ The deterministic runtime now provides its **first complete supported headless m
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slices **01-14 are closed**. Slice 15 is the browser-playability parent epic. **Slice 15.1 is open; Gates 1-3 are complete and Gate 4 independent QA is pending.** Slices 15.2-15.6 and 16-17 remain prepared.
+**Slice state:** Slices **01-14 and 15.1 are closed**. Slice 15 is the browser-playability parent epic. **Slice 15.2 is the next prepared objective; it is not open yet.** Slices 15.3-15.6 and 16-17 remain prepared.
 
 The Slice-15 browser roadmap now has six parts: **15.1 shell/navigation/i18n -> 15.2 strategic gameplay HMI -> 15.3 visual identity/assets -> 15.4 rich decisions/persistence UX -> 15.5 interactive 2D Tactical Combat -> 15.6 final browser vertical slice/QA**. Tactical Combat is deliberately its own gameplay slice because the current Slice-07 baseline supports deterministic fixed-position Laser combat but not player-controlled tactical movement/turning.
 
@@ -45,7 +45,7 @@ The Slice-15 browser roadmap now has six parts: **15.1 shell/navigation/i18n -> 
 | 12 | **closed** | First deterministic end-to-end match from New Game to conquest winner |
 | 13 | **closed** | Built-in strategic AI baseline |
 | 14 | **closed** | Live GameSession save/resume baseline |
-| 15.1 | **open; Gate 4 pending** | UX/navigation/design-system/i18n shell |
+| 15.1 | **closed; Gates 1-4 complete** | UX/navigation/design-system/i18n shell |
 | 15.2 | prepared | Functional strategic gameplay HMI |
 | 15.3 | prepared | MOOX visual identity / graphics / asset pipeline |
 | 15.4 | prepared | Rich decisions / Encounter transitions / persistence UX |
