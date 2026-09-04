@@ -23,7 +23,7 @@ In scope:
 - an in-map **star-system dialog** with persistent authoritative star metadata plus normal planets, gas giants and asteroid belts, Colony/Outpost state and present player Fleets/Ships;
 - server-authoritative planet actions from the system dialog, including a **Colonize confirmation flow** only when a legal colonization choice is projected;
 - **Colonies as a sortable management table** with quick population/job controls plus a canonical full **Colony Detail** screen reachable from both the table and owned planets in the star-system dialog;
-- Colony Detail population/jobs header, planet/status presentation, buildings/infrastructure and a real ordered authoritative construction queue with no user-visible item-count cap;
+- Colony Detail population/jobs header, **planet/Colony round-up with Population growth/capacity/output plus built Buildings/infrastructure**, and a real ordered authoritative construction queue with no user-visible item-count cap;
 - **Research as a visual eight-category screen** (Construction, Power, Chemistry, Sociology, Computers, Biology, Physics, Force Fields), with Creative/Uncreative behavior driven by projected authoritative legal choices rather than browser rules;
 - **Fleets as ship/fleet tiles grouped by system/location**, plus in-transit grouping, inspection, movement, colonization and Outpost workflows;
 - **Diplomacy as a first-class strategic area** using the existing war/peace baseline;
@@ -78,7 +78,7 @@ Gate-2 freeze adds persistent gas-giant/asteroid/star metadata and generalized O
 
 - [ ] Implement persistent star/orbital-body state plus the interactive 2D Galaxy map and in-map system dialog with planets, gas giants, asteroid belts, Outposts and present Fleet/Ship information.
 - [ ] Generalize Outposts to legal orbital bodies; implement server-projected Body/Planet actions, Colonize confirmation and post-resolution state refresh/navigation.
-- [ ] Implement the sortable Colonies management table, same-row job/cross-row Population-transfer gestures, canonical Colony Detail, pure Planning preview and the real ordered construction queue/editor.
+- [ ] Implement the sortable Colonies management table, same-row job/cross-row Population-transfer gestures, canonical Colony Detail **planet overview with Population growth/next-Pop projection and built Buildings**, pure Planning preview and the real ordered construction queue/editor.
 - [ ] Implement location-grouped Fleet/Ship tiles and Fleet inspection/movement flows.
 - [ ] Implement normalized eight-category Research plus live authoritative RP/turn and ETA preview.
 - [ ] Implement movement/colonization/Outpost and first-class War/Peace Diplomacy workflows; keep Espionage non-actionable and reserved for Slice 20.

@@ -82,11 +82,16 @@ Per Colony:
 
 - projected Farmers / Workers / Scientists;
 - Food, Production PP and Research RP output;
-- population/growth/capacity values already modeled by Core/Game;
+- current total Population and authoritative Capacity;
+- free Population capacity as a projected display value;
+- projected Population growth per turn or projected starvation per turn;
+- current-rate ETA to the next whole Population unit when growth is positive and capacity remains;
 - food-safe/starvation indication;
 - current construction progress;
 - ordered build queue;
 - current-rate estimated build completion turns for the queue.
+
+Population growth display is derived from the existing authoritative `ColonyPopulationDynamics` (`Capacity`, `BaseGrowth`, `GrowthMultiplier`, `ProjectedGrowth`, `ProjectedStarvation`) plus current Colony Population. React must not reimplement the growth curve. The UI may format the returned projection as, for example, `+0.12 Pop / Runde`; at capacity it shows `voll / full`, and with negative projected state it shows starvation/loss rather than a positive ETA.
 
 Research:
 
@@ -326,12 +331,32 @@ Both entry paths resolve to the same GameID + ColonyID identity:
 Functional layout:
 
 - top: Population jobs with the same draft/preview behavior as the table;
+- a prominent **planet/Colony overview** modelled after the information density of the current/original game, while using MOOX-native layout/art;
 - planet/environment/status + authoritative Colony economy;
 - Buildings/infrastructure;
 - current construction + queue summary;
 - `Neues bauen / Change` -> construction editor;
 - desktop queue/build summary on the right, mobile below/sheet as appropriate;
 - back navigation preserves useful Galaxy/system context where entered from Galaxy.
+
+### Planet / Colony overview
+
+The canonical Colony Detail screen must make the Colony readable at a glance rather than requiring the player to inspect separate debug/status panels. The overview includes, where authoritative data exists:
+
+- planet + system/Colony name and owner;
+- planet climate, size, minerals and gravity;
+- current Population / Capacity;
+- free Population capacity;
+- **Population growth per turn** (`+X.XX Pop / Runde`) or projected starvation/loss;
+- current-rate ETA to the next whole Population unit when finite;
+- Farmer / Worker / Scientist allocation;
+- Food / Production / Research output;
+- Tax/economic contribution where projected;
+- existing Ground Forces where supported;
+- **all already-built Buildings/infrastructure**, using authoritative `Colony.Buildings` and ruleset display metadata rather than a React-owned building list;
+- current construction, progress, ETA and upcoming queue items.
+
+Built Buildings should be inspectable as a compact list/grid on desktop and a touch-friendly list/grid/sheet on mobile. Slice 15.2 only requires functional names/status; final building/planet artwork/icons remain Slice 15.3. Unsupported values such as Morale/Pollution must not be fabricated merely to imitate the original overview.
 
 ## 14. Fleets
 
@@ -422,6 +447,7 @@ Before Gate 3 can be considered implemented, automated/manual evidence must cove
 18. End Turn submits the full effective draft once, drives built-in AI to the next human boundary and refetches authoritative state;
 19. reload/save-resume preserves bodies, Outposts, construction queue/progress and normal strategic state;
 20. DE/EN + 15.1 desktop/mobile shell remain functional.
+21. Colony Detail shows a coherent planet/Colony overview with planet traits, Population/Capacity, projected Population growth or starvation, next-Pop ETA where finite, outputs, existing Buildings and current construction/queue without React-owned formulas.
 
 ## 20. Intentional MOO2 divergence recorded in Gate 2
 
@@ -443,3 +469,7 @@ Espionage mechanics are explicitly outside Gate 3 and move to prepared Slice 20.
 - `git diff --check` - PASS before commit.
 - Live development preview `/healthz` on port 7171 - PASS after Gate-session handoff.
 - Gate 2 is documentation/contract freeze only; no production gameplay implementation changed.
+
+## Gate-2 post-freeze Colony-overview refinement - 2026-09-04
+
+Before Gate-3 implementation the player added one accepted presentation requirement without changing the authority architecture: Colony Detail must include a dense planet/Colony round-up comparable in usefulness to the current/original game, including explicit Population growth visibility and already-built Buildings. Existing Core data already contains `Colony.Buildings` and `ColonyPopulationDynamics`; Gate 3 must expose/type/render those fields and include growth/next-Pop display in the pure Planning preview. Final art remains Slice 15.3.

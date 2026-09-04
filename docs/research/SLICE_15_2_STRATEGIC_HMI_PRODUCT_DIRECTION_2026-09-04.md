@@ -271,3 +271,16 @@ The player refined and accepted the functional contract before 15.2 implementati
 - Espionage remains first-class in navigation but all actionable mechanics move to prepared **Slice 20 Espionage / Intelligence baseline**; 15.2 must not fake Spy controls.
 
 Permanent Gate-2 authority contract: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE2_2026-09-04.md`.
+
+### Colony overview refinement
+
+The full Colony Detail screen must also function as a compact planet/Colony round-up:
+
+- Population / capacity and free capacity;
+- visible Population growth per turn (or starvation/loss) and next-Pop ETA where finite;
+- climate / size / minerals / gravity;
+- Food / Production / Research and available economic contribution;
+- existing Buildings/infrastructure as an inspectable list/grid;
+- current build/progress/ETA plus upcoming queue.
+
+The functional data already present in Core (`Colony.Buildings`, `ColonyPopulationDynamics`, Colony economy and Planet traits) is authoritative. MOOX should not invent unsupported Morale/Pollution values solely for visual imitation. Final planet/building art remains 15.3.
