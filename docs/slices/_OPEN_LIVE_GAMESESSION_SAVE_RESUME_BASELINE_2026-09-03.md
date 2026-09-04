@@ -2,15 +2,15 @@
 
 Opened: **2026-09-03**.
 
-Status: **Gate 2 design review complete; reviewed freeze candidate approval pending; no persistence implementation yet**.
+Status: **Gate 2 frozen by user approval; Gate 3 implementation complete; Gate 4 independent QA pending**.
 
 ## Gates
 
 - [x] Gate 1: repository/session/host persistence audit + exact live-save contract proposal.
-- [ ] Gate 2: accept/freeze exact live snapshot/save-boundary/load-authority contract.
-- [ ] Gate 3: implementation + exact save/load/continue regressions.
+- [x] Gate 2: accepted/frozen exact live snapshot/save-boundary/load-authority contract.
+- [x] Gate 3: implementation + exact save/load/continue regressions.
 - [ ] Gate 4: independent QA + commits + close.
 
 ## Recovery
 
-Permanent Gate-1 evidence is written to `docs/research/LIVE_GAMESESSION_SAVE_RESUME_BASELINE_2026-09-03.md`.
+Permanent Gate 1-3 evidence is written to `docs/research/LIVE_GAMESESSION_SAVE_RESUME_BASELINE_2026-09-03.md`.

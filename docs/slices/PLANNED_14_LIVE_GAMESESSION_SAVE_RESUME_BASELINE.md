@@ -1,6 +1,6 @@
 # Planned slice 14 - Live GameSession save / resume baseline
 
-Status: **open; Gate 2 design review complete; freeze candidate approval pending**.
+Status: **open; Gate 2 frozen by user approval; Gate 3 implementation complete; Gate 4 independent QA pending**.
 
 Queue position: **14 of 17**.
 
@@ -47,17 +47,17 @@ Defer:
 
 ## Gate 2 - Implementation decision
 
-- [ ] Freeze live snapshot schema and save boundaries.
-- [ ] Freeze load validation/atomic replacement semantics.
-- [ ] Freeze HTTP/App surfaces and filename/storage-neutral contract.
-- [ ] Freeze exact-continuation regression.
+- [x] Freeze live snapshot schema and save boundaries.
+- [x] Freeze load validation/atomic replacement semantics.
+- [x] Freeze HTTP/App surfaces and filename/storage-neutral contract.
+- [x] Freeze exact-continuation regression.
 
 ## Gate 3 - Implementation
 
-- [ ] Implement live snapshot marshal/unmarshal.
-- [ ] Implement Host/App/server save/load surfaces.
-- [ ] Add exact mid-game roundtrip + continuation regressions.
-- [ ] Verify AI/human controller identity and pending decisions survive.
+- [x] Implement live snapshot marshal/unmarshal.
+- [x] Implement Host/App/server save/load surfaces.
+- [x] Add exact mid-game roundtrip + continuation regressions.
+- [x] Verify AI/human controller identity and pending decisions survive.
 
 ## Gate 4 - Follow-up QA + commit + close
 

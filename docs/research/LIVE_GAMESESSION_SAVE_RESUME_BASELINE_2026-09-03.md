@@ -4,7 +4,7 @@ Date: **2026-09-03**
 
 Slice: **14 - Live GameSession save / resume baseline**
 
-Status: **Gate 1 approved; Gate 2 design review complete; reviewed freeze candidate awaiting approval; no persistence implementation yet**.
+Status: **Gate 2 frozen by user approval; Gate 3 implementation complete; Gate 4 independent QA/closure pending**.
 
 ## Gate 1 conclusion
 
@@ -522,8 +522,45 @@ At minimum cover:
 24. Malformed/unknown-version/trailing-data, simulation/rules mismatch, unsupported controller/resolver, invalid counter/phase/Battle/Invasion/Result, duplicate import and target GameID mismatch all receive atomic rejection tests; rejected restore preserves Session bytes and Host ChangeSequence.
 25. Server filesystem slots, cloud sync, browser file UX, original MOO2 SAV compatibility, future migrations, custom/stateful resolver persistence and External/MCP controller checkpointing remain deferred.
 
-Gate 2 design review is complete. This 25-point contract supersedes the Gate-1 draft and is the **freeze candidate awaiting explicit approval** before Gate 3 implementation.
+Gate 2 design review completed this 25-point contract. It was **explicitly frozen by user approval on 2026-09-04** before Gate 3 implementation.
 
-## Gate 1 status
+## Gate 1 / Gate 2 status
 
-All Gate-1 audit items are complete and were accepted when the user advanced to Gate 2 on 2026-09-03. Gate 2 then refined the contract as documented above. No live-persistence implementation is authorized until the reviewed Gate-2 freeze candidate is explicitly approved.
+Gate 1 audit was accepted when the user advanced to Gate 2 on 2026-09-03. Gate 2 refined the contract above and was explicitly frozen when the user advanced to Gate 3 on 2026-09-04.
+
+## Gate 2 freeze and Gate 3 implementation - 2026-09-04
+
+The user explicitly advanced from Gate 2 to Gate 3 on 2026-09-04, freezing the reviewed 25-point contract above. Gate 3 is implemented in commit `a2c4ccd` (`game: add live gamesession persistence`).
+
+### Implemented authority/runtime surfaces
+
+- `EconomyRules` now carries a loaded ruleset ID and compacted-JSON SHA-256 identity. The committed `moo2-1.31` fingerprint is `2e2e9760051845a99092457760cfe78d0e90e20381fecf1072002c2081844f5b`; a regression proves harmless JSON whitespace does not change it.
+- `LiveSnapshotSchemaVersion = 1` and `SimulationCompatibilityVersion = 1` are separate guards. Rules/simulation mismatches are rejected before activation.
+- Battle live snapshots preserve Spec/Phase/Result plus Tactical State, RNG, next command/event sequences, event history and Tactical revision. Active Tactical combat can save after an RNG-consuming Beam shot, roundtrip exactly and continue identically.
+- GameSession live snapshots preserve Core23, revision/phase, Seats/controllers/submissions, events/telemetry and explicit counters, Battle children/nextBattleID, encounter context, Invasion/handled keys, eliminated Empires, Result and pending-elimination state. Historical `battle_created` events also constrain `next_battle_id` so removed completed Battles cannot allow ID reuse after load.
+- Strict restore uses unknown-field and trailing-document rejection, Core validation, stable Seat/Battle/key ordering, phase-specific continuation validation and controller guards. Planning, Encounters, InvasionDecisions, interactive Colony-Base PostResolution and Completed are supported; StrategicResolution/transient PostResolution are rejected.
+- Built-in AI requires no private save state. LiveSnapshot v1 permits `local_human`, `remote_human` and `builtin_ai`; ExternalAI/MCPAI and custom/stateful resolvers are explicitly rejected.
+- `Host.ExportLiveSnapshot`, `Host.ImportLiveSnapshot` and `Host.RestoreLiveSnapshot` implement storage-neutral persistence. Import starts at Host ChangeSequence 1 without auto-drive. Restore validates off to the side, atomically replaces the Session, preserves subscribers/resolvers, increments ChangeSequence once and publishes `snapshot_invalidated` with reason `game_loaded`.
+- HTTP persistence is separately privileged via `PersistenceEnabled` / `-enable-persistence` (default false): GET live snapshot, POST import and PUT restore. Import/restore use a separate 64 MiB body cap; the existing 1 MiB command limit is unchanged.
+
+### Exact Gate 3 regressions
+
+The committed tests cover:
+
+- real canonical `NewGame(0x8009)` AI-vs-AI: uninterrupted completion versus save at **Planning Turn 250** -> fresh compatible Host import -> byte-identical live re-export -> continue; the existing final CompletedSnapshot bytes are exactly equal;
+- Completed live snapshot -> fresh Host import/re-export -> existing CompletedSnapshot bytes remain exact;
+- partial Human/BuiltinAI Planning submission plus draft telemetry -> exact roundtrip and identical continuation;
+- active supported Tactical Encounter after a Beam command has consumed RNG -> exact Session/Battle roundtrip and identical Battle/strategic continuation;
+- Invasion decision -> exact roundtrip and identical decline/next-Planning continuation;
+- interactive Colony-Base PostResolution -> exact roundtrip and identical colonization/next-Planning continuation;
+- invalid simulation/rules identity, trailing JSON, unsupported controller/custom resolver, StrategicResolution save, corrupt Tactical/Event counters, duplicate import and target/embedded GameID mismatch; rejected existing-game restores leave Session revision and Host ChangeSequence unchanged;
+- HTTP persistence disabled-by-default behavior and enabled export/import/restore byte equality.
+
+Gate 3 verification performed in the implementation session:
+
+- targeted persistence matrix across game/battle/session/app/server: PASS;
+- `go test ./... -count=1`: PASS, including `internal/session` in 45.174 s;
+- `go vet ./...`: PASS;
+- `git diff --check`: PASS before the implementation commit.
+
+Gate 4 remains intentionally independent: repeat the critical exact roundtrips/rejections from a fresh QA session, rerun full Go tests/vet, run the production Web build, run `git diff --check`, update final evidence/HISTORY, remove the OPEN marker and close Slice 14 only if everything remains green.
