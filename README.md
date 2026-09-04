@@ -30,7 +30,7 @@ The deterministic runtime now provides its **first complete supported headless m
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slices **01-14 are closed**. Slice 15 is now a prepared **browser-playability parent epic** split into gated sub-slices **15.1-15.5**: UX/navigation/design system, functional strategic HMI, MOOX visual identity/assets, rich gameplay/persistence UX, and final complete browser vertical slice. No slice is open. **Slice 15.1 Gate 1** is the next prepared objective; Slices 16-17 remain prepared after the 15.x family.
+**Slice state:** Slices **01-14 are closed**. Slice 15 is the browser-playability parent epic. **Slice 15.1 is open; Gate 1 mobile-first UX/navigation/design-system audit is complete and Gate 2 freeze is pending user approval.** Slices 15.2-15.5 and 16-17 remain prepared.
 
 ### Current / prepared slice queue
 

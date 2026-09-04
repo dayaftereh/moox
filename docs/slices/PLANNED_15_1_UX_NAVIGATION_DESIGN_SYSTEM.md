@@ -1,6 +1,6 @@
 # Planned slice 15.1 - UX architecture / navigation / design system contract
 
-Status: **planned / queued; not open**.
+Status: **open; Gate 1 audit complete; Gate 2 interaction/design-system freeze pending user approval**.
 
 Queue position: **15.1 of Slice-15 family**.
 
@@ -37,12 +37,12 @@ Defer:
 
 ## Gate 1 - UX audit
 
-- [ ] Inventory current App.tsx/styles.css structure and existing browser routes/state transitions.
-- [ ] Map every canonical Human-vs-AI user journey and required screen/panel.
-- [ ] Identify navigation ambiguity, modal collisions and responsive constraints.
-- [ ] Audit existing server invalidation/reconnect states that need explicit UX states.
-- [ ] Produce low-fidelity screen map and component inventory.
-- [ ] Present Gate-2 UX contract before implementation.
+- [x] Inventory current App.tsx/styles.css structure and existing browser routes/state transitions.
+- [x] Map every canonical Human-vs-AI user journey and required screen/panel.
+- [x] Identify navigation ambiguity, modal collisions and responsive constraints.
+- [x] Audit existing server invalidation/reconnect states that need explicit UX states.
+- [x] Produce low-fidelity screen map and component inventory.
+- [x] Present Gate-2 UX contract before implementation.
 
 ## Gate 2 - Interaction/design-system freeze
 
@@ -63,6 +63,7 @@ Defer:
 ## Gate 4 - QA + close
 
 - [ ] Verify every accepted wireframe/navigation path in browser runtime.
-- [ ] Verify responsive/focus/loading/error states at representative viewports.
+- [ ] Verify responsive/focus/loading/error states at representative phone and desktop viewports.
+- [ ] Run the built UI on `0.0.0.0:7171`, verify it through the current NetBird IP, and keep the managed `moox-ui-review` Chrome session on the same live build for desktop QA.
 - [ ] Run web build plus relevant Go/server regressions and `git diff --check`.
 - [ ] Update evidence/status/HISTORY and close marker.
