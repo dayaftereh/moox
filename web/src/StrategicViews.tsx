@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
 import {
   aggregatePopulation,
   type Colony,
@@ -57,10 +57,11 @@ function bodyLabel(t: Translator, kind: string): string {
   return t('system.planet')
 }
 
-export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem, onOpenColony, onPlanOrder, t }: {
+export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem, onCloseSystem, onOpenColony, onPlanOrder, t }: {
   snapshot: PlayerSnapshot
   selectedSystemID?: number
   onSelectSystem: (systemID: number) => void
+  onCloseSystem: () => void
   onOpenColony: (colonyID: number) => void
   onPlanOrder: (order: DraftOrder) => void
   t: Translator
@@ -252,9 +253,10 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
         </div>
       </Card>
       {selected && (
-        <SystemDetail
+        <SystemDialog
           snapshot={snapshot}
           system={selected}
+          onClose={onCloseSystem}
           onOpenColony={onOpenColony}
           onPlanOrder={onPlanOrder}
           t={t}
@@ -264,13 +266,26 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   )
 }
 
-function SystemDetail({ snapshot, system, onOpenColony, onPlanOrder, t }: {
+function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t }: {
   snapshot: PlayerSnapshot
   system: StarSystem
+  onClose: () => void
   onOpenColony: (colonyID: number) => void
   onPlanOrder: (order: DraftOrder) => void
   t: Translator
 }) {
+  useEffect(() => {
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', handleKey)
+    document.body.classList.add('modal-open')
+    return () => {
+      window.removeEventListener('keydown', handleKey)
+      document.body.classList.remove('modal-open')
+    }
+  }, [onClose])
+
   const decision = snapshot.decision
   if (!decision) return null
   const bodies = system.bodies ?? system.planets.map((planet) => ({
@@ -279,93 +294,124 @@ function SystemDetail({ snapshot, system, onOpenColony, onPlanOrder, t }: {
     orbit: planet.orbit,
     kind: 'planet' as const,
     planet_id: planet.id,
+    outpost_id: undefined as number | undefined,
   }))
   const fleets = decision.strategic.fleets?.filter((fleet) => fleet.at_system_id === system.id) ?? []
   const contacts = decision.strategic.contacts?.filter((contact) => contact.system_id === system.id) ?? []
 
   return (
-    <section className="content-grid content-grid-2 system-detail">
-      <Card>
-        <div className="card-heading">
-          <div><p className="eyebrow">{t('system.title', { system: system.name })}</p><h2>{system.name}</h2></div>
-          <span className="badge">{t('system.starClass', { class: system.spectral_class })}</span>
-        </div>
-        <div className="orbit-list">
-          {bodies.map((body) => {
-            const colony = body.planet_id ? decision.colonies.find((item) => item.planet_id === body.planet_id) : undefined
-            const colonizeChoices = (decision.decisions.colonization ?? []).filter((choice) => choice.system_id === system.id && choice.planet_id === body.planet_id)
-            const outpostChoices = (decision.decisions.outpost_deployment ?? []).filter((choice) => choice.system_id === system.id && choice.body_id === body.id)
-            return (
-              <div className="orbit-row" key={body.id}>
-                <div>
-                  <strong>{body.orbit}. {body.name}</strong>
-                  <small>{bodyLabel(t, body.kind)}</small>
-                </div>
-                <div className="action-row compact-actions">
-                  {colony && <button type="button" className="button-secondary" onClick={() => onOpenColony(colony.id)}>{t('system.openColony')}</button>}
-                  {colonizeChoices.map((choice) => (
-                    <button
-                      type="button"
-                      className="button-primary"
-                      key={`colonize-${choice.fleet_id}`}
-                      onClick={() => {
-                        if (!window.confirm(t('system.colonizeConfirm', { body: body.name, fleet: choice.fleet_id }))) return
-                        onPlanOrder({
-                          key: `fleet:${choice.fleet_id}`,
-                          kind: 'empire.colonize_planet',
-                          payload: { fleet_id: choice.fleet_id, planet_id: choice.planet_id },
-                        })
-                      }}
-                    >
-                      {t('system.colonize')}
-                    </button>
-                  ))}
-                  {outpostChoices.map((choice) => (
-                    <button
-                      type="button"
-                      className="button-secondary"
-                      key={`outpost-${choice.fleet_id}`}
-                      onClick={() => {
-                        if (!window.confirm(t('system.outpostConfirm', { body: body.name, fleet: choice.fleet_id }))) return
-                        onPlanOrder({
-                          key: `fleet:${choice.fleet_id}`,
-                          kind: 'fleet.deploy_outpost',
-                          payload: { fleet_id: choice.fleet_id, body_id: choice.body_id },
-                        })
-                      }}
-                    >
-                      {t('system.buildOutpost')}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      </Card>
-      <Card>
-        <h2>{t('system.fleets')}</h2>
-        {fleets.length === 0 && contacts.length === 0 ? <p className="muted">{t('common.none')}</p> : (
-          <div className="list-stack">
-            {fleets.map((fleet) => (
-              <div className="list-row" key={`own-${fleet.id}`}>
-                <span><strong>{t('galaxy.fleet', { id: fleet.id })}</strong><small>{fleet.role}{fleet.special_kind ? ` · ${fleet.special_kind}` : ''}</small></span>
-                <span className="badge">{fleet.ship_ids?.length ?? 0}</span>
-              </div>
-            ))}
-            {contacts.map((contact, index) => (
-              <div className="list-row" key={`contact-${index}-${contact.empire_id}`}>
-                <span><strong>{t('common.empireFallback', { id: contact.empire_id })}</strong><small>{contact.kind}</small></span>
-                <span className="badge">{contact.role ?? contact.special_kind ?? '—'}</span>
-              </div>
-            ))}
+    <div className="system-dialog-backdrop" role="presentation" onPointerDown={(event) => {
+      if (event.target === event.currentTarget) onClose()
+    }}>
+      <section className="system-dialog" role="dialog" aria-modal="true" aria-labelledby={'system-dialog-title-' + system.id}>
+        <header className="system-dialog-header">
+          <div>
+            <p className="eyebrow">{t('system.title', { system: system.name })}</p>
+            <h2 id={'system-dialog-title-' + system.id}>{system.name}</h2>
           </div>
-        )}
-      </Card>
-    </section>
+          <div className="system-dialog-header-actions">
+            <span className="badge">{t('system.starClass', { class: system.spectral_class })}</span>
+            <button type="button" className="button-secondary" onClick={onClose}>{t('common.close')}</button>
+          </div>
+        </header>
+
+        <div className="system-dialog-grid">
+          <div className="system-dialog-main">
+            <div className="system-orbit-visual" aria-label={t('system.bodies')}>
+              <div className="system-star-visual" aria-hidden="true"><span /></div>
+              <div className="system-orbit-strip">
+                {bodies.map((body) => (
+                  <div className="system-body-visual" key={'visual-' + body.id}>
+                    <span className={'system-body-dot system-body-' + body.kind.replace(/_/g, '-')} aria-hidden="true" />
+                    <strong>{body.name}</strong>
+                    <small>{body.orbit}. {bodyLabel(t, body.kind)}</small>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="orbit-list">
+              {bodies.map((body) => {
+                const colony = body.planet_id ? decision.colonies.find((item) => item.planet_id === body.planet_id) : undefined
+                const colonizeChoices = (decision.decisions.colonization ?? []).filter((choice) => choice.system_id === system.id && choice.planet_id === body.planet_id)
+                const outpostChoices = (decision.decisions.outpost_deployment ?? []).filter((choice) => choice.system_id === system.id && choice.body_id === body.id)
+                return (
+                  <div className="orbit-row" key={body.id}>
+                    <div className="orbit-row-copy">
+                      <strong>{body.orbit}. {body.name}</strong>
+                      <small>{bodyLabel(t, body.kind)}</small>
+                      <div className="tag-list compact-tags">
+                        {colony && <span className="badge">{t('system.colonyStatus')}</span>}
+                        {body.outpost_id && <span className="badge">{t('system.outpostStatus')}</span>}
+                      </div>
+                    </div>
+                    <div className="action-row compact-actions">
+                      {colony && <button type="button" className="button-primary" onClick={() => onOpenColony(colony.id)}>{t('system.openColony')}</button>}
+                      {colonizeChoices.map((choice) => (
+                        <button
+                          type="button"
+                          className="button-primary"
+                          key={'colonize-' + choice.fleet_id}
+                          onClick={() => {
+                            if (!window.confirm(t('system.colonizeConfirm', { body: body.name, fleet: choice.fleet_id }))) return
+                            onPlanOrder({
+                              key: 'fleet:' + choice.fleet_id,
+                              kind: 'empire.colonize_planet',
+                              payload: { fleet_id: choice.fleet_id, planet_id: choice.planet_id },
+                            })
+                          }}
+                        >
+                          {t('system.colonize')}
+                        </button>
+                      ))}
+                      {outpostChoices.map((choice) => (
+                        <button
+                          type="button"
+                          className="button-secondary"
+                          key={'outpost-' + choice.fleet_id}
+                          onClick={() => {
+                            if (!window.confirm(t('system.outpostConfirm', { body: body.name, fleet: choice.fleet_id }))) return
+                            onPlanOrder({
+                              key: 'fleet:' + choice.fleet_id,
+                              kind: 'fleet.deploy_outpost',
+                              payload: { fleet_id: choice.fleet_id, body_id: choice.body_id },
+                            })
+                          }}
+                        >
+                          {t('system.buildOutpost')}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
+          <aside className="system-dialog-side">
+            <p className="eyebrow">{t('system.fleets')}</p>
+            {fleets.length === 0 && contacts.length === 0 ? <p className="muted">{t('common.none')}</p> : (
+              <div className="list-stack">
+                {fleets.map((fleet) => (
+                  <div className="list-row" key={'own-' + fleet.id}>
+                    <span><strong>{t('galaxy.fleet', { id: fleet.id })}</strong><small>{fleet.role}{fleet.special_kind ? ' · ' + fleet.special_kind : ''}</small></span>
+                    <span className="badge">{fleet.ship_ids?.length ?? 0}</span>
+                  </div>
+                ))}
+                {contacts.map((contact, index) => (
+                  <div className="list-row" key={'contact-' + index + '-' + contact.empire_id}>
+                    <span><strong>{t('common.empireFallback', { id: contact.empire_id })}</strong><small>{contact.kind}</small></span>
+                    <span className="badge">{contact.role ?? contact.special_kind ?? '—'}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </aside>
+        </div>
+      </section>
+    </div>
   )
 }
-
 export function StrategicColoniesView({ snapshot, preview, draftOrders, selectedColonyID, onOpenColony, onBack, onPlanPopulation, onPlanOrder, onRemoveOrder, t }: {
   snapshot: PlayerSnapshot
   preview: PlanningPreviewSnapshot | null
@@ -402,62 +448,104 @@ export function StrategicColoniesView({ snapshot, preview, draftOrders, selected
     <>
       <PageHeader eyebrow={t('colonies.eyebrow')} title={t('colonies.title')} subtitle={t('colonies.subtitle')} />
       {colonies.length === 0 ? <EmptyState title={t('colonies.noColonies')} /> : (
-        <div className="table-scroll">
-          <table className="colony-table">
-            <thead>
-              <tr>
-                <th>{t('colonies.tableColony')}</th>
-                <th>{t('colonies.tablePopulation')}</th>
-                <th>{t('colonies.tableFood')}</th>
-                <th>{t('colonies.tableProduction')}</th>
-                <th>{t('colonies.tableResearch')}</th>
-                <th>{t('colonies.tableBuild')}</th>
-                <th>{t('common.details')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {colonies.map((baseColony) => {
-                const previewColony = projected.find((item) => item.colony.id === baseColony.id)
-                const colony = previewColony?.colony ?? baseColony
-                const population = aggregatePopulation(colony)
-                const build = previewColony?.construction?.[0]
-                return (
-                  <tr key={colony.id}>
-                    <td><strong>{t('colonies.colony', { id: colony.id })}</strong><small>{t('colonies.planet', { id: colony.planet_id })}</small></td>
-                    <td>
-                      <strong>{population.total.toFixed(1)} / {colony.population_dynamics.capacity.toFixed(1)}</strong>
-                      <small>{population.farmers}/{population.workers}/{population.scientists}</small>
-                    </td>
-                    <td>{colony.adjusted_economy.food.toFixed(1)}</td>
-                    <td>{colony.adjusted_economy.production.toFixed(1)}</td>
-                    <td>{colony.adjusted_economy.research.toFixed(1)}</td>
-                    <td><strong>{build?.project.project_id ?? colony.construction?.project_id ?? t('construction.empty')}</strong><small>{formatEta(t, build?.eta_turns)}</small></td>
-                    <td>
-                      <div className="action-row compact-actions">
-                        <button type="button" className="button-secondary" onClick={() => onOpenColony(colony.id)}>{t('colonies.open')}</button>
+        <>
+          <div className="colony-card-list">
+            {colonies.map((baseColony) => (
+              <ColonyListCard
+                key={baseColony.id}
+                colony={baseColony}
+                preview={projected.find((item) => item.colony.id === baseColony.id)}
+                onOpen={onOpenColony}
+                onPlanPopulation={onPlanPopulation}
+                t={t}
+              />
+            ))}
+          </div>
+          <div className="table-scroll colony-table-wrap">
+            <table className="colony-table">
+              <thead>
+                <tr>
+                  <th>{t('colonies.tableColony')}</th>
+                  <th>{t('colonies.tablePopulation')}</th>
+                  <th>{t('colonies.tableFood')}</th>
+                  <th>{t('colonies.tableProduction')}</th>
+                  <th>{t('colonies.tableResearch')}</th>
+                  <th>{t('colonies.tableBuild')}</th>
+                  <th>{t('common.details')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {colonies.map((baseColony) => {
+                  const previewColony = projected.find((item) => item.colony.id === baseColony.id)
+                  const colony = previewColony?.colony ?? baseColony
+                  const population = aggregatePopulation(colony)
+                  const build = previewColony?.construction?.[0]
+                  return (
+                    <tr key={colony.id}>
+                      <td><strong>{t('colonies.colony', { id: colony.id })}</strong><small>{t('colonies.planet', { id: colony.planet_id })}</small></td>
+                      <td className="colony-population-cell">
+                        <strong>{population.total.toFixed(1)} / {colony.population_dynamics.capacity.toFixed(1)}</strong>
                         <PopulationMoveControls colony={colony} onPlan={onPlanPopulation} t={t} compact />
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+                      </td>
+                      <td>{colony.adjusted_economy.food.toFixed(1)}</td>
+                      <td>{colony.adjusted_economy.production.toFixed(1)}</td>
+                      <td>{colony.adjusted_economy.research.toFixed(1)}</td>
+                      <td><strong>{build?.project.project_id ?? colony.construction?.project_id ?? t('construction.empty')}</strong><small>{formatEta(t, build?.eta_turns)}</small></td>
+                      <td><button type="button" className="button-secondary" onClick={() => onOpenColony(colony.id)}>{t('colonies.open')}</button></td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
     </>
   )
 }
 
+function ColonyListCard({ colony, preview, onOpen, onPlanPopulation, t }: {
+  colony: Colony
+  preview?: PlanningPreviewSnapshot['preview']['projection']['colonies'][number]
+  onOpen: (colonyID: number) => void
+  onPlanPopulation: (colonyID: number, farmers: number, workers: number, scientists: number) => void
+  t: Translator
+}) {
+  const displayColony = preview?.colony ?? colony
+  const population = aggregatePopulation(displayColony)
+  const build = preview?.construction?.[0]
+  return (
+    <article className="colony-list-card">
+      <header className="colony-list-card-header">
+        <div>
+          <p className="eyebrow">{t('colonies.planet', { id: displayColony.planet_id })}</p>
+          <h2>{t('colonies.colony', { id: displayColony.id })}</h2>
+        </div>
+        <span className="badge">{population.total.toFixed(1)} / {displayColony.population_dynamics.capacity.toFixed(1)}</span>
+      </header>
+      <PopulationMoveControls colony={displayColony} onPlan={onPlanPopulation} t={t} compact />
+      <div className="colony-output-strip">
+        <span><small>{t('colonies.tableFood')}</small><strong>{displayColony.adjusted_economy.food.toFixed(1)}</strong></span>
+        <span><small>{t('colonies.tableProduction')}</small><strong>{displayColony.adjusted_economy.production.toFixed(1)}</strong></span>
+        <span><small>{t('colonies.tableResearch')}</small><strong>{displayColony.adjusted_economy.research.toFixed(1)}</strong></span>
+      </div>
+      <div className="colony-build-strip">
+        <span><small>{t('colonies.tableBuild')}</small><strong>{build?.project.project_id ?? displayColony.construction?.project_id ?? t('construction.empty')}</strong></span>
+        <span className="badge">{formatEta(t, build?.eta_turns)}</span>
+      </div>
+      <button type="button" className="button-primary button-wide" onClick={() => onOpen(displayColony.id)}>{t('colonies.open')}</button>
+    </article>
+  )
+}
 function PopulationMoveControls({ colony, onPlan, t, compact = false }: {
   colony: Colony
   onPlan: (colonyID: number, farmers: number, workers: number, scientists: number) => void
   t: Translator
   compact?: boolean
 }) {
-  const [source, setSource] = useState<PopulationJob>('farmer')
-  const [destination, setDestination] = useState<PopulationJob>('worker')
+  const [source, setSource] = useState<PopulationJob | null>(null)
   const population = aggregatePopulation(colony)
+  const jobs: PopulationJob[] = ['farmer', 'worker', 'scientist']
   const values: Record<PopulationJob, number> = {
     farmer: population.farmers,
     worker: population.workers,
@@ -468,36 +556,73 @@ function PopulationMoveControls({ colony, onPlan, t, compact = false }: {
     worker: t('jobs.worker'),
     scientist: t('jobs.scientist'),
   }
-  const canMove = source !== destination && values[source] > 0
 
-  function moveOne() {
-    if (!canMove) return
+  function markers(value: number): Array<{ amount: number; fractional: boolean }> {
+    const whole = Math.floor(value + 0.0001)
+    const fraction = Math.max(0, value - whole)
+    const result = Array.from({ length: whole }, () => ({ amount: 1, fractional: false }))
+    if (fraction > 0.01) result.push({ amount: fraction, fractional: true })
+    return result
+  }
+
+  function moveTo(destination: PopulationJob) {
+    if (!source || source === destination || values[source] <= 0) return
     const amount = Math.min(1, values[source])
-    const next = { ...values, [source]: values[source] - amount, [destination]: values[destination] + amount }
+    const next = {
+      ...values,
+      [source]: values[source] - amount,
+      [destination]: values[destination] + amount,
+    }
     onPlan(colony.id, next.farmer, next.worker, next.scientist)
+    setSource(null)
   }
 
   return (
-    <div className={compact ? 'job-move job-move-compact' : 'job-move'}>
-      {!compact && (
-        <div className="summary-stats">
-          <div><span>{labels.farmer}</span><strong>{values.farmer.toFixed(1)}</strong></div>
-          <div><span>{labels.worker}</span><strong>{values.worker.toFixed(1)}</strong></div>
-          <div><span>{labels.scientist}</span><strong>{values.scientist.toFixed(1)}</strong></div>
+    <div className={'population-board' + (compact ? ' population-board-compact' : '')}>
+      {!compact && <p className="muted population-board-hint">{t('jobs.visualHint')}</p>}
+      <div className="population-job-grid">
+        {jobs.map((job) => {
+          const selected = source === job
+          const people = markers(values[job])
+          return (
+            <section className={'population-job population-job-' + job + (selected ? ' population-job-source' : '')} key={job}>
+              <header>
+                <span>{labels[job]}</span>
+                <strong>{values[job].toFixed(1)}</strong>
+              </header>
+              <div className="population-people" aria-label={labels[job] + ': ' + values[job].toFixed(1)}>
+                {people.length === 0 ? <span className="population-empty" aria-hidden="true">—</span> : people.map((person, index) => (
+                  <button
+                    type="button"
+                    className={'population-person' + (person.fractional ? ' population-person-fractional' : '')}
+                    key={job + '-' + index}
+                    aria-label={t('jobs.selectSource', { job: labels[job] })}
+                    title={person.fractional ? person.amount.toFixed(1) : labels[job]}
+                    onClick={() => setSource(job)}
+                  >
+                    <span className="population-person-glyph" aria-hidden="true" />
+                    {person.fractional && <small>{person.amount.toFixed(1)}</small>}
+                  </button>
+                ))}
+              </div>
+              {source && source !== job && (
+                <button type="button" className="population-destination" onClick={() => moveTo(job)}>
+                  {t('jobs.moveTo', { job: labels[job] })}
+                </button>
+              )}
+            </section>
+          )
+        })}
+      </div>
+      {source && (
+        <div className="population-selection">
+          <span>{t('jobs.selectedSource', { job: labels[source] })}</span>
+          <button type="button" className="button-ghost" onClick={() => setSource(null)}>{t('common.cancel')}</button>
         </div>
       )}
-      <select aria-label={labels[source]} value={source} onChange={(event) => setSource(event.target.value as PopulationJob)}>
-        {(['farmer', 'worker', 'scientist'] as PopulationJob[]).map((job) => <option key={job} value={job}>{labels[job]}</option>)}
-      </select>
-      <span aria-hidden="true">→</span>
-      <select aria-label={labels[destination]} value={destination} onChange={(event) => setDestination(event.target.value as PopulationJob)}>
-        {(['farmer', 'worker', 'scientist'] as PopulationJob[]).map((job) => <option key={job} value={job}>{labels[job]}</option>)}
-      </select>
-      <button type="button" className="button-secondary" disabled={!canMove} onClick={moveOne}>{t('jobs.moveOne')}</button>
     </div>
   )
 }
-
 type DraftQueueItem = {
   project_kind: ConstructionState['project_kind']
   project_id: string
@@ -567,6 +692,15 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onPlanPo
           </dl>
           <PopulationMoveControls colony={displayColony} onPlan={onPlanPopulation} t={t} />
         </Card>
+        <ConstructionEditor
+          colony={displayColony}
+          preview={preview}
+          choices={constructionDecision?.choices ?? []}
+          draftOrders={draftOrders}
+          onPlanOrder={onPlanOrder}
+          onRemoveOrder={onRemoveOrder}
+          t={t}
+        />
         <Card>
           <p className="eyebrow">{t('colony.outputs')}</p>
           <div className="summary-stats">
@@ -584,18 +718,10 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onPlanPo
         <Card>
           <p className="eyebrow">{t('colony.buildings')}</p>
           {(displayColony.buildings ?? []).length === 0 ? <p className="muted">{t('colony.noBuildings')}</p> : (
-            <div className="tag-list">{(displayColony.buildings ?? []).map((building) => <span className="badge" key={building}>{building}</span>)}</div>
+            <div className="building-grid">{(displayColony.buildings ?? []).map((building) => <div className="building-tile" key={building}><span className="building-placeholder" aria-hidden="true" /><strong>{building}</strong></div>)}</div>
           )}
         </Card>
-        <ConstructionEditor
-          colony={displayColony}
-          preview={preview}
-          choices={constructionDecision?.choices ?? []}
-          draftOrders={draftOrders}
-          onPlanOrder={onPlanOrder}
-          onRemoveOrder={onRemoveOrder}
-          t={t}
-        />
+
         <Card className="span-two">
           <p className="eyebrow">{t('transfer.title')}</p>
           {transferChoices.length === 0 ? <p className="muted">{t('common.none')}</p> : (
@@ -643,7 +769,7 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
   }
 
   return (
-    <Card>
+    <Card className="construction-card">
       <p className="eyebrow">{t('colony.construction')}</p>
       <h2>{t('construction.queue')}</h2>
       {items.length === 0 ? <p className="muted">{t('construction.empty')}</p> : (

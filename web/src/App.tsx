@@ -513,6 +513,7 @@ function App() {
           snapshot={snapshot}
           selectedSystemID={route.entityID}
           onSelectSystem={(systemID) => navigate({ kind: 'game', gameID: route.gameID, section: 'galaxy', entityID: systemID })}
+          onCloseSystem={() => navigate({ kind: 'game', gameID: route.gameID, section: 'galaxy' })}
           onOpenColony={(colonyID) => navigate({ kind: 'game', gameID: route.gameID, section: 'colonies', entityID: colonyID })}
           onPlanOrder={planOrder}
           t={t}

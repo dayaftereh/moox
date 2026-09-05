@@ -18,7 +18,7 @@ Permanent evidence:
 - [x] Gate 3: implementation.
 - [ ] Gate 4: independent QA and close.
   - [x] G4-A: direct Galaxy pan/zoom interaction plus persistent Main/End-Turn actions.
-  - [ ] G4-B: explicit star-system dialog/overlay plus Colony usability/Population presentation blockers.
+  - [x] G4-B: explicit star-system dialog/overlay plus Colony usability/Population presentation blockers.
   - [ ] G4-C: independent mobile/desktop workflow QA and Slice-15.2 closure.
 
 Live preview:

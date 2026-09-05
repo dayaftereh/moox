@@ -6,7 +6,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 
 - Branch: `main`.
 - Open slice marker: `docs/slices/_OPEN_15_2_FUNCTIONAL_STRATEGIC_GAMEPLAY_HMI_2026-09-04.md`.
-- Active implementation slice: **Slice 15.2 Gates 1-3 complete; Gate 4 independent QA/closure pending**.
+- Active implementation slice: **Slice 15.2 Gates 1-3 complete; Gate 4 remediation G4-A/G4-B complete; G4-C independent QA/closure pending**.
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
@@ -14,11 +14,12 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-14 and 15.1 are closed**; **15.2 is open with Gates 1-3 complete and Gate 4 pending**; 15.3-15.6, 16-17 and reserved Slice 20 remain prepared.
-- Current objective: **Slice 15.2 Gate 4 - independently verify the implemented strategic browser workflow and authority boundaries, rerun final QA, synchronize closure documentation/HISTORY and close the Slice 15.2 OPEN marker if all checks pass.**
+- Current objective: **Slice 15.2 Gate 4-C - independently verify the remediated strategic browser workflow on mobile/desktop and its authority boundaries, rerun final QA, synchronize closure documentation/HISTORY and close the Slice 15.2 OPEN marker only if all checks pass.**
 - Slice-15.1 closure evidence: `docs/research/SLICE_15_1_MOBILE_FIRST_UX_GATE4_2026-09-04.md`.
 - Slice-15.2 Gate-1 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE1_2026-09-04.md`.
 - Slice-15.2 Gate-2 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE2_2026-09-04.md`.
 - Slice-15.2 Gate-3 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE3_2026-09-05.md`.
+- Slice-15.2 Gate-4 blocker remediation: `docs/research/SLICE_15_2_GATE4_BLOCKER_REMEDIATION_2026-09-05.md`.
 - Prepared future Espionage mechanics: `docs/slices/PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md`.
 - Accepted downstream 15.2/15.3 strategic product direction: `docs/research/SLICE_15_2_STRATEGIC_HMI_PRODUCT_DIRECTION_2026-09-04.md` - 2D Galaxy primary view, orbital star-system dialog, legal Colonize confirmation, Colony table + full Colony Detail/build queue, location-grouped Fleets, eight-category Research, first-class Diplomacy and planned Espionage, plus retained OX lettermark / future spacecraft-space icon.
 - Accepted Tactical roadmap amendment: `docs/research/SLICE_15_5_INTERACTIVE_TACTICAL_COMBAT_PRODUCT_DIRECTION_2026-09-04.md` - interactive Tactical is a dedicated Slice 15.5; the former final integration slice moves to 15.6.
