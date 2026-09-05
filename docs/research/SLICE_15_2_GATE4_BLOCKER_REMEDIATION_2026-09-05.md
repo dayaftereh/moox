@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-H complete; direct user review pending; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-I complete; direct user review pending; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -173,6 +173,17 @@ Status: **complete; direct user review pending**.
 - Browser smoke selected Biology / Biospheres, returned to Galaxy, reopened Research, and verified the active Biology field plus `Biospheres · AKTUELL` with bold/bright selected styling. Switching to Hydroponic Farm and reopening changed the selected marker to `Hydroponic Farm · AKTUELL`.
 - `npm run build` - **PASS**.
 - `git diff --check` - **PASS** (Windows LF/CRLF notices only).
+
+#### G4-B2-I - Robust selected-technology visibility
+
+Status: **complete; direct user review pending**.
+
+- Fixed a timing hole in the Research overlay: selected technology highlighting previously depended primarily on the asynchronous Planning Preview, so an immediate reopen after choosing a technology could briefly show no bold/selected state.
+- The overlay now prefers the current `research` DraftOrder (`tech_field_id` / `technology_id`) before falling back to Planning Preview/current empire research state. This keeps the displayed choice synchronized immediately with the user's pending authoritative command intent without duplicating research legality.
+- The selected choose-one technology name now renders semantically as `<strong>` with an explicit `font-weight: 1000`, brighter text, a 2px green outline, stronger green background, and a `✓ AKTUELL` badge.
+- Immediate browser smoke: select Biology / Biospheres -> overlay closes -> reopen Research immediately with no wait -> `BIOSPHERES · ✓ AKTUELL` rendered as `STRONG`, computed weight `1000`, `aria-pressed=true`.
+- Immediate switch smoke: choose Hydroponic Farm -> reopen immediately -> marker moved to `HYDROPONIC FARM · ✓ AKTUELL`, computed weight `1000`.
+- `npm run build` - **PASS** after restoring the internal fallback Research view signature.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
 

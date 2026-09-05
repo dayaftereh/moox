@@ -708,6 +708,7 @@ function App() {
         <StrategicResearchOverlay
           snapshot={snapshot}
           preview={planningPreview}
+          draftOrders={draftOrders}
           onPlanOrder={(order) => {
             planOrder(order)
             setResearchOverlayOpen(false)

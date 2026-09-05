@@ -1065,9 +1065,10 @@ export function StrategicFleetsView({ snapshot, onPlanOrder, t }: { snapshot: Pl
   )
 }
 
-export function StrategicResearchOverlay({ snapshot, preview, onPlanOrder, onClose, t }: {
+export function StrategicResearchOverlay({ snapshot, preview, draftOrders, onPlanOrder, onClose, t }: {
   snapshot: PlayerSnapshot
   preview: PlanningPreviewSnapshot | null
+  draftOrders: DraftOrder[]
   onPlanOrder: (order: DraftOrder) => void
   onClose: () => void
   t: Translator
@@ -1076,8 +1077,19 @@ export function StrategicResearchOverlay({ snapshot, preview, onPlanOrder, onClo
   const categories = [...(decision?.decisions.research_categories ?? [])].sort((a, b) => a.order - b.order)
   const choices = decision?.decisions.research ?? []
   const active = preview?.preview.projection.research
-  const activeFieldID = active?.tech_field_id ?? decision?.empire.research?.tech_field_id
-  const activeTechnologyIDs = new Set(active?.technology_ids ?? decision?.empire.research?.technology_ids ?? [])
+  const researchDraft = draftOrders.find((order) => order.key === 'research' && order.kind === 'empire.select_research')
+  const draftFieldID = typeof researchDraft?.payload.tech_field_id === 'number' ? researchDraft.payload.tech_field_id : undefined
+  const draftTechnologyID = typeof researchDraft?.payload.technology_id === 'number' ? researchDraft.payload.technology_id : undefined
+  const activeFieldID = draftFieldID ?? active?.tech_field_id ?? decision?.empire.research?.tech_field_id
+  const activeTechnologyIDs = new Set(
+    draftTechnologyID !== undefined
+      ? [draftTechnologyID]
+      : activeFieldID === active?.tech_field_id
+        ? (active?.technology_ids ?? [])
+        : activeFieldID === decision?.empire.research?.tech_field_id
+          ? (decision?.empire.research?.technology_ids ?? [])
+          : [],
+  )
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -1146,6 +1158,7 @@ export function StrategicResearchOverlay({ snapshot, preview, onPlanOrder, onClo
                   <div className="research-tech-list">
                     {choice.selection_mode === 'choose_one' ? choice.technology_ids.map((technologyID, index) => {
                       const selected = isActive && activeTechnologyIDs.has(technologyID)
+                      const technologyName = serverLabel(t, choice.technology_name_keys[index], humanizeToken(choice.technology_keys[index] ?? String(technologyID)))
                       return (
                         <button
                           type="button"
@@ -1154,8 +1167,10 @@ export function StrategicResearchOverlay({ snapshot, preview, onPlanOrder, onClo
                           aria-pressed={selected}
                           onClick={() => selectResearch(choice, technologyID)}
                         >
-                          <span>{serverLabel(t, choice.technology_name_keys[index], humanizeToken(choice.technology_keys[index] ?? String(technologyID)))}</span>
-                          {selected && <strong>{t('research.currentChoice')}</strong>}
+                          {selected
+                            ? <strong className="research-tech-name selected-name">{technologyName}</strong>
+                            : <span className="research-tech-name">{technologyName}</span>}
+                          {selected && <strong className="research-current-badge">✓ {t('research.currentChoice')}</strong>}
                         </button>
                       )
                     }) : (
