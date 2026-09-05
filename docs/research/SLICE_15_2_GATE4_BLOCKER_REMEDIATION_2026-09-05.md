@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-I complete; direct user review pending; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-J complete; direct user review pending; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -184,6 +184,19 @@ Status: **complete; direct user review pending**.
 - Immediate browser smoke: select Biology / Biospheres -> overlay closes -> reopen Research immediately with no wait -> `BIOSPHERES · ✓ AKTUELL` rendered as `STRONG`, computed weight `1000`, `aria-pressed=true`.
 - Immediate switch smoke: choose Hydroponic Farm -> reopen immediately -> marker moved to `HYDROPONIC FARM · ✓ AKTUELL`, computed weight `1000`.
 - `npm run build` - **PASS** after restoring the internal fallback Research view signature.
+
+#### G4-B2-J - HUD spacing and connection-state menu frame
+
+Status: **complete; direct user review pending**.
+
+- Increased visual separation between BC, Food, Freighters, Command Points and Research without increasing the overall top-bar height.
+- Removed the separate connection-status dot from the far right of the top bar. The three-dot game-menu control now carries connection status directly as a 2px frame: green for `success`, red for `danger`, yellow for `warning`, neutral gray otherwise.
+- The menu trigger keeps the connection-status text in its title/accessible label while the visible UI only uses the colored frame.
+- Desktop browser smoke at `791px` measured a consistent `10px` visible gap between all five HUD resources with no resource overflow.
+- A 320px probe measured `11px` visible gaps between all five HUD resources while `clientWidth == scrollWidth == 264`, so the more relaxed layout still fits without horizontal scrolling.
+- The 320px and desktop probes confirmed the separate `.topbar-live`/`.connection-dot` indicator is gone.
+- Computed-style smoke confirmed `success` renders a `2px` `rgb(98, 215, 124)` outline and forced `danger` renders a `2px` `rgb(240, 109, 123)` outline.
+- `npm run build` - **PASS** after correcting the menu accessibility expression syntax.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
 

@@ -138,11 +138,12 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
         <div className="main-menu-anchor" ref={menuRef}>
           <button
             type="button"
-            className={'main-menu-trigger' + (menuOpen || secondaryActive ? ' active' : '')}
-            aria-label={t('gameMenu.open')}
+            className={'main-menu-trigger connection-frame-' + statusTone + (menuOpen || secondaryActive ? ' active' : '')}
+            aria-label={t('gameMenu.open') + ' · ' + status}
+            data-connection-status={statusTone}
             aria-haspopup="dialog"
             aria-expanded={menuOpen}
-            title={t('gameMenu.open')}
+            title={t('gameMenu.open') + ' · ' + status}
             onClick={() => { setActiveResourceID(null); setMenuOpen((open) => !open) }}
           >
             <span aria-hidden="true">⋯</span>
@@ -238,9 +239,7 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
           {turn !== undefined && <span className="status-chip">{t('top.turn', { turn })}</span>}
           {phaseLabel && <span className="status-chip status-chip-phase">{phaseLabel}</span>}
         </div>
-        <div className="topbar-live" aria-live="polite" title={status} aria-label={status}>
-          <span className={`connection-dot connection-${statusTone}`} aria-hidden="true" />
-        </div>
+
       </header>
 
       <div className="shell-layout">

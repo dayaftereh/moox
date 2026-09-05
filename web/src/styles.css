@@ -1216,3 +1216,52 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .research-tech-choice.selected .research-tech-name.selected-name { font-size: .74rem !important; }
   .research-current-badge { font-size: .46rem !important; }
 }
+
+/* Slice 15.2 G4-B2-J: calmer HUD spacing + connection status on menu frame */
+.topbar {
+  grid-template-columns: 38px minmax(0, 1fr) auto !important;
+  gap: 6px !important;
+}
+.topbar-resources {
+  justify-content: space-between;
+  gap: 8px !important;
+  padding-inline: 2px;
+}
+.main-menu-trigger {
+  border-width: 2px !important;
+  transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+}
+.main-menu-trigger.connection-frame-success {
+  border-color: #62d77c !important;
+  box-shadow: 0 0 0 1px rgba(98, 215, 124, .13), 0 0 10px rgba(98, 215, 124, .12);
+}
+.main-menu-trigger.connection-frame-danger {
+  border-color: #f06d7b !important;
+  box-shadow: 0 0 0 1px rgba(240, 109, 123, .14), 0 0 10px rgba(240, 109, 123, .12);
+}
+.main-menu-trigger.connection-frame-warning {
+  border-color: #e2b84f !important;
+  box-shadow: 0 0 0 1px rgba(226, 184, 79, .12);
+}
+.main-menu-trigger.connection-frame-neutral {
+  border-color: #60758e !important;
+}
+
+@media (max-width: 560px) {
+  .topbar { gap: 4px !important; }
+  .topbar-resources { gap: 5px !important; padding-inline: 1px; }
+}
+
+@media (max-width: 360px) {
+  .topbar { gap: 3px !important; }
+  .topbar-resources { gap: 3px !important; padding-inline: 0; }
+}
+
+@media (min-width: 760px) {
+  .topbar-resources { gap: 10px !important; padding-inline: 4px; }
+}
+/* B2-J connection frame uses outline so hover/menu-active border styling cannot mask status. */
+.main-menu-trigger.connection-frame-success { outline: 2px solid #62d77c !important; outline-offset: -2px; }
+.main-menu-trigger.connection-frame-danger { outline: 2px solid #f06d7b !important; outline-offset: -2px; }
+.main-menu-trigger.connection-frame-warning { outline: 2px solid #e2b84f !important; outline-offset: -2px; }
+.main-menu-trigger.connection-frame-neutral { outline: 2px solid #60758e !important; outline-offset: -2px; }
