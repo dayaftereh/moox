@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-J complete; direct user review pending; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -197,6 +197,18 @@ Status: **complete; direct user review pending**.
 - The 320px and desktop probes confirmed the separate `.topbar-live`/`.connection-dot` indicator is gone.
 - Computed-style smoke confirmed `success` renders a `2px` `rgb(98, 215, 124)` outline and forced `danger` renders a `2px` `rgb(240, 109, 123)` outline.
 - `npm run build` - **PASS** after correcting the menu accessibility expression syntax.
+
+#### G4-B2-K - Galaxy pan bounds and framing review
+
+Status: **in progress; pan bounds complete, MOO2 reference review pending**.
+
+- Added hard pan limits to the Galaxy map for both one-pointer/mouse drag and the pan portion of two-pointer touch gestures.
+- The limit is based on the transformed full Galaxy layer rather than individual stars. At 100% zoom only a small edge offset is allowed; zooming in expands the legal pan range by exactly the extra scaled map area; zooming back out automatically clamps the current pan again.
+- The small overscroll allowance is responsive: `6%` of the smaller map dimension, bounded to `18..42px`.
+- Desktop smoke (`781 x 460` map) forced multi-thousand-pixel drags and clamped to `±27.6px` at 100%. At 208% zoom the positive bound was `x=449.34px`, `y=276px`, matching the scaled-layer calculation; returning to 100% automatically reclamped to `27.6px`.
+- A 320px mobile probe (`310 x 495` map) forced a 3000px touch drag and clamped to `18.6px` at 100%, so the map cannot be dragged into an empty no-system viewport.
+- `npm run build` - **PASS**.
+- Next: review the user's supplied Master of Orion II Galaxy screenshot and refine Galaxy framing/density without copying original artwork.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
 

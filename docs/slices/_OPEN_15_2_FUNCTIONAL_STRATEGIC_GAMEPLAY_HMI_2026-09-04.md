@@ -30,6 +30,9 @@ Permanent evidence:
     - [x] B2-H: explicit choose-one technology buttons + selected technology emphasis + visible selection-mode explanation.
     - [x] B2-I: selected research technology uses immediate draft state + unmistakable bold/check/highlight styling.
     - [x] B2-J: relaxed top-HUD spacing + connection status integrated into the three-dot menu frame.
+    - [ ] B2-K: Galaxy pan bounds + MOO2-inspired framing review.
+      - [x] Pan bounds with responsive edge offset on mouse/touch.
+      - [ ] Review supplied MOO2 Galaxy reference and refine framing/density.
   - [ ] G4-C: independent mobile/desktop workflow QA and Slice-15.2 closure.
 
 Live preview:

@@ -71,6 +71,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [dragging, setDragging] = useState(false)
+  const mapRef = useRef<HTMLDivElement | null>(null)
   const ignoreClickRef = useRef(false)
   const gestureRef = useRef<{
     pointers: Map<number, { x: number; y: number }>
@@ -92,6 +93,28 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   const minZoom = 0.7
   const maxZoom = 4
   const clampZoom = (value: number) => Math.max(minZoom, Math.min(maxZoom, value))
+  const clampPan = (next: { x: number; y: number }, zoomValue = zoom) => {
+    const map = mapRef.current
+    if (!map) return next
+    const width = Math.max(1, map.clientWidth)
+    const height = Math.max(1, map.clientHeight)
+    const edgeOffset = Math.max(18, Math.min(42, Math.min(width, height) * 0.06))
+    const maxX = Math.max(edgeOffset, ((zoomValue - 1) * width) / 2 + edgeOffset)
+    const maxY = Math.max(edgeOffset, ((zoomValue - 1) * height) / 2 + edgeOffset)
+    const x = Math.max(-maxX, Math.min(maxX, next.x))
+    const y = Math.max(-maxY, Math.min(maxY, next.y))
+    return x === next.x && y === next.y ? next : { x, y }
+  }
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map) return
+    const enforceBounds = () => setPan((current) => clampPan(current, zoom))
+    enforceBounds()
+    const observer = new ResizeObserver(enforceBounds)
+    observer.observe(map)
+    return () => observer.disconnect()
+  }, [zoom])
 
   if (!decision) {
     return (
@@ -147,7 +170,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
         const dx = center.x - gesture.lastCenter.x
         const dy = center.y - gesture.lastCenter.y
         if (Math.abs(dx) + Math.abs(dy) > 0.5) {
-          setPan((current) => ({ x: current.x + dx, y: current.y + dy }))
+          setPan((current) => clampPan({ x: current.x + dx, y: current.y + dy }, zoom))
           gesture.dragged = true
         }
       }
@@ -166,7 +189,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
         const dx = point.x - gesture.lastCenter.x
         const dy = point.y - gesture.lastCenter.y
         if (Math.abs(dx) + Math.abs(dy) > 0.5) {
-          setPan((current) => ({ x: current.x + dx, y: current.y + dy }))
+          setPan((current) => clampPan({ x: current.x + dx, y: current.y + dy }, zoom))
           gesture.dragged = true
         }
       }
@@ -213,6 +236,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
           </div>
         </div>
         <div
+          ref={mapRef}
           className={'galaxy-map' + (dragging ? ' galaxy-map-dragging' : '')}
           role="list"
           aria-label={t('galaxy.mapTitle')}
