@@ -412,12 +412,13 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
     </div>
   )
 }
-export function StrategicColoniesView({ snapshot, preview, draftOrders, selectedColonyID, onOpenColony, onBack, onPlanPopulation, onPlanOrder, onRemoveOrder, t }: {
+export function StrategicColoniesView({ snapshot, preview, draftOrders, selectedColonyID, onOpenColony, onOpenConstruction, onBack, onPlanPopulation, onPlanOrder, onRemoveOrder, t }: {
   snapshot: PlayerSnapshot
   preview: PlanningPreviewSnapshot | null
   draftOrders: DraftOrder[]
   selectedColonyID?: number
   onOpenColony: (colonyID: number) => void
+  onOpenConstruction: (colonyID: number) => void
   onBack: () => void
   onPlanPopulation: (colonyID: number, farmers: number, workers: number, scientists: number) => void
   onPlanOrder: (order: DraftOrder) => void
@@ -436,6 +437,7 @@ export function StrategicColoniesView({ snapshot, preview, draftOrders, selected
         preview={projected.find((item) => item.colony.id === colony.id)}
         draftOrders={draftOrders}
         onBack={onBack}
+        onOpenConstruction={onOpenConstruction}
         onPlanPopulation={onPlanPopulation}
         onPlanOrder={onPlanOrder}
         onRemoveOrder={onRemoveOrder}
@@ -713,12 +715,13 @@ function queueItemFromChoice(choice: ConstructionChoice): DraftQueueItem {
   }
 }
 
-function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onPlanPopulation, onPlanOrder, onRemoveOrder, t }: {
+function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenConstruction, onPlanPopulation, onPlanOrder, onRemoveOrder, t }: {
   snapshot: PlayerSnapshot
   colony: Colony
   preview?: PlanningPreviewSnapshot['preview']['projection']['colonies'][number]
   draftOrders: DraftOrder[]
   onBack: () => void
+  onOpenConstruction: (colonyID: number) => void
   onPlanPopulation: (colonyID: number, farmers: number, workers: number, scientists: number) => void
   onPlanOrder: (order: DraftOrder) => void
   onRemoveOrder: (key: string) => void
@@ -732,7 +735,6 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onPlanPo
   const growth = preview?.population_growth_per_turn ?? Math.max(0, displayColony.population_dynamics.projected_growth)
   const loss = preview?.population_loss_per_turn ?? Math.max(0, displayColony.population_dynamics.projected_starvation)
   const freeCapacity = preview?.free_population_capacity ?? Math.max(0, displayColony.population_dynamics.capacity - population.total)
-  const constructionDecision = decision?.decisions.construction?.find((item) => item.colony_id === colony.id)
   const transferChoices = decision?.decisions.population_transfers?.filter((item) => item.source_colony_id === colony.id) ?? []
 
   return (
@@ -756,13 +758,11 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onPlanPo
           </dl>
           <PopulationMoveControls colony={displayColony} onPlan={onPlanPopulation} t={t} />
         </Card>
-        <ConstructionEditor
+        <ConstructionSummary
           colony={displayColony}
           preview={preview}
-          choices={constructionDecision?.choices ?? []}
           draftOrders={draftOrders}
-          onPlanOrder={onPlanOrder}
-          onRemoveOrder={onRemoveOrder}
+          onOpen={() => onOpenConstruction(colony.id)}
           t={t}
         />
         <Card>
@@ -806,6 +806,74 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onPlanPo
   )
 }
 
+function ConstructionSummary({ colony, preview, draftOrders, onOpen, t }: {
+  colony: Colony
+  preview?: PlanningPreviewSnapshot['preview']['projection']['colonies'][number]
+  draftOrders: DraftOrder[]
+  onOpen: () => void
+  t: Translator
+}) {
+  const draftKey = `construction:${colony.id}`
+  const drafted = draftOrders.find((order) => order.key === draftKey)
+  const draftedItems = drafted?.payload.items
+  const items = Array.isArray(draftedItems) ? draftedItems as DraftQueueItem[] : queueItemsFromColony(colony)
+  const current = items[0]
+  const projected = preview?.construction?.[0]
+  return (
+    <Card className="construction-summary-card">
+      <div className="card-heading construction-summary-heading">
+        <div>
+          <p className="eyebrow">{t('colony.construction')}</p>
+          <h2>{current ? humanizeToken(current.project_id) : t('construction.empty')}</h2>
+        </div>
+        <span className="badge">{t('construction.queueCount', { count: items.length })}</span>
+      </div>
+      <div className="construction-summary-meta">
+        <span>{projected ? formatEta(t, projected.eta_turns) : t('common.noEta')}</span>
+        {items.length > 1 && <small>{items.slice(1, 4).map((item) => humanizeToken(item.project_id)).join(' · ')}{items.length > 4 ? ' …' : ''}</small>}
+      </div>
+      <button type="button" className="button-secondary button-wide" onClick={onOpen}>{t('construction.openManager')}</button>
+    </Card>
+  )
+}
+
+export function StrategicConstructionView({ snapshot, preview, draftOrders, colonyID, onBack, onPlanOrder, onRemoveOrder, t }: {
+  snapshot: PlayerSnapshot
+  preview: PlanningPreviewSnapshot | null
+  draftOrders: DraftOrder[]
+  colonyID: number
+  onBack: () => void
+  onPlanOrder: (order: DraftOrder) => void
+  onRemoveOrder: (key: string) => void
+  t: Translator
+}) {
+  const colonies = snapshot.decision?.colonies ?? snapshot.view.colonies
+  const colony = colonies.find((item) => item.id === colonyID)
+  if (!colony) return <EmptyState title={t('colonies.noColonies')} />
+  const projected = preview?.preview.projection.colonies.find((item) => item.colony.id === colony.id)
+  const displayColony = projected?.colony ?? colony
+  const constructionDecision = snapshot.decision?.decisions.construction?.find((item) => item.colony_id === colony.id)
+  return (
+    <>
+      <PageHeader
+        eyebrow={t('colony.construction')}
+        title={t('construction.manageTitle', { colony: colony.id })}
+        subtitle={t('colonies.planet', { id: colony.planet_id })}
+        actions={<button type="button" className="button-secondary" onClick={onBack}>{t('construction.backToColony')}</button>}
+      />
+      <ConstructionEditor
+        colony={displayColony}
+        preview={projected}
+        choices={constructionDecision?.choices ?? []}
+        draftOrders={draftOrders}
+        onPlanOrder={onPlanOrder}
+        onRemoveOrder={onRemoveOrder}
+        t={t}
+      />
+    </>
+  )
+}
+
 function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder, onRemoveOrder, t }: {
   colony: Colony
   preview?: PlanningPreviewSnapshot['preview']['projection']['colonies'][number]
@@ -833,53 +901,63 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
   }
 
   return (
-    <Card className="construction-card">
-      <p className="eyebrow">{t('colony.construction')}</p>
-      <h2>{t('construction.queue')}</h2>
-      {items.length === 0 ? <p className="muted">{t('construction.empty')}</p> : (
-        <div className="list-stack">
-          {items.map((item, index) => {
-            const projected = preview?.construction?.[index]
+    <div className="construction-workspace">
+      <Card className="construction-available-card">
+        <div className="card-heading">
+          <div><p className="eyebrow">{t('construction.catalog')}</p><h2>{t('construction.available')}</h2></div>
+          <span className="badge">{choices.length}</span>
+        </div>
+        <div className="choice-grid construction-choice-grid">
+          {choices.map((choice, index) => {
+            const nonRepeatable = choice.project_kind === 'building' || choice.project_kind === 'planetary_transformation'
+            const alreadyQueued = nonRepeatable && items.some((item) => item.project_kind === choice.project_kind && item.project_id === choice.project_id)
             return (
-              <div className="queue-row" key={`${item.project_kind}-${item.project_id}-${index}`}>
-                <span>
-                  <strong>{humanizeToken(item.project_id)}</strong>
-                  <small>{item.project_kind !== item.project_id ? `${humanizeToken(item.project_kind)} · ` : ''}{projected ? formatEta(t, projected.eta_turns) : t('common.noEta')}</small>
-                </span>
-                <div className="action-row compact-actions">
-                  <button type="button" className="button-ghost" disabled={index === 0} onClick={() => move(index, -1)}>{t('construction.moveUp')}</button>
-                  <button type="button" className="button-ghost" disabled={index === items.length - 1} onClick={() => move(index, 1)}>{t('construction.moveDown')}</button>
-                  <button type="button" className="button-ghost" onClick={() => save(items.filter((_, itemIndex) => itemIndex !== index))}>{t('common.remove')}</button>
-                </div>
-              </div>
+              <button
+                type="button"
+                className="choice-button construction-choice"
+                key={`${choice.project_kind}-${choice.project_id}-${index}`}
+                disabled={alreadyQueued}
+                onClick={() => save([...items, queueItemFromChoice(choice)])}
+              >
+                <strong>{humanizeToken(choice.ship_design_name ?? choice.project_id)}</strong>
+                <small>{humanizeToken(choice.project_kind)} · {t('construction.cost', { pp: choice.production_cost_pp.toFixed(0) })}</small>
+              </button>
             )
           })}
         </div>
-      )}
-      <h3>{t('construction.available')}</h3>
-      <div className="choice-grid">
-        {choices.map((choice, index) => {
-          const nonRepeatable = choice.project_kind === 'building' || choice.project_kind === 'planetary_transformation'
-          const alreadyQueued = nonRepeatable && items.some((item) => item.project_kind === choice.project_kind && item.project_id === choice.project_id)
-          return (
-            <button
-              type="button"
-              className="choice-button"
-              key={`${choice.project_kind}-${choice.project_id}-${index}`}
-              disabled={alreadyQueued}
-              onClick={() => save([...items, queueItemFromChoice(choice)])}
-            >
-              <strong>{humanizeToken(choice.ship_design_name ?? choice.project_id)}</strong>
-              <small>{choice.project_kind !== choice.project_id ? `${choice.project_kind} · ` : ''}{t('construction.cost', { pp: choice.production_cost_pp.toFixed(0) })}</small>
-            </button>
-          )
-        })}
-      </div>
-      {drafted && <button type="button" className="button-ghost" onClick={() => onRemoveOrder(draftKey)}>{t('common.cancel')}</button>}
-    </Card>
+      </Card>
+
+      <Card className="construction-queue-card">
+        <div className="card-heading">
+          <div><p className="eyebrow">{t('colony.construction')}</p><h2>{t('construction.queue')}</h2></div>
+          <span className="badge">{items.length}</span>
+        </div>
+        {items.length === 0 ? <p className="muted">{t('construction.empty')}</p> : (
+          <div className="construction-queue-list">
+            {items.map((item, index) => {
+              const projectedItem = preview?.construction?.[index]
+              return (
+                <div className="queue-row construction-queue-row" key={`${item.project_kind}-${item.project_id}-${index}`}>
+                  <span className="queue-position">{index + 1}</span>
+                  <span className="queue-copy">
+                    <strong>{humanizeToken(item.project_id)}</strong>
+                    <small>{humanizeToken(item.project_kind)} · {projectedItem ? formatEta(t, projectedItem.eta_turns) : t('common.noEta')}</small>
+                  </span>
+                  <div className="action-row compact-actions">
+                    <button type="button" className="button-ghost" disabled={index === 0} onClick={() => move(index, -1)}>{t('construction.moveUp')}</button>
+                    <button type="button" className="button-ghost" disabled={index === items.length - 1} onClick={() => move(index, 1)}>{t('construction.moveDown')}</button>
+                    <button type="button" className="button-ghost" onClick={() => save(items.filter((_, itemIndex) => itemIndex !== index))}>{t('common.remove')}</button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+        {drafted && <button type="button" className="button-secondary construction-cancel-draft" onClick={() => onRemoveOrder(draftKey)}>{t('construction.resetDraft')}</button>}
+      </Card>
+    </div>
   )
 }
-
 function PopulationTransferRow({ choice, onPlanOrder, t }: {
   choice: PopulationTransferChoice
   onPlanOrder: (order: DraftOrder) => void

@@ -47,7 +47,7 @@ Status: **complete**.
 - `git diff --check` - **PASS** (Windows LF/CRLF notices only).
 ### G4-B2 - Interaction-density refinement after direct review
 
-Status: **implementation in progress; B2-A complete, B2-B/B2-C pending**.
+Status: **implementation in progress; B2-A/B2-B complete, B2-C pending**.
 
 This block captures direct hands-on review after G4-B. These items are treated as pre-closure interaction requirements rather than later artwork polish:
 
@@ -70,6 +70,17 @@ Status: **complete**.
 - Desktop HTML drag/drop is supported between job buckets.
 - Touch/pen pointer drag/drop is supported by pointer capture plus destination hit-testing, with tap-selection + destination-button fallback retained for accessibility.
 - Authority evidence: selecting both starting Farmers and moving them to Worker projected Farmer `2.0 -> 0.0`, Worker `1.0 -> 3.0`, Food `4.0 -> 0.0` and Production `3.0 -> 9.0` through the existing Planning Preview. A subsequent desktop drag Worker -> Scientist and touch-style drag Scientist -> Farmer also updated the same preview path.
+- `npm run build` - **PASS**.
+
+#### G4-B2-B - Dedicated Colony build-management page
+
+Status: **complete**.
+
+- Added a typed `build` game subview so a Colony construction workspace has its own route, e.g. `#/game/demo/colonies/10/build`, while keeping Colonies as the active strategic section.
+- Colony Detail now shows only a compact current-build/queue summary, authoritative ETA and a `Bau verwalten` action.
+- The dedicated build page separates the available build catalog from the ordered queue, with the catalog first and queue below.
+- Queue items remain editable with up/down/remove plus full draft reset, all using the existing `colony.set_construction_queue` Planning draft.
+- Browser smoke added Housing and Troop Transport, reordered Troop Transport to position 1, then returned to Colony Detail. The compact summary projected `Troop Transport`, `2 in Queue`, `34 Runde(n)` and `Housing` as the next item.
 - `npm run build` - **PASS**.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure

@@ -21,7 +21,7 @@ Permanent evidence:
   - [x] G4-B: explicit star-system dialog/overlay plus Colony usability/Population presentation blockers.
   - [ ] G4-B2: table-first Colony UI, drag/drop Population, dedicated build route, fullscreen Galaxy/orbital System layout, denser typography and smaller bottom-right End Turn.
     - [x] B2-A: table-first Colony overview + multi-unit desktop/touch Population drag/drop.
-    - [ ] B2-B: dedicated Colony build-management route/page.
+    - [x] B2-B: dedicated Colony build-management route/page.
     - [ ] B2-C: fullscreen Galaxy/orbital System + denser typography/help + smaller bottom-right End Turn.
   - [ ] G4-C: independent mobile/desktop workflow QA and Slice-15.2 closure.
 

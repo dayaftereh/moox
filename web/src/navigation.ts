@@ -1,11 +1,13 @@
 export type GameSection = 'galaxy' | 'colonies' | 'fleets' | 'research' | 'diplomacy' | 'espionage' | 'more'
+export type GameSubview = 'build'
 
 export type AppRoute =
   | { kind: 'home' }
   | { kind: 'new-game' }
-  | { kind: 'game'; gameID: string; section: GameSection; entityID?: number }
+  | { kind: 'game'; gameID: string; section: GameSection; entityID?: number; subview?: GameSubview }
 
 const sections = new Set<GameSection>(['galaxy', 'colonies', 'fleets', 'research', 'diplomacy', 'espionage', 'more'])
+const subviews = new Set<GameSubview>(['build'])
 
 export function parseRoute(hash = window.location.hash): AppRoute {
   const value = hash.replace(/^#/, '') || '/'
@@ -15,11 +17,14 @@ export function parseRoute(hash = window.location.hash): AppRoute {
     const section = parts[2] as GameSection
     if (sections.has(section)) {
       const parsed = parts.length >= 4 ? Number(parts[3]) : undefined
+      const entityID = parsed !== undefined && Number.isFinite(parsed) && parsed > 0 ? parsed : undefined
+      const parsedSubview = entityID && parts.length >= 5 && subviews.has(parts[4] as GameSubview) ? parts[4] as GameSubview : undefined
       return {
         kind: 'game',
         gameID: decodeURIComponent(parts[1]),
         section,
-        entityID: parsed !== undefined && Number.isFinite(parsed) && parsed > 0 ? parsed : undefined,
+        entityID,
+        subview: parsedSubview,
       }
     }
   }
@@ -29,8 +34,9 @@ export function parseRoute(hash = window.location.hash): AppRoute {
 export function routeHash(route: AppRoute): string {
   if (route.kind === 'home') return '#/'
   if (route.kind === 'new-game') return '#/new-game'
-  const suffix = route.entityID ? `/${route.entityID}` : ''
-  return `#/game/${encodeURIComponent(route.gameID)}/${route.section}${suffix}`
+  const entitySuffix = route.entityID ? `/${route.entityID}` : ''
+  const subviewSuffix = route.entityID && route.subview ? `/${route.subview}` : ''
+  return `#/game/${encodeURIComponent(route.gameID)}/${route.section}${entitySuffix}${subviewSuffix}`
 }
 
 export function navigate(route: AppRoute) {

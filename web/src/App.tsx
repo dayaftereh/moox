@@ -25,6 +25,7 @@ import { type TranslationKey, type TranslationVars, useI18n } from './i18n'
 import { type AppRoute, type GameSection, navigate, parseRoute } from './navigation'
 import {
   StrategicColoniesView,
+  StrategicConstructionView,
   StrategicDiplomacyView,
   StrategicEspionageView,
   StrategicFleetsView,
@@ -519,18 +520,32 @@ function App() {
           t={t}
         />
       ) : activeSection === 'colonies' ? (
-        <StrategicColoniesView
-          snapshot={snapshot}
-          preview={planningPreview}
-          draftOrders={draftOrders}
-          selectedColonyID={route.entityID}
-          onOpenColony={(colonyID) => navigate({ kind: 'game', gameID: route.gameID, section: 'colonies', entityID: colonyID })}
-          onBack={() => navigate({ kind: 'game', gameID: route.gameID, section: 'colonies' })}
-          onPlanPopulation={planPopulation}
-          onPlanOrder={planOrder}
-          onRemoveOrder={removePlannedOrder}
-          t={t}
-        />
+        route.subview === 'build' && route.entityID ? (
+          <StrategicConstructionView
+            snapshot={snapshot}
+            preview={planningPreview}
+            draftOrders={draftOrders}
+            colonyID={route.entityID}
+            onBack={() => navigate({ kind: 'game', gameID: route.gameID, section: 'colonies', entityID: route.entityID })}
+            onPlanOrder={planOrder}
+            onRemoveOrder={removePlannedOrder}
+            t={t}
+          />
+        ) : (
+          <StrategicColoniesView
+            snapshot={snapshot}
+            preview={planningPreview}
+            draftOrders={draftOrders}
+            selectedColonyID={route.entityID}
+            onOpenColony={(colonyID) => navigate({ kind: 'game', gameID: route.gameID, section: 'colonies', entityID: colonyID })}
+            onOpenConstruction={(colonyID) => navigate({ kind: 'game', gameID: route.gameID, section: 'colonies', entityID: colonyID, subview: 'build' })}
+            onBack={() => navigate({ kind: 'game', gameID: route.gameID, section: 'colonies' })}
+            onPlanPopulation={planPopulation}
+            onPlanOrder={planOrder}
+            onRemoveOrder={removePlannedOrder}
+            t={t}
+          />
+        )
       ) : activeSection === 'fleets' ? (
         <StrategicFleetsView snapshot={snapshot} onPlanOrder={planOrder} t={t} />
       ) : activeSection === 'research' ? (

@@ -598,3 +598,36 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .colony-population-cell { min-width: 292px; }
   .colony-table-dense .population-job-grid { grid-template-columns: repeat(3, minmax(82px, 1fr)) !important; }
 }
+
+
+/* Slice 15.2 G4-B2-B: dedicated Colony construction workspace */
+.construction-summary-card { display: grid; align-content: start; gap: 10px; }
+.construction-summary-heading { align-items: flex-start; }
+.construction-summary-meta { display: grid; gap: 3px; padding: 8px 10px; border: 1px solid var(--border-soft); border-radius: 9px; background: rgba(6, 14, 24, .54); }
+.construction-summary-meta > span { font-size: .76rem; font-weight: 850; }
+.construction-summary-meta small { overflow: hidden; color: var(--muted); font-size: .65rem; text-overflow: ellipsis; white-space: nowrap; }
+.construction-workspace { display: grid; gap: 12px; }
+.construction-available-card, .construction-queue-card { min-width: 0; }
+.construction-choice-grid { grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 7px; }
+.construction-choice { min-height: 58px; padding: 9px 10px; text-align: left; }
+.construction-choice strong { font-size: .77rem; }
+.construction-choice small { font-size: .62rem; }
+.construction-queue-list { display: grid; gap: 6px; }
+.construction-queue-row { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 8px; }
+.queue-position { display: grid; width: 25px; height: 25px; place-items: center; border: 1px solid var(--border-soft); border-radius: 7px; background: rgba(12, 27, 46, .9); color: var(--muted-strong); font-size: .68rem; font-weight: 900; }
+.queue-copy { display: grid; min-width: 0; gap: 2px; }
+.queue-copy strong, .queue-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.queue-copy strong { font-size: .76rem; }
+.queue-copy small { color: var(--muted); font-size: .62rem; }
+.construction-cancel-draft { margin-top: 10px; }
+
+@media (min-width: 980px) {
+  .construction-choice-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 699px) {
+  .construction-choice-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .construction-queue-row { grid-template-columns: 26px minmax(0, 1fr); }
+  .construction-queue-row .compact-actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .construction-queue-row .compact-actions button { min-width: 0; padding-inline: 5px; font-size: .6rem; }
+}
