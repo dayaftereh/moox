@@ -241,17 +241,27 @@ function App() {
   const diplomacyClosed = snapshot?.view.phase !== 'planning' || Boolean(snapshot?.view.seats.some((seat) => seat.submitted))
   const projectedResources = planningPreview?.preview.projection
   const projectedEmpire = snapshot?.decision?.empire
+  const projectedColonies = projectedResources?.colonies?.map((item) => item.colony) ?? snapshot?.decision?.colonies ?? snapshot?.view.colonies ?? []
+  const projectedFood = projectedColonies.reduce((sum, colony) => sum + colony.adjusted_economy.food, 0)
   const resourceChips = projectedEmpire ? [
     {
       label: t('resource.bc'),
+      shortLabel: 'BC',
       value: `${Math.round(projectedResources?.treasury_balance_bc ?? projectedEmpire.treasury.balance_bc)} (${(projectedResources?.net_modeled_income_bc ?? projectedEmpire.treasury.net_modeled_income_bc) >= 0 ? '+' : ''}${Math.round(projectedResources?.net_modeled_income_bc ?? projectedEmpire.treasury.net_modeled_income_bc)})`,
     },
     {
+      label: t('resource.food'),
+      shortLabel: 'Food',
+      value: projectedFood.toFixed(1),
+    },
+    {
       label: t('resource.freighters'),
+      shortLabel: 'Tr',
       value: projectedResources ? `${projectedResources.freighters.available}/${projectedResources.freighters.total}` : String(projectedEmpire.freighters),
     },
     {
       label: t('resource.command'),
+      shortLabel: 'CP',
       value: `${projectedResources?.command_points.used ?? projectedEmpire.command_points.used}/${projectedResources?.command_points.capacity ?? projectedEmpire.command_points.capacity}`,
       tone: (projectedResources?.command_point_overage ?? Math.max(0, projectedEmpire.command_points.used - projectedEmpire.command_points.capacity)) > 0 ? 'warning' as const : 'neutral' as const,
     },

@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A and G4-B complete; G4-B2 interaction refinement accepted; G4-C independent QA/closure deferred until B2 is complete**.
+Status: **G4-A/G4-B and iterative G4-B2 A-D complete; direct user review pending; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -95,6 +95,22 @@ Status: **complete; direct user review pending**.
 - Persistent actions are now a small bottom-right cluster instead of a broad bar. In the same desktop smoke viewport the cluster measured about `154 x 40px`; on narrow/mobile layouts the redundant `Main` action is hidden and End Turn remains available without dominating the screen.
 - Regression smoke after density changes confirmed the table-first Colony overview remains intact and the dedicated `/colonies/10/build` construction workspace still renders its build catalog and queue correctly.
 - `npm run build` - **PASS** after final viewport-height correction.
+- `git diff --check` - **PASS** (Windows LF/CRLF notices only).
+
+#### G4-B2-D - Compact shell and full-viewport strategic layout
+
+Status: **complete; direct user review pending**.
+
+- Removed the separate resource strip and moved strategic resources directly into the compact top bar.
+- The visible top bar now prioritizes Main/OX plus BC, Food, Freighters/Transporter and Command Points. Connection state remains available as a tiny status dot/tooltip rather than visible status text; DE/EN was removed from the top bar and remains in the left desktop Main/navigation area.
+- Food in the top bar is display-only aggregation of the authoritative projected Colony `adjusted_economy.food` values. Browser authority smoke moved one Farmer to Worker and the top Food display changed `4.0 -> 2.0` together with the Planning Preview (`Food 4.0 -> 2.0`, Production `3.0 -> 6.0`). No food rule was duplicated in React.
+- Mobile bottom navigation now shows all seven strategic sections in one row: Galaxy, Colonies, Fleets, Research, Diplomacy, Espionage and More.
+- End Turn is integrated at the bottom-right edge of the command bar on mobile and remains a small persistent bottom-right action on desktop.
+- The former 1180px content cap was removed for strategic game screens. A 1200px desktop probe measured the retained left navigation at `158px`, Colony content/table at `1030px`, and End Turn at about `98 x 34px` in the bottom-right corner.
+- A 360px probe measured the compact top bar at `46px`, bottom command bar at `48px`, all seven tabs at about `39px` each and End Turn at about `70 x 44px`.
+- A 320px probe confirmed icon-only Main/OX, no visible round/phase chip, all BC/Food/Tr/CP resources fitting without horizontal overflow, all seven tabs at about `33px` each, and a full-width Colony content area (`308px`) with horizontally scrollable table (`306px` viewport) and sticky Colony column.
+- Galaxy now computes its height from the compact shell bars so the strategic surface uses essentially the full remaining viewport.
+- `npm run build` - **PASS**.
 - `git diff --check` - **PASS** (Windows LF/CRLF notices only).
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure

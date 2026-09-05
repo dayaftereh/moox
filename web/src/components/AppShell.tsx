@@ -12,9 +12,9 @@ const desktopNavItems: Array<{ section: GameSection; label: TranslationKey; glyp
   { section: 'more', label: 'nav.more', glyph: '\u2026' },
 ]
 
-const mobileNavItems = desktopNavItems.filter((item) => ['galaxy', 'colonies', 'fleets', 'research', 'more'].includes(item.section))
+const mobileNavItems = desktopNavItems
 
-type ResourceChip = { label: string; value: string; tone?: 'neutral' | 'warning' | 'danger' }
+type ResourceChip = { label: string; shortLabel?: string; value: string; tone?: 'neutral' | 'warning' | 'danger' }
 
 type AppShellProps = {
   activeSection: GameSection
@@ -88,49 +88,54 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
   return (
     <div className={'game-shell section-' + activeSection}>
       <header className="topbar">
-        <button type="button" className="brand-button topbar-brand" onClick={onHome}>
+        <button type="button" className="brand-button topbar-brand" onClick={onHome} aria-label={t('nav.main')} title={t('nav.main')}>
           <span className="brand-mark" aria-hidden="true">OX</span>
-          <span className="brand-copy"><strong>{t('app.name')}</strong><small>{gameID}</small></span>
+          <span className="topbar-menu-label">{t('nav.main')}</span>
         </button>
+
+        <div className="topbar-resources" aria-label={t('a11y.resources')}>
+          {resources.map((resource) => (
+            <div className={`topbar-resource resource-${resource.tone ?? 'neutral'}`} key={resource.label} title={`${resource.label}: ${resource.value}`}>
+              <span className="resource-label resource-label-long">{resource.label}</span>
+              <span className="resource-label resource-label-short">{resource.shortLabel ?? resource.label}</span>
+              <strong>{resource.value}</strong>
+            </div>
+          ))}
+        </div>
+
         <div className="topbar-context" aria-label={t('a11y.gameStatus')}>
           {turn !== undefined && <span className="status-chip">{t('top.turn', { turn })}</span>}
           {phaseLabel && <span className="status-chip status-chip-phase">{phaseLabel}</span>}
         </div>
-        <div className="topbar-live" aria-live="polite">
+        <div className="topbar-live" aria-live="polite" title={status} aria-label={status}>
           <span className={`connection-dot connection-${statusTone}`} aria-hidden="true" />
-          <span className="connection-copy">{status}</span>
         </div>
-        <LanguageSwitch compact />
       </header>
-
-      {resources.length > 0 && (
-        <div className="resource-strip" aria-label={t('a11y.resources')}>
-          {resources.map((resource) => (
-            <div className={`resource-chip resource-${resource.tone ?? 'neutral'}`} key={resource.label}>
-              <span>{resource.label}</span><strong>{resource.value}</strong>
-            </div>
-          ))}
-        </div>
-      )}
 
       <div className="shell-layout">
         <aside className="side-nav" aria-label={t('a11y.primaryNavigation')}>
           <div className="side-nav-items"><NavItems items={desktopNavItems} activeSection={activeSection} onNavigate={onNavigate} /></div>
-          <div className="side-nav-footer"><LanguageSwitch /></div>
+          <div className="side-nav-footer">
+            <LanguageSwitch />
+          </div>
         </aside>
         <main className="game-content">{children}</main>
       </div>
 
-      <div className="persistent-actions" role="group">
-        <button type="button" className="button-ghost persistent-main" onClick={() => onNavigate('galaxy')}>{t('nav.main')}</button>
-        <button type="button" className="button-primary persistent-end-turn" disabled={!onEndTurn || endTurnDisabled} onClick={onEndTurn}>{endTurnLabel ?? t('planning.endTurn')}</button>
+      <div className="bottom-command-bar">
+        <nav className="bottom-nav" aria-label={t('a11y.primaryNavigation')}>
+          <NavItems items={mobileNavItems} activeSection={activeSection} onNavigate={onNavigate} mobile />
+        </nav>
+        <button
+          type="button"
+          className="button-primary bottom-end-turn"
+          disabled={!onEndTurn || endTurnDisabled}
+          onClick={onEndTurn}
+        >
+          {endTurnLabel ?? t('planning.endTurn')}
+        </button>
       </div>
-
-      <nav className="bottom-nav" aria-label={t('a11y.primaryNavigation')}>
-        <NavItems items={mobileNavItems} activeSection={activeSection} onNavigate={onNavigate} mobile />
-      </nav>
     </div>
   )
 }
-
 export { LanguageSwitch }

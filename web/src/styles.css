@@ -751,3 +751,123 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 @media (max-width: 699px) {
   .galaxy-card-full { height: calc(100dvh - 182px - env(safe-area-inset-bottom)); min-height: 320px; }
 }
+
+
+/* Slice 15.2 G4-B2-D: compact shell/header + full-width strategic viewport */
+.game-shell { --topbar-height: 46px; --bottom-nav-height: 48px; }
+.topbar {
+  height: var(--topbar-height) !important;
+  grid-template-columns: auto minmax(0, 1fr) auto auto !important;
+  gap: 4px !important;
+  padding: 0 6px !important;
+}
+.topbar-brand { gap: 5px; min-width: 34px; padding: 2px 3px; }
+.topbar-brand .brand-mark { width: 29px !important; height: 29px !important; flex-basis: 29px !important; font-size: .66rem; }
+.topbar-menu-label { display: none; color: var(--muted-strong); font-size: .62rem; font-weight: 850; }
+.topbar-resources { display: flex; min-width: 0; align-items: center; gap: 3px; overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: none; }
+.topbar-resources::-webkit-scrollbar { display: none; }
+.topbar-resource { display: inline-flex; min-width: max-content; min-height: 30px; align-items: center; gap: 4px; padding: 3px 6px; border: 1px solid var(--border-soft); border-radius: 8px; background: rgba(10, 24, 41, .82); font-variant-numeric: tabular-nums; }
+.topbar-resource .resource-label { color: var(--muted); font-size: .55rem; font-weight: 850; line-height: 1; }
+.topbar-resource strong { color: var(--text); font-size: .66rem; line-height: 1; white-space: nowrap; }
+.resource-label-long { display: none; }
+.resource-label-short { display: inline; }
+.topbar-resource.resource-warning { border-color: rgba(242, 191, 94, .58); background: rgba(82, 59, 17, .42); }
+.topbar-resource.resource-danger { border-color: rgba(255, 116, 135, .58); background: rgba(89, 26, 37, .42); }
+.topbar-context { display: flex !important; gap: 3px !important; }
+.topbar-context .status-chip { min-height: 27px; padding: 3px 6px; font-size: .55rem; }
+.topbar-live { min-width: 16px; justify-content: center !important; gap: 0 !important; }
+.topbar-live .connection-dot { width: 7px; height: 7px; flex-basis: 7px; }
+
+.game-content { width: calc(100% - 12px) !important; max-width: none !important; margin: 0 6px !important; padding: 7px 0 calc(var(--bottom-nav-height) + 8px + env(safe-area-inset-bottom)) !important; }
+.section-galaxy .game-content { width: calc(100% - 8px) !important; margin: 0 4px !important; padding: 4px 0 calc(var(--bottom-nav-height) + 4px + env(safe-area-inset-bottom)) !important; }
+
+.bottom-command-bar {
+  position: fixed;
+  z-index: 47;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: grid;
+  min-height: calc(var(--bottom-nav-height) + env(safe-area-inset-bottom));
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3px;
+  align-items: stretch;
+  padding: 3px 4px env(safe-area-inset-bottom);
+  border-top: 1px solid var(--border);
+  background: rgba(6, 14, 25, .96);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, .2);
+  backdrop-filter: blur(16px);
+}
+.bottom-nav {
+  position: static !important;
+  z-index: auto !important;
+  display: grid !important;
+  min-width: 0;
+  min-height: 0 !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  gap: 1px;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+.bottom-nav .nav-item { min-width: 0; min-height: 40px; gap: 1px; padding: 2px 0; border-radius: 7px; font-size: .46rem; line-height: 1; }
+.bottom-nav .nav-glyph { width: 18px; height: 18px; border-radius: 5px; font-size: .55rem; }
+.bottom-end-turn { min-width: 74px !important; min-height: 40px !important; max-width: 86px; padding: 4px 6px !important; border-radius: 7px !important; font-size: .58rem !important; line-height: 1.05; }
+.persistent-actions { display: none !important; }
+
+.galaxy-card-full { height: calc(100dvh - var(--topbar-height) - var(--bottom-nav-height) - 10px - env(safe-area-inset-bottom)) !important; min-height: 300px !important; }
+
+@media (max-width: 560px) {
+  .topbar-context .status-chip-phase { display: none; }
+  .topbar-context .status-chip { padding-inline: 4px; }
+}
+
+@media (max-width: 360px) {
+  .topbar-resource { gap: 3px; padding-inline: 4px; }
+  .topbar-resource .resource-label { font-size: .5rem; }
+  .topbar-resource strong { font-size: .6rem; }
+  .bottom-nav .nav-item { font-size: .41rem; }
+  .bottom-nav .nav-glyph { width: 16px; height: 16px; font-size: .5rem; }
+  .bottom-end-turn { min-width: 66px !important; max-width: 70px; padding-inline: 3px !important; font-size: .53rem !important; }
+}
+
+@media (min-width: 760px) {
+  .resource-label-long { display: inline; }
+  .resource-label-short { display: none; }
+  .topbar-menu-label { display: inline; }
+}
+
+@media (min-width: 960px) {
+  .game-shell { --topbar-height: 48px; --bottom-nav-height: 0px; }
+  .topbar { grid-template-columns: 158px minmax(0, 1fr) auto auto !important; padding-inline: 8px !important; }
+  .shell-layout { grid-template-columns: 158px minmax(0, 1fr) !important; }
+  .side-nav { top: var(--topbar-height) !important; height: calc(100vh - var(--topbar-height)) !important; padding: 8px 7px !important; }
+  .side-nav-items { gap: 3px !important; }
+  .side-nav .nav-item { grid-template-columns: 23px minmax(0, 1fr) !important; min-height: 38px !important; padding: 4px 6px !important; border-radius: 8px; font-size: .68rem !important; }
+  .side-nav .nav-glyph { width: 21px; height: 21px; border-radius: 6px; font-size: .55rem; }
+  .side-nav-footer { padding: 7px 3px !important; }
+  .side-nav-footer .language-switch { width: 100%; }
+  .side-nav-footer .language-switch button { min-width: 0; min-height: 28px; padding: 3px; font-size: .58rem; }
+  .game-content { width: calc(100% - 12px) !important; margin: 0 6px !important; padding: 7px 0 54px !important; }
+  .section-galaxy .game-content { width: calc(100% - 8px) !important; margin: 0 4px !important; padding: 4px 0 10px !important; }
+  .bottom-command-bar { left: auto; right: 12px; bottom: 12px; display: block; width: auto; min-height: 0; padding: 0; border: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
+  .bottom-nav { display: none !important; }
+  .bottom-end-turn { min-width: 96px !important; min-height: 34px !important; max-width: none; padding: 5px 9px !important; font-size: .64rem !important; box-shadow: 0 7px 22px rgba(34, 105, 226, .24); }
+  .galaxy-card-full { height: calc(100dvh - var(--topbar-height) - 12px) !important; min-height: 360px !important; }
+}
+
+@media (min-width: 1280px) {
+  .shell-layout { grid-template-columns: 170px minmax(0, 1fr) !important; }
+  .topbar { grid-template-columns: 170px minmax(0, 1fr) auto auto !important; }
+}
+
+/* B2-D narrow-shell correction: keep the top-left Main affordance icon-only on mobile. */
+.topbar-menu-label { display: none !important; }
+@media (max-width: 340px) {
+  .topbar-context { display: none !important; }
+}
+@media (min-width: 760px) {
+  .topbar-menu-label { display: inline !important; }
+}

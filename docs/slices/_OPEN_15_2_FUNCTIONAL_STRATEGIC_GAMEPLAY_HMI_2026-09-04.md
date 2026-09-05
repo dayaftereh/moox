@@ -23,6 +23,7 @@ Permanent evidence:
     - [x] B2-A: table-first Colony overview + multi-unit desktop/touch Population drag/drop.
     - [x] B2-B: dedicated Colony build-management route/page.
     - [x] B2-C: fullscreen Galaxy/orbital System + denser typography/help + smaller bottom-right End Turn.
+    - [x] B2-D: compact resource-first top bar + full-width strategic content + seven-tab mobile nav + bottom-right End Turn; left Main/navigation retained.
   - [ ] G4-C: independent mobile/desktop workflow QA and Slice-15.2 closure.
 
 Live preview:
