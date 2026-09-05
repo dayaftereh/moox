@@ -1024,3 +1024,116 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 @media (max-width: 360px) {
   .topbar-resource { gap: 1px; padding-inline: 1px; }
 }
+
+
+/* Slice 15.2 G4-B2-G: HUD-driven research selection overlay */
+.bottom-nav { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+
+.research-overlay-backdrop {
+  position: fixed;
+  z-index: 120;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  background: rgba(1, 5, 10, .82);
+  backdrop-filter: blur(8px);
+}
+.research-overlay {
+  display: grid;
+  width: min(1040px, 100%);
+  max-height: calc(100dvh - 16px);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  border: 1px solid #4a6079;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(17, 25, 34, .98), rgba(3, 8, 13, .99));
+  box-shadow: 0 22px 70px rgba(0, 0, 0, .66);
+}
+.research-overlay-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 32px;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-bottom: 1px solid #4c6074;
+  background: linear-gradient(180deg, #334252, #121a23 56%, #202c39);
+}
+.research-overlay-header h2 { margin: 0; font-size: .95rem; letter-spacing: .04em; text-transform: uppercase; }
+.research-overlay-current { display: grid; grid-template-columns: auto auto; gap: 1px 6px; align-items: baseline; font-size: .55rem; }
+.research-overlay-current span { color: #8fa2b6; text-transform: uppercase; }
+.research-overlay-current strong { color: #a9f36f; font-size: .65rem; text-align: right; }
+.research-overlay-close { min-width: 30px !important; width: 30px; min-height: 30px !important; padding: 0 !important; }
+.research-grid-classic {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  min-height: 0;
+  overflow: auto;
+  padding: 7px;
+  background: #030705;
+}
+.research-field-panel {
+  min-height: 138px;
+  overflow: hidden;
+  border: 1px solid #354559;
+  border-radius: 7px;
+  background: #001006;
+  box-shadow: inset 0 0 0 1px rgba(114, 137, 160, .08);
+}
+.research-field-panel.active { border-color: #7fb54f; box-shadow: inset 0 0 0 1px rgba(139, 205, 80, .2), 0 0 15px rgba(66, 126, 36, .18); }
+.research-field-disabled { opacity: .5; }
+.research-field-bar {
+  display: flex;
+  min-height: 29px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 8px;
+  border-bottom: 1px solid #435263;
+  background: linear-gradient(180deg, #4a5561, #1b232c 48%, #323d49);
+  color: #d7dbe0;
+  text-transform: uppercase;
+}
+.research-field-bar strong { overflow: hidden; font-size: .67rem; letter-spacing: .04em; text-overflow: ellipsis; white-space: nowrap; }
+.research-field-bar span { color: #79ec42; font-size: .74rem; font-weight: 900; white-space: nowrap; }
+.research-field-body { display: grid; gap: 6px; padding: 7px 9px 9px; }
+.research-field-body h3 { margin: 0; color: #80e14a; font-size: .9rem; font-weight: 700; }
+.research-tech-list { display: grid; gap: 2px; }
+.research-tech-list > span,
+.research-tech-list > button:not(.research-field-select) {
+  width: 100%;
+  padding: 2px 3px;
+  border: 0;
+  background: transparent;
+  color: #4ebc3d;
+  font-size: .7rem;
+  font-weight: 650;
+  text-align: left;
+}
+.research-tech-list > button:not(.research-field-select) { cursor: pointer; }
+.research-tech-list > button:not(.research-field-select):hover,
+.research-tech-list > button:not(.research-field-select):focus-visible { color: #9cff6c; background: rgba(60, 130, 43, .17); }
+.research-field-select {
+  justify-self: start;
+  margin-top: 5px;
+  padding: 4px 8px;
+  border: 1px solid rgba(97, 166, 66, .55);
+  border-radius: 6px;
+  background: rgba(31, 78, 28, .45);
+  color: #a2f375;
+  font-size: .61rem;
+  font-weight: 850;
+}
+.research-overlay-footer { display: flex; justify-content: center; padding: 6px 8px; border-top: 1px solid #3b4d61; background: #111820; }
+
+@media (max-width: 699px) {
+  .research-overlay-backdrop { place-items: stretch; padding: 4px; }
+  .research-overlay { width: 100%; max-height: calc(100dvh - 8px); }
+  .research-overlay-header { grid-template-columns: minmax(0, 1fr) 30px; }
+  .research-overlay-current { grid-column: 1 / -1; grid-row: 2; grid-template-columns: repeat(4, auto); justify-content: start; }
+  .research-grid-classic { grid-template-columns: 1fr; gap: 5px; }
+  .research-field-panel { min-height: 112px; }
+  .research-field-body h3 { font-size: .8rem; }
+  .research-tech-list > span, .research-tech-list > button:not(.research-field-select) { font-size: .65rem; }
+}

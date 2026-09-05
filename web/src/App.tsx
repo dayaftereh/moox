@@ -30,6 +30,7 @@ import {
   StrategicEspionageView,
   StrategicFleetsView,
   StrategicGalaxyView,
+  StrategicResearchOverlay,
   StrategicResearchView,
 } from './StrategicViews'
 import './styles.css'
@@ -86,6 +87,7 @@ function App() {
   const [error, setError] = useState('')
   const [diplomacyBusy, setDiplomacyBusy] = useState(false)
   const [invasionBusy, setInvasionBusy] = useState(false)
+  const [researchOverlayOpen, setResearchOverlayOpen] = useState(false)
   const [lastNotification, setLastNotification] = useState<Notification | null>(null)
   const reconnectTimer = useRef<number | null>(null)
   const activeGameRef = useRef(gameID)
@@ -590,6 +592,11 @@ function App() {
       statusTone={statusTone}
       resources={resourceChips}
       onNavigate={(section) => navigate({ kind: 'game', gameID: route.gameID, section })}
+      onResourceActivate={(resourceID) => {
+        if (resourceID !== 'research') return false
+        setResearchOverlayOpen(true)
+        return true
+      }}
       onHome={() => navigate({ kind: 'home' })}
       onEndTurn={snapshot ? () => void endTurn() : undefined}
       endTurnDisabled={!snapshot || snapshot.view.phase !== 'planning' || planningBusy || previewBusy}
@@ -697,7 +704,19 @@ function App() {
           t={t}
         />
       )}
-    </AppShell>
+      {researchOverlayOpen && snapshot && (
+        <StrategicResearchOverlay
+          snapshot={snapshot}
+          preview={planningPreview}
+          onPlanOrder={(order) => {
+            planOrder(order)
+            setResearchOverlayOpen(false)
+            navigate({ kind: 'game', gameID: route.gameID, section: 'galaxy' })
+          }}
+          onClose={() => setResearchOverlayOpen(false)}
+          t={t}
+        />
+      )}    </AppShell>
   )
 }
 

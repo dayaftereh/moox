@@ -1065,6 +1065,101 @@ export function StrategicFleetsView({ snapshot, onPlanOrder, t }: { snapshot: Pl
   )
 }
 
+export function StrategicResearchOverlay({ snapshot, preview, onPlanOrder, onClose, t }: {
+  snapshot: PlayerSnapshot
+  preview: PlanningPreviewSnapshot | null
+  onPlanOrder: (order: DraftOrder) => void
+  onClose: () => void
+  t: Translator
+}) {
+  const decision = snapshot.decision
+  const categories = [...(decision?.decisions.research_categories ?? [])].sort((a, b) => a.order - b.order)
+  const choices = decision?.decisions.research ?? []
+  const active = preview?.preview.projection.research
+  const activeFieldID = active?.tech_field_id ?? decision?.empire.research?.tech_field_id
+
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') onClose()
+    }
+    document.body.classList.add('modal-open')
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.classList.remove('modal-open')
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [onClose])
+
+  function selectResearch(choice: ResearchChoice, technologyID = 0) {
+    onPlanOrder({
+      key: 'research',
+      kind: 'empire.select_research',
+      payload: {
+        tech_field_id: choice.tech_field_id,
+        ...(technologyID ? { technology_id: technologyID } : {}),
+      },
+    })
+    onClose()
+  }
+
+  return (
+    <div className="research-overlay-backdrop" role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
+      <section className="research-overlay" role="dialog" aria-modal="true" aria-label={t('research.changeTitle')}>
+        <header className="research-overlay-header">
+          <div>
+            <p className="eyebrow">{t('research.eyebrow')}</p>
+            <h2>{t('research.changeTitle')}</h2>
+          </div>
+          <div className="research-overlay-current">
+            <span>{t('research.rpRate')}</span><strong>{active?.rp_per_turn.toFixed(1) ?? '—'} RP</strong>
+            <span>{t('research.eta')}</span><strong>{formatEta(t, active?.eta_turns)}</strong>
+          </div>
+          <button type="button" className="button-ghost research-overlay-close" onClick={onClose} aria-label={t('common.close')}>×</button>
+        </header>
+
+        <div className="research-grid-classic">
+          {categories.map((category) => {
+            const choice = choices.find((item) => item.category_id === category.id)
+            if (!choice) {
+              return <section className="research-field-panel research-field-disabled" key={category.id}><div className="research-field-bar"><strong>{serverLabel(t, category.name_key, category.id)}</strong></div><p>{t('common.none')}</p></section>
+            }
+            const isActive = activeFieldID === choice.tech_field_id
+            const fieldName = t('research.fieldNumber', { id: choice.tech_field_id })
+            return (
+              <section className={`research-field-panel${isActive ? ' active' : ''}`} key={category.id}>
+                <div className="research-field-bar">
+                  <strong>{serverLabel(t, category.name_key, category.id)}</strong>
+                  <span>{choice.base_cost_rp.toFixed(0)} RP</span>
+                </div>
+                <div className="research-field-body">
+                  <h3>{fieldName}</h3>
+                  <div className="research-tech-list">
+                    {choice.selection_mode === 'choose_one' ? choice.technology_ids.map((technologyID, index) => (
+                      <button type="button" key={technologyID} onClick={() => selectResearch(choice, technologyID)}>
+                        {serverLabel(t, choice.technology_name_keys[index], humanizeToken(choice.technology_keys[index] ?? String(technologyID)))}
+                      </button>
+                    )) : (
+                      <>
+                        {choice.technology_ids.map((technologyID, index) => (
+                          <span key={technologyID}>{serverLabel(t, choice.technology_name_keys[index], humanizeToken(choice.technology_keys[index] ?? String(technologyID)))}</span>
+                        ))}
+                        <button type="button" className="research-field-select" onClick={() => selectResearch(choice)}>{isActive ? t('research.reselect') : t('research.select')}</button>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )
+          })}
+        </div>
+
+        <footer className="research-overlay-footer">
+          <button type="button" className="button-secondary" onClick={onClose}>{t('common.cancel')}</button>
+        </footer>
+      </section>
+    </div>
+  )
+}
 export function StrategicResearchView({ snapshot, preview, onPlanOrder, t }: {
   snapshot: PlayerSnapshot
   preview: PlanningPreviewSnapshot | null

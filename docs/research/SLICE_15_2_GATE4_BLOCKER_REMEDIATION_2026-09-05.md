@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-F complete; direct user review pending; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-G complete; direct user review pending; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -144,6 +144,22 @@ Status: **complete; direct user review pending**.
 - A 320px browser probe confirmed all five HUD resources fit without horizontal overflow (`clientWidth == scrollWidth == 242`) after ultra-narrow spacing, while the research detail popover remains fully inside the viewport.
 - `npm run build` - **PASS** after final projection-consistency cleanup.
 - `git diff --check` - **PASS** (Windows LF/CRLF notices only).
+
+#### G4-B2-G - HUD-driven Research selection overlay
+
+Status: **complete; direct user review pending**.
+
+- Removed Research from the visible primary bottom/side navigation. The four primary gameplay tabs are now Galaxy, Colonies, Fleets and Diplomacy; the internal `/research` route remains available as a fallback/debug path.
+- Clicking the Research resource in the top HUD now opens a large modal research-selection screen rather than the small resource-detail popover.
+- The modal follows the original MOO2 interaction pattern without copying artwork: two-column desktop research grid, one panel per authoritative category, category header + RP cost, dark field body with green technology/application entries, active-field highlight, and Cancel/close behavior.
+- No research-field names are fabricated. The current server projection exposes category and technology/application names but no independent display name for a tech field, so the overlay labels these honestly as `Technologiefeld #<id>` until richer metadata exists.
+- `choose_one` research exposes each authoritative technology/application as its own selectable action. Other selection modes show their projected technology list plus one field-level Research action.
+- Selecting any research option uses the existing `empire.select_research` draft and immediately closes the modal and routes back to Galaxy.
+- Browser smoke from Colony opened the Research HUD overlay, selected Chemistry, and verified the route returned to Galaxy while the Research planning draft remained active.
+- Browser smoke selecting Construction field #29 updated the top HUD from `4.5 RP [—]` to `4.5 RP [0% · 12T]` after closing back to Galaxy.
+- Desktop smoke at `791 x 605` measured an 8-panel, two-column (`369px + 369px`) overlay inside `775 x 589px`; first panel displayed `Konstruktion`, `50 RP`, `Technologiefeld #29`, and its real technology list.
+- A 320px probe confirmed the overlay fits inside the viewport (`312 x 632px`) with a vertically scrollable one-column grid and all eight panels, while the bottom navigation expands to four tabs at ~59px each.
+- `npm run build` - **PASS** after final authoritative field-label adjustment.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
 

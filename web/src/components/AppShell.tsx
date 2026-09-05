@@ -6,7 +6,6 @@ const primaryNavItems: Array<{ section: GameSection; label: TranslationKey; glyp
   { section: 'galaxy', label: 'nav.galaxy', glyph: '\u25C8' },
   { section: 'colonies', label: 'nav.colonies', glyph: '\u2302' },
   { section: 'fleets', label: 'nav.fleets', glyph: '\u2197' },
-  { section: 'research', label: 'nav.research', glyph: '\u269B' },
   { section: 'diplomacy', label: 'nav.diplomacy', glyph: '\u2696' },
 ]
 type ResourceTone = 'neutral' | 'positive' | 'warning' | 'danger'
@@ -33,6 +32,7 @@ type AppShellProps = {
   statusTone: 'neutral' | 'success' | 'warning' | 'danger'
   resources?: ResourceChip[]
   onNavigate: (section: GameSection) => void
+  onResourceActivate?: (resourceID: string) => boolean
   onHome: () => void
   onEndTurn?: () => void
   endTurnDisabled?: boolean
@@ -88,7 +88,7 @@ function NavItems({ items, activeSection, onNavigate }: {
   </>
 }
 
-export function AppShell({ activeSection, gameID, turn, phaseLabel, status, statusTone, resources = [], onNavigate, onHome, onEndTurn, endTurnDisabled = false, endTurnLabel, children }: AppShellProps) {
+export function AppShell({ activeSection, gameID, turn, phaseLabel, status, statusTone, resources = [], onNavigate, onResourceActivate, onHome, onEndTurn, endTurnDisabled = false, endTurnLabel, children }: AppShellProps) {
   const { t } = useI18n()
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeResourceID, setActiveResourceID] = useState<string | null>(null)
@@ -193,7 +193,11 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
               data-resource-id={resource.id}
               aria-expanded={activeResourceID === resource.id}
               title={`${resource.label}: ${[resource.value, resource.delta].filter(Boolean).join(' ')}`}
-              onClick={() => { setMenuOpen(false); setActiveResourceID((current) => current === resource.id ? null : resource.id) }}
+              onClick={() => {
+                setMenuOpen(false)
+                if (onResourceActivate?.(resource.id)) { setActiveResourceID(null); return }
+                setActiveResourceID((current) => current === resource.id ? null : resource.id)
+              }}
             >
               <span className="resource-icon" aria-hidden="true">{resource.icon}</span>
               <span className="resource-label resource-label-long">{resource.label}</span>
