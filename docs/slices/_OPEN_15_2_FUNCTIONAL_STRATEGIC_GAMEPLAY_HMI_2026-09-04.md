@@ -19,6 +19,7 @@ Permanent evidence:
 - [ ] Gate 4: independent QA and close.
   - [x] G4-A: direct Galaxy pan/zoom interaction plus persistent Main/End-Turn actions.
   - [x] G4-B: explicit star-system dialog/overlay plus Colony usability/Population presentation blockers.
+  - [ ] G4-B2: table-first Colony UI, drag/drop Population, dedicated build route, fullscreen Galaxy/orbital System layout, denser typography and smaller bottom-right End Turn.
   - [ ] G4-C: independent mobile/desktop workflow QA and Slice-15.2 closure.
 
 Live preview:

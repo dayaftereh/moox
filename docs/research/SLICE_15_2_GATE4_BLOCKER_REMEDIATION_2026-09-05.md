@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A and G4-B complete; G4-C independent QA/closure pending**.
+Status: **G4-A and G4-B complete; G4-B2 interaction refinement accepted; G4-C independent QA/closure deferred until B2 is complete**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -45,6 +45,21 @@ Status: **complete**.
 - `npm run build` in `web/` - **PASS** after the final G4-B changes.
 - `go test ./internal/session ./internal/server -count=1` - **PASS** (`internal/session` 47.862s; `internal/server` 1.422s).
 - `git diff --check` - **PASS** (Windows LF/CRLF notices only).
+### G4-B2 - Interaction-density refinement after direct review
+
+Status: **accepted; implementation pending**.
+
+This block captures direct hands-on review after G4-B. These items are treated as pre-closure interaction requirements rather than later artwork polish:
+
+- **Colony overview remains table-first on both desktop and mobile.** Do not replace the strategic colony overview with large vertical cards as the primary representation. On narrow screens, use a compact horizontally scrollable/sticky-column table or similarly dense table treatment.
+- **Population assignment should behave more like the original MOO interaction model.** Farmer/Worker/Scientist Population remains visible as individual figures/markers inside each job cell. Support direct drag-and-drop between Farmer, Worker and Scientist buckets on desktop and touch devices. Selecting multiple figures/units before dropping is desirable so, for example, two of three Farmers can be moved in one operation. The final icon artwork is later 15.x, but the interaction model belongs here.
+- **Construction Queue becomes a dedicated Colony build-management route/page.** Colony Detail should summarize current build and queue compactly, with an explicit action opening the build page. That page should present available projects in dense side/top selection areas and the ordered active queue clearly separated below, with an obvious return to the Colony Detail. Planning authority remains unchanged.
+- **Galaxy should read as a near-fullscreen strategic surface.** Reduce page chrome/headlines/descriptive copy around it; let the map consume most available viewport area while retaining pan/zoom and system selection.
+- **Star-system presentation should become spatial/orbital rather than list-first.** Center the star and place planets/orbital bodies around it on visible orbit rings. Body details/actions may remain in supporting panels, but the first visual impression should be a larger orbital system view.
+- **Global UI density should increase.** Reduce base font sizes, card/panel padding and redundant headings. Prefer concise labels plus contextual `?`/help affordances over long explanatory paragraphs. This is a product-wide 15.x direction, but Slice 15.2 should already avoid oversized primary controls and headline-heavy strategic screens.
+- **End Turn should stop dominating the interface.** Move it toward a smaller persistent bottom-right action on desktop/mobile-safe layouts instead of a wide two-column action bar. Keep it predictable and always available during Planning, but visually secondary to the strategic surface.
+
+G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
 
 Status: **pending**.
