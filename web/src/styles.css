@@ -941,3 +941,86 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 @media (min-width: 1280px) {
   .topbar { grid-template-columns: 38px minmax(0, 1fr) auto auto !important; }
 }
+
+
+/* Slice 15.2 G4-B2-F: interactive resource HUD + detail popovers */
+.topbar-resource {
+  position: relative;
+  appearance: none;
+  cursor: pointer;
+  color: var(--text);
+}
+.topbar-resource:hover, .topbar-resource:focus-visible, .topbar-resource.active {
+  border-color: #548ff0;
+  background: rgba(25, 59, 101, .86);
+}
+.resource-icon {
+  display: inline-grid;
+  min-width: 18px;
+  height: 18px;
+  place-items: center;
+  border: 1px solid rgba(99, 138, 184, .42);
+  border-radius: 5px;
+  background: rgba(14, 32, 54, .92);
+  color: #b9d2f2;
+  font-size: .52rem;
+  font-weight: 950;
+  line-height: 1;
+}
+.resource-delta { font-size: .59rem; font-weight: 900; line-height: 1; white-space: nowrap; }
+.resource-positive, .resource-text-positive { color: #79d993 !important; }
+.resource-danger, .resource-text-danger { color: #ff8290 !important; }
+.resource-warning, .resource-text-warning { color: #f1c86a !important; }
+.resource-neutral, .resource-text-neutral { color: var(--muted-strong); }
+.topbar-resource.resource-positive { border-color: rgba(91, 182, 116, .34); }
+.topbar-resource.resource-danger { border-color: rgba(240, 91, 109, .5); background: rgba(82, 24, 34, .44); }
+.topbar-resource.resource-warning { border-color: rgba(226, 180, 75, .5); background: rgba(78, 57, 17, .38); }
+
+.resource-detail-popover {
+  position: absolute;
+  z-index: 91;
+  top: calc(100% + 6px);
+  right: 6px;
+  width: min(350px, calc(100vw - 12px));
+  max-height: min(72dvh, 560px);
+  overflow: auto;
+  border: 1px solid #36567d;
+  border-radius: 14px;
+  background: rgba(7, 16, 29, .988);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .5);
+  backdrop-filter: blur(18px);
+}
+.resource-detail-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 10px 11px; border-bottom: 1px solid var(--border-soft); }
+.resource-detail-heading { display: flex; min-width: 0; align-items: center; gap: 9px; }
+.resource-detail-heading > div { min-width: 0; }
+.resource-detail-heading strong { display: block; overflow: hidden; font-size: .77rem; text-overflow: ellipsis; white-space: nowrap; }
+.resource-detail-icon { display: grid; width: 31px; height: 31px; flex: 0 0 31px; place-items: center; border: 1px solid #456991; border-radius: 8px; background: rgba(18, 42, 70, .9); color: #c8dcf6; font-size: .65rem; font-weight: 950; }
+.resource-detail-close { width: 28px; min-width: 28px; min-height: 28px !important; padding: 2px !important; font-size: .9rem !important; }
+.resource-progress { height: 5px; margin: 0 10px; overflow: hidden; border-radius: 999px; background: rgba(77, 102, 132, .28); }
+.resource-progress > span { display: block; height: 100%; border-radius: inherit; background: #5b8fe4; }
+.resource-detail-list { display: grid; margin: 0; padding: 7px 10px 10px; }
+.resource-detail-list > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; gap: 12px; padding: 6px 1px; border-bottom: 1px solid rgba(65, 91, 121, .22); }
+.resource-detail-list > div:last-child { border-bottom: 0; }
+.resource-detail-list dt { color: var(--muted); font-size: .62rem; }
+.resource-detail-list dd { margin: 0; color: var(--text); font-size: .68rem; font-weight: 850; font-variant-numeric: tabular-nums; text-align: right; }
+
+@media (max-width: 560px) {
+  .topbar-resource { min-height: 30px; gap: 3px; padding: 3px 4px; }
+  .topbar-resource .resource-label { display: none !important; }
+  .resource-icon { min-width: 16px; width: 16px; height: 16px; font-size: .46rem; }
+  .topbar-resource strong { font-size: .58rem; }
+  .resource-delta { font-size: .53rem; }
+  .resource-detail-popover { right: 4px; width: min(326px, calc(100vw - 8px)); }
+}
+
+@media (max-width: 360px) {
+  .topbar-resource { gap: 2px; padding-inline: 3px; }
+  .topbar-resource strong { font-size: .54rem; }
+  .resource-delta { font-size: .49rem; }
+  .resource-icon { min-width: 15px; width: 15px; height: 15px; font-size: .42rem; }
+}
+
+/* B2-F ultra-narrow resource fit: keep all five HUD resources visible at 320px. */
+@media (max-width: 360px) {
+  .topbar-resource { gap: 1px; padding-inline: 1px; }
+}

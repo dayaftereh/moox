@@ -9,7 +9,20 @@ const primaryNavItems: Array<{ section: GameSection; label: TranslationKey; glyp
   { section: 'research', label: 'nav.research', glyph: '\u269B' },
   { section: 'diplomacy', label: 'nav.diplomacy', glyph: '\u2696' },
 ]
-type ResourceChip = { label: string; shortLabel?: string; value: string; tone?: 'neutral' | 'warning' | 'danger' }
+type ResourceTone = 'neutral' | 'positive' | 'warning' | 'danger'
+type ResourceChip = {
+  id: string
+  label: string
+  shortLabel?: string
+  icon: string
+  value?: string
+  delta?: string
+  deltaTone?: ResourceTone
+  tone?: ResourceTone
+  progressPercent?: number
+  detailTitle: string
+  details: Array<{ label: string; value: string; tone?: ResourceTone }>
+}
 
 type AppShellProps = {
   activeSection: GameSection
@@ -78,9 +91,26 @@ function NavItems({ items, activeSection, onNavigate }: {
 export function AppShell({ activeSection, gameID, turn, phaseLabel, status, statusTone, resources = [], onNavigate, onHome, onEndTurn, endTurnDisabled = false, endTurnLabel, children }: AppShellProps) {
   const { t } = useI18n()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [activeResourceID, setActiveResourceID] = useState<string | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const resourcePopupRef = useRef<HTMLDivElement | null>(null)
   const secondaryActive = activeSection === 'espionage' || activeSection === 'more'
 
+  useEffect(() => {
+    if (!activeResourceID) return
+    const closeOnPointer = (event: PointerEvent) => {
+      if (!resourcePopupRef.current?.contains(event.target as Node) && !(event.target as Element | null)?.closest?.('[data-resource-id]')) setActiveResourceID(null)
+    }
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setActiveResourceID(null)
+    }
+    window.addEventListener('pointerdown', closeOnPointer)
+    window.addEventListener('keydown', closeOnEscape)
+    return () => {
+      window.removeEventListener('pointerdown', closeOnPointer)
+      window.removeEventListener('keydown', closeOnEscape)
+    }
+  }, [activeResourceID])
   useEffect(() => {
     if (!menuOpen) return
     const closeOnPointer = (event: PointerEvent) => {
@@ -113,7 +143,7 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
             aria-haspopup="dialog"
             aria-expanded={menuOpen}
             title={t('gameMenu.open')}
-            onClick={() => setMenuOpen((open) => !open)}
+            onClick={() => { setActiveResourceID(null); setMenuOpen((open) => !open) }}
           >
             <span aria-hidden="true">⋯</span>
           </button>
@@ -156,13 +186,49 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
 
         <div className="topbar-resources" aria-label={t('a11y.resources')}>
           {resources.map((resource) => (
-            <div className={`topbar-resource resource-${resource.tone ?? 'neutral'}`} key={resource.label} title={`${resource.label}: ${resource.value}`}>
+            <button
+              type="button"
+              className={`topbar-resource resource-${resource.tone ?? 'neutral'}${activeResourceID === resource.id ? ' active' : ''}`}
+              key={resource.id}
+              data-resource-id={resource.id}
+              aria-expanded={activeResourceID === resource.id}
+              title={`${resource.label}: ${[resource.value, resource.delta].filter(Boolean).join(' ')}`}
+              onClick={() => { setMenuOpen(false); setActiveResourceID((current) => current === resource.id ? null : resource.id) }}
+            >
+              <span className="resource-icon" aria-hidden="true">{resource.icon}</span>
               <span className="resource-label resource-label-long">{resource.label}</span>
               <span className="resource-label resource-label-short">{resource.shortLabel ?? resource.label}</span>
-              <strong>{resource.value}</strong>
-            </div>
+              {resource.value && <strong>{resource.value}</strong>}
+              {resource.delta && <span className={`resource-delta resource-${resource.deltaTone ?? 'neutral'}`}>{resource.delta}</span>}
+            </button>
           ))}
         </div>
+
+        {activeResourceID && (() => {
+          const resource = resources.find((item) => item.id === activeResourceID)
+          if (!resource) return null
+          return (
+            <section ref={resourcePopupRef} className="resource-detail-popover" role="dialog" aria-label={resource.detailTitle}>
+              <header className="resource-detail-header">
+                <div className="resource-detail-heading">
+                  <span className="resource-detail-icon" aria-hidden="true">{resource.icon}</span>
+                  <div><p className="eyebrow">{resource.label}</p><strong>{resource.detailTitle}</strong></div>
+                </div>
+                <button type="button" className="button-ghost resource-detail-close" onClick={() => setActiveResourceID(null)} aria-label={t('common.close')}>×</button>
+              </header>
+              {resource.progressPercent !== undefined && (
+                <div className="resource-progress" aria-label={`${Math.round(resource.progressPercent)}%`}>
+                  <span style={{ width: `${Math.max(0, Math.min(100, resource.progressPercent))}%` }} />
+                </div>
+              )}
+              <dl className="resource-detail-list">
+                {resource.details.map((detail) => (
+                  <div key={detail.label}><dt>{detail.label}</dt><dd className={`resource-text-${detail.tone ?? 'neutral'}`}>{detail.value}</dd></div>
+                ))}
+              </dl>
+            </section>
+          )
+        })()}
 
         <div className="topbar-context" aria-label={t('a11y.gameStatus')}>
           {turn !== undefined && <span className="status-chip">{t('top.turn', { turn })}</span>}

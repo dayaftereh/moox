@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-E complete; direct user review pending; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-F complete; direct user review pending; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -127,6 +127,22 @@ Status: **complete; direct user review pending**.
 - Browser smoke opened Espionage from the popover and confirmed the menu closed while routing to `/espionage`.
 - A 320px probe measured five bottom tabs at about `48px` each plus End Turn, while the popover measured about `294 x 321px` and remained fully inside a `320 x 640` viewport. The top resource row still fit without horizontal overflow.
 - `npm run build` - **PASS** after the final removal of visible technical game-ID text.
+- `git diff --check` - **PASS** (Windows LF/CRLF notices only).
+
+#### G4-B2-F - Interactive resource HUD and detail popovers
+
+Status: **complete; direct user review pending**.
+
+- Expanded the compact top HUD to five clickable resources: BC, Food, Freighters, Command Points and Research. Current glyphs are structural placeholders for later final icon artwork.
+- BC now shows treasury balance plus signed projected net income in square brackets, e.g. `0 [+6]`; positive delta is green and negative delta is red.
+- Food now shows the authoritative empire-wide surplus/deficit derived from projected Colony `population_dynamics.food_surplus` / `food_shortage`, e.g. `[+x]` or `[-x]`, instead of raw food production.
+- Browser authority smoke moved one Farmer to Worker: the HUD changed Food `0.0 -> -2.0` in red while the same Planning Preview changed Colony Food `4.0 -> 2.0` and Production `3.0 -> 6.0`.
+- Command Points show total capacity plus signed available/over-capacity value in brackets, e.g. `5 [+5]`; the detail popover exposes capacity, used, available/overage and command maintenance.
+- Research now shows authoritative RP/turn plus progress percent and ETA when a field is selected. Browser smoke selected tech field `29` (50 RP): HUD changed from `4.5 RP [—]` to `4.5 RP [0% · 12T]`, while the Research view independently showed `0 / 50` RP and ETA `12` turns.
+- Research becomes yellow only for an active project whose authoritative ETA is <=1 turn (or remaining RP is within the current authoritative RP/turn). No-active-research state stays neutral `[—]`; a false yellow breakthrough state found during smoke testing was fixed.
+- Every HUD resource is a button opening a compact detail popover. BC exposes balance/net and projected tax plus maintenance components; Food exposes produced/required/surplus/shortage/import/export; Freighters expose total/available/food/reserved logistics; Command exposes capacity/usage/overage; Research exposes rate/progress/cost/remaining/ETA/field/mode/breakthrough state.
+- A 320px browser probe confirmed all five HUD resources fit without horizontal overflow (`clientWidth == scrollWidth == 242`) after ultra-narrow spacing, while the research detail popover remains fully inside the viewport.
+- `npm run build` - **PASS** after final projection-consistency cleanup.
 - `git diff --check` - **PASS** (Windows LF/CRLF notices only).
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure

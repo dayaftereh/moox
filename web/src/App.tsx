@@ -242,28 +242,145 @@ function App() {
   const projectedResources = planningPreview?.preview.projection
   const projectedEmpire = snapshot?.decision?.empire
   const projectedColonies = projectedResources?.colonies?.map((item) => item.colony) ?? snapshot?.decision?.colonies ?? snapshot?.view.colonies ?? []
-  const projectedFood = projectedColonies.reduce((sum, colony) => sum + colony.adjusted_economy.food, 0)
+  const foodProduced = projectedColonies.reduce((sum, colony) => sum + colony.adjusted_economy.food, 0)
+  const foodRequired = projectedColonies.reduce((sum, colony) => sum + colony.population_dynamics.food_required, 0)
+  const foodSurplus = projectedColonies.reduce((sum, colony) => sum + colony.population_dynamics.food_surplus, 0)
+  const foodShortage = projectedColonies.reduce((sum, colony) => sum + colony.population_dynamics.food_shortage, 0)
+  const foodImported = projectedColonies.reduce((sum, colony) => sum + colony.population_dynamics.food_imported, 0)
+  const foodExported = projectedColonies.reduce((sum, colony) => sum + colony.population_dynamics.food_exported, 0)
+  const foodNet = foodSurplus - foodShortage
+  const projectedTaxIncome = projectedColonies.reduce((sum, colony) => sum + colony.adjusted_economy.tax_bc, 0)
+
+  const treasuryBalance = projectedResources?.treasury_balance_bc ?? projectedEmpire?.treasury.balance_bc ?? 0
+  const treasuryNet = projectedResources?.net_modeled_income_bc ?? projectedEmpire?.treasury.net_modeled_income_bc ?? 0
+  const commandCapacity = projectedResources?.command_points.capacity ?? projectedEmpire?.command_points.capacity ?? 0
+  const commandUsed = projectedResources?.command_points.used ?? projectedEmpire?.command_points.used ?? 0
+  const commandAvailable = commandCapacity - commandUsed
+  const commandOverage = projectedResources?.command_point_overage ?? Math.max(0, commandUsed - commandCapacity)
+  const freighterTotal = projectedResources?.freighters.total ?? projectedEmpire?.freighters ?? 0
+  const freighterFoodUsed = projectedResources?.freighters.food_used ?? projectedEmpire?.food_logistics.freighters_used ?? 0
+  const freighterTransferReserved = projectedResources?.freighters.transfer_reserved ?? projectedEmpire?.food_logistics.population_transport_freighters_reserved ?? 0
+  const freighterAvailable = projectedResources?.freighters.available ?? Math.max(0, freighterTotal - freighterFoodUsed - freighterTransferReserved)
+
+  const researchProjection = projectedResources?.research
+  const researchState = projectedEmpire?.research
+  const researchFieldID = researchProjection?.tech_field_id ?? researchState?.tech_field_id
+  const researchChoice = snapshot?.decision?.decisions.research?.find((choice) => choice.tech_field_id === researchFieldID)
+  const researchProgress = researchProjection?.progress_rp ?? researchState?.progress_rp ?? 0
+  const researchCost = researchProjection?.cost_rp ?? researchChoice?.base_cost_rp ?? 0
+  const researchRemaining = researchProjection?.remaining_rp ?? Math.max(0, researchCost - researchProgress)
+  const researchRate = researchProjection?.rp_per_turn ?? projectedColonies.reduce((sum, colony) => sum + colony.adjusted_economy.research, 0)
+  const researchETA = researchProjection?.eta_turns
+  const researchPercent = researchCost > 0 ? Math.max(0, Math.min(100, (researchProgress / researchCost) * 100)) : 0
+  const hasActiveResearch = researchFieldID !== undefined && researchCost > 0
+  const researchNearBreakthrough = hasActiveResearch && (researchETA !== undefined && researchETA <= 1
+    || Boolean(researchProjection && researchProjection.rp_per_turn > 0 && researchProjection.remaining_rp <= researchProjection.rp_per_turn))
+
+  function signed(value: number, digits = 0) {
+    const rounded = value.toFixed(digits)
+    return `${value > 0 ? '+' : ''}${rounded}`
+  }
+
+  function signedTone(value: number): 'positive' | 'danger' | 'neutral' {
+    if (value > 0) return 'positive'
+    if (value < 0) return 'danger'
+    return 'neutral'
+  }
+
   const resourceChips = projectedEmpire ? [
     {
+      id: 'bc',
       label: t('resource.bc'),
       shortLabel: 'BC',
-      value: `${Math.round(projectedResources?.treasury_balance_bc ?? projectedEmpire.treasury.balance_bc)} (${(projectedResources?.net_modeled_income_bc ?? projectedEmpire.treasury.net_modeled_income_bc) >= 0 ? '+' : ''}${Math.round(projectedResources?.net_modeled_income_bc ?? projectedEmpire.treasury.net_modeled_income_bc)})`,
+      icon: '¤',
+      value: Math.round(treasuryBalance).toString(),
+      delta: `[${signed(treasuryNet)}]`,
+      deltaTone: signedTone(treasuryNet),
+      detailTitle: t('resourceDetail.bcTitle'),
+      details: [
+        { label: t('resourceDetail.balance'), value: Math.round(treasuryBalance).toString() },
+        { label: t('resourceDetail.netPerTurn'), value: signed(treasuryNet), tone: signedTone(treasuryNet) },
+        { label: t('resourceDetail.taxIncome'), value: projectedTaxIncome.toFixed(1) },
+        { label: t('resourceDetail.foodIncome'), value: projectedEmpire.treasury.surplus_food_income_bc.toFixed(1) },
+        { label: t('resourceDetail.buildingMaintenance'), value: projectedEmpire.treasury.building_maintenance_bc.toFixed(1) },
+        { label: t('resourceDetail.freighterCost'), value: projectedEmpire.treasury.freighter_operating_cost_bc.toFixed(1) },
+        { label: t('resourceDetail.commandCost'), value: projectedEmpire.treasury.ship_command_maintenance_bc.toFixed(1) },
+      ],
     },
     {
+      id: 'food',
       label: t('resource.food'),
       shortLabel: 'Food',
-      value: projectedFood.toFixed(1),
+      icon: 'F',
+      delta: `[${signed(foodNet, 1)}]`,
+      deltaTone: signedTone(foodNet),
+      tone: foodNet < 0 ? 'danger' as const : foodNet > 0 ? 'positive' as const : 'neutral' as const,
+      detailTitle: t('resourceDetail.foodTitle'),
+      details: [
+        { label: t('resourceDetail.foodNet'), value: signed(foodNet, 1), tone: signedTone(foodNet) },
+        { label: t('resourceDetail.foodProduced'), value: foodProduced.toFixed(1) },
+        { label: t('resourceDetail.foodRequired'), value: foodRequired.toFixed(1) },
+        { label: t('resourceDetail.foodSurplus'), value: foodSurplus.toFixed(1), tone: foodSurplus > 0 ? 'positive' as const : 'neutral' as const },
+        { label: t('resourceDetail.foodShortage'), value: foodShortage.toFixed(1), tone: foodShortage > 0 ? 'danger' as const : 'neutral' as const },
+        { label: t('resourceDetail.foodImported'), value: foodImported.toFixed(1) },
+        { label: t('resourceDetail.foodExported'), value: foodExported.toFixed(1) },
+      ],
     },
     {
+      id: 'freighters',
       label: t('resource.freighters'),
       shortLabel: 'Tr',
-      value: projectedResources ? `${projectedResources.freighters.available}/${projectedResources.freighters.total}` : String(projectedEmpire.freighters),
+      icon: '⇄',
+      value: `${freighterAvailable}/${freighterTotal}`,
+      tone: freighterAvailable <= 0 && freighterTotal > 0 ? 'warning' as const : 'neutral' as const,
+      detailTitle: t('resourceDetail.freighterTitle'),
+      details: [
+        { label: t('resourceDetail.freighterTotal'), value: freighterTotal.toString() },
+        { label: t('resourceDetail.freighterAvailable'), value: freighterAvailable.toString(), tone: freighterAvailable > 0 ? 'positive' as const : 'neutral' as const },
+        { label: t('resourceDetail.freighterFood'), value: freighterFoodUsed.toString() },
+        { label: t('resourceDetail.freighterTransfer'), value: freighterTransferReserved.toString() },
+        { label: t('resourceDetail.freighterCost'), value: projectedEmpire.treasury.freighter_operating_cost_bc.toFixed(1) },
+      ],
     },
     {
+      id: 'command',
       label: t('resource.command'),
       shortLabel: 'CP',
-      value: `${projectedResources?.command_points.used ?? projectedEmpire.command_points.used}/${projectedResources?.command_points.capacity ?? projectedEmpire.command_points.capacity}`,
-      tone: (projectedResources?.command_point_overage ?? Math.max(0, projectedEmpire.command_points.used - projectedEmpire.command_points.capacity)) > 0 ? 'warning' as const : 'neutral' as const,
+      icon: 'CP',
+      value: commandCapacity.toString(),
+      delta: `[${signed(commandAvailable)}]`,
+      deltaTone: signedTone(commandAvailable),
+      tone: commandOverage > 0 ? 'danger' as const : commandAvailable === 0 ? 'warning' as const : 'neutral' as const,
+      detailTitle: t('resourceDetail.commandTitle'),
+      details: [
+        { label: t('resourceDetail.commandCapacity'), value: commandCapacity.toString() },
+        { label: t('resourceDetail.commandUsed'), value: commandUsed.toString() },
+        { label: t('resourceDetail.commandAvailable'), value: signed(commandAvailable), tone: signedTone(commandAvailable) },
+        { label: t('resourceDetail.commandOverage'), value: commandOverage.toString(), tone: commandOverage > 0 ? 'danger' as const : 'neutral' as const },
+        { label: t('resourceDetail.commandCost'), value: projectedEmpire.treasury.ship_command_maintenance_bc.toFixed(1) },
+      ],
+    },
+    {
+      id: 'research',
+      label: t('resource.research'),
+      shortLabel: 'RP',
+      icon: 'RP',
+      value: `${researchRate.toFixed(1)} RP`,
+      delta: hasActiveResearch ? `[${researchPercent.toFixed(0)}%${researchETA !== undefined ? ` · ${researchETA}T` : ''}]` : '[—]',
+      deltaTone: researchNearBreakthrough ? 'warning' as const : 'neutral' as const,
+      tone: researchNearBreakthrough ? 'warning' as const : 'neutral' as const,
+      progressPercent: researchPercent,
+      detailTitle: t('resourceDetail.researchTitle'),
+      details: [
+        { label: t('resourceDetail.researchRate'), value: `${researchRate.toFixed(1)} RP` },
+        { label: t('resourceDetail.researchProgress'), value: researchCost > 0 ? `${researchProgress.toFixed(1)} / ${researchCost.toFixed(1)} RP` : researchProgress.toFixed(1) },
+        { label: t('resourceDetail.researchPercent'), value: `${researchPercent.toFixed(1)}%` },
+        { label: t('resourceDetail.researchRemaining'), value: `${researchRemaining.toFixed(1)} RP` },
+        { label: t('resourceDetail.researchEta'), value: researchETA !== undefined ? `${researchETA}` : '—', tone: researchNearBreakthrough ? 'warning' as const : 'neutral' as const },
+        { label: t('resourceDetail.researchField'), value: researchFieldID !== undefined ? `#${researchFieldID}${researchChoice?.category_id ? ` · ${researchChoice.category_id}` : ''}` : '—' },
+        { label: t('resourceDetail.researchMode'), value: researchProjection?.selection_mode ?? researchState?.selection_mode ?? '—' },
+        { label: t('resourceDetail.breakthrough'), value: !hasActiveResearch ? t('resourceDetail.researchNone') : researchNearBreakthrough ? t('resourceDetail.breakthroughNear') : t('resourceDetail.breakthroughNormal'), tone: researchNearBreakthrough ? 'warning' as const : 'neutral' as const },
+      ],
     },
   ] : []
   const statusText = t(status.key, status.vars)
