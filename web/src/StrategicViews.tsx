@@ -127,10 +127,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   const selected = systems.find((system) => system.id === selectedSystemID)
 
   const changeZoom = (factor: number) => setZoom((current) => Math.round(clampZoom(current * factor) * 100) / 100)
-  const resetView = () => {
-    setZoom(1)
-    setPan({ x: 0, y: 0 })
-  }
+
   const pointerPair = () => Array.from(gestureRef.current.pointers.values()).slice(0, 2)
   const pairCenter = (points: Array<{ x: number; y: number }>) => ({
     x: (points[0].x + points[1].x) / 2,
@@ -225,16 +222,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   return (
     <>
       <Card className="galaxy-card galaxy-card-full">
-        <div className="galaxy-map-toolbar">
-          <strong className="galaxy-map-title">{decision.empire.name}</strong>
-          <div className="galaxy-map-tools" role="group" aria-label={t('galaxy.mapControls')}>
-            <button type="button" className="help-button" aria-label={t('galaxy.mapHint')} title={t('galaxy.mapHint')}>?</button>
-            <button type="button" className="button-ghost" aria-label={t('galaxy.zoomOut')} onClick={() => changeZoom(1 / 1.2)}>−</button>
-            <span className="badge" aria-live="polite">{Math.round(zoom * 100)}%</span>
-            <button type="button" className="button-ghost" aria-label={t('galaxy.zoomIn')} onClick={() => changeZoom(1.2)}>+</button>
-            <button type="button" className="button-ghost galaxy-reset-button" aria-label={t('galaxy.resetView')} title={t('galaxy.resetView')} onClick={resetView}>↺</button>
-          </div>
-        </div>
+
         <div
           ref={mapRef}
           className={'galaxy-map' + (dragging ? ' galaxy-map-dragging' : '')}

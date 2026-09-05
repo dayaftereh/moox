@@ -1265,3 +1265,6 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 .main-menu-trigger.connection-frame-danger { outline: 2px solid #f06d7b !important; outline-offset: -2px; }
 .main-menu-trigger.connection-frame-warning { outline: 2px solid #e2b84f !important; outline-offset: -2px; }
 .main-menu-trigger.connection-frame-neutral { outline: 2px solid #60758e !important; outline-offset: -2px; }
+
+/* Slice 15.2 G4-B2-K: Galaxy is a map-only surface; gesture zoom remains available. */
+.galaxy-card-full { grid-template-rows: minmax(0, 1fr) !important; }

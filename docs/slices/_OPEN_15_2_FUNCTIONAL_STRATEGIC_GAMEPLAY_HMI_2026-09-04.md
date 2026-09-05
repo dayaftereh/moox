@@ -32,6 +32,7 @@ Permanent evidence:
     - [x] B2-J: relaxed top-HUD spacing + connection status integrated into the three-dot menu frame.
     - [ ] B2-K: Galaxy pan bounds + MOO2-inspired framing review.
       - [x] Pan bounds with responsive edge offset on mouse/touch.
+      - [x] Map-only Galaxy surface; remove visible zoom/help/title controls while preserving wheel/pinch zoom.
       - [ ] Review supplied MOO2 Galaxy reference and refine framing/density.
   - [ ] G4-C: independent mobile/desktop workflow QA and Slice-15.2 closure.
 
