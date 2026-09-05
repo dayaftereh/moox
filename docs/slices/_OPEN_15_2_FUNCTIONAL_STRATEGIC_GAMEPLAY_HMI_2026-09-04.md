@@ -27,6 +27,7 @@ Permanent evidence:
     - [x] B2-E: three-dot in-game Main menu + language/settings + Espionage/Advanced relocation + five-tab primary navigation.
     - [x] B2-F: clickable BC/Food/Freighter/Command/Research HUD with signed surplus/deficit states and detail popovers.
     - [x] B2-G: remove Research primary tab; HUD opens MOO2-inspired authoritative research-selection overlay and returns to Galaxy after selection.
+    - [x] B2-H: explicit choose-one technology buttons + selected technology emphasis + visible selection-mode explanation.
   - [ ] G4-C: independent mobile/desktop workflow QA and Slice-15.2 closure.
 
 Live preview:

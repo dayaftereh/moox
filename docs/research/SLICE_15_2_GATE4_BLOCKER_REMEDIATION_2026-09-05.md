@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-G complete; direct user review pending; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-H complete; direct user review pending; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -160,6 +160,19 @@ Status: **complete; direct user review pending**.
 - Desktop smoke at `791 x 605` measured an 8-panel, two-column (`369px + 369px`) overlay inside `775 x 589px`; first panel displayed `Konstruktion`, `50 RP`, `Technologiefeld #29`, and its real technology list.
 - A 320px probe confirmed the overlay fits inside the viewport (`312 x 632px`) with a vertically scrollable one-column grid and all eight panels, while the bottom navigation expands to four tabs at ~59px each.
 - `npm run build` - **PASS** after final authoritative field-label adjustment.
+
+#### G4-B2-H - Explicit research-technology selection state
+
+Status: **complete; direct user review pending**.
+
+- Clarified the difference between field-level and technology-level research selection directly in the overlay.
+- The ruleset already exposes four authoritative selection modes: `all`, `choose_one`, `fixed_one`, and `repeat_field`. The UI now labels the mode in each panel instead of making non-clickable entries look broken.
+- `choose_one` panels render every technology/application as an explicit button. The selected technology is derived from authoritative projected/current `research.technology_ids` and is shown bold, bright green, outlined, `aria-pressed=true`, and labeled `Aktuell`.
+- `all` panels explicitly say that all technologies are researched; `fixed_one` says the technology is fixed; repeat-field mode is labeled separately. No client-side legality is invented.
+- Current demo research choices explain the user's observation: five currently exposed fields resolve as `all`, while Sociology, Biology, and Force Fields resolve as `choose_one`. The server rule is: general research fields are always `all`; Creative races are also `all`; Uncreative races are `fixed_one`; otherwise non-general fields use `choose_one`.
+- Browser smoke selected Biology / Biospheres, returned to Galaxy, reopened Research, and verified the active Biology field plus `Biospheres · AKTUELL` with bold/bright selected styling. Switching to Hydroponic Farm and reopening changed the selected marker to `Hydroponic Farm · AKTUELL`.
+- `npm run build` - **PASS**.
+- `git diff --check` - **PASS** (Windows LF/CRLF notices only).
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
 

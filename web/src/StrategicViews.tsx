@@ -1077,6 +1077,7 @@ export function StrategicResearchOverlay({ snapshot, preview, onPlanOrder, onClo
   const choices = decision?.decisions.research ?? []
   const active = preview?.preview.projection.research
   const activeFieldID = active?.tech_field_id ?? decision?.empire.research?.tech_field_id
+  const activeTechnologyIDs = new Set(active?.technology_ids ?? decision?.empire.research?.technology_ids ?? [])
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -1133,16 +1134,41 @@ export function StrategicResearchOverlay({ snapshot, preview, onPlanOrder, onClo
                 </div>
                 <div className="research-field-body">
                   <h3>{fieldName}</h3>
+                  <div className="research-selection-mode">
+                    {choice.selection_mode === 'choose_one'
+                      ? t('research.modeChooseOne')
+                      : choice.selection_mode === 'all'
+                        ? t('research.modeAll')
+                        : choice.selection_mode === 'fixed_one'
+                          ? t('research.modeFixedOne')
+                          : t('research.modeRepeatField')}
+                  </div>
                   <div className="research-tech-list">
-                    {choice.selection_mode === 'choose_one' ? choice.technology_ids.map((technologyID, index) => (
-                      <button type="button" key={technologyID} onClick={() => selectResearch(choice, technologyID)}>
-                        {serverLabel(t, choice.technology_name_keys[index], humanizeToken(choice.technology_keys[index] ?? String(technologyID)))}
-                      </button>
-                    )) : (
+                    {choice.selection_mode === 'choose_one' ? choice.technology_ids.map((technologyID, index) => {
+                      const selected = isActive && activeTechnologyIDs.has(technologyID)
+                      return (
+                        <button
+                          type="button"
+                          className={`research-tech-choice${selected ? ' selected' : ''}`}
+                          key={technologyID}
+                          aria-pressed={selected}
+                          onClick={() => selectResearch(choice, technologyID)}
+                        >
+                          <span>{serverLabel(t, choice.technology_name_keys[index], humanizeToken(choice.technology_keys[index] ?? String(technologyID)))}</span>
+                          {selected && <strong>{t('research.currentChoice')}</strong>}
+                        </button>
+                      )
+                    }) : (
                       <>
-                        {choice.technology_ids.map((technologyID, index) => (
-                          <span key={technologyID}>{serverLabel(t, choice.technology_name_keys[index], humanizeToken(choice.technology_keys[index] ?? String(technologyID)))}</span>
-                        ))}
+                        {choice.technology_ids.map((technologyID, index) => {
+                          const selected = isActive && activeTechnologyIDs.has(technologyID)
+                          return (
+                            <span className={selected ? 'selected' : ''} key={technologyID}>
+                              {serverLabel(t, choice.technology_name_keys[index], humanizeToken(choice.technology_keys[index] ?? String(technologyID)))}
+                              {selected && <strong>{t('research.currentChoice')}</strong>}
+                            </span>
+                          )
+                        })}
                         <button type="button" className="research-field-select" onClick={() => selectResearch(choice)}>{isActive ? t('research.reselect') : t('research.select')}</button>
                       </>
                     )}

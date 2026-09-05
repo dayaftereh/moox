@@ -1137,3 +1137,50 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .research-field-body h3 { font-size: .8rem; }
   .research-tech-list > span, .research-tech-list > button:not(.research-field-select) { font-size: .65rem; }
 }
+
+
+/* Slice 15.2 G4-B2-H: explicit selected technology state inside Research overlay */
+.research-selection-mode {
+  margin-top: -2px;
+  color: #779072;
+  font-size: .54rem;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+.research-tech-choice {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid transparent !important;
+  border-radius: 5px;
+}
+.research-tech-choice > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.research-tech-choice > strong,
+.research-tech-list > span.selected > strong {
+  flex: 0 0 auto;
+  color: #d5ffb9;
+  font-size: .52rem;
+  font-weight: 950;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.research-tech-choice.selected {
+  border-color: #7bd94d !important;
+  background: rgba(54, 124, 37, .34) !important;
+  color: #c9ff9d !important;
+  font-weight: 950 !important;
+  box-shadow: inset 0 0 0 1px rgba(137, 235, 81, .18), 0 0 10px rgba(70, 154, 43, .12);
+}
+.research-tech-list > span.selected {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 3px 5px;
+  border: 1px solid #6dbb43;
+  border-radius: 5px;
+  background: rgba(48, 107, 34, .3);
+  color: #bdf093;
+  font-weight: 900;
+}
