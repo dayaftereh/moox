@@ -553,3 +553,48 @@ body.modal-open { overflow: hidden; }
   .colony-list-card .population-destination { font-size: .6rem; padding-inline: 4px; }
   .building-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+
+/* Slice 15.2 G4-B2-A: dense table-first Colony management + population drag/drop */
+.colony-card-list { display: none !important; }
+.colony-table-wrap { display: block !important; overflow-x: auto; overscroll-behavior-inline: contain; }
+.colony-table-dense { min-width: 850px; font-size: .78rem; }
+.colony-table-dense th, .colony-table-dense td { padding: 7px 8px; vertical-align: middle; }
+.colony-table-dense thead th { position: sticky; top: 0; z-index: 3; background: #0a1728; }
+.colony-sticky-column { position: sticky !important; left: 0; z-index: 4 !important; min-width: 122px; background: #0a1728 !important; box-shadow: 1px 0 0 var(--border-soft); }
+tbody .colony-sticky-column { background: #0c1b2d !important; }
+.colony-name-button { display: grid; width: 100%; gap: 1px; padding: 4px 3px; border: 0; background: transparent; color: var(--text); text-align: left; }
+.colony-name-button strong { font-size: .77rem; }
+.colony-name-button small { color: var(--muted); font-size: .62rem; }
+.colony-name-button:hover strong, .colony-name-button:focus-visible strong { color: #dceaff; }
+.colony-population-cell { min-width: 315px; }
+.colony-population-total { margin-bottom: 4px; color: var(--muted); font-size: .61rem; font-weight: 800; text-align: right; }
+.colony-table-dense .population-job-grid { grid-template-columns: repeat(3, minmax(88px, 1fr)) !important; gap: 4px; }
+.colony-table-dense .population-job { min-height: 58px; padding: 5px; gap: 4px; border-radius: 8px; }
+.colony-table-dense .population-job header span { font-size: .56rem; }
+.colony-table-dense .population-job header strong { font-size: .73rem; }
+.colony-table-dense .population-people { min-height: 25px; gap: 2px; }
+.colony-table-dense .population-person { width: 20px; min-width: 20px; height: 26px; min-height: 26px; border-radius: 6px; }
+.colony-table-dense .population-person-glyph { transform: scale(.82); }
+.colony-table-dense .population-destination { min-height: 24px; padding: 2px 4px; font-size: .54rem; }
+.colony-table-dense .population-selection { padding: 3px 5px; font-size: .56rem; }
+.colony-table-dense .population-selection .button-ghost { min-height: 24px; padding: 2px 5px; font-size: .56rem; }
+.numeric-cell { min-width: 62px; text-align: right; font-variant-numeric: tabular-nums; }
+.colony-build-cell { min-width: 125px; }
+.colony-build-cell strong, .colony-build-cell small { display: block; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.colony-build-cell small { margin-top: 2px; color: var(--muted); font-size: .6rem; }
+.button-compact { min-height: 30px; padding: 5px 8px; font-size: .68rem; }
+.population-person { cursor: grab; touch-action: none; }
+.population-person:active { cursor: grabbing; }
+.population-person-selected { border-color: #8ab7ff !important; background: #24558f !important; box-shadow: 0 0 0 2px rgba(109, 166, 255, .28); transform: translateY(-1px); }
+.population-job-target { border-color: rgba(92, 158, 255, .42); }
+.population-job-target:hover, .population-job-target:focus-within { background: rgba(30, 68, 115, .28); }
+
+@media (max-width: 759px) {
+  .colony-table-wrap { margin-inline: -12px; padding-inline: 12px; }
+  .colony-table-dense { min-width: 805px; }
+  .colony-sticky-column { min-width: 108px; max-width: 108px; }
+  .colony-table-dense th, .colony-table-dense td { padding: 6px; }
+  .colony-population-cell { min-width: 292px; }
+  .colony-table-dense .population-job-grid { grid-template-columns: repeat(3, minmax(82px, 1fr)) !important; }
+}

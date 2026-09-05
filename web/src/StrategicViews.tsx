@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
 import {
   aggregatePopulation,
   type Colony,
@@ -446,104 +446,67 @@ export function StrategicColoniesView({ snapshot, preview, draftOrders, selected
 
   return (
     <>
-      <PageHeader eyebrow={t('colonies.eyebrow')} title={t('colonies.title')} subtitle={t('colonies.subtitle')} />
+      <PageHeader eyebrow={t('colonies.eyebrow')} title={t('colonies.title')} />
       {colonies.length === 0 ? <EmptyState title={t('colonies.noColonies')} /> : (
-        <>
-          <div className="colony-card-list">
-            {colonies.map((baseColony) => (
-              <ColonyListCard
-                key={baseColony.id}
-                colony={baseColony}
-                preview={projected.find((item) => item.colony.id === baseColony.id)}
-                onOpen={onOpenColony}
-                onPlanPopulation={onPlanPopulation}
-                t={t}
-              />
-            ))}
-          </div>
-          <div className="table-scroll colony-table-wrap">
-            <table className="colony-table">
-              <thead>
-                <tr>
-                  <th>{t('colonies.tableColony')}</th>
-                  <th>{t('colonies.tablePopulation')}</th>
-                  <th>{t('colonies.tableFood')}</th>
-                  <th>{t('colonies.tableProduction')}</th>
-                  <th>{t('colonies.tableResearch')}</th>
-                  <th>{t('colonies.tableBuild')}</th>
-                  <th>{t('common.details')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {colonies.map((baseColony) => {
-                  const previewColony = projected.find((item) => item.colony.id === baseColony.id)
-                  const colony = previewColony?.colony ?? baseColony
-                  const population = aggregatePopulation(colony)
-                  const build = previewColony?.construction?.[0]
-                  return (
-                    <tr key={colony.id}>
-                      <td><strong>{t('colonies.colony', { id: colony.id })}</strong><small>{t('colonies.planet', { id: colony.planet_id })}</small></td>
-                      <td className="colony-population-cell">
-                        <strong>{population.total.toFixed(1)} / {colony.population_dynamics.capacity.toFixed(1)}</strong>
-                        <PopulationMoveControls colony={colony} onPlan={onPlanPopulation} t={t} compact />
-                      </td>
-                      <td>{colony.adjusted_economy.food.toFixed(1)}</td>
-                      <td>{colony.adjusted_economy.production.toFixed(1)}</td>
-                      <td>{colony.adjusted_economy.research.toFixed(1)}</td>
-                      <td><strong>{build?.project.project_id ?? colony.construction?.project_id ?? t('construction.empty')}</strong><small>{formatEta(t, build?.eta_turns)}</small></td>
-                      <td><button type="button" className="button-secondary" onClick={() => onOpenColony(colony.id)}>{t('colonies.open')}</button></td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        </>
+        <div className="table-scroll colony-table-wrap">
+          <table className="colony-table colony-table-dense">
+            <thead>
+              <tr>
+                <th className="colony-sticky-column">{t('colonies.tableColony')}</th>
+                <th>{t('colonies.tablePopulation')}</th>
+                <th>{t('colonies.tableFood')}</th>
+                <th>{t('colonies.tableProduction')}</th>
+                <th>{t('colonies.tableResearch')}</th>
+                <th>{t('colonies.tableBuild')}</th>
+                <th>{t('common.details')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {colonies.map((baseColony) => {
+                const previewColony = projected.find((item) => item.colony.id === baseColony.id)
+                const colony = previewColony?.colony ?? baseColony
+                const population = aggregatePopulation(colony)
+                const build = previewColony?.construction?.[0]
+                return (
+                  <tr key={colony.id}>
+                    <td className="colony-sticky-column">
+                      <button type="button" className="colony-name-button" onClick={() => onOpenColony(colony.id)}>
+                        <strong>{t('colonies.colony', { id: colony.id })}</strong>
+                        <small>{t('colonies.planet', { id: colony.planet_id })}</small>
+                      </button>
+                    </td>
+                    <td className="colony-population-cell">
+                      <div className="colony-population-total">{population.total.toFixed(1)} / {colony.population_dynamics.capacity.toFixed(1)}</div>
+                      <PopulationMoveControls colony={colony} onPlan={onPlanPopulation} t={t} compact />
+                    </td>
+                    <td className="numeric-cell">{colony.adjusted_economy.food.toFixed(1)}</td>
+                    <td className="numeric-cell">{colony.adjusted_economy.production.toFixed(1)}</td>
+                    <td className="numeric-cell">{colony.adjusted_economy.research.toFixed(1)}</td>
+                    <td className="colony-build-cell"><strong>{build?.project.project_id ?? colony.construction?.project_id ?? t('construction.empty')}</strong><small>{formatEta(t, build?.eta_turns)}</small></td>
+                    <td><button type="button" className="button-secondary button-compact" onClick={() => onOpenColony(colony.id)}>{t('colonies.open')}</button></td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
       )}
     </>
   )
 }
 
-function ColonyListCard({ colony, preview, onOpen, onPlanPopulation, t }: {
-  colony: Colony
-  preview?: PlanningPreviewSnapshot['preview']['projection']['colonies'][number]
-  onOpen: (colonyID: number) => void
-  onPlanPopulation: (colonyID: number, farmers: number, workers: number, scientists: number) => void
-  t: Translator
-}) {
-  const displayColony = preview?.colony ?? colony
-  const population = aggregatePopulation(displayColony)
-  const build = preview?.construction?.[0]
-  return (
-    <article className="colony-list-card">
-      <header className="colony-list-card-header">
-        <div>
-          <p className="eyebrow">{t('colonies.planet', { id: displayColony.planet_id })}</p>
-          <h2>{t('colonies.colony', { id: displayColony.id })}</h2>
-        </div>
-        <span className="badge">{population.total.toFixed(1)} / {displayColony.population_dynamics.capacity.toFixed(1)}</span>
-      </header>
-      <PopulationMoveControls colony={displayColony} onPlan={onPlanPopulation} t={t} compact />
-      <div className="colony-output-strip">
-        <span><small>{t('colonies.tableFood')}</small><strong>{displayColony.adjusted_economy.food.toFixed(1)}</strong></span>
-        <span><small>{t('colonies.tableProduction')}</small><strong>{displayColony.adjusted_economy.production.toFixed(1)}</strong></span>
-        <span><small>{t('colonies.tableResearch')}</small><strong>{displayColony.adjusted_economy.research.toFixed(1)}</strong></span>
-      </div>
-      <div className="colony-build-strip">
-        <span><small>{t('colonies.tableBuild')}</small><strong>{build?.project.project_id ?? displayColony.construction?.project_id ?? t('construction.empty')}</strong></span>
-        <span className="badge">{formatEta(t, build?.eta_turns)}</span>
-      </div>
-      <button type="button" className="button-primary button-wide" onClick={() => onOpen(displayColony.id)}>{t('colonies.open')}</button>
-    </article>
-  )
-}
 function PopulationMoveControls({ colony, onPlan, t, compact = false }: {
   colony: Colony
   onPlan: (colonyID: number, farmers: number, workers: number, scientists: number) => void
   t: Translator
   compact?: boolean
 }) {
-  const [source, setSource] = useState<PopulationJob | null>(null)
+  type Selection = { job: PopulationJob; indexes: number[] }
+  type DragPayload = Selection & { amount: number }
+  const [selected, setSelected] = useState<Selection | null>(null)
+  const dragPayloadRef = useRef<DragPayload | null>(null)
+  const pointerDragRef = useRef<(DragPayload & { pointerId: number; startX: number; startY: number; dragging: boolean }) | null>(null)
+  const suppressClickRef = useRef(false)
   const population = aggregatePopulation(colony)
   const jobs: PopulationJob[] = ['farmer', 'worker', 'scientist']
   const values: Record<PopulationJob, number> = {
@@ -565,59 +528,160 @@ function PopulationMoveControls({ colony, onPlan, t, compact = false }: {
     return result
   }
 
-  function moveTo(destination: PopulationJob) {
-    if (!source || source === destination || values[source] <= 0) return
-    const amount = Math.min(1, values[source])
+  const markerMap: Record<PopulationJob, Array<{ amount: number; fractional: boolean }>> = {
+    farmer: markers(values.farmer),
+    worker: markers(values.worker),
+    scientist: markers(values.scientist),
+  }
+
+  function amountFor(selection: Selection): number {
+    return selection.indexes.reduce((sum, index) => sum + (markerMap[selection.job][index]?.amount ?? 0), 0)
+  }
+
+  function selectionFor(job: PopulationJob, index: number): Selection {
+    if (selected?.job === job && selected.indexes.includes(index)) return selected
+    return { job, indexes: [index] }
+  }
+
+  function toggleMarker(job: PopulationJob, index: number) {
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false
+      return
+    }
+    setSelected((current) => {
+      if (!current || current.job !== job) return { job, indexes: [index] }
+      const exists = current.indexes.includes(index)
+      const indexes = exists ? current.indexes.filter((item) => item !== index) : [...current.indexes, index].sort((a, b) => a - b)
+      return indexes.length > 0 ? { job, indexes } : null
+    })
+  }
+
+  function moveAmount(source: PopulationJob, destination: PopulationJob, amount: number) {
+    if (source === destination || amount <= 0 || values[source] + 0.0001 < amount) return
     const next = {
       ...values,
       [source]: values[source] - amount,
       [destination]: values[destination] + amount,
     }
     onPlan(colony.id, next.farmer, next.worker, next.scientist)
-    setSource(null)
+    setSelected(null)
+    dragPayloadRef.current = null
+    pointerDragRef.current = null
   }
+
+  function moveSelection(destination: PopulationJob) {
+    if (!selected) return
+    moveAmount(selected.job, destination, amountFor(selected))
+  }
+
+  function handleDragStart(event: ReactDragEvent<HTMLButtonElement>, job: PopulationJob, index: number) {
+    const selection = selectionFor(job, index)
+    const payload = { ...selection, amount: amountFor(selection) }
+    dragPayloadRef.current = payload
+    if (selected !== selection) setSelected(selection)
+    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer.setData('text/plain', job)
+  }
+
+  function handleDrop(event: ReactDragEvent<HTMLElement>, destination: PopulationJob) {
+    event.preventDefault()
+    const payload = dragPayloadRef.current
+    if (!payload) return
+    moveAmount(payload.job, destination, payload.amount)
+  }
+
+  function handlePointerDown(event: ReactPointerEvent<HTMLButtonElement>, job: PopulationJob, index: number) {
+    if (event.pointerType === 'mouse') return
+    const selection = selectionFor(job, index)
+    const payload: DragPayload = { ...selection, amount: amountFor(selection) }
+    pointerDragRef.current = { ...payload, pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, dragging: false }
+    if (selected !== selection) setSelected(selection)
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+
+  function handlePointerMove(event: ReactPointerEvent<HTMLButtonElement>) {
+    const drag = pointerDragRef.current
+    if (!drag || drag.pointerId !== event.pointerId) return
+    if (Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) >= 8) {
+      drag.dragging = true
+      event.preventDefault()
+    }
+  }
+
+  function finishPointerDrag(event: ReactPointerEvent<HTMLButtonElement>) {
+    const drag = pointerDragRef.current
+    if (!drag || drag.pointerId !== event.pointerId) return
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
+    if (drag.dragging) {
+      const target = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-population-job]')
+      const destination = target?.dataset.populationJob as PopulationJob | undefined
+      if (destination) moveAmount(drag.job, destination, drag.amount)
+      suppressClickRef.current = true
+      window.setTimeout(() => { suppressClickRef.current = false }, 0)
+    }
+    pointerDragRef.current = null
+  }
+
+  const selectionAmount = selected ? amountFor(selected) : 0
 
   return (
     <div className={'population-board' + (compact ? ' population-board-compact' : '')}>
-      {!compact && <p className="muted population-board-hint">{t('jobs.visualHint')}</p>}
+      {!compact && <p className="muted population-board-hint">{t('jobs.dragHint')}</p>}
       <div className="population-job-grid">
         {jobs.map((job) => {
-          const selected = source === job
-          const people = markers(values[job])
+          const sourceSelected = selected?.job === job
+          const people = markerMap[job]
           return (
-            <section className={'population-job population-job-' + job + (selected ? ' population-job-source' : '')} key={job}>
+            <section
+              className={'population-job population-job-' + job + (sourceSelected ? ' population-job-source' : '') + (selected && selected.job !== job ? ' population-job-target' : '')}
+              key={job}
+              data-population-job={job}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => handleDrop(event, job)}
+            >
               <header>
                 <span>{labels[job]}</span>
                 <strong>{values[job].toFixed(1)}</strong>
               </header>
               <div className="population-people" aria-label={labels[job] + ': ' + values[job].toFixed(1)}>
-                {people.length === 0 ? <span className="population-empty" aria-hidden="true">—</span> : people.map((person, index) => (
-                  <button
-                    type="button"
-                    className={'population-person' + (person.fractional ? ' population-person-fractional' : '')}
-                    key={job + '-' + index}
-                    aria-label={t('jobs.selectSource', { job: labels[job] })}
-                    title={person.fractional ? person.amount.toFixed(1) : labels[job]}
-                    onClick={() => setSource(job)}
-                  >
-                    <span className="population-person-glyph" aria-hidden="true" />
-                    {person.fractional && <small>{person.amount.toFixed(1)}</small>}
-                  </button>
-                ))}
+                {people.length === 0 ? <span className="population-empty" aria-hidden="true">—</span> : people.map((person, index) => {
+                  const isSelected = selected?.job === job && selected.indexes.includes(index)
+                  return (
+                    <button
+                      type="button"
+                      draggable
+                      className={'population-person' + (person.fractional ? ' population-person-fractional' : '') + (isSelected ? ' population-person-selected' : '')}
+                      key={job + '-' + index}
+                      aria-pressed={isSelected}
+                      aria-label={t('jobs.selectSource', { job: labels[job] })}
+                      title={person.fractional ? person.amount.toFixed(1) : labels[job]}
+                      onClick={() => toggleMarker(job, index)}
+                      onDragStart={(event) => handleDragStart(event, job, index)}
+                      onDragEnd={() => { dragPayloadRef.current = null }}
+                      onPointerDown={(event) => handlePointerDown(event, job, index)}
+                      onPointerMove={handlePointerMove}
+                      onPointerUp={finishPointerDrag}
+                      onPointerCancel={finishPointerDrag}
+                    >
+                      <span className="population-person-glyph" aria-hidden="true" />
+                      {person.fractional && <small>{person.amount.toFixed(1)}</small>}
+                    </button>
+                  )
+                })}
               </div>
-              {source && source !== job && (
-                <button type="button" className="population-destination" onClick={() => moveTo(job)}>
-                  {t('jobs.moveTo', { job: labels[job] })}
+              {selected && selected.job !== job && (
+                <button type="button" className="population-destination" onClick={() => moveSelection(job)}>
+                  {t('jobs.dropTo', { job: labels[job] })}
                 </button>
               )}
             </section>
           )
         })}
       </div>
-      {source && (
+      {selected && (
         <div className="population-selection">
-          <span>{t('jobs.selectedSource', { job: labels[source] })}</span>
-          <button type="button" className="button-ghost" onClick={() => setSource(null)}>{t('common.cancel')}</button>
+          <span>{t('jobs.selectedCount', { count: selected.indexes.length, amount: selectionAmount.toFixed(1), job: labels[selected.job] })}</span>
+          <button type="button" className="button-ghost" onClick={() => setSelected(null)}>{t('common.cancel')}</button>
         </div>
       )}
     </div>

@@ -47,7 +47,7 @@ Status: **complete**.
 - `git diff --check` - **PASS** (Windows LF/CRLF notices only).
 ### G4-B2 - Interaction-density refinement after direct review
 
-Status: **accepted; implementation pending**.
+Status: **implementation in progress; B2-A complete, B2-B/B2-C pending**.
 
 This block captures direct hands-on review after G4-B. These items are treated as pre-closure interaction requirements rather than later artwork polish:
 
@@ -59,6 +59,18 @@ This block captures direct hands-on review after G4-B. These items are treated a
 - **Global UI density should increase.** Reduce base font sizes, card/panel padding and redundant headings. Prefer concise labels plus contextual `?`/help affordances over long explanatory paragraphs. This is a product-wide 15.x direction, but Slice 15.2 should already avoid oversized primary controls and headline-heavy strategic screens.
 - **End Turn should stop dominating the interface.** Move it toward a smaller persistent bottom-right action on desktop/mobile-safe layouts instead of a wide two-column action bar. Keep it predictable and always available during Planning, but visually secondary to the strategic surface.
 
+
+#### G4-B2-A - Colony table + Population drag/drop
+
+Status: **complete**.
+
+- Colony overview is table-first again at every viewport width; mobile keeps the same dense table with horizontal scrolling and a sticky Colony column instead of switching to large cards.
+- Population remains visible in three Farmer/Worker/Scientist buckets inside the table row and Colony Detail.
+- Individual Population markers support multi-selection; selected units can be moved together.
+- Desktop HTML drag/drop is supported between job buckets.
+- Touch/pen pointer drag/drop is supported by pointer capture plus destination hit-testing, with tap-selection + destination-button fallback retained for accessibility.
+- Authority evidence: selecting both starting Farmers and moving them to Worker projected Farmer `2.0 -> 0.0`, Worker `1.0 -> 3.0`, Food `4.0 -> 0.0` and Production `3.0 -> 9.0` through the existing Planning Preview. A subsequent desktop drag Worker -> Scientist and touch-style drag Scientist -> Farmer also updated the same preview path.
+- `npm run build` - **PASS**.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
 
