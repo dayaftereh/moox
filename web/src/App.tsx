@@ -463,19 +463,19 @@ function App() {
       resources={resourceChips}
       onNavigate={(section) => navigate({ kind: 'game', gameID: route.gameID, section })}
       onHome={() => navigate({ kind: 'home' })}
+      onEndTurn={snapshot ? () => void endTurn() : undefined}
+      endTurnDisabled={!snapshot || snapshot.view.phase !== 'planning' || planningBusy || previewBusy}
+      endTurnLabel={planningBusy ? t('planning.resolving') : t('planning.endTurn')}
     >
       {error && <Notice title={t('state.errorTitle')} tone="danger"><p>{error}</p></Notice>}
 
-      {snapshot?.view.phase === 'planning' && (
+      {snapshot?.view.phase === 'planning' && (draftOrders.length > 0 || previewBusy) && (
         <Card className="planning-bar">
           <div>
             <p className="eyebrow">{t('planning.pending')}</p>
-            <strong>{draftOrders.length === 0 ? t('planning.noChanges') : t('planning.draftCount', { count: draftOrders.length })}</strong>
+            <strong>{t('planning.draftCount', { count: draftOrders.length })}</strong>
             {previewBusy && <small>{t('planning.previewing')}</small>}
           </div>
-          <button type="button" className="button-primary" disabled={planningBusy || previewBusy} onClick={() => void endTurn()}>
-            {planningBusy ? t('planning.resolving') : t('planning.endTurn')}
-          </button>
         </Card>
       )}
 

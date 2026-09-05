@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
 import {
   aggregatePopulation,
   type Colony,
@@ -69,6 +69,14 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   const systems = decision?.strategic.galaxy.systems ?? []
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
+  const [dragging, setDragging] = useState(false)
+  const ignoreClickRef = useRef(false)
+  const gestureRef = useRef<{
+    pointers: Map<number, { x: number; y: number }>
+    lastCenter?: { x: number; y: number }
+    lastDistance?: number
+    dragged: boolean
+  }>({ pointers: new Map(), dragged: false })
   const bounds = useMemo(() => {
     if (systems.length === 0) return { minX: 0, maxX: 1, minY: 0, maxY: 1 }
     return {
@@ -80,6 +88,9 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   }, [systems])
   const spanX = Math.max(1, bounds.maxX - bounds.minX)
   const spanY = Math.max(1, bounds.maxY - bounds.minY)
+  const minZoom = 0.7
+  const maxZoom = 4
+  const clampZoom = (value: number) => Math.max(minZoom, Math.min(maxZoom, value))
 
   if (!decision) {
     return (
@@ -91,55 +102,152 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   }
   const selected = systems.find((system) => system.id === selectedSystemID)
 
-  const panBy = (x: number, y: number) => setPan((current) => ({ x: current.x + x, y: current.y + y }))
-  const changeZoom = (delta: number) => setZoom((current) => Math.max(0.75, Math.min(2.5, Math.round((current + delta) * 100) / 100)))
+  const changeZoom = (factor: number) => setZoom((current) => Math.round(clampZoom(current * factor) * 100) / 100)
   const resetView = () => {
     setZoom(1)
     setPan({ x: 0, y: 0 })
   }
+  const pointerPair = () => Array.from(gestureRef.current.pointers.values()).slice(0, 2)
+  const pairCenter = (points: Array<{ x: number; y: number }>) => ({
+    x: (points[0].x + points[1].x) / 2,
+    y: (points[0].y + points[1].y) / 2,
+  })
+  const pairDistance = (points: Array<{ x: number; y: number }>) => Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y)
+
+  const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+    if (event.pointerType === 'mouse' && event.button !== 0) return
+    event.currentTarget.setPointerCapture(event.pointerId)
+    const point = { x: event.clientX, y: event.clientY }
+    const gesture = gestureRef.current
+    gesture.pointers.set(event.pointerId, point)
+    gesture.dragged = false
+    ignoreClickRef.current = false
+    if (gesture.pointers.size >= 2) {
+      const points = pointerPair()
+      gesture.lastCenter = pairCenter(points)
+      gesture.lastDistance = pairDistance(points)
+    } else {
+      gesture.lastCenter = point
+      gesture.lastDistance = undefined
+    }
+    setDragging(true)
+  }
+
+  const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const gesture = gestureRef.current
+    if (!gesture.pointers.has(event.pointerId)) return
+    gesture.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
+
+    if (gesture.pointers.size >= 2) {
+      const points = pointerPair()
+      const center = pairCenter(points)
+      const distance = Math.max(1, pairDistance(points))
+      if (gesture.lastCenter) {
+        const dx = center.x - gesture.lastCenter.x
+        const dy = center.y - gesture.lastCenter.y
+        if (Math.abs(dx) + Math.abs(dy) > 0.5) {
+          setPan((current) => ({ x: current.x + dx, y: current.y + dy }))
+          gesture.dragged = true
+        }
+      }
+      if (gesture.lastDistance) {
+        const ratio = distance / gesture.lastDistance
+        if (Math.abs(ratio - 1) > 0.002) {
+          setZoom((current) => clampZoom(current * ratio))
+          gesture.dragged = true
+        }
+      }
+      gesture.lastCenter = center
+      gesture.lastDistance = distance
+    } else {
+      const point = gesture.pointers.get(event.pointerId)!
+      if (gesture.lastCenter) {
+        const dx = point.x - gesture.lastCenter.x
+        const dy = point.y - gesture.lastCenter.y
+        if (Math.abs(dx) + Math.abs(dy) > 0.5) {
+          setPan((current) => ({ x: current.x + dx, y: current.y + dy }))
+          gesture.dragged = true
+        }
+      }
+      gesture.lastCenter = point
+    }
+    if (gesture.dragged) ignoreClickRef.current = true
+  }
+
+  const finishPointer = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const gesture = gestureRef.current
+    gesture.pointers.delete(event.pointerId)
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
+    if (gesture.pointers.size === 1) {
+      gesture.lastCenter = Array.from(gesture.pointers.values())[0]
+      gesture.lastDistance = undefined
+    } else if (gesture.pointers.size >= 2) {
+      const points = pointerPair()
+      gesture.lastCenter = pairCenter(points)
+      gesture.lastDistance = pairDistance(points)
+    } else {
+      gesture.lastCenter = undefined
+      gesture.lastDistance = undefined
+      setDragging(false)
+      if (gesture.dragged) window.setTimeout(() => { ignoreClickRef.current = false }, 0)
+    }
+  }
+
+  const handleWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    changeZoom(event.deltaY < 0 ? 1.12 : 1 / 1.12)
+  }
+
   return (
     <>
-      <PageHeader eyebrow={t('galaxy.eyebrow')} title={t('galaxy.title')} subtitle={t('galaxy.subtitle')} />
+      <PageHeader eyebrow={t('galaxy.eyebrow')} title={t('galaxy.title')} />
       <Card className="galaxy-card">
-        <div className="card-heading galaxy-map-heading">
-          <div><p className="eyebrow">{t('galaxy.mapTitle')}</p><h2>{decision.empire.name}</h2></div>
+        <div className="card-heading galaxy-map-heading galaxy-map-heading-compact">
+          <small className="muted galaxy-map-hint">{t('galaxy.mapHint')}</small>
           <div className="galaxy-map-meta">
-            <small className="muted">{t('galaxy.mapHint')}</small>
             <div className="galaxy-map-tools" role="group" aria-label={t('galaxy.mapControls')}>
-              <button type="button" className="button-ghost" aria-label={t('galaxy.panLeft')} onClick={() => panBy(32, 0)}>←</button>
-              <button type="button" className="button-ghost" aria-label={t('galaxy.panUp')} onClick={() => panBy(0, 32)}>↑</button>
-              <button type="button" className="button-ghost" aria-label={t('galaxy.panDown')} onClick={() => panBy(0, -32)}>↓</button>
-              <button type="button" className="button-ghost" aria-label={t('galaxy.panRight')} onClick={() => panBy(-32, 0)}>→</button>
-              <button type="button" className="button-ghost" aria-label={t('galaxy.zoomOut')} onClick={() => changeZoom(-0.25)}>−</button>
-              <span className="badge" aria-live="polite">{zoom.toFixed(2)}×</span>
-              <button type="button" className="button-ghost" aria-label={t('galaxy.zoomIn')} onClick={() => changeZoom(0.25)}>+</button>
+              <button type="button" className="button-ghost" aria-label={t('galaxy.zoomOut')} onClick={() => changeZoom(1 / 1.2)}>−</button>
+              <span className="badge" aria-live="polite">{Math.round(zoom * 100)}%</span>
+              <button type="button" className="button-ghost" aria-label={t('galaxy.zoomIn')} onClick={() => changeZoom(1.2)}>+</button>
               <button type="button" className="button-ghost" onClick={resetView}>{t('galaxy.resetView')}</button>
             </div>
           </div>
         </div>
-        <div className="galaxy-map" role="list" aria-label={t('galaxy.mapTitle')}>
-          <div className="galaxy-map-layer" style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})` }}>
-          {systems.map((system) => {
-            const ownsColony = system.planets.some((planet) => decision.colonies.some((colony) => colony.planet_id === planet.id))
-            const ownOutpost = (system.bodies ?? []).some((body) => Boolean(body.outpost_id) && decision.strategic.outposts?.some((outpost) => outpost.id === body.outpost_id && outpost.empire_id === decision.empire.id))
-            return (
-              <button
-                key={system.id}
-                type="button"
-                className={`galaxy-node${selectedSystemID === system.id ? ' galaxy-node-selected' : ''}${ownsColony ? ' galaxy-node-colony' : ownOutpost ? ' galaxy-node-outpost' : ''}`}
-                style={{
-                  left: `${8 + ((system.x - bounds.minX) / spanX) * 84}%`,
-                  top: `${8 + ((system.y - bounds.minY) / spanY) * 84}%`,
-                }}
-                onClick={() => onSelectSystem(system.id)}
-                title={`${system.name} (${system.x}, ${system.y})`}
-              >
-                <span className="galaxy-star" aria-hidden="true">✦</span>
-                <strong>{system.name}</strong>
-                <small>{system.x}, {system.y}</small>
-              </button>
-            )
-          })}
+        <div
+          className={'galaxy-map' + (dragging ? ' galaxy-map-dragging' : '')}
+          role="list"
+          aria-label={t('galaxy.mapTitle')}
+          onWheel={handleWheel}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={finishPointer}
+          onPointerCancel={finishPointer}
+        >
+          <div className="galaxy-map-layer" style={{ transform: 'translate3d(' + pan.x + 'px, ' + pan.y + 'px, 0) scale(' + zoom + ')' }}>
+            {systems.map((system) => {
+              const ownsColony = system.planets.some((planet) => decision.colonies.some((colony) => colony.planet_id === planet.id))
+              const ownOutpost = (system.bodies ?? []).some((body) => Boolean(body.outpost_id) && decision.strategic.outposts?.some((outpost) => outpost.id === body.outpost_id && outpost.empire_id === decision.empire.id))
+              return (
+                <button
+                  key={system.id}
+                  type="button"
+                  className={'galaxy-node' + (selectedSystemID === system.id ? ' galaxy-node-selected' : '') + (ownsColony ? ' galaxy-node-colony' : ownOutpost ? ' galaxy-node-outpost' : '')}
+                  style={{
+                    left: (8 + ((system.x - bounds.minX) / spanX) * 84) + '%',
+                    top: (8 + ((system.y - bounds.minY) / spanY) * 84) + '%',
+                  }}
+                  aria-label={system.name}
+                  onClick={() => {
+                    if (ignoreClickRef.current) return
+                    onSelectSystem(system.id)
+                  }}
+                  title={system.name + ' (' + system.x + ', ' + system.y + ')'}
+                >
+                  <span className="galaxy-star" aria-hidden="true" />
+                  <span className="galaxy-node-label" aria-hidden="true">{system.name}</span>
+                </button>
+              )
+            })}
           </div>
         </div>
       </Card>

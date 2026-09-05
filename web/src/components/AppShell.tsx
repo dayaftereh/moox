@@ -26,6 +26,9 @@ type AppShellProps = {
   resources?: ResourceChip[]
   onNavigate: (section: GameSection) => void
   onHome: () => void
+  onEndTurn?: () => void
+  endTurnDisabled?: boolean
+  endTurnLabel?: string
   children: ReactNode
 }
 
@@ -80,7 +83,7 @@ function NavItems({ items, activeSection, onNavigate, mobile = false }: {
   </>
 }
 
-export function AppShell({ activeSection, gameID, turn, phaseLabel, status, statusTone, resources = [], onNavigate, onHome, children }: AppShellProps) {
+export function AppShell({ activeSection, gameID, turn, phaseLabel, status, statusTone, resources = [], onNavigate, onHome, onEndTurn, endTurnDisabled = false, endTurnLabel, children }: AppShellProps) {
   const { t } = useI18n()
   return (
     <div className="game-shell">
@@ -116,6 +119,11 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
           <div className="side-nav-footer"><LanguageSwitch /></div>
         </aside>
         <main className="game-content">{children}</main>
+      </div>
+
+      <div className="persistent-actions" role="group">
+        <button type="button" className="button-secondary" onClick={() => onNavigate('galaxy')}>{t('nav.main')}</button>
+        <button type="button" className="button-primary" disabled={!onEndTurn || endTurnDisabled} onClick={onEndTurn}>{endTurnLabel ?? t('planning.endTurn')}</button>
       </div>
 
       <nav className="bottom-nav" aria-label={t('a11y.primaryNavigation')}>
