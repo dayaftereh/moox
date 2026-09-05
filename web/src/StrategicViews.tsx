@@ -201,17 +201,15 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
 
   return (
     <>
-      <PageHeader eyebrow={t('galaxy.eyebrow')} title={t('galaxy.title')} />
-      <Card className="galaxy-card">
-        <div className="card-heading galaxy-map-heading galaxy-map-heading-compact">
-          <small className="muted galaxy-map-hint">{t('galaxy.mapHint')}</small>
-          <div className="galaxy-map-meta">
-            <div className="galaxy-map-tools" role="group" aria-label={t('galaxy.mapControls')}>
-              <button type="button" className="button-ghost" aria-label={t('galaxy.zoomOut')} onClick={() => changeZoom(1 / 1.2)}>−</button>
-              <span className="badge" aria-live="polite">{Math.round(zoom * 100)}%</span>
-              <button type="button" className="button-ghost" aria-label={t('galaxy.zoomIn')} onClick={() => changeZoom(1.2)}>+</button>
-              <button type="button" className="button-ghost" onClick={resetView}>{t('galaxy.resetView')}</button>
-            </div>
+      <Card className="galaxy-card galaxy-card-full">
+        <div className="galaxy-map-toolbar">
+          <strong className="galaxy-map-title">{decision.empire.name}</strong>
+          <div className="galaxy-map-tools" role="group" aria-label={t('galaxy.mapControls')}>
+            <button type="button" className="help-button" aria-label={t('galaxy.mapHint')} title={t('galaxy.mapHint')}>?</button>
+            <button type="button" className="button-ghost" aria-label={t('galaxy.zoomOut')} onClick={() => changeZoom(1 / 1.2)}>−</button>
+            <span className="badge" aria-live="polite">{Math.round(zoom * 100)}%</span>
+            <button type="button" className="button-ghost" aria-label={t('galaxy.zoomIn')} onClick={() => changeZoom(1.2)}>+</button>
+            <button type="button" className="button-ghost galaxy-reset-button" aria-label={t('galaxy.resetView')} title={t('galaxy.resetView')} onClick={resetView}>↺</button>
           </div>
         </div>
         <div
@@ -298,6 +296,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
   }))
   const fleets = decision.strategic.fleets?.filter((fleet) => fleet.at_system_id === system.id) ?? []
   const contacts = decision.strategic.contacts?.filter((contact) => contact.system_id === system.id) ?? []
+  const orderedBodies = [...bodies].sort((a, b) => a.orbit - b.orbit || a.id - b.id)
 
   return (
     <div className="system-dialog-backdrop" role="presentation" onPointerDown={(event) => {
@@ -317,17 +316,29 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
 
         <div className="system-dialog-grid">
           <div className="system-dialog-main">
-            <div className="system-orbit-visual" aria-label={t('system.bodies')}>
-              <div className="system-star-visual" aria-hidden="true"><span /></div>
-              <div className="system-orbit-strip">
-                {bodies.map((body) => (
-                  <div className="system-body-visual" key={'visual-' + body.id}>
-                    <span className={'system-body-dot system-body-' + body.kind.replace(/_/g, '-')} aria-hidden="true" />
-                    <strong>{body.name}</strong>
-                    <small>{body.orbit}. {bodyLabel(t, body.kind)}</small>
+            <div className="system-orbit-stage" aria-label={t('system.bodies')}>
+              <div className="system-star-core" aria-hidden="true"><span /></div>
+              {orderedBodies.map((body, index) => {
+                const radius = 17 + ((index + 1) / (orderedBodies.length + 1)) * 30
+                const angle = (((system.id * 31) + (body.id * 67) + (index * 103)) % 360) * Math.PI / 180
+                const x = 50 + Math.cos(angle) * radius
+                const y = 50 + Math.sin(angle) * radius
+                return (
+                  <div className="system-orbit-body-layer" key={'orbit-' + body.id}>
+                    <span className="system-orbit-ring" style={{ width: (radius * 2) + '%', height: (radius * 2) + '%' }} aria-hidden="true" />
+                    <button
+                      type="button"
+                      className={'system-orbit-body system-orbit-body-' + body.kind.replace(/_/g, '-')}
+                      style={{ left: x + '%', top: y + '%' }}
+                      title={body.name + ' · ' + bodyLabel(t, body.kind)}
+                      onClick={() => document.getElementById('system-body-row-' + body.id)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
+                    >
+                      <span className="system-orbit-body-dot" aria-hidden="true" />
+                      <strong>{body.name}</strong>
+                    </button>
                   </div>
-                ))}
-              </div>
+                )
+              })}
             </div>
 
             <div className="orbit-list">
@@ -336,7 +347,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                 const colonizeChoices = (decision.decisions.colonization ?? []).filter((choice) => choice.system_id === system.id && choice.planet_id === body.planet_id)
                 const outpostChoices = (decision.decisions.outpost_deployment ?? []).filter((choice) => choice.system_id === system.id && choice.body_id === body.id)
                 return (
-                  <div className="orbit-row" key={body.id}>
+                  <div className="orbit-row" id={'system-body-row-' + body.id} key={body.id}>
                     <div className="orbit-row-copy">
                       <strong>{body.orbit}. {body.name}</strong>
                       <small>{bodyLabel(t, body.kind)}</small>

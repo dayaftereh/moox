@@ -86,7 +86,7 @@ function NavItems({ items, activeSection, onNavigate, mobile = false }: {
 export function AppShell({ activeSection, gameID, turn, phaseLabel, status, statusTone, resources = [], onNavigate, onHome, onEndTurn, endTurnDisabled = false, endTurnLabel, children }: AppShellProps) {
   const { t } = useI18n()
   return (
-    <div className="game-shell">
+    <div className={'game-shell section-' + activeSection}>
       <header className="topbar">
         <button type="button" className="brand-button topbar-brand" onClick={onHome}>
           <span className="brand-mark" aria-hidden="true">OX</span>
@@ -122,8 +122,8 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
       </div>
 
       <div className="persistent-actions" role="group">
-        <button type="button" className="button-secondary" onClick={() => onNavigate('galaxy')}>{t('nav.main')}</button>
-        <button type="button" className="button-primary" disabled={!onEndTurn || endTurnDisabled} onClick={onEndTurn}>{endTurnLabel ?? t('planning.endTurn')}</button>
+        <button type="button" className="button-ghost persistent-main" onClick={() => onNavigate('galaxy')}>{t('nav.main')}</button>
+        <button type="button" className="button-primary persistent-end-turn" disabled={!onEndTurn || endTurnDisabled} onClick={onEndTurn}>{endTurnLabel ?? t('planning.endTurn')}</button>
       </div>
 
       <nav className="bottom-nav" aria-label={t('a11y.primaryNavigation')}>

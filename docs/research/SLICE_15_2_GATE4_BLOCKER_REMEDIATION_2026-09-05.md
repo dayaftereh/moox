@@ -47,7 +47,7 @@ Status: **complete**.
 - `git diff --check` - **PASS** (Windows LF/CRLF notices only).
 ### G4-B2 - Interaction-density refinement after direct review
 
-Status: **implementation in progress; B2-A/B2-B complete, B2-C pending**.
+Status: **complete; direct user review pending before independent G4-C closure QA**.
 
 This block captures direct hands-on review after G4-B. These items are treated as pre-closure interaction requirements rather than later artwork polish:
 
@@ -82,6 +82,20 @@ Status: **complete**.
 - Queue items remain editable with up/down/remove plus full draft reset, all using the existing `colony.set_construction_queue` Planning draft.
 - Browser smoke added Housing and Troop Transport, reordered Troop Transport to position 1, then returned to Colony Detail. The compact summary projected `Troop Transport`, `2 in Queue`, `34 Runde(n)` and `Housing` as the next item.
 - `npm run build` - **PASS**.
+
+#### G4-B2-C - Spatial Galaxy/System and strategic density
+
+Status: **complete; direct user review pending**.
+
+- Galaxy is now a near-fullscreen strategic surface: the large page heading/explanatory copy were removed from the active map view, while a compact toolbar keeps zoom/reset plus contextual `?` help.
+- The Galaxy map continues to support direct mouse/touch pan and zoom from G4-A. A low-height desktop smoke viewport (`791 x 605`) measured the final Galaxy card at top `175`, height `420`, bottom `595`, with `379px` of map height, keeping the strategic surface inside the visible shell rather than forcing vertical overflow.
+- System presentation is now spatial/orbital: a central star, one visible orbit ring per body and deterministically positioned clickable planets/orbital bodies. Clicking a body links back to its authoritative detail/action row; Colony/Outpost/Colonize actions remain unchanged.
+- Browser geometry smoke on Alpha confirmed one central star, one ring and one body (`Alpha I`) spatially separated on a `493 x 360` orbital stage.
+- Strategic shell typography, cards, list rows, buttons, page headers and resource chips were compacted to increase information density without changing authority or data semantics.
+- Persistent actions are now a small bottom-right cluster instead of a broad bar. In the same desktop smoke viewport the cluster measured about `154 x 40px`; on narrow/mobile layouts the redundant `Main` action is hidden and End Turn remains available without dominating the screen.
+- Regression smoke after density changes confirmed the table-first Colony overview remains intact and the dedicated `/colonies/10/build` construction workspace still renders its build catalog and queue correctly.
+- `npm run build` - **PASS** after final viewport-height correction.
+- `git diff --check` - **PASS** (Windows LF/CRLF notices only).
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
 

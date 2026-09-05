@@ -631,3 +631,123 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .construction-queue-row .compact-actions { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .construction-queue-row .compact-actions button { min-width: 0; padding-inline: 5px; font-size: .6rem; }
 }
+
+
+/* Slice 15.2 G4-B2-C: denser strategic shell, near-fullscreen Galaxy, orbital System view */
+.game-shell { font-size: 14px; }
+.game-shell h1 { margin-bottom: .28rem; font-size: clamp(1.25rem, 3vw, 1.65rem); line-height: 1.08; }
+.game-shell h2 { margin-bottom: .42rem; font-size: .98rem; }
+.game-shell h3 { margin-bottom: .36rem; font-size: .82rem; }
+.game-shell .eyebrow { margin-bottom: 3px; font-size: .57rem; letter-spacing: .09em; }
+.game-shell .card { padding: 12px; border-radius: 12px; }
+.game-shell .page-header { align-items: center; gap: 10px; margin-bottom: 10px; }
+.game-shell .page-header p { margin-bottom: 0; }
+.game-shell .card-heading { gap: 10px; }
+.game-shell .list-row, .game-shell .orbit-row, .game-shell .queue-row { padding: 7px 8px; }
+.game-shell .button-primary, .game-shell .button-secondary, .game-shell .button-ghost { min-height: 32px; padding: 5px 9px; font-size: .69rem; }
+.game-shell .resource-strip { gap: 6px; padding-block: 5px; }
+.game-shell .resource-chip { min-height: 30px; padding: 4px 8px; }
+.game-shell .resource-chip span { font-size: .56rem; }
+.game-shell .resource-chip strong { font-size: .75rem; }
+.game-content { padding-top: 12px; padding-bottom: calc(var(--bottom-nav-height) + 66px + env(safe-area-inset-bottom)); }
+
+.persistent-actions {
+  left: auto !important;
+  right: 10px !important;
+  bottom: calc(var(--bottom-nav-height) + 7px + env(safe-area-inset-bottom)) !important;
+  width: auto !important;
+  display: flex !important;
+  grid-template-columns: none !important;
+  gap: 4px !important;
+  padding: 4px !important;
+  border: 1px solid rgba(62, 92, 128, .72) !important;
+  border-radius: 10px !important;
+  background: rgba(5, 13, 23, .88) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .28) !important;
+  backdrop-filter: blur(12px);
+}
+.persistent-actions button { min-height: 30px !important; padding: 4px 8px !important; font-size: .64rem !important; }
+.persistent-main { opacity: .8; }
+.persistent-end-turn { min-width: 92px; }
+
+.section-galaxy .game-content { width: 100%; max-width: none; padding: 7px 8px calc(var(--bottom-nav-height) + 58px + env(safe-area-inset-bottom)); }
+.galaxy-card-full { display: grid; height: max(430px, calc(100dvh - 178px - env(safe-area-inset-bottom))); grid-template-rows: auto minmax(0, 1fr); padding: 0 !important; overflow: hidden; }
+.galaxy-map-toolbar { position: relative; z-index: 3; display: flex; min-height: 38px; align-items: center; justify-content: space-between; gap: 8px; padding: 5px 7px; border-bottom: 1px solid var(--border-soft); background: rgba(6, 15, 27, .92); }
+.galaxy-map-title { overflow: hidden; color: var(--muted-strong); font-size: .67rem; text-overflow: ellipsis; white-space: nowrap; }
+.galaxy-map-tools { flex-wrap: nowrap; gap: 4px; }
+.galaxy-map-tools .button-ghost, .galaxy-map-tools .help-button { min-width: 29px; min-height: 28px; padding: 3px 6px; }
+.galaxy-map-tools .badge { min-width: 48px; min-height: 27px; padding-inline: 6px; font-size: .62rem; }
+.help-button { display: inline-grid; width: 28px; height: 28px; place-items: center; padding: 0; border: 1px solid var(--border-soft); border-radius: 999px; background: transparent; color: var(--muted-strong); font-size: .7rem; font-weight: 900; }
+.help-button:hover, .help-button:focus-visible { border-color: var(--accent); color: var(--text); }
+.galaxy-map { height: 100%; min-height: 0 !important; border: 0; border-radius: 0; }
+.galaxy-node-label { font-size: .58rem; }
+.galaxy-reset-button { font-size: .85rem !important; }
+
+.system-dialog { width: min(1180px, 100%); max-height: 94dvh; }
+.system-dialog-header { padding: 10px 12px; }
+.system-dialog-header h2 { font-size: 1rem; }
+.system-dialog-grid { grid-template-columns: minmax(0, 1fr) 230px; gap: 10px; padding: 10px; }
+.system-dialog-main { display: grid; min-width: 0; gap: 8px; }
+.system-orbit-stage {
+  position: relative;
+  min-height: 360px;
+  height: min(56vh, 560px);
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(93, 137, 214, .13), transparent 22%),
+    radial-gradient(circle at 20% 24%, rgba(255, 255, 255, .08) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 76% 68%, rgba(255, 255, 255, .07) 0 1px, transparent 1.5px),
+    #030914;
+}
+.system-star-core { position: absolute; z-index: 3; left: 50%; top: 50%; display: grid; width: 72px; height: 72px; place-items: center; transform: translate(-50%, -50%); }
+.system-star-core span { width: 34px; height: 34px; border-radius: 999px; background: #f3f7ff; box-shadow: 0 0 16px #c4d8ff, 0 0 52px rgba(88, 139, 232, .75); }
+.system-orbit-body-layer { position: absolute; inset: 0; pointer-events: none; }
+.system-orbit-ring { position: absolute; left: 50%; top: 50%; border: 1px solid rgba(106, 139, 180, .24); border-radius: 999px; transform: translate(-50%, -50%); }
+.system-orbit-body { position: absolute; z-index: 4; display: grid; min-width: 62px; justify-items: center; gap: 3px; padding: 4px 6px; transform: translate(-50%, -50%); border: 0; background: transparent; color: var(--muted-strong); pointer-events: auto; }
+.system-orbit-body:hover, .system-orbit-body:focus-visible { color: var(--text); }
+.system-orbit-body-dot { display: block; width: 14px; height: 14px; border: 1px solid rgba(255, 255, 255, .24); border-radius: 999px; background: #7189a7; box-shadow: 0 0 10px rgba(105, 144, 194, .38); }
+.system-orbit-body strong { max-width: 90px; overflow: hidden; font-size: .58rem; text-overflow: ellipsis; white-space: nowrap; }
+.system-orbit-body-gas-giant .system-orbit-body-dot { width: 22px; height: 22px; background: #b18b6b; }
+.system-orbit-body-asteroid-belt .system-orbit-body-dot { width: 28px; height: 9px; border: 2px dotted #8793a3; border-radius: 999px; background: transparent; box-shadow: none; }
+.system-dialog .orbit-list { display: grid; max-height: 190px; overflow: auto; gap: 5px; padding-right: 2px; }
+.system-dialog .orbit-row { scroll-margin-top: 54px; border-radius: 9px; background: rgba(8, 18, 31, .72); }
+.system-dialog-side { padding: 9px; }
+.system-dialog-side .list-row { padding: 6px; }
+
+@media (min-width: 760px) {
+  .game-content { padding-bottom: 66px; }
+  .persistent-actions { right: 16px !important; bottom: 16px !important; }
+  .section-galaxy .game-content { padding: 7px 9px 58px; }
+  .galaxy-card-full { height: max(520px, calc(100dvh - 126px)); }
+}
+
+@media (max-width: 699px) {
+  .game-shell { font-size: 13px; }
+  .game-shell .card { padding: 10px; }
+  .game-shell h1 { font-size: 1.18rem; }
+  .game-shell .page-header { margin-bottom: 7px; }
+  .persistent-main { display: none; }
+  .persistent-end-turn { min-width: 86px; }
+  .galaxy-card-full { height: max(420px, calc(100dvh - 164px - env(safe-area-inset-bottom))); }
+  .galaxy-map-title { display: none; }
+  .system-dialog-backdrop { place-items: end stretch; }
+  .system-dialog { max-height: 94dvh; }
+  .system-dialog-grid { grid-template-columns: 1fr; }
+  .system-orbit-stage { min-height: 250px; height: min(72vw, 350px); }
+  .system-star-core { width: 54px; height: 54px; }
+  .system-star-core span { width: 27px; height: 27px; }
+  .system-orbit-body { min-width: 52px; padding: 3px; }
+  .system-orbit-body strong { max-width: 68px; font-size: .52rem; }
+  .system-dialog .orbit-list { max-height: 160px; }
+}
+
+/* Keep the near-fullscreen Galaxy inside the actually visible shell viewport. */
+.galaxy-card-full { height: calc(100dvh - 185px - env(safe-area-inset-bottom)); min-height: 340px; }
+@media (min-width: 760px) {
+  .galaxy-card-full { height: calc(100dvh - 185px); min-height: 360px; }
+}
+@media (max-width: 699px) {
+  .galaxy-card-full { height: calc(100dvh - 182px - env(safe-area-inset-bottom)); min-height: 320px; }
+}
