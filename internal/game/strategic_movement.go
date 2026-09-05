@@ -140,8 +140,17 @@ func nearestEmpireSupplyDistanceParsecs(state *core.GameState, empireID core.ID,
 		}
 	}
 	for _, outpost := range state.Outposts {
-		if outpost.EmpireID == empireID {
-			considerPlanet(outpost.PlanetID)
+		if outpost.EmpireID != empireID {
+			continue
+		}
+		target := orbitalBodyTargetByID(state, outpostTargetBodyID(outpost))
+		if target.System == nil {
+			continue
+		}
+		distance := strategicDistanceParsecs(*target.System, destination)
+		if !found || distance < nearest {
+			nearest = distance
+			found = true
 		}
 	}
 	return nearest, found

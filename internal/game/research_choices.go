@@ -7,7 +7,16 @@ import (
 	"moox/internal/core"
 )
 
+type ResearchCategory struct {
+	ID              string `json:"id"`
+	Order           int    `json:"order"`
+	NameKey         string `json:"name_key"`
+	RootTechFieldID int    `json:"root_tech_field_id"`
+}
 type ResearchChoice struct {
+	CategoryID          string                     `json:"category_id"`
+	CategoryOrder       int                        `json:"category_order"`
+	CategoryNameKey     string                     `json:"category_name_key"`
 	TechFieldID         int                        `json:"tech_field_id"`
 	PreviousTechFieldID int                        `json:"previous_tech_field_id"`
 	NextTechFieldID     int                        `json:"next_tech_field_id"`
@@ -69,6 +78,12 @@ func (r *EconomyRules) AvailableResearchChoices(state *core.GameState, empireID 
 			}
 		}
 
+		categoryID, ok := r.TechnologyFieldCategoryID[fieldID]
+		if !ok || categoryID == "" {
+			return nil, fmt.Errorf("researchable field %d has no normalized category", fieldID)
+		}
+		categoryNameKey := r.TechnologyFieldCategoryNameKey[fieldID]
+		categoryOrder := r.TechnologyFieldCategoryOrder[fieldID]
 		if hyperAdvanced {
 			costRP, err := r.researchFieldCostRP(empire, fieldID)
 			if err != nil {
@@ -76,6 +91,9 @@ func (r *EconomyRules) AvailableResearchChoices(state *core.GameState, empireID 
 			}
 			completed, _ := hyperAdvancedCompletedLevels(empire, fieldID)
 			choices = append(choices, ResearchChoice{
+				CategoryID:          categoryID,
+				CategoryOrder:       categoryOrder,
+				CategoryNameKey:     categoryNameKey,
 				TechFieldID:         fieldID,
 				PreviousTechFieldID: previousID,
 				NextTechFieldID:     r.TechnologyFieldNextID[fieldID],
@@ -134,6 +152,9 @@ func (r *EconomyRules) AvailableResearchChoices(state *core.GameState, empireID 
 			technologyNameKeys[i] = nameKey
 		}
 		choices = append(choices, ResearchChoice{
+			CategoryID:          categoryID,
+			CategoryOrder:       categoryOrder,
+			CategoryNameKey:     categoryNameKey,
 			TechFieldID:         fieldID,
 			PreviousTechFieldID: previousID,
 			NextTechFieldID:     r.TechnologyFieldNextID[fieldID],
@@ -147,6 +168,12 @@ func (r *EconomyRules) AvailableResearchChoices(state *core.GameState, empireID 
 	return choices, nil
 }
 
+func (r *EconomyRules) AvailableResearchCategories() []ResearchCategory {
+	if r == nil || len(r.ResearchCategories) == 0 {
+		return nil
+	}
+	return append([]ResearchCategory(nil), r.ResearchCategories...)
+}
 func (r *EconomyRules) researchSelectionMode(modifiers RaceEconomyModifiers, fieldID int) core.ResearchSelectionMode {
 	if r.isHyperAdvancedField(fieldID) {
 		return core.ResearchSelectionRepeatField

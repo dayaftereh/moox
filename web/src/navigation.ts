@@ -1,11 +1,11 @@
-export type GameSection = 'galaxy' | 'colonies' | 'fleets' | 'research' | 'more'
+export type GameSection = 'galaxy' | 'colonies' | 'fleets' | 'research' | 'diplomacy' | 'espionage' | 'more'
 
 export type AppRoute =
   | { kind: 'home' }
   | { kind: 'new-game' }
-  | { kind: 'game'; gameID: string; section: GameSection }
+  | { kind: 'game'; gameID: string; section: GameSection; entityID?: number }
 
-const sections = new Set<GameSection>(['galaxy', 'colonies', 'fleets', 'research', 'more'])
+const sections = new Set<GameSection>(['galaxy', 'colonies', 'fleets', 'research', 'diplomacy', 'espionage', 'more'])
 
 export function parseRoute(hash = window.location.hash): AppRoute {
   const value = hash.replace(/^#/, '') || '/'
@@ -14,7 +14,13 @@ export function parseRoute(hash = window.location.hash): AppRoute {
   if (parts.length >= 3 && parts[0] === 'game') {
     const section = parts[2] as GameSection
     if (sections.has(section)) {
-      return { kind: 'game', gameID: decodeURIComponent(parts[1]), section }
+      const parsed = parts.length >= 4 ? Number(parts[3]) : undefined
+      return {
+        kind: 'game',
+        gameID: decodeURIComponent(parts[1]),
+        section,
+        entityID: parsed !== undefined && Number.isFinite(parsed) && parsed > 0 ? parsed : undefined,
+      }
     }
   }
   return { kind: 'home' }
@@ -23,7 +29,8 @@ export function parseRoute(hash = window.location.hash): AppRoute {
 export function routeHash(route: AppRoute): string {
   if (route.kind === 'home') return '#/'
   if (route.kind === 'new-game') return '#/new-game'
-  return `#/game/${encodeURIComponent(route.gameID)}/${route.section}`
+  const suffix = route.entityID ? `/${route.entityID}` : ''
+  return `#/game/${encodeURIComponent(route.gameID)}/${route.section}${suffix}`
 }
 
 export function navigate(route: AppRoute) {

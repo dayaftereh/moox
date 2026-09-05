@@ -22,14 +22,32 @@ type TransferPopulationPayload struct {
 	SourceColonyID      core.ID                   `json:"source_colony_id"`
 	DestinationColonyID core.ID                   `json:"destination_colony_id"`
 	Cohort              *core.PopulationCohortKey `json:"cohort,omitempty"`
-	Job                 core.PopulationJob        `json:"job"`
+	Job                 core.PopulationJob        `json:"job,omitempty"` // legacy/source-job compatibility
+	SourceJob           core.PopulationJob        `json:"source_job,omitempty"`
+	DestinationJob      core.PopulationJob        `json:"destination_job,omitempty"`
+}
+
+func (p TransferPopulationPayload) SourcePopulationJob() core.PopulationJob {
+	if p.SourceJob != "" {
+		return p.SourceJob
+	}
+	return p.Job
+}
+
+func (p TransferPopulationPayload) DestinationPopulationJob() core.PopulationJob {
+	if p.DestinationJob != "" {
+		return p.DestinationJob
+	}
+	return p.SourcePopulationJob()
 }
 
 type PopulationTransferredEvent struct {
 	EmpireID            core.ID                  `json:"empire_id"`
 	SourceColonyID      core.ID                  `json:"source_colony_id"`
 	DestinationColonyID core.ID                  `json:"destination_colony_id"`
-	Job                 core.PopulationJob       `json:"job"`
+	Job                 core.PopulationJob       `json:"job,omitempty"`
+	SourceJob           core.PopulationJob       `json:"source_job,omitempty"`
+	DestinationJob      core.PopulationJob       `json:"destination_job,omitempty"`
 	Cohort              core.PopulationCohortKey `json:"cohort"`
 	Amount              float64                  `json:"amount"`
 	SameSystem          bool                     `json:"same_system"`
@@ -40,7 +58,9 @@ type PopulationTransferStartedEvent struct {
 	EmpireID            core.ID                  `json:"empire_id"`
 	SourceColonyID      core.ID                  `json:"source_colony_id"`
 	DestinationColonyID core.ID                  `json:"destination_colony_id"`
-	Job                 core.PopulationJob       `json:"job"`
+	Job                 core.PopulationJob       `json:"job,omitempty"`
+	SourceJob           core.PopulationJob       `json:"source_job,omitempty"`
+	DestinationJob      core.PopulationJob       `json:"destination_job,omitempty"`
 	Cohort              core.PopulationCohortKey `json:"cohort"`
 	Amount              float64                  `json:"amount"`
 	ETA                 int                      `json:"eta"`
@@ -58,7 +78,9 @@ type PopulationTransferArrivedEvent struct {
 	EmpireID            core.ID                  `json:"empire_id"`
 	SourceColonyID      core.ID                  `json:"source_colony_id"`
 	DestinationColonyID core.ID                  `json:"destination_colony_id"`
-	Job                 core.PopulationJob       `json:"job"`
+	Job                 core.PopulationJob       `json:"job,omitempty"`
+	SourceJob           core.PopulationJob       `json:"source_job,omitempty"`
+	DestinationJob      core.PopulationJob       `json:"destination_job,omitempty"`
 	Cohort              core.PopulationCohortKey `json:"cohort"`
 	Amount              float64                  `json:"amount"`
 	FreightersReleased  int                      `json:"freighters_released"`
@@ -69,7 +91,9 @@ type PopulationTransferLostEvent struct {
 	EmpireID            core.ID                  `json:"empire_id"`
 	SourceColonyID      core.ID                  `json:"source_colony_id"`
 	DestinationColonyID core.ID                  `json:"destination_colony_id"`
-	Job                 core.PopulationJob       `json:"job"`
+	Job                 core.PopulationJob       `json:"job,omitempty"`
+	SourceJob           core.PopulationJob       `json:"source_job,omitempty"`
+	DestinationJob      core.PopulationJob       `json:"destination_job,omitempty"`
 	Cohort              core.PopulationCohortKey `json:"cohort"`
 	Amount              float64                  `json:"amount"`
 	Reason              string                   `json:"reason"`
@@ -117,11 +141,26 @@ func validateTransferPopulationPayload(payload TransferPopulationPayload) error 
 			return fmt.Errorf("only assimilated organic population can be transferred")
 		}
 	}
-	switch payload.Job {
+	sourceJob := payload.SourcePopulationJob()
+	destinationJob := payload.DestinationPopulationJob()
+	if payload.Job != "" && payload.SourceJob != "" && payload.Job != payload.SourceJob {
+		return fmt.Errorf("legacy job %q conflicts with source_job %q", payload.Job, payload.SourceJob)
+	}
+	if !validPopulationTransferJob(sourceJob) {
+		return fmt.Errorf("unsupported source population job %q", sourceJob)
+	}
+	if !validPopulationTransferJob(destinationJob) {
+		return fmt.Errorf("unsupported destination population job %q", destinationJob)
+	}
+	return nil
+}
+
+func validPopulationTransferJob(job core.PopulationJob) bool {
+	switch job {
 	case core.PopulationJobFarmer, core.PopulationJobWorker, core.PopulationJobScientist:
-		return nil
+		return true
 	default:
-		return fmt.Errorf("unsupported population job %q", payload.Job)
+		return false
 	}
 }
 
@@ -130,6 +169,8 @@ func (r *EconomyResolver) transferPopulation(state *core.GameState, empireID cor
 	if err != nil {
 		return DomainEvent{}, err
 	}
+	sourceJob := payload.SourcePopulationJob()
+	destinationJob := payload.DestinationPopulationJob()
 	source := colonyByID(state, payload.SourceColonyID)
 	destination := colonyByID(state, payload.DestinationColonyID)
 	if source == nil || destination == nil {
@@ -145,9 +186,9 @@ func (r *EconomyResolver) transferPopulation(state *core.GameState, empireID cor
 	if err != nil {
 		return DomainEvent{}, fmt.Errorf("colony %d population transfer: %w", source.ID, err)
 	}
-	available, ok := source.Population.JobAmount(cohortKey, payload.Job)
+	available, ok := source.Population.JobAmount(cohortKey, sourceJob)
 	if !ok || available < 1-populationEpsilon {
-		return DomainEvent{}, fmt.Errorf("colony %d selected cohort has less than one %s Population available", source.ID, payload.Job)
+		return DomainEvent{}, fmt.Errorf("colony %d selected cohort has less than one %s Population available", source.ID, sourceJob)
 	}
 	if err := r.recalculateColony(state, destination); err != nil {
 		return DomainEvent{}, err
@@ -157,11 +198,11 @@ func (r *EconomyResolver) transferPopulation(state *core.GameState, empireID cor
 		if inbound.EmpireID != empireID || inbound.DestinationColonyID != destination.ID {
 			continue
 		}
-		if err := capacityPopulation.AddToCohortJob(inbound.CohortKey(), inbound.Job, 1); err != nil {
+		if err := capacityPopulation.AddToCohortJob(inbound.CohortKey(), inbound.DestinationPopulationJob(), 1); err != nil {
 			return DomainEvent{}, err
 		}
 	}
-	canAdd, err := r.populationCanAdd(state, *destination, capacityPopulation, cohortKey, payload.Job, 1)
+	canAdd, err := r.populationCanAdd(state, *destination, capacityPopulation, cohortKey, destinationJob, 1)
 	if err != nil {
 		return DomainEvent{}, err
 	}
@@ -176,17 +217,19 @@ func (r *EconomyResolver) transferPopulation(state *core.GameState, empireID cor
 	}
 
 	if sourceSystem.ID == destinationSystem.ID {
-		if err := source.Population.RemoveFromCohortJob(cohortKey, payload.Job, 1); err != nil {
+		if err := source.Population.RemoveFromCohortJob(cohortKey, sourceJob, 1); err != nil {
 			return DomainEvent{}, err
 		}
-		if err := destination.Population.AddToCohortJob(cohortKey, payload.Job, 1); err != nil {
+		if err := destination.Population.AddToCohortJob(cohortKey, destinationJob, 1); err != nil {
 			return DomainEvent{}, err
 		}
 		return NewDomainEvent("colony.population_transferred", seatID, command.Sequence, PopulationTransferredEvent{
 			EmpireID:            empireID,
 			SourceColonyID:      source.ID,
 			DestinationColonyID: destination.ID,
-			Job:                 payload.Job,
+			Job:                 sourceJob,
+			SourceJob:           sourceJob,
+			DestinationJob:      destinationJob,
 			Cohort:              cohortKey,
 			Amount:              1,
 			SameSystem:          true,
@@ -210,7 +253,7 @@ func (r *EconomyResolver) transferPopulation(state *core.GameState, empireID cor
 	if eta < 1 {
 		return DomainEvent{}, fmt.Errorf("invalid interstellar Population-transfer ETA %d", eta)
 	}
-	if err := source.Population.RemoveFromCohortJob(cohortKey, payload.Job, 1); err != nil {
+	if err := source.Population.RemoveFromCohortJob(cohortKey, sourceJob, 1); err != nil {
 		return DomainEvent{}, err
 	}
 	transfer := core.PopulationTransfer{
@@ -221,7 +264,9 @@ func (r *EconomyResolver) transferPopulation(state *core.GameState, empireID cor
 		OriginEmpireID:      cohortKey.OriginEmpireID,
 		LoyaltyEmpireID:     cohortKey.LoyaltyEmpireID,
 		AssimilationState:   cohortKey.AssimilationState,
-		Job:                 payload.Job,
+		Job:                 sourceJob,
+		SourceJob:           sourceJob,
+		DestinationJob:      destinationJob,
 		RemainingTurns:      eta,
 	}
 	state.PopulationTransfers = append(state.PopulationTransfers, transfer)
@@ -230,7 +275,9 @@ func (r *EconomyResolver) transferPopulation(state *core.GameState, empireID cor
 		EmpireID:            empireID,
 		SourceColonyID:      source.ID,
 		DestinationColonyID: destination.ID,
-		Job:                 payload.Job,
+		Job:                 sourceJob,
+		SourceJob:           sourceJob,
+		DestinationJob:      destinationJob,
 		Cohort:              cohortKey,
 		Amount:              1,
 		ETA:                 eta,
@@ -275,7 +322,7 @@ func (r *EconomyResolver) advancePopulationTransfers(state *core.GameState) ([]D
 				if err := r.recalculateColony(state, destination); err != nil {
 					return nil, err
 				}
-				canAdd, err := r.populationCanAdd(state, *destination, destination.Population, transfer.CohortKey(), transfer.Job, 1)
+				canAdd, err := r.populationCanAdd(state, *destination, destination.Population, transfer.CohortKey(), transfer.DestinationPopulationJob(), 1)
 				if err != nil {
 					return nil, err
 				}
@@ -291,7 +338,9 @@ func (r *EconomyResolver) advancePopulationTransfers(state *core.GameState) ([]D
 				EmpireID:            transfer.EmpireID,
 				SourceColonyID:      transfer.SourceColonyID,
 				DestinationColonyID: transfer.DestinationColonyID,
-				Job:                 transfer.Job,
+				Job:                 transfer.SourcePopulationJob(),
+				SourceJob:           transfer.SourcePopulationJob(),
+				DestinationJob:      transfer.DestinationPopulationJob(),
 				Cohort:              transfer.CohortKey(),
 				Amount:              1,
 				Reason:              reason,
@@ -304,7 +353,7 @@ func (r *EconomyResolver) advancePopulationTransfers(state *core.GameState) ([]D
 			continue
 		}
 
-		if err := destination.Population.AddToCohortJob(transfer.CohortKey(), transfer.Job, 1); err != nil {
+		if err := destination.Population.AddToCohortJob(transfer.CohortKey(), transfer.DestinationPopulationJob(), 1); err != nil {
 			return nil, err
 		}
 		event, err := NewDomainEvent("empire.population_transfer_arrived", 0, 0, PopulationTransferArrivedEvent{
@@ -312,7 +361,9 @@ func (r *EconomyResolver) advancePopulationTransfers(state *core.GameState) ([]D
 			EmpireID:            transfer.EmpireID,
 			SourceColonyID:      transfer.SourceColonyID,
 			DestinationColonyID: transfer.DestinationColonyID,
-			Job:                 transfer.Job,
+			Job:                 transfer.SourcePopulationJob(),
+			SourceJob:           transfer.SourcePopulationJob(),
+			DestinationJob:      transfer.DestinationPopulationJob(),
 			Cohort:              transfer.CohortKey(),
 			Amount:              1,
 			FreightersReleased:  populationTransferFreighters,
@@ -342,13 +393,13 @@ func resolveTransferCohortKey(population core.PopulationState, payload TransferP
 		if cohort.AssimilationState != core.PopulationAssimilated || cohort.LoyaltyEmpireID != ownerEmpireID {
 			continue
 		}
-		amount, ok := population.JobAmount(cohort.Key(), payload.Job)
+		amount, ok := population.JobAmount(cohort.Key(), payload.SourcePopulationJob())
 		if ok && amount > populationEpsilon {
 			candidates = append(candidates, cohort.Key())
 		}
 	}
 	if len(candidates) == 0 {
-		return core.PopulationCohortKey{}, fmt.Errorf("no assimilated cohort has %s Population available", payload.Job)
+		return core.PopulationCohortKey{}, fmt.Errorf("no assimilated cohort has %s Population available", payload.SourcePopulationJob())
 	}
 	if len(candidates) > 1 {
 		return core.PopulationCohortKey{}, fmt.Errorf("population transfer is ambiguous across %d cohorts; explicit cohort selector is required", len(candidates))

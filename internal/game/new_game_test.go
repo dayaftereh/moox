@@ -36,7 +36,7 @@ func TestNewGameGoldenSeedStateFingerprint(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := fmt.Sprintf("%x", sha256.Sum256(data))
-	const want = "83614740b216409877b03c536a16328c7fa7031867f58dbeb70857a8953f5762"
+	const want = "f8c12c29aab63c69334d15a9e62f730ce30458152d16a9f3b7170f243f86e6c9"
 	if got != want {
 		t.Fatalf("golden seed state sha256=%s want=%s", got, want)
 	}
@@ -244,5 +244,52 @@ func TestNewGameRejectsUnsupportedSettings(t *testing.T) {
 		if _, err := rules.NewGame(7, settings); err == nil {
 			t.Fatalf("case %d unexpectedly accepted", i)
 		}
+	}
+}
+
+func TestNewGamePersistsOrbitalBodiesAndSpectralClass(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	result, err := rules.NewGame(0x8009, canonicalNewGameSettings())
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := result.State
+	counts := map[core.OrbitalBodyKind]int{}
+	for si := range state.Galaxy.Systems {
+		system := &state.Galaxy.Systems[si]
+		if system.SpectralClass < 0 || system.SpectralClass > 6 {
+			t.Fatalf("system %d spectral class=%d", system.ID, system.SpectralClass)
+		}
+		orbits := map[int]bool{}
+		planetBodies := map[core.ID]bool{}
+		for _, body := range system.Bodies {
+			if body.ID == 0 || body.Name == "" {
+				t.Fatalf("system %d has incomplete body %+v", system.ID, body)
+			}
+			if orbits[body.Orbit] {
+				t.Fatalf("system %d has duplicate body orbit %d", system.ID, body.Orbit)
+			}
+			orbits[body.Orbit] = true
+			counts[body.Kind]++
+			if body.Kind == core.OrbitalBodyPlanet {
+				if body.PlanetID == 0 || body.ID != body.PlanetID {
+					t.Fatalf("system %d planet body=%+v", system.ID, body)
+				}
+				planetBodies[body.PlanetID] = true
+			} else if body.PlanetID != 0 {
+				t.Fatalf("system %d non-planet body references planet: %+v", system.ID, body)
+			}
+		}
+		for _, planet := range system.Planets {
+			if !planetBodies[planet.ID] {
+				t.Fatalf("system %d planet %d has no persistent orbital body", system.ID, planet.ID)
+			}
+		}
+	}
+	if counts[core.OrbitalBodyPlanet] == 0 || counts[core.OrbitalBodyGasGiant] == 0 || counts[core.OrbitalBodyAsteroidBelt] == 0 {
+		t.Fatalf("body counts=%v want planets, gas giants and asteroid belts", counts)
+	}
+	if err := state.Validate(); err != nil {
+		t.Fatalf("new-game body state invalid: %v", err)
 	}
 }

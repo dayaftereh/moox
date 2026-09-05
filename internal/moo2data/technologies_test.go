@@ -34,6 +34,12 @@ func TestDecodeTechnologiesUsesOriginalBoundedSequence(t *testing.T) {
 	if got := bundle.Rules.Technologies[202]; got.TechnologyID != 203 || got.ID != "zortrium_armor" || got.TechFieldID != 36 {
 		t.Fatalf("last=%+v", got)
 	}
+	if got := bundle.Rules.Fields[0]; got.CategoryID != "biology" || got.CategoryOrder != 6 || got.CategoryNameKey != "research.category.biology" {
+		t.Fatalf("field1 research category=%+v", got)
+	}
+	if got := bundle.Rules.Fields[73]; got.CategoryID != "" || got.CategoryNameKey != "" {
+		t.Fatalf("field74 must remain outside player-facing research categories: %+v", got)
+	}
 	wantStart := []int{29, 55, 22, 57, 28, 23}
 	for i, want := range wantStart {
 		if got := bundle.Rules.NewGameStart.StagedKnownTechFieldIDs[i]; got != want {

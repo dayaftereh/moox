@@ -102,6 +102,58 @@ func TestHTTPPlayerSnapshotAndConcretePopulationCommandFlow(t *testing.T) {
 	}
 }
 
+func TestHTTPPlanningPreviewIsPureAndCarriesAtomicDecisionProjection(t *testing.T) {
+	server, state := newServerFixture(t, true, nil)
+	defer server.Close()
+
+	var before app.PlayerSnapshot
+	getJSON(t, server.URL+"/api/v1/games/demo/seats/1/snapshot", &before)
+	if before.Decision == nil {
+		t.Fatal("player snapshot is missing atomic DecisionView projection")
+	}
+	if before.Decision.GameID != before.View.GameID || before.Decision.Revision != before.View.Revision || before.Decision.Turn != before.View.Turn {
+		t.Fatalf("snapshot/decision boundary mismatch: view=%+v decision=%+v", before.View, before.Decision)
+	}
+	beforeColony, err := json.Marshal(before.View.Colonies[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	command, err := game.NewAssignPopulationCommand(1, game.AssignPopulationPayload{
+		ColonyID: state.Colonies[0].ID, Farmers: 1, Workers: 2, Scientists: 1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	batch := protocol.CommandBatch{
+		SchemaVersion: protocol.CommandSchemaVersion,
+		GameID:        "demo",
+		SeatID:        1,
+		Turn:          before.View.Turn,
+		BaseRevision:  before.View.Revision,
+		Commands:      []protocol.Command{command},
+	}
+	var preview app.PlanningPreviewSnapshot
+	postJSON(t, server.URL+"/api/v1/games/demo/seats/1/planning-preview", batch, "", http.StatusOK, &preview)
+	if preview.ChangeSequence != before.ChangeSequence || preview.Preview.GameID != "demo" || preview.Preview.Turn != before.View.Turn || preview.Preview.BaseRevision != before.View.Revision {
+		t.Fatalf("planning preview boundary mismatch: before=%+v preview=%+v", before, preview)
+	}
+	if len(preview.Preview.Projection.Colonies) != 1 {
+		t.Fatalf("planning preview colonies=%d, want 1", len(preview.Preview.Projection.Colonies))
+	}
+
+	var after app.PlayerSnapshot
+	getJSON(t, server.URL+"/api/v1/games/demo/seats/1/snapshot", &after)
+	if after.ChangeSequence != before.ChangeSequence || after.View.Revision != before.View.Revision || after.View.Turn != before.View.Turn {
+		t.Fatalf("planning preview mutated hosted session: before=%+v after=%+v", before, after)
+	}
+	afterColony, err := json.Marshal(after.View.Colonies[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(afterColony, beforeColony) {
+		t.Fatalf("planning preview mutated authoritative Colony: before=%s after=%s", beforeColony, afterColony)
+	}
+}
 func TestWebSocketInvalidatesSnapshotAndReconnectUsesHTTPTruth(t *testing.T) {
 	server, state := newServerFixture(t, false, nil)
 	defer server.Close()

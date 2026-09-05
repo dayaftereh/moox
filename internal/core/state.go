@@ -34,12 +34,14 @@ type Galaxy struct {
 }
 
 type StarSystem struct {
-	ID                 ID       `json:"id"`
-	Name               string   `json:"name"`
-	X                  int      `json:"x"`
-	Y                  int      `json:"y"`
-	BlockadedEmpireIDs []ID     `json:"blockaded_empire_ids,omitempty"`
-	Planets            []Planet `json:"planets"`
+	ID                 ID            `json:"id"`
+	Name               string        `json:"name"`
+	X                  int           `json:"x"`
+	Y                  int           `json:"y"`
+	SpectralClass      int           `json:"spectral_class"`
+	BlockadedEmpireIDs []ID          `json:"blockaded_empire_ids,omitempty"`
+	Planets            []Planet      `json:"planets"`
+	Bodies             []OrbitalBody `json:"bodies,omitempty"`
 }
 
 type Planet struct {
@@ -57,7 +59,8 @@ type Planet struct {
 type Outpost struct {
 	ID       ID `json:"id"`
 	EmpireID ID `json:"empire_id"`
-	PlanetID ID `json:"planet_id"`
+	BodyID   ID `json:"body_id,omitempty"`
+	PlanetID ID `json:"planet_id,omitempty"`
 }
 
 type Empire struct {
@@ -138,17 +141,19 @@ type ColonyGroundForces struct {
 }
 
 type Colony struct {
-	ID                 ID                       `json:"id"`
-	EmpireID           ID                       `json:"empire_id"`
-	PlanetID           ID                       `json:"planet_id"`
-	Population         PopulationState          `json:"population"`
-	GroundForces       ColonyGroundForces       `json:"ground_forces,omitempty"`
-	Buildings          []string                 `json:"buildings,omitempty"`
-	Economy            ColonyEconomy            `json:"economy"`
-	EconomyContext     ColonyEconomyContext     `json:"economy_context"`
-	AdjustedEconomy    ColonyEconomy            `json:"adjusted_economy"`
-	PopulationDynamics ColonyPopulationDynamics `json:"population_dynamics"`
-	Construction       *ConstructionState       `json:"construction,omitempty"`
+	ID                    ID                       `json:"id"`
+	EmpireID              ID                       `json:"empire_id"`
+	PlanetID              ID                       `json:"planet_id"`
+	Population            PopulationState          `json:"population"`
+	GroundForces          ColonyGroundForces       `json:"ground_forces,omitempty"`
+	Buildings             []string                 `json:"buildings,omitempty"`
+	Economy               ColonyEconomy            `json:"economy"`
+	EconomyContext        ColonyEconomyContext     `json:"economy_context"`
+	AdjustedEconomy       ColonyEconomy            `json:"adjusted_economy"`
+	PopulationDynamics    ColonyPopulationDynamics `json:"population_dynamics"`
+	Construction          *ConstructionState       `json:"construction,omitempty"`
+	ConstructionQueue     []ConstructionState      `json:"construction_queue,omitempty"`
+	ConstructionReservePP float64                  `json:"construction_reserve_pp,omitempty"`
 }
 
 type ConstructionProjectKind string
@@ -283,12 +288,15 @@ func (s *GameState) Validate() error {
 
 	seen := make(map[ID]string)
 	planetIDs := make(map[ID]struct{})
+	bodyIDs := make(map[ID]struct{})
+	bodyOutpostLinks := make(map[ID]ID)
 	systemIDs := make(map[ID]struct{})
 	empireIDs := make(map[ID]struct{})
 	colonyIDs := make(map[ID]struct{})
 	outpostIDs := make(map[ID]struct{})
 	colonyPlanetIDs := make(map[ID]ID)
 	outpostPlanetIDs := make(map[ID]ID)
+	outpostBodyIDs := make(map[ID]ID)
 	checkID := func(id ID, label string) error {
 		if id == 0 {
 			return fmt.Errorf("%s has zero id", label)
@@ -331,6 +339,55 @@ func (s *GameState) Validate() error {
 				return err
 			}
 			planetIDs[planet.ID] = struct{}{}
+		}
+		if len(system.Bodies) == 0 {
+			for pi := range system.Planets {
+				bodyIDs[system.Planets[pi].ID] = struct{}{}
+			}
+		} else {
+			seenOrbits := make(map[int]struct{}, len(system.Bodies))
+			for bi := range system.Bodies {
+				body := &system.Bodies[bi]
+				if body.ID == 0 || body.Name == "" {
+					return fmt.Errorf("system[%d] body[%d] has incomplete identity", si, bi)
+				}
+				if body.Orbit < 0 || body.Orbit > 4 {
+					return fmt.Errorf("system[%d] body[%d] has invalid orbit %d", si, bi, body.Orbit)
+				}
+				if _, exists := seenOrbits[body.Orbit]; exists {
+					return fmt.Errorf("system[%d] has multiple bodies in orbit %d", si, body.Orbit)
+				}
+				seenOrbits[body.Orbit] = struct{}{}
+				switch body.Kind {
+				case OrbitalBodyPlanet:
+					if body.PlanetID == 0 || body.ID != body.PlanetID {
+						return fmt.Errorf("system[%d] planet body[%d] must reuse its non-zero planet id", si, bi)
+					}
+					var planet *Planet
+					for pi := range system.Planets {
+						if system.Planets[pi].ID == body.PlanetID {
+							planet = &system.Planets[pi]
+							break
+						}
+					}
+					if planet == nil || planet.Orbit != body.Orbit {
+						return fmt.Errorf("system[%d] planet body[%d] does not match planet %d at orbit %d", si, bi, body.PlanetID, body.Orbit)
+					}
+				case OrbitalBodyAsteroidBelt, OrbitalBodyGasGiant:
+					if body.PlanetID != 0 {
+						return fmt.Errorf("system[%d] non-planet body[%d] must not reference planet %d", si, bi, body.PlanetID)
+					}
+					if err := checkID(body.ID, fmt.Sprintf("system[%d].body[%d]", si, bi)); err != nil {
+						return err
+					}
+				default:
+					return fmt.Errorf("system[%d] body[%d] has unsupported kind %q", si, bi, body.Kind)
+				}
+				bodyIDs[body.ID] = struct{}{}
+				if body.OutpostID != 0 {
+					bodyOutpostLinks[body.ID] = body.OutpostID
+				}
+			}
 		}
 	}
 	for i := range s.Empires {
@@ -701,25 +758,43 @@ func (s *GameState) Validate() error {
 	}
 	for i := range s.Outposts {
 		outpost := &s.Outposts[i]
-		if outpost.EmpireID == 0 || outpost.PlanetID == 0 {
+		if outpost.EmpireID == 0 {
 			return fmt.Errorf("outpost[%d] has incomplete references", i)
+		}
+		targetBodyID := outpost.BodyID
+		if targetBodyID == 0 {
+			targetBodyID = outpost.PlanetID
+		}
+		if targetBodyID == 0 {
+			return fmt.Errorf("outpost[%d] has no target body", i)
+		}
+		if outpost.BodyID != 0 && outpost.PlanetID != 0 && outpost.BodyID != outpost.PlanetID {
+			return fmt.Errorf("outpost[%d] body %d and planet %d disagree", i, outpost.BodyID, outpost.PlanetID)
 		}
 		if _, ok := empireIDs[outpost.EmpireID]; !ok {
 			return fmt.Errorf("outpost[%d] references unknown empire %d", i, outpost.EmpireID)
 		}
-		if _, ok := planetIDs[outpost.PlanetID]; !ok {
-			return fmt.Errorf("outpost[%d] references unknown planet %d", i, outpost.PlanetID)
+		if _, ok := bodyIDs[targetBodyID]; !ok {
+			return fmt.Errorf("outpost[%d] references unknown body %d", i, targetBodyID)
 		}
-		if colonyID, occupied := colonyPlanetIDs[outpost.PlanetID]; occupied {
-			return fmt.Errorf("outpost[%d] shares planet %d with colony %d", i, outpost.PlanetID, colonyID)
+		if outpost.PlanetID != 0 {
+			if _, ok := planetIDs[outpost.PlanetID]; !ok {
+				return fmt.Errorf("outpost[%d] references unknown planet %d", i, outpost.PlanetID)
+			}
+			if colonyID, occupied := colonyPlanetIDs[outpost.PlanetID]; occupied {
+				return fmt.Errorf("outpost[%d] shares planet %d with colony %d", i, outpost.PlanetID, colonyID)
+			}
 		}
-		if previous, exists := outpostPlanetIDs[outpost.PlanetID]; exists {
-			return fmt.Errorf("outpost[%d] shares planet %d with outpost %d", i, outpost.PlanetID, previous)
+		if previous, exists := outpostBodyIDs[targetBodyID]; exists {
+			return fmt.Errorf("outpost[%d] shares body %d with outpost %d", i, targetBodyID, previous)
 		}
 		if err := checkID(outpost.ID, fmt.Sprintf("outpost[%d]", i)); err != nil {
 			return err
 		}
-		outpostPlanetIDs[outpost.PlanetID] = outpost.ID
+		outpostBodyIDs[targetBodyID] = outpost.ID
+		if outpost.PlanetID != 0 {
+			outpostPlanetIDs[outpost.PlanetID] = outpost.ID
+		}
 		outpostIDs[outpost.ID] = struct{}{}
 	}
 	for i := range s.Empires {
@@ -762,6 +837,21 @@ func (s *GameState) Validate() error {
 			}
 		}
 	}
+	for si := range s.Galaxy.Systems {
+		for bi := range s.Galaxy.Systems[si].Bodies {
+			body := &s.Galaxy.Systems[si].Bodies[bi]
+			if body.OutpostID != 0 {
+				if _, ok := outpostIDs[body.OutpostID]; !ok {
+					return fmt.Errorf("system[%d] body[%d] references unknown outpost %d", si, bi, body.OutpostID)
+				}
+				if expected := outpostBodyIDs[body.ID]; expected != body.OutpostID {
+					return fmt.Errorf("system[%d] body[%d] outpost link %d does not match outpost on body %d", si, bi, body.OutpostID, expected)
+				}
+			} else if expected := outpostBodyIDs[body.ID]; expected != 0 {
+				return fmt.Errorf("system[%d] body[%d] is missing reciprocal outpost link %d", si, bi, expected)
+			}
+		}
+	}
 	for i, transfer := range s.PopulationTransfers {
 		if transfer.EmpireID == 0 || transfer.SourceColonyID == 0 || transfer.DestinationColonyID == 0 {
 			return fmt.Errorf("population_transfer[%d] has incomplete references", i)
@@ -781,8 +871,16 @@ func (s *GameState) Validate() error {
 		if transfer.LoyaltyEmpireID != transfer.EmpireID {
 			return fmt.Errorf("population_transfer[%d] assimilated cohort loyalty must match transfer empire", i)
 		}
-		if transfer.Job != PopulationJobFarmer && transfer.Job != PopulationJobWorker && transfer.Job != PopulationJobScientist {
-			return fmt.Errorf("population_transfer[%d] has invalid job %q", i, transfer.Job)
+		sourceJob := transfer.SourcePopulationJob()
+		destinationJob := transfer.DestinationPopulationJob()
+		if transfer.Job != "" && transfer.SourceJob != "" && transfer.Job != transfer.SourceJob {
+			return fmt.Errorf("population_transfer[%d] legacy job %q conflicts with source job %q", i, transfer.Job, transfer.SourceJob)
+		}
+		if sourceJob != PopulationJobFarmer && sourceJob != PopulationJobWorker && sourceJob != PopulationJobScientist {
+			return fmt.Errorf("population_transfer[%d] has invalid source job %q", i, sourceJob)
+		}
+		if destinationJob != PopulationJobFarmer && destinationJob != PopulationJobWorker && destinationJob != PopulationJobScientist {
+			return fmt.Errorf("population_transfer[%d] has invalid destination job %q", i, destinationJob)
 		}
 		if transfer.RemainingTurns < 1 || transfer.RemainingTurns > 15 {
 			return fmt.Errorf("population_transfer[%d] remaining_turns %d outside [1,15]", i, transfer.RemainingTurns)

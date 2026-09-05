@@ -168,7 +168,15 @@ func validateColonizePlanetPayload(payload ColonizePlanetPayload) error {
 
 type DeployOutpostPayload struct {
 	FleetID  core.ID `json:"fleet_id"`
-	PlanetID core.ID `json:"planet_id"`
+	BodyID   core.ID `json:"body_id,omitempty"`
+	PlanetID core.ID `json:"planet_id,omitempty"` // legacy/normal-Planet compatibility
+}
+
+func (p DeployOutpostPayload) TargetBodyID() core.ID {
+	if p.BodyID != 0 {
+		return p.BodyID
+	}
+	return p.PlanetID
 }
 
 func NewDeployOutpostCommand(sequence uint32, payload DeployOutpostPayload) (protocol.Command, error) {
@@ -193,8 +201,11 @@ func validateDeployOutpostPayload(payload DeployOutpostPayload) error {
 	if payload.FleetID == 0 {
 		return fmt.Errorf("fleet_id must be non-zero")
 	}
-	if payload.PlanetID == 0 {
-		return fmt.Errorf("planet_id must be non-zero")
+	if payload.BodyID == 0 && payload.PlanetID == 0 {
+		return fmt.Errorf("body_id or legacy planet_id must be non-zero")
+	}
+	if payload.BodyID != 0 && payload.PlanetID != 0 && payload.BodyID != payload.PlanetID {
+		return fmt.Errorf("body_id %d and planet_id %d must refer to the same normal-Planet body when both are provided", payload.BodyID, payload.PlanetID)
 	}
 	return nil
 }

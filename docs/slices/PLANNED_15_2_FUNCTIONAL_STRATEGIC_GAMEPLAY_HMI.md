@@ -76,14 +76,14 @@ Gate-2 freeze adds persistent gas-giant/asteroid/star metadata and generalized O
 
 ## Gate 3 - Implementation
 
-- [ ] Implement persistent star/orbital-body state plus the interactive 2D Galaxy map and in-map system dialog with planets, gas giants, asteroid belts, Outposts and present Fleet/Ship information.
-- [ ] Generalize Outposts to legal orbital bodies; implement server-projected Body/Planet actions, Colonize confirmation and post-resolution state refresh/navigation.
-- [ ] Implement the sortable Colonies management table, same-row job/cross-row Population-transfer gestures, canonical Colony Detail **planet overview with Population growth/next-Pop projection and built Buildings**, pure Planning preview and the real ordered construction queue/editor.
-- [ ] Implement location-grouped Fleet/Ship tiles and Fleet inspection/movement flows.
-- [ ] Implement normalized eight-category Research plus live authoritative RP/turn and ETA preview.
-- [ ] Implement movement/colonization/Outpost and first-class War/Peace Diplomacy workflows; keep Espionage non-actionable and reserved for Slice 20.
-- [ ] Add the sticky global BC/Freighters/Command-Points strip and integrate end-turn/built-in-AI automation through normal Host authority.
-- [ ] Add browser/server regressions for critical strategic commands.
+- [x] Implement persistent star/orbital-body state plus the interactive 2D Galaxy map and in-map system dialog with planets, gas giants, asteroid belts, Outposts and present Fleet/Ship information.
+- [x] Generalize Outposts to legal orbital bodies; implement server-projected Body/Planet actions, Colonize confirmation and post-resolution state refresh/navigation.
+- [x] Implement the sortable Colonies management table, same-row job/cross-row Population-transfer gestures, canonical Colony Detail **planet overview with Population growth/next-Pop projection and built Buildings**, pure Planning preview and the real ordered construction queue/editor.
+- [x] Implement location-grouped Fleet/Ship tiles and Fleet inspection/movement flows.
+- [x] Implement normalized eight-category Research plus live authoritative RP/turn and ETA preview.
+- [x] Implement movement/colonization/Outpost and first-class War/Peace Diplomacy workflows; keep Espionage non-actionable and reserved for Slice 20.
+- [x] Add the sticky global BC/Freighters/Command-Points strip and integrate end-turn/built-in-AI automation through normal Host authority.
+- [x] Add browser/server regressions for critical strategic commands.
 
 ## Gate 4 - QA + close
 

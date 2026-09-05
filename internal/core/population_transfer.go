@@ -8,7 +8,9 @@ type PopulationTransfer struct {
 	OriginEmpireID      ID                          `json:"origin_empire_id"`
 	LoyaltyEmpireID     ID                          `json:"loyalty_empire_id"`
 	AssimilationState   PopulationAssimilationState `json:"assimilation_state"`
-	Job                 PopulationJob               `json:"job"`
+	Job                 PopulationJob               `json:"job,omitempty"` // legacy/source-job compatibility
+	SourceJob           PopulationJob               `json:"source_job,omitempty"`
+	DestinationJob      PopulationJob               `json:"destination_job,omitempty"`
 	RemainingTurns      int                         `json:"remaining_turns"`
 }
 
@@ -18,4 +20,18 @@ func (t PopulationTransfer) CohortKey() PopulationCohortKey {
 		LoyaltyEmpireID:   t.LoyaltyEmpireID,
 		AssimilationState: t.AssimilationState,
 	}
+}
+
+func (t PopulationTransfer) SourcePopulationJob() PopulationJob {
+	if t.SourceJob != "" {
+		return t.SourceJob
+	}
+	return t.Job
+}
+
+func (t PopulationTransfer) DestinationPopulationJob() PopulationJob {
+	if t.DestinationJob != "" {
+		return t.DestinationJob
+	}
+	return t.SourcePopulationJob()
 }

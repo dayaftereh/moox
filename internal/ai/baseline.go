@@ -208,7 +208,7 @@ func planTurn(view session.PlayerDecisionView) (protocol.CommandBatch, error) {
 		for _, choice := range bestOutpostDeployments(view) {
 			selected := choice
 			if err := appendCommand(func(seq uint32) (protocol.Command, error) {
-				return game.NewDeployOutpostCommand(seq, game.DeployOutpostPayload{FleetID: selected.FleetID, PlanetID: selected.PlanetID})
+				return game.NewDeployOutpostCommand(seq, game.DeployOutpostPayload{FleetID: selected.FleetID, BodyID: selected.BodyID, PlanetID: selected.PlanetID})
 			}); err != nil {
 				return protocol.CommandBatch{}, err
 			}

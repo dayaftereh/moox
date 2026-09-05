@@ -65,6 +65,7 @@ func NewHandler(cfg Config) (http.Handler, error) {
 	mux.HandleFunc("GET /api/v1/games", server.handleGames)
 	mux.HandleFunc("POST /api/v1/games", server.handleCreateGame)
 	mux.HandleFunc("GET /api/v1/games/{gameID}/seats/{seatID}/snapshot", server.handlePlayerSnapshot)
+	mux.HandleFunc("POST /api/v1/games/{gameID}/seats/{seatID}/planning-preview", server.handlePlanningPreview)
 	mux.HandleFunc("GET /api/v1/games/{gameID}/observer/snapshot", server.handleObserverSnapshot)
 	mux.HandleFunc("GET /api/v1/games/{gameID}/live-snapshot", server.handleLiveSnapshotExport)
 	mux.HandleFunc("POST /api/v1/games/import", server.handleLiveSnapshotImport)
@@ -99,6 +100,33 @@ func (s *apiServer) handlePlayerSnapshot(w http.ResponseWriter, r *http.Request)
 		return
 	}
 	writeJSON(w, http.StatusOK, snapshot)
+}
+
+func (s *apiServer) handlePlanningPreview(w http.ResponseWriter, r *http.Request) {
+	if !validateMutationRequest(w, r) {
+		return
+	}
+	seatID, err := parseSeatID(r.PathValue("seatID"))
+	if err != nil {
+		writeAPIError(w, http.StatusBadRequest, "bad_request", err.Error())
+		return
+	}
+	var batch protocol.CommandBatch
+	if err := decodeJSON(w, r, &batch); err != nil {
+		writeAPIError(w, http.StatusBadRequest, "bad_request", err.Error())
+		return
+	}
+	gameID := r.PathValue("gameID")
+	if batch.GameID != gameID || batch.SeatID != seatID {
+		writeAPIError(w, http.StatusBadRequest, "bad_request", "body game_id/seat_id does not match planning-preview route")
+		return
+	}
+	preview, err := s.host.PlanningPreview(gameID, seatID, batch)
+	if err != nil {
+		writeHostError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, preview)
 }
 
 func (s *apiServer) handleObserverSnapshot(w http.ResponseWriter, r *http.Request) {

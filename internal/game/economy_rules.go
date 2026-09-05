@@ -131,6 +131,10 @@ type EconomyRules struct {
 	TechnologyFieldPreviousID                     map[int]int
 	TechnologyFieldNextID                         map[int]int
 	TechnologyFieldAIGroup                        map[int]int
+	TechnologyFieldCategoryID                     map[int]string
+	TechnologyFieldCategoryOrder                  map[int]int
+	TechnologyFieldCategoryNameKey                map[int]string
+	ResearchCategories                            []ResearchCategory
 	TechnologyIDsByField                          map[int][]int
 	TechnologyFieldByID                           map[int]int
 	TechnologyKeyByID                             map[int]string
@@ -268,11 +272,28 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	technologyFieldPreviousID := make(map[int]int, len(technologies.Fields))
 	technologyFieldNextID := make(map[int]int, len(technologies.Fields))
 	technologyFieldAIGroup := make(map[int]int, len(technologies.Fields))
+	technologyFieldCategoryID := make(map[int]string, len(technologies.Fields))
+	technologyFieldCategoryOrder := make(map[int]int, len(technologies.Fields))
+	technologyFieldCategoryNameKey := make(map[int]string, len(technologies.Fields))
+	researchCategories := make([]ResearchCategory, 8)
 	for _, field := range technologies.Fields {
 		technologyFieldCosts[field.FieldID] = float64(field.ResearchCost)
 		technologyFieldPreviousID[field.FieldID] = field.PreviousID
 		technologyFieldNextID[field.FieldID] = field.NextID
 		technologyFieldAIGroup[field.FieldID] = field.AIGroup
+		if field.CategoryID != "" {
+			technologyFieldCategoryID[field.FieldID] = field.CategoryID
+			technologyFieldCategoryOrder[field.FieldID] = field.CategoryOrder
+			technologyFieldCategoryNameKey[field.FieldID] = field.CategoryNameKey
+			if field.PreviousID == 0 {
+				researchCategories[field.CategoryOrder] = ResearchCategory{ID: field.CategoryID, Order: field.CategoryOrder, NameKey: field.CategoryNameKey, RootTechFieldID: field.FieldID}
+			}
+		}
+	}
+	for order, category := range researchCategories {
+		if category.ID == "" || category.Order != order || category.NameKey == "" || category.RootTechFieldID == 0 {
+			return nil, fmt.Errorf("research category order %d is incomplete", order)
+		}
 	}
 	technologyIDsByField := make(map[int][]int)
 	technologyFieldByID := make(map[int]int, len(technologies.Technologies))
@@ -520,39 +541,43 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 			ImperiumBonusNumerator:             economy.CommandPoints.Imperium.BonusNumerator,
 			ImperiumBonusDenominator:           economy.CommandPoints.Imperium.BonusDenominator,
 		},
-		GravityPenaltyPercent:         gravityPenalties,
-		GovernmentModifiers:           governmentModifiers,
-		MoraleBarracksPenaltyPercent:  economy.Morale.BarracksPenaltyPercent,
-		MoraleBarracksGovernments:     moraleBarracksGovernments,
-		MoraleBarracksBuildingIDs:     moraleBarracksBuildingIDs,
-		MoraleBuildingBonusPercent:    moraleBuildingBonusPercent,
-		KnownBuildingIDs:              buildingIDs,
-		BuildingDefinitions:           buildingDefinitions,
-		TechnologyFieldCostsRP:        technologyFieldCosts,
-		TechnologyFieldPreviousID:     technologyFieldPreviousID,
-		TechnologyFieldNextID:         technologyFieldNextID,
-		TechnologyFieldAIGroup:        technologyFieldAIGroup,
-		TechnologyIDsByField:          technologyIDsByField,
-		TechnologyFieldByID:           technologyFieldByID,
-		TechnologyKeyByID:             technologyKeyByID,
-		TechnologyNameKeyByID:         technologyNameKeyByID,
-		TechnologyStrategicAvailable:  technologyStrategicAvailable,
-		TechnologyAIClassByID:         technologyAIClassByID,
-		TechnologyAIClasses:           technologyAIClasses,
-		TechnologyAIFieldGroupValues:  technologyAIFieldGroupValues,
-		NewGameAlwaysKnownFieldID:     technologies.NewGameStart.AlwaysKnownTechFieldID,
-		NewGameStagedKnownFieldIDs:    append([]int(nil), technologies.NewGameStart.StagedKnownTechFieldIDs...),
-		GeneralResearchFieldIDs:       generalResearchFieldIDs,
-		HyperAdvancedResearchFieldIDs: hyperAdvancedResearchFieldIDs,
-		HyperAdvancedCostIncrementRP:  float64(technologies.HyperAdvanced.CostIncrementRP),
-		ShipHulls:                     shipHullDefinitions,
-		ShipDrives:                    append([]ruleset.ShipDrive(nil), shipHulls.MandatoryComponents.Drives...),
-		ShipComputers:                 append([]ruleset.ShipComputer(nil), shipHulls.MandatoryComponents.Computers...),
-		ShipArmors:                    append([]ruleset.ShipArmor(nil), shipHulls.MandatoryComponents.Armors...),
-		ShipShields:                   append([]ruleset.ShipShield(nil), shipHulls.MandatoryComponents.Shields...),
-		ShipFuelCells:                 append([]ruleset.ShipFuelCell(nil), shipHulls.MandatoryComponents.FuelCells...),
-		TacticalCombat:                tacticalCombat,
-		NewGameGalaxy:                 newGameGalaxy,
+		GravityPenaltyPercent:          gravityPenalties,
+		GovernmentModifiers:            governmentModifiers,
+		MoraleBarracksPenaltyPercent:   economy.Morale.BarracksPenaltyPercent,
+		MoraleBarracksGovernments:      moraleBarracksGovernments,
+		MoraleBarracksBuildingIDs:      moraleBarracksBuildingIDs,
+		MoraleBuildingBonusPercent:     moraleBuildingBonusPercent,
+		KnownBuildingIDs:               buildingIDs,
+		BuildingDefinitions:            buildingDefinitions,
+		TechnologyFieldCostsRP:         technologyFieldCosts,
+		TechnologyFieldPreviousID:      technologyFieldPreviousID,
+		TechnologyFieldNextID:          technologyFieldNextID,
+		TechnologyFieldAIGroup:         technologyFieldAIGroup,
+		TechnologyFieldCategoryID:      technologyFieldCategoryID,
+		TechnologyFieldCategoryOrder:   technologyFieldCategoryOrder,
+		TechnologyFieldCategoryNameKey: technologyFieldCategoryNameKey,
+		ResearchCategories:             researchCategories,
+		TechnologyIDsByField:           technologyIDsByField,
+		TechnologyFieldByID:            technologyFieldByID,
+		TechnologyKeyByID:              technologyKeyByID,
+		TechnologyNameKeyByID:          technologyNameKeyByID,
+		TechnologyStrategicAvailable:   technologyStrategicAvailable,
+		TechnologyAIClassByID:          technologyAIClassByID,
+		TechnologyAIClasses:            technologyAIClasses,
+		TechnologyAIFieldGroupValues:   technologyAIFieldGroupValues,
+		NewGameAlwaysKnownFieldID:      technologies.NewGameStart.AlwaysKnownTechFieldID,
+		NewGameStagedKnownFieldIDs:     append([]int(nil), technologies.NewGameStart.StagedKnownTechFieldIDs...),
+		GeneralResearchFieldIDs:        generalResearchFieldIDs,
+		HyperAdvancedResearchFieldIDs:  hyperAdvancedResearchFieldIDs,
+		HyperAdvancedCostIncrementRP:   float64(technologies.HyperAdvanced.CostIncrementRP),
+		ShipHulls:                      shipHullDefinitions,
+		ShipDrives:                     append([]ruleset.ShipDrive(nil), shipHulls.MandatoryComponents.Drives...),
+		ShipComputers:                  append([]ruleset.ShipComputer(nil), shipHulls.MandatoryComponents.Computers...),
+		ShipArmors:                     append([]ruleset.ShipArmor(nil), shipHulls.MandatoryComponents.Armors...),
+		ShipShields:                    append([]ruleset.ShipShield(nil), shipHulls.MandatoryComponents.Shields...),
+		ShipFuelCells:                  append([]ruleset.ShipFuelCell(nil), shipHulls.MandatoryComponents.FuelCells...),
+		TacticalCombat:                 tacticalCombat,
+		NewGameGalaxy:                  newGameGalaxy,
 	}
 	for _, climate := range planetClasses.Climates {
 		rules.ClimateFoodPerFarmer[climate.ID] = float64(climate.BaseFoodPerFarmer)

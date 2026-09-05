@@ -330,7 +330,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2080693
-      }
+      },
+      "category_id": "biology",
+      "category_order": 6,
+      "category_name_key": "research.category.biology"
     },
     {
       "field_id": 2,
@@ -341,7 +344,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2080716
-      }
+      },
+      "category_id": "chemistry",
+      "category_order": 1,
+      "category_name_key": "research.category.chemistry"
     },
     {
       "field_id": 3,
@@ -352,7 +358,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2080739
-      }
+      },
+      "category_id": "construction",
+      "category_order": 0,
+      "category_name_key": "research.category.construction"
     },
     {
       "field_id": 4,
@@ -363,7 +372,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2080762
-      }
+      },
+      "category_id": "construction",
+      "category_order": 0,
+      "category_name_key": "research.category.construction"
     },
     {
       "field_id": 5,
@@ -374,7 +386,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2080785
-      }
+      },
+      "category_id": "power",
+      "category_order": 4,
+      "category_name_key": "research.category.power"
     },
     {
       "field_id": 6,
@@ -385,7 +400,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2080808
-      }
+      },
+      "category_id": "sociology",
+      "category_order": 5,
+      "category_name_key": "research.category.sociology"
     },
     {
       "field_id": 7,
@@ -396,7 +414,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2080831
-      }
+      },
+      "category_id": "force_fields",
+      "category_order": 7,
+      "category_name_key": "research.category.force_fields"
     },
     {
       "field_id": 8,
@@ -407,7 +428,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2080854
-      }
+      },
+      "category_id": "construction",
+      "category_order": 0,
+      "category_name_key": "research.category.construction"
     },
     {
       "field_id": 9,
@@ -418,7 +442,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2080877
-      }
+      },
+      "category_id": "chemistry",
+      "category_order": 1,
+      "category_name_key": "research.category.chemistry"
     },
     {
       "field_id": 10,
@@ -429,7 +456,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2080900
-      }
+      },
+      "category_id": "sociology",
+      "category_order": 5,
+      "category_name_key": "research.category.sociology"
     },
     {
       "field_id": 11,
@@ -440,7 +470,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2080923
-      }
+      },
+      "category_id": "construction",
+      "category_order": 0,
+      "category_name_key": "research.category.construction"
     },
     {
       "field_id": 12,
@@ -451,7 +484,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2080946
-      }
+      },
+      "category_id": "sociology",
+      "category_order": 5,
+      "category_name_key": "research.category.sociology"
     },
     {
       "field_id": 13,
@@ -462,7 +498,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2080969
-      }
+      },
+      "category_id": "power",
+      "category_order": 4,
+      "category_name_key": "research.category.power"
     },
     {
       "field_id": 14,
@@ -473,7 +512,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2080992
-      }
+      },
+      "category_id": "computers",
+      "category_order": 2,
+      "category_name_key": "research.category.computers"
     },
     {
       "field_id": 15,
@@ -484,7 +526,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081015
-      }
+      },
+      "category_id": "computers",
+      "category_order": 2,
+      "category_name_key": "research.category.computers"
     },
     {
       "field_id": 16,
@@ -495,7 +540,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081038
-      }
+      },
+      "category_id": "physics",
+      "category_order": 3,
+      "category_name_key": "research.category.physics"
     },
     {
       "field_id": 17,
@@ -506,7 +554,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081061
-      }
+      },
+      "category_id": "biology",
+      "category_order": 6,
+      "category_name_key": "research.category.biology"
     },
     {
       "field_id": 18,
@@ -517,7 +568,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081084
-      }
+      },
+      "category_id": "biology",
+      "category_order": 6,
+      "category_name_key": "research.category.biology"
     },
     {
       "field_id": 19,
@@ -528,7 +582,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081107
-      }
+      },
+      "category_id": "construction",
+      "category_order": 0,
+      "category_name_key": "research.category.construction"
     },
     {
       "field_id": 20,
@@ -539,7 +596,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081130
-      }
+      },
+      "category_id": "construction",
+      "category_order": 0,
+      "category_name_key": "research.category.construction"
     },
     {
       "field_id": 21,
@@ -550,7 +610,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081153
-      }
+      },
+      "category_id": "construction",
+      "category_order": 0,
+      "category_name_key": "research.category.construction"
     },
     {
       "field_id": 22,
@@ -561,7 +624,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081176
-      }
+      },
+      "category_id": "chemistry",
+      "category_order": 1,
+      "category_name_key": "research.category.chemistry"
     },
     {
       "field_id": 23,
@@ -572,7 +638,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081199
-      }
+      },
+      "category_id": "power",
+      "category_order": 4,
+      "category_name_key": "research.category.power"
     },
     {
       "field_id": 24,
@@ -583,7 +652,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081222
-      }
+      },
+      "category_id": "computers",
+      "category_order": 2,
+      "category_name_key": "research.category.computers"
     },
     {
       "field_id": 25,
@@ -594,7 +666,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081245
-      }
+      },
+      "category_id": "computers",
+      "category_order": 2,
+      "category_name_key": "research.category.computers"
     },
     {
       "field_id": 26,
@@ -605,7 +680,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081268
-      }
+      },
+      "category_id": "force_fields",
+      "category_order": 7,
+      "category_name_key": "research.category.force_fields"
     },
     {
       "field_id": 27,
@@ -616,7 +694,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081291
-      }
+      },
+      "category_id": "force_fields",
+      "category_order": 7,
+      "category_name_key": "research.category.force_fields"
     },
     {
       "field_id": 28,
@@ -627,7 +708,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081314
-      }
+      },
+      "category_id": "computers",
+      "category_order": 2,
+      "category_name_key": "research.category.computers"
     },
     {
       "field_id": 29,
@@ -638,7 +722,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081337
-      }
+      },
+      "category_id": "construction",
+      "category_order": 0,
+      "category_name_key": "research.category.construction"
     },
     {
       "field_id": 30,
@@ -649,7 +736,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081360
-      }
+      },
+      "category_id": "biology",
+      "category_order": 6,
+      "category_name_key": "research.category.biology"
     },
     {
       "field_id": 31,
@@ -660,7 +750,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081383
-      }
+      },
+      "category_id": "physics",
+      "category_order": 3,
+      "category_name_key": "research.category.physics"
     },
     {
       "field_id": 32,
@@ -671,7 +764,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081406
-      }
+      },
+      "category_id": "sociology",
+      "category_order": 5,
+      "category_name_key": "research.category.sociology"
     },
     {
       "field_id": 33,
@@ -682,7 +778,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081429
-      }
+      },
+      "category_id": "computers",
+      "category_order": 2,
+      "category_name_key": "research.category.computers"
     },
     {
       "field_id": 34,
@@ -693,7 +792,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081452
-      }
+      },
+      "category_id": "biology",
+      "category_order": 6,
+      "category_name_key": "research.category.biology"
     },
     {
       "field_id": 35,
@@ -704,7 +806,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081475
-      }
+      },
+      "category_id": "biology",
+      "category_order": 6,
+      "category_name_key": "research.category.biology"
     },
     {
       "field_id": 36,
@@ -715,7 +820,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081498
-      }
+      },
+      "category_id": "force_fields",
+      "category_order": 7,
+      "category_name_key": "research.category.force_fields"
     },
     {
       "field_id": 37,
@@ -726,7 +834,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081521
-      }
+      },
+      "category_id": "power",
+      "category_order": 4,
+      "category_name_key": "research.category.power"
     },
     {
       "field_id": 38,
@@ -737,7 +848,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081544
-      }
+      },
+      "category_id": "power",
+      "category_order": 4,
+      "category_name_key": "research.category.power"
     },
     {
       "field_id": 39,
@@ -748,7 +862,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081567
-      }
+      },
+      "category_id": "physics",
+      "category_order": 3,
+      "category_name_key": "research.category.physics"
     },
     {
       "field_id": 40,
@@ -759,7 +876,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081590
-      }
+      },
+      "category_id": "power",
+      "category_order": 4,
+      "category_name_key": "research.category.power"
     },
     {
       "field_id": 41,
@@ -770,7 +890,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081613
-      }
+      },
+      "category_id": "power",
+      "category_order": 4,
+      "category_name_key": "research.category.power"
     },
     {
       "field_id": 42,
@@ -781,7 +904,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081636
-      }
+      },
+      "category_id": "construction",
+      "category_order": 0,
+      "category_name_key": "research.category.construction"
     },
     {
       "field_id": 43,
@@ -792,7 +918,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081659
-      }
+      },
+      "category_id": "sociology",
+      "category_order": 5,
+      "category_name_key": "research.category.sociology"
     },
     {
       "field_id": 44,
@@ -803,7 +932,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081682
-      }
+      },
+      "category_id": "biology",
+      "category_order": 6,
+      "category_name_key": "research.category.biology"
     },
     {
       "field_id": 45,
@@ -814,7 +946,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081705
-      }
+      },
+      "category_id": "force_fields",
+      "category_order": 7,
+      "category_name_key": "research.category.force_fields"
     },
     {
       "field_id": 46,
@@ -825,7 +960,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081728
-      }
+      },
+      "category_id": "power",
+      "category_order": 4,
+      "category_name_key": "research.category.power"
     },
     {
       "field_id": 47,
@@ -836,7 +974,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081751
-      }
+      },
+      "category_id": "chemistry",
+      "category_order": 1,
+      "category_name_key": "research.category.chemistry"
     },
     {
       "field_id": 48,
@@ -847,7 +988,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081774
-      }
+      },
+      "category_id": "chemistry",
+      "category_order": 1,
+      "category_name_key": "research.category.chemistry"
     },
     {
       "field_id": 49,
@@ -858,7 +1002,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081797
-      }
+      },
+      "category_id": "computers",
+      "category_order": 2,
+      "category_name_key": "research.category.computers"
     },
     {
       "field_id": 50,
@@ -869,7 +1016,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081820
-      }
+      },
+      "category_id": "chemistry",
+      "category_order": 1,
+      "category_name_key": "research.category.chemistry"
     },
     {
       "field_id": 51,
@@ -880,7 +1030,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081843
-      }
+      },
+      "category_id": "physics",
+      "category_order": 3,
+      "category_name_key": "research.category.physics"
     },
     {
       "field_id": 52,
@@ -891,7 +1044,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081866
-      }
+      },
+      "category_id": "physics",
+      "category_order": 3,
+      "category_name_key": "research.category.physics"
     },
     {
       "field_id": 53,
@@ -902,7 +1058,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081889
-      }
+      },
+      "category_id": "chemistry",
+      "category_order": 1,
+      "category_name_key": "research.category.chemistry"
     },
     {
       "field_id": 54,
@@ -913,7 +1072,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081912
-      }
+      },
+      "category_id": "physics",
+      "category_order": 3,
+      "category_name_key": "research.category.physics"
     },
     {
       "field_id": 55,
@@ -924,7 +1086,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081935
-      }
+      },
+      "category_id": "power",
+      "category_order": 4,
+      "category_name_key": "research.category.power"
     },
     {
       "field_id": 56,
@@ -935,7 +1100,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081958
-      }
+      },
+      "category_id": "computers",
+      "category_order": 2,
+      "category_name_key": "research.category.computers"
     },
     {
       "field_id": 57,
@@ -946,7 +1114,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2081981
-      }
+      },
+      "category_id": "physics",
+      "category_order": 3,
+      "category_name_key": "research.category.physics"
     },
     {
       "field_id": 58,
@@ -957,7 +1128,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082004
-      }
+      },
+      "category_id": "construction",
+      "category_order": 0,
+      "category_name_key": "research.category.construction"
     },
     {
       "field_id": 59,
@@ -968,7 +1142,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082027
-      }
+      },
+      "category_id": "physics",
+      "category_order": 3,
+      "category_name_key": "research.category.physics"
     },
     {
       "field_id": 60,
@@ -979,7 +1156,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082050
-      }
+      },
+      "category_id": "computers",
+      "category_order": 2,
+      "category_name_key": "research.category.computers"
     },
     {
       "field_id": 61,
@@ -990,7 +1170,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082073
-      }
+      },
+      "category_id": "force_fields",
+      "category_order": 7,
+      "category_name_key": "research.category.force_fields"
     },
     {
       "field_id": 62,
@@ -1001,7 +1184,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082096
-      }
+      },
+      "category_id": "construction",
+      "category_order": 0,
+      "category_name_key": "research.category.construction"
     },
     {
       "field_id": 63,
@@ -1012,7 +1198,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082119
-      }
+      },
+      "category_id": "construction",
+      "category_order": 0,
+      "category_name_key": "research.category.construction"
     },
     {
       "field_id": 64,
@@ -1023,7 +1212,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082142
-      }
+      },
+      "category_id": "force_fields",
+      "category_order": 7,
+      "category_name_key": "research.category.force_fields"
     },
     {
       "field_id": 65,
@@ -1034,7 +1226,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082165
-      }
+      },
+      "category_id": "physics",
+      "category_order": 3,
+      "category_name_key": "research.category.physics"
     },
     {
       "field_id": 66,
@@ -1045,7 +1240,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082188
-      }
+      },
+      "category_id": "physics",
+      "category_order": 3,
+      "category_name_key": "research.category.physics"
     },
     {
       "field_id": 67,
@@ -1056,7 +1254,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082211
-      }
+      },
+      "category_id": "construction",
+      "category_order": 0,
+      "category_name_key": "research.category.construction"
     },
     {
       "field_id": 68,
@@ -1067,7 +1268,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082234
-      }
+      },
+      "category_id": "force_fields",
+      "category_order": 7,
+      "category_name_key": "research.category.force_fields"
     },
     {
       "field_id": 69,
@@ -1078,7 +1282,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082257
-      }
+      },
+      "category_id": "physics",
+      "category_order": 3,
+      "category_name_key": "research.category.physics"
     },
     {
       "field_id": 70,
@@ -1089,7 +1296,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082280
-      }
+      },
+      "category_id": "biology",
+      "category_order": 6,
+      "category_name_key": "research.category.biology"
     },
     {
       "field_id": 71,
@@ -1100,7 +1310,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082303
-      }
+      },
+      "category_id": "force_fields",
+      "category_order": 7,
+      "category_name_key": "research.category.force_fields"
     },
     {
       "field_id": 72,
@@ -1111,7 +1324,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082326
-      }
+      },
+      "category_id": "force_fields",
+      "category_order": 7,
+      "category_name_key": "research.category.force_fields"
     },
     {
       "field_id": 73,
@@ -1122,7 +1338,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082349
-      }
+      },
+      "category_id": "sociology",
+      "category_order": 5,
+      "category_name_key": "research.category.sociology"
     },
     {
       "field_id": 74,
@@ -1144,7 +1363,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082395
-      }
+      },
+      "category_id": "biology",
+      "category_order": 6,
+      "category_name_key": "research.category.biology"
     },
     {
       "field_id": 76,
@@ -1155,7 +1377,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082418
-      }
+      },
+      "category_id": "power",
+      "category_order": 4,
+      "category_name_key": "research.category.power"
     },
     {
       "field_id": 77,
@@ -1166,7 +1391,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082441
-      }
+      },
+      "category_id": "physics",
+      "category_order": 3,
+      "category_name_key": "research.category.physics"
     },
     {
       "field_id": 78,
@@ -1177,7 +1405,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082464
-      }
+      },
+      "category_id": "construction",
+      "category_order": 0,
+      "category_name_key": "research.category.construction"
     },
     {
       "field_id": 79,
@@ -1188,7 +1419,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082487
-      }
+      },
+      "category_id": "force_fields",
+      "category_order": 7,
+      "category_name_key": "research.category.force_fields"
     },
     {
       "field_id": 80,
@@ -1199,7 +1433,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082510
-      }
+      },
+      "category_id": "chemistry",
+      "category_order": 1,
+      "category_name_key": "research.category.chemistry"
     },
     {
       "field_id": 81,
@@ -1210,7 +1447,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082533
-      }
+      },
+      "category_id": "computers",
+      "category_order": 2,
+      "category_name_key": "research.category.computers"
     },
     {
       "field_id": 82,
@@ -1221,7 +1461,10 @@
       "source": {
         "source_id": "moo2-1.31-orion2-technology-fields",
         "offset": 2082556
-      }
+      },
+      "category_id": "sociology",
+      "category_order": 5,
+      "category_name_key": "research.category.sociology"
     }
   ],
   "technologies": [

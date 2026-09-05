@@ -247,6 +247,7 @@ func decodeOriginalTechnologyTables(exeData []byte) ([]ruleset.TechnologyField, 
 			Source:       ruleset.FieldProvenance{SourceID: technologyFieldsSourceID, Offset: intPtr(offset)},
 		})
 	}
+	applyTechnologyFieldCategories(fields)
 
 	staged := make([]int, 6)
 	for i := range staged {
@@ -261,6 +262,43 @@ func decodeOriginalTechnologyTables(exeData []byte) ([]ruleset.TechnologyField, 
 	return fields, staged, nil
 }
 
+type technologyResearchCategory struct {
+	id      string
+	order   int
+	nameKey string
+	fields  []int
+}
+
+var technologyResearchCategories = []technologyResearchCategory{
+	{id: "construction", order: 0, nameKey: "research.category.construction", fields: []int{29, 4, 3, 21, 20, 62, 63, 19, 8, 11, 67, 42, 58, 78}},
+	{id: "chemistry", order: 1, nameKey: "research.category.chemistry", fields: []int{22, 9, 2, 47, 53, 50, 48, 80}},
+	{id: "computers", order: 2, nameKey: "research.category.computers", fields: []int{28, 56, 15, 60, 14, 25, 24, 33, 49, 81}},
+	{id: "physics", order: 3, nameKey: "research.category.physics", fields: []int{57, 31, 66, 54, 16, 65, 52, 59, 51, 39, 69, 77}},
+	{id: "power", order: 4, nameKey: "research.category.power", fields: []int{55, 23, 5, 41, 13, 46, 37, 38, 40, 76}},
+	{id: "sociology", order: 5, nameKey: "research.category.sociology", fields: []int{10, 73, 43, 12, 6, 32, 82}},
+	{id: "biology", order: 6, nameKey: "research.category.biology", fields: []int{18, 1, 34, 35, 44, 30, 17, 70, 75}},
+	{id: "force_fields", order: 7, nameKey: "research.category.force_fields", fields: []int{7, 36, 45, 27, 72, 64, 26, 61, 71, 68, 79}},
+}
+
+// applyTechnologyFieldCategories adds the stable eight player-facing research
+// chains used by the strategic HMI. The mapping is deliberately keyed by the
+// original TechField IDs rather than inferred from a synthetic previous/next
+// graph, so the raw-data decoder remains deterministic in extractor fixtures.
+// Field 74 is the original non-research sentinel and intentionally has no
+// player-facing category.
+func applyTechnologyFieldCategories(fields []ruleset.TechnologyField) {
+	for _, category := range technologyResearchCategories {
+		for _, fieldID := range category.fields {
+			if fieldID <= 0 || fieldID > len(fields) {
+				continue
+			}
+			field := &fields[fieldID-1]
+			field.CategoryID = category.id
+			field.CategoryOrder = category.order
+			field.CategoryNameKey = category.nameKey
+		}
+	}
+}
 func concreteTechnologyRuns(runs []textscan.String) ([]textscan.String, error) {
 	start := -1
 	for i, run := range runs {

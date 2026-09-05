@@ -234,3 +234,67 @@ func TestPopulationTransferOriginalDriveAndTraitETA(t *testing.T) {
 		t.Fatalf("long-range ETA=%d want original cap 15", got)
 	}
 }
+
+func TestPopulationTransferCanChangeDestinationJob(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	resolver, err := NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state, home, destination := twoColonyFoodFixture(t, 916)
+	empire := &state.Empires[0]
+	empire.Freighters = 5
+	empire.KnownTechnologyIDs = []int{120}
+	beforeScientists := destination.Population.Scientists()
+	beforeFarmers := destination.Population.Farmers()
+
+	choices, err := resolver.AvailablePopulationTransferChoices(state, empire.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	found := false
+	for _, choice := range choices {
+		if choice.SourceColonyID == home.ID && choice.DestinationColonyID == destination.ID && choice.SourceJob == core.PopulationJobFarmer && choice.DestinationJob == core.PopulationJobScientist {
+			if choice.SameSystem || choice.ETA != 1 || choice.FreightersRequired != 5 {
+				t.Fatalf("transfer choice metadata=%+v", choice)
+			}
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("no Farmer->Scientist transfer choice in %+v", choices)
+	}
+
+	command, err := NewTransferPopulationCommand(1, TransferPopulationPayload{
+		SourceColonyID: home.ID, DestinationColonyID: destination.ID,
+		SourceJob: core.PopulationJobFarmer, DestinationJob: core.PopulationJobScientist,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	started, err := resolver.transferPopulation(state, empire.ID, protocol.SeatID(1), command)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if started.Kind != "empire.population_transfer_started" || len(state.PopulationTransfers) != 1 {
+		t.Fatalf("start event/state=%+v/%+v", started, state.PopulationTransfers)
+	}
+	transfer := state.PopulationTransfers[0]
+	if transfer.SourcePopulationJob() != core.PopulationJobFarmer || transfer.DestinationPopulationJob() != core.PopulationJobScientist {
+		t.Fatalf("transfer jobs=%+v", transfer)
+	}
+	events, err := resolver.advancePopulationTransfers(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if eventIndex(events, "empire.population_transfer_arrived") < 0 {
+		t.Fatalf("arrival events=%+v", events)
+	}
+	if got := destination.Population.Scientists(); got != beforeScientists+1 {
+		t.Fatalf("destination scientists=%v want=%v", got, beforeScientists+1)
+	}
+	if got := destination.Population.Farmers(); got != beforeFarmers {
+		t.Fatalf("destination farmers=%v want unchanged %v", got, beforeFarmers)
+	}
+}

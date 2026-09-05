@@ -43,7 +43,8 @@ type ColonizationChoice struct {
 type OutpostDeploymentChoice struct {
 	FleetID  core.ID `json:"fleet_id"`
 	SystemID core.ID `json:"system_id"`
-	PlanetID core.ID `json:"planet_id"`
+	BodyID   core.ID `json:"body_id"`
+	PlanetID core.ID `json:"planet_id,omitempty"`
 }
 
 // ResearchDue reports whether the active selected field has accumulated enough
@@ -288,18 +289,40 @@ func (r *EconomyResolver) AvailableOutpostDeploymentChoices(state *core.GameStat
 		if system == nil {
 			return nil, fmt.Errorf("fleet %d references unknown system %d", fleet.ID, fleet.AtSystemID)
 		}
-		for _, planet := range system.Planets {
-			if planet.ColonyID != 0 || colonyReferencesPlanet(state, planet.ID) || planet.OutpostID != 0 || outpostReferencesPlanet(state, planet.ID) {
-				continue
+		if len(system.Bodies) > 0 {
+			for bi := range system.Bodies {
+				body := &system.Bodies[bi]
+				target := orbitalBodyTargetByID(state, body.ID)
+				if orbitalBodyOccupiedByOutpost(state, target) {
+					continue
+				}
+				planetID := core.ID(0)
+				if target.Planet != nil {
+					planetID = target.Planet.ID
+					if target.Planet.ColonyID != 0 || colonyReferencesPlanet(state, target.Planet.ID) {
+						continue
+					}
+				}
+				choices = append(choices, OutpostDeploymentChoice{FleetID: fleet.ID, SystemID: system.ID, BodyID: body.ID, PlanetID: planetID})
 			}
-			choices = append(choices, OutpostDeploymentChoice{FleetID: fleet.ID, SystemID: system.ID, PlanetID: planet.ID})
+		} else {
+			for pi := range system.Planets {
+				planet := &system.Planets[pi]
+				if planet.ColonyID != 0 || colonyReferencesPlanet(state, planet.ID) || planet.OutpostID != 0 || outpostReferencesPlanet(state, planet.ID) {
+					continue
+				}
+				choices = append(choices, OutpostDeploymentChoice{FleetID: fleet.ID, SystemID: system.ID, BodyID: planet.ID, PlanetID: planet.ID})
+			}
 		}
 	}
 	sort.Slice(choices, func(i, j int) bool {
 		if choices[i].FleetID != choices[j].FleetID {
 			return choices[i].FleetID < choices[j].FleetID
 		}
-		return choices[i].PlanetID < choices[j].PlanetID
+		if choices[i].SystemID != choices[j].SystemID {
+			return choices[i].SystemID < choices[j].SystemID
+		}
+		return choices[i].BodyID < choices[j].BodyID
 	})
 	return choices, nil
 }

@@ -2,13 +2,19 @@ import { ReactNode } from 'react'
 import { type GameSection } from '../navigation'
 import { type TranslationKey, useI18n } from '../i18n'
 
-const navItems: Array<{ section: GameSection; label: TranslationKey; glyph: string }> = [
-  { section: 'galaxy', label: 'nav.galaxy', glyph: '◎' },
-  { section: 'colonies', label: 'nav.colonies', glyph: '▦' },
-  { section: 'fleets', label: 'nav.fleets', glyph: '➤' },
-  { section: 'research', label: 'nav.research', glyph: '✦' },
-  { section: 'more', label: 'nav.more', glyph: '•••' },
+const desktopNavItems: Array<{ section: GameSection; label: TranslationKey; glyph: string }> = [
+  { section: 'galaxy', label: 'nav.galaxy', glyph: '\u25C8' },
+  { section: 'colonies', label: 'nav.colonies', glyph: '\u2302' },
+  { section: 'fleets', label: 'nav.fleets', glyph: '\u2197' },
+  { section: 'research', label: 'nav.research', glyph: '\u269B' },
+  { section: 'diplomacy', label: 'nav.diplomacy', glyph: '\u2696' },
+  { section: 'espionage', label: 'nav.espionage', glyph: '\u25C9' },
+  { section: 'more', label: 'nav.more', glyph: '\u2026' },
 ]
+
+const mobileNavItems = desktopNavItems.filter((item) => ['galaxy', 'colonies', 'fleets', 'research', 'more'].includes(item.section))
+
+type ResourceChip = { label: string; value: string; tone?: 'neutral' | 'warning' | 'danger' }
 
 type AppShellProps = {
   activeSection: GameSection
@@ -17,6 +23,7 @@ type AppShellProps = {
   phaseLabel?: string
   status: string
   statusTone: 'neutral' | 'success' | 'warning' | 'danger'
+  resources?: ResourceChip[]
   onNavigate: (section: GameSection) => void
   onHome: () => void
   children: ReactNode
@@ -45,26 +52,36 @@ export function StandaloneHeader({ onHome }: { onHome?: () => void }) {
   )
 }
 
-export function AppShell({ activeSection, gameID, turn, phaseLabel, status, statusTone, onNavigate, onHome, children }: AppShellProps) {
+function NavItems({ items, activeSection, onNavigate, mobile = false }: {
+  items: typeof desktopNavItems
+  activeSection: GameSection
+  onNavigate: (section: GameSection) => void
+  mobile?: boolean
+}) {
   const { t } = useI18n()
-
-  const navigation = (
-    <>
-      {navItems.map((item) => (
+  return <>
+    {items.map((item) => {
+      const active = mobile && item.section === 'more'
+        ? ['more', 'diplomacy', 'espionage'].includes(activeSection)
+        : activeSection === item.section
+      return (
         <button
           type="button"
           key={item.section}
-          className={`nav-item ${activeSection === item.section ? 'active' : ''}`}
-          aria-current={activeSection === item.section ? 'page' : undefined}
+          className={`nav-item ${active ? 'active' : ''}`}
+          aria-current={active ? 'page' : undefined}
           onClick={() => onNavigate(item.section)}
         >
           <span className="nav-glyph" aria-hidden="true">{item.glyph}</span>
           <span>{t(item.label)}</span>
         </button>
-      ))}
-    </>
-  )
+      )
+    })}
+  </>
+}
 
+export function AppShell({ activeSection, gameID, turn, phaseLabel, status, statusTone, resources = [], onNavigate, onHome, children }: AppShellProps) {
+  const { t } = useI18n()
   return (
     <div className="game-shell">
       <header className="topbar">
@@ -83,15 +100,27 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
         <LanguageSwitch compact />
       </header>
 
+      {resources.length > 0 && (
+        <div className="resource-strip" aria-label={t('a11y.resources')}>
+          {resources.map((resource) => (
+            <div className={`resource-chip resource-${resource.tone ?? 'neutral'}`} key={resource.label}>
+              <span>{resource.label}</span><strong>{resource.value}</strong>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="shell-layout">
         <aside className="side-nav" aria-label={t('a11y.primaryNavigation')}>
-          <div className="side-nav-items">{navigation}</div>
+          <div className="side-nav-items"><NavItems items={desktopNavItems} activeSection={activeSection} onNavigate={onNavigate} /></div>
           <div className="side-nav-footer"><LanguageSwitch /></div>
         </aside>
         <main className="game-content">{children}</main>
       </div>
 
-      <nav className="bottom-nav" aria-label={t('a11y.primaryNavigation')}>{navigation}</nav>
+      <nav className="bottom-nav" aria-label={t('a11y.primaryNavigation')}>
+        <NavItems items={mobileNavItems} activeSection={activeSection} onNavigate={onNavigate} mobile />
+      </nav>
     </div>
   )
 }

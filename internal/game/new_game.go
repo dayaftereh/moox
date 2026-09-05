@@ -53,6 +53,12 @@ type newGameSystemPlan struct {
 	Y        int
 	Spectral int
 	Planets  []newGamePlanetPlan
+	Bodies   []newGameBodyPlan
+}
+
+type newGameBodyPlan struct {
+	Orbit int
+	Kind  core.OrbitalBodyKind
 }
 
 type newGamePlanetPlan struct {
@@ -128,7 +134,7 @@ func (r *EconomyRules) NewGame(seed uint64, settings NewGameSettings) (NewGameRe
 	for si := range systems {
 		plan := &systems[si]
 		sort.Slice(plan.Planets, func(i, j int) bool { return plan.Planets[i].Orbit < plan.Planets[j].Orbit })
-		system := core.StarSystem{ID: plan.ID, Name: plan.Name, X: plan.X, Y: plan.Y}
+		system := core.StarSystem{ID: plan.ID, Name: plan.Name, X: plan.X, Y: plan.Y, SpectralClass: plan.Spectral}
 		for pi, planetPlan := range plan.Planets {
 			if err := r.validateNewGamePlanetPlan(planetPlan); err != nil {
 				return NewGameResult{}, fmt.Errorf("system %d planet %d: %w", plan.ID, pi, err)
@@ -200,6 +206,12 @@ func (r *EconomyRules) NewGame(seed uint64, settings NewGameSettings) (NewGameRe
 			ID: state.NewID(), EmpireID: state.Empires[i].ID, Role: core.StrategicFleetRoleCivilian,
 			SpecialKind: core.StrategicFleetSpecialColonyShip, AtSystemID: homeSystem.ID, FTLSpeed: 2,
 		})
+	}
+	// Allocate non-planet body IDs only after every legacy New Game object has
+	// received its ID. This preserves the established deterministic IDs for
+	// empires, planets, colonies, designs, ships and fleets.
+	if err := materializeNewGameBodies(state, systems); err != nil {
+		return NewGameResult{}, err
 	}
 
 	resolver, err := NewEconomyResolver(r)
@@ -353,16 +365,81 @@ func (r *EconomyRules) generateNewGamePlanets(system *newGameSystemPlan, rng *co
 		if err != nil {
 			return err
 		}
-		if bodyType != 3 {
-			continue
-		}
-		planet, err := r.newGamePlanetProperties(rng, system.Spectral, orbit)
+		kind, err := newGameOrbitalBodyKind(bodyType)
 		if err != nil {
 			return err
 		}
-		system.Planets = append(system.Planets, planet)
+		system.Bodies = append(system.Bodies, newGameBodyPlan{Orbit: orbit, Kind: kind})
+		if kind == core.OrbitalBodyPlanet {
+			planet, err := r.newGamePlanetProperties(rng, system.Spectral, orbit)
+			if err != nil {
+				return err
+			}
+			system.Planets = append(system.Planets, planet)
+		}
 	}
 	sort.Slice(system.Planets, func(i, j int) bool { return system.Planets[i].Orbit < system.Planets[j].Orbit })
+	return nil
+}
+
+func newGameOrbitalBodyKind(bodyType int) (core.OrbitalBodyKind, error) {
+	switch bodyType {
+	case 1:
+		return core.OrbitalBodyAsteroidBelt, nil
+	case 2:
+		return core.OrbitalBodyGasGiant, nil
+	case 3:
+		return core.OrbitalBodyPlanet, nil
+	default:
+		return "", fmt.Errorf("unsupported materialized satellite body type %d", bodyType)
+	}
+}
+
+func materializeNewGameBodies(state *core.GameState, plans []newGameSystemPlan) error {
+	if state == nil {
+		return fmt.Errorf("game state must not be nil")
+	}
+	if len(state.Galaxy.Systems) != len(plans) {
+		return fmt.Errorf("system/body plan count mismatch: state=%d plans=%d", len(state.Galaxy.Systems), len(plans))
+	}
+	for si := range plans {
+		system := &state.Galaxy.Systems[si]
+		plan := &plans[si]
+		sort.Slice(plan.Bodies, func(i, j int) bool { return plan.Bodies[i].Orbit < plan.Bodies[j].Orbit })
+		if len(plan.Bodies) == 0 {
+			system.Bodies = nil
+			continue
+		}
+		system.Bodies = make([]core.OrbitalBody, 0, len(plan.Bodies))
+		for _, bodyPlan := range plan.Bodies {
+			body := core.OrbitalBody{Orbit: bodyPlan.Orbit, Kind: bodyPlan.Kind}
+			switch bodyPlan.Kind {
+			case core.OrbitalBodyPlanet:
+				var planet *core.Planet
+				for pi := range system.Planets {
+					if system.Planets[pi].Orbit == bodyPlan.Orbit {
+						planet = &system.Planets[pi]
+						break
+					}
+				}
+				if planet == nil {
+					return fmt.Errorf("system %d orbit %d planet body has no materialized planet", system.ID, bodyPlan.Orbit)
+				}
+				body.ID = planet.ID
+				body.PlanetID = planet.ID
+				body.Name = planet.Name
+			case core.OrbitalBodyAsteroidBelt:
+				body.ID = state.NewID()
+				body.Name = fmt.Sprintf("%s Asteroid Belt %d", system.Name, bodyPlan.Orbit+1)
+			case core.OrbitalBodyGasGiant:
+				body.ID = state.NewID()
+				body.Name = fmt.Sprintf("%s Gas Giant %d", system.Name, bodyPlan.Orbit+1)
+			default:
+				return fmt.Errorf("system %d orbit %d has unsupported body kind %q", system.ID, bodyPlan.Orbit, bodyPlan.Kind)
+			}
+			system.Bodies = append(system.Bodies, body)
+		}
+	}
 	return nil
 }
 
@@ -445,7 +522,19 @@ func (r *EconomyRules) fillNewGameHomeSystem(system *newGameSystemPlan, rng *cor
 			return err
 		}
 		system.Planets = append(system.Planets, planet)
+		replaced := false
+		for i := range system.Bodies {
+			if system.Bodies[i].Orbit == orbit {
+				system.Bodies[i].Kind = core.OrbitalBodyPlanet
+				replaced = true
+				break
+			}
+		}
+		if !replaced {
+			system.Bodies = append(system.Bodies, newGameBodyPlan{Orbit: orbit, Kind: core.OrbitalBodyPlanet})
+		}
 		sort.Slice(system.Planets, func(i, j int) bool { return system.Planets[i].Orbit < system.Planets[j].Orbit })
+		sort.Slice(system.Bodies, func(i, j int) bool { return system.Bodies[i].Orbit < system.Bodies[j].Orbit })
 	}
 	return nil
 }

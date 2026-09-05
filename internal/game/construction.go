@@ -223,192 +223,197 @@ func (r *EconomyResolver) advanceConstruction(state *core.GameState) ([]DomainEv
 		if colony.Construction == nil {
 			continue
 		}
-		projectKind := colony.Construction.ProjectKind
-		projectID := colony.Construction.ProjectID
-		shipDesignID := colony.Construction.ShipDesignID
-		shipDesignRevision := colony.Construction.ShipDesignRevision
-		if projectKind == core.ConstructionProjectHousing {
-			if projectID != HousingProjectID || math.Abs(colony.Construction.ProgressPP) > populationEpsilon {
-				return nil, fmt.Errorf("colony %d has invalid Housing construction state", colony.ID)
-			}
-			if colony.PopulationDynamics.Capacity > 0 && colony.Population.Total() >= colony.PopulationDynamics.Capacity-populationEpsilon {
-				colony.Construction = nil
-				stopped, err := NewDomainEvent("colony.housing_stopped", 0, 0, HousingStoppedEvent{ColonyID: colony.ID, Reason: "population_capacity"})
-				if err != nil {
-					return nil, err
+		available := colony.PopulationDynamics.ProductionAvailable
+		if available < 0 {
+			return nil, fmt.Errorf("colony %d has negative adjusted production %g", colony.ID, available)
+		}
+		reserveApplied := false
+		completedPrior := false
+		for colony.Construction != nil {
+			project := *colony.Construction
+			if project.ProjectKind == core.ConstructionProjectHousing {
+				if project.ProjectID != HousingProjectID || math.Abs(project.ProgressPP) > populationEpsilon {
+					return nil, fmt.Errorf("colony %d has invalid Housing construction state", colony.ID)
 				}
-				events = append(events, stopped)
+				if colony.PopulationDynamics.Capacity > 0 && colony.Population.Total() >= colony.PopulationDynamics.Capacity-populationEpsilon {
+					colony.Construction = nil
+					stopped, err := NewDomainEvent("colony.housing_stopped", 0, 0, HousingStoppedEvent{ColonyID: colony.ID, Reason: "population_capacity"})
+					if err != nil {
+						return nil, err
+					}
+					events = append(events, stopped)
+					promoteConstructionQueue(colony)
+					continue
+				}
+				if completedPrior && available > 0 {
+					colony.ConstructionReservePP += available
+				}
+				break
 			}
-			continue
+			if !reserveApplied {
+				available += colony.ConstructionReservePP
+				colony.ConstructionReservePP = 0
+				reserveApplied = true
+			}
+			costPP, err := r.constructionProjectCostPP(state, colony, colony.Construction)
+			if err != nil {
+				return nil, fmt.Errorf("colony %d: %w", colony.ID, err)
+			}
+			remaining := math.Max(0, costPP-colony.Construction.ProgressPP)
+			applied := math.Min(available, remaining)
+			colony.Construction.ProgressPP += applied
+			available -= applied
+			remaining -= applied
+			progress, err := NewDomainEvent("colony.construction_progressed", 0, 0, ConstructionProgressedEvent{
+				ColonyID:    colony.ID,
+				ProjectKind: project.ProjectKind,
+				ProjectID:   project.ProjectID,
+				AppliedPP:   applied,
+				ProgressPP:  colony.Construction.ProgressPP,
+				RemainingPP: remaining,
+			})
+			if err != nil {
+				return nil, err
+			}
+			events = append(events, progress)
+			if remaining > 1e-9 {
+				break
+			}
+			colony.Construction = nil
+			completedEvents, err := r.completeConstructionProject(state, colony, project)
+			if err != nil {
+				return nil, err
+			}
+			events = append(events, completedEvents...)
+			completedPrior = true
+			if !promoteConstructionQueue(colony) {
+				if available > 0 {
+					colony.ConstructionReservePP += available
+				}
+				break
+			}
 		}
-		costPP, err := r.constructionProjectCostPP(state, colony, colony.Construction)
-		if err != nil {
-			return nil, fmt.Errorf("colony %d: %w", colony.ID, err)
+	}
+	return events, nil
+}
+
+func (r *EconomyResolver) completeConstructionProject(state *core.GameState, colony *core.Colony, project core.ConstructionState) ([]DomainEvent, error) {
+	projectKind := project.ProjectKind
+	projectID := project.ProjectID
+	shipDesignID := project.ShipDesignID
+	shipDesignRevision := project.ShipDesignRevision
+	var events []DomainEvent
+	switch projectKind {
+	case core.ConstructionProjectBuilding:
+		if err := applyCompletedCommandStation(colony, projectID); err != nil {
+			return nil, err
 		}
-		remaining := costPP - colony.Construction.ProgressPP
-		if remaining <= 1e-9 {
-			return nil, fmt.Errorf("colony %d construction %s %q has invalid completed progress %g", colony.ID, projectKind, projectID, colony.Construction.ProgressPP)
-		}
-		applied := colony.PopulationDynamics.ProductionAvailable
-		if applied < 0 {
-			return nil, fmt.Errorf("colony %d has negative adjusted production %g", colony.ID, applied)
-		}
-		if applied > remaining {
-			applied = remaining
-		}
-		colony.Construction.ProgressPP += applied
-		remaining -= applied
-		progress, err := NewDomainEvent("colony.construction_progressed", 0, 0, ConstructionProgressedEvent{
-			ColonyID:    colony.ID,
-			ProjectKind: projectKind,
-			ProjectID:   projectID,
-			AppliedPP:   applied,
-			ProgressPP:  colony.Construction.ProgressPP,
-			RemainingPP: remaining,
-		})
+		completed, err := NewDomainEvent("colony.building_completed", 0, 0, BuildingCompletedEvent{ColonyID: colony.ID, BuildingID: projectID})
 		if err != nil {
 			return nil, err
 		}
-		events = append(events, progress)
-		if remaining > 1e-9 {
-			continue
+		events = append(events, completed)
+	case core.ConstructionProjectPlanetaryTransformation:
+		completed, err := r.completePlanetaryTransformation(state, colony, projectID)
+		if err != nil {
+			return nil, err
 		}
-		colony.Construction = nil
-		switch projectKind {
-		case core.ConstructionProjectBuilding:
-			if err := applyCompletedCommandStation(colony, projectID); err != nil {
-				return nil, err
-			}
-			completed, err := NewDomainEvent("colony.building_completed", 0, 0, BuildingCompletedEvent{ColonyID: colony.ID, BuildingID: projectID})
-			if err != nil {
-				return nil, err
-			}
-			events = append(events, completed)
-		case core.ConstructionProjectPlanetaryTransformation:
-			completed, err := r.completePlanetaryTransformation(state, colony, projectID)
-			if err != nil {
-				return nil, err
-			}
-			events = append(events, completed)
-		case core.ConstructionProjectColonyShip:
-			if projectID != ColonyShipProjectID {
-				return nil, fmt.Errorf("colony %d completed unknown Colony Ship project %q", colony.ID, projectID)
-			}
-			empire := empireByID(state, colony.EmpireID)
-			if empire == nil {
-				return nil, fmt.Errorf("colony %d references unknown empire %d", colony.ID, colony.EmpireID)
-			}
-			system := systemForPlanetID(state, colony.PlanetID)
-			if system == nil {
-				return nil, fmt.Errorf("colony %d planet %d is not assigned to a star system", colony.ID, colony.PlanetID)
-			}
-			ftlSpeed := r.Rules.populationTransferFTLSpeed(*empire)
-			if ftlSpeed < 2 {
-				return nil, fmt.Errorf("empire %d cannot complete Colony Ship without an installed strategic drive", empire.ID)
-			}
-			fleet := core.StrategicFleet{
-				ID:          state.NewID(),
-				EmpireID:    empire.ID,
-				Role:        core.StrategicFleetRoleCivilian,
-				SpecialKind: core.StrategicFleetSpecialColonyShip,
-				AtSystemID:  system.ID,
-				FTLSpeed:    ftlSpeed,
-			}
-			state.StrategicFleets = append(state.StrategicFleets, fleet)
-			completed, err := NewDomainEvent("colony.colony_ship_completed", 0, 0, ColonyShipCompletedEvent{
-				ColonyID: colony.ID, EmpireID: empire.ID, FleetID: fleet.ID, SystemID: system.ID, FTLSpeed: fleet.FTLSpeed,
-			})
-			if err != nil {
-				return nil, err
-			}
-			events = append(events, completed)
-		case core.ConstructionProjectOutpostShip:
-			if projectID != OutpostShipProjectID {
-				return nil, fmt.Errorf("colony %d completed unknown Outpost Ship project %q", colony.ID, projectID)
-			}
-			empire := empireByID(state, colony.EmpireID)
-			if empire == nil {
-				return nil, fmt.Errorf("colony %d references unknown empire %d", colony.ID, colony.EmpireID)
-			}
-			system := systemForPlanetID(state, colony.PlanetID)
-			if system == nil {
-				return nil, fmt.Errorf("colony %d planet %d is not assigned to a star system", colony.ID, colony.PlanetID)
-			}
-			ftlSpeed := r.Rules.populationTransferFTLSpeed(*empire)
-			if ftlSpeed < 2 {
-				return nil, fmt.Errorf("empire %d cannot complete Outpost Ship without an installed strategic drive", empire.ID)
-			}
-			fleet := core.StrategicFleet{
-				ID:          state.NewID(),
-				EmpireID:    empire.ID,
-				Role:        core.StrategicFleetRoleCivilian,
-				SpecialKind: core.StrategicFleetSpecialOutpostShip,
-				AtSystemID:  system.ID,
-				FTLSpeed:    ftlSpeed,
-			}
-			state.StrategicFleets = append(state.StrategicFleets, fleet)
-			completed, err := NewDomainEvent("colony.outpost_ship_completed", 0, 0, OutpostShipCompletedEvent{
-				ColonyID: colony.ID, EmpireID: empire.ID, FleetID: fleet.ID, SystemID: system.ID, FTLSpeed: fleet.FTLSpeed,
-			})
-			if err != nil {
-				return nil, err
-			}
-			events = append(events, completed)
-		case core.ConstructionProjectTroopTransport:
-			if projectID != TroopTransportProjectID {
-				return nil, fmt.Errorf("colony %d completed unknown Troop Transport project %q", colony.ID, projectID)
-			}
-			empire := empireByID(state, colony.EmpireID)
-			if empire == nil {
-				return nil, fmt.Errorf("colony %d references unknown empire %d", colony.ID, colony.EmpireID)
-			}
-			system := systemForPlanetID(state, colony.PlanetID)
-			if system == nil {
-				return nil, fmt.Errorf("colony %d planet %d is not assigned to a star system", colony.ID, colony.PlanetID)
-			}
-			ftlSpeed := r.Rules.populationTransferFTLSpeed(*empire)
-			if ftlSpeed < 2 {
-				return nil, fmt.Errorf("empire %d cannot complete Troop Transport without an installed strategic drive", empire.ID)
-			}
-			fleet := core.StrategicFleet{ID: state.NewID(), EmpireID: empire.ID, Role: core.StrategicFleetRoleCivilian, SpecialKind: core.StrategicFleetSpecialTroopTransport, AtSystemID: system.ID, FTLSpeed: ftlSpeed}
-			state.StrategicFleets = append(state.StrategicFleets, fleet)
-			completed, err := NewDomainEvent("colony.troop_transport_completed", 0, 0, TroopTransportCompletedEvent{ColonyID: colony.ID, EmpireID: empire.ID, FleetID: fleet.ID, SystemID: system.ID, FTLSpeed: fleet.FTLSpeed})
-			if err != nil {
-				return nil, err
-			}
-			events = append(events, completed)
-		case core.ConstructionProjectMilitaryShip:
-			if projectID != MilitaryShipProjectID {
-				return nil, fmt.Errorf("colony %d completed unknown military Ship project %q", colony.ID, projectID)
-			}
-			design, err := militaryConstructionDesign(state, colony.EmpireID, shipDesignID, shipDesignRevision)
-			if err != nil {
-				return nil, fmt.Errorf("colony %d military Ship completion: %w", colony.ID, err)
-			}
-			completed, err := completeMilitaryShip(state, colony, design)
-			if err != nil {
-				return nil, err
-			}
-			events = append(events, completed)
-		case core.ConstructionProjectFreighterFleet:
-			empire := empireByID(state, colony.EmpireID)
-			if empire == nil {
-				return nil, fmt.Errorf("colony %d references unknown empire %d", colony.ID, colony.EmpireID)
-			}
-			empire.Freighters += r.Rules.FreightersPerFleet
-			completed, err := NewDomainEvent("colony.freighter_fleet_completed", 0, 0, FreighterFleetCompletedEvent{
-				ColonyID:        colony.ID,
-				EmpireID:        empire.ID,
-				FreightersAdded: r.Rules.FreightersPerFleet,
-				TotalFreighters: empire.Freighters,
-			})
-			if err != nil {
-				return nil, err
-			}
-			events = append(events, completed)
-		default:
-			return nil, fmt.Errorf("colony %d completed unsupported project kind %q", colony.ID, projectKind)
+		events = append(events, completed)
+	case core.ConstructionProjectColonyShip:
+		if projectID != ColonyShipProjectID {
+			return nil, fmt.Errorf("colony %d completed unknown Colony Ship project %q", colony.ID, projectID)
 		}
+		empire := empireByID(state, colony.EmpireID)
+		if empire == nil {
+			return nil, fmt.Errorf("colony %d references unknown empire %d", colony.ID, colony.EmpireID)
+		}
+		system := systemForPlanetID(state, colony.PlanetID)
+		if system == nil {
+			return nil, fmt.Errorf("colony %d planet %d is not assigned to a star system", colony.ID, colony.PlanetID)
+		}
+		ftlSpeed := r.Rules.populationTransferFTLSpeed(*empire)
+		if ftlSpeed < 2 {
+			return nil, fmt.Errorf("empire %d cannot complete Colony Ship without an installed strategic drive", empire.ID)
+		}
+		fleet := core.StrategicFleet{ID: state.NewID(), EmpireID: empire.ID, Role: core.StrategicFleetRoleCivilian, SpecialKind: core.StrategicFleetSpecialColonyShip, AtSystemID: system.ID, FTLSpeed: ftlSpeed}
+		state.StrategicFleets = append(state.StrategicFleets, fleet)
+		completed, err := NewDomainEvent("colony.colony_ship_completed", 0, 0, ColonyShipCompletedEvent{ColonyID: colony.ID, EmpireID: empire.ID, FleetID: fleet.ID, SystemID: system.ID, FTLSpeed: fleet.FTLSpeed})
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, completed)
+	case core.ConstructionProjectOutpostShip:
+		if projectID != OutpostShipProjectID {
+			return nil, fmt.Errorf("colony %d completed unknown Outpost Ship project %q", colony.ID, projectID)
+		}
+		empire := empireByID(state, colony.EmpireID)
+		if empire == nil {
+			return nil, fmt.Errorf("colony %d references unknown empire %d", colony.ID, colony.EmpireID)
+		}
+		system := systemForPlanetID(state, colony.PlanetID)
+		if system == nil {
+			return nil, fmt.Errorf("colony %d planet %d is not assigned to a star system", colony.ID, colony.PlanetID)
+		}
+		ftlSpeed := r.Rules.populationTransferFTLSpeed(*empire)
+		if ftlSpeed < 2 {
+			return nil, fmt.Errorf("empire %d cannot complete Outpost Ship without an installed strategic drive", empire.ID)
+		}
+		fleet := core.StrategicFleet{ID: state.NewID(), EmpireID: empire.ID, Role: core.StrategicFleetRoleCivilian, SpecialKind: core.StrategicFleetSpecialOutpostShip, AtSystemID: system.ID, FTLSpeed: ftlSpeed}
+		state.StrategicFleets = append(state.StrategicFleets, fleet)
+		completed, err := NewDomainEvent("colony.outpost_ship_completed", 0, 0, OutpostShipCompletedEvent{ColonyID: colony.ID, EmpireID: empire.ID, FleetID: fleet.ID, SystemID: system.ID, FTLSpeed: fleet.FTLSpeed})
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, completed)
+	case core.ConstructionProjectTroopTransport:
+		if projectID != TroopTransportProjectID {
+			return nil, fmt.Errorf("colony %d completed unknown Troop Transport project %q", colony.ID, projectID)
+		}
+		empire := empireByID(state, colony.EmpireID)
+		if empire == nil {
+			return nil, fmt.Errorf("colony %d references unknown empire %d", colony.ID, colony.EmpireID)
+		}
+		system := systemForPlanetID(state, colony.PlanetID)
+		if system == nil {
+			return nil, fmt.Errorf("colony %d planet %d is not assigned to a star system", colony.ID, colony.PlanetID)
+		}
+		ftlSpeed := r.Rules.populationTransferFTLSpeed(*empire)
+		if ftlSpeed < 2 {
+			return nil, fmt.Errorf("empire %d cannot complete Troop Transport without an installed strategic drive", empire.ID)
+		}
+		fleet := core.StrategicFleet{ID: state.NewID(), EmpireID: empire.ID, Role: core.StrategicFleetRoleCivilian, SpecialKind: core.StrategicFleetSpecialTroopTransport, AtSystemID: system.ID, FTLSpeed: ftlSpeed}
+		state.StrategicFleets = append(state.StrategicFleets, fleet)
+		completed, err := NewDomainEvent("colony.troop_transport_completed", 0, 0, TroopTransportCompletedEvent{ColonyID: colony.ID, EmpireID: empire.ID, FleetID: fleet.ID, SystemID: system.ID, FTLSpeed: fleet.FTLSpeed})
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, completed)
+	case core.ConstructionProjectMilitaryShip:
+		if projectID != MilitaryShipProjectID {
+			return nil, fmt.Errorf("colony %d completed unknown military Ship project %q", colony.ID, projectID)
+		}
+		design, err := militaryConstructionDesign(state, colony.EmpireID, shipDesignID, shipDesignRevision)
+		if err != nil {
+			return nil, fmt.Errorf("colony %d military Ship completion: %w", colony.ID, err)
+		}
+		completed, err := completeMilitaryShip(state, colony, design)
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, completed)
+	case core.ConstructionProjectFreighterFleet:
+		empire := empireByID(state, colony.EmpireID)
+		if empire == nil {
+			return nil, fmt.Errorf("colony %d references unknown empire %d", colony.ID, colony.EmpireID)
+		}
+		empire.Freighters += r.Rules.FreightersPerFleet
+		completed, err := NewDomainEvent("colony.freighter_fleet_completed", 0, 0, FreighterFleetCompletedEvent{ColonyID: colony.ID, EmpireID: empire.ID, FreightersAdded: r.Rules.FreightersPerFleet, TotalFreighters: empire.Freighters})
+		if err != nil {
+			return nil, err
+		}
+		events = append(events, completed)
+	default:
+		return nil, fmt.Errorf("colony %d completed unsupported project kind %q", colony.ID, projectKind)
 	}
 	return events, nil
 }

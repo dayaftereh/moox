@@ -298,3 +298,88 @@ func TestColonyBaseConvertsSameOwnerOutpost(t *testing.T) {
 		t.Fatalf("Colony Base converted state invalid: %v", err)
 	}
 }
+
+func fixtureSystemBodiesWithExtra(state *core.GameState, system *core.StarSystem, kind core.OrbitalBodyKind) *core.OrbitalBody {
+	used := map[int]bool{}
+	system.Bodies = nil
+	for pi := range system.Planets {
+		planet := &system.Planets[pi]
+		used[planet.Orbit] = true
+		system.Bodies = append(system.Bodies, core.OrbitalBody{ID: planet.ID, Name: planet.Name, Orbit: planet.Orbit, Kind: core.OrbitalBodyPlanet, PlanetID: planet.ID})
+	}
+	orbit := -1
+	for candidate := 0; candidate < 5; candidate++ {
+		if !used[candidate] {
+			orbit = candidate
+			break
+		}
+	}
+	if orbit < 0 {
+		panic("fixture system has no free orbit")
+	}
+	body := core.OrbitalBody{ID: state.NewID(), Name: "Test Body", Orbit: orbit, Kind: kind}
+	system.Bodies = append(system.Bodies, body)
+	return &system.Bodies[len(system.Bodies)-1]
+}
+
+func TestOutpostDeploymentSupportsGasGiantsAndAsteroidBelts(t *testing.T) {
+	for _, kind := range []core.OrbitalBodyKind{core.OrbitalBodyGasGiant, core.OrbitalBodyAsteroidBelt} {
+		t.Run(string(kind), func(t *testing.T) {
+			rules := loadColonyShipRules(t)
+			resolver, err := NewEconomyResolver(rules)
+			if err != nil {
+				t.Fatal(err)
+			}
+			state := core.NewSmallFixture(1800 + uint64(len(kind)))
+			empire := &state.Empires[0]
+			alpha := &state.Galaxy.Systems[0]
+			beta := &state.Galaxy.Systems[1]
+			gamma := &state.Galaxy.Systems[2]
+			alpha.X, alpha.Y = 0, 0
+			beta.X, beta.Y = 90, 0
+			gamma.X, gamma.Y = 210, 0
+			target := fixtureSystemBodiesWithExtra(state, beta, kind)
+			fleetID := addFixedSpecialShipTestFleet(state, empire.ID, beta.ID, core.StrategicFleetSpecialOutpostShip, 2)
+
+			choices, err := resolver.AvailableOutpostDeploymentChoices(state, empire.ID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			found := false
+			for _, choice := range choices {
+				if choice.FleetID == fleetID && choice.SystemID == beta.ID && choice.BodyID == target.ID && choice.PlanetID == 0 {
+					found = true
+					break
+				}
+			}
+			if !found {
+				t.Fatalf("no legal %s Outpost choice for body %d: %+v", kind, target.ID, choices)
+			}
+
+			command, err := NewDeployOutpostCommand(1, DeployOutpostPayload{FleetID: fleetID, BodyID: target.ID})
+			if err != nil {
+				t.Fatal(err)
+			}
+			events, err := resolver.deployOutpost(state, empire.ID, 1, command)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(events) != 2 || len(state.Outposts) != 1 {
+				t.Fatalf("events=%+v outposts=%+v", events, state.Outposts)
+			}
+			outpost := state.Outposts[0]
+			if outpost.BodyID != target.ID || outpost.PlanetID != 0 || target.OutpostID != outpost.ID {
+				t.Fatalf("%s Outpost=%+v body=%+v", kind, outpost, *target)
+			}
+			if _, fleet := strategicFleetByID(state, fleetID); fleet != nil {
+				t.Fatalf("consumed %s Outpost Ship remains: %+v", kind, *fleet)
+			}
+			if distance, ok := nearestEmpireSupplyDistanceParsecs(state, empire.ID, *gamma); !ok || distance != 4 {
+				t.Fatalf("%s Outpost supply distance to Gamma=(%d,%v) want=(4,true)", kind, distance, ok)
+			}
+			if err := state.Validate(); err != nil {
+				t.Fatalf("%s Outpost state invalid: %v", kind, err)
+			}
+		})
+	}
+}

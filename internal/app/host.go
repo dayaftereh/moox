@@ -32,10 +32,17 @@ type GameSummary struct {
 }
 
 type PlayerSnapshot struct {
-	SchemaVersion  int                `json:"schema_version"`
-	ChangeSequence uint64             `json:"change_sequence"`
-	View           session.PlayerView `json:"view"`
-	Battles        []battle.View      `json:"battles"`
+	SchemaVersion  int                         `json:"schema_version"`
+	ChangeSequence uint64                      `json:"change_sequence"`
+	View           session.PlayerView          `json:"view"`
+	Decision       *session.PlayerDecisionView `json:"decision,omitempty"`
+	Battles        []battle.View               `json:"battles"`
+}
+
+type PlanningPreviewSnapshot struct {
+	SchemaVersion  int                     `json:"schema_version"`
+	ChangeSequence uint64                  `json:"change_sequence"`
+	Preview        session.PlanningPreview `json:"preview"`
 }
 
 type ObserverSnapshot struct {
@@ -180,11 +187,42 @@ func (h *Host) PlayerSnapshot(gameID string, seatID protocol.SeatID) (PlayerSnap
 	if err != nil {
 		return PlayerSnapshot{}, fmt.Errorf("project player view: %w", err)
 	}
+	var decision *session.PlayerDecisionView
+	if hosted.immediateResolver != nil {
+		projected, err := hosted.session.DecisionView(seatID, hosted.immediateResolver)
+		if err != nil {
+			return PlayerSnapshot{}, fmt.Errorf("project player decision view: %w", err)
+		}
+		decision = &projected
+	}
 	battles, err := hosted.session.PlayerBattleViews(seatID)
 	if err != nil {
 		return PlayerSnapshot{}, fmt.Errorf("project player battles: %w", err)
 	}
-	return PlayerSnapshot{SchemaVersion: SchemaVersion, ChangeSequence: hosted.changeSequence, View: view, Battles: battles}, nil
+	return PlayerSnapshot{SchemaVersion: SchemaVersion, ChangeSequence: hosted.changeSequence, View: view, Decision: decision, Battles: battles}, nil
+}
+
+func (h *Host) PlanningPreview(gameID string, seatID protocol.SeatID, batch protocol.CommandBatch) (PlanningPreviewSnapshot, error) {
+	hosted, err := h.lookup(gameID)
+	if err != nil {
+		return PlanningPreviewSnapshot{}, err
+	}
+	hosted.mu.Lock()
+	defer hosted.mu.Unlock()
+	if !containsSeat(hosted.seats, seatID) {
+		return PlanningPreviewSnapshot{}, fmt.Errorf("%w: seat %d", ErrNotFound, seatID)
+	}
+	if batch.GameID != gameID || batch.SeatID != seatID {
+		return PlanningPreviewSnapshot{}, fmt.Errorf("planning preview batch identity does not match route game/seat")
+	}
+	if hosted.immediateResolver == nil {
+		return PlanningPreviewSnapshot{}, fmt.Errorf("planning preview is unavailable without an economy resolver")
+	}
+	preview, err := hosted.session.PlanningPreview(batch, hosted.immediateResolver)
+	if err != nil {
+		return PlanningPreviewSnapshot{}, err
+	}
+	return PlanningPreviewSnapshot{SchemaVersion: SchemaVersion, ChangeSequence: hosted.changeSequence, Preview: preview}, nil
 }
 
 func (h *Host) ObserverSnapshot(gameID string) (ObserverSnapshot, error) {

@@ -212,3 +212,56 @@ func TestResearchUsesPreGrowthTurnOutput(t *testing.T) {
 		t.Fatalf("missing population growth event: %+v", result.Events)
 	}
 }
+
+func TestResearchCategoriesCoverEightPlayerFacingChains(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	want := []ResearchCategory{
+		{ID: "construction", Order: 0, NameKey: "research.category.construction", RootTechFieldID: 29},
+		{ID: "chemistry", Order: 1, NameKey: "research.category.chemistry", RootTechFieldID: 22},
+		{ID: "computers", Order: 2, NameKey: "research.category.computers", RootTechFieldID: 28},
+		{ID: "physics", Order: 3, NameKey: "research.category.physics", RootTechFieldID: 57},
+		{ID: "power", Order: 4, NameKey: "research.category.power", RootTechFieldID: 55},
+		{ID: "sociology", Order: 5, NameKey: "research.category.sociology", RootTechFieldID: 10},
+		{ID: "biology", Order: 6, NameKey: "research.category.biology", RootTechFieldID: 18},
+		{ID: "force_fields", Order: 7, NameKey: "research.category.force_fields", RootTechFieldID: 7},
+	}
+	got := rules.AvailableResearchCategories()
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("research categories=%+v want=%+v", got, want)
+	}
+	categorized := 0
+	for fieldID := range rules.TechnologyFieldCostsRP {
+		categoryID := rules.TechnologyFieldCategoryID[fieldID]
+		if fieldID == 74 {
+			if categoryID != "" {
+				t.Fatalf("special Antaran field 74 category=%q want empty", categoryID)
+			}
+			continue
+		}
+		if categoryID == "" || rules.TechnologyFieldCategoryNameKey[fieldID] == "" {
+			t.Fatalf("ordinary field %d has incomplete category metadata", fieldID)
+		}
+		order, ok := rules.TechnologyFieldCategoryOrder[fieldID]
+		if !ok || order < 0 || order > 7 {
+			t.Fatalf("ordinary field %d category order=(%d,%v)", fieldID, order, ok)
+		}
+		categorized++
+	}
+	if categorized != 81 {
+		t.Fatalf("categorized ordinary/hyper fields=%d want=81", categorized)
+	}
+
+	state := core.NewSmallFixture(0xCA7E)
+	choices, err := rules.AvailableResearchChoices(state, state.Empires[0].ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, choice := range choices {
+		if choice.TechFieldID == 74 {
+			t.Fatalf("special Antaran field 74 exposed as ordinary research choice: %+v", choice)
+		}
+		if choice.CategoryID != rules.TechnologyFieldCategoryID[choice.TechFieldID] || choice.CategoryOrder != rules.TechnologyFieldCategoryOrder[choice.TechFieldID] || choice.CategoryNameKey != rules.TechnologyFieldCategoryNameKey[choice.TechFieldID] {
+			t.Fatalf("choice field %d category=%q/%d/%q does not match rules metadata", choice.TechFieldID, choice.CategoryID, choice.CategoryOrder, choice.CategoryNameKey)
+		}
+	}
+}

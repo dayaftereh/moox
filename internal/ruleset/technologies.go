@@ -47,12 +47,15 @@ type TechnologyAIClass struct {
 }
 
 type TechnologyField struct {
-	FieldID      int             `json:"field_id"`
-	PreviousID   int             `json:"previous_id"`
-	NextID       int             `json:"next_id"`
-	ResearchCost int             `json:"research_cost_rp"`
-	AIGroup      int             `json:"ai_group"`
-	Source       FieldProvenance `json:"source"`
+	FieldID         int             `json:"field_id"`
+	PreviousID      int             `json:"previous_id"`
+	NextID          int             `json:"next_id"`
+	ResearchCost    int             `json:"research_cost_rp"`
+	AIGroup         int             `json:"ai_group"`
+	CategoryID      string          `json:"category_id"`
+	CategoryOrder   int             `json:"category_order"`
+	CategoryNameKey string          `json:"category_name_key"`
+	Source          FieldProvenance `json:"source"`
 }
 
 type Technology struct {
@@ -124,7 +127,8 @@ func (f *TechnologiesFile) Validate() error {
 		return fmt.Errorf("expected 82 technology fields, got %d", len(f.Fields))
 	}
 	for i, field := range f.Fields {
-		if field.FieldID != i+1 || field.PreviousID < 0 || field.PreviousID > 82 || field.NextID < 0 || field.NextID > 82 || field.ResearchCost <= 0 || field.Source.SourceID == "" {
+		categoryInvalid := field.FieldID != 74 && (field.CategoryID == "" || field.CategoryOrder < 0 || field.CategoryOrder > 7 || field.CategoryNameKey == "")
+		if field.FieldID != i+1 || field.PreviousID < 0 || field.PreviousID > 82 || field.NextID < 0 || field.NextID > 82 || field.ResearchCost <= 0 || categoryInvalid || field.Source.SourceID == "" {
 			return fmt.Errorf("technology field %d is invalid", i+1)
 		}
 	}

@@ -1,23 +1,36 @@
 import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   aggregatePopulation,
-  assignPopulation,
   createGame,
   getPlayerSnapshot,
   listGames,
+  previewPlanning,
+  removeDraftOrder,
+  replaceDraftOrder,
   streamURL,
   submitDiplomacy,
   submitInvasion,
+  submitPlanning,
   type DiplomacyCommandKind,
   type DiplomaticStance,
+  type DraftOrder,
   type GameSummary,
   type Notification,
+  type PlanningPreviewSnapshot,
   type PlayerSnapshot,
 } from './api'
 import { AppShell, LanguageSwitch, StandaloneHeader } from './components/AppShell'
 import { Card, EmptyState, Metric, Notice, PageHeader } from './components/ui'
 import { type TranslationKey, type TranslationVars, useI18n } from './i18n'
 import { type AppRoute, type GameSection, navigate, parseRoute } from './navigation'
+import {
+  StrategicColoniesView,
+  StrategicDiplomacyView,
+  StrategicEspionageView,
+  StrategicFleetsView,
+  StrategicGalaxyView,
+  StrategicResearchView,
+} from './StrategicViews'
 import './styles.css'
 
 type AssignmentDraft = {
@@ -64,6 +77,10 @@ function App() {
   const [seatID, setSeatID] = useState(1)
   const [snapshot, setSnapshot] = useState<PlayerSnapshot | null>(null)
   const [assignment, setAssignment] = useState<AssignmentDraft>({ farmers: '0', workers: '0', scientists: '0' })
+  const [draftOrders, setDraftOrders] = useState<DraftOrder[]>([])
+  const [planningPreview, setPlanningPreview] = useState<PlanningPreviewSnapshot | null>(null)
+  const [previewBusy, setPreviewBusy] = useState(false)
+  const [planningBusy, setPlanningBusy] = useState(false)
   const [status, setStatus] = useState<StatusMessage>({ key: 'status.connecting' })
   const [error, setError] = useState('')
   const [diplomacyBusy, setDiplomacyBusy] = useState(false)
@@ -95,6 +112,8 @@ function App() {
     const next = await getPlayerSnapshot(selectedGameID, selectedSeatID, signal)
     if (selectedGameID !== activeGameRef.current || selectedSeatID !== activeSeatRef.current) return
     setSnapshot(next)
+    setDraftOrders([])
+    setPlanningPreview(null)
     const firstColony = next.view.colonies[0]
     if (firstColony) {
       const population = aggregatePopulation(firstColony)
@@ -189,12 +208,53 @@ function App() {
     }
   }, [gameID, seatID, loadSnapshot])
 
+  useEffect(() => {
+    if (!snapshot || snapshot.view.phase !== 'planning') {
+      setPlanningPreview(null)
+      setPreviewBusy(false)
+      return
+    }
+    const controller = new AbortController()
+    setPreviewBusy(true)
+    void previewPlanning(snapshot, seatID, draftOrders, controller.signal)
+      .then((preview) => {
+        if (!controller.signal.aborted) {
+          setPlanningPreview(preview)
+          setError('')
+        }
+      })
+      .catch((cause) => {
+        if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : String(cause))
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setPreviewBusy(false)
+      })
+    return () => controller.abort()
+  }, [snapshot, seatID, draftOrders])
+
   const firstColony = snapshot?.view.colonies[0]
   const totalDraft = useMemo(
     () => Number(assignment.farmers || 0) + Number(assignment.workers || 0) + Number(assignment.scientists || 0),
     [assignment],
   )
   const diplomacyClosed = snapshot?.view.phase !== 'planning' || Boolean(snapshot?.view.seats.some((seat) => seat.submitted))
+  const projectedResources = planningPreview?.preview.projection
+  const projectedEmpire = snapshot?.decision?.empire
+  const resourceChips = projectedEmpire ? [
+    {
+      label: t('resource.bc'),
+      value: `${Math.round(projectedResources?.treasury_balance_bc ?? projectedEmpire.treasury.balance_bc)} (${(projectedResources?.net_modeled_income_bc ?? projectedEmpire.treasury.net_modeled_income_bc) >= 0 ? '+' : ''}${Math.round(projectedResources?.net_modeled_income_bc ?? projectedEmpire.treasury.net_modeled_income_bc)})`,
+    },
+    {
+      label: t('resource.freighters'),
+      value: projectedResources ? `${projectedResources.freighters.available}/${projectedResources.freighters.total}` : String(projectedEmpire.freighters),
+    },
+    {
+      label: t('resource.command'),
+      value: `${projectedResources?.command_points.used ?? projectedEmpire.command_points.used}/${projectedResources?.command_points.capacity ?? projectedEmpire.command_points.capacity}`,
+      tone: (projectedResources?.command_point_overage ?? Math.max(0, projectedEmpire.command_points.used - projectedEmpire.command_points.capacity)) > 0 ? 'warning' as const : 'neutral' as const,
+    },
+  ] : []
   const statusText = t(status.key, status.vars)
   const statusTone: 'neutral' | 'success' | 'warning' | 'danger' = error
     ? 'danger'
@@ -237,26 +297,44 @@ function App() {
     }
   }
 
-  async function submitAssignment(event: FormEvent) {
-    event.preventDefault()
-    if (!snapshot || !firstColony) return
-    setError('')
-    try {
-      const receipt = await assignPopulation(
-        snapshot,
-        seatID,
-        firstColony.id,
-        Number(assignment.farmers),
-        Number(assignment.workers),
-        Number(assignment.scientists),
-      )
-      setStatus({ key: 'status.commandAccepted', vars: { change: receipt.change_sequence, revision: receipt.game_revision } })
-      await loadSnapshot(snapshot.view.game_id, seatID)
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : String(reason))
-    }
+  function planOrder(order: DraftOrder) {
+    setDraftOrders((current) => replaceDraftOrder(current, order))
   }
 
+  function removePlannedOrder(key: string) {
+    setDraftOrders((current) => removeDraftOrder(current, key))
+  }
+
+  function planPopulation(colonyID: number, farmers: number, workers: number, scientists: number) {
+    planOrder({
+      key: `population:${colonyID}`,
+      kind: 'colony.assign_population',
+      payload: { colony_id: colonyID, farmers, workers, scientists },
+    })
+  }
+
+  function submitAssignment(event: FormEvent) {
+    event.preventDefault()
+    if (!firstColony) return
+    planPopulation(firstColony.id, Number(assignment.farmers), Number(assignment.workers), Number(assignment.scientists))
+  }
+
+  async function endTurn() {
+    if (!snapshot || planningBusy || snapshot.view.phase !== 'planning') return
+    setPlanningBusy(true)
+    setError('')
+    try {
+      const receipt = await submitPlanning(snapshot, seatID, draftOrders)
+      setDraftOrders([])
+      setPlanningPreview(null)
+      setStatus({ key: 'status.commandAccepted', vars: { change: receipt.change_sequence, revision: receipt.game_revision } })
+      await loadSnapshot(snapshot.view.game_id, seatID)
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause))
+    } finally {
+      setPlanningBusy(false)
+    }
+  }
   async function runDiplomacy(kind: DiplomacyCommandKind, otherEmpireID: number) {
     if (!snapshot) return
     setDiplomacyBusy(true)
@@ -288,9 +366,15 @@ function App() {
   }
 
   function enterGame(selectedGameID: string, section: GameSection = 'galaxy') {
+    const reloadSelectedGame = selectedGameID === gameID
     setGameID(selectedGameID)
     setSnapshot(null)
     navigate({ kind: 'game', gameID: selectedGameID, section })
+    if (reloadSelectedGame) {
+      void loadSnapshot(selectedGameID, seatID).catch((cause: unknown) => {
+        setError(cause instanceof Error ? cause.message : String(cause))
+      })
+    }
   }
 
   function selectHostedGame(selectedGameID: string) {
@@ -313,6 +397,7 @@ function App() {
           </section>
 
           {error && <Notice title={t('state.errorTitle')} tone="danger"><p>{error}</p></Notice>}
+
 
           <Card>
             <div className="card-heading">
@@ -345,6 +430,7 @@ function App() {
         <main className="standalone-content">
           <PageHeader eyebrow={t('newGame.eyebrow')} title={t('newGame.title')} subtitle={t('newGame.subtitle')} actions={<button type="button" className="button-ghost" onClick={() => navigate({ kind: 'home' })}>{t('common.back')}</button>} />
           {error && <Notice title={t('state.errorTitle')} tone="danger"><p>{error}</p></Notice>}
+
           <Card>
             <form className="new-game-form" onSubmit={submitNewGame}>
               <div className="form-grid">
@@ -374,10 +460,24 @@ function App() {
       phaseLabel={phaseText}
       status={statusText}
       statusTone={statusTone}
+      resources={resourceChips}
       onNavigate={(section) => navigate({ kind: 'game', gameID: route.gameID, section })}
       onHome={() => navigate({ kind: 'home' })}
     >
       {error && <Notice title={t('state.errorTitle')} tone="danger"><p>{error}</p></Notice>}
+
+      {snapshot?.view.phase === 'planning' && (
+        <Card className="planning-bar">
+          <div>
+            <p className="eyebrow">{t('planning.pending')}</p>
+            <strong>{draftOrders.length === 0 ? t('planning.noChanges') : t('planning.draftCount', { count: draftOrders.length })}</strong>
+            {previewBusy && <small>{t('planning.previewing')}</small>}
+          </div>
+          <button type="button" className="button-primary" disabled={planningBusy || previewBusy} onClick={() => void endTurn()}>
+            {planningBusy ? t('planning.resolving') : t('planning.endTurn')}
+          </button>
+        </Card>
+      )}
 
       {snapshot?.view.invasion && (
         <Card className="priority-card">
@@ -409,15 +509,36 @@ function App() {
       {!snapshot ? (
         error ? null : <EmptyState title={t('state.loadingTitle')} body={t('state.loadingBody')} />
       ) : activeSection === 'galaxy' ? (
-        <GalaxyView snapshot={snapshot} t={t} />
+        <StrategicGalaxyView
+          snapshot={snapshot}
+          selectedSystemID={route.entityID}
+          onSelectSystem={(systemID) => navigate({ kind: 'game', gameID: route.gameID, section: 'galaxy', entityID: systemID })}
+          onOpenColony={(colonyID) => navigate({ kind: 'game', gameID: route.gameID, section: 'colonies', entityID: colonyID })}
+          onPlanOrder={planOrder}
+          t={t}
+        />
       ) : activeSection === 'colonies' ? (
-        <ColoniesView snapshot={snapshot} assignment={assignment} setAssignment={setAssignment} totalDraft={totalDraft} onSubmit={submitAssignment} t={t} />
+        <StrategicColoniesView
+          snapshot={snapshot}
+          preview={planningPreview}
+          draftOrders={draftOrders}
+          selectedColonyID={route.entityID}
+          onOpenColony={(colonyID) => navigate({ kind: 'game', gameID: route.gameID, section: 'colonies', entityID: colonyID })}
+          onBack={() => navigate({ kind: 'game', gameID: route.gameID, section: 'colonies' })}
+          onPlanPopulation={planPopulation}
+          onPlanOrder={planOrder}
+          onRemoveOrder={removePlannedOrder}
+          t={t}
+        />
       ) : activeSection === 'fleets' ? (
-        <FleetsView snapshot={snapshot} t={t} />
+        <StrategicFleetsView snapshot={snapshot} onPlanOrder={planOrder} t={t} />
       ) : activeSection === 'research' ? (
-        <ResearchView t={t} />
-      ) : (
-        <MoreView
+        <StrategicResearchView snapshot={snapshot} preview={planningPreview} onPlanOrder={planOrder} t={t} />
+      ) : activeSection === 'diplomacy' ? (
+        <StrategicDiplomacyView snapshot={snapshot} busy={diplomacyBusy} closed={Boolean(diplomacyClosed)} onCommand={runDiplomacy} t={t} />
+      ) : activeSection === 'espionage' ? (
+        <StrategicEspionageView t={t} />
+      ) : (        <MoreView
           snapshot={snapshot}
           games={games}
           gameID={gameID}

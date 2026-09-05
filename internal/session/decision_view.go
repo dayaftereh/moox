@@ -63,16 +63,18 @@ type BattleDecision struct {
 }
 
 type DecisionCatalog struct {
-	Research          []game.ResearchChoice          `json:"research,omitempty"`
-	Construction      []ColonyConstructionDecision   `json:"construction,omitempty"`
-	Population        []ColonyPopulationDecision     `json:"population,omitempty"`
-	FleetMoves        []game.FleetMoveChoice         `json:"fleet_moves,omitempty"`
-	Colonization      []game.ColonizationChoice      `json:"colonization,omitempty"`
-	OutpostDeployment []game.OutpostDeploymentChoice `json:"outpost_deployment,omitempty"`
-	Diplomacy         []DiplomacyDecision            `json:"diplomacy,omitempty"`
-	ColonyBase        []game.ColonyBaseResolution    `json:"colony_base,omitempty"`
-	Invasion          *game.InvasionOpportunity      `json:"invasion,omitempty"`
-	Battles           []BattleDecision               `json:"battles,omitempty"`
+	ResearchCategories  []game.ResearchCategory         `json:"research_categories,omitempty"`
+	Research            []game.ResearchChoice           `json:"research,omitempty"`
+	Construction        []ColonyConstructionDecision    `json:"construction,omitempty"`
+	Population          []ColonyPopulationDecision      `json:"population,omitempty"`
+	PopulationTransfers []game.PopulationTransferChoice `json:"population_transfers,omitempty"`
+	FleetMoves          []game.FleetMoveChoice          `json:"fleet_moves,omitempty"`
+	Colonization        []game.ColonizationChoice       `json:"colonization,omitempty"`
+	OutpostDeployment   []game.OutpostDeploymentChoice  `json:"outpost_deployment,omitempty"`
+	Diplomacy           []DiplomacyDecision             `json:"diplomacy,omitempty"`
+	ColonyBase          []game.ColonyBaseResolution     `json:"colony_base,omitempty"`
+	Invasion            *game.InvasionOpportunity       `json:"invasion,omitempty"`
+	Battles             []BattleDecision                `json:"battles,omitempty"`
 }
 
 // PlayerDecisionView is the complete input boundary for built-in AI and future
@@ -142,12 +144,13 @@ func (s *GameSession) DecisionView(seatID protocol.SeatID, resolver *game.Econom
 	sort.Slice(view.Diplomacy, func(i, j int) bool { return view.Diplomacy[i].OtherEmpireID < view.Diplomacy[j].OtherEmpireID })
 	view.Strategic = buildStrategicView(state, seat.EmpireID)
 
+	view.Decisions.ResearchCategories = resolver.Rules.AvailableResearchCategories()
 	view.Decisions.Research, err = resolver.Rules.AvailableResearchChoices(state, seat.EmpireID)
 	if err != nil {
 		return PlayerDecisionView{}, fmt.Errorf("research choices: %w", err)
 	}
 	for _, colony := range view.Colonies {
-		construction, err := resolver.Rules.AvailableConstructionChoices(state, seat.EmpireID, colony.ID)
+		construction, err := resolver.Rules.AvailableConstructionQueueChoices(state, seat.EmpireID, colony.ID)
 		if err != nil {
 			return PlayerDecisionView{}, fmt.Errorf("colony %d construction choices: %w", colony.ID, err)
 		}
@@ -157,6 +160,10 @@ func (s *GameSession) DecisionView(seatID protocol.SeatID, resolver *game.Econom
 		}
 		view.Decisions.Construction = append(view.Decisions.Construction, ColonyConstructionDecision{ColonyID: colony.ID, Choices: construction})
 		view.Decisions.Population = append(view.Decisions.Population, ColonyPopulationDecision{ColonyID: colony.ID, Choices: population})
+	}
+	view.Decisions.PopulationTransfers, err = resolver.AvailablePopulationTransferChoices(state, seat.EmpireID)
+	if err != nil {
+		return PlayerDecisionView{}, fmt.Errorf("population transfer choices: %w", err)
 	}
 	view.Decisions.FleetMoves, err = resolver.AvailableFleetMoveChoices(state, seat.EmpireID)
 	if err != nil {
