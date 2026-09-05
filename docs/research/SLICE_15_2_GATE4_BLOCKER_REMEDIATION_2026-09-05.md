@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-D complete; direct user review pending; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-E complete; direct user review pending; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -111,6 +111,22 @@ Status: **complete; direct user review pending**.
 - A 320px probe confirmed icon-only Main/OX, no visible round/phase chip, all BC/Food/Tr/CP resources fitting without horizontal overflow, all seven tabs at about `33px` each, and a full-width Colony content area (`308px`) with horizontally scrollable table (`306px` viewport) and sticky Colony column.
 - Galaxy now computes its height from the compact shell bars so the strategic surface uses essentially the full remaining viewport.
 - `npm run build` - **PASS**.
+- `git diff --check` - **PASS** (Windows LF/CRLF notices only).
+
+#### G4-B2-E - Three-dot game menu and five-tab primary navigation
+
+Status: **complete; direct user review pending**.
+
+- Replaced the top-left OX/home shortcut with an explicit `⋯` game-menu trigger. Clicking it no longer leaves the game.
+- The popover contains compact Settings/Language controls, Espionage, an Advanced entry for the existing session/diagnostic/development surface, and a clear Main-menu exit action.
+- The MOOX/OX brand remains available on standalone/main-menu surfaces instead of consuming the in-game menu affordance.
+- Removed `More` and `Espionage` from the primary navigation rail and mobile bottom bar. The five primary strategic destinations are now Galaxy, Colonies, Fleets, Research and Diplomacy; Espionage is reached from the `⋯` menu and remains intentionally non-actionable until Slice 20.
+- Existing `More` functionality was not deleted: it is retained behind the `Advanced` menu entry so session/seat/diagnostic development utilities remain reachable without occupying primary gameplay navigation.
+- The menu closes when navigating from it and supports outside-pointer/Escape dismissal via the shell event handling.
+- Browser smoke switched DE -> EN directly inside the popover and immediately updated both menu and strategic-shell localization.
+- Browser smoke opened Espionage from the popover and confirmed the menu closed while routing to `/espionage`.
+- A 320px probe measured five bottom tabs at about `48px` each plus End Turn, while the popover measured about `294 x 321px` and remained fully inside a `320 x 640` viewport. The top resource row still fit without horizontal overflow.
+- `npm run build` - **PASS** after the final removal of visible technical game-ID text.
 - `git diff --check` - **PASS** (Windows LF/CRLF notices only).
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
