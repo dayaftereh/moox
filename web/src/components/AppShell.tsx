@@ -7,6 +7,7 @@ const primaryNavItems: Array<{ section: GameSection; label: TranslationKey; glyp
   { section: 'colonies', label: 'nav.colonies', glyph: '\u2302' },
   { section: 'fleets', label: 'nav.fleets', glyph: '\u2197' },
   { section: 'diplomacy', label: 'nav.diplomacy', glyph: '\u2696' },
+  { section: 'espionage', label: 'nav.espionage', glyph: '\u25C9' },
 ]
 type ResourceTone = 'neutral' | 'positive' | 'warning' | 'danger'
 type ResourceChip = {
@@ -165,10 +166,6 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
 
               <div className="main-menu-section">
                 <span className="main-menu-section-title">{t('gameMenu.game')}</span>
-                <button type="button" className="main-menu-item" onClick={() => navigateFromMenu('espionage')}>
-                  <span className="main-menu-item-glyph" aria-hidden="true">◉</span>
-                  <span><strong>{t('nav.espionage')}</strong><small>{t('gameMenu.espionageHint')}</small></span>
-                </button>
                 <button type="button" className="main-menu-item" onClick={() => navigateFromMenu('more')}>
                   <span className="main-menu-item-glyph" aria-hidden="true">⚙</span>
                   <span><strong>{t('gameMenu.advanced')}</strong><small>{t('gameMenu.advancedHint')}</small></span>

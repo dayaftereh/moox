@@ -1027,7 +1027,7 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 
 
 /* Slice 15.2 G4-B2-G: HUD-driven research selection overlay */
-.bottom-nav { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
+.bottom-nav { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
 
 .research-overlay-backdrop {
   position: fixed;

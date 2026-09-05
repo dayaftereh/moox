@@ -33,6 +33,7 @@ Permanent evidence:
     - [ ] B2-K: Galaxy pan bounds + MOO2-inspired framing review.
       - [x] Pan bounds with responsive edge offset on mouse/touch.
       - [x] Map-only Galaxy surface; remove visible zoom/help/title controls while preserving wheel/pinch zoom.
+      - [x] Restore Espionage as fifth primary tab; shorten turn-submit action to Fertig/Done and remove duplicate Espionage from the game menu.
       - [ ] Review supplied MOO2 Galaxy reference and refine framing/density.
   - [ ] G4-C: independent mobile/desktop workflow QA and Slice-15.2 closure.
 

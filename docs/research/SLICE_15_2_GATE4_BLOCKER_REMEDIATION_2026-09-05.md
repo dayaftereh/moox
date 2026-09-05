@@ -211,7 +211,9 @@ Status: **in progress; pan bounds complete, MOO2 reference review pending**.
 - Removed all visible Galaxy-map chrome at the user's request: empire/title toolbar, help button, zoom `-`, zoom percentage, zoom `+`, and reset control are gone. The Galaxy card is now map-only.
 - Direct gesture zoom remains: desktop mouse wheel and touch pinch still change the authoritative UI zoom state, while the bounded-pan behavior remains active.
 - Desktop smoke measured the `501px` Galaxy card with the map occupying `499px`; no toolbar, zoom buttons, or zoom badge remained. Wheel smoke changed the layer from `scale(1)` to `scale(1.12)`.
-- A 320px probe measured the `536px` card with `534px` of actual map and no toolbar, preserving the four bottom strategic tabs.- Next: review the user's supplied Master of Orion II Galaxy screenshot and refine Galaxy framing/density without copying original artwork.
+- A 320px probe measured the `536px` card with `534px` of actual map and no toolbar, preserving the four bottom strategic tabs.
+- Restored Espionage to the visible primary navigation now that Research no longer consumes a tab. The bottom/side primary set is Galaxy, Colonies, Fleets, Diplomacy and Espionage; the duplicate Espionage entry was removed from the three-dot game menu.
+- Shortened the turn-submit label from Runde beenden / End turn to Fertig / Done to preserve horizontal space. A 320px probe measured five primary tabs at about 48px each plus a 66px Fertig button with no navigation overflow.- Next: review the user's supplied Master of Orion II Galaxy screenshot and refine Galaxy framing/density without copying original artwork.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
 
