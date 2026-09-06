@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M system inspection refinements complete; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -229,6 +229,22 @@ Status: **complete; direct user review pending**.
 - Current core state exposes no authoritative crystal/Orion/artifact/special-resource field on Planet or OrbitalBody. The UI therefore does **not** invent such markers. The lower-left special-feature concept is reserved for a later core/data extension when actual feature IDs exist.
 - Desktop smoke at 791x605 measured a 777x463 orbital stage filling the full dialog scene. A 320x640 probe kept the dialog inside the viewport with a 407px orbital scene plus a compact 132px selected-body inspector.
 - `npm run build` - **PASS** after final layout/status cleanup.
+
+#### G4-B2-M - Circular system orbits + authoritative fleet/ship inspection
+
+Status: **complete; direct user review pending**.
+
+- Replaced the perspective/stadium orbit geometry with a dedicated square orbital canvas. Planet positions now use the same X/Y radius and each orbit ring is rendered with equal width/height, so the visual tracks are true circles rather than ellipses.
+- Desktop browser smoke on Beta measured a `430 x 430px` orbit canvas and circular rings (`235.1 x 235.1px`, `323.9 x 323.9px`).
+- The permanent Slice 15.2 product direction already required the system dialog to show player fleets currently present plus the ships belonging to each visible player fleet. That requirement is now represented directly in the orbital scene rather than only as footer badges.
+- Added a clickable `Systemorbit` fleet dock. Every own authoritative `StrategicFleet` whose `at_system_id` matches the open system becomes a fleet marker. Selecting the marker switches the inspector from the planet/body view to fleet details.
+- Fleet inspection shows authoritative role, special kind where present, ship count and an explicit location statement: `Im Sternsystem · kein Planeten-Orbitanker`.
+- If projected ship identities are available, the fleet inspector resolves `ship_ids` against `decision.strategic.ships`, renders each ship as an individual selectable row and shows its name, hull and source design/revision. No ship identity is fabricated when the projection omits it.
+- Fleet markers are deliberately **not attached to a specific planet**. The current authoritative `core.StrategicFleet` contains `AtSystemID` / `DestinationSystemID` but no `AtBodyID` / planet-orbit location. Rendering a fleet beside a particular planet today would falsely imply a location the server does not know.
+- If planet-local orbital positioning becomes gameplay-significant, add an explicit authoritative body anchor (for example `AtBodyID`) plus transition/stacking semantics before the HMI places fleets at individual planets.
+- For browser QA only, the demo server was temporarily augmented with one valid authoritative combat fleet containing two valid ships (`Falcon`, `Raven`). The temporary backend change was inspected and fully restored before staging/commit. Smoke verified: fleet marker -> fleet inspector -> Falcon/Raven ship buttons -> selecting Raven updates the ship detail panel.
+- 320px smoke with that temporary authoritative QA fleet kept the complete dialog inside the viewport, used a `262 x 262px` circular canvas, a compact `142px` fleet dock, a `188px` fleet inspector, and no horizontal document overflow. The displayed ring remained circular (`170 x 170px`).
+- `npm run build` - **PASS**.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
 

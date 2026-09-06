@@ -1443,3 +1443,102 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 
 /* System scene must fill the available dialog body instead of retaining the legacy fixed stage height. */
 .system-orbit-stage.system-orbit-stage-classic { height: 100% !important; }
+
+
+/* Slice 15.2 follow-up: true circular system orbits + clickable system-level fleet dock. */
+.system-orbit-canvas {
+  position: absolute;
+  z-index: 2;
+  left: 56%;
+  top: 50%;
+  width: min(82%, 430px);
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%);
+}
+.system-orbit-canvas .system-star-core { left: 50%; top: 50%; }
+.system-orbit-canvas .system-orbit-ring { border-radius: 50%; }
+.system-fleet-dock {
+  position: absolute;
+  z-index: 9;
+  right: 10px;
+  bottom: 10px;
+  display: grid;
+  width: min(190px, 31%);
+  gap: 4px;
+  padding: 6px;
+  border: 1px solid rgba(104, 127, 151, .55);
+  border-radius: 7px;
+  background: rgba(3, 9, 15, .84);
+  backdrop-filter: blur(5px);
+}
+.system-fleet-dock-label {
+  color: #8497aa;
+  font-size: .52rem;
+  font-weight: 900;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.system-fleet-marker {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  padding: 4px 5px;
+  border: 1px solid rgba(96, 119, 143, .42);
+  border-radius: 5px;
+  background: rgba(11, 20, 28, .86);
+  color: #b8c8d7;
+  text-align: left;
+}
+.system-fleet-marker:hover,
+.system-fleet-marker:focus-visible { border-color: #8eacc7; background: rgba(19, 33, 45, .94); color: #eff7ff; }
+.system-fleet-marker.selected { border-color: #a7d4ff; background: rgba(31, 57, 78, .94); color: #f4faff; box-shadow: inset 0 0 0 1px rgba(167, 212, 255, .16); }
+.system-fleet-glyph {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid rgba(176, 204, 228, .42);
+  border-radius: 50%;
+  color: #bcd8ee;
+  font-size: .7rem;
+  transform: rotate(90deg);
+}
+.system-fleet-marker > span:last-child { display: grid; min-width: 0; }
+.system-fleet-marker strong { overflow: hidden; font-size: .59rem; text-overflow: ellipsis; white-space: nowrap; }
+.system-fleet-marker small { color: #8295a7; font-size: .5rem; }
+.system-fleet-inspector { max-height: calc(100% - 24px); overflow: auto; }
+.system-fleet-ships { display: grid; gap: 3px; padding: 4px 7px 6px; border-top: 1px solid rgba(100, 124, 147, .24); }
+.system-ship-choice {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 5px;
+  min-height: 30px;
+  padding: 3px 5px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  background: rgba(14, 25, 35, .62);
+  color: #aebfce;
+  text-align: left;
+}
+.system-ship-choice.selected { border-color: #6ea0c7; background: rgba(35, 63, 84, .72); color: #f0f7fd; }
+.system-ship-choice > span:last-child { display: grid; min-width: 0; }
+.system-ship-choice strong { overflow: hidden; font-size: .56rem; text-overflow: ellipsis; white-space: nowrap; }
+.system-ship-choice small { color: #7f94a7; font-size: .48rem; }
+.system-ship-glyph { color: #9fc6e5; font-size: .6rem; }
+.system-ship-details { display: grid; gap: 2px; margin: 0 7px 7px; padding: 5px 6px; border: 1px solid rgba(101, 131, 157, .3); border-radius: 4px; background: rgba(6, 15, 23, .72); color: #aebecd; font-size: .52rem; }
+.system-ship-details strong { color: #edf6fd; font-size: .58rem; }
+.system-fleet-projection-note { margin: 5px 7px 7px; font-size: .52rem; }
+
+@media (max-width: 699px) {
+  .system-orbit-canvas { left: 50%; width: min(84%, 292px); }
+  .system-fleet-dock { right: 5px; bottom: 5px; width: min(142px, 46%); padding: 4px; }
+  .system-fleet-dock-label { font-size: .46rem; }
+  .system-fleet-marker { grid-template-columns: 20px minmax(0, 1fr); min-height: 30px; padding: 3px 4px; }
+  .system-fleet-glyph { width: 18px; height: 18px; font-size: .58rem; }
+  .system-fleet-marker strong { font-size: .52rem; }
+  .system-fleet-marker small { font-size: .45rem; }
+  .system-fleet-inspector { max-height: 188px; overflow: auto; }
+}

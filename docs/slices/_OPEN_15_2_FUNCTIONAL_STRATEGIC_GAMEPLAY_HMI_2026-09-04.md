@@ -36,6 +36,7 @@ Permanent evidence:
       - [x] Restore Espionage as fifth primary tab; shorten turn-submit action to Fertig/Done and remove duplicate Espionage from the game menu.
       - [ ] Review supplied MOO2 Galaxy reference and refine framing/density.
     - [x] B2-L: MOO2-inspired star-system dialog with clickable bodies, authoritative planet inspection and legal selected-body actions; special-resource markers deferred until core metadata exists.
+    - [x] B2-M: true circular system orbits + clickable system-level fleet/ship inspection; planet-local fleet anchoring deferred until core exposes an authoritative body location.
   - [ ] G4-C: independent mobile/desktop workflow QA and Slice-15.2 closure.
 
 Live preview:

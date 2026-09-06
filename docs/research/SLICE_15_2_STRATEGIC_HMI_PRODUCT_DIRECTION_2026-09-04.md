@@ -59,6 +59,11 @@ The dialog should visually show the system as a miniature orbital scene:
 - fleet names and the ships belonging to each visible player fleet;
 - system name prominently visible.
 
+Fleet-location authority note:
+- the current strategic model locates fleets authoritatively at star-system level (`AtSystemID`) or in transit to a destination system;
+- the HMI may present those fleets as clickable system-orbit markers, but must not visually bind a fleet to a particular planet/body unless the core exposes an explicit body-level location;
+- if local planet-orbit positioning becomes gameplay-significant, introduce an authoritative body anchor (for example `AtBodyID`) and its movement/stacking semantics before rendering fleets next to individual planets.
+
 Desktop:
 
 - modal/large overlay on top of the 2D galaxy;

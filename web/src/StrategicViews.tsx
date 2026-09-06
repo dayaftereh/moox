@@ -294,6 +294,8 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
   }))
   const orderedBodies = [...bodies].sort((a, b) => a.orbit - b.orbit || a.id - b.id)
   const [selectedBodyID, setSelectedBodyID] = useState<number | null>(orderedBodies[0]?.id ?? null)
+  const [selectedFleetID, setSelectedFleetID] = useState<number | null>(null)
+  const [selectedShipID, setSelectedShipID] = useState<number | null>(null)
 
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
@@ -309,12 +311,17 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
 
   useEffect(() => {
     setSelectedBodyID(orderedBodies[0]?.id ?? null)
+    setSelectedFleetID(null)
+    setSelectedShipID(null)
   }, [system.id])
 
   const decision = snapshot.decision
   if (!decision) return null
 
-  const selectedBody = orderedBodies.find((body) => body.id === selectedBodyID) ?? orderedBodies[0]
+  const fleets = decision.strategic.fleets?.filter((fleet) => fleet.at_system_id === system.id) ?? []
+  const contacts = decision.strategic.contacts?.filter((contact) => contact.system_id === system.id) ?? []
+  const selectedFleet = fleets.find((fleet) => fleet.id === selectedFleetID)
+  const selectedBody = selectedFleet ? undefined : (orderedBodies.find((body) => body.id === selectedBodyID) ?? orderedBodies[0])
   const selectedPlanet = selectedBody?.planet_id ? system.planets.find((planet) => planet.id === selectedBody.planet_id) : undefined
   const selectedColony = selectedPlanet ? decision.colonies.find((colony) => colony.planet_id === selectedPlanet.id) : undefined
   const colonizeChoices = selectedPlanet
@@ -323,8 +330,9 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
   const outpostChoices = selectedBody
     ? (decision.decisions.outpost_deployment ?? []).filter((choice) => choice.system_id === system.id && choice.body_id === selectedBody.id)
     : []
-  const fleets = decision.strategic.fleets?.filter((fleet) => fleet.at_system_id === system.id) ?? []
-  const contacts = decision.strategic.contacts?.filter((contact) => contact.system_id === system.id) ?? []
+  const shipsByID = new Map((decision.strategic.ships ?? []).map((ship) => [ship.id, ship]))
+  const fleetShips = selectedFleet?.ship_ids?.map((shipID) => shipsByID.get(shipID)).filter((ship): ship is NonNullable<typeof ship> => Boolean(ship)) ?? []
+  const selectedShip = fleetShips.find((ship) => ship.id === selectedShipID) ?? fleetShips[0]
 
   const selectedStatus = selectedColony
     ? t('system.colonyStatus')
@@ -334,7 +342,17 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
         ? t('system.uncolonized')
         : t('system.noSettlement')
 
-  const selectBody = (bodyID: number) => setSelectedBodyID(bodyID)
+  const selectBody = (bodyID: number) => {
+    setSelectedFleetID(null)
+    setSelectedShipID(null)
+    setSelectedBodyID(bodyID)
+  }
+  const selectFleet = (fleetID: number) => {
+    const fleet = fleets.find((item) => item.id === fleetID)
+    setSelectedFleetID(fleetID)
+    setSelectedBodyID(null)
+    setSelectedShipID(fleet?.ship_ids?.[0] ?? null)
+  }
 
   return (
     <div className="system-dialog-backdrop" role="presentation" onPointerDown={(event) => {
@@ -351,44 +369,68 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
 
         <div className="system-dialog-scene">
           <div className="system-orbit-stage system-orbit-stage-classic" aria-label={t('system.bodies')}>
-            <div className={'system-star-core system-star-class-' + system.spectral_class} aria-hidden="true"><span /></div>
-            {orderedBodies.map((body, index) => {
-              const radius = 18 + ((index + 1) / (orderedBodies.length + 1)) * 31
-              const angle = (((system.id * 31) + (body.id * 67) + (index * 103)) % 360) * Math.PI / 180
-              const x = 50 + Math.cos(angle) * radius
-              const y = 50 + Math.sin(angle) * radius * 0.56
-              const planet = body.planet_id ? system.planets.find((item) => item.id === body.planet_id) : undefined
-              const selected = selectedBody?.id === body.id
-              const bodyClasses = [
-                'system-orbit-body',
-                'system-orbit-body-' + body.kind.replace(/_/g, '-'),
-                planet?.climate_id ? 'system-orbit-body-climate-' + planet.climate_id.replace(/_/g, '-') : '',
-                planet?.size_id ? 'system-orbit-body-size-' + planet.size_id.replace(/_/g, '-') : '',
-                selected ? 'selected' : '',
-              ].filter(Boolean).join(' ')
-              return (
-                <div className="system-orbit-body-layer" key={'orbit-' + body.id}>
-                  <span
-                    className="system-orbit-ring"
-                    style={{ width: (radius * 2) + '%', height: (radius * 1.12) + '%' }}
-                    aria-hidden="true"
-                  />
-                  <button
-                    type="button"
-                    className={bodyClasses}
-                    style={{ left: x + '%', top: y + '%' }}
-                    title={body.name + ' - ' + bodyLabel(t, body.kind)}
-                    aria-pressed={selected}
-                    onClick={() => selectBody(body.id)}
-                  >
-                    <span className="system-orbit-body-reticle" aria-hidden="true">
-                      <span className="system-orbit-body-dot" />
-                    </span>
-                    <strong>{body.name}</strong>
-                  </button>
-                </div>
-              )
-            })}
+            <div className="system-orbit-canvas">
+              <div className={'system-star-core system-star-class-' + system.spectral_class} aria-hidden="true"><span /></div>
+              {orderedBodies.map((body, index) => {
+                const radius = 17 + ((index + 1) / (orderedBodies.length + 1)) * 31
+                const angle = (((system.id * 31) + (body.id * 67) + (index * 103)) % 360) * Math.PI / 180
+                const x = 50 + Math.cos(angle) * radius
+                const y = 50 + Math.sin(angle) * radius
+                const planet = body.planet_id ? system.planets.find((item) => item.id === body.planet_id) : undefined
+                const selected = selectedBody?.id === body.id
+                const bodyClasses = [
+                  'system-orbit-body',
+                  'system-orbit-body-' + body.kind.replace(/_/g, '-'),
+                  planet?.climate_id ? 'system-orbit-body-climate-' + planet.climate_id.replace(/_/g, '-') : '',
+                  planet?.size_id ? 'system-orbit-body-size-' + planet.size_id.replace(/_/g, '-') : '',
+                  selected ? 'selected' : '',
+                ].filter(Boolean).join(' ')
+                return (
+                  <div className="system-orbit-body-layer" key={'orbit-' + body.id}>
+                    <span
+                      className="system-orbit-ring"
+                      style={{ width: (radius * 2) + '%', height: (radius * 2) + '%' }}
+                      aria-hidden="true"
+                    />
+                    <button
+                      type="button"
+                      className={bodyClasses}
+                      style={{ left: x + '%', top: y + '%' }}
+                      title={body.name + ' - ' + bodyLabel(t, body.kind)}
+                      aria-pressed={selected}
+                      onClick={() => selectBody(body.id)}
+                    >
+                      <span className="system-orbit-body-reticle" aria-hidden="true">
+                        <span className="system-orbit-body-dot" />
+                      </span>
+                      <strong>{body.name}</strong>
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+
+            {fleets.length > 0 && (
+              <div className="system-fleet-dock" aria-label={t('system.systemOrbit')}>
+                <span className="system-fleet-dock-label">{t('system.systemOrbit')}</span>
+                {fleets.map((fleet) => {
+                  const selected = selectedFleet?.id === fleet.id
+                  return (
+                    <button
+                      type="button"
+                      className={'system-fleet-marker' + (selected ? ' selected' : '')}
+                      key={'fleet-marker-' + fleet.id}
+                      aria-pressed={selected}
+                      title={t('system.fleetMarkerTitle', { id: fleet.id })}
+                      onClick={() => selectFleet(fleet.id)}
+                    >
+                      <span className="system-fleet-glyph" aria-hidden="true">▲</span>
+                      <span><strong>{t('galaxy.fleet', { id: fleet.id })}</strong><small>{t('fleets.ships', { count: fleet.ship_ids?.length ?? 0 })}</small></span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
           {selectedBody && (
@@ -415,13 +457,54 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
               </div>
             </aside>
           )}
+
+          {selectedFleet && (
+            <aside className="system-body-inspector system-fleet-inspector" aria-live="polite">
+              <header>
+                <div>
+                  <p className="eyebrow">{t('system.fleetDetails')}</p>
+                  <h3>{t('galaxy.fleet', { id: selectedFleet.id })}</h3>
+                </div>
+                <span className="badge">{t('system.systemOrbit')}</span>
+              </header>
+              <dl className="system-body-facts">
+                <div><dt>{t('system.fleetRole')}</dt><dd>{humanizeToken(selectedFleet.role)}</dd></div>
+                {selectedFleet.special_kind && <div><dt>{t('system.fleetType')}</dt><dd>{humanizeToken(selectedFleet.special_kind)}</dd></div>}
+                <div><dt>{t('system.shipCount')}</dt><dd>{selectedFleet.ship_ids?.length ?? 0}</dd></div>
+                <div><dt>{t('system.location')}</dt><dd>{t('system.systemLevelLocation')}</dd></div>
+              </dl>
+              {fleetShips.length > 0 && (
+                <div className="system-fleet-ships">
+                  {fleetShips.map((ship) => (
+                    <button
+                      type="button"
+                      className={'system-ship-choice' + (selectedShip?.id === ship.id ? ' selected' : '')}
+                      key={'system-ship-' + ship.id}
+                      aria-pressed={selectedShip?.id === ship.id}
+                      onClick={() => setSelectedShipID(ship.id)}
+                    >
+                      <span className="system-ship-glyph" aria-hidden="true">◆</span>
+                      <span><strong>{ship.name}</strong><small>{humanizeToken(ship.spec.hull_id)}</small></span>
+                    </button>
+                  ))}
+                </div>
+              )}
+              {selectedShip && (
+                <div className="system-ship-details">
+                  <strong>{selectedShip.name}</strong>
+                  <span>{t('system.hull')}: {humanizeToken(selectedShip.spec.hull_id)}</span>
+                  <span>{t('system.design')}: #{selectedShip.source_design_id} · r{selectedShip.source_design_revision}</span>
+                </div>
+              )}
+              {(selectedFleet.ship_ids?.length ?? 0) > 0 && fleetShips.length === 0 && <p className="muted system-fleet-projection-note">{t('system.shipDetailsUnavailable')}</p>}
+            </aside>
+          )}
         </div>
 
         <footer className="system-dialog-footer">
           <div className="system-dialog-footer-left">
-            {(fleets.length > 0 || contacts.length > 0) && (
+            {contacts.length > 0 && (
               <div className="system-traffic-strip" aria-label={t('system.fleets')}>
-                {fleets.map((fleet) => <span className="badge" key={'own-' + fleet.id}>{t('galaxy.fleet', { id: fleet.id })} · {fleet.ship_ids?.length ?? 0}</span>)}
                 {contacts.map((contact, index) => <span className="badge" key={'contact-' + index + '-' + contact.empire_id}>{t('common.empireFallback', { id: contact.empire_id })} · {contact.kind}</span>)}
               </div>
             )}
