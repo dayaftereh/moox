@@ -1268,3 +1268,178 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 
 /* Slice 15.2 G4-B2-K: Galaxy is a map-only surface; gesture zoom remains available. */
 .galaxy-card-full { grid-template-rows: minmax(0, 1fr) !important; }
+
+
+/* Slice 15.2 system-dialog refinement: MOO2-inspired orbital scene without copied artwork. */
+.system-dialog.system-dialog-classic {
+  display: grid;
+  width: min(980px, calc(100vw - 12px));
+  height: min(720px, 94dvh);
+  max-height: 94dvh;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  border: 1px solid #52606f;
+  border-radius: 12px;
+  background: #0a1017;
+  box-shadow: 0 26px 80px rgba(0, 0, 0, .68), inset 0 0 0 1px rgba(185, 204, 222, .05);
+}
+.system-dialog-classic-header {
+  min-height: 48px;
+  padding: 7px 11px !important;
+  border-bottom: 1px solid #52606f;
+  background: linear-gradient(180deg, #3b4652, #151c24 52%, #26303a);
+}
+.system-dialog-classic-header h2 { margin: 0 !important; font-size: 1.02rem !important; letter-spacing: .03em; }
+.system-dialog-classic-header .eyebrow { margin-bottom: 1px; }
+.system-star-class { justify-self: end; }
+.system-dialog-scene {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+  background: #020806;
+}
+.system-orbit-stage.system-orbit-stage-classic {
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(122, 164, 119, .07) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 72% 28%, rgba(177, 205, 192, .08) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 37% 78%, rgba(139, 169, 143, .07) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 82% 71%, rgba(197, 214, 199, .06) 0 1px, transparent 1.5px),
+    radial-gradient(ellipse at center, #07180f 0%, #031008 48%, #010503 100%);
+  background-size: 83px 77px, 109px 103px, 131px 119px, 151px 139px, auto;
+}
+.system-orbit-stage-classic .system-orbit-ring {
+  border-color: rgba(94, 119, 170, .4);
+  box-shadow: 0 0 9px rgba(49, 72, 121, .08);
+}
+.system-orbit-stage-classic .system-star-core { width: 82px; height: 82px; }
+.system-orbit-stage-classic .system-star-core span {
+  width: 37px;
+  height: 37px;
+  background: #ffd477;
+  box-shadow: 0 0 14px #ffc85b, 0 0 36px rgba(255, 159, 45, .82), 0 0 70px rgba(255, 123, 30, .32);
+}
+.system-star-class-0 span, .system-star-class-1 span { background: #f9f7e8 !important; box-shadow: 0 0 14px #f6f7ff, 0 0 38px rgba(196, 217, 255, .78), 0 0 70px rgba(116, 158, 255, .28) !important; }
+.system-star-class-3 span { background: #ffe25d !important; box-shadow: 0 0 14px #ffe271, 0 0 38px rgba(255, 205, 62, .72), 0 0 70px rgba(255, 177, 31, .28) !important; }
+.system-star-class-4 span, .system-star-class-5 span { background: #ffad63 !important; box-shadow: 0 0 14px #ffb76f, 0 0 38px rgba(255, 132, 55, .74), 0 0 70px rgba(255, 86, 37, .25) !important; }
+.system-orbit-body { min-width: 52px !important; padding: 2px 4px !important; gap: 4px !important; }
+.system-orbit-body-reticle {
+  position: relative;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+}
+.system-orbit-body-reticle::before,
+.system-orbit-body-reticle::after {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border: 0 solid transparent;
+  pointer-events: none;
+}
+.system-orbit-body.selected .system-orbit-body-reticle::before {
+  border-top: 2px solid #d5e7ff;
+  border-left: 2px solid #d5e7ff;
+  clip-path: polygon(0 0, 42% 0, 42% 8%, 8% 8%, 8% 42%, 0 42%);
+}
+.system-orbit-body.selected .system-orbit-body-reticle::after {
+  border-right: 2px solid #d5e7ff;
+  border-bottom: 2px solid #d5e7ff;
+  clip-path: polygon(58% 92%, 92% 92%, 92% 58%, 100% 58%, 100% 100%, 58% 100%);
+}
+.system-orbit-body.selected strong { color: #eff7ff; font-weight: 950; text-shadow: 0 0 7px rgba(179, 216, 255, .32); }
+.system-orbit-body-dot { width: 16px; height: 16px; border-color: rgba(255,255,255,.32); background: radial-gradient(circle at 32% 30%, #a9bdc9, #4e697d 62%, #253443); box-shadow: 0 0 11px rgba(98, 149, 196, .32); }
+.system-orbit-body-size-tiny .system-orbit-body-dot { width: 10px; height: 10px; }
+.system-orbit-body-size-small .system-orbit-body-dot { width: 13px; height: 13px; }
+.system-orbit-body-size-medium .system-orbit-body-dot { width: 16px; height: 16px; }
+.system-orbit-body-size-large .system-orbit-body-dot { width: 20px; height: 20px; }
+.system-orbit-body-size-huge .system-orbit-body-dot { width: 25px; height: 25px; }
+.system-orbit-body-climate-gaia .system-orbit-body-dot,
+.system-orbit-body-climate-terran .system-orbit-body-dot { background: radial-gradient(circle at 31% 28%, #6bc27b, #256d66 52%, #173746 100%); }
+.system-orbit-body-climate-ocean .system-orbit-body-dot { background: radial-gradient(circle at 31% 28%, #7bc2db, #276d9a 58%, #173551 100%); }
+.system-orbit-body-climate-desert .system-orbit-body-dot,
+.system-orbit-body-climate-arid .system-orbit-body-dot { background: radial-gradient(circle at 31% 28%, #e0a75f, #8f542b 58%, #49301f 100%); }
+.system-orbit-body-climate-tundra .system-orbit-body-dot,
+.system-orbit-body-climate-arctic .system-orbit-body-dot { background: radial-gradient(circle at 31% 28%, #e7f4f8, #8fb0c5 58%, #496678 100%); }
+.system-orbit-body-climate-barren .system-orbit-body-dot { background: radial-gradient(circle at 31% 28%, #b6afa1, #655e56 58%, #35332f 100%); }
+.system-orbit-body-climate-toxic .system-orbit-body-dot { background: radial-gradient(circle at 31% 28%, #c0d95d, #667e28 58%, #334315 100%); }
+.system-orbit-body-climate-radiated .system-orbit-body-dot { background: radial-gradient(circle at 31% 28%, #d289cb, #75396f 58%, #3e1f3d 100%); }
+.system-orbit-body-gas-giant .system-orbit-body-dot {
+  width: 27px !important;
+  height: 27px !important;
+  background: repeating-linear-gradient(8deg, #b98558 0 4px, #6e4935 4px 8px, #d7aa73 8px 10px);
+  box-shadow: 0 0 12px rgba(198, 140, 88, .3);
+}
+.system-orbit-body-asteroid-belt .system-orbit-body-dot {
+  width: 30px !important;
+  height: 12px !important;
+  border: 2px dotted #909ba7 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.system-body-inspector {
+  position: absolute;
+  z-index: 8;
+  left: 12px;
+  top: 12px;
+  width: min(220px, 34%);
+  overflow: hidden;
+  border: 1px solid #718092;
+  border-radius: 5px;
+  background: rgba(3, 9, 15, .91);
+  box-shadow: 0 8px 24px rgba(0,0,0,.32);
+  backdrop-filter: blur(6px);
+}
+.system-body-inspector > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; padding: 7px 8px 5px; border-bottom: 1px solid rgba(111, 132, 154, .35); }
+.system-body-inspector h3 { margin: 1px 0 0; font-size: .9rem; }
+.system-body-facts { display: grid; margin: 0; padding: 5px 8px 7px; }
+.system-body-facts > div { display: grid; grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr); gap: 7px; padding: 3px 0; border-bottom: 1px solid rgba(88, 108, 127, .16); }
+.system-body-facts > div:last-child { border-bottom: 0; }
+.system-body-facts dt { color: #8294a8; font-size: .56rem; }
+.system-body-facts dd { margin: 0; color: #d8e1ea; font-size: .62rem; font-weight: 850; text-align: right; }
+.system-body-status-row { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 8px 8px; }
+.system-dialog-footer {
+  display: flex;
+  min-height: 54px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 8px;
+  border-top: 1px solid #536170;
+  background: linear-gradient(180deg, #1f2831, #10161d);
+}
+.system-dialog-footer-left { display: flex; min-width: 0; align-items: center; gap: 8px; overflow: hidden; }
+.system-feature-tray { display: flex; min-width: 34px; align-items: center; gap: 4px; }
+.system-feature-marker { display: grid; width: 28px; height: 28px; place-items: center; border: 1px solid #68798b; border-radius: 4px; background: #111a23; color: #c8d7e5; font-size: .62rem; font-weight: 950; }
+.system-traffic-strip { display: flex; min-width: 0; gap: 4px; overflow: hidden; }
+.system-traffic-strip .badge { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.system-dialog-footer-actions { display: flex; flex: 0 0 auto; align-items: center; justify-content: flex-end; gap: 5px; }
+.system-dialog-footer-actions button { min-height: 32px; padding: 5px 9px; }
+.system-dialog-close { min-width: 74px; }
+
+@media (max-width: 699px) {
+  .system-dialog.system-dialog-classic { width: calc(100vw - 6px); height: calc(100dvh - 8px); max-height: calc(100dvh - 8px); }
+  .system-dialog-classic-header { min-height: 43px; padding: 5px 7px !important; }
+  .system-dialog-classic-header h2 { font-size: .86rem !important; }
+  .system-dialog-scene { display: grid; grid-template-rows: minmax(270px, 1fr) auto; overflow: hidden; }
+  .system-orbit-stage.system-orbit-stage-classic { position: relative; inset: auto; min-height: 270px; }
+  .system-body-inspector { position: static; width: auto; max-height: 168px; border-width: 1px 0 0; border-radius: 0; background: rgba(4, 11, 17, .98); box-shadow: none; }
+  .system-body-inspector > header { padding-block: 5px 4px; }
+  .system-body-facts { grid-template-columns: repeat(2, minmax(0,1fr)); column-gap: 10px; padding-block: 4px; }
+  .system-body-facts > div { grid-template-columns: auto auto; padding: 2px 0; }
+  .system-body-status-row { padding-bottom: 5px; }
+  .system-dialog-footer { min-height: 48px; padding: 4px 5px; }
+  .system-traffic-strip { display: none; }
+  .system-dialog-footer-actions { gap: 3px; }
+  .system-dialog-footer-actions button { min-height: 30px; padding: 4px 7px; font-size: .57rem; }
+  .system-dialog-close { min-width: 58px; }
+  .system-orbit-body strong { font-size: .52rem; }
+}
+
+/* System scene must fill the available dialog body instead of retaining the legacy fixed stage height. */
+.system-orbit-stage.system-orbit-stage-classic { height: 100% !important; }

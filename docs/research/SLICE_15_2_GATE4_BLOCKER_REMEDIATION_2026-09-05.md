@@ -214,6 +214,21 @@ Status: **in progress; pan bounds complete, MOO2 reference review pending**.
 - A 320px probe measured the `536px` card with `534px` of actual map and no toolbar, preserving the four bottom strategic tabs.
 - Restored Espionage to the visible primary navigation now that Research no longer consumes a tab. The bottom/side primary set is Galaxy, Colonies, Fleets, Diplomacy and Espionage; the duplicate Espionage entry was removed from the three-dot game menu.
 - Shortened the turn-submit label from Runde beenden / End turn to Fertig / Done to preserve horizontal space. A 320px probe measured five primary tabs at about 48px each plus a 66px Fertig button with no navigation overflow.- Next: review the user's supplied Master of Orion II Galaxy screenshot and refine Galaxy framing/density without copying original artwork.
+
+#### G4-B2-L - MOO2-inspired interactive star-system inspection
+
+Status: **complete; direct user review pending**.
+
+- Rebuilt the System dialog using the user-supplied Master of Orion II system-view screenshot as an interaction/layout reference without copying original artwork.
+- The dialog now centers on a large dark orbital scene with an authoritative star, elliptical orbit tracks and clickable orbital bodies. The selected body receives a visible targeting reticle and stronger label treatment.
+- Clicking any body now updates a dedicated inspector rather than scrolling to a separate row. For authoritative planets the inspector shows body type, orbit, climate, size, mineral class, gravity and settlement status. Uncolonized planets are fully inspectable.
+- Browser smoke on Beta verified `Beta I -> Planet / Orbit 1 / Desert / Small / Rich / Normal G / Unkolonisiert`, then selecting Beta II immediately changed the inspector to `Planet / Orbit 2 / Barren / Large / Poor / Heavy G / Unkolonisiert`.
+- Gas giants and asteroid belts are rendered from authoritative `OrbitalBody.kind` with distinct structural visuals. They do not receive fabricated planet-only climate/size/mineral/gravity values; an unoccupied non-planet body reports neutral `Keine Siedlung` rather than implying colonizability.
+- Legal actions remain server-projected: Open Colony, Colonize and Build Outpost only appear from the existing authoritative decision choices for the currently selected body.
+- The prior fleet/contact information remains available as compact footer traffic badges when present. Close moved into the lower-right footer, matching the supplied reference's hierarchy more closely.
+- Current core state exposes no authoritative crystal/Orion/artifact/special-resource field on Planet or OrbitalBody. The UI therefore does **not** invent such markers. The lower-left special-feature concept is reserved for a later core/data extension when actual feature IDs exist.
+- Desktop smoke at 791x605 measured a 777x463 orbital stage filling the full dialog scene. A 320x640 probe kept the dialog inside the viewport with a 407px orbital scene plus a compact 132px selected-body inspector.
+- `npm run build` - **PASS** after final layout/status cleanup.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
 

@@ -284,6 +284,17 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
   onPlanOrder: (order: DraftOrder) => void
   t: Translator
 }) {
+  const bodies = system.bodies ?? system.planets.map((planet) => ({
+    id: planet.id,
+    name: planet.name,
+    orbit: planet.orbit,
+    kind: 'planet' as const,
+    planet_id: planet.id,
+    outpost_id: undefined as number | undefined,
+  }))
+  const orderedBodies = [...bodies].sort((a, b) => a.orbit - b.orbit || a.id - b.id)
+  const [selectedBodyID, setSelectedBodyID] = useState<number | null>(orderedBodies[0]?.id ?? null)
+
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose()
@@ -296,141 +307,164 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
     }
   }, [onClose])
 
+  useEffect(() => {
+    setSelectedBodyID(orderedBodies[0]?.id ?? null)
+  }, [system.id])
+
   const decision = snapshot.decision
   if (!decision) return null
-  const bodies = system.bodies ?? system.planets.map((planet) => ({
-    id: planet.id,
-    name: planet.name,
-    orbit: planet.orbit,
-    kind: 'planet' as const,
-    planet_id: planet.id,
-    outpost_id: undefined as number | undefined,
-  }))
+
+  const selectedBody = orderedBodies.find((body) => body.id === selectedBodyID) ?? orderedBodies[0]
+  const selectedPlanet = selectedBody?.planet_id ? system.planets.find((planet) => planet.id === selectedBody.planet_id) : undefined
+  const selectedColony = selectedPlanet ? decision.colonies.find((colony) => colony.planet_id === selectedPlanet.id) : undefined
+  const colonizeChoices = selectedPlanet
+    ? (decision.decisions.colonization ?? []).filter((choice) => choice.system_id === system.id && choice.planet_id === selectedPlanet.id)
+    : []
+  const outpostChoices = selectedBody
+    ? (decision.decisions.outpost_deployment ?? []).filter((choice) => choice.system_id === system.id && choice.body_id === selectedBody.id)
+    : []
   const fleets = decision.strategic.fleets?.filter((fleet) => fleet.at_system_id === system.id) ?? []
   const contacts = decision.strategic.contacts?.filter((contact) => contact.system_id === system.id) ?? []
-  const orderedBodies = [...bodies].sort((a, b) => a.orbit - b.orbit || a.id - b.id)
+
+  const selectedStatus = selectedColony
+    ? t('system.colonyStatus')
+    : selectedBody?.outpost_id
+      ? t('system.outpostStatus')
+      : selectedBody?.kind === 'planet'
+        ? t('system.uncolonized')
+        : t('system.noSettlement')
+
+  const selectBody = (bodyID: number) => setSelectedBodyID(bodyID)
 
   return (
     <div className="system-dialog-backdrop" role="presentation" onPointerDown={(event) => {
       if (event.target === event.currentTarget) onClose()
     }}>
-      <section className="system-dialog" role="dialog" aria-modal="true" aria-labelledby={'system-dialog-title-' + system.id}>
-        <header className="system-dialog-header">
+      <section className="system-dialog system-dialog-classic" role="dialog" aria-modal="true" aria-labelledby={'system-dialog-title-' + system.id}>
+        <header className="system-dialog-header system-dialog-classic-header">
           <div>
             <p className="eyebrow">{t('system.title', { system: system.name })}</p>
             <h2 id={'system-dialog-title-' + system.id}>{system.name}</h2>
           </div>
-          <div className="system-dialog-header-actions">
-            <span className="badge">{t('system.starClass', { class: system.spectral_class })}</span>
-            <button type="button" className="button-secondary" onClick={onClose}>{t('common.close')}</button>
-          </div>
+          <span className="badge system-star-class">{t('system.starClass', { class: system.spectral_class })}</span>
         </header>
 
-        <div className="system-dialog-grid">
-          <div className="system-dialog-main">
-            <div className="system-orbit-stage" aria-label={t('system.bodies')}>
-              <div className="system-star-core" aria-hidden="true"><span /></div>
-              {orderedBodies.map((body, index) => {
-                const radius = 17 + ((index + 1) / (orderedBodies.length + 1)) * 30
-                const angle = (((system.id * 31) + (body.id * 67) + (index * 103)) % 360) * Math.PI / 180
-                const x = 50 + Math.cos(angle) * radius
-                const y = 50 + Math.sin(angle) * radius
-                return (
-                  <div className="system-orbit-body-layer" key={'orbit-' + body.id}>
-                    <span className="system-orbit-ring" style={{ width: (radius * 2) + '%', height: (radius * 2) + '%' }} aria-hidden="true" />
-                    <button
-                      type="button"
-                      className={'system-orbit-body system-orbit-body-' + body.kind.replace(/_/g, '-')}
-                      style={{ left: x + '%', top: y + '%' }}
-                      title={body.name + ' · ' + bodyLabel(t, body.kind)}
-                      onClick={() => document.getElementById('system-body-row-' + body.id)?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })}
-                    >
-                      <span className="system-orbit-body-dot" aria-hidden="true" />
-                      <strong>{body.name}</strong>
-                    </button>
-                  </div>
-                )
-              })}
-            </div>
-
-            <div className="orbit-list">
-              {bodies.map((body) => {
-                const colony = body.planet_id ? decision.colonies.find((item) => item.planet_id === body.planet_id) : undefined
-                const colonizeChoices = (decision.decisions.colonization ?? []).filter((choice) => choice.system_id === system.id && choice.planet_id === body.planet_id)
-                const outpostChoices = (decision.decisions.outpost_deployment ?? []).filter((choice) => choice.system_id === system.id && choice.body_id === body.id)
-                return (
-                  <div className="orbit-row" id={'system-body-row-' + body.id} key={body.id}>
-                    <div className="orbit-row-copy">
-                      <strong>{body.orbit}. {body.name}</strong>
-                      <small>{bodyLabel(t, body.kind)}</small>
-                      <div className="tag-list compact-tags">
-                        {colony && <span className="badge">{t('system.colonyStatus')}</span>}
-                        {body.outpost_id && <span className="badge">{t('system.outpostStatus')}</span>}
-                      </div>
-                    </div>
-                    <div className="action-row compact-actions">
-                      {colony && <button type="button" className="button-primary" onClick={() => onOpenColony(colony.id)}>{t('system.openColony')}</button>}
-                      {colonizeChoices.map((choice) => (
-                        <button
-                          type="button"
-                          className="button-primary"
-                          key={'colonize-' + choice.fleet_id}
-                          onClick={() => {
-                            if (!window.confirm(t('system.colonizeConfirm', { body: body.name, fleet: choice.fleet_id }))) return
-                            onPlanOrder({
-                              key: 'fleet:' + choice.fleet_id,
-                              kind: 'empire.colonize_planet',
-                              payload: { fleet_id: choice.fleet_id, planet_id: choice.planet_id },
-                            })
-                          }}
-                        >
-                          {t('system.colonize')}
-                        </button>
-                      ))}
-                      {outpostChoices.map((choice) => (
-                        <button
-                          type="button"
-                          className="button-secondary"
-                          key={'outpost-' + choice.fleet_id}
-                          onClick={() => {
-                            if (!window.confirm(t('system.outpostConfirm', { body: body.name, fleet: choice.fleet_id }))) return
-                            onPlanOrder({
-                              key: 'fleet:' + choice.fleet_id,
-                              kind: 'fleet.deploy_outpost',
-                              payload: { fleet_id: choice.fleet_id, body_id: choice.body_id },
-                            })
-                          }}
-                        >
-                          {t('system.buildOutpost')}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+        <div className="system-dialog-scene">
+          <div className="system-orbit-stage system-orbit-stage-classic" aria-label={t('system.bodies')}>
+            <div className={'system-star-core system-star-class-' + system.spectral_class} aria-hidden="true"><span /></div>
+            {orderedBodies.map((body, index) => {
+              const radius = 18 + ((index + 1) / (orderedBodies.length + 1)) * 31
+              const angle = (((system.id * 31) + (body.id * 67) + (index * 103)) % 360) * Math.PI / 180
+              const x = 50 + Math.cos(angle) * radius
+              const y = 50 + Math.sin(angle) * radius * 0.56
+              const planet = body.planet_id ? system.planets.find((item) => item.id === body.planet_id) : undefined
+              const selected = selectedBody?.id === body.id
+              const bodyClasses = [
+                'system-orbit-body',
+                'system-orbit-body-' + body.kind.replace(/_/g, '-'),
+                planet?.climate_id ? 'system-orbit-body-climate-' + planet.climate_id.replace(/_/g, '-') : '',
+                planet?.size_id ? 'system-orbit-body-size-' + planet.size_id.replace(/_/g, '-') : '',
+                selected ? 'selected' : '',
+              ].filter(Boolean).join(' ')
+              return (
+                <div className="system-orbit-body-layer" key={'orbit-' + body.id}>
+                  <span
+                    className="system-orbit-ring"
+                    style={{ width: (radius * 2) + '%', height: (radius * 1.12) + '%' }}
+                    aria-hidden="true"
+                  />
+                  <button
+                    type="button"
+                    className={bodyClasses}
+                    style={{ left: x + '%', top: y + '%' }}
+                    title={body.name + ' - ' + bodyLabel(t, body.kind)}
+                    aria-pressed={selected}
+                    onClick={() => selectBody(body.id)}
+                  >
+                    <span className="system-orbit-body-reticle" aria-hidden="true">
+                      <span className="system-orbit-body-dot" />
+                    </span>
+                    <strong>{body.name}</strong>
+                  </button>
+                </div>
+              )
+            })}
           </div>
 
-          <aside className="system-dialog-side">
-            <p className="eyebrow">{t('system.fleets')}</p>
-            {fleets.length === 0 && contacts.length === 0 ? <p className="muted">{t('common.none')}</p> : (
-              <div className="list-stack">
-                {fleets.map((fleet) => (
-                  <div className="list-row" key={'own-' + fleet.id}>
-                    <span><strong>{t('galaxy.fleet', { id: fleet.id })}</strong><small>{fleet.role}{fleet.special_kind ? ' · ' + fleet.special_kind : ''}</small></span>
-                    <span className="badge">{fleet.ship_ids?.length ?? 0}</span>
-                  </div>
-                ))}
-                {contacts.map((contact, index) => (
-                  <div className="list-row" key={'contact-' + index + '-' + contact.empire_id}>
-                    <span><strong>{t('common.empireFallback', { id: contact.empire_id })}</strong><small>{contact.kind}</small></span>
-                    <span className="badge">{contact.role ?? contact.special_kind ?? '—'}</span>
-                  </div>
-                ))}
+          {selectedBody && (
+            <aside className="system-body-inspector" aria-live="polite">
+              <header>
+                <div>
+                  <p className="eyebrow">{t('system.bodyDetails')}</p>
+                  <h3>{selectedBody.name}</h3>
+                </div>
+                <span className="badge">{selectedBody.orbit}</span>
+              </header>
+              <dl className="system-body-facts">
+                <div><dt>{t('system.kind')}</dt><dd>{bodyLabel(t, selectedBody.kind)}</dd></div>
+                <div><dt>{t('system.orbit')}</dt><dd>{selectedBody.orbit}</dd></div>
+                {selectedPlanet && <div><dt>{t('system.climate')}</dt><dd>{humanizeToken(selectedPlanet.climate_id)}</dd></div>}
+                {selectedPlanet && <div><dt>{t('system.size')}</dt><dd>{humanizeToken(selectedPlanet.size_id)}</dd></div>}
+                {selectedPlanet && <div><dt>{t('system.minerals')}</dt><dd>{humanizeToken(selectedPlanet.mineral_id)}</dd></div>}
+                {selectedPlanet && <div><dt>{t('system.gravity')}</dt><dd>{humanizeToken(selectedPlanet.gravity_id)}</dd></div>}
+                <div><dt>{t('system.status')}</dt><dd>{selectedStatus}</dd></div>
+              </dl>
+              <div className="system-body-status-row">
+                {selectedColony && <span className="badge">{t('system.colonyStatus')}</span>}
+                {selectedBody.outpost_id && <span className="badge">{t('system.outpostStatus')}</span>}
+              </div>
+            </aside>
+          )}
+        </div>
+
+        <footer className="system-dialog-footer">
+          <div className="system-dialog-footer-left">
+            {(fleets.length > 0 || contacts.length > 0) && (
+              <div className="system-traffic-strip" aria-label={t('system.fleets')}>
+                {fleets.map((fleet) => <span className="badge" key={'own-' + fleet.id}>{t('galaxy.fleet', { id: fleet.id })} · {fleet.ship_ids?.length ?? 0}</span>)}
+                {contacts.map((contact, index) => <span className="badge" key={'contact-' + index + '-' + contact.empire_id}>{t('common.empireFallback', { id: contact.empire_id })} · {contact.kind}</span>)}
               </div>
             )}
-          </aside>
-        </div>
+          </div>
+          <div className="system-dialog-footer-actions">
+            {selectedColony && <button type="button" className="button-primary" onClick={() => onOpenColony(selectedColony.id)}>{t('system.openColony')}</button>}
+            {selectedBody && colonizeChoices.map((choice) => (
+              <button
+                type="button"
+                className="button-primary"
+                key={'colonize-' + choice.fleet_id}
+                onClick={() => {
+                  if (!window.confirm(t('system.colonizeConfirm', { body: selectedBody.name, fleet: choice.fleet_id }))) return
+                  onPlanOrder({
+                    key: 'fleet:' + choice.fleet_id,
+                    kind: 'empire.colonize_planet',
+                    payload: { fleet_id: choice.fleet_id, planet_id: choice.planet_id },
+                  })
+                }}
+              >
+                {t('system.colonize')}
+              </button>
+            ))}
+            {selectedBody && outpostChoices.map((choice) => (
+              <button
+                type="button"
+                className="button-secondary"
+                key={'outpost-' + choice.fleet_id}
+                onClick={() => {
+                  if (!window.confirm(t('system.outpostConfirm', { body: selectedBody.name, fleet: choice.fleet_id }))) return
+                  onPlanOrder({
+                    key: 'fleet:' + choice.fleet_id,
+                    kind: 'fleet.deploy_outpost',
+                    payload: { fleet_id: choice.fleet_id, body_id: choice.body_id },
+                  })
+                }}
+              >
+                {t('system.buildOutpost')}
+              </button>
+            ))}
+            <button type="button" className="button-secondary system-dialog-close" onClick={onClose}>{t('common.close')}</button>
+          </div>
+        </footer>
       </section>
     </div>
   )

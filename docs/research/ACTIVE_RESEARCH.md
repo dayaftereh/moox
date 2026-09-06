@@ -6,7 +6,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 
 - Branch: `main`.
 - Open slice marker: `docs/slices/_OPEN_15_2_FUNCTIONAL_STRATEGIC_GAMEPLAY_HMI_2026-09-04.md`.
-- Active implementation slice: **Slice 15.2 Gates 1-3 complete; Gate 4 remediation G4-A/G4-B and G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-C independent QA/closure remains open**.
+- Active implementation slice: **Slice 15.2 Gates 1-3 complete; Gate 4 remediation G4-A/G4-B and G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L system inspection complete; G4-C independent QA/closure remains open**.
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
@@ -14,7 +14,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-14 and 15.1 are closed**; **15.2 is open with Gates 1-3 complete and Gate 4 pending**; 15.3-15.6, 16-17 and reserved Slice 20 remain prepared.
-- Current objective: **Slice 15.2 G4-B2-K - keep Galaxy panning inside responsive map bounds, then use the incoming Master of Orion II Galaxy screenshot as a framing/density reference before returning to direct user review.**
+- Current objective: **Serve the latest B2-L interactive star-system inspection for direct review while keeping B2-K open for any remaining Galaxy-overview framing feedback; do not close G4-C yet.**
 - Slice-15.1 closure evidence: `docs/research/SLICE_15_1_MOBILE_FIRST_UX_GATE4_2026-09-04.md`.
 - Slice-15.2 Gate-1 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE1_2026-09-04.md`.
 - Slice-15.2 Gate-2 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE2_2026-09-04.md`.
