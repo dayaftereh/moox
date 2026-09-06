@@ -37,6 +37,7 @@ Permanent evidence:
       - [ ] Review supplied MOO2 Galaxy reference and refine framing/density.
     - [x] B2-L: MOO2-inspired star-system dialog with clickable bodies, authoritative planet inspection and legal selected-body actions; special-resource markers deferred until core metadata exists.
     - [x] B2-M: true circular system orbits + clickable system-level fleet/ship inspection; planet-local fleet anchoring deferred until core exposes an authoritative body location.
+    - [x] B2-N: keep the orbital picture fleet-free; expose present fleets/special vessels through a contextual Fleet/Ships dialog with per-Ship technical loadout drill-down; persistent partial damage remains a core gap.
   - [ ] G4-C: independent mobile/desktop workflow QA and Slice-15.2 closure.
 
 Live preview:

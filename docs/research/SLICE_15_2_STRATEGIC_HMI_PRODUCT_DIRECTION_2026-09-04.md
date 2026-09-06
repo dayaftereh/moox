@@ -59,10 +59,12 @@ The dialog should visually show the system as a miniature orbital scene:
 - fleet names and the ships belonging to each visible player fleet;
 - system name prominently visible.
 
-Fleet-location authority note:
+Fleet/ship inspection authority note:
 - the current strategic model locates fleets authoritatively at star-system level (`AtSystemID`) or in transit to a destination system;
-- the HMI may present those fleets as clickable system-orbit markers, but must not visually bind a fleet to a particular planet/body unless the core exposes an explicit body-level location;
-- if local planet-orbit positioning becomes gameplay-significant, introduce an authoritative body anchor (for example `AtBodyID`) and its movement/stacking semantics before rendering fleets next to individual planets.
+- keep the orbital picture itself free of inferred fleet placement. When own fleets/special vessels are present, expose a contextual `Fleets / Ships` action from the system dialog and open a dedicated nested fleet roster/detail view;
+- concrete projected `Ship` objects may expose their authoritative design/spec loadout (hull, drive, computer, armor, shield, fuel cell/range and weapon mounts), while Colony Ship / Outpost Ship / Troop Transport remain selectable special strategic vessels even when the current model represents them only as `StrategicFleet` objects;
+- do not visually bind a fleet to a particular planet/body unless the core exposes an explicit body-level location. If local planet-orbit positioning becomes gameplay-significant, introduce an authoritative body anchor (for example `AtBodyID`) and its movement/stacking semantics first;
+- do not fabricate strategic damage. Tactical battle state tracks armor/structure damage while a battle is active, but `core.Ship` currently has no persistent partial-damage state and strategic resolution only permanently removes destroyed ships. Persistent ship damage needs its own authoritative state extension before the strategic HMI can show health/damage percentages.
 
 Desktop:
 

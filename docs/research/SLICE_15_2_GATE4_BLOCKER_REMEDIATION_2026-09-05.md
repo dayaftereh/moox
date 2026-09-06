@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M system inspection refinements complete; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N system inspection refinements complete; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -244,6 +244,21 @@ Status: **complete; direct user review pending**.
 - If planet-local orbital positioning becomes gameplay-significant, add an explicit authoritative body anchor (for example `AtBodyID`) plus transition/stacking semantics before the HMI places fleets at individual planets.
 - For browser QA only, the demo server was temporarily augmented with one valid authoritative combat fleet containing two valid ships (`Falcon`, `Raven`). The temporary backend change was inspected and fully restored before staging/commit. Smoke verified: fleet marker -> fleet inspector -> Falcon/Raven ship buttons -> selecting Raven updates the ship detail panel.
 - 320px smoke with that temporary authoritative QA fleet kept the complete dialog inside the viewport, used a `262 x 262px` circular canvas, a compact `142px` fleet dock, a `188px` fleet inspector, and no horizontal document overflow. The displayed ring remained circular (`170 x 170px`).
+- `npm run build` - **PASS**.
+
+#### G4-B2-N - System Fleet/Ships dialog and technical ship drill-down
+
+Status: **complete; direct user review pending**.
+
+- Replaced the B2-M in-scene `Systemorbit` fleet dock with the clarified interaction: the orbital picture remains visually clean and a contextual `Flotten / Schiffe` button appears in the System dialog footer whenever at least one own authoritative fleet/special vessel is present in the system.
+- The button count represents currently present ship-like units: concrete combat ships from `ship_ids`, plus one unit for each special civilian strategic vessel. It therefore works for ordinary fleets as well as Colony Ship, Outpost Ship and Troop Transport fleet objects.
+- Clicking `Flotten / Schiffe` opens a nested system fleet dialog. The roster groups concrete ships under their fleet and lists special civilian vessels as their own selectable entries.
+- Clicking a concrete projected `Ship` opens an authoritative technical detail panel with hull, warp drive, FTL speed, computer, armor, shield, fuel cell, fuel range, production cost, source design/revision and all projected weapon mounts/counts/slots.
+- Special strategic vessels currently exist as `StrategicFleet` objects rather than concrete `Ship` objects. They remain visible/selectable but only expose the metadata the core actually owns (special kind, role, system location and FTL speed); the UI explicitly states that no component loadout exists for them yet rather than fabricating one.
+- Strategic partial damage is a backend gap, not a presentation omission: `core.Ship` contains design/spec data but no persistent armor/structure damage fields. Tactical battle state does track `ArmorCurrent` and `StructureDamage` during an active battle, while strategic encounter resolution currently persists destroyed ship IDs rather than surviving partial damage. The ship panel therefore explains that persistent damage is not yet available instead of inventing a health percentage.
+- Browser QA used a **temporary, restored-before-commit** authoritative demo augmentation containing one combat fleet with two concrete Frigates (`Falcon`, `Raven`, each with `2x laser_cannon`) plus one Colony Ship, Outpost Ship and Troop Transport in Alpha. The System dialog correctly showed `Flotten / Schiffe 5`; the nested dialog showed all four fleet/special-vessel groups; Raven selection exposed the full technical loadout and `2x Laser Cannon`; Colony Ship selection exposed only its real strategic metadata.
+- 320x640 QA kept the outer system dialog at `314x632` and nested fleet dialog at `306x624`, with a `304x217` roster and `304x353` technical panel; no horizontal document overflow occurred.
+- Temporary QA fleets/ships were removed completely from `cmd/moox-server/main.go` before staging.
 - `npm run build` - **PASS**.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure

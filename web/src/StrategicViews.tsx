@@ -294,12 +294,18 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
   }))
   const orderedBodies = [...bodies].sort((a, b) => a.orbit - b.orbit || a.id - b.id)
   const [selectedBodyID, setSelectedBodyID] = useState<number | null>(orderedBodies[0]?.id ?? null)
+  const [fleetDialogOpen, setFleetDialogOpen] = useState(false)
   const [selectedFleetID, setSelectedFleetID] = useState<number | null>(null)
   const [selectedShipID, setSelectedShipID] = useState<number | null>(null)
 
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key !== 'Escape') return
+      if (fleetDialogOpen) {
+        setFleetDialogOpen(false)
+        return
+      }
+      onClose()
     }
     window.addEventListener('keydown', handleKey)
     document.body.classList.add('modal-open')
@@ -307,10 +313,11 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
       window.removeEventListener('keydown', handleKey)
       document.body.classList.remove('modal-open')
     }
-  }, [onClose])
+  }, [fleetDialogOpen, onClose])
 
   useEffect(() => {
     setSelectedBodyID(orderedBodies[0]?.id ?? null)
+    setFleetDialogOpen(false)
     setSelectedFleetID(null)
     setSelectedShipID(null)
   }, [system.id])
@@ -320,8 +327,35 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
 
   const fleets = decision.strategic.fleets?.filter((fleet) => fleet.at_system_id === system.id) ?? []
   const contacts = decision.strategic.contacts?.filter((contact) => contact.system_id === system.id) ?? []
-  const selectedFleet = fleets.find((fleet) => fleet.id === selectedFleetID)
-  const selectedBody = selectedFleet ? undefined : (orderedBodies.find((body) => body.id === selectedBodyID) ?? orderedBodies[0])
+  const shipsByID = new Map((decision.strategic.ships ?? []).map((ship) => [ship.id, ship]))
+  const selectedFleet = fleets.find((fleet) => fleet.id === selectedFleetID) ?? fleets[0]
+  const selectedFleetShips = selectedFleet?.ship_ids
+    ?.map((shipID) => shipsByID.get(shipID))
+    .filter((ship): ship is NonNullable<typeof ship> => Boolean(ship)) ?? []
+  const selectedShip = selectedFleetShips.find((ship) => ship.id === selectedShipID) ?? selectedFleetShips[0]
+  const fleetUnitCount = fleets.reduce((sum, fleet) => sum + (fleet.special_kind ? 1 : Math.max(1, fleet.ship_ids?.length ?? 0)), 0)
+
+  const fleetName = (fleet: (typeof fleets)[number]) => {
+    switch (fleet.special_kind) {
+      case 'colony_ship': return t('system.colonyShip')
+      case 'outpost_ship': return t('system.outpostShip')
+      case 'troop_transport': return t('system.troopTransport')
+      default: return t('galaxy.fleet', { id: fleet.id })
+    }
+  }
+  const selectFleet = (fleetID: number, shipID?: number) => {
+    const fleet = fleets.find((item) => item.id === fleetID)
+    setSelectedFleetID(fleetID)
+    setSelectedShipID(shipID ?? fleet?.ship_ids?.[0] ?? null)
+  }
+  const openFleetDialog = () => {
+    const fleet = selectedFleet ?? fleets[0]
+    setSelectedFleetID(fleet?.id ?? null)
+    setSelectedShipID(fleet?.ship_ids?.[0] ?? null)
+    setFleetDialogOpen(true)
+  }
+
+  const selectedBody = orderedBodies.find((body) => body.id === selectedBodyID) ?? orderedBodies[0]
   const selectedPlanet = selectedBody?.planet_id ? system.planets.find((planet) => planet.id === selectedBody.planet_id) : undefined
   const selectedColony = selectedPlanet ? decision.colonies.find((colony) => colony.planet_id === selectedPlanet.id) : undefined
   const colonizeChoices = selectedPlanet
@@ -330,9 +364,6 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
   const outpostChoices = selectedBody
     ? (decision.decisions.outpost_deployment ?? []).filter((choice) => choice.system_id === system.id && choice.body_id === selectedBody.id)
     : []
-  const shipsByID = new Map((decision.strategic.ships ?? []).map((ship) => [ship.id, ship]))
-  const fleetShips = selectedFleet?.ship_ids?.map((shipID) => shipsByID.get(shipID)).filter((ship): ship is NonNullable<typeof ship> => Boolean(ship)) ?? []
-  const selectedShip = fleetShips.find((ship) => ship.id === selectedShipID) ?? fleetShips[0]
 
   const selectedStatus = selectedColony
     ? t('system.colonyStatus')
@@ -341,18 +372,6 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
       : selectedBody?.kind === 'planet'
         ? t('system.uncolonized')
         : t('system.noSettlement')
-
-  const selectBody = (bodyID: number) => {
-    setSelectedFleetID(null)
-    setSelectedShipID(null)
-    setSelectedBodyID(bodyID)
-  }
-  const selectFleet = (fleetID: number) => {
-    const fleet = fleets.find((item) => item.id === fleetID)
-    setSelectedFleetID(fleetID)
-    setSelectedBodyID(null)
-    setSelectedShipID(fleet?.ship_ids?.[0] ?? null)
-  }
 
   return (
     <div className="system-dialog-backdrop" role="presentation" onPointerDown={(event) => {
@@ -387,50 +406,22 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                 ].filter(Boolean).join(' ')
                 return (
                   <div className="system-orbit-body-layer" key={'orbit-' + body.id}>
-                    <span
-                      className="system-orbit-ring"
-                      style={{ width: (radius * 2) + '%', height: (radius * 2) + '%' }}
-                      aria-hidden="true"
-                    />
+                    <span className="system-orbit-ring" style={{ width: (radius * 2) + '%', height: (radius * 2) + '%' }} aria-hidden="true" />
                     <button
                       type="button"
                       className={bodyClasses}
                       style={{ left: x + '%', top: y + '%' }}
                       title={body.name + ' - ' + bodyLabel(t, body.kind)}
                       aria-pressed={selected}
-                      onClick={() => selectBody(body.id)}
+                      onClick={() => setSelectedBodyID(body.id)}
                     >
-                      <span className="system-orbit-body-reticle" aria-hidden="true">
-                        <span className="system-orbit-body-dot" />
-                      </span>
+                      <span className="system-orbit-body-reticle" aria-hidden="true"><span className="system-orbit-body-dot" /></span>
                       <strong>{body.name}</strong>
                     </button>
                   </div>
                 )
               })}
             </div>
-
-            {fleets.length > 0 && (
-              <div className="system-fleet-dock" aria-label={t('system.systemOrbit')}>
-                <span className="system-fleet-dock-label">{t('system.systemOrbit')}</span>
-                {fleets.map((fleet) => {
-                  const selected = selectedFleet?.id === fleet.id
-                  return (
-                    <button
-                      type="button"
-                      className={'system-fleet-marker' + (selected ? ' selected' : '')}
-                      key={'fleet-marker-' + fleet.id}
-                      aria-pressed={selected}
-                      title={t('system.fleetMarkerTitle', { id: fleet.id })}
-                      onClick={() => selectFleet(fleet.id)}
-                    >
-                      <span className="system-fleet-glyph" aria-hidden="true">▲</span>
-                      <span><strong>{t('galaxy.fleet', { id: fleet.id })}</strong><small>{t('fleets.ships', { count: fleet.ship_ids?.length ?? 0 })}</small></span>
-                    </button>
-                  )
-                })}
-              </div>
-            )}
           </div>
 
           {selectedBody && (
@@ -457,48 +448,6 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
               </div>
             </aside>
           )}
-
-          {selectedFleet && (
-            <aside className="system-body-inspector system-fleet-inspector" aria-live="polite">
-              <header>
-                <div>
-                  <p className="eyebrow">{t('system.fleetDetails')}</p>
-                  <h3>{t('galaxy.fleet', { id: selectedFleet.id })}</h3>
-                </div>
-                <span className="badge">{t('system.systemOrbit')}</span>
-              </header>
-              <dl className="system-body-facts">
-                <div><dt>{t('system.fleetRole')}</dt><dd>{humanizeToken(selectedFleet.role)}</dd></div>
-                {selectedFleet.special_kind && <div><dt>{t('system.fleetType')}</dt><dd>{humanizeToken(selectedFleet.special_kind)}</dd></div>}
-                <div><dt>{t('system.shipCount')}</dt><dd>{selectedFleet.ship_ids?.length ?? 0}</dd></div>
-                <div><dt>{t('system.location')}</dt><dd>{t('system.systemLevelLocation')}</dd></div>
-              </dl>
-              {fleetShips.length > 0 && (
-                <div className="system-fleet-ships">
-                  {fleetShips.map((ship) => (
-                    <button
-                      type="button"
-                      className={'system-ship-choice' + (selectedShip?.id === ship.id ? ' selected' : '')}
-                      key={'system-ship-' + ship.id}
-                      aria-pressed={selectedShip?.id === ship.id}
-                      onClick={() => setSelectedShipID(ship.id)}
-                    >
-                      <span className="system-ship-glyph" aria-hidden="true">◆</span>
-                      <span><strong>{ship.name}</strong><small>{humanizeToken(ship.spec.hull_id)}</small></span>
-                    </button>
-                  ))}
-                </div>
-              )}
-              {selectedShip && (
-                <div className="system-ship-details">
-                  <strong>{selectedShip.name}</strong>
-                  <span>{t('system.hull')}: {humanizeToken(selectedShip.spec.hull_id)}</span>
-                  <span>{t('system.design')}: #{selectedShip.source_design_id} · r{selectedShip.source_design_revision}</span>
-                </div>
-              )}
-              {(selectedFleet.ship_ids?.length ?? 0) > 0 && fleetShips.length === 0 && <p className="muted system-fleet-projection-note">{t('system.shipDetailsUnavailable')}</p>}
-            </aside>
-          )}
         </div>
 
         <footer className="system-dialog-footer">
@@ -510,6 +459,11 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
             )}
           </div>
           <div className="system-dialog-footer-actions">
+            {fleets.length > 0 && (
+              <button type="button" className="button-secondary system-fleets-button" onClick={openFleetDialog}>
+                {t('system.fleetsShips')} <span className="badge">{fleetUnitCount}</span>
+              </button>
+            )}
             {selectedColony && <button type="button" className="button-primary" onClick={() => onOpenColony(selectedColony.id)}>{t('system.openColony')}</button>}
             {selectedBody && colonizeChoices.map((choice) => (
               <button
@@ -518,11 +472,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                 key={'colonize-' + choice.fleet_id}
                 onClick={() => {
                   if (!window.confirm(t('system.colonizeConfirm', { body: selectedBody.name, fleet: choice.fleet_id }))) return
-                  onPlanOrder({
-                    key: 'fleet:' + choice.fleet_id,
-                    kind: 'empire.colonize_planet',
-                    payload: { fleet_id: choice.fleet_id, planet_id: choice.planet_id },
-                  })
+                  onPlanOrder({ key: 'fleet:' + choice.fleet_id, kind: 'empire.colonize_planet', payload: { fleet_id: choice.fleet_id, planet_id: choice.planet_id } })
                 }}
               >
                 {t('system.colonize')}
@@ -535,11 +485,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                 key={'outpost-' + choice.fleet_id}
                 onClick={() => {
                   if (!window.confirm(t('system.outpostConfirm', { body: selectedBody.name, fleet: choice.fleet_id }))) return
-                  onPlanOrder({
-                    key: 'fleet:' + choice.fleet_id,
-                    kind: 'fleet.deploy_outpost',
-                    payload: { fleet_id: choice.fleet_id, body_id: choice.body_id },
-                  })
+                  onPlanOrder({ key: 'fleet:' + choice.fleet_id, kind: 'fleet.deploy_outpost', payload: { fleet_id: choice.fleet_id, body_id: choice.body_id } })
                 }}
               >
                 {t('system.buildOutpost')}
@@ -548,6 +494,118 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
             <button type="button" className="button-secondary system-dialog-close" onClick={onClose}>{t('common.close')}</button>
           </div>
         </footer>
+
+        {fleetDialogOpen && selectedFleet && (
+          <div className="system-fleet-dialog-backdrop" role="presentation" onPointerDown={(event) => {
+            if (event.target === event.currentTarget) setFleetDialogOpen(false)
+          }}>
+            <section className="system-fleet-dialog" role="dialog" aria-modal="true" aria-labelledby={'system-fleet-dialog-title-' + system.id}>
+              <header className="system-fleet-dialog-header">
+                <div>
+                  <p className="eyebrow">{system.name}</p>
+                  <h3 id={'system-fleet-dialog-title-' + system.id}>{t('system.fleetsShips')}</h3>
+                </div>
+                <button type="button" className="button-ghost" aria-label={t('common.close')} onClick={() => setFleetDialogOpen(false)}>×</button>
+              </header>
+
+              <div className="system-fleet-dialog-layout">
+                <aside className="system-fleet-roster" aria-label={t('system.fleetsShips')}>
+                  {fleets.map((fleet) => {
+                    const fleetShips = fleet.ship_ids?.map((shipID) => shipsByID.get(shipID)).filter((ship): ship is NonNullable<typeof ship> => Boolean(ship)) ?? []
+                    const selected = selectedFleet.id === fleet.id
+                    return (
+                      <div className={'system-fleet-roster-group' + (selected ? ' selected' : '')} key={'fleet-roster-' + fleet.id}>
+                        <button type="button" className="system-fleet-roster-head" aria-pressed={selected && !selectedShip} onClick={() => selectFleet(fleet.id, 0)}>
+                          <span className="system-fleet-roster-glyph" aria-hidden="true">▲</span>
+                          <span>
+                            <strong>{fleetName(fleet)}</strong>
+                            <small>{fleet.special_kind ? t('system.specialVessel') : t('fleets.ships', { count: fleet.ship_ids?.length ?? 0 })}</small>
+                          </span>
+                        </button>
+                        {fleetShips.length > 0 && (
+                          <div className="system-fleet-roster-ships">
+                            {fleetShips.map((ship) => (
+                              <button
+                                type="button"
+                                className={'system-fleet-roster-ship' + (selected && selectedShip?.id === ship.id ? ' selected' : '')}
+                                key={'fleet-ship-' + ship.id}
+                                aria-pressed={selected && selectedShip?.id === ship.id}
+                                onClick={() => selectFleet(fleet.id, ship.id)}
+                              >
+                                <span aria-hidden="true">◆</span>
+                                <span><strong>{ship.name}</strong><small>{humanizeToken(ship.spec.hull_id)}</small></span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+                </aside>
+
+                <div className="system-fleet-tech-panel" aria-live="polite">
+                  {selectedShip ? (
+                    <>
+                      <header className="system-fleet-tech-title">
+                        <div>
+                          <p className="eyebrow">{fleetName(selectedFleet)}</p>
+                          <h3>{selectedShip.name}</h3>
+                        </div>
+                        <span className="badge">{humanizeToken(selectedShip.spec.hull_id)}</span>
+                      </header>
+                      <dl className="system-ship-tech-grid">
+                        <div><dt>{t('system.hull')}</dt><dd>{humanizeToken(selectedShip.spec.hull_id)}</dd></div>
+                        <div><dt>{t('system.warpDrive')}</dt><dd>{humanizeToken(selectedShip.spec.warp_drive_id)}</dd></div>
+                        <div><dt>{t('system.ftlSpeed')}</dt><dd>{selectedShip.spec.ftl_speed}</dd></div>
+                        <div><dt>{t('system.computer')}</dt><dd>{humanizeToken(selectedShip.spec.computer_id)}</dd></div>
+                        <div><dt>{t('system.armor')}</dt><dd>{humanizeToken(selectedShip.spec.armor_id)}</dd></div>
+                        <div><dt>{t('system.shield')}</dt><dd>{selectedShip.spec.shield_id ? humanizeToken(selectedShip.spec.shield_id) : t('common.none')}</dd></div>
+                        <div><dt>{t('system.fuelCell')}</dt><dd>{humanizeToken(selectedShip.spec.fuel_cell_id)}</dd></div>
+                        <div><dt>{t('system.range')}</dt><dd>{selectedShip.spec.fuel_range_parsecs}</dd></div>
+                        <div><dt>{t('system.productionCost')}</dt><dd>{selectedShip.spec.production_cost_pp} PP</dd></div>
+                        <div><dt>{t('system.design')}</dt><dd>#{selectedShip.source_design_id} · r{selectedShip.source_design_revision}</dd></div>
+                      </dl>
+                      <section className="system-ship-weapons">
+                        <h4>{t('system.weapons')}</h4>
+                        {(selectedShip.spec.weapons?.length ?? 0) > 0 ? (
+                          <div className="system-ship-weapon-list">
+                            {selectedShip.spec.weapons?.map((weapon) => (
+                              <div className="system-ship-weapon" key={'weapon-' + weapon.slot}>
+                                <span>{weapon.count}×</span>
+                                <strong>{humanizeToken(weapon.weapon_id)}</strong>
+                                <small>{t('system.weaponSlot', { slot: weapon.slot + 1 })}</small>
+                              </div>
+                            ))}
+                          </div>
+                        ) : <p className="muted">{t('system.noWeapons')}</p>}
+                      </section>
+                      <section className="system-ship-damage-status">
+                        <h4>{t('system.damage')}</h4>
+                        <p>{t('system.damageNotStrategic')}</p>
+                      </section>
+                    </>
+                  ) : (
+                    <>
+                      <header className="system-fleet-tech-title">
+                        <div>
+                          <p className="eyebrow">{t('system.specialVessel')}</p>
+                          <h3>{fleetName(selectedFleet)}</h3>
+                        </div>
+                        <span className="badge">{humanizeToken(selectedFleet.role)}</span>
+                      </header>
+                      <dl className="system-ship-tech-grid">
+                        <div><dt>{t('system.fleetType')}</dt><dd>{selectedFleet.special_kind ? humanizeToken(selectedFleet.special_kind) : humanizeToken(selectedFleet.role)}</dd></div>
+                        <div><dt>{t('system.location')}</dt><dd>{system.name}</dd></div>
+                        {selectedFleet.ftl_speed !== undefined && <div><dt>{t('system.ftlSpeed')}</dt><dd>{selectedFleet.ftl_speed}</dd></div>}
+                      </dl>
+                      <p className="muted system-special-vessel-note">{t('system.specialVesselLoadoutUnavailable')}</p>
+                    </>
+                  )}
+                </div>
+              </div>
+            </section>
+          </div>
+        )}
       </section>
     </div>
   )
