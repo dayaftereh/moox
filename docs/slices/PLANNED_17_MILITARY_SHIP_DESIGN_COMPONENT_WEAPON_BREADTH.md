@@ -16,6 +16,7 @@ The persisted design/Ship snapshot already carries hull, drive, computer, armor,
 
 - Existing Research/technology unlock model.
 - Slice 15.6 browser vertical slice establishes the presentation shell, including the first interactive Slice-15.5 Tactical baseline, while this slice remains core/server-authoritative first.
+- Slice 15.2 B2-P reserves the Colony Build -> Ship Designer entry point without implementing a fake route; Slice 17 should activate that affordance so a saved/revised legal design returns to the colony build catalog as an authoritative construction choice.
 
 ## Scope guard
 

@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -271,6 +271,22 @@ Status: **complete; direct user review pending**.
 - Browser smoke on Alpha verified clicking colonized `Alpha I` closed the System dialog and navigated to `#/game/demo/colonies/10`, rendering `Kolonie #10 / Alpha · Alpha I`.
 - Regression smoke on uncolonized Beta verified clicking `Beta II` remained at `#/game/demo/galaxy/4`, kept the System dialog open and updated the inspector to Beta II (`Barren / Large / Poor / Heavy G / Unkolonisiert`).
 - `npm run build` - **PASS**.
+
+#### G4-B2-P - MOO2-inspired construction workspace + confirmed build cancellation
+
+Status: **complete; direct user review pending**.
+
+- Reworked the dedicated Colony build workspace using the supplied Master of Orion II build-management screenshot as an information-architecture reference without copying original artwork.
+- Desktop at 1200px now uses three functional columns: authoritative build catalog, selected-project detail, and current build / ordered queue. A 791px-class viewport collapses to two columns with the queue beneath; 320px stacks Catalog -> Project -> Queue vertically.
+- Catalog clicks now select/inspect first rather than immediately enqueueing. The center panel shows only authoritative choice metadata currently exposed by the server: project kind/name, PP cost, maintenance where present, freighters added where present, Ship Design name/revision where present, and authoritative remaining PP/ETA once the project is in the projected queue.
+- Adding a selected choice still emits only the existing `colony.set_construction_queue` Planning draft. Non-repeatable building/transformation choices remain disabled when already queued.
+- The current build has a dedicated progress block, authoritative ETA, and `Bau abbrechen`. Removing the queue head requires an explicit in-app `role=alertdialog` confirmation; queued future items remain removable without the destructive-current-build confirmation.
+- Core audit confirmed cancellation/reordering semantics already preserve accumulated production: `setConstructionQueue` folds `Construction.ProgressPP + ConstructionReservePP` into `stockPP`, transfers it to the new head, or keeps it as `ConstructionReservePP` if the queue becomes empty. Existing `TestSetConstructionQueuePreservesAccumulatedProductionStock` passes. The confirmation text therefore truthfully states that accumulated PP are preserved.
+- Browser smoke: selected Troop Transport -> `Einplanen` -> current block showed `0.0 / 100 PP`, authoritative `34 Runde(n)` ETA; opening Bauabbruch produced the confirmation text and cancelling left the queue untouched; reopening and confirming removed the current project and left a zero-item planned queue.
+- Responsive smoke: 1200x720 measured three panels at about `275 / 419 / 316px` with no horizontal document overflow. 320x640 stacked the three 308px-wide panels; after planning Troop Transport, the confirmation dialog measured `296x182` and stayed entirely inside the viewport, with body width 320 and no horizontal overflow.
+- The center project area reserves a visibly disabled `Schiff entwerfen` affordance for military ship/design choices. No fake route is exposed: the interactive Ship Designer remains deferred to Slice 17.
+- `npm run build` - **PASS**.
+- `go test ./internal/game -run TestSetConstructionQueuePreservesAccumulatedProductionStock -count=1` - **PASS**.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
 

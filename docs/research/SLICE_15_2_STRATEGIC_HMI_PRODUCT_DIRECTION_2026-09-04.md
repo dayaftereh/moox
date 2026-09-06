@@ -270,6 +270,10 @@ The player refined and accepted the functional contract before 15.2 implementati
 - gas giants and asteroid belts become persistent authoritative orbital bodies rather than presentation-only decoration; Outpost Ships must be able to establish legal Outposts on them as in original MOO2;
 - star spectral/class identity is retained for the functional system view, while final artwork remains 15.3;
 - Colony construction becomes a real ordered persistent queue with **no user-visible item-count cap** in MOOX; the original seven-slot limit is deliberately not carried forward;
+- the dedicated build workspace follows a responsive catalog -> selected-project detail -> current build/queue information architecture inspired by the classic screen: three functional columns on wide desktop, a two-column collapse at intermediate widths, and vertical stacking on mobile;
+- selecting a buildable is inspect-first; enqueue remains an explicit authoritative `colony.set_construction_queue` planning action;
+- aborting the current build is destructive enough to require an explicit confirmation dialog, but it must describe the actual core semantics: accumulated construction PP are preserved and transferred to the new queue head or construction reserve rather than silently discarded;
+- military Ship Design choices may reserve a disabled future `Ship Designer` affordance in Slice 15.2, but no working-looking designer route may be fabricated before the real Ship Designer workflow exists;
 - Colony Detail's construction editor uses available-buildables on one side and the ordered queue on the other; normal Colony Detail and Colony table always expose the current build and ETA;
 - Colony-table same-row population moves reassign Farmer/Worker/Scientist jobs, while cross-row moves initiate Population transfer with a server-derived Freighter/ETA confirmation; the destination column is the desired destination job;
 - job changes update Food/PP/RP plus build/research timing immediately through a pure non-mutating authoritative Planning preview; React never owns those formulas;

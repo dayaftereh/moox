@@ -1091,6 +1091,30 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
   const drafted = draftOrders.find((order) => order.key === draftKey)
   const draftedItems = drafted?.payload.items
   const items = Array.isArray(draftedItems) ? draftedItems as DraftQueueItem[] : queueItemsFromColony(colony)
+  const [selectedChoiceIndex, setSelectedChoiceIndex] = useState(() => {
+    const current = items[0]
+    if (!current) return 0
+    const index = choices.findIndex((choice) => current.project_kind === choice.project_kind
+      && current.project_id === choice.project_id
+      && (current.ship_design_id ?? 0) === (choice.ship_design_id ?? 0)
+      && (current.ship_design_revision ?? 0) === (choice.ship_design_revision ?? 0))
+    return index >= 0 ? index : 0
+  })
+  const [abortConfirmOpen, setAbortConfirmOpen] = useState(false)
+
+  useEffect(() => {
+    if (choices.length === 0 && selectedChoiceIndex !== 0) setSelectedChoiceIndex(0)
+    if (choices.length > 0 && selectedChoiceIndex >= choices.length) setSelectedChoiceIndex(choices.length - 1)
+  }, [choices.length, selectedChoiceIndex])
+
+  useEffect(() => {
+    if (!abortConfirmOpen) return
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setAbortConfirmOpen(false)
+    }
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [abortConfirmOpen])
 
   function save(next: DraftQueueItem[]) {
     onPlanOrder({ key: draftKey, kind: 'colony.set_construction_queue', payload: { colony_id: colony.id, items: next } })
@@ -1104,61 +1128,213 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
     save(next)
   }
 
+  function matchesChoice(item: DraftQueueItem, choice: ConstructionChoice) {
+    return item.project_kind === choice.project_kind
+      && item.project_id === choice.project_id
+      && (item.ship_design_id ?? 0) === (choice.ship_design_id ?? 0)
+      && (item.ship_design_revision ?? 0) === (choice.ship_design_revision ?? 0)
+  }
+
+  function displayChoice(choice: ConstructionChoice) {
+    return humanizeToken(choice.ship_design_name ?? choice.project_id)
+  }
+
+  function displayItem(item: DraftQueueItem) {
+    const choice = choices.find((candidate) => matchesChoice(item, candidate))
+    return choice ? displayChoice(choice) : humanizeToken(item.project_id)
+  }
+
+  function selectQueueItem(item: DraftQueueItem) {
+    const index = choices.findIndex((choice) => matchesChoice(item, choice))
+    if (index >= 0) setSelectedChoiceIndex(index)
+  }
+
+  function abortCurrentBuild() {
+    if (items.length === 0) return
+    save(items.slice(1))
+    setAbortConfirmOpen(false)
+  }
+
+  const selectedChoice = choices[selectedChoiceIndex]
+  const selectedQueueIndex = selectedChoice ? items.findIndex((item) => matchesChoice(item, selectedChoice)) : -1
+  const selectedProjected = selectedQueueIndex >= 0 ? preview?.construction?.[selectedQueueIndex] : undefined
+  const currentItem = items[0]
+  const currentProjected = preview?.construction?.[0]
+  const currentProgressPP = currentProjected?.project.progress_pp ?? colony.construction?.progress_pp ?? 0
+  const currentCostPP = currentProjected?.cost_pp
+  const currentProgressPercent = currentCostPP && currentCostPP > 0 ? Math.max(0, Math.min(100, (currentProgressPP / currentCostPP) * 100)) : 0
+
   return (
-    <div className="construction-workspace">
-      <Card className="construction-available-card">
-        <div className="card-heading">
+    <div className="construction-workspace construction-workspace-classic">
+      <Card className="construction-catalog-panel">
+        <div className="card-heading construction-panel-heading">
           <div><p className="eyebrow">{t('construction.catalog')}</p><h2>{t('construction.available')}</h2></div>
           <span className="badge">{choices.length}</span>
         </div>
-        <div className="choice-grid construction-choice-grid">
-          {choices.map((choice, index) => {
-            const nonRepeatable = choice.project_kind === 'building' || choice.project_kind === 'planetary_transformation'
-            const alreadyQueued = nonRepeatable && items.some((item) => item.project_kind === choice.project_kind && item.project_id === choice.project_id)
-            return (
-              <button
-                type="button"
-                className="choice-button construction-choice"
-                key={`${choice.project_kind}-${choice.project_id}-${index}`}
-                disabled={alreadyQueued}
-                onClick={() => save([...items, queueItemFromChoice(choice)])}
-              >
-                <strong>{humanizeToken(choice.ship_design_name ?? choice.project_id)}</strong>
-                <small>{humanizeToken(choice.project_kind)} · {t('construction.cost', { pp: choice.production_cost_pp.toFixed(0) })}</small>
-              </button>
-            )
-          })}
-        </div>
+        {choices.length === 0 ? <p className="muted">{t('construction.noAvailable')}</p> : (
+          <div className="construction-catalog-list">
+            {choices.map((choice, index) => {
+              const nonRepeatable = choice.project_kind === 'building' || choice.project_kind === 'planetary_transformation'
+              const alreadyQueued = nonRepeatable && items.some((item) => matchesChoice(item, choice))
+              const selected = index === selectedChoiceIndex
+              return (
+                <button
+                  type="button"
+                  className={'construction-catalog-item' + (selected ? ' selected' : '')}
+                  key={`${choice.project_kind}-${choice.project_id}-${choice.ship_design_id ?? 0}-${choice.ship_design_revision ?? 0}-${index}`}
+                  aria-pressed={selected}
+                  onClick={() => setSelectedChoiceIndex(index)}
+                >
+                  <span className="construction-catalog-glyph" data-kind={choice.project_kind} aria-hidden="true" />
+                  <span className="construction-catalog-copy">
+                    <strong>{displayChoice(choice)}</strong>
+                    <small>{humanizeToken(choice.project_kind)} · {t('construction.cost', { pp: choice.production_cost_pp.toFixed(0) })}</small>
+                  </span>
+                  {alreadyQueued && <span className="badge">{t('construction.queued')}</span>}
+                </button>
+              )
+            })}
+          </div>
+        )}
       </Card>
 
-      <Card className="construction-queue-card">
-        <div className="card-heading">
+      <Card className="construction-project-panel">
+        {selectedChoice ? (
+          <>
+            <div className="construction-project-hero">
+              <div className="construction-project-visual" data-kind={selectedChoice.project_kind} aria-hidden="true">
+                <span />
+              </div>
+              <div className="construction-project-title">
+                <p className="eyebrow">{t('construction.selectedProject')}</p>
+                <h2>{displayChoice(selectedChoice)}</h2>
+                <span className="badge">{humanizeToken(selectedChoice.project_kind)}</span>
+              </div>
+            </div>
+
+            <dl className="construction-project-facts">
+              <div><dt>{t('construction.productionCost')}</dt><dd>{selectedChoice.production_cost_pp.toFixed(0)} PP</dd></div>
+              {selectedChoice.maintenance_bc !== undefined && <div><dt>{t('construction.maintenance')}</dt><dd>{selectedChoice.maintenance_bc.toFixed(1)} BC</dd></div>}
+              {selectedChoice.freighters_added !== undefined && <div><dt>{t('construction.freightersAdded')}</dt><dd>+{selectedChoice.freighters_added}</dd></div>}
+              {selectedChoice.ship_design_name && <div><dt>{t('construction.shipDesign')}</dt><dd>{humanizeToken(selectedChoice.ship_design_name)}</dd></div>}
+              {selectedChoice.ship_design_revision !== undefined && <div><dt>{t('construction.revision')}</dt><dd>r{selectedChoice.ship_design_revision}</dd></div>}
+              {selectedProjected && <div><dt>{t('construction.remaining')}</dt><dd>{selectedProjected.remaining_pp.toFixed(1)} PP</dd></div>}
+              {selectedProjected && <div><dt>{t('construction.eta')}</dt><dd>{formatEta(t, selectedProjected.eta_turns)}</dd></div>}
+            </dl>
+
+            <div className="construction-project-description">
+              <p>{selectedQueueIndex >= 0 ? t('construction.projectQueuedHint') : t('construction.projectAvailableHint')}</p>
+            </div>
+
+            <div className="construction-project-actions">
+              {(() => {
+                const nonRepeatable = selectedChoice.project_kind === 'building' || selectedChoice.project_kind === 'planetary_transformation'
+                const alreadyQueued = nonRepeatable && items.some((item) => matchesChoice(item, selectedChoice))
+                return (
+                  <button
+                    type="button"
+                    className="button-primary"
+                    disabled={alreadyQueued}
+                    onClick={() => save([...items, queueItemFromChoice(selectedChoice)])}
+                  >
+                    {alreadyQueued ? t('construction.alreadyQueued') : t('construction.addToQueue')}
+                  </button>
+                )
+              })()}
+              {(selectedChoice.project_kind === 'military_ship' || selectedChoice.ship_design_id !== undefined) && (
+                <button type="button" className="button-secondary construction-designer-placeholder" disabled title={t('construction.shipDesignerUnavailable')}>
+                  {t('construction.openShipDesigner')}
+                </button>
+              )}
+            </div>
+
+            {(selectedChoice.project_kind === 'military_ship' || selectedChoice.ship_design_id !== undefined) && (
+              <p className="muted construction-designer-note">{t('construction.shipDesignerUnavailable')}</p>
+            )}
+          </>
+        ) : (
+          <div className="empty-state construction-project-empty">
+            <h2>{t('construction.noSelection')}</h2>
+            <p>{t('construction.noSelectionHint')}</p>
+          </div>
+        )}
+      </Card>
+
+      <Card className="construction-queue-panel">
+        <div className="card-heading construction-panel-heading">
           <div><p className="eyebrow">{t('colony.construction')}</p><h2>{t('construction.queue')}</h2></div>
           <span className="badge">{items.length}</span>
         </div>
-        {items.length === 0 ? <p className="muted">{t('construction.empty')}</p> : (
-          <div className="construction-queue-list">
+
+        {currentItem ? (
+          <section className="construction-current-build">
+            <div className="construction-current-head">
+              <div>
+                <p className="eyebrow">{t('construction.current')}</p>
+                <strong>{displayItem(currentItem)}</strong>
+              </div>
+              <button type="button" className="button-danger construction-abort-button" onClick={() => setAbortConfirmOpen(true)}>{t('construction.abort')}</button>
+            </div>
+            <div className="construction-progress-track" aria-label={t('construction.progress')}>
+              <span style={{ width: `${currentProgressPercent}%` }} />
+            </div>
+            <div className="construction-current-meta">
+              <span>{currentCostPP ? `${currentProgressPP.toFixed(1)} / ${currentCostPP.toFixed(0)} PP` : `${currentProgressPP.toFixed(1)} PP`}</span>
+              <span>{currentProjected ? formatEta(t, currentProjected.eta_turns) : t('common.noEta')}</span>
+            </div>
+          </section>
+        ) : <p className="muted">{t('construction.empty')}</p>}
+
+        {items.length > 0 && (
+          <div className="construction-queue-list construction-queue-list-classic">
             {items.map((item, index) => {
               const projectedItem = preview?.construction?.[index]
+              const isCurrent = index === 0
               return (
-                <div className="queue-row construction-queue-row" key={`${item.project_kind}-${item.project_id}-${index}`}>
+                <div className={'queue-row construction-queue-row' + (isCurrent ? ' current' : '')} key={`${item.project_kind}-${item.project_id}-${item.ship_design_id ?? 0}-${item.ship_design_revision ?? 0}-${index}`}>
                   <span className="queue-position">{index + 1}</span>
-                  <span className="queue-copy">
-                    <strong>{humanizeToken(item.project_id)}</strong>
+                  <button type="button" className="construction-queue-copy" onClick={() => selectQueueItem(item)}>
+                    <strong>{displayItem(item)}</strong>
                     <small>{humanizeToken(item.project_kind)} · {projectedItem ? formatEta(t, projectedItem.eta_turns) : t('common.noEta')}</small>
-                  </span>
-                  <div className="action-row compact-actions">
-                    <button type="button" className="button-ghost" disabled={index === 0} onClick={() => move(index, -1)}>{t('construction.moveUp')}</button>
-                    <button type="button" className="button-ghost" disabled={index === items.length - 1} onClick={() => move(index, 1)}>{t('construction.moveDown')}</button>
-                    <button type="button" className="button-ghost" onClick={() => save(items.filter((_, itemIndex) => itemIndex !== index))}>{t('common.remove')}</button>
+                  </button>
+                  <div className="action-row compact-actions construction-queue-actions">
+                    <button type="button" className="button-ghost" disabled={index === 0} onClick={() => move(index, -1)} aria-label={t('construction.moveUp')}>↑</button>
+                    <button type="button" className="button-ghost" disabled={index === items.length - 1} onClick={() => move(index, 1)} aria-label={t('construction.moveDown')}>↓</button>
+                    <button
+                      type="button"
+                      className={isCurrent ? 'button-danger' : 'button-ghost'}
+                      onClick={() => isCurrent ? setAbortConfirmOpen(true) : save(items.filter((_, itemIndex) => itemIndex !== index))}
+                    >
+                      {isCurrent ? t('construction.abortShort') : t('common.remove')}
+                    </button>
                   </div>
                 </div>
               )
             })}
           </div>
         )}
-        {drafted && <button type="button" className="button-secondary construction-cancel-draft" onClick={() => onRemoveOrder(draftKey)}>{t('construction.resetDraft')}</button>}
+
+        <div className="construction-queue-footer">
+          {drafted && <button type="button" className="button-secondary construction-cancel-draft" onClick={() => onRemoveOrder(draftKey)}>{t('construction.resetDraft')}</button>}
+          <span className="construction-reserve">{t('construction.reserve', { pp: (colony.construction_reserve_pp ?? 0).toFixed(1) })}</span>
+        </div>
       </Card>
+
+      {abortConfirmOpen && currentItem && (
+        <div className="construction-confirm-backdrop" role="presentation" onPointerDown={(event) => {
+          if (event.target === event.currentTarget) setAbortConfirmOpen(false)
+        }}>
+          <section className="construction-confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby={`construction-abort-title-${colony.id}`} aria-describedby={`construction-abort-body-${colony.id}`}>
+            <p className="eyebrow">{t('construction.abort')}</p>
+            <h2 id={`construction-abort-title-${colony.id}`}>{displayItem(currentItem)}</h2>
+            <p id={`construction-abort-body-${colony.id}`}>{t('construction.abortConfirmBody', { pp: currentProgressPP.toFixed(1) })}</p>
+            <div className="action-row construction-confirm-actions">
+              <button type="button" className="button-secondary" onClick={() => setAbortConfirmOpen(false)}>{t('common.cancel')}</button>
+              <button type="button" className="button-danger" onClick={abortCurrentBuild}>{t('construction.abortConfirm')}</button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   )
 }
