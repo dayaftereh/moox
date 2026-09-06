@@ -1854,3 +1854,196 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .construction-queue-actions { grid-column: 2; justify-content: flex-end; }
   .construction-queue-footer { align-items: flex-end; }
 }
+
+
+/* Slice 15.2 B2-Q: MOO2-inspired colony command hierarchy + planet potential. */
+.system-planet-potential {
+  display: grid;
+  gap: 5px;
+  padding: 7px 8px 8px;
+  border-top: 1px solid rgba(88, 108, 127, .28);
+  background: rgba(8, 17, 24, .72);
+}
+.system-planet-potential .eyebrow { margin: 0; }
+.system-potential-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px 8px;
+}
+.system-potential-grid > div {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 2px 0;
+}
+.system-potential-grid span { color: #8395a7; font-size: .5rem; }
+.system-potential-grid strong { color: #e3edf4; font-size: .57rem; text-align: right; }
+
+.colony-command-layout {
+  display: grid;
+  grid-template-columns: minmax(210px, .78fr) minmax(360px, 1.55fr) minmax(230px, .88fr);
+  gap: 10px;
+  align-items: stretch;
+}
+.colony-command-layout > .card {
+  min-width: 0;
+  min-height: 360px;
+}
+.colony-panel-heading { margin-bottom: 7px; }
+.colony-profile-card,
+.colony-jobs-card,
+.colony-command-layout > .construction-summary-card {
+  display: flex;
+  flex-direction: column;
+}
+.colony-trait-stack {
+  display: grid;
+  gap: 5px;
+}
+.colony-trait-chip {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 2px 7px;
+  padding: 6px 7px;
+  border: 1px solid rgba(83, 105, 124, .28);
+  border-radius: 5px;
+  background: rgba(7, 15, 22, .58);
+}
+.colony-trait-chip > span {
+  align-self: center;
+  color: #7f91a1;
+  font-size: .49rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.colony-trait-chip > strong {
+  color: #e1eaf0;
+  font-size: .61rem;
+}
+.colony-trait-chip > small {
+  grid-column: 2;
+  color: #91a1ae;
+  font-size: .49rem;
+  line-height: 1.3;
+}
+.colony-profile-stats {
+  display: grid;
+  margin: 8px 0 0;
+  border-top: 1px solid rgba(83, 104, 122, .27);
+}
+.colony-profile-stats > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  padding: 4px 2px;
+  border-bottom: 1px solid rgba(83, 104, 122, .14);
+}
+.colony-profile-stats dt { color: #8192a1; font-size: .52rem; }
+.colony-profile-stats dd { margin: 0; color: #dce5ec; font-size: .57rem; font-weight: 850; text-align: right; }
+
+.colony-jobs-card .population-board { margin-top: 2px; }
+.colony-jobs-card .population-job-grid { grid-template-columns: 1fr; gap: 6px; }
+.colony-jobs-card .population-job {
+  grid-template-columns: minmax(138px, .42fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 8px 10px;
+  min-height: 78px;
+  padding: 8px 9px;
+}
+.colony-jobs-card .population-job > header {
+  display: grid;
+  align-content: center;
+  gap: 4px;
+}
+.population-job-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.population-job-label > span { color: #9bacbb !important; font-size: .6rem !important; font-weight: 850; }
+.population-job-label > strong { color: #ecf4f9; font-size: .8rem !important; }
+.population-job-output {
+  display: grid;
+  gap: 1px;
+}
+.population-job-output > strong {
+  color: #f1c487;
+  font-size: .84rem !important;
+  line-height: 1.1;
+}
+.population-job-output > small {
+  color: #8092a1;
+  font-size: .48rem;
+  line-height: 1.2;
+}
+.colony-jobs-card .population-people {
+  min-height: 48px;
+  align-content: center;
+}
+.colony-jobs-card .population-person {
+  width: 30px;
+  min-width: 30px;
+  height: 39px;
+  min-height: 39px;
+}
+.colony-jobs-card .population-selection { margin-top: 2px; }
+.colony-base-research { margin: 5px 0 0; font-size: .5rem; }
+.colony-command-layout > .construction-summary-card {
+  min-height: 360px;
+  justify-content: flex-start;
+}
+.colony-command-layout > .construction-summary-card .button-wide { margin-top: auto; }
+
+.colony-surface-card {
+  margin-top: 10px;
+  min-height: 170px;
+}
+.colony-surface-hint { margin: -2px 0 8px; font-size: .52rem; }
+.colony-building-grid { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
+.colony-transfer-card { margin-top: 10px; }
+
+@media (max-width: 1080px) {
+  .colony-command-layout {
+    grid-template-columns: minmax(200px, .72fr) minmax(330px, 1.28fr);
+  }
+  .colony-command-layout > .construction-summary-card {
+    grid-column: 1 / -1;
+    min-height: 0;
+  }
+}
+
+@media (max-width: 699px) {
+  .system-potential-grid { grid-template-columns: 1fr; }
+  .colony-command-layout { grid-template-columns: 1fr; gap: 7px; }
+  .colony-command-layout > .card { min-height: 0; padding: 8px; }
+  .colony-command-layout > .construction-summary-card { grid-column: auto; }
+  .colony-trait-stack { grid-template-columns: 1fr; }
+  .colony-trait-chip { grid-template-columns: 58px minmax(0, 1fr); padding: 5px 6px; }
+  .colony-jobs-card .population-job {
+    grid-template-columns: 1fr;
+    min-height: 0;
+    padding: 7px;
+  }
+  .colony-jobs-card .population-job > header {
+    grid-template-columns: minmax(0, .75fr) minmax(100px, 1.25fr);
+    align-items: center;
+    gap: 8px;
+  }
+  .population-job-output { text-align: right; }
+  .colony-jobs-card .population-people { min-height: 40px; }
+  .colony-jobs-card .population-person { width: 27px; min-width: 27px; height: 35px; min-height: 35px; }
+  .colony-surface-card, .colony-transfer-card { margin-top: 7px; }
+}
+
+@media (max-width: 699px) {
+  .system-potential-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .system-body-inspector { max-height: 210px; }
+}
+
+@media (max-width: 699px) {
+  .system-body-inspector { max-height: 224px; }
+}

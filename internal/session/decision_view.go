@@ -34,6 +34,7 @@ type StrategicContact struct {
 
 type StrategicView struct {
 	Galaxy              core.Galaxy               `json:"galaxy"`
+	PlanetPotentials    []game.PlanetPotential    `json:"planet_potentials,omitempty"`
 	Outposts            []core.Outpost            `json:"outposts,omitempty"`
 	ShipDesigns         []core.ShipDesign         `json:"ship_designs,omitempty"`
 	Ships               []core.Ship               `json:"ships,omitempty"`
@@ -143,6 +144,16 @@ func (s *GameSession) DecisionView(seatID protocol.SeatID, resolver *game.Econom
 	}
 	sort.Slice(view.Diplomacy, func(i, j int) bool { return view.Diplomacy[i].OtherEmpireID < view.Diplomacy[j].OtherEmpireID })
 	view.Strategic = buildStrategicView(state, seat.EmpireID)
+
+	for _, system := range view.Strategic.Galaxy.Systems {
+		for _, planet := range system.Planets {
+			potential, err := resolver.Rules.PlanetPotentialForEmpire(planet, view.Empire)
+			if err != nil {
+				return PlayerDecisionView{}, fmt.Errorf("planet %d potential: %w", planet.ID, err)
+			}
+			view.Strategic.PlanetPotentials = append(view.Strategic.PlanetPotentials, potential)
+		}
+	}
 
 	view.Decisions.ResearchCategories = resolver.Rules.AvailableResearchCategories()
 	view.Decisions.Research, err = resolver.Rules.AvailableResearchChoices(state, seat.EmpireID)

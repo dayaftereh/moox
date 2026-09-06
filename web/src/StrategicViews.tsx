@@ -47,6 +47,12 @@ function humanizeToken(value: string): string {
   return value.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
+function planetTraitLabel(t: Translator, group: 'climate' | 'size' | 'mineral' | 'gravity', id: string): string {
+  const key = `planetTrait.${group}.${id}` as TranslationKey
+  const translated = t(key)
+  return translated === key ? humanizeToken(id) : translated
+}
+
 function formatEta(t: Translator, value: number | undefined): string {
   return value && value > 0 ? t('common.turns', { turns: value }) : t('common.noEta')
 }
@@ -358,6 +364,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
   const selectedBody = orderedBodies.find((body) => body.id === selectedBodyID) ?? orderedBodies[0]
   const selectedPlanet = selectedBody?.planet_id ? system.planets.find((planet) => planet.id === selectedBody.planet_id) : undefined
   const selectedColony = selectedPlanet ? decision.colonies.find((colony) => colony.planet_id === selectedPlanet.id) : undefined
+  const selectedPotential = selectedPlanet ? decision.strategic.planet_potentials?.find((item) => item.planet_id === selectedPlanet.id) : undefined
   const colonizeChoices = selectedPlanet
     ? (decision.decisions.colonization ?? []).filter((choice) => choice.system_id === system.id && choice.planet_id === selectedPlanet.id)
     : []
@@ -443,12 +450,25 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
               <dl className="system-body-facts">
                 <div><dt>{t('system.kind')}</dt><dd>{bodyLabel(t, selectedBody.kind)}</dd></div>
                 <div><dt>{t('system.orbit')}</dt><dd>{selectedBody.orbit}</dd></div>
-                {selectedPlanet && <div><dt>{t('system.climate')}</dt><dd>{humanizeToken(selectedPlanet.climate_id)}</dd></div>}
-                {selectedPlanet && <div><dt>{t('system.size')}</dt><dd>{humanizeToken(selectedPlanet.size_id)}</dd></div>}
-                {selectedPlanet && <div><dt>{t('system.minerals')}</dt><dd>{humanizeToken(selectedPlanet.mineral_id)}</dd></div>}
-                {selectedPlanet && <div><dt>{t('system.gravity')}</dt><dd>{humanizeToken(selectedPlanet.gravity_id)}</dd></div>}
+                {selectedPlanet && <div><dt>{t('system.climate')}</dt><dd>{planetTraitLabel(t, 'climate', selectedPlanet.climate_id)}</dd></div>}
+                {selectedPlanet && <div><dt>{t('system.size')}</dt><dd>{planetTraitLabel(t, 'size', selectedPlanet.size_id)}</dd></div>}
+                {selectedPlanet && <div><dt>{t('system.minerals')}</dt><dd>{planetTraitLabel(t, 'mineral', selectedPlanet.mineral_id)}</dd></div>}
+                {selectedPlanet && <div><dt>{t('system.gravity')}</dt><dd>{planetTraitLabel(t, 'gravity', selectedPlanet.gravity_id)}</dd></div>}
                 <div><dt>{t('system.status')}</dt><dd>{selectedStatus}</dd></div>
               </dl>
+              {selectedPlanet && !selectedColony && selectedPotential && (
+                <section className="system-planet-potential">
+                  <p className="eyebrow">{t('system.potentialTitle')}</p>
+                  <div className="system-potential-grid">
+                    <div><span>{t('system.potentialFarmer')}</span><strong>{selectedPotential.food_per_farmer.toFixed(1)} F</strong></div>
+                    <div><span>{t('system.potentialWorker')}</span><strong>{selectedPotential.production_per_worker.toFixed(1)} PP</strong></div>
+                    <div><span>{t('system.potentialScientist')}</span><strong>{selectedPotential.research_per_scientist.toFixed(1)} RP</strong></div>
+                    <div><span>{t('system.habitability')}</span><strong>{selectedPotential.climate_habitability_percent}%</strong></div>
+                    <div><span>{t('system.gravityEffect')}</span><strong>{selectedPotential.gravity_penalty_percent > 0 ? `-${selectedPotential.gravity_penalty_percent}%` : '0%'}</strong></div>
+                    <div><span>{t('system.populationPotential')}</span><strong>{selectedPotential.population_capacity.toFixed(0)}</strong></div>
+                  </div>
+                </section>
+              )}
               <div className="system-body-status-row">
                 {selectedColony && <span className="badge">{t('system.colonyStatus')}</span>}
                 {selectedBody.outpost_id && <span className="badge">{t('system.outpostStatus')}</span>}
@@ -701,11 +721,12 @@ export function StrategicColoniesView({ snapshot, preview, draftOrders, selected
   )
 }
 
-function PopulationMoveControls({ colony, onPlan, t, compact = false }: {
+function PopulationMoveControls({ colony, onPlan, t, compact = false, outputs }: {
   colony: Colony
   onPlan: (colonyID: number, farmers: number, workers: number, scientists: number) => void
   t: Translator
   compact?: boolean
+  outputs?: Partial<Record<PopulationJob, { total: number; unit: string; base?: string }>>
 }) {
   type Selection = { job: PopulationJob; indexes: number[] }
   type DragPayload = Selection & { amount: number }
@@ -846,8 +867,13 @@ function PopulationMoveControls({ colony, onPlan, t, compact = false }: {
               onDrop={(event) => handleDrop(event, job)}
             >
               <header>
-                <span>{labels[job]}</span>
-                <strong>{values[job].toFixed(1)}</strong>
+                <span className="population-job-label"><span>{labels[job]}</span><strong>{values[job].toFixed(1)}</strong></span>
+                {outputs?.[job] && (
+                  <span className="population-job-output">
+                    <strong>{outputs[job]?.total.toFixed(1)} {outputs[job]?.unit}</strong>
+                    {outputs[job]?.base && <small>{outputs[job]?.base}</small>}
+                  </span>
+                )}
               </header>
               <div className="population-people" aria-label={labels[job] + ': ' + values[job].toFixed(1)}>
                 {people.length === 0 ? <span className="population-empty" aria-hidden="true">—</span> : people.map((person, index) => {
@@ -931,37 +957,100 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
   onRemoveOrder: (key: string) => void
   t: Translator
 }) {
+  void onRemoveOrder
   const displayColony = preview?.colony ?? colony
   const decision = snapshot.decision
   const galaxy = decision?.strategic.galaxy
-  const planet = galaxy?.systems.flatMap((system) => system.planets.map((item) => ({ system, planet: item }))).find((item) => item.planet.id === colony.planet_id)
+  const planetContext = galaxy?.systems
+    .flatMap((system) => system.planets.map((item) => ({ system, planet: item })))
+    .find((item) => item.planet.id === colony.planet_id)
+  const planetPotential = planetContext
+    ? decision?.strategic.planet_potentials?.find((item) => item.planet_id === planetContext.planet.id)
+    : undefined
   const population = aggregatePopulation(displayColony)
   const growth = preview?.population_growth_per_turn ?? Math.max(0, displayColony.population_dynamics.projected_growth)
   const loss = preview?.population_loss_per_turn ?? Math.max(0, displayColony.population_dynamics.projected_starvation)
   const freeCapacity = preview?.free_population_capacity ?? Math.max(0, displayColony.population_dynamics.capacity - population.total)
   const transferChoices = decision?.decisions.population_transfers?.filter((item) => item.source_colony_id === colony.id) ?? []
+  const jobOutputs: Partial<Record<PopulationJob, { total: number; unit: string; base?: string }>> = {
+    farmer: {
+      total: displayColony.adjusted_economy.food,
+      unit: 'F',
+      base: planetPotential ? t('colony.jobBase', { value: planetPotential.food_per_farmer.toFixed(1), unit: 'F' }) : undefined,
+    },
+    worker: {
+      total: displayColony.adjusted_economy.production,
+      unit: 'PP',
+      base: planetPotential ? t('colony.jobBase', { value: planetPotential.production_per_worker.toFixed(1), unit: 'PP' }) : undefined,
+    },
+    scientist: {
+      total: displayColony.adjusted_economy.research,
+      unit: 'RP',
+      base: planetPotential ? t('colony.jobBase', { value: planetPotential.research_per_scientist.toFixed(1), unit: 'RP' }) : undefined,
+    },
+  }
 
   return (
     <>
       <PageHeader
         eyebrow={t('colonies.eyebrow')}
         title={t('colonies.colony', { id: colony.id })}
-        subtitle={planet ? `${planet.system.name} · ${planet.planet.name}` : t('colonies.planet', { id: colony.planet_id })}
+        subtitle={planetContext ? `${planetContext.system.name} · ${planetContext.planet.name}` : t('colonies.planet', { id: colony.planet_id })}
         actions={<button type="button" className="button-ghost" onClick={onBack}>{t('common.back')}</button>}
       />
-      <div className="content-grid content-grid-2">
-        <Card>
-          <p className="eyebrow">{t('colony.overview')}</p>
-          <h2>{t('colony.population')}</h2>
-          <dl className="detail-list">
+
+      <div className="colony-command-layout">
+        <Card className="colony-profile-card">
+          <div className="card-heading colony-panel-heading">
+            <div><p className="eyebrow">{t('colony.planetProfile')}</p><h2>{planetContext?.planet.name ?? t('colonies.planet', { id: colony.planet_id })}</h2></div>
+            <span className="badge">{population.total.toFixed(1)} / {displayColony.population_dynamics.capacity.toFixed(0)}</span>
+          </div>
+
+          {planetContext && (
+            <div className="colony-trait-stack">
+              <div className="colony-trait-chip">
+                <span>{t('system.climate')}</span>
+                <strong>{planetTraitLabel(t, 'climate', planetContext.planet.climate_id)}</strong>
+                {planetPotential && <small>{t('colony.climateEffect', { food: planetPotential.food_per_farmer.toFixed(1), habitability: planetPotential.climate_habitability_percent })}</small>}
+              </div>
+              <div className="colony-trait-chip">
+                <span>{t('system.size')}</span>
+                <strong>{planetTraitLabel(t, 'size', planetContext.planet.size_id)}</strong>
+                {planetPotential && <small>{t('colony.sizeEffect', { capacity: planetPotential.size_base_capacity.toFixed(0) })}</small>}
+              </div>
+              <div className="colony-trait-chip">
+                <span>{t('system.minerals')}</span>
+                <strong>{planetTraitLabel(t, 'mineral', planetContext.planet.mineral_id)}</strong>
+                {planetPotential && <small>{t('colony.mineralEffect', { production: planetPotential.production_per_worker.toFixed(1) })}</small>}
+              </div>
+              <div className="colony-trait-chip">
+                <span>{t('system.gravity')}</span>
+                <strong>{planetTraitLabel(t, 'gravity', planetContext.planet.gravity_id)}</strong>
+                {planetPotential && <small>{planetPotential.gravity_penalty_percent > 0 ? t('colony.gravityEffect', { penalty: planetPotential.gravity_penalty_percent }) : t('colony.gravityNoPenalty')}</small>}
+              </div>
+            </div>
+          )}
+
+          <dl className="colony-profile-stats">
             <div><dt>{t('colonies.population')}</dt><dd>{population.total.toFixed(2)} / {displayColony.population_dynamics.capacity.toFixed(2)}</dd></div>
             <div><dt>{t('colonies.freeCapacity')}</dt><dd>{freeCapacity.toFixed(2)}</dd></div>
             <div><dt>{loss > 0 ? t('colonies.starvation') : t('colonies.growth')}</dt><dd>{loss > 0 ? `-${loss.toFixed(2)}` : `+${growth.toFixed(2)}`}</dd></div>
             <div><dt>{t('colonies.nextPop')}</dt><dd>{formatEta(t, preview?.next_population_eta_turns)}</dd></div>
             <div><dt>{t('colony.groundForces')}</dt><dd>{displayColony.ground_forces?.infantry ?? 0}</dd></div>
+            <div><dt>{t('colony.taxContribution')}</dt><dd>{displayColony.adjusted_economy.tax_bc.toFixed(1)} BC</dd></div>
+            {planetPotential && <div><dt>{t('system.populationPotential')}</dt><dd>{planetPotential.population_capacity.toFixed(0)}</dd></div>}
           </dl>
-          <PopulationMoveControls colony={displayColony} onPlan={onPlanPopulation} t={t} />
         </Card>
+
+        <Card className="colony-jobs-card">
+          <div className="card-heading colony-panel-heading">
+            <div><p className="eyebrow">{t('colony.jobOutputs')}</p><h2>{t('colony.population')}</h2></div>
+            <span className="badge">{t('colony.taxContribution')}: {displayColony.adjusted_economy.tax_bc.toFixed(1)}</span>
+          </div>
+          <PopulationMoveControls colony={displayColony} onPlan={onPlanPopulation} outputs={jobOutputs} t={t} />
+          {planetPotential && <p className="muted colony-base-research">{t('colony.baseResearch', { research: planetPotential.research_per_scientist.toFixed(1) })}</p>}
+        </Card>
+
         <ConstructionSummary
           colony={displayColony}
           preview={preview}
@@ -969,47 +1058,37 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
           onOpen={() => onOpenConstruction(colony.id)}
           t={t}
         />
-        <Card>
-          <p className="eyebrow">{t('colony.outputs')}</p>
-          <div className="summary-stats">
-            <div><span>{t('colonies.tableFood')}</span><strong>{displayColony.adjusted_economy.food.toFixed(1)}</strong></div>
-            <div><span>{t('colonies.tableProduction')}</span><strong>{displayColony.adjusted_economy.production.toFixed(1)}</strong></div>
-            <div><span>{t('colonies.tableResearch')}</span><strong>{displayColony.adjusted_economy.research.toFixed(1)}</strong></div>
-          </div>
-          {planet && (
-            <>
-              <h3>{t('colony.planetTraits')}</h3>
-              <p className="muted">{planet.planet.climate_id} · {planet.planet.size_id} · {planet.planet.mineral_id} · {planet.planet.gravity_id}</p>
-            </>
-          )}
-        </Card>
-        <Card>
-          <p className="eyebrow">{t('colony.buildings')}</p>
-          {(displayColony.buildings ?? []).length === 0 ? <p className="muted">{t('colony.noBuildings')}</p> : (
-            <div className="building-grid">{(displayColony.buildings ?? []).map((building) => <div className="building-tile" key={building}><span className="building-placeholder" aria-hidden="true" /><strong>{building}</strong></div>)}</div>
-          )}
-        </Card>
-
-        <Card className="span-two">
-          <p className="eyebrow">{t('transfer.title')}</p>
-          {transferChoices.length === 0 ? <p className="muted">{t('common.none')}</p> : (
-            <div className="list-stack">
-              {transferChoices.slice(0, 24).map((choice, index) => (
-                <PopulationTransferRow
-                  key={`${choice.destination_colony_id}-${choice.source_job}-${choice.destination_job}-${index}`}
-                  choice={choice}
-                  onPlanOrder={onPlanOrder}
-                  t={t}
-                />
-              ))}
-            </div>
-          )}
-        </Card>
       </div>
+
+      <Card className="colony-surface-card">
+        <div className="card-heading colony-panel-heading">
+          <div><p className="eyebrow">{t('colony.surface')}</p><h2>{t('colony.buildings')}</h2></div>
+          <span className="badge">{(displayColony.buildings ?? []).length}</span>
+        </div>
+        <p className="muted colony-surface-hint">{t('colony.surfaceHint')}</p>
+        {(displayColony.buildings ?? []).length === 0 ? <p className="muted">{t('colony.noBuildings')}</p> : (
+          <div className="building-grid colony-building-grid">{(displayColony.buildings ?? []).map((building) => <div className="building-tile" key={building}><span className="building-placeholder" aria-hidden="true" /><strong>{humanizeToken(building)}</strong></div>)}</div>
+        )}
+      </Card>
+
+      <Card className="colony-transfer-card">
+        <p className="eyebrow">{t('transfer.title')}</p>
+        {transferChoices.length === 0 ? <p className="muted">{t('common.none')}</p> : (
+          <div className="list-stack">
+            {transferChoices.slice(0, 24).map((choice, index) => (
+              <PopulationTransferRow
+                key={`${choice.destination_colony_id}-${choice.source_job}-${choice.destination_job}-${index}`}
+                choice={choice}
+                onPlanOrder={onPlanOrder}
+                t={t}
+              />
+            ))}
+          </div>
+        )}
+      </Card>
     </>
   )
 }
-
 function ConstructionSummary({ colony, preview, draftOrders, onOpen, t }: {
   colony: Colony
   preview?: PlanningPreviewSnapshot['preview']['projection']['colonies'][number]

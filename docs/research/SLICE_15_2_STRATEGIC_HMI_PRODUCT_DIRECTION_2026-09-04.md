@@ -295,3 +295,12 @@ The full Colony Detail screen must also function as a compact planet/Colony roun
 - current build/progress/ETA plus upcoming queue.
 
 The functional data already present in Core (`Colony.Buildings`, `ColonyPopulationDynamics`, Colony economy and Planet traits) is authoritative. MOOX should not invent unsupported Morale/Pollution values solely for visual imitation. Final planet/building art remains 15.3.
+### Colony and uncolonized-planet presentation authority note
+
+- Colony Detail should use the classic information hierarchy (planet profile + job/output assignment + current build + colony/building surface) while preserving the existing authoritative drag/drop population workflow.
+- Planet traits must be explanatory, not raw IDs: climate should expose base food/habitability, size its base capacity, mineral class its worker-production potential, and gravity the viewing population's penalty.
+- Uncolonized planet inspection must consume a player-safe server projection derived from EconomyRules. The browser must not hardcode MOO2 food/industry/gravity/capacity tables or infer race effects itself.
+- `PlanetPotential` is explicitly pre-Colony/base context: race job modifiers and player gravity/capacity are valid, while Government/morale and Colony-local building effects remain outside that base projection.
+- The live Colony job bands display actual authoritative `adjusted_economy` totals; per-Pop base values are explanatory context only.
+- Colony BC contribution may surface authoritative `adjusted_economy.tax_bc` directly.
+- Do not add Morale/Pollution fields unless the server owns and projects them. Rich terrain/building artwork remains Slice 15.3 presentation work.

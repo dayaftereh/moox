@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -287,6 +287,26 @@ Status: **complete; direct user review pending**.
 - The center project area reserves a visibly disabled `Schiff entwerfen` affordance for military ship/design choices. No fake route is exposed: the interactive Ship Designer remains deferred to Slice 17.
 - `npm run build` - **PASS**.
 - `go test ./internal/game -run TestSetConstructionQueuePreservesAccumulatedProductionStock -count=1` - **PASS**.
+
+#### G4-B2-Q - MOO2-inspired Colony command view + authoritative planet potential
+
+Status: **complete; direct user review pending**.
+
+- Added an additive player-safe `PlanetPotential` projection to `PlayerDecisionView.strategic`. It is derived server-side from the same `EconomyRules` used by Colony economy/capacity resolution; React performs display formatting only.
+- `PlanetPotential` exposes per planet: player-relative base Food/Farmer, Production/Worker and Research/Scientist, gravity penalty, ruleset climate habitability percentage, ruleset size base capacity, and Empire-relative population capacity. Government/morale and Colony-local buildings are deliberately excluded from the base job potential.
+- Added game-level coverage for the Small Fixture Alpha I baseline (`2 Food/Farmer`, `3 PP/Worker`, `3 RP/Scientist`, `0%` gravity penalty, `80%` Terran habitability, Medium base capacity `15`, player capacity `12`) and DecisionView coverage requiring one valid potential for every projected planet.
+- Uncolonized System planets now show a compact `Basis für dein Volk` block beneath their authoritative body facts. Browser smoke: Beta I projected `1.0 F / 5.0 PP / 3.0 RP`, `25%` habitability, `0%` gravity penalty and max population `3`; Beta II projected `0.0 F / 2.0 PP / 3.0 RP`, `25%` habitability, `-50%` Heavy-G penalty and max population `5`.
+- Planet class tokens are now localized for climate, size, mineral class and gravity rather than exposing raw `terran / medium / abundant / normal_g` IDs.
+- Reworked Colony Detail into a compact classic hierarchy without copying original artwork: left Planet Profile, center Population & Output, right current Construction summary, with the existing Building/Colony surface below.
+- Planet Profile explains the current planet using authoritative potential/rules data. Demo Alpha I shows `Terran -> 2.0 Food/Farmer + 80% habitability`, `Medium -> base capacity 15`, `Abundant -> 3.0 PP/Worker`, `Normal-G -> no gravity penalty`, current `4 / 12` population and `6.0 BC` Colony tax contribution.
+- The three existing Farmer/Worker/Scientist drag/drop bands now surface their actual authoritative adjusted totals directly beside the population tokens while also showing server-projected base output per Pop. Demo baseline displays Farmer `2.0 -> 4.0 F`, Worker `1.0 -> 3.0 PP`, Scientist `1.0 -> 4.5 RP`, with base Scientist potential `3.0 RP/Pop`.
+- Authority regression: selecting one Farmer and moving it to Worker through the existing planning flow changed Farmer `2 -> 1`, Worker `1 -> 2`, Food `4 -> 2` and Production `3 -> 6`; the top Food indicator followed the authoritative Planning Preview to `-2.0`.
+- `adjusted_economy.tax_bc` is surfaced as the Colony BC contribution; no new treasury/economy math was added to the client.
+- Current Construction summary remains the right-hand Colony action and opens the B2-P manager. Buildings remain structural tiles; rich colony landscape/building art stays deferred to Slice 15.3.
+- Responsive QA: 1200x720 produced three Colony command columns at about `242 / 480 / 273px`, equal `414px` height and no horizontal overflow. A 320x640 probe stacked all three command cards at `308px` width with no horizontal overflow and retained touch/tap population controls.
+- Mobile System QA after adding potential data: 320x640 dialog `314x632`, circular orbital stage `312x329`, selected-body inspector `312x210`, potential block `312x91`, no horizontal overflow.
+- `go test ./internal/game ./internal/session -count=1` - **PASS**.
+- `npm run build` - **PASS**.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
 

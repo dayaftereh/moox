@@ -86,14 +86,24 @@ func TestPlayerDecisionViewIsPlayerSafeDeepCopyAndDeterministic(t *testing.T) {
 	if !foreignColonyContact || !foreignFleetContact {
 		t.Fatalf("symmetric strategic contacts missing colony=%v fleet=%v contacts=%+v", foreignColonyContact, foreignFleetContact, view.Strategic.Contacts)
 	}
+	planetCount := 0
 	for _, system := range view.Strategic.Galaxy.Systems {
 		if len(system.BlockadedEmpireIDs) != 0 {
 			t.Fatalf("decision galaxy leaked blockade internals for system %d: %v", system.ID, system.BlockadedEmpireIDs)
 		}
 		for _, planet := range system.Planets {
+			planetCount++
 			if planet.ColonyID != 0 || planet.OutpostID != 0 {
 				t.Fatalf("decision galaxy leaked occupancy internals planet=%d colony=%d outpost=%d", planet.ID, planet.ColonyID, planet.OutpostID)
 			}
+		}
+	}
+	if len(view.Strategic.PlanetPotentials) != planetCount {
+		t.Fatalf("planet potential count=%d want=%d", len(view.Strategic.PlanetPotentials), planetCount)
+	}
+	for _, potential := range view.Strategic.PlanetPotentials {
+		if potential.PlanetID == 0 || potential.PopulationCapacity <= 0 {
+			t.Fatalf("invalid player-relative planet potential %+v", potential)
 		}
 	}
 	if len(view.Decisions.Research) == 0 || len(view.Decisions.Construction) == 0 || len(view.Decisions.Population) == 0 {

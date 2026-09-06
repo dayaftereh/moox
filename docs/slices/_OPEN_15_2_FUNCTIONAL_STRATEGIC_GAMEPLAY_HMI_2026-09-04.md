@@ -40,6 +40,7 @@ Permanent evidence:
     - [x] B2-N: keep the orbital picture fleet-free; expose present fleets/special vessels through a contextual Fleet/Ships dialog with per-Ship technical loadout drill-down; persistent partial damage remains a core gap.
     - [x] B2-O: clicking a colonized planet opens its Colony detail directly; uncolonized/non-planet bodies remain inspectable in the System dialog.
     - [x] B2-P: MOO2-inspired responsive construction catalog/detail/queue workspace + confirmed current-build cancellation with preserved authoritative PP; future Ship Designer affordance reserved but disabled until Slice 17.
+    - [x] B2-Q: MOO2-inspired responsive Colony command hierarchy plus server-derived player-relative PlanetPotential for uncolonized System inspection and understandable climate/size/mineral/gravity effects.
   - [ ] G4-C: independent mobile/desktop workflow QA and Slice-15.2 closure.
 
 Live preview:

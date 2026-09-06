@@ -191,6 +191,16 @@ export type StarSystem = {
   bodies?: OrbitalBody[]
 }
 export type Galaxy = { id: number; systems: StarSystem[] }
+export type PlanetPotential = {
+  planet_id: number
+  food_per_farmer: number
+  production_per_worker: number
+  research_per_scientist: number
+  gravity_penalty_percent: number
+  climate_habitability_percent: number
+  size_base_capacity: number
+  population_capacity: number
+}
 export type Outpost = { id: number; empire_id: number; body_id?: number; planet_id?: number }
 
 export type ShipWeaponMount = { slot: number; weapon_id: string; count: number }
@@ -248,6 +258,7 @@ export type StrategicContact = {
 }
 export type StrategicView = {
   galaxy: Galaxy
+  planet_potentials?: PlanetPotential[]
   outposts?: Outpost[]
   ship_designs?: ShipDesign[]
   ships?: Ship[]
