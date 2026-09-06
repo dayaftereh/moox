@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-B2-R Colony density cleanup complete; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-B2-R Colony density cleanup complete; G4-B2-S Planet/Colony profile split complete; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -322,6 +322,19 @@ Status: **complete; direct user review pending**.
 - The uncolonized-planet `Basis für dein Volk` block was also compressed from ~91px to ~62px at 320px width using a three-column value grid, with all six authoritative values retained.
 - Responsive browser QA: 1200x720 Colony command row is now ~300px high (previous B2-Q ~414px), with the compact header ~40px and no horizontal overflow. At 320x640: Profile ~193px, Jobs ~212px, Build ~147px, all 308px wide and no horizontal overflow.
 - Authority regression: moving one Farmer to Worker still changed Farmer `2 -> 1`, Worker `1 -> 2`, Food `4 -> 2`, Production `3 -> 6`; top Food followed Planning Preview to `-2.0`.
+- `npm run build` - **PASS**.
+
+#### G4-B2-S - Planet Profile / Colony Profile split
+
+Status: **complete; direct user review pending**.
+
+- Replaced the always-visible four-row planet trait block in Colony Detail with a compact `Planeten-Profil` line showing the planet name plus a tap/click `Planeten-Info` disclosure.
+- `Planeten-Info` opens a small responsive 2x2 popover containing authoritative climate, size, mineral class and gravity plus their already-projected player-relative effects. A click/tap disclosure was chosen instead of hover-only tooltip behavior so the same interaction works on mobile.
+- Added a distinct `Kolonie-Profil` directly underneath. Only Colony-state values remain permanently visible there: population/capacity, growth/starvation, next-Pop ETA, ground forces and Colony BC.
+- The German labels now explicitly read `Planeten-Profil` and `Kolonie-Profil`; population uses `Bevölkerungsstatus` rather than the assignment-oriented label.
+- No game rules or PlanetPotential math changed; this is presentation-only reuse of B2-Q authoritative data.
+- Desktop smoke: popover is bounded inside the viewport (`240x105px`, no horizontal overflow); Colony profile occupies ~88px beneath the 34px Planet Profile line.
+- 320x640 smoke: profile card reduced to ~127px total, Colony Profile ~79px, jobs ~212px, build ~147px. The `240x95px` Planet Info popover fits fully at x=65..305 with no horizontal overflow.
 - `npm run build` - **PASS**.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure

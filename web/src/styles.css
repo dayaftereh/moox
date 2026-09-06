@@ -2189,3 +2189,135 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .system-potential-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .system-body-inspector { max-height: 202px; }
 }
+
+/* Slice 15.2 B2-S: separate compact Planet Profile from Colony Profile. */
+.colony-profile-card {
+  position: relative;
+  overflow: visible;
+}
+.colony-planet-profile-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 34px;
+  padding-bottom: 5px;
+}
+.colony-planet-profile-summary > div:first-child {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  gap: 7px;
+}
+.colony-planet-profile-summary .eyebrow { margin: 0; font-size: .46rem; }
+.colony-planet-profile-summary > div:first-child > strong {
+  overflow: hidden;
+  color: #dfe8ee;
+  font-size: .59rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.colony-planet-info {
+  position: relative;
+  flex: 0 0 auto;
+}
+.colony-planet-info > summary {
+  list-style: none;
+  min-height: 24px;
+  padding: 4px 7px;
+  border: 1px solid rgba(103, 128, 150, .42);
+  border-radius: 5px;
+  background: rgba(11, 21, 29, .72);
+  color: #aebdca;
+  cursor: pointer;
+  font-size: .47rem;
+  font-weight: 850;
+  user-select: none;
+}
+.colony-planet-info > summary::-webkit-details-marker { display: none; }
+.colony-planet-info[open] > summary,
+.colony-planet-info > summary:hover,
+.colony-planet-info > summary:focus-visible {
+  border-color: #7f9cb6;
+  background: rgba(23, 39, 52, .9);
+  color: #eef5fa;
+}
+.colony-planet-info-popover {
+  position: absolute;
+  z-index: 45;
+  top: calc(100% + 4px);
+  right: 0;
+  display: grid;
+  width: min(240px, calc(100vw - 24px));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  padding: 7px;
+  border: 1px solid #526a7f;
+  border-radius: 7px;
+  background: rgba(7, 15, 22, .97);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, .52);
+  backdrop-filter: blur(5px);
+}
+.colony-planet-info-item {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+  padding: 5px 6px;
+  border: 1px solid rgba(83, 105, 124, .24);
+  border-radius: 4px;
+  background: rgba(13, 24, 33, .72);
+}
+.colony-planet-info-item > span {
+  color: #7f91a1;
+  font-size: .43rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.colony-planet-info-item > strong {
+  overflow: hidden;
+  color: #e4edf3;
+  font-size: .55rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.colony-planet-info-item > small {
+  overflow: hidden;
+  color: #8b9dab;
+  font-size: .43rem;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.colony-colony-profile {
+  padding-top: 5px;
+  border-top: 1px solid rgba(83, 104, 122, .22);
+}
+.colony-profile-section-title {
+  min-height: 16px;
+  margin-bottom: 2px;
+}
+.colony-profile-section-title .eyebrow { margin: 0; font-size: .46rem; }
+.colony-colony-profile .colony-profile-stats { margin-top: 2px; }
+.colony-command-layout > .card,
+.colony-command-layout > .construction-summary-card { min-height: 225px; }
+
+@media (max-width: 699px) {
+  .colony-planet-profile-summary { min-height: 30px; padding-bottom: 4px; }
+  .colony-planet-profile-summary > div:first-child { gap: 5px; }
+  .colony-planet-profile-summary .eyebrow { font-size: .42rem; }
+  .colony-planet-profile-summary > div:first-child > strong { font-size: .54rem; }
+  .colony-planet-info > summary { min-height: 22px; padding: 3px 6px; font-size: .43rem; }
+  .colony-planet-info-popover {
+    right: 0;
+    width: min(240px, calc(100vw - 24px));
+    gap: 4px;
+    padding: 5px;
+  }
+  .colony-planet-info-item { padding: 4px 5px; }
+  .colony-planet-info-item > span { font-size: .4rem; }
+  .colony-planet-info-item > strong { font-size: .51rem; }
+  .colony-planet-info-item > small { font-size: .4rem; }
+  .colony-command-layout > .card,
+  .colony-command-layout > .construction-summary-card { min-height: 0; }
+}

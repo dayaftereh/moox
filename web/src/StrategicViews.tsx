@@ -997,45 +997,53 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
 
       <div className="colony-command-layout">
         <Card className="colony-profile-card">
-          <div className="card-heading colony-panel-heading colony-panel-heading-compact">
-            <p className="eyebrow">{t('colony.planetProfile')}</p>
-            <strong>{planetContext?.planet.name ?? t('colonies.planet', { id: colony.planet_id })}</strong>
-          </div>
-
-          {planetContext && (
-            <div className="colony-trait-stack">
-              <div className="colony-trait-chip">
-                <span>{t('system.climate')}</span>
-                <strong>{planetTraitLabel(t, 'climate', planetContext.planet.climate_id)}</strong>
-                {planetPotential && <small>{t('colony.climateEffect', { food: planetPotential.food_per_farmer.toFixed(1), habitability: planetPotential.climate_habitability_percent })}</small>}
-              </div>
-              <div className="colony-trait-chip">
-                <span>{t('system.size')}</span>
-                <strong>{planetTraitLabel(t, 'size', planetContext.planet.size_id)}</strong>
-                {planetPotential && <small>{t('colony.sizeEffect', { capacity: planetPotential.size_base_capacity.toFixed(0) })}</small>}
-              </div>
-              <div className="colony-trait-chip">
-                <span>{t('system.minerals')}</span>
-                <strong>{planetTraitLabel(t, 'mineral', planetContext.planet.mineral_id)}</strong>
-                {planetPotential && <small>{t('colony.mineralEffect', { production: planetPotential.production_per_worker.toFixed(1) })}</small>}
-              </div>
-              <div className="colony-trait-chip">
-                <span>{t('system.gravity')}</span>
-                <strong>{planetTraitLabel(t, 'gravity', planetContext.planet.gravity_id)}</strong>
-                {planetPotential && <small>{planetPotential.gravity_penalty_percent > 0 ? t('colony.gravityEffect', { penalty: planetPotential.gravity_penalty_percent }) : t('colony.gravityNoPenalty')}</small>}
-              </div>
+          <section className="colony-planet-profile-summary">
+            <div>
+              <p className="eyebrow">{t('colony.planetProfile')}</p>
+              <strong>{planetContext?.planet.name ?? t('colonies.planet', { id: colony.planet_id })}</strong>
             </div>
-          )}
+            {planetContext && (
+              <details className="colony-planet-info">
+                <summary>{t('colony.planetInfo')}</summary>
+                <div className="colony-planet-info-popover">
+                  <div className="colony-planet-info-item">
+                    <span>{t('system.climate')}</span>
+                    <strong>{planetTraitLabel(t, 'climate', planetContext.planet.climate_id)}</strong>
+                    {planetPotential && <small>{t('colony.climateEffect', { food: planetPotential.food_per_farmer.toFixed(1), habitability: planetPotential.climate_habitability_percent })}</small>}
+                  </div>
+                  <div className="colony-planet-info-item">
+                    <span>{t('system.size')}</span>
+                    <strong>{planetTraitLabel(t, 'size', planetContext.planet.size_id)}</strong>
+                    {planetPotential && <small>{t('colony.sizeEffect', { capacity: planetPotential.size_base_capacity.toFixed(0) })}</small>}
+                  </div>
+                  <div className="colony-planet-info-item">
+                    <span>{t('system.minerals')}</span>
+                    <strong>{planetTraitLabel(t, 'mineral', planetContext.planet.mineral_id)}</strong>
+                    {planetPotential && <small>{t('colony.mineralEffect', { production: planetPotential.production_per_worker.toFixed(1) })}</small>}
+                  </div>
+                  <div className="colony-planet-info-item">
+                    <span>{t('system.gravity')}</span>
+                    <strong>{planetTraitLabel(t, 'gravity', planetContext.planet.gravity_id)}</strong>
+                    {planetPotential && <small>{planetPotential.gravity_penalty_percent > 0 ? t('colony.gravityEffect', { penalty: planetPotential.gravity_penalty_percent }) : t('colony.gravityNoPenalty')}</small>}
+                  </div>
+                </div>
+              </details>
+            )}
+          </section>
 
-          <dl className="colony-profile-stats">
-            <div><dt>{t('colonies.population')}</dt><dd>{population.total.toFixed(2)} / {displayColony.population_dynamics.capacity.toFixed(2)}</dd></div>
-            <div><dt>{loss > 0 ? t('colonies.starvation') : t('colonies.growth')}</dt><dd>{loss > 0 ? `-${loss.toFixed(2)}` : `+${growth.toFixed(2)}`}</dd></div>
-            <div><dt>{t('colonies.nextPop')}</dt><dd>{formatEta(t, preview?.next_population_eta_turns)}</dd></div>
-            <div><dt>{t('colony.groundForces')}</dt><dd>{displayColony.ground_forces?.infantry ?? 0}</dd></div>
-            <div><dt>{t('colony.taxContribution')}</dt><dd>{displayColony.adjusted_economy.tax_bc.toFixed(1)} BC</dd></div>
-          </dl>
+          <section className="colony-colony-profile">
+            <div className="colony-profile-section-title">
+              <p className="eyebrow">{t('colony.colonyProfile')}</p>
+            </div>
+            <dl className="colony-profile-stats">
+              <div><dt>{t('colony.populationStatus')}</dt><dd>{population.total.toFixed(2)} / {displayColony.population_dynamics.capacity.toFixed(2)}</dd></div>
+              <div><dt>{loss > 0 ? t('colonies.starvation') : t('colonies.growth')}</dt><dd>{loss > 0 ? `-${loss.toFixed(2)}` : `+${growth.toFixed(2)}`}</dd></div>
+              <div><dt>{t('colonies.nextPop')}</dt><dd>{formatEta(t, preview?.next_population_eta_turns)}</dd></div>
+              <div><dt>{t('colony.groundForces')}</dt><dd>{displayColony.ground_forces?.infantry ?? 0}</dd></div>
+              <div><dt>{t('colony.taxContribution')}</dt><dd>{displayColony.adjusted_economy.tax_bc.toFixed(1)} BC</dd></div>
+            </dl>
+          </section>
         </Card>
-
         <Card className="colony-jobs-card">
           <div className="card-heading colony-panel-heading colony-panel-heading-compact">
             <p className="eyebrow">{t('colony.jobOutputs')}</p>
