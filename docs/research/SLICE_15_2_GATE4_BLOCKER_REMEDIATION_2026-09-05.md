@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-B2-R Colony density cleanup complete; G4-B2-S Planet/Colony profile split complete; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-B2-R Colony density cleanup complete; G4-B2-S Planet/Colony profile split complete; G4-B2-T signed growth/resource cleanup complete; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -335,6 +335,18 @@ Status: **complete; direct user review pending**.
 - No game rules or PlanetPotential math changed; this is presentation-only reuse of B2-Q authoritative data.
 - Desktop smoke: popover is bounded inside the viewport (`240x105px`, no horizontal overflow); Colony profile occupies ~88px beneath the 34px Planet Profile line.
 - 320x640 smoke: profile card reduced to ~127px total, Colony Profile ~79px, jobs ~212px, build ~147px. The `240x95px` Planet Info popover fits fully at x=65..305 with no horizontal overflow.
+- `npm run build` - **PASS**.
+
+#### G4-B2-T - Signed growth/resource presentation + Morale boundary audit
+
+Status: **complete; direct user review pending**.
+
+- Merged Colony `Wachstum` and `Nächste Population` into one compact row. Positive growth now renders as e.g. `+0.07 (14 Runde(n))`; the separate next-pop row is removed. When the colony is starving, the same row remains `Wachstum` but shows the authoritative negative rate without a misleading next-positive-pop ETA.
+- Reused the existing signed resource tone convention everywhere touched by this refinement: positive values are green, negative values red, zero neutral. Colony growth now consumes the same `resource-text-positive / resource-text-danger / resource-text-neutral` presentation used by top-bar resource deltas.
+- Browser smoke verified the positive baseline: `Wachstum +0.07 (14 Runde(n))`, BC `[+6]` and CP `[+5]` all compute to the positive green tone.
+- Authority/negative smoke moved one Farmer to Worker through the existing planning flow. Food became `[-2.0]` with `resource-danger` red, and Colony growth became `-0.10` with `resource-text-danger` red; Farmer/Worker outputs still changed authoritatively from `2/1 -> 1/2`, Food `4 -> 2`, Production `3 -> 6`.
+- Morale audit: the core already contains a Phase-1 local morale context (`ECONOMY_MORALE_2026-08-27.md`) including Feudal/Dictatorship missing-barracks penalties, Marine/Armor Barracks cancellation, Holo Simulator +20%, Pleasure Dome +30%, Unification morale immunity, and applied morale effects on colony output/money. The current player-safe browser projection does **not** expose `MoralePercent`, so Slice 15.2 continues to avoid fabricating a Morale UI row.
+- Deferred morale breadth remains in the post-Slice-17 economy-fidelity backlog: Virtual Reality Network empire-wide morale, Telepathic Training, Capitol-loss morale, and conquest/assimilation morale. When a player-safe morale breakdown is projected, Colony Profile is the intended display location, using the same signed green/red convention and a detail disclosure for sources.
 - `npm run build` - **PASS**.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure

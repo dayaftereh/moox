@@ -43,6 +43,7 @@ Permanent evidence:
     - [x] B2-Q: MOO2-inspired responsive Colony command hierarchy plus server-derived player-relative PlanetPotential for uncolonized System inspection and understandable climate/size/mineral/gravity effects.
     - [x] B2-R: compact Colony toolbar + deduplicated BC/population/output presentation + dense planet-trait/job tables, preserving authoritative drag/drop and PlanetPotential.
     - [x] B2-S: split Colony Detail into compact Planet Profile + tap/click Planet Info popover and a separate always-visible Colony Profile below.
+    - [x] B2-T: merge Growth + next-Pop ETA into one signed row; apply shared green-positive/red-negative tones and document the existing core-Morale / missing player-safe Morale-projection boundary.
   - [ ] G4-C: independent mobile/desktop workflow QA and Slice-15.2 closure.
 
 Live preview:

@@ -969,6 +969,10 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
   const population = aggregatePopulation(displayColony)
   const growth = preview?.population_growth_per_turn ?? Math.max(0, displayColony.population_dynamics.projected_growth)
   const loss = preview?.population_loss_per_turn ?? Math.max(0, displayColony.population_dynamics.projected_starvation)
+  const signedGrowth = loss > 0 ? -loss : growth
+  const growthTone = signedGrowth > 0 ? 'positive' : signedGrowth < 0 ? 'danger' : 'neutral'
+  const nextPopulationETA = preview?.next_population_eta_turns
+  const growthEta = signedGrowth > 0 && nextPopulationETA && nextPopulationETA > 0 ? ` (${formatEta(t, nextPopulationETA)})` : ''
   const transferChoices = decision?.decisions.population_transfers?.filter((item) => item.source_colony_id === colony.id) ?? []
   const jobOutputs: Partial<Record<PopulationJob, { total: number; unit: string }>> = {
     farmer: {
@@ -1037,8 +1041,7 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
             </div>
             <dl className="colony-profile-stats">
               <div><dt>{t('colony.populationStatus')}</dt><dd>{population.total.toFixed(2)} / {displayColony.population_dynamics.capacity.toFixed(2)}</dd></div>
-              <div><dt>{loss > 0 ? t('colonies.starvation') : t('colonies.growth')}</dt><dd>{loss > 0 ? `-${loss.toFixed(2)}` : `+${growth.toFixed(2)}`}</dd></div>
-              <div><dt>{t('colonies.nextPop')}</dt><dd>{formatEta(t, preview?.next_population_eta_turns)}</dd></div>
+              <div><dt>{t('colonies.growth')}</dt><dd className={`resource-text-${growthTone}`}>{signedGrowth > 0 ? '+' : ''}{signedGrowth.toFixed(2)}{growthEta}</dd></div>
               <div><dt>{t('colony.groundForces')}</dt><dd>{displayColony.ground_forces?.infantry ?? 0}</dd></div>
               <div><dt>{t('colony.taxContribution')}</dt><dd>{displayColony.adjusted_economy.tax_bc.toFixed(1)} BC</dd></div>
             </dl>

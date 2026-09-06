@@ -304,3 +304,9 @@ The functional data already present in Core (`Colony.Buildings`, `ColonyPopulati
 - The live Colony job bands display actual authoritative `adjusted_economy` totals; per-Pop base values are explanatory context only.
 - Colony BC contribution may surface authoritative `adjusted_economy.tax_bc` directly.
 - Do not add Morale/Pollution fields unless the server owns and projects them. Rich terrain/building artwork remains Slice 15.3 presentation work.
+### Morale presentation boundary
+
+- Local Morale is not an invented future mechanic: Phase-1 authoritative economy context already supports government barracks penalties, morale buildings and Unification immunity, and those effects participate in adjusted Colony outputs.
+- Slice 15.2 must nevertheless not display a guessed Morale number because `MoralePercent` / its source breakdown are not currently part of the player-safe browser DecisionView.
+- When Morale is projected player-safely, display it in the compact Colony Profile as a signed percentage (positive green, negative red, zero neutral) with a click/tap breakdown of authoritative sources rather than duplicating the full rule explanation in the main screen.
+- Full morale breadth (empire-wide morale technology, Capitol loss, conquered-population/assimilation morale) remains part of the evidence-driven economy/building/pollution/morale fidelity backlog after Slice 17; it should not reopen Economy as one monolithic rewrite.
