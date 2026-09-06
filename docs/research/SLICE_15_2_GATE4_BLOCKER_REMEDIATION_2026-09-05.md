@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-B2-R Colony density cleanup complete; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -306,6 +306,22 @@ Status: **complete; direct user review pending**.
 - Responsive QA: 1200x720 produced three Colony command columns at about `242 / 480 / 273px`, equal `414px` height and no horizontal overflow. A 320x640 probe stacked all three command cards at `308px` width with no horizontal overflow and retained touch/tap population controls.
 - Mobile System QA after adding potential data: 320x640 dialog `314x632`, circular orbital stage `312x329`, selected-body inspector `312x210`, potential block `312x91`, no horizontal overflow.
 - `go test ./internal/game ./internal/session -count=1` - **PASS**.
+- `npm run build` - **PASS**.
+
+#### G4-B2-R - Colony density cleanup
+
+Status: **complete; direct user review pending**.
+
+- Replaced the large generic PageHeader (`Imperiumsverwaltung` + large Colony title/subtitle) with a compact Colony toolbar containing only `Kolonie #ID`, System/Planet context and a small Back action.
+- Removed redundant population/capacity presentation from the Planet Profile heading and removed the separately repeated max-population row; current population/capacity is now shown once in the compact stats table.
+- Removed redundant free-capacity display from Colony Detail because it is directly inferable from the single population/capacity value.
+- `Kolonie-BC` is now shown only once in the Planet Profile stats; the duplicate BC badge in the population/output card was removed.
+- Farmer/Worker/Scientist rows retain only the current authoritative Colony output totals (`F`, `PP`, `RP`). The repeated per-Pop base-output subtitles and separate base-research footer were removed; planet rule explanations remain once in the Planet Profile.
+- Planet trait explanations were shortened (`2.0 F/Farmer · 80%`, `15 Pop Basis`, `3.0 PP/Arbeiter`, `0% Malus`) and converted to a dense table-like row layout rather than large stacked cards.
+- Reduced card minimum heights, row padding, marker size and typography. The population drag/drop hint is hidden on Colony Detail while existing selection/tap/drag mechanics remain unchanged.
+- The uncolonized-planet `Basis für dein Volk` block was also compressed from ~91px to ~62px at 320px width using a three-column value grid, with all six authoritative values retained.
+- Responsive browser QA: 1200x720 Colony command row is now ~300px high (previous B2-Q ~414px), with the compact header ~40px and no horizontal overflow. At 320x640: Profile ~193px, Jobs ~212px, Build ~147px, all 308px wide and no horizontal overflow.
+- Authority regression: moving one Farmer to Worker still changed Farmer `2 -> 1`, Worker `1 -> 2`, Food `4 -> 2`, Production `3 -> 6`; top Food followed Planning Preview to `-2.0`.
 - `npm run build` - **PASS**.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure

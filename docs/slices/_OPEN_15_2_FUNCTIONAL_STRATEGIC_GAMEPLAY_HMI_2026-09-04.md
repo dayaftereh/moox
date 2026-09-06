@@ -41,6 +41,7 @@ Permanent evidence:
     - [x] B2-O: clicking a colonized planet opens its Colony detail directly; uncolonized/non-planet bodies remain inspectable in the System dialog.
     - [x] B2-P: MOO2-inspired responsive construction catalog/detail/queue workspace + confirmed current-build cancellation with preserved authoritative PP; future Ship Designer affordance reserved but disabled until Slice 17.
     - [x] B2-Q: MOO2-inspired responsive Colony command hierarchy plus server-derived player-relative PlanetPotential for uncolonized System inspection and understandable climate/size/mineral/gravity effects.
+    - [x] B2-R: compact Colony toolbar + deduplicated BC/population/output presentation + dense planet-trait/job tables, preserving authoritative drag/drop and PlanetPotential.
   - [ ] G4-C: independent mobile/desktop workflow QA and Slice-15.2 closure.
 
 Live preview:

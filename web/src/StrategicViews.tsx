@@ -726,7 +726,7 @@ function PopulationMoveControls({ colony, onPlan, t, compact = false, outputs }:
   onPlan: (colonyID: number, farmers: number, workers: number, scientists: number) => void
   t: Translator
   compact?: boolean
-  outputs?: Partial<Record<PopulationJob, { total: number; unit: string; base?: string }>>
+  outputs?: Partial<Record<PopulationJob, { total: number; unit: string }>>
 }) {
   type Selection = { job: PopulationJob; indexes: number[] }
   type DragPayload = Selection & { amount: number }
@@ -871,7 +871,6 @@ function PopulationMoveControls({ colony, onPlan, t, compact = false, outputs }:
                 {outputs?.[job] && (
                   <span className="population-job-output">
                     <strong>{outputs[job]?.total.toFixed(1)} {outputs[job]?.unit}</strong>
-                    {outputs[job]?.base && <small>{outputs[job]?.base}</small>}
                   </span>
                 )}
               </header>
@@ -970,40 +969,37 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
   const population = aggregatePopulation(displayColony)
   const growth = preview?.population_growth_per_turn ?? Math.max(0, displayColony.population_dynamics.projected_growth)
   const loss = preview?.population_loss_per_turn ?? Math.max(0, displayColony.population_dynamics.projected_starvation)
-  const freeCapacity = preview?.free_population_capacity ?? Math.max(0, displayColony.population_dynamics.capacity - population.total)
   const transferChoices = decision?.decisions.population_transfers?.filter((item) => item.source_colony_id === colony.id) ?? []
-  const jobOutputs: Partial<Record<PopulationJob, { total: number; unit: string; base?: string }>> = {
+  const jobOutputs: Partial<Record<PopulationJob, { total: number; unit: string }>> = {
     farmer: {
       total: displayColony.adjusted_economy.food,
       unit: 'F',
-      base: planetPotential ? t('colony.jobBase', { value: planetPotential.food_per_farmer.toFixed(1), unit: 'F' }) : undefined,
     },
     worker: {
       total: displayColony.adjusted_economy.production,
       unit: 'PP',
-      base: planetPotential ? t('colony.jobBase', { value: planetPotential.production_per_worker.toFixed(1), unit: 'PP' }) : undefined,
     },
     scientist: {
       total: displayColony.adjusted_economy.research,
       unit: 'RP',
-      base: planetPotential ? t('colony.jobBase', { value: planetPotential.research_per_scientist.toFixed(1), unit: 'RP' }) : undefined,
     },
   }
 
   return (
     <>
-      <PageHeader
-        eyebrow={t('colonies.eyebrow')}
-        title={t('colonies.colony', { id: colony.id })}
-        subtitle={planetContext ? `${planetContext.system.name} · ${planetContext.planet.name}` : t('colonies.planet', { id: colony.planet_id })}
-        actions={<button type="button" className="button-ghost" onClick={onBack}>{t('common.back')}</button>}
-      />
+      <header className="colony-detail-toolbar">
+        <div className="colony-detail-toolbar-title">
+          <strong>{t('colonies.colony', { id: colony.id })}</strong>
+          <span>{planetContext ? `${planetContext.system.name} · ${planetContext.planet.name}` : t('colonies.planet', { id: colony.planet_id })}</span>
+        </div>
+        <button type="button" className="button-ghost colony-detail-back" onClick={onBack}>{t('common.back')}</button>
+      </header>
 
       <div className="colony-command-layout">
         <Card className="colony-profile-card">
-          <div className="card-heading colony-panel-heading">
-            <div><p className="eyebrow">{t('colony.planetProfile')}</p><h2>{planetContext?.planet.name ?? t('colonies.planet', { id: colony.planet_id })}</h2></div>
-            <span className="badge">{population.total.toFixed(1)} / {displayColony.population_dynamics.capacity.toFixed(0)}</span>
+          <div className="card-heading colony-panel-heading colony-panel-heading-compact">
+            <p className="eyebrow">{t('colony.planetProfile')}</p>
+            <strong>{planetContext?.planet.name ?? t('colonies.planet', { id: colony.planet_id })}</strong>
           </div>
 
           {planetContext && (
@@ -1033,22 +1029,18 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
 
           <dl className="colony-profile-stats">
             <div><dt>{t('colonies.population')}</dt><dd>{population.total.toFixed(2)} / {displayColony.population_dynamics.capacity.toFixed(2)}</dd></div>
-            <div><dt>{t('colonies.freeCapacity')}</dt><dd>{freeCapacity.toFixed(2)}</dd></div>
             <div><dt>{loss > 0 ? t('colonies.starvation') : t('colonies.growth')}</dt><dd>{loss > 0 ? `-${loss.toFixed(2)}` : `+${growth.toFixed(2)}`}</dd></div>
             <div><dt>{t('colonies.nextPop')}</dt><dd>{formatEta(t, preview?.next_population_eta_turns)}</dd></div>
             <div><dt>{t('colony.groundForces')}</dt><dd>{displayColony.ground_forces?.infantry ?? 0}</dd></div>
             <div><dt>{t('colony.taxContribution')}</dt><dd>{displayColony.adjusted_economy.tax_bc.toFixed(1)} BC</dd></div>
-            {planetPotential && <div><dt>{t('system.populationPotential')}</dt><dd>{planetPotential.population_capacity.toFixed(0)}</dd></div>}
           </dl>
         </Card>
 
         <Card className="colony-jobs-card">
-          <div className="card-heading colony-panel-heading">
-            <div><p className="eyebrow">{t('colony.jobOutputs')}</p><h2>{t('colony.population')}</h2></div>
-            <span className="badge">{t('colony.taxContribution')}: {displayColony.adjusted_economy.tax_bc.toFixed(1)}</span>
+          <div className="card-heading colony-panel-heading colony-panel-heading-compact">
+            <p className="eyebrow">{t('colony.jobOutputs')}</p>
           </div>
           <PopulationMoveControls colony={displayColony} onPlan={onPlanPopulation} outputs={jobOutputs} t={t} />
-          {planetPotential && <p className="muted colony-base-research">{t('colony.baseResearch', { research: planetPotential.research_per_scientist.toFixed(1) })}</p>}
         </Card>
 
         <ConstructionSummary
