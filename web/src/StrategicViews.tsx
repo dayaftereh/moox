@@ -396,6 +396,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                 const x = 50 + Math.cos(angle) * radius
                 const y = 50 + Math.sin(angle) * radius
                 const planet = body.planet_id ? system.planets.find((item) => item.id === body.planet_id) : undefined
+                const colony = planet ? decision.colonies.find((item) => item.planet_id === planet.id) : undefined
                 const selected = selectedBody?.id === body.id
                 const bodyClasses = [
                   'system-orbit-body',
@@ -411,9 +412,15 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                       type="button"
                       className={bodyClasses}
                       style={{ left: x + '%', top: y + '%' }}
-                      title={body.name + ' - ' + bodyLabel(t, body.kind)}
+                      title={colony ? body.name + ' - ' + t('system.openColony') : body.name + ' - ' + bodyLabel(t, body.kind)}
                       aria-pressed={selected}
-                      onClick={() => setSelectedBodyID(body.id)}
+                      onClick={() => {
+                        if (colony) {
+                          onOpenColony(colony.id)
+                          return
+                        }
+                        setSelectedBodyID(body.id)
+                      }}
                     >
                       <span className="system-orbit-body-reticle" aria-hidden="true"><span className="system-orbit-body-dot" /></span>
                       <strong>{body.name}</strong>
@@ -464,7 +471,6 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                 {t('system.fleetsShips')} <span className="badge">{fleetUnitCount}</span>
               </button>
             )}
-            {selectedColony && <button type="button" className="button-primary" onClick={() => onOpenColony(selectedColony.id)}>{t('system.openColony')}</button>}
             {selectedBody && colonizeChoices.map((choice) => (
               <button
                 type="button"

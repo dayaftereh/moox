@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N system inspection refinements complete; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -259,6 +259,17 @@ Status: **complete; direct user review pending**.
 - Browser QA used a **temporary, restored-before-commit** authoritative demo augmentation containing one combat fleet with two concrete Frigates (`Falcon`, `Raven`, each with `2x laser_cannon`) plus one Colony Ship, Outpost Ship and Troop Transport in Alpha. The System dialog correctly showed `Flotten / Schiffe 5`; the nested dialog showed all four fleet/special-vessel groups; Raven selection exposed the full technical loadout and `2x Laser Cannon`; Colony Ship selection exposed only its real strategic metadata.
 - 320x640 QA kept the outer system dialog at `314x632` and nested fleet dialog at `306x624`, with a `304x217` roster and `304x353` technical panel; no horizontal document overflow occurred.
 - Temporary QA fleets/ships were removed completely from `cmd/moox-server/main.go` before staging.
+- `npm run build` - **PASS**.
+
+#### G4-B2-O - Direct colony navigation from colonized planets
+
+Status: **complete; direct user review pending**.
+
+- Clicking an authoritative colonized planet in the System dialog now navigates directly to that colony detail view instead of only selecting the planet in the local body inspector.
+- The former redundant `Open Colony` footer action was removed; the planet itself is the primary interaction target and its accessible/title text announces the colony action.
+- Uncolonized planets, gas giants and asteroid belts keep the existing in-dialog inspection behavior.
+- Browser smoke on Alpha verified clicking colonized `Alpha I` closed the System dialog and navigated to `#/game/demo/colonies/10`, rendering `Kolonie #10 / Alpha · Alpha I`.
+- Regression smoke on uncolonized Beta verified clicking `Beta II` remained at `#/game/demo/galaxy/4`, kept the System dialog open and updated the inspector to Beta II (`Barren / Large / Poor / Heavy G / Unkolonisiert`).
 - `npm run build` - **PASS**.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
