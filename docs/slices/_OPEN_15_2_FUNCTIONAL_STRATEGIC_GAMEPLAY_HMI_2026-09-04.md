@@ -44,6 +44,7 @@ Permanent evidence:
     - [x] B2-R: compact Colony toolbar + deduplicated BC/population/output presentation + dense planet-trait/job tables, preserving authoritative drag/drop and PlanetPotential.
     - [x] B2-S: split Colony Detail into compact Planet Profile + tap/click Planet Info popover and a separate always-visible Colony Profile below.
     - [x] B2-T: merge Growth + next-Pop ETA into one signed row; apply shared green-positive/red-negative tones and document the existing core-Morale / missing player-safe Morale-projection boundary.
+    - [x] B2-U: compact Build-management toolbar + show current construction once with PP/%/ETA and only future projects in the Queue; lock queue reordering from silently replacing the current build.
   - [ ] G4-C: independent mobile/desktop workflow QA and Slice-15.2 closure.
 
 Live preview:

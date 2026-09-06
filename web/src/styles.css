@@ -2321,3 +2321,43 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .colony-command-layout > .card,
   .colony-command-layout > .construction-summary-card { min-height: 0; }
 }
+/* Slice 15.2 B2-U: compact construction header and current-build/queue split. */
+.construction-detail-toolbar {
+  margin-bottom: 6px;
+}
+.construction-queue-panel {
+  gap: 6px;
+}
+.construction-queue-heading-compact {
+  min-height: 24px;
+  margin: 1px 0 0;
+  padding-top: 5px;
+  border-top: 1px solid rgba(83, 104, 122, .22);
+}
+.construction-queue-heading-compact h2 {
+  margin: 0;
+  color: #dce6ed;
+  font-size: .62rem;
+}
+.construction-current-build {
+  gap: 5px;
+  padding: 7px;
+}
+.construction-current-meta {
+  align-items: baseline;
+}
+.construction-current-empty {
+  margin: 0;
+  padding: 5px 1px;
+  font-size: .52rem;
+}
+.construction-queue-list-classic {
+  margin-top: -1px;
+}
+
+@media (max-width: 699px) {
+  .construction-detail-toolbar { margin-bottom: 4px; }
+  .construction-queue-heading-compact { min-height: 21px; padding-top: 4px; }
+  .construction-queue-heading-compact h2 { font-size: .56rem; }
+  .construction-current-build { padding: 6px; }
+}

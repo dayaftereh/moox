@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-B2-R Colony density cleanup complete; G4-B2-S Planet/Colony profile split complete; G4-B2-T signed growth/resource cleanup complete; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-B2-R Colony density cleanup complete; G4-B2-S Planet/Colony profile split complete; G4-B2-T signed growth/resource cleanup complete; G4-B2-U build-management density cleanup complete; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -347,6 +347,20 @@ Status: **complete; direct user review pending**.
 - Authority/negative smoke moved one Farmer to Worker through the existing planning flow. Food became `[-2.0]` with `resource-danger` red, and Colony growth became `-0.10` with `resource-text-danger` red; Farmer/Worker outputs still changed authoritatively from `2/1 -> 1/2`, Food `4 -> 2`, Production `3 -> 6`.
 - Morale audit: the core already contains a Phase-1 local morale context (`ECONOMY_MORALE_2026-08-27.md`) including Feudal/Dictatorship missing-barracks penalties, Marine/Armor Barracks cancellation, Holo Simulator +20%, Pleasure Dome +30%, Unification morale immunity, and applied morale effects on colony output/money. The current player-safe browser projection does **not** expose `MoralePercent`, so Slice 15.2 continues to avoid fabricating a Morale UI row.
 - Deferred morale breadth remains in the post-Slice-17 economy-fidelity backlog: Virtual Reality Network empire-wide morale, Telepathic Training, Capitol-loss morale, and conquest/assimilation morale. When a player-safe morale breakdown is projected, Colony Profile is the intended display location, using the same signed green/red convention and a detail disclosure for sources.
+- `npm run build` - **PASS**.
+
+#### G4-B2-U - Build-management density cleanup
+
+Status: **complete; direct user review pending**.
+
+- Replaced the large Build-management PageHeader (`Bau`, `Bauverwaltung · Kolonie #ID`, Planet subtitle, large return action) with the same compact toolbar pattern as Colony Detail: only `Bauverwaltung` + a small `Zurück` action.
+- Split the right construction column into two non-duplicated concepts: the current build is rendered exactly once with its progress bar, PP progress, explicit percentage and ETA; the Queue below contains only future items.
+- Queue badge/count now reports only future queued projects (`items.slice(1)`), not current + future combined.
+- The current project is no longer repeated as queue position 1. Browser smoke after planning Troop Transport once showed `Aktuell / Troop Transport / 0.0 / 100 PP · 0% / 34 Runde(n)` and `Queue 0` with zero queue rows.
+- Planning the same repeatable project a second time kept the first as Current and produced exactly one future Queue row (`Queue 1`, position 1, ETA 67 turns), proving the duplicate-list presentation is gone.
+- Future Queue reordering is now constrained to the future tail: the first future item's Up action is disabled, so a queue reorder cannot silently replace the current build and bypass the explicit current-build abort confirmation. Current-build removal still uses the existing confirmed abort flow and PP-preservation semantics.
+- Empty construction state renders only one `Kein Projekt eingeplant.` current-state message plus `Queue 0`; there is no duplicate empty/current queue row.
+- Responsive smoke at 320x640 retained the same stacked Catalog -> Project -> Current/Queue order, with a 40px compact header and no horizontal overflow.
 - `npm run build` - **PASS**.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure

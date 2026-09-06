@@ -1141,12 +1141,12 @@ export function StrategicConstructionView({ snapshot, preview, draftOrders, colo
   const constructionDecision = snapshot.decision?.decisions.construction?.find((item) => item.colony_id === colony.id)
   return (
     <>
-      <PageHeader
-        eyebrow={t('colony.construction')}
-        title={t('construction.manageTitle', { colony: colony.id })}
-        subtitle={t('colonies.planet', { id: colony.planet_id })}
-        actions={<button type="button" className="button-secondary" onClick={onBack}>{t('construction.backToColony')}</button>}
-      />
+      <header className="colony-detail-toolbar construction-detail-toolbar">
+        <div className="colony-detail-toolbar-title">
+          <strong>{t('construction.manageTitle', { colony: colony.id })}</strong>
+        </div>
+        <button type="button" className="button-ghost colony-detail-back" onClick={onBack}>{t('common.back')}</button>
+      </header>
       <ConstructionEditor
         colony={displayColony}
         preview={projected}
@@ -1241,6 +1241,7 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
   const selectedQueueIndex = selectedChoice ? items.findIndex((item) => matchesChoice(item, selectedChoice)) : -1
   const selectedProjected = selectedQueueIndex >= 0 ? preview?.construction?.[selectedQueueIndex] : undefined
   const currentItem = items[0]
+  const queuedItems = items.slice(1)
   const currentProjected = preview?.construction?.[0]
   const currentProgressPP = currentProjected?.project.progress_pp ?? colony.construction?.progress_pp ?? 0
   const currentCostPP = currentProjected?.cost_pp
@@ -1343,10 +1344,6 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
       </Card>
 
       <Card className="construction-queue-panel">
-        <div className="card-heading construction-panel-heading">
-          <div><p className="eyebrow">{t('colony.construction')}</p><h2>{t('construction.queue')}</h2></div>
-          <span className="badge">{items.length}</span>
-        </div>
 
         {currentItem ? (
           <section className="construction-current-build">
@@ -1361,34 +1358,32 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
               <span style={{ width: `${currentProgressPercent}%` }} />
             </div>
             <div className="construction-current-meta">
-              <span>{currentCostPP ? `${currentProgressPP.toFixed(1)} / ${currentCostPP.toFixed(0)} PP` : `${currentProgressPP.toFixed(1)} PP`}</span>
+              <span>{currentCostPP ? `${currentProgressPP.toFixed(1)} / ${currentCostPP.toFixed(0)} PP · ${currentProgressPercent.toFixed(0)}%` : `${currentProgressPP.toFixed(1)} PP`}</span>
               <span>{currentProjected ? formatEta(t, currentProjected.eta_turns) : t('common.noEta')}</span>
             </div>
           </section>
-        ) : <p className="muted">{t('construction.empty')}</p>}
+        ) : <p className="muted construction-current-empty">{t('construction.empty')}</p>}
+        <div className="card-heading construction-panel-heading construction-queue-heading-compact">
+          <h2>{t('construction.queue')}</h2>
+          <span className="badge">{queuedItems.length}</span>
+        </div>
 
-        {items.length > 0 && (
+        {queuedItems.length > 0 && (
           <div className="construction-queue-list construction-queue-list-classic">
-            {items.map((item, index) => {
+            {queuedItems.map((item, queueIndex) => {
+              const index = queueIndex + 1
               const projectedItem = preview?.construction?.[index]
-              const isCurrent = index === 0
               return (
-                <div className={'queue-row construction-queue-row' + (isCurrent ? ' current' : '')} key={`${item.project_kind}-${item.project_id}-${item.ship_design_id ?? 0}-${item.ship_design_revision ?? 0}-${index}`}>
-                  <span className="queue-position">{index + 1}</span>
+                <div className="queue-row construction-queue-row" key={`${item.project_kind}-${item.project_id}-${item.ship_design_id ?? 0}-${item.ship_design_revision ?? 0}-${index}`}>
+                  <span className="queue-position">{queueIndex + 1}</span>
                   <button type="button" className="construction-queue-copy" onClick={() => selectQueueItem(item)}>
                     <strong>{displayItem(item)}</strong>
                     <small>{humanizeToken(item.project_kind)} · {projectedItem ? formatEta(t, projectedItem.eta_turns) : t('common.noEta')}</small>
                   </button>
                   <div className="action-row compact-actions construction-queue-actions">
-                    <button type="button" className="button-ghost" disabled={index === 0} onClick={() => move(index, -1)} aria-label={t('construction.moveUp')}>↑</button>
-                    <button type="button" className="button-ghost" disabled={index === items.length - 1} onClick={() => move(index, 1)} aria-label={t('construction.moveDown')}>↓</button>
-                    <button
-                      type="button"
-                      className={isCurrent ? 'button-danger' : 'button-ghost'}
-                      onClick={() => isCurrent ? setAbortConfirmOpen(true) : save(items.filter((_, itemIndex) => itemIndex !== index))}
-                    >
-                      {isCurrent ? t('construction.abortShort') : t('common.remove')}
-                    </button>
+                    <button type="button" className="button-ghost" disabled={queueIndex === 0} onClick={() => move(index, -1)} aria-label={t('construction.moveUp')}>↑</button>
+                    <button type="button" className="button-ghost" disabled={queueIndex === queuedItems.length - 1} onClick={() => move(index, 1)} aria-label={t('construction.moveDown')}>↓</button>
+                    <button type="button" className="button-ghost" onClick={() => save(items.filter((_, itemIndex) => itemIndex !== index))}>{t('common.remove')}</button>
                   </div>
                 </div>
               )
