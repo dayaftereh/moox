@@ -1,5 +1,5 @@
 export type VisualHullID = 'scout' | 'frigate' | 'destroyer' | 'cruiser' | 'battleship' | 'titan' | 'doom_star' | string
-
+export type ShipStyleID = 'spear' | 'sleek' | 'organic'
 export type ShipPrimitiveKind = 'wedge' | 'spike' | 'pod'
 
 export type ShipCutoutGene = {
@@ -24,6 +24,7 @@ export type ShipPrimitiveGene = {
 export type ShipVisualGenome = {
   version: 2
   hullId: VisualHullID
+  styleId: ShipStyleID
   seed: string
   length: number
   beam: number
@@ -85,6 +86,12 @@ function profileFor(hullId: VisualHullID): HullProfile {
   return { length: 72, beam: 13, stationCount: 8, notchCount: 1, cutoutCount: 0, primitiveMin: 4, primitiveMax: 7, engineMin: 1, engineMax: 2, detailCount: 3 }
 }
 
+function styleScale(styleId: ShipStyleID): { length: number; beam: number; mirrorChance: number } {
+  if (styleId === 'sleek') return { length: 1.06, beam: .82, mirrorChance: .96 }
+  if (styleId === 'organic') return { length: .95, beam: 1.12, mirrorChance: .68 }
+  return { length: 1.04, beam: .92, mirrorChance: .92 }
+}
+
 function shuffledStations(random: () => number, count: number, stationCount: number): Set<number> {
   const candidates = Array.from({ length: Math.max(0, stationCount - 4) }, (_, index) => index + 2)
   const selected = new Set<number>()
@@ -94,51 +101,63 @@ function shuffledStations(random: () => number, count: number, stationCount: num
   return selected
 }
 
-function randomPrimitive(random: () => number, beam: number, length: number): ShipPrimitiveGene {
+function randomPrimitive(random: () => number, beam: number, length: number, styleId: ShipStyleID): ShipPrimitiveGene {
   const roll = random()
-  const kind: ShipPrimitiveKind = roll < .48 ? 'wedge' : roll < .8 ? 'spike' : 'pod'
+  const kind: ShipPrimitiveKind = styleId === 'organic'
+    ? (roll < .22 ? 'wedge' : roll < .36 ? 'spike' : 'pod')
+    : styleId === 'sleek'
+      ? (roll < .62 ? 'wedge' : roll < .72 ? 'spike' : 'pod')
+      : (roll < .5 ? 'wedge' : roll < .9 ? 'spike' : 'pod')
   const side: -1 | 1 = random() < .5 ? -1 : 1
+  const lengthFactor = styleId === 'spear' ? 1.2 : styleId === 'sleek' ? 1.05 : .82
+  const widthFactor = styleId === 'organic' ? 1.22 : styleId === 'sleek' ? .72 : .9
+  const sweepRange = styleId === 'spear' ? 1.18 : styleId === 'sleek' ? .55 : .9
   return {
     kind,
     t: .18 + random() * .68,
     side,
-    length: Math.max(5, length * (.055 + random() * .105)),
-    width: Math.max(2.5, beam * (.12 + random() * .26)),
-    sweep: -.85 + random() * 1.7,
-    mirrored: random() < .9,
+    length: Math.max(5, length * (.055 + random() * .105) * lengthFactor),
+    width: Math.max(2.5, beam * (.12 + random() * .26) * widthFactor),
+    sweep: -sweepRange + random() * sweepRange * 2,
+    mirrored: random() < styleScale(styleId).mirrorChance,
   }
 }
 
-export function createShipGenome(seed: string, hullId: VisualHullID): ShipVisualGenome {
+export function createShipGenome(seed: string, hullId: VisualHullID, styleId: ShipStyleID = 'spear'): ShipVisualGenome {
   const profile = profileFor(hullId)
-  const random = createRandom(hashSeed(`${seed}|${hullId}|v2`))
+  const style = styleScale(styleId)
+  const length = profile.length * style.length
+  const beam = profile.beam * style.beam
+  const random = createRandom(hashSeed(`${seed}|${hullId}|${styleId}|v2`))
   const notchStations = shuffledStations(random, profile.notchCount, profile.stationCount)
   const stationWidths = Array.from({ length: profile.stationCount }, (_, station) => {
     const t = station / Math.max(1, profile.stationCount - 1)
     if (station === profile.stationCount - 1) return 0
     const envelope = Math.pow(Math.sin(Math.PI * Math.min(.985, t + .035)), .58)
     const taper = .84 + random() * .3
-    return Math.max(2.4, profile.beam * (.25 + .75 * envelope) * taper * (station === 0 ? .7 : 1))
+    return Math.max(2.4, beam * (.25 + .75 * envelope) * taper * (station === 0 ? .7 : 1))
   })
-  const notchDepths = stationWidths.map((width, station) => notchStations.has(station) ? width * (.5 + random() * .24) : 0)
+  const notchBase = styleId === 'sleek' ? .7 : styleId === 'organic' ? .42 : .5
+  const notchDepths = stationWidths.map((width, station) => notchStations.has(station) ? width * (notchBase + random() * .2) : 0)
   const engineCount = profile.engineMin + Math.floor(random() * (profile.engineMax - profile.engineMin + 1))
   const primitiveCount = profile.primitiveMin + Math.floor(random() * (profile.primitiveMax - profile.primitiveMin + 1))
-  const primitives = Array.from({ length: primitiveCount }, () => randomPrimitive(random, profile.beam, profile.length))
+  const primitives = Array.from({ length: primitiveCount }, () => randomPrimitive(random, beam, length, styleId))
   const cutouts = Array.from({ length: profile.cutoutCount }, (_, index): ShipCutoutGene => ({
     t: .42 + ((index + 1) / (profile.cutoutCount + 1)) * .25 + (random() - .5) * .06,
     side: index % 2 === 0 ? -1 : 1,
-    offset: profile.beam * (.12 + random() * .14),
-    rx: Math.max(3.3, profile.length * (.035 + random() * .018)),
-    ry: Math.max(2.1, profile.beam * (.11 + random() * .06)),
+    offset: beam * (.12 + random() * .14),
+    rx: Math.max(3.3, length * (.035 + random() * .018)),
+    ry: Math.max(2.1, beam * (.11 + random() * .06)),
     angle: -18 + random() * 36,
   }))
 
   return {
     version: 2,
     hullId,
+    styleId,
     seed,
-    length: profile.length,
-    beam: profile.beam,
+    length,
+    beam,
     stationCount: profile.stationCount,
     stationWidths,
     notchDepths,
@@ -155,25 +174,25 @@ function mutateNumber(value: number, random: () => number, scale: number, amount
 
 export function mutateShipGenome(parent: ShipVisualGenome, mutationSeed: string, amount: number): ShipVisualGenome {
   const profile = profileFor(parent.hullId)
-  const random = createRandom(hashSeed(`${mutationSeed}|mutate|v2`))
+  const random = createRandom(hashSeed(`${mutationSeed}|${parent.styleId}|mutate|v2`))
   const mutation = clamp(amount, .03, 1)
 
   const stationWidths = parent.stationWidths.map((value, index) => {
     if (index === parent.stationWidths.length - 1) return 0
-    return mutateNumber(value, random, profile.beam * .18, mutation, 2.2, profile.beam * 1.35)
+    return mutateNumber(value, random, parent.beam * .18, mutation, 2.2, parent.beam * 1.35)
   })
-  const notchDepths = parent.notchDepths.map((value, index) => value <= 0 ? 0 : mutateNumber(value, random, profile.beam * .14, mutation, stationWidths[index] * .24, stationWidths[index] * .86))
+  const notchDepths = parent.notchDepths.map((value, index) => value <= 0 ? 0 : mutateNumber(value, random, parent.beam * .14, mutation, stationWidths[index] * .24, stationWidths[index] * .9))
 
   let primitives = parent.primitives.map((primitive): ShipPrimitiveGene => ({
     ...primitive,
     t: mutateNumber(primitive.t, random, .12, mutation, .08, .92),
-    length: mutateNumber(primitive.length, random, profile.length * .08, mutation, 4, profile.length * .23),
-    width: mutateNumber(primitive.width, random, profile.beam * .18, mutation, 2, profile.beam * .55),
-    sweep: mutateNumber(primitive.sweep, random, .7, mutation, -1.4, 1.4),
+    length: mutateNumber(primitive.length, random, parent.length * .08, mutation, 4, parent.length * .26),
+    width: mutateNumber(primitive.width, random, parent.beam * .18, mutation, 2, parent.beam * .62),
+    sweep: mutateNumber(primitive.sweep, random, .7, mutation, -1.5, 1.5),
   }))
 
   if (random() < mutation * .72 && primitives.length < profile.primitiveMax + 4) {
-    primitives = [...primitives, randomPrimitive(random, profile.beam, profile.length)]
+    primitives = [...primitives, randomPrimitive(random, parent.beam, parent.length, parent.styleId)]
   }
   if (random() < mutation * .42 && primitives.length > Math.max(2, profile.primitiveMin - 1)) {
     primitives = primitives.filter((_, index) => index !== Math.floor(random() * primitives.length))
@@ -182,9 +201,9 @@ export function mutateShipGenome(parent: ShipVisualGenome, mutationSeed: string,
   const cutouts = parent.cutouts.map((cutout): ShipCutoutGene => ({
     ...cutout,
     t: mutateNumber(cutout.t, random, .08, mutation, .2, .82),
-    offset: mutateNumber(cutout.offset, random, profile.beam * .1, mutation, 0, profile.beam * .4),
-    rx: mutateNumber(cutout.rx, random, profile.length * .03, mutation, 2.8, profile.length * .09),
-    ry: mutateNumber(cutout.ry, random, profile.beam * .08, mutation, 1.8, profile.beam * .28),
+    offset: mutateNumber(cutout.offset, random, parent.beam * .1, mutation, 0, parent.beam * .4),
+    rx: mutateNumber(cutout.rx, random, parent.length * .03, mutation, 2.8, parent.length * .09),
+    ry: mutateNumber(cutout.ry, random, parent.beam * .08, mutation, 1.8, parent.beam * .28),
     angle: mutateNumber(cutout.angle, random, 28, mutation, -45, 45),
   }))
 

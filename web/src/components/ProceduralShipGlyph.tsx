@@ -176,6 +176,7 @@ export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className =
       data-cutout-count={geometry.cutouts.length}
       data-primitive-count={resolvedGenome.primitives.length}
       data-genome-version={resolvedGenome.version}
+      data-style-id={resolvedGenome.styleId}
     >
       <defs>
         <mask id={maskID} maskUnits="userSpaceOnUse" x="0" y="0" width="136" height="84">

@@ -3,7 +3,7 @@ import type { PlayerSnapshot } from './api'
 import { ProceduralShipGlyph } from './components/ProceduralShipGlyph'
 import { Card, PageHeader } from './components/ui'
 import type { TranslationKey, TranslationVars } from './i18n'
-import { createShipGenome, mutateShipGenome, type ShipVisualGenome } from './shipVisualGenome'
+import { createShipGenome, mutateShipGenome, type ShipStyleID, type ShipVisualGenome } from './shipVisualGenome'
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
 
@@ -18,6 +18,12 @@ type Candidate = {
 }
 
 const populationSize = 6
+
+const shipStyles: Array<{ id: ShipStyleID; label: TranslationKey; hint: TranslationKey }> = [
+  { id: 'spear', label: 'shipbuilder.style.spear', hint: 'shipbuilder.style.spearHint' },
+  { id: 'sleek', label: 'shipbuilder.style.sleek', hint: 'shipbuilder.style.sleekHint' },
+  { id: 'organic', label: 'shipbuilder.style.organic', hint: 'shipbuilder.style.organicHint' },
+]
 
 const hulls: Array<{ id: HullID; label: TranslationKey; status: TranslationKey }> = [
   { id: 'scout', label: 'shipbuilder.hull.scout', status: 'shipbuilder.scoutRole' },
@@ -35,34 +41,46 @@ function hullLabel(t: Translator, hullID: HullID): string {
 
 export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: Translator }) {
   const [hullID, setHullID] = useState<HullID>('scout')
+  const [styleID, setStyleID] = useState<ShipStyleID>('spear')
   const [generation, setGeneration] = useState(1)
   const [familyRound, setFamilyRound] = useState(1)
   const [mutation, setMutation] = useState(.32)
   const [parent, setParent] = useState<Candidate | null>(null)
   const [kept, setKept] = useState<Candidate | null>(null)
   const currentHull = hulls.find((hull) => hull.id === hullID) ?? hulls[0]
+  const currentStyle = shipStyles.find((style) => style.id === styleID) ?? shipStyles[0]
   const designs = snapshot.decision?.strategic.ship_designs ?? []
   const baseline = designs[0]
   const baselineWeapons = baseline?.spec.weapons ?? []
 
   const candidates = useMemo<Candidate[]>(() => {
     return Array.from({ length: populationSize }, (_, index) => {
-      const seed = parent && parent.hullID === hullID
-        ? `shipbuilder:${snapshot.view.game_id}:${hullID}:evolve:${parent.seed}:g${generation}:c${index + 1}`
-        : `shipbuilder:${snapshot.view.game_id}:${hullID}:family:${familyRound}:c${index + 1}`
-      const genome = parent && parent.hullID === hullID
+      const seed = parent && parent.hullID === hullID && parent.genome.styleId === styleID
+        ? `shipbuilder:${snapshot.view.game_id}:${hullID}:${styleID}:evolve:${parent.seed}:g${generation}:c${index + 1}`
+        : `shipbuilder:${snapshot.view.game_id}:${hullID}:${styleID}:family:${familyRound}:c${index + 1}`
+      const genome = parent && parent.hullID === hullID && parent.genome.styleId === styleID
         ? mutateShipGenome(parent.genome, seed, mutation)
-        : createShipGenome(seed, hullID)
+        : createShipGenome(seed, hullID, styleID)
       return { hullID, generation, index, seed, genome }
     })
-  }, [familyRound, generation, hullID, mutation, parent, snapshot.view.game_id])
+  }, [familyRound, generation, hullID, mutation, parent, snapshot.view.game_id, styleID])
+
+  function resetEvolution() {
+    setParent(null)
+    setGeneration(1)
+    setFamilyRound((value) => value + 1)
+  }
+
+  function selectStyle(nextStyleID: ShipStyleID) {
+    if (nextStyleID === styleID) return
+    setStyleID(nextStyleID)
+    resetEvolution()
+  }
 
   function selectHull(nextHullID: HullID) {
     if (nextHullID === hullID) return
     setHullID(nextHullID)
-    setParent(null)
-    setGeneration(1)
-    setFamilyRound((value) => value + 1)
+    resetEvolution()
   }
 
   function evolveFrom(candidate: Candidate) {
@@ -71,9 +89,7 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
   }
 
   function freshFamily() {
-    setParent(null)
-    setGeneration(1)
-    setFamilyRound((value) => value + 1)
+    resetEvolution()
   }
 
   return (
@@ -98,6 +114,30 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
               <span><strong>{t(hull.label)}</strong><small>{t(hull.status)}</small></span>
             </button>
           ))}
+        </div>
+      </Card>
+
+      <Card className="shipbuilder-style-card">
+        <div className="card-heading">
+          <div><p className="eyebrow">{t('shipbuilder.artDirection')}</p><h2>{t('shipbuilder.styleDNA')}</h2></div>
+          <span className="badge">{t(currentStyle.label)}</span>
+        </div>
+        <div className="shipbuilder-style-grid">
+          {shipStyles.map((style) => {
+            const previewGenome = createShipGenome(`shipbuilder:style:${hullID}:${style.id}`, hullID, style.id)
+            return (
+              <button
+                type="button"
+                key={style.id}
+                className={`shipbuilder-style-option${style.id === styleID ? ' selected' : ''}`}
+                aria-pressed={style.id === styleID}
+                onClick={() => selectStyle(style.id)}
+              >
+                <ProceduralShipGlyph seed={previewGenome.seed} hullId={hullID} genome={previewGenome} className="shipbuilder-style-thumb" />
+                <span><strong>{t(style.label)}</strong><small>{t(style.hint)}</small></span>
+              </button>
+            )
+          })}
         </div>
       </Card>
 
@@ -168,7 +208,7 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
                   <ProceduralShipGlyph seed={parent.seed} hullId={parent.hullID} genome={parent.genome} className="shipbuilder-kept-ship" />
                 </div>
                 <strong>{hullLabel(t, parent.hullID)} · #{parent.index + 1}</strong>
-                <small className="muted">{t('shipbuilder.generation', { count: parent.generation })} · {parent.genome.primitives.length} {t('shipbuilder.primitives')}</small>
+                <small className="muted">{t(shipStyles.find((style) => style.id === parent.genome.styleId)?.label ?? 'shipbuilder.style.spear')} · {t('shipbuilder.generation', { count: parent.generation })}</small>
               </>
             ) : <p className="muted">{t('shipbuilder.noParentHint')}</p>}
           </Card>
@@ -180,7 +220,7 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
               <>
                 <div className="shipbuilder-kept-stage"><ProceduralShipGlyph seed={kept.seed} hullId={kept.hullID} genome={kept.genome} className="shipbuilder-kept-ship" /></div>
                 <strong>{hullLabel(t, kept.hullID)} · #{kept.index + 1}</strong>
-                <small className="muted">{t('shipbuilder.generation', { count: kept.generation })} · genome v{kept.genome.version}</small>
+                <small className="muted">{t(shipStyles.find((style) => style.id === kept.genome.styleId)?.label ?? 'shipbuilder.style.spear')} · genome v{kept.genome.version}</small>
               </>
             ) : <p className="muted">{t('shipbuilder.keepHintEvolution')}</p>}
           </Card>

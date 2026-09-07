@@ -152,3 +152,7 @@ The visual size selector now extends from a small **Scout role** through Frigate
 ## Directed-evolution v2 update (2026-09-07)
 
 The Shipbuilder now shows six candidates at once. Selecting a candidate makes its resolved Visual Genome v2 the parent for the next six deterministic mutations. A Shape Mutation slider controls mutation strength, New random family resets the root population, and Keep design pins a favorite independently. The geometry adds sharp Wedge/Spike/Pod primitives on top of the accepted class-scale/concavity grammar. Reference/provenance and implementation differences are documented in docs/research/SLICE_15_3_PROCEDURO_DIRECTED_EVOLUTION_REFERENCE_2026-09-07.md.
+
+## Style-DNA update (2026-09-07)
+
+A new Style-DNA stage now sits between hull size and directed evolution. Spear/Angular, Sleek/High-Tech and Organic/Alien each bias hull proportions, primitive families, sweep and symmetry while keeping gameplay rules unchanged. Switching style resets only the active evolution parent/family. Details and browser evidence: docs/research/SLICE_15_3_SHIP_STYLE_DNA_CANDIDATES_2026-09-07.md.

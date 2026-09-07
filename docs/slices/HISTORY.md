@@ -127,3 +127,10 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Added deterministic Wedge/Spike/Pod primitive genes, parent-based mutation, primitive add/remove mutation and retained class-scale/concavity/cutout rules.
 - Replaced the one-at-a-time Shipbuilder roll with six candidates, parent selection, six mutated descendants, Shape Mutation control, New random family and independent Keep design.
 - Desktop 995x605 and mobile 360x646 browser QA pass with six candidates and no horizontal overflow.
+
+## 2026-09-07 - Slice 15.3 Gate 1 Style-DNA candidates
+
+- Added Spear/Angular, Sleek/High-Tech and Organic/Alien visual style genomes on top of Visual Genome v2.
+- Style DNA biases hull length/beam, concavity depth, Wedge/Spike/Pod distributions, sweep and mirror probability while remaining presentation-only.
+- Added a responsive live Style-DNA selector; switching style resets the evolution lineage to Generation 1 without touching the game or kept design.
+- Desktop 995x605 and mobile 360x646 browser QA pass without horizontal overflow.
