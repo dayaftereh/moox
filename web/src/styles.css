@@ -3053,3 +3053,38 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   line-height: 1.35;
 }
 .shipbuilder-save-state.error { color: var(--danger); }
+/* Slice 15.3 SVG icon language. */
+.game-icon {
+  display: block;
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  overflow: visible;
+  color: inherit;
+}
+.game-icon * { vector-effect: non-scaling-stroke; }
+.nav-glyph .game-icon { width: 17px; height: 17px; }
+.resource-icon .game-icon { width: 13px; height: 13px; }
+.resource-detail-icon .game-icon { width: 19px; height: 19px; }
+.main-menu-trigger > .game-icon { width: 17px; height: 17px; }
+.main-menu-item-glyph .game-icon { width: 16px; height: 16px; }
+.main-menu-close .game-icon,
+.resource-detail-close .game-icon { width: 15px; height: 15px; margin: auto; }
+
+@media (max-width: 700px) {
+  .nav-glyph .game-icon { width: 16px; height: 16px; }
+  .resource-icon .game-icon { width: 12px; height: 12px; }
+}
+.population-job-name {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+}
+.population-job-name .game-icon { width: 17px; height: 17px; color: #9ebce1; }
+.population-job-farmer .population-job-name .game-icon { color: #9fcf9c; }
+.population-job-worker .population-job-name .game-icon { color: #d9b67d; }
+.population-job-scientist .population-job-name .game-icon { color: #9dbfff; }
+.population-empty .game-icon { width: 18px; height: 18px; opacity: .28; }
+.colony-planet-info summary .game-icon { width: 14px; height: 14px; }
+.colony-planet-info-close .game-icon { width: 13px; height: 13px; margin: auto; }

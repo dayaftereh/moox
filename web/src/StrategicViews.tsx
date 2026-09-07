@@ -17,10 +17,17 @@ import {
   type StarSystem,
 } from './api'
 import { ProceduralShipGlyph } from './components/ProceduralShipGlyph'
+import { GameIcon, type GameIconName } from './components/GameIcon'
 import { Card, EmptyState, PageHeader } from './components/ui'
 import { type TranslationKey, type TranslationVars } from './i18n'
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
+
+const populationJobIcons: Record<PopulationJob, GameIconName> = {
+  farmer: 'farmer',
+  worker: 'worker',
+  scientist: 'scientist',
+}
 
 function localizedPhase(t: Translator, phase: string): string {
   switch (phase) {
@@ -929,7 +936,7 @@ function PopulationMoveControls({ colony, onPlan, t, compact = false, outputs }:
               onDrop={(event) => handleDrop(event, job)}
             >
               <header>
-                <span className="population-job-label"><span>{labels[job]}</span><strong>{values[job].toFixed(1)}</strong></span>
+                <span className="population-job-label"><span className="population-job-name"><GameIcon name={populationJobIcons[job]} /><span>{labels[job]}</span></span><strong>{values[job].toFixed(1)}</strong></span>
                 {outputs?.[job] && (
                   <span className="population-job-output">
                     <strong>{outputs[job]?.total.toFixed(1)} {outputs[job]?.unit}</strong>
@@ -937,7 +944,7 @@ function PopulationMoveControls({ colony, onPlan, t, compact = false, outputs }:
                 )}
               </header>
               <div className="population-people" aria-label={labels[job] + ': ' + values[job].toFixed(1)}>
-                {people.length === 0 ? <span className="population-empty" aria-hidden="true">—</span> : people.map((person, index) => {
+                {people.length === 0 ? <span className="population-empty" aria-hidden="true"><GameIcon name={populationJobIcons[job]} /></span> : people.map((person, index) => {
                   const isSelected = selected?.job === job && selected.indexes.includes(index)
                   return (
                     <button
@@ -1078,9 +1085,9 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
             <p className="eyebrow">{t('colony.information')}</p>
             {planetContext && (
               <details className="colony-planet-info" ref={planetInfoRef}>
-                <summary aria-label={t('colony.planetInfo')} title={t('colony.planetInfo')}>?</summary>
+                <summary aria-label={t('colony.planetInfo')} title={t('colony.planetInfo')}><GameIcon name="info" /></summary>
                 <div className="colony-planet-info-popover">
-                  <button type="button" className="colony-planet-info-close" aria-label={t('common.close')} title={t('common.close')} onClick={() => { if (planetInfoRef.current) planetInfoRef.current.open = false }}>×</button>
+                  <button type="button" className="colony-planet-info-close" aria-label={t('common.close')} title={t('common.close')} onClick={() => { if (planetInfoRef.current) planetInfoRef.current.open = false }}><GameIcon name="close" /></button>
                   <div className="colony-planet-info-item">
                     <span>{t('system.climate')}</span>
                     <strong>{planetTraitLabel(t, 'climate', planetContext.planet.climate_id)}</strong>

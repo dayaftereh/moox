@@ -174,3 +174,12 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Completed ships freeze the design's Visual Genome/source visual revision; later design image changes do not mutate existing ships.
 - Web Shipbuilder now saves Use this design server-side and restores the kept design from snapshots; strategic fleet glyphs prefer concrete persisted ship genomes with legacy seed fallback.
 - Core state, GameSession live snapshot and Host export/import tests all round-trip the exact genome; gameplay revision independence is regression-covered.
+
+## 2026-09-07 - Slice 15.3 core SVG icon language
+
+- Added typed GameIcon React/SVG registry with a 24x24 vector-first technical grammar and 26 initial icon identities.
+- Replaced primary Galaxy/Colonies/Fleets/Diplomacy/Espionage Unicode nav glyphs with shared SVGs.
+- Replaced BC/Food/Freighter/Command/Research text/Unicode resource artwork and reused the same SVG in compact chips and detail popovers.
+- Replaced menu/more/home/close shell glyphs with common vector icons.
+- Added dedicated Farmer/Worker/Scientist role figures plus Colony info/close vectors.
+- Desktop and 320px-mobile browser QA confirm responsive icon sizes and no actual horizontal document overflow; production web build passes.

@@ -331,3 +331,5 @@ Original copyrighted assets remain private reference material and are not distri
 - Symmetric half-hull / class footprint v4: docs/research/SLICE_15_3_SYMMETRIC_HALF_HULL_SCALE_V4_2026-09-07.md - strict X-axis mirroring, asymmetric morphology removed from default pool, Space values surfaced, and Scout-to-Doom-Star visible footprint scaling.
 
 - Visual Genome v4 server persistence: docs/research/SLICE_15_3_VISUAL_GENOME_V4_SERVER_PERSISTENCE_2026-09-07.md - authoritative resolved genome, separate VisualRevision, immediate save, built-ship freeze and save/export/import round-trip contract.
+
+- Core SVG icon language implementation: docs/research/SLICE_15_3_CORE_SVG_ICON_LANGUAGE_IMPLEMENTATION_2026-09-07.md - typed 24x24 React/SVG registry, shell/resources/navigation/population-role integration and desktop/mobile QA.

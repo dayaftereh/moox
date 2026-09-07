@@ -2,20 +2,21 @@ import { ReactNode, useEffect, useRef, useState } from 'react'
 import { type GameSection } from '../navigation'
 import { type TranslationKey, useI18n } from '../i18n'
 import { ProceduralShipGlyph } from './ProceduralShipGlyph'
+import { GameIcon, type GameIconName } from './GameIcon'
 
-const primaryNavItems: Array<{ section: GameSection; label: TranslationKey; glyph: string }> = [
-  { section: 'galaxy', label: 'nav.galaxy', glyph: '\u25C8' },
-  { section: 'colonies', label: 'nav.colonies', glyph: '\u2302' },
-  { section: 'fleets', label: 'nav.fleets', glyph: '\u2197' },
-  { section: 'diplomacy', label: 'nav.diplomacy', glyph: '\u2696' },
-  { section: 'espionage', label: 'nav.espionage', glyph: '\u25C9' },
+const primaryNavItems: Array<{ section: GameSection; label: TranslationKey; icon: GameIconName }> = [
+  { section: 'galaxy', label: 'nav.galaxy', icon: 'galaxy' },
+  { section: 'colonies', label: 'nav.colonies', icon: 'colonies' },
+  { section: 'fleets', label: 'nav.fleets', icon: 'fleets' },
+  { section: 'diplomacy', label: 'nav.diplomacy', icon: 'diplomacy' },
+  { section: 'espionage', label: 'nav.espionage', icon: 'espionage' },
 ]
 type ResourceTone = 'neutral' | 'positive' | 'warning' | 'danger'
-type ResourceChip = {
+export type ResourceChip = {
   id: string
   label: string
   shortLabel?: string
-  icon: string
+  icon: GameIconName
   value?: string
   delta?: string
   deltaTone?: ResourceTone
@@ -82,7 +83,7 @@ function NavItems({ items, activeSection, onNavigate }: {
           aria-current={active ? 'page' : undefined}
           onClick={() => onNavigate(item.section)}
         >
-          <span className="nav-glyph" aria-hidden="true">{item.glyph}</span>
+          <span className="nav-glyph" aria-hidden="true"><GameIcon name={item.icon} /></span>
           <span>{t(item.label)}</span>
         </button>
       )
@@ -148,13 +149,13 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
             title={t('gameMenu.open') + ' · ' + status}
             onClick={() => { setActiveResourceID(null); setMenuOpen((open) => !open) }}
           >
-            <span aria-hidden="true">⋯</span>
+            <GameIcon name="menu" aria-hidden="true" />
           </button>
           {menuOpen && (
             <section className="main-menu-popover" role="dialog" aria-label={t('gameMenu.title')} data-game-id={gameID}>
               <header className="main-menu-header">
                 <div><p className="eyebrow">{t('gameMenu.title')}</p></div>
-                <button type="button" className="button-ghost main-menu-close" onClick={() => setMenuOpen(false)} aria-label={t('common.close')}>×</button>
+                <button type="button" className="button-ghost main-menu-close" onClick={() => setMenuOpen(false)} aria-label={t('common.close')}><GameIcon name="close" /></button>
               </header>
 
               <div className="main-menu-section">
@@ -172,14 +173,14 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
                   <span><strong>{t('gameMenu.shipbuilder')}</strong><small>{t('gameMenu.shipbuilderHint')}</small></span>
                 </button>
                 <button type="button" className="main-menu-item" onClick={() => navigateFromMenu('more')}>
-                  <span className="main-menu-item-glyph" aria-hidden="true">⚙</span>
+                  <span className="main-menu-item-glyph" aria-hidden="true"><GameIcon name="more" /></span>
                   <span><strong>{t('gameMenu.advanced')}</strong><small>{t('gameMenu.advancedHint')}</small></span>
                 </button>
               </div>
 
               <div className="main-menu-section main-menu-section-last">
                 <button type="button" className="main-menu-item main-menu-home" onClick={() => { setMenuOpen(false); onHome() }}>
-                  <span className="main-menu-item-glyph" aria-hidden="true">↩</span>
+                  <span className="main-menu-item-glyph" aria-hidden="true"><GameIcon name="home" /></span>
                   <span><strong>{t('gameMenu.mainMenu')}</strong><small>{t('gameMenu.mainMenuHint')}</small></span>
                 </button>
               </div>
@@ -202,7 +203,7 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
                 setActiveResourceID((current) => current === resource.id ? null : resource.id)
               }}
             >
-              <span className="resource-icon" aria-hidden="true">{resource.icon}</span>
+              <span className="resource-icon" aria-hidden="true"><GameIcon name={resource.icon} /></span>
               <span className="resource-label resource-label-long">{resource.label}</span>
               <span className="resource-label resource-label-short">{resource.shortLabel ?? resource.label}</span>
               {resource.value && <strong>{resource.value}</strong>}
@@ -218,10 +219,10 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
             <section ref={resourcePopupRef} className="resource-detail-popover" role="dialog" aria-label={resource.detailTitle}>
               <header className="resource-detail-header">
                 <div className="resource-detail-heading">
-                  <span className="resource-detail-icon" aria-hidden="true">{resource.icon}</span>
+                  <span className="resource-detail-icon" aria-hidden="true"><GameIcon name={resource.icon} /></span>
                   <div><p className="eyebrow">{resource.label}</p><strong>{resource.detailTitle}</strong></div>
                 </div>
-                <button type="button" className="button-ghost resource-detail-close" onClick={() => setActiveResourceID(null)} aria-label={t('common.close')}>×</button>
+                <button type="button" className="button-ghost resource-detail-close" onClick={() => setActiveResourceID(null)} aria-label={t('common.close')}><GameIcon name="close" /></button>
               </header>
               {resource.progressPercent !== undefined && (
                 <div className="resource-progress" aria-label={`${Math.round(resource.progressPercent)}%`}>

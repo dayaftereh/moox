@@ -19,7 +19,7 @@ import {
   type PlanningPreviewSnapshot,
   type PlayerSnapshot,
 } from './api'
-import { AppShell, LanguageSwitch, StandaloneHeader } from './components/AppShell'
+import { AppShell, LanguageSwitch, StandaloneHeader, type ResourceChip } from './components/AppShell'
 import { Card, EmptyState, Metric, Notice, PageHeader } from './components/ui'
 import { type TranslationKey, type TranslationVars, useI18n } from './i18n'
 import { type AppRoute, type GameSection, navigate, parseRoute } from './navigation'
@@ -290,12 +290,12 @@ function App() {
     return 'neutral'
   }
 
-  const resourceChips = projectedEmpire ? [
+  const resourceChips: ResourceChip[] = projectedEmpire ? [
     {
       id: 'bc',
       label: t('resource.bc'),
       shortLabel: 'BC',
-      icon: '¤',
+      icon: 'credits',
       value: Math.round(treasuryBalance).toString(),
       delta: `[${signed(treasuryNet)}]`,
       deltaTone: signedTone(treasuryNet),
@@ -314,7 +314,7 @@ function App() {
       id: 'food',
       label: t('resource.food'),
       shortLabel: 'Food',
-      icon: 'F',
+      icon: 'food',
       delta: `[${signed(foodNet, 1)}]`,
       deltaTone: signedTone(foodNet),
       tone: foodNet < 0 ? 'danger' as const : foodNet > 0 ? 'positive' as const : 'neutral' as const,
@@ -333,7 +333,7 @@ function App() {
       id: 'freighters',
       label: t('resource.freighters'),
       shortLabel: 'Tr',
-      icon: '⇄',
+      icon: 'freighter',
       value: `${freighterAvailable}/${freighterTotal}`,
       tone: freighterAvailable <= 0 && freighterTotal > 0 ? 'warning' as const : 'neutral' as const,
       detailTitle: t('resourceDetail.freighterTitle'),
@@ -349,7 +349,7 @@ function App() {
       id: 'command',
       label: t('resource.command'),
       shortLabel: 'CP',
-      icon: 'CP',
+      icon: 'command',
       value: commandCapacity.toString(),
       delta: `[${signed(commandAvailable)}]`,
       deltaTone: signedTone(commandAvailable),
@@ -367,7 +367,7 @@ function App() {
       id: 'research',
       label: t('resource.research'),
       shortLabel: 'RP',
-      icon: 'RP',
+      icon: 'research',
       value: `${researchRate.toFixed(1)} RP`,
       delta: hasActiveResearch ? `[${researchPercent.toFixed(0)}%${researchETA !== undefined ? ` · ${researchETA}T` : ''}]` : '[—]',
       deltaTone: researchNearBreakthrough ? 'warning' as const : 'neutral' as const,

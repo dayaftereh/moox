@@ -56,6 +56,7 @@ Defer:
 - [x] Replace the primary directed-evolution Shipbuilder UX with a single-click full-random Visual Genome v3 flow and eight coarse morphology families; retain evolution/locks as historical advanced generator research.
 - [x] Advance to Visual Genome v4 with strict symmetric half-hull generation/mirroring, remove default asymmetry, expose hull Space, and add explicit Scout-to-Doom-Star preview footprint scaling.
 - [x] Persist accepted Visual Genome v4 as authoritative optional ShipDesign/Ship state with separate VisualRevision, immediate save, exact save/restore round-trip and built-ship visual freeze.
+- [x] Implement a typed core SVG icon registry and replace shell/navigation/resource plus Colony Farmer/Worker/Scientist placeholder glyphs; browser-verify desktop/mobile scaling.
 - [ ] Produce multiple styleboard/art-direction candidates for the OX+icon brand, shell, 2D Galaxy, star-system dialog, Colony Detail, planet, portrait, Fleet/ship and eight-category Research imagery.
 - [ ] Define target resolutions/aspect ratios and responsive/cropping requirements.
 - [ ] Define provenance/license rules for generated, commissioned, extracted/reference and third-party assets.

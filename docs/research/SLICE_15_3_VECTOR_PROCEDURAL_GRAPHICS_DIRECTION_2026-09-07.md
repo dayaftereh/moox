@@ -140,3 +140,7 @@ This is a **Gate-1 exploratory implementation**, not the final frozen art style.
 The procedural generator is now exposed through the in-game Shipbuilder prototype using the accepted sequence **choose hull size -> Generate repeatedly -> Keep design -> equipment handoff**. The current Frigate is server-authoritative; Destroyer/Cruiser/Battleship/Titan remain explicitly labelled visual previews until Slice 17 supplies authoritative multi-hull/component/weapon breadth. The accepted visual seed must eventually be persisted with the ship design so save/resume/replay preserve the chosen appearance.
 
 See `docs/research/SLICE_15_3_SHIPBUILDER_GENERATION_UX_2026-09-07.md` for the complete browser/product contract and QA evidence.
+
+## Core icon implementation follow-up (2026-09-07)
+
+The vector-first icon direction now has a live typed React/SVG registry and first runtime integration across navigation, resources, shell actions and Farmer/Worker/Scientist job headings. Unicode/text artwork is no longer the source for those surfaces. The first 24x24 / 1.55-stroke grammar remains a Gate-1 candidate until the broader icon family is visually reviewed. See docs/research/SLICE_15_3_CORE_SVG_ICON_LANGUAGE_IMPLEMENTATION_2026-09-07.md.
