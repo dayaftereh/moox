@@ -205,3 +205,12 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Added compact own Colony/Outpost/Fleet markers and diplomacy-toned foreign Colony/Outpost/Fleet contact markers; duplicate empire+kind contacts are collapsed.
 - Reused the same star/contact language in the System dialog.
 - Desktop and 320px-mobile browser QA on canonical port 7171 passes without danger banners or horizontal overflow.
+
+## 2026-09-07 - Slice 15.3 body, fleet, construction and diplomacy icon pass
+
+- Replaced System body dots with typed planet/gas-giant/asteroid-belt SVGs and added colony/outpost badges plus climate tinting.
+- Added fleet-role semantics for combat/civilian/scout and special colony/outpost/transport vessels while retaining procedural ship visuals.
+- Replaced Construction catalog/project CSS glyphs with typed project icons; added dedicated Capitol, Colony Base, Marine Barracks and Star Base identities plus Housing/Terraform support.
+- Reused building icons on Colony built-building tiles and replaced queue text arrows with shared arrow SVGs.
+- Added neutral/peace/war Diplomacy stance icons and matching action-button icons.
+- Desktop and 320px mobile QA pass without danger banners or horizontal overflow.

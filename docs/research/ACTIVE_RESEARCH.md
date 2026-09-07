@@ -337,3 +337,5 @@ Original copyrighted assets remain private reference material and are not distri
 - Research/population/action icon refinement: docs/research/SLICE_15_3_ICON_REFINEMENT_RESEARCH_ACTIONS_2026-09-07.md - microscope Research identity, test-tube category primitive, role-specific population markers and selective leading action icons.
 
 - Research-category and Galaxy marker integration: `docs/research/SLICE_15_3_RESEARCH_GALAXY_ICON_INTEGRATION_2026-09-07.md` - eight category SVG identities plus strategic star/colony/outpost/fleet/contact markers and desktop/mobile QA.
+
+- Body/Fleet/Construction/Diplomacy icon pass: `docs/research/SLICE_15_3_BODY_FLEET_CONSTRUCTION_DIPLOMACY_ICON_PASS_2026-09-07.md` - orbital body/settlement SVGs, fleet-role semantics, construction/building family, queue arrows and diplomacy stance/actions.

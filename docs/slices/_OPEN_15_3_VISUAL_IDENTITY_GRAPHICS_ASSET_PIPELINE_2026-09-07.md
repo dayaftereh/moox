@@ -88,3 +88,5 @@ Defer:
 - [ ] Run relevant tests plus `git diff --check`, update evidence/status/HISTORY and close marker.
 
 - [x] Integrate the eight authoritative Research categories with distinct SVG identities and add first Galaxy/System/Fleet/contact markers with diplomacy tones; browser-verify desktop and 320px mobile on canonical port 7171.
+
+- [x] Integrate system-body, settlement, fleet-role, construction/building and diplomacy icons; replace remaining obvious strategic CSS/text glyphs; browser-verify desktop and 320px mobile.

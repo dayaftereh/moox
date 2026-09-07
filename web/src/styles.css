@@ -3207,3 +3207,131 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .galaxy-node-marker { width: 14px; height: 14px; }
   .galaxy-node-marker .game-icon { width: 8px; height: 8px; }
 }
+
+
+/* Slice 15.3 body, fleet-role and construction icon pass. */
+.system-orbit-body-reticle {
+  position: relative;
+  display: grid;
+  min-width: 34px;
+  min-height: 34px;
+  place-items: center;
+}
+.system-orbit-body-icon {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid rgba(166, 197, 232, .24);
+  border-radius: 999px;
+  background: rgba(12, 24, 40, .82);
+  color: #90acd0;
+  box-shadow: 0 0 10px rgba(89, 137, 196, .24);
+}
+.system-orbit-body-icon .game-icon { width: 18px; height: 18px; }
+.system-orbit-body-gas-giant .system-orbit-body-icon { width: 32px; height: 32px; color: #d0ae8c; border-color: rgba(208, 174, 140, .38); }
+.system-orbit-body-gas-giant .system-orbit-body-icon .game-icon { width: 24px; height: 24px; }
+.system-orbit-body-asteroid-belt .system-orbit-body-icon { width: 38px; height: 22px; border-radius: 12px; color: #a7b0be; }
+.system-orbit-body-asteroid-belt .system-orbit-body-icon .game-icon { width: 30px; height: 18px; }
+.system-orbit-body.selected .system-orbit-body-icon { border-color: #8db8ff; color: #cfe1ff; box-shadow: 0 0 0 3px rgba(75, 141, 255, .16), 0 0 16px rgba(75, 141, 255, .28); }
+.system-orbit-settlement {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  display: grid;
+  width: 15px;
+  height: 15px;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: #07111f;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, .42);
+}
+.system-orbit-settlement .game-icon { width: 9px; height: 9px; }
+.system-orbit-settlement-colony { color: var(--success); }
+.system-orbit-settlement-outpost { color: var(--warning); }
+.fleet-role-heading { display: flex; align-items: center; gap: 8px; text-transform: capitalize; }
+.fleet-role-chip {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 1px solid rgba(98, 145, 208, .42);
+  border-radius: 8px;
+  background: rgba(44, 85, 139, .14);
+  color: #a9ccfb;
+}
+.fleet-role-chip .game-icon { width: 18px; height: 18px; }
+.fleet-role-badge { gap: 5px; }
+.fleet-role-badge .game-icon { width: 13px; height: 13px; }
+.system-fleet-roster-copy { display: flex; min-width: 0; align-items: center; gap: 7px; }
+.system-fleet-roster-copy > span:last-child { min-width: 0; }
+.system-fleet-role-icon {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  place-items: center;
+  border: 1px solid rgba(99, 139, 190, .36);
+  border-radius: 7px;
+  background: rgba(34, 65, 104, .22);
+  color: #a9c7ef;
+}
+.system-fleet-role-icon .game-icon { width: 15px; height: 15px; }
+.construction-catalog-glyph {
+  display: grid !important;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 7px !important;
+  background: linear-gradient(145deg, #172c40, #09151f) !important;
+  color: #a8c6e6;
+  transform: none !important;
+  box-shadow: inset 0 0 0 1px rgba(126, 166, 205, .08) !important;
+}
+.construction-catalog-glyph .game-icon { width: 19px; height: 19px; }
+.construction-catalog-glyph[data-kind='building'] { color: #a9c6e0; }
+.construction-catalog-glyph[data-kind='housing'] { color: #8fd6b1; }
+.construction-catalog-glyph[data-kind='colony_ship'] { color: #8fd6b1; }
+.construction-catalog-glyph[data-kind='outpost_ship'] { color: #f2bf5e; }
+.construction-catalog-glyph[data-kind='troop_transport'] { color: #d7b78b; }
+.construction-catalog-glyph[data-kind='military_ship'] { color: #ff9cac; }
+.construction-catalog-glyph[data-kind='freighter_fleet'] { color: #80c8f0; }
+.construction-catalog-glyph[data-kind='planetary_transformation'] { color: #9adb81; }
+.construction-project-visual { color: #a9c6e6; }
+.construction-project-visual > .game-icon { width: min(66px, 48%); height: min(66px, 48%); filter: drop-shadow(0 5px 12px rgba(0, 0, 0, .35)); }
+.construction-project-visual[data-kind='housing'],
+.construction-project-visual[data-kind='colony_ship'] { color: #8fd6b1; }
+.construction-project-visual[data-kind='outpost_ship'] { color: #f2bf5e; }
+.construction-project-visual[data-kind='troop_transport'] { color: #d7b78b; }
+.construction-project-visual[data-kind='military_ship'] { color: #ff9cac; }
+.construction-project-visual[data-kind='freighter_fleet'] { color: #80c8f0; }
+.construction-project-visual[data-kind='planetary_transformation'] { color: #9adb81; }
+.construction-current-title { display: flex; min-width: 0; align-items: center; gap: 9px; }
+.construction-current-title > div { min-width: 0; }
+.construction-current-kind-icon { display: grid; width: 30px; height: 30px; flex: 0 0 30px; place-items: center; border: 1px solid var(--border); border-radius: 8px; background: rgba(45, 77, 112, .16); color: #afc9e7; }
+.construction-current-kind-icon .game-icon { width: 18px; height: 18px; }
+@media (max-width: 700px) {
+  .fleet-role-chip { width: 25px; height: 25px; }
+  .fleet-role-chip .game-icon { width: 16px; height: 16px; }
+  .construction-project-visual > .game-icon { width: 48px; height: 48px; }
+}
+
+.system-orbit-body-climate-terran .system-orbit-body-icon { color: #72d38a; border-color: rgba(114, 211, 138, .36); }
+.system-orbit-body-climate-ocean .system-orbit-body-icon { color: #74c9e8; border-color: rgba(116, 201, 232, .36); }
+.system-orbit-body-climate-desert .system-orbit-body-icon,
+.system-orbit-body-climate-arid .system-orbit-body-icon { color: #e5ad68; border-color: rgba(229, 173, 104, .36); }
+.system-orbit-body-climate-tundra .system-orbit-body-icon,
+.system-orbit-body-climate-arctic .system-orbit-body-icon { color: #d8edf6; border-color: rgba(216, 237, 246, .36); }
+.system-orbit-body-climate-barren .system-orbit-body-icon { color: #bbb2a5; border-color: rgba(187, 178, 165, .34); }
+.system-orbit-body-climate-toxic .system-orbit-body-icon { color: #bed765; border-color: rgba(190, 215, 101, .36); }
+.system-orbit-body-climate-radiated .system-orbit-body-icon { color: #d48ccc; border-color: rgba(212, 140, 204, .36); }
+
+.building-placeholder { display: grid; place-items: center; color: #a9c7e6; }
+.building-placeholder .game-icon { width: 18px; height: 18px; }
+
+.diplomacy-stance-badge { gap: 6px; }
+.diplomacy-stance-badge .game-icon { width: 14px; height: 14px; }
+.diplomacy-stance-badge.relation-friendly { border-color: rgba(99, 214, 154, .66); color: #a9ebc8; background: rgba(99, 214, 154, .1); }
+.diplomacy-stance-badge.relation-neutral { border-color: #536984; color: #bdcadb; background: rgba(112, 132, 159, .1); }
+.diplomacy-stance-badge.relation-hostile { border-color: rgba(255, 116, 135, .72); color: #ffacb8; background: rgba(255, 116, 135, .1); }

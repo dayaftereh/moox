@@ -120,3 +120,7 @@ Recommended next pass:
 2. fleet-role differentiation (combat, scout, colony, outpost, transport);
 3. construction/building category family;
 4. final broad icon consistency review before Gate-2 freeze.
+
+## Body/Fleet/Construction/Diplomacy follow-up (2026-09-07)
+
+The next Gate-1 pass replaced System body dots with planet/gas-giant/asteroid SVGs plus settlement badges, differentiated Fleet roles, replaced Construction CSS glyphs with typed project/building identities, moved queue arrows to SVG, and added Diplomacy stance/action symbols. See `docs/research/SLICE_15_3_BODY_FLEET_CONSTRUCTION_DIPLOMACY_ICON_PASS_2026-09-07.md`.

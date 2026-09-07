@@ -4,18 +4,21 @@ import {
   decodeShipVisualGenome,
   type Colony,
   type ConstructionChoice,
+  type ConstructionProjectKind,
   type ConstructionState,
   type DraftOrder,
   type DiplomacyCommandKind,
   type DiplomaticStance,
   type DiplomacyView,
   type PlanningMetricBreakdown,
+  type OrbitalBodyKind,
   type PlanningPreviewSnapshot,
   type PlayerSnapshot,
   type PopulationJob,
   type PopulationTransferChoice,
   type ResearchChoice,
   type StrategicContact,
+  type StrategicFleet,
   type StarSystem,
 } from './api'
 import { ProceduralShipGlyph } from './components/ProceduralShipGlyph'
@@ -62,6 +65,45 @@ function strategicContactIcon(kind: StrategicContact['kind']): GameIconName {
   return 'fleets'
 }
 
+function orbitalBodyIcon(kind: OrbitalBodyKind): GameIconName {
+  if (kind === 'gas_giant') return 'gas-giant'
+  if (kind === 'asteroid_belt') return 'asteroid-belt'
+  return 'planet'
+}
+
+function fleetRoleIcon(fleet: StrategicFleet): GameIconName {
+  if (fleet.special_kind === 'colony_ship') return 'flag'
+  if (fleet.special_kind === 'outpost_ship') return 'outpost'
+  if (fleet.special_kind === 'troop_transport') return 'transport'
+  const role = fleet.role.toLowerCase()
+  if (role.includes('scout')) return 'fleet-scout'
+  if (role.includes('combat') || role.includes('military')) return 'fleet-combat'
+  if (role.includes('civilian')) return 'fleet-civilian'
+  return 'fleets'
+}
+
+function constructionProjectIcon(kind: ConstructionProjectKind, projectID?: string): GameIconName {
+  if (kind === 'building') {
+    switch (projectID) {
+      case 'capitol': return 'building-capitol'
+      case 'colony_base': return 'building-colony-base'
+      case 'marine_barracks': return 'building-barracks'
+      case 'star_base': return 'building-star-base'
+      default: return 'build'
+    }
+  }
+  switch (kind) {
+    case 'housing': return 'housing'
+    case 'colony_ship': return 'flag'
+    case 'outpost_ship': return 'outpost'
+    case 'troop_transport': return 'transport'
+    case 'military_ship': return 'ship'
+    case 'freighter_fleet': return 'freighter'
+    case 'planetary_transformation': return 'terraform'
+    default: return 'build'
+  }
+}
+
 function localizedPhase(t: Translator, phase: string): string {
   switch (phase) {
     case 'planning': return t('phase.planning')
@@ -78,6 +120,17 @@ function localizedStance(t: Translator, stance: DiplomaticStance): string {
   if (stance === 'war') return t('stance.war')
   if (stance === 'peace') return t('stance.peace')
   return t('stance.neutral')
+}
+
+function diplomaticStanceIcon(stance: DiplomaticStance): GameIconName {
+  if (stance === 'war') return 'war'
+  if (stance === 'peace') return 'peace'
+  return 'neutral'
+}
+
+function diplomacyActionIcon(kind: DiplomacyCommandKind): GameIconName {
+  if (kind === 'diplomacy.declare_war') return 'war'
+  return 'peace'
 }
 
 function serverLabel(t: Translator, key: string | undefined, fallback: string): string {
@@ -546,7 +599,11 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                         setSelectedBodyID(body.id)
                       }}
                     >
-                      <span className="system-orbit-body-reticle" aria-hidden="true"><span className="system-orbit-body-dot" /></span>
+                      <span className="system-orbit-body-reticle" aria-hidden="true">
+                        <span className="system-orbit-body-icon"><GameIcon name={orbitalBodyIcon(body.kind)} /></span>
+                        {colony && <span className="system-orbit-settlement system-orbit-settlement-colony"><GameIcon name="colonies" /></span>}
+                        {!colony && body.outpost_id && <span className="system-orbit-settlement system-orbit-settlement-outpost"><GameIcon name="outpost" /></span>}
+                      </span>
                       <strong>{body.name}</strong>
                     </button>
                   </div>
@@ -656,7 +713,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                   <p className="eyebrow">{system.name}</p>
                   <h3 id={'system-fleet-dialog-title-' + system.id}><GameIcon name="fleets" />{t('system.fleetsShips')}</h3>
                 </div>
-                <button type="button" className="button-ghost" aria-label={t('common.close')} onClick={() => setFleetDialogOpen(false)}>×</button>
+                <button type="button" className="button-ghost" aria-label={t('common.close')} onClick={() => setFleetDialogOpen(false)}><GameIcon name="close" /></button>
               </header>
 
               <div className="system-fleet-dialog-layout">
@@ -676,9 +733,12 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                             hullId={fleetShips[0]?.spec.hull_id}
                             weaponCount={fleetShips[0]?.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0}
                           />
-                          <span>
-                            <strong>{fleetName(fleet)}</strong>
-                            <small>{fleet.special_kind ? t('system.specialVessel') : t('fleets.ships', { count: fleet.ship_ids?.length ?? 0 })}</small>
+                          <span className="system-fleet-roster-copy">
+                            <span className="system-fleet-role-icon"><GameIcon name={fleetRoleIcon(fleet)} /></span>
+                            <span>
+                              <strong>{fleetName(fleet)}</strong>
+                              <small>{fleet.special_kind ? t('system.specialVessel') : t('fleets.ships', { count: fleet.ship_ids?.length ?? 0 })}</small>
+                            </span>
                           </span>
                         </button>
                         {fleetShips.length > 0 && (
@@ -1237,7 +1297,7 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
         </div>
         <p className="muted colony-surface-hint">{t('colony.surfaceHint')}</p>
         {(displayColony.buildings ?? []).length === 0 ? <p className="muted">{t('colony.noBuildings')}</p> : (
-          <div className="building-grid colony-building-grid">{(displayColony.buildings ?? []).map((building) => <div className="building-tile" key={building}><span className="building-placeholder" aria-hidden="true" /><strong>{humanizeToken(building)}</strong></div>)}</div>
+          <div className="building-grid colony-building-grid">{(displayColony.buildings ?? []).map((building) => <div className="building-tile" key={building}><span className="building-placeholder" aria-hidden="true"><GameIcon name={constructionProjectIcon('building', building)} /></span><strong>{humanizeToken(building)}</strong></div>)}</div>
         )}
       </Card>
 
@@ -1450,7 +1510,7 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
                   aria-pressed={selected}
                   onClick={() => setSelectedChoiceIndex(index)}
                 >
-                  <span className="construction-catalog-glyph" data-kind={choice.project_kind} aria-hidden="true" />
+                  <span className="construction-catalog-glyph" data-kind={choice.project_kind} aria-hidden="true"><GameIcon name={constructionProjectIcon(choice.project_kind, choice.project_id)} /></span>
                   <span className="construction-catalog-copy">
                     <strong>{displayChoice(choice)}</strong>
                     <small>{humanizeToken(choice.project_kind)} · {t('construction.cost', { pp: choice.production_cost_pp.toFixed(0) })}</small>
@@ -1468,7 +1528,7 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
           <>
             <div className="construction-project-hero">
               <div className="construction-project-visual" data-kind={selectedChoice.project_kind} aria-hidden="true">
-                <span />
+                <GameIcon name={constructionProjectIcon(selectedChoice.project_kind, selectedChoice.project_id)} />
               </div>
               <div className="construction-project-title">
                 <p className="eyebrow">{t('construction.selectedProject')}</p>
@@ -1502,7 +1562,7 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
                     disabled={alreadyQueued}
                     onClick={() => save([...items, queueItemFromChoice(selectedChoice)])}
                   >
-                    <GameIcon name="build" />{alreadyQueued ? t('construction.alreadyQueued') : t('construction.addToQueue')}
+                    <GameIcon name={constructionProjectIcon(selectedChoice.project_kind, selectedChoice.project_id)} />{alreadyQueued ? t('construction.alreadyQueued') : t('construction.addToQueue')}
                   </button>
                 )
               })()}
@@ -1530,9 +1590,9 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
         {currentItem ? (
           <section className="construction-current-build">
             <div className="construction-current-head">
-              <div>
-                <p className="eyebrow">{t('construction.current')}</p>
-                <strong>{displayItem(currentItem)}</strong>
+              <div className="construction-current-title">
+                <span className="construction-current-kind-icon"><GameIcon name={constructionProjectIcon(currentItem.project_kind, currentItem.project_id)} /></span>
+                <div><p className="eyebrow">{t('construction.current')}</p><strong>{displayItem(currentItem)}</strong></div>
               </div>
               <button type="button" className="button-danger construction-abort-button" onClick={() => setAbortConfirmOpen(true)}>{t('construction.abort')}</button>
             </div>
@@ -1563,8 +1623,8 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
                     <small>{humanizeToken(item.project_kind)} · {projectedItem ? formatEta(t, projectedItem.eta_turns) : t('common.noEta')}</small>
                   </button>
                   <div className="action-row compact-actions construction-queue-actions">
-                    <button type="button" className="button-ghost" disabled={queueIndex === 0} onClick={() => move(index, -1)} aria-label={t('construction.moveUp')}>↑</button>
-                    <button type="button" className="button-ghost" disabled={queueIndex === queuedItems.length - 1} onClick={() => move(index, 1)} aria-label={t('construction.moveDown')}>↓</button>
+                    <button type="button" className="button-ghost" disabled={queueIndex === 0} onClick={() => move(index, -1)} aria-label={t('construction.moveUp')}><GameIcon name="arrow-up" /></button>
+                    <button type="button" className="button-ghost" disabled={queueIndex === queuedItems.length - 1} onClick={() => move(index, 1)} aria-label={t('construction.moveDown')}><GameIcon name="arrow-down" /></button>
                     <button type="button" className="button-ghost" onClick={() => save(items.filter((_, itemIndex) => itemIndex !== index))}>{t('common.remove')}</button>
                   </div>
                 </div>
@@ -1661,9 +1721,9 @@ export function StrategicFleetsView({ snapshot, onPlanOrder, t }: { snapshot: Pl
                     hullId={leadShip?.spec.hull_id}
                     weaponCount={leadShip?.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0}
                   />
-                  <div><p className="eyebrow">{t('galaxy.fleet', { id: fleet.id })}</p><h2>{fleet.role}</h2></div>
+                  <div><p className="eyebrow">{t('galaxy.fleet', { id: fleet.id })}</p><h2 className="fleet-role-heading"><span className="fleet-role-chip"><GameIcon name={fleetRoleIcon(fleet)} /></span>{fleet.role}</h2></div>
                 </div>
-                <span className="badge">{t('fleets.ships')}: {fleet.ship_ids?.length ?? 0}</span>
+                <span className="badge fleet-role-badge"><GameIcon name={fleetRoleIcon(fleet)} />{t('fleets.ships')}: {fleet.ship_ids?.length ?? 0}</span>
               </div>
               <dl className="detail-list compact">
                 <div><dt>{t('fleets.atSystem')}</dt><dd>{fleet.at_system_id ?? '—'}</dd></div>
@@ -1939,7 +1999,7 @@ export function StrategicDiplomacyView({ snapshot, busy, closed, onCommand, t }:
               <Card key={relation.other_empire_id}>
                 <div className="card-heading">
                   <div><p className="eyebrow">{t('common.empireFallback', { id: relation.other_empire_id })}</p><h2>{otherSeat?.seat.name ?? t('common.empireFallback', { id: relation.other_empire_id })}</h2></div>
-                  <span className="badge">{localizedStance(t, relation.stance)}</span>
+                  <span className={'badge diplomacy-stance-badge relation-' + strategicRelationTone(snapshot.view.empire.id, relation.other_empire_id, relations)}><GameIcon name={diplomaticStanceIcon(relation.stance)} />{localizedStance(t, relation.stance)}</span>
                 </div>
                 <div className="action-row">
                   {actions.map((action) => (
@@ -1950,7 +2010,7 @@ export function StrategicDiplomacyView({ snapshot, busy, closed, onCommand, t }:
                       key={action.kind}
                       onClick={() => void onCommand(action.kind, relation.other_empire_id)}
                     >
-                      {action.kind === 'diplomacy.declare_war'
+                      <GameIcon name={diplomacyActionIcon(action.kind)} />{action.kind === 'diplomacy.declare_war'
                         ? t('more.declareWar')
                         : action.kind === 'diplomacy.offer_peace'
                           ? t('more.offerPeace')

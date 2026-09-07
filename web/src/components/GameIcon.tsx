@@ -42,7 +42,23 @@ export type GameIconName =
   | 'play'
   | 'flag'
   | 'outpost'
-  | 'build'
+  | 'build'  | 'building-capitol'
+  | 'building-colony-base'
+  | 'building-barracks'
+  | 'building-star-base'
+
+  | 'gas-giant'
+  | 'asteroid-belt'
+  | 'housing'
+  | 'terraform'
+  | 'fleet-combat'
+  | 'fleet-civilian'
+  | 'fleet-scout'
+  | 'arrow-up'
+  | 'arrow-down'
+  | 'peace'
+  | 'war'
+  | 'neutral'
 
 export type GameIconProps = Omit<SVGProps<SVGSVGElement>, 'name'> & {
   name: GameIconName
@@ -248,6 +264,80 @@ const icons: Record<GameIconName, ReactNode> = {
     <path d="M4.5 19V9.8l4.2 2.3V8.9l4.1 2.3V5h3.5v8.1l3.2 1.8V19h-15Z" />
     <path d="M8 15.2h2M13 15.2h2M17.1 15.2h1.1" />
     <path d="m18.5 5.2 1.8-1.8M19.4 8.2h2.2" />
+  </>,
+  'building-capitol': <>
+    <path d="M4.5 8.2 12 4l7.5 4.2H4.5Z" />
+    <path d="M6 9.5h12M7.2 9.5v7.2M10.4 9.5v7.2M13.6 9.5v7.2M16.8 9.5v7.2M5.2 18.3h13.6M4 20h16" />
+  </>,
+  'building-colony-base': <>
+    <path d="M4.2 17.8c1.4-4.6 4-6.9 7.8-6.9s6.4 2.3 7.8 6.9H4.2Z" />
+    <path d="M8.2 10.6c.5-3.3 1.8-5 3.8-5s3.3 1.7 3.8 5" />
+    <path d="M8.1 17.8v-2.7h7.8v2.7M12 5.6V3.8" />
+  </>,
+  'building-barracks': <>
+    <path d="M5 19V8.4h14V19H5Z" />
+    <path d="M8 8.4V5h8v3.4M9 19v-5h6v5" />
+    <path d="m8.1 11.6 2.2 2.2M15.9 11.6l-2.2 2.2" />
+  </>,
+  'building-star-base': <>
+    <circle cx="12" cy="12" r="3.1" />
+    <path d="M12 3.4v5.5M12 15.1v5.5M3.4 12h5.5M15.1 12h5.5" />
+    <path d="m5.9 5.9 3.9 3.9M14.2 14.2l3.9 3.9M18.1 5.9l-3.9 3.9M9.8 14.2l-3.9 3.9" />
+  </>,
+  'gas-giant': <>
+    <circle cx="12" cy="12" r="7.4" />
+    <path d="M5.3 9.2c3.8 1.1 9.6 1.1 13.4 0M4.8 12.1c4.4 1.3 10 1.3 14.4 0M6 15.1c3.4.9 8.6.9 12 0" />
+    <path d="M8.3 5.8c1.2.5 2.4.7 3.7.7s2.5-.2 3.7-.7" />
+  </>,
+  'asteroid-belt': <>
+    <ellipse cx="12" cy="12" rx="8.3" ry="3.9" />
+    <circle cx="7.2" cy="10.7" r="1.3" />
+    <circle cx="11.4" cy="13.4" r="1" />
+    <circle cx="15.7" cy="10.9" r="1.45" />
+    <circle cx="18.5" cy="13.1" r=".75" />
+  </>,
+  housing: <>
+    <path d="M4.2 11.1 12 4.8l7.8 6.3" />
+    <path d="M6.4 10.1v9h11.2v-9M9 19.1v-5.4h6v5.4" />
+    <path d="M9.1 9.2h5.8" />
+  </>,
+  terraform: <>
+    <circle cx="12" cy="12" r="7.6" />
+    <path d="M5.5 10.1c2.2.3 3.7 1.3 4.6 3.1 1.1-1.1 2.4-1.8 4.1-2.1 1.4-.3 2.8-.1 4.1.4" />
+    <path d="M9.9 17.5c-.5-2.3 0-4.3 1.6-6 1.5-1.6 3.4-2.5 5.8-2.6-1.1 3.8-3.5 6.7-7.4 8.6Z" />
+  </>,
+  'fleet-combat': <>
+    <path d="M12 3.8 15.2 10l5 2.4-4.8 2.2.8 5.1L12 17.5l-4.2 2.2.8-5.1-4.8-2.2 5-2.4L12 3.8Z" />
+    <path d="M7.6 7.3 4.7 4.4M16.4 7.3l2.9-2.9" />
+  </>,
+  'fleet-civilian': <>
+    <path d="M5.2 15.8 10.5 6l2.2 5.3 6.1-2.5-4.5 9.3-2.5-4.1-6.6 1.8Z" />
+    <path d="M7.4 18.4h9.2" />
+  </>,
+  'fleet-scout': <>
+    <path d="M5.2 16.5 11.1 5l2.1 6 5.6-2.2-4.4 9.4-2.4-4.4-6.8 2.7Z" />
+    <circle cx="17.6" cy="5.5" r="2.2" />
+    <path d="m19.2 7.1 1.6 1.6" />
+  </>,
+  'arrow-up': <>
+    <path d="M12 19V5M6.5 10.5 12 5l5.5 5.5" />
+  </>,
+  'arrow-down': <>
+    <path d="M12 5v14M6.5 13.5 12 19l5.5-5.5" />
+  </>,
+  peace: <>
+    <path d="m5.1 10.2 4.1-3.3 3 2.2 2.7-1.7 4 3.2" />
+    <path d="m6.4 11.4 4.1 4.1c.8.8 2 .8 2.8 0l3.5-3.4" />
+    <path d="m8.8 13.6 1.8-1.8c.8-.8 2-.8 2.8 0l1.6 1.6" />
+    <path d="M5 18.8h14" />
+  </>,
+  war: <>
+    <path d="m5.3 4.8 5.1 5.1M18.7 4.8l-5.1 5.1M8.9 11.4l-4.1 4.1 3.7 3.7 4.1-4.1M15.1 11.4l4.1 4.1-3.7 3.7-4.1-4.1" />
+    <path d="M5.2 4.8h3.4v3.4M18.8 4.8h-3.4v3.4" />
+  </>,
+  neutral: <>
+    <circle cx="12" cy="12" r="7.4" />
+    <path d="M7.2 12h9.6" />
   </>,
   info: <>
     <circle cx="12" cy="12" r="8" />
