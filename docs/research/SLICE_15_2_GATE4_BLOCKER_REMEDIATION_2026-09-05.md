@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-B2-R Colony density cleanup complete; G4-B2-S Planet/Colony profile split complete; G4-B2-T signed growth/resource cleanup complete; G4-B2-U build-management density cleanup complete; G4-B2-V Colony live breakdown/progress complete; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-B2-R Colony density cleanup complete; G4-B2-S Planet/Colony profile split complete; G4-B2-T signed growth/resource cleanup complete; G4-B2-U build-management density cleanup complete; G4-B2-V Colony live breakdown/progress complete; G4-B2-W direct metric disclosures complete; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -379,6 +379,21 @@ Status: **complete; direct user review pending**.
 - Important mechanics boundary: `cloning_center` and morale buildings are already implemented economy effects and therefore appear in authoritative breakdowns. `planetary_stock_exchange` / a Bank-style direct BC building bonus is catalogued but **not yet an implemented EconomyRules money modifier**, so Slice 15.2 does not fabricate that contribution; it remains economy/building fidelity work.
 - `npm run build` - **PASS**.
 - targeted Game breakdown tests - **PASS**.
+
+#### G4-B2-W - Direct Colony metric disclosures
+
+Status: **complete; direct user review pending**.
+
+- Removed the separate `Kolonie-Info` control from Colony Profile. Growth and Colony-BC now disclose their own authoritative breakdown directly from the displayed value, so the interaction stays attached to the number the player is trying to understand.
+- Growth value remains visually a normal signed metric (`+0.07 (14 Runde(n))`, or draft Housing `+0.09 (11 Runde(n))`) with only a subtle dotted affordance; tap/click opens only the Growth component list.
+- Colony-BC value behaves the same way: tap/click on `6.0 BC` opens only the BC component list (Small Fixture: population tax `+4.0 BC` + government `+2.0 BC`).
+- Metric `details` share one native disclosure group, so opening BC closes Growth and vice versa; overlapping metric popovers are avoided without client-side metric state or duplicated calculation logic.
+- Planet Profile keeps the existing authoritative planet-fact popover, but its text button was replaced by a compact accessible `?` trigger (`aria-label`/title still expose `Planeten-Info`). Desktop trigger is 22x22px; mobile 20x20px.
+- Live Housing smoke still works through Planning Preview: planning Housing changed the clickable Growth value to `+0.09 (11 Runde(n))`; opening that value showed `Natürlich / Volk +0.07 Pop` + `Housing +0.02 Pop` = `+0.09 Pop`.
+- Desktop smoke: Growth popover `240x46px` at x=23..263, BC popover `240x63px` at x=23..263, Planet `?` popover `240x105px` at x=24..264; no horizontal overflow.
+- 320x640 smoke: `?` trigger 20x20px at x=285..305; Planet popover `240x95px` at x=65..305; Growth value `81x18px` at x=226..307; Growth popover `232x44px` at x=72..304; no horizontal overflow.
+- Server-derived B2-V breakdown authority is unchanged; this block is presentation/navigation only.
+- `npm run build` - **PASS**.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
 

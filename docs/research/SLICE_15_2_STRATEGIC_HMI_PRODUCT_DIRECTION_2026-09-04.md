@@ -319,3 +319,10 @@ The functional data already present in Core (`Colony.Buildings`, `ColonyPopulati
 - Colony BC breakdown should distinguish population tax, government and morale contributions and sum to authoritative `adjusted_economy.tax_bc`.
 - Future money buildings (for example Planetary Stock Exchange / Bank-style effects) must only appear after EconomyRules actually implements and projects the effect. Catalog/buildability presence alone is not enough to claim a BC modifier.
 - Planning a current Housing project must immediately change both the headline Growth value/ETA and the detailed Housing component through Planning Preview; the browser must not simulate that delta locally.
+### Direct metric disclosure interaction
+
+- Do not add a separate Colony Info button when the user intent is to understand one metric. The displayed Growth and Colony-BC values are the interaction targets for their respective player-safe breakdowns.
+- Metric-value disclosures should look like values, not secondary action buttons: use a minimal affordance, retain signed coloring, and keep mobile tap area usable.
+- Only one Colony metric breakdown should be open at a time to prevent overlapping popovers in the compact two-column profile.
+- Planet facts are broader than one metric, so Planet Profile retains a dedicated disclosure; its compact trigger is `?`, with an accessible label/title rather than visible `Planeten-Info` text.
+- Breakdown calculations remain exclusively server-derived through Planning Preview; direct-value interaction is a presentation change, not a new client-side formula path.

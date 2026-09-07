@@ -46,6 +46,7 @@ Permanent evidence:
     - [x] B2-T: merge Growth + next-Pop ETA into one signed row; apply shared green-positive/red-negative tones and document the existing core-Morale / missing player-safe Morale-projection boundary.
     - [x] B2-U: compact Build-management toolbar + show current construction once with PP/%/ETA and only future projects in the Queue; lock queue reordering from silently replacing the current build.
     - [x] B2-V: show authoritative current-build PP/%/ETA progress directly on Colony Detail and add tap/click live Growth/BC breakdowns from Planning Preview, including Housing/Cloning/Morale effects that already exist in core.
+    - [x] B2-W: remove standalone Colony Info button; make Growth and Colony-BC values themselves open their own authoritative breakdown, and reduce Planet Info to an accessible ? trigger.
   - [ ] G4-C: independent mobile/desktop workflow QA and Slice-15.2 closure.
 
 Live preview:

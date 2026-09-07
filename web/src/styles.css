@@ -2473,3 +2473,92 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .construction-summary-progress-meta { font-size: .44rem; }
   .construction-summary-progress-meta strong { font-size: .48rem; }
 }
+
+
+/* Slice 15.2 B2-W: direct metric-value disclosures; planet info becomes a compact ? trigger. */
+.colony-planet-info > summary {
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  min-width: 22px;
+  height: 22px;
+  min-height: 22px;
+  padding: 0;
+  border-radius: 50%;
+  font-size: .54rem;
+  line-height: 1;
+}
+
+.colony-metric-value-info {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  vertical-align: top;
+}
+.colony-metric-value-info > summary {
+  list-style: none;
+  display: inline-block;
+  max-width: 100%;
+  margin: -3px -2px;
+  padding: 3px 2px;
+  border: 0;
+  border-bottom: 1px dotted rgba(154, 177, 194, .45);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-weight: inherit;
+  line-height: 1.15;
+  text-align: right;
+  white-space: nowrap;
+  user-select: none;
+}
+.colony-metric-value-info > summary::-webkit-details-marker { display: none; }
+.colony-metric-value-info > summary::marker { content: ''; }
+.colony-metric-value-info[open] > summary,
+.colony-metric-value-info > summary:hover,
+.colony-metric-value-info > summary:focus-visible {
+  border-bottom-color: #9db8cd;
+  color: #f0f7fb;
+  outline: none;
+}
+.colony-metric-value-popover {
+  position: absolute;
+  z-index: 52;
+  top: calc(100% + 5px);
+  right: 0;
+  width: min(240px, calc(100vw - 24px));
+  padding: 7px;
+  border: 1px solid #526a7f;
+  border-radius: 7px;
+  background: rgba(7, 15, 22, .98);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, .55);
+  backdrop-filter: blur(5px);
+  text-align: left;
+}
+.colony-metric-value-popover .colony-metric-breakdown > header strong,
+.colony-metric-value-popover .colony-metric-breakdown > header span {
+  font-size: .52rem;
+}
+.colony-metric-value-popover .colony-metric-components > div > span,
+.colony-metric-value-popover .colony-metric-components > div > strong {
+  font-size: .44rem;
+}
+
+@media (max-width: 699px) {
+  .colony-planet-info > summary {
+    width: 20px;
+    min-width: 20px;
+    height: 20px;
+    min-height: 20px;
+    font-size: .5rem;
+  }
+  .colony-metric-value-info > summary {
+    margin: -4px -3px;
+    padding: 4px 3px;
+  }
+  .colony-metric-value-popover {
+    width: min(232px, calc(100vw - 18px));
+    padding: 6px;
+  }
+}
