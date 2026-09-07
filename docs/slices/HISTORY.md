@@ -134,3 +134,10 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Style DNA biases hull length/beam, concavity depth, Wedge/Spike/Pod distributions, sweep and mirror probability while remaining presentation-only.
 - Added a responsive live Style-DNA selector; switching style resets the evolution lineage to Generation 1 without touching the game or kept design.
 - Desktop 995x605 and mobile 360x646 browser QA pass without horizontal overflow.
+
+## 2026-09-07 - Slice 15.3 Gate 1 genome locks
+
+- Added deterministic Core hull, Wings/Parts, Engines and Cutouts locks to Visual Genome v2 mutation.
+- Locked groups copy exact parent gene data; primitive add/remove is disabled only while Wings/Parts is locked.
+- Desktop QA proved all-four-lock descendants match the Doom Star parent geometry exactly, and partial-lock QA proved only the unlocked primitives mutate.
+- Mobile 360x646 renders four locks as 2x2 while retaining the six-candidate 2-column population without horizontal overflow.

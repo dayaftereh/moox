@@ -52,6 +52,7 @@ Defer:
 - [x] Add Scout-to-Doom-Star perceptual size scaling plus deterministic concave/negative-space silhouette grammar; Scout remains a Frigate-rules visual role.
 - [x] Add a directed-evolution six-candidate Shipbuilder population, deterministic Visual Genome v2 mutation, and sharp primitive geometry inspired by the documented Proceduro reference without vendoring its implementation.
 - [x] Add three representative Style-DNA families (Spear/Angular, Sleek/High-Tech, Organic/Alien) with live Shipbuilder previews and evolution-family preservation.
+- [x] Add partial Visual-Genome locks for core hull, Wings/Parts primitives, engines and cutouts; browser-verify exact locked-gene preservation and isolated unlocked mutation.
 - [ ] Produce multiple styleboard/art-direction candidates for the OX+icon brand, shell, 2D Galaxy, star-system dialog, Colony Detail, planet, portrait, Fleet/ship and eight-category Research imagery.
 - [ ] Define target resolutions/aspect ratios and responsive/cropping requirements.
 - [ ] Define provenance/license rules for generated, commissioned, extracted/reference and third-party assets.

@@ -3,7 +3,7 @@ import type { PlayerSnapshot } from './api'
 import { ProceduralShipGlyph } from './components/ProceduralShipGlyph'
 import { Card, PageHeader } from './components/ui'
 import type { TranslationKey, TranslationVars } from './i18n'
-import { createShipGenome, mutateShipGenome, type ShipStyleID, type ShipVisualGenome } from './shipVisualGenome'
+import { createShipGenome, emptyShipGenomeLocks, mutateShipGenome, type ShipGenomeLocks, type ShipStyleID, type ShipVisualGenome } from './shipVisualGenome'
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
 
@@ -23,6 +23,13 @@ const shipStyles: Array<{ id: ShipStyleID; label: TranslationKey; hint: Translat
   { id: 'spear', label: 'shipbuilder.style.spear', hint: 'shipbuilder.style.spearHint' },
   { id: 'sleek', label: 'shipbuilder.style.sleek', hint: 'shipbuilder.style.sleekHint' },
   { id: 'organic', label: 'shipbuilder.style.organic', hint: 'shipbuilder.style.organicHint' },
+]
+
+const genomeLockOptions: Array<{ id: keyof ShipGenomeLocks; label: TranslationKey }> = [
+  { id: 'core', label: 'shipbuilder.lock.core' },
+  { id: 'primitives', label: 'shipbuilder.lock.primitives' },
+  { id: 'engines', label: 'shipbuilder.lock.engines' },
+  { id: 'cutouts', label: 'shipbuilder.lock.cutouts' },
 ]
 
 const hulls: Array<{ id: HullID; label: TranslationKey; status: TranslationKey }> = [
@@ -45,6 +52,7 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
   const [generation, setGeneration] = useState(1)
   const [familyRound, setFamilyRound] = useState(1)
   const [mutation, setMutation] = useState(.32)
+  const [locks, setLocks] = useState<ShipGenomeLocks>(() => ({ ...emptyShipGenomeLocks }))
   const [parent, setParent] = useState<Candidate | null>(null)
   const [kept, setKept] = useState<Candidate | null>(null)
   const currentHull = hulls.find((hull) => hull.id === hullID) ?? hulls[0]
@@ -59,11 +67,11 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
         ? `shipbuilder:${snapshot.view.game_id}:${hullID}:${styleID}:evolve:${parent.seed}:g${generation}:c${index + 1}`
         : `shipbuilder:${snapshot.view.game_id}:${hullID}:${styleID}:family:${familyRound}:c${index + 1}`
       const genome = parent && parent.hullID === hullID && parent.genome.styleId === styleID
-        ? mutateShipGenome(parent.genome, seed, mutation)
+        ? mutateShipGenome(parent.genome, seed, mutation, locks)
         : createShipGenome(seed, hullID, styleID)
       return { hullID, generation, index, seed, genome }
     })
-  }, [familyRound, generation, hullID, mutation, parent, snapshot.view.game_id, styleID])
+  }, [familyRound, generation, hullID, locks, mutation, parent, snapshot.view.game_id, styleID])
 
   function resetEvolution() {
     setParent(null)
@@ -90,6 +98,10 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
 
   function freshFamily() {
     resetEvolution()
+  }
+
+  function toggleLock(lockID: keyof ShipGenomeLocks) {
+    setLocks((current) => ({ ...current, [lockID]: !current[lockID] }))
   }
 
   return (
@@ -169,6 +181,27 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
               />
             </label>
             <button type="button" className="button-secondary" onClick={freshFamily}>{t('shipbuilder.freshFamily')}</button>
+          </div>
+
+          <div className="shipbuilder-lock-panel">
+            <div className="shipbuilder-lock-heading">
+              <span><strong>{t('shipbuilder.locks')}</strong><small>{t('shipbuilder.locksHint')}</small></span>
+              <span className="badge">{Object.values(locks).filter(Boolean).length}/4</span>
+            </div>
+            <div className="shipbuilder-lock-grid">
+              {genomeLockOptions.map((lock) => (
+                <button
+                  type="button"
+                  key={lock.id}
+                  className={`shipbuilder-lock${locks[lock.id] ? ' locked' : ''}`}
+                  aria-pressed={locks[lock.id]}
+                  onClick={() => toggleLock(lock.id)}
+                >
+                  <span aria-hidden="true">{locks[lock.id] ? 'LOCK' : 'OPEN'}</span>
+                  <strong>{t(lock.label)}</strong>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="shipbuilder-candidate-grid">

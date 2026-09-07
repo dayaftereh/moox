@@ -156,3 +156,7 @@ The Shipbuilder now shows six candidates at once. Selecting a candidate makes it
 ## Style-DNA update (2026-09-07)
 
 A new Style-DNA stage now sits between hull size and directed evolution. Spear/Angular, Sleek/High-Tech and Organic/Alien each bias hull proportions, primitive families, sweep and symmetry while keeping gameplay rules unchanged. Switching style resets only the active evolution parent/family. Details and browser evidence: docs/research/SLICE_15_3_SHIP_STYLE_DNA_CANDIDATES_2026-09-07.md.
+
+## Genome-lock update (2026-09-07)
+
+The directed-evolution editor now supports four deterministic preservation groups: Core hull, Wings/Parts, Engines and Cutouts. Locked genes are copied exactly from the selected parent; unlocked groups continue to mutate. With all four locked, all six descendant geometry signatures matched the parent exactly. With only Wings/Parts unlocked, every child changed primitives while core, engines and cutouts remained exact. Details: docs/research/SLICE_15_3_SHIP_GENOME_LOCK_CONTROLS_2026-09-07.md.

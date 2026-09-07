@@ -1,5 +1,18 @@
 export type VisualHullID = 'scout' | 'frigate' | 'destroyer' | 'cruiser' | 'battleship' | 'titan' | 'doom_star' | string
 export type ShipStyleID = 'spear' | 'sleek' | 'organic'
+export type ShipGenomeLocks = {
+  core: boolean
+  primitives: boolean
+  engines: boolean
+  cutouts: boolean
+}
+
+export const emptyShipGenomeLocks: ShipGenomeLocks = {
+  core: false,
+  primitives: false,
+  engines: false,
+  cutouts: false,
+}
 export type ShipPrimitiveKind = 'wedge' | 'spike' | 'pod'
 
 export type ShipCutoutGene = {
@@ -172,42 +185,50 @@ function mutateNumber(value: number, random: () => number, scale: number, amount
   return clamp(value + (random() * 2 - 1) * scale * amount, min, max)
 }
 
-export function mutateShipGenome(parent: ShipVisualGenome, mutationSeed: string, amount: number): ShipVisualGenome {
+export function mutateShipGenome(parent: ShipVisualGenome, mutationSeed: string, amount: number, locks: Partial<ShipGenomeLocks> = {}): ShipVisualGenome {
   const profile = profileFor(parent.hullId)
   const random = createRandom(hashSeed(`${mutationSeed}|${parent.styleId}|mutate|v2`))
   const mutation = clamp(amount, .03, 1)
 
-  const stationWidths = parent.stationWidths.map((value, index) => {
-    if (index === parent.stationWidths.length - 1) return 0
-    return mutateNumber(value, random, parent.beam * .18, mutation, 2.2, parent.beam * 1.35)
-  })
-  const notchDepths = parent.notchDepths.map((value, index) => value <= 0 ? 0 : mutateNumber(value, random, parent.beam * .14, mutation, stationWidths[index] * .24, stationWidths[index] * .9))
+  const stationWidths = locks.core
+    ? [...parent.stationWidths]
+    : parent.stationWidths.map((value, index) => {
+        if (index === parent.stationWidths.length - 1) return 0
+        return mutateNumber(value, random, parent.beam * .18, mutation, 2.2, parent.beam * 1.35)
+      })
+  const notchDepths = locks.core
+    ? [...parent.notchDepths]
+    : parent.notchDepths.map((value, index) => value <= 0 ? 0 : mutateNumber(value, random, parent.beam * .14, mutation, stationWidths[index] * .24, stationWidths[index] * .9))
 
-  let primitives = parent.primitives.map((primitive): ShipPrimitiveGene => ({
-    ...primitive,
-    t: mutateNumber(primitive.t, random, .12, mutation, .08, .92),
-    length: mutateNumber(primitive.length, random, parent.length * .08, mutation, 4, parent.length * .26),
-    width: mutateNumber(primitive.width, random, parent.beam * .18, mutation, 2, parent.beam * .62),
-    sweep: mutateNumber(primitive.sweep, random, .7, mutation, -1.5, 1.5),
-  }))
+  let primitives = locks.primitives
+    ? parent.primitives.map((primitive) => ({ ...primitive }))
+    : parent.primitives.map((primitive): ShipPrimitiveGene => ({
+        ...primitive,
+        t: mutateNumber(primitive.t, random, .12, mutation, .08, .92),
+        length: mutateNumber(primitive.length, random, parent.length * .08, mutation, 4, parent.length * .26),
+        width: mutateNumber(primitive.width, random, parent.beam * .18, mutation, 2, parent.beam * .62),
+        sweep: mutateNumber(primitive.sweep, random, .7, mutation, -1.5, 1.5),
+      }))
 
-  if (random() < mutation * .72 && primitives.length < profile.primitiveMax + 4) {
+  if (!locks.primitives && random() < mutation * .72 && primitives.length < profile.primitiveMax + 4) {
     primitives = [...primitives, randomPrimitive(random, parent.beam, parent.length, parent.styleId)]
   }
-  if (random() < mutation * .42 && primitives.length > Math.max(2, profile.primitiveMin - 1)) {
+  if (!locks.primitives && random() < mutation * .42 && primitives.length > Math.max(2, profile.primitiveMin - 1)) {
     primitives = primitives.filter((_, index) => index !== Math.floor(random() * primitives.length))
   }
 
-  const cutouts = parent.cutouts.map((cutout): ShipCutoutGene => ({
-    ...cutout,
-    t: mutateNumber(cutout.t, random, .08, mutation, .2, .82),
-    offset: mutateNumber(cutout.offset, random, parent.beam * .1, mutation, 0, parent.beam * .4),
-    rx: mutateNumber(cutout.rx, random, parent.length * .03, mutation, 2.8, parent.length * .09),
-    ry: mutateNumber(cutout.ry, random, parent.beam * .08, mutation, 1.8, parent.beam * .28),
-    angle: mutateNumber(cutout.angle, random, 28, mutation, -45, 45),
-  }))
+  const cutouts = locks.cutouts
+    ? parent.cutouts.map((cutout) => ({ ...cutout }))
+    : parent.cutouts.map((cutout): ShipCutoutGene => ({
+        ...cutout,
+        t: mutateNumber(cutout.t, random, .08, mutation, .2, .82),
+        offset: mutateNumber(cutout.offset, random, parent.beam * .1, mutation, 0, parent.beam * .4),
+        rx: mutateNumber(cutout.rx, random, parent.length * .03, mutation, 2.8, parent.length * .09),
+        ry: mutateNumber(cutout.ry, random, parent.beam * .08, mutation, 1.8, parent.beam * .28),
+        angle: mutateNumber(cutout.angle, random, 28, mutation, -45, 45),
+      }))
 
-  const engineDelta = random() < mutation * .35 ? (random() < .5 ? -1 : 1) : 0
+  const engineDelta = locks.engines ? 0 : (random() < mutation * .35 ? (random() < .5 ? -1 : 1) : 0)
   return {
     ...parent,
     seed: mutationSeed,

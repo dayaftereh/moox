@@ -175,6 +175,7 @@ export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className =
       data-notch-count={geometry.notchCount}
       data-cutout-count={geometry.cutouts.length}
       data-primitive-count={resolvedGenome.primitives.length}
+      data-engine-count={resolvedGenome.engineCount}
       data-genome-version={resolvedGenome.version}
       data-style-id={resolvedGenome.styleId}
     >
