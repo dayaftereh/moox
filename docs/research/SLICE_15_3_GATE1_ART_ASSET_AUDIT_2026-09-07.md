@@ -2,7 +2,7 @@
 
 Date: **2026-09-07**
 
-Status: **in progress**.
+Status: **complete; Gate-1 direction package is ready for Gate-2 review**.
 
 ## Starting point
 
@@ -60,3 +60,13 @@ The first art-direction pass should cover the accepted integration targets rathe
 - The initial geometry grammar covers hull envelope/wing station, engines, panel lines and weapon hardpoints.
 - The star-system Fleet/Ship roster is the first integration target; this replaces placeholder ship glyphs without changing any server/gameplay authority.
 - This is Gate-1 exploration only. Race/faction style grammars, empire palettes and optional per-ship serial variation remain Gate-2 decisions.
+## Gate-1 completion package
+
+The initial audit is now supplemented by:
+
+- `SLICE_15_3_GATE1_VISUAL_CONSISTENCY_AUDIT_2026-09-07.md`;
+- `SLICE_15_3_STYLEBOARD_CANDIDATES_2026-09-07.md`;
+- live `/styleboard.html` on port 7171;
+- `SLICE_15_3_GATE2_VISUAL_ASSET_PIPELINE_CONTRACT_DRAFT_2026-09-07.md`.
+
+Gate 1 is therefore research/direction complete. Gate 2 remains intentionally unfrozen pending explicit visual-direction approval.

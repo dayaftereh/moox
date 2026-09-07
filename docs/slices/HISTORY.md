@@ -214,3 +214,11 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Reused building icons on Colony built-building tiles and replaced queue text arrows with shared arrow SVGs.
 - Added neutral/peace/war Diplomacy stance icons and matching action-button icons.
 - Desktop and 320px mobile QA pass without danger banners or horizontal overflow.
+
+## 2026-09-07 - Slice 15.3 Gate-1 direction package completed
+
+- Audited all functional strategic surfaces at the review width plus the 320px floor; no blocking visual inconsistency or document-level overflow remains.
+- Added a live responsive `/styleboard.html` with three representative directions: Deep Space Command (recommended/current), Orbital Glass and Industrial Tactical.
+- Defined target responsive tiers, rich-asset resolutions/crops, vector icon grammar, semantic asset IDs, fallback behavior and procedural-ship presentation boundaries.
+- Defined provenance/license classes and required metadata; private/original-game reference material remains non-distributable without explicit rights.
+- Prepared the Gate-2 visual identity / asset-pipeline contract draft and marked Gate 1 direction work complete; Gate 2 remains unfrozen pending explicit review.

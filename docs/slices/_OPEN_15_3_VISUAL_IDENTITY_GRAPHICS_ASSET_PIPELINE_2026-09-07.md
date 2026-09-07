@@ -1,6 +1,6 @@
 # Open slice 15.3 - MOOX visual identity / graphics / asset pipeline
 
-Status: **open; Gate 1 art/asset audit and direction exploration active**.
+Status: **open; Gate 1 art/asset audit and direction package complete; awaiting Gate-2 visual-direction review**.
 
 Queue position: **15.3 of Slice-15 family**.
 
@@ -46,7 +46,7 @@ Defer:
 ## Gate 1 - Art/asset audit and direction exploration
 
 - [x] Inventory current web visuals plus graphic/palette/catalog capabilities already present in the repo.
-- [ ] Define visual goals: readable strategy UI, recognizable MOOX identity, sci-fi tone and acceptable nostalgia/reference distance.
+- [x] Define visual goals: strategy-first readability, recognizable original MOOX identity, modern sci-fi tone, semantic consistency and nostalgia through functional reference rather than copied pixels; codified in the Gate-2 contract draft.
 - [x] Capture vector-first SVG direction and deterministic procedural-ship proof-of-concept contract.
 - [x] Capture and browser-prototype the Shipbuilder generate/keep/equip product flow against a fresh real New Game; broader authoritative hull/component/weapon breadth remains Slice 17.
 - [x] Add Scout-to-Doom-Star perceptual size scaling plus deterministic concave/negative-space silhouette grammar; Scout remains a Frigate-rules visual role.
@@ -58,10 +58,18 @@ Defer:
 - [x] Persist accepted Visual Genome v4 as authoritative optional ShipDesign/Ship state with separate VisualRevision, immediate save, exact save/restore round-trip and built-ship visual freeze.
 - [x] Implement a typed core SVG icon registry and replace shell/navigation/resource plus Colony Farmer/Worker/Scientist placeholder glyphs; browser-verify desktop/mobile scaling.
 - [x] Refine Research to a microscope, reserve a test-tube primitive for Chemistry/Pharma categories, put role SVGs on individual population markers, and add selective leading icons to high-value action buttons.
-- [ ] Produce multiple styleboard/art-direction candidates for the OX+icon brand, shell, 2D Galaxy, star-system dialog, Colony Detail, planet, portrait, Fleet/ship and eight-category Research imagery.
-- [ ] Define target resolutions/aspect ratios and responsive/cropping requirements.
-- [ ] Define provenance/license rules for generated, commissioned, extracted/reference and third-party assets.
-- [ ] Present Gate-2 visual-direction and asset-pipeline contract with representative mockups.
+- [x] Produce multiple styleboard/art-direction candidates for the OX+icon brand, shell, 2D Galaxy, star-system dialog, Colony Detail, planet, portrait, Fleet/ship and eight-category Research imagery; live review board at `/styleboard.html`, with Deep Space Command recommended.
+- [x] Define target resolutions/aspect ratios and responsive/cropping requirements in the Gate-2 contract draft, including the canonical 320px floor and rich-asset target matrix.
+- [x] Define provenance/license rules for generated, commissioned, extracted/reference and third-party assets; original-game/extracted reference material remains non-distributable absent explicit rights.
+- [x] Present Gate-2 visual-direction and asset-pipeline contract with representative mockups: live A/B/C styleboard plus functional 7171 acceptance routes.
+
+## Gate-1 completion evidence (2026-09-07)
+
+- Broad functional visual-consistency audit: `docs/research/SLICE_15_3_GATE1_VISUAL_CONSISTENCY_AUDIT_2026-09-07.md`.
+- Styleboard candidates and recommendation: `docs/research/SLICE_15_3_STYLEBOARD_CANDIDATES_2026-09-07.md`.
+- Live review artifact: `/styleboard.html` on canonical port 7171.
+- Gate-2 contract draft: `docs/research/SLICE_15_3_GATE2_VISUAL_ASSET_PIPELINE_CONTRACT_DRAFT_2026-09-07.md`.
+- Gate 2 remains **unfrozen** until explicit review/acceptance.
 
 ## Gate 2 - Visual identity / pipeline freeze
 

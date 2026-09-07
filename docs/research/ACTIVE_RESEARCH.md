@@ -339,3 +339,6 @@ Original copyrighted assets remain private reference material and are not distri
 - Research-category and Galaxy marker integration: `docs/research/SLICE_15_3_RESEARCH_GALAXY_ICON_INTEGRATION_2026-09-07.md` - eight category SVG identities plus strategic star/colony/outpost/fleet/contact markers and desktop/mobile QA.
 
 - Body/Fleet/Construction/Diplomacy icon pass: `docs/research/SLICE_15_3_BODY_FLEET_CONSTRUCTION_DIPLOMACY_ICON_PASS_2026-09-07.md` - orbital body/settlement SVGs, fleet-role semantics, construction/building family, queue arrows and diplomacy stance/actions.
+- Gate-1 visual consistency audit: `docs/research/SLICE_15_3_GATE1_VISUAL_CONSISTENCY_AUDIT_2026-09-07.md` - cross-screen 791px/320px audit and placeholder sweep.
+- Gate-1 styleboard candidates: `docs/research/SLICE_15_3_STYLEBOARD_CANDIDATES_2026-09-07.md` - Deep Space Command vs Orbital Glass vs Industrial Tactical; Candidate A recommended.
+- Gate-2 visual/asset contract draft: `docs/research/SLICE_15_3_GATE2_VISUAL_ASSET_PIPELINE_CONTRACT_DRAFT_2026-09-07.md` - palette/icon grammar, responsive/raster targets, semantic IDs, provenance/license, fallback and procedural-ship contract.
