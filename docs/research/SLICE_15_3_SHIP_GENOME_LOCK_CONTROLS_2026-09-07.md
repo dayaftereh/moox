@@ -156,3 +156,6 @@ The remaining high-value generator work is now less about raw randomization and 
 - decide whether dedicated sub-gene locks such as Nose / Wing family / Engine-pod shape are needed beyond the four coarse groups;
 - map Style DNA / faction families to race visual direction without making visual style a gameplay rule;
 - prepare the Gate-2 visual pipeline and persistence freeze.
+## Primary-UX status update (2026-09-07)
+
+The lock implementation remains valid generator/editor research but is no longer exposed in the primary player Shipbuilder. The accepted interaction is now full-random reroll plus Use this design; locks may return only if a later advanced editor explicitly needs them.

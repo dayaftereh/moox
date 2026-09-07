@@ -148,3 +148,11 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Client now suppresses Planning-preview for submitted local seats.
 - Session/App layers type expected Planning-preview boundary rejection as session_rejected instead of allowing HTTP 500 fallback.
 - Added generated-game and submitted-seat regression coverage; live reload of existing game-1 shows no error banner and no Planning-preview request.
+
+## 2026-09-07 - Slice 15.3 full-random morphology v3
+
+- Replaced the primary six-candidate directed-evolution flow with one large clickable ship and full-random rerolls.
+- Added Visual Genome v3 morphology identity with Needle, Barge, Manta, Fork, Chevron/A-shape, Hammer, Bulb/Blob and Asymmetric topology families.
+- Each roll independently randomizes morphology and Style DNA, then generates topology-specific envelope, signature primitives, details, concavity/cutouts and engines.
+- Desktop browser QA reached all eight topology families within 24 rolls, with structural aspect ratios spanning roughly 0.70:1 to 9.15:1.
+- Mobile 360x646 remains overflow-free across repeated extreme rerolls; Use this design preserves the exact chosen genome while later rolls continue independently.

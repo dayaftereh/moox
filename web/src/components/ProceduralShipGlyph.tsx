@@ -70,9 +70,9 @@ function primitivePath(primitive: ShipPrimitiveGene, side: -1 | 1, centerX: numb
   ])
 }
 
-function makeGeometry(genome: ShipVisualGenome, weaponCount: number): ShipGeometry {
-  const centerX = 68
-  const centerY = 42
+function makeGeometry(genome: ShipVisualGenome, weaponCount: number, canvas: { width: number; height: number }): ShipGeometry {
+  const centerX = canvas.width / 2
+  const centerY = canvas.height / 2
   const rearX = centerX - genome.length / 2
   const noseX = centerX + genome.length / 2
   const segment = genome.length / Math.max(1, genome.stationCount - 1)
@@ -159,14 +159,18 @@ function makeGeometry(genome: ShipVisualGenome, weaponCount: number): ShipGeomet
 
 export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className = '', label, genome }: ProceduralShipGlyphProps) {
   const resolvedGenome = genome ?? createShipGenome(seed, hullId ?? 'generic')
-  const geometry = makeGeometry(resolvedGenome, weaponCount)
+  const canvas = {
+    width: Math.ceil(Math.max(180, resolvedGenome.length * 1.65)),
+    height: Math.ceil(Math.max(120, resolvedGenome.beam * 4.1)),
+  }
+  const geometry = makeGeometry(resolvedGenome, weaponCount, canvas)
   const classes = `procedural-ship-glyph${className ? ` ${className}` : ''}`
   const maskID = `ship-mask-${hashSeed(`${resolvedGenome.seed}|${geometry.profileKey}`).toString(16)}`
 
   return (
     <svg
       className={classes}
-      viewBox="0 0 136 84"
+      viewBox={`0 0 ${canvas.width} ${canvas.height}`}
       role={label ? 'img' : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
@@ -178,10 +182,11 @@ export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className =
       data-engine-count={resolvedGenome.engineCount}
       data-genome-version={resolvedGenome.version}
       data-style-id={resolvedGenome.styleId}
+      data-morphology-id={resolvedGenome.morphologyId}
     >
       <defs>
-        <mask id={maskID} maskUnits="userSpaceOnUse" x="0" y="0" width="136" height="84">
-          <rect x="0" y="0" width="136" height="84" fill="white" />
+        <mask id={maskID} maskUnits="userSpaceOnUse" x="0" y="0" width={canvas.width} height={canvas.height}>
+          <rect x="0" y="0" width={canvas.width} height={canvas.height} fill="white" />
           {geometry.cutouts.map((cutout, index) => (
             <ellipse
               key={`mask-cutout-${index}`}

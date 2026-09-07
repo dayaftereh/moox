@@ -53,6 +53,7 @@ Defer:
 - [x] Add a directed-evolution six-candidate Shipbuilder population, deterministic Visual Genome v2 mutation, and sharp primitive geometry inspired by the documented Proceduro reference without vendoring its implementation.
 - [x] Add three representative Style-DNA families (Spear/Angular, Sleek/High-Tech, Organic/Alien) with live Shipbuilder previews and evolution-family preservation.
 - [x] Add partial Visual-Genome locks for core hull, Wings/Parts primitives, engines and cutouts; browser-verify exact locked-gene preservation and isolated unlocked mutation.
+- [x] Replace the primary directed-evolution Shipbuilder UX with a single-click full-random Visual Genome v3 flow and eight coarse morphology families; retain evolution/locks as historical advanced generator research.
 - [ ] Produce multiple styleboard/art-direction candidates for the OX+icon brand, shell, 2D Galaxy, star-system dialog, Colony Detail, planet, portrait, Fleet/ship and eight-category Research imagery.
 - [ ] Define target resolutions/aspect ratios and responsive/cropping requirements.
 - [ ] Define provenance/license rules for generated, commissioned, extracted/reference and third-party assets.

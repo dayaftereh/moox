@@ -173,3 +173,6 @@ With directed evolution now established, the next useful layer is **art-directio
 - later crystalline, industrial, stealth or intentionally asymmetric families.
 
 Gate 1 should compare 2-3 representative families in the same six-candidate evolution UI before Gate 2 freezes the generator/pipeline contract.
+## Primary-UX follow-up (2026-09-07)
+
+Directed evolution remains useful algorithmic research, but subsequent user review rejected it as the primary Shipbuilder interaction. MOOX now uses full-random Visual Genome v3 rerolls for the player-facing flow while retaining the reference-derived primitive/mutation ideas as internal generator capability. See docs/research/SLICE_15_3_FULL_RANDOM_SHIP_MORPHOLOGY_V3_2026-09-07.md.
