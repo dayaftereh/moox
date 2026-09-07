@@ -144,3 +144,7 @@ Mobile acceptance at **360x646**:
 - mapping authoritative modules to visible geometry without forcing every component to be literal;
 - minimum uniqueness/readability requirements by hull class and viewport size;
 - whether a small set of authored silhouette primitives should complement the procedural grammar.
+
+## Hull-scale / concavity update (2026-09-07)
+
+The visual size selector now extends from a small **Scout role** through Frigate, Destroyer, Cruiser, Battleship, Titan and Doom Star. Scout is explicitly a visual role using Frigate rules, not a new authoritative hull. Larger classes use progressively larger perceptual envelopes, more forced concave side bays and, from Cruiser upward, transparent negative-space cutouts. Full measured profile/QA evidence is in docs/research/SLICE_15_3_HULL_SCALE_CONCAVITY_GRAMMAR_2026-09-07.md.

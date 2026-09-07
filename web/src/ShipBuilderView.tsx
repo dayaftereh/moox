@@ -6,7 +6,7 @@ import type { TranslationKey, TranslationVars } from './i18n'
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
 
-type HullID = 'frigate' | 'destroyer' | 'cruiser' | 'battleship' | 'titan'
+type HullID = 'scout' | 'frigate' | 'destroyer' | 'cruiser' | 'battleship' | 'titan' | 'doom_star'
 
 type Candidate = {
   hullID: HullID
@@ -14,12 +14,14 @@ type Candidate = {
   seed: string
 }
 
-const hulls: Array<{ id: HullID; label: TranslationKey; authoritative: boolean }> = [
-  { id: 'frigate', label: 'shipbuilder.hull.frigate', authoritative: true },
-  { id: 'destroyer', label: 'shipbuilder.hull.destroyer', authoritative: false },
-  { id: 'cruiser', label: 'shipbuilder.hull.cruiser', authoritative: false },
-  { id: 'battleship', label: 'shipbuilder.hull.battleship', authoritative: false },
-  { id: 'titan', label: 'shipbuilder.hull.titan', authoritative: false },
+const hulls: Array<{ id: HullID; label: TranslationKey; status: TranslationKey }> = [
+  { id: 'scout', label: 'shipbuilder.hull.scout', status: 'shipbuilder.scoutRole' },
+  { id: 'frigate', label: 'shipbuilder.hull.frigate', status: 'shipbuilder.authoritative' },
+  { id: 'destroyer', label: 'shipbuilder.hull.destroyer', status: 'shipbuilder.visualPreview' },
+  { id: 'cruiser', label: 'shipbuilder.hull.cruiser', status: 'shipbuilder.visualPreview' },
+  { id: 'battleship', label: 'shipbuilder.hull.battleship', status: 'shipbuilder.visualPreview' },
+  { id: 'titan', label: 'shipbuilder.hull.titan', status: 'shipbuilder.visualPreview' },
+  { id: 'doom_star', label: 'shipbuilder.hull.doomStar', status: 'shipbuilder.visualPreview' },
 ]
 
 function candidateFor(gameID: string, hullID: HullID, generation: number): Candidate {
@@ -27,7 +29,7 @@ function candidateFor(gameID: string, hullID: HullID, generation: number): Candi
 }
 
 export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: Translator }) {
-  const [hullID, setHullID] = useState<HullID>('frigate')
+  const [hullID, setHullID] = useState<HullID>('scout')
   const [generation, setGeneration] = useState(1)
   const [recent, setRecent] = useState<Candidate[]>([])
   const [kept, setKept] = useState<Candidate | null>(null)
@@ -65,7 +67,7 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
       <Card className="shipbuilder-size-card">
         <div className="card-heading">
           <div><p className="eyebrow">{t('shipbuilder.stepSize')}</p><h2>{t('shipbuilder.size')}</h2></div>
-          <span className="badge">{currentHull.authoritative ? t('shipbuilder.authoritative') : t('shipbuilder.visualPreview')}</span>
+          <span className="badge">{t(currentHull.status)}</span>
         </div>
         <div className="shipbuilder-hull-grid" role="list" aria-label={t('shipbuilder.size')}>
           {hulls.map((hull) => (
@@ -77,7 +79,7 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
               onClick={() => selectHull(hull.id)}
             >
               <ProceduralShipGlyph seed={`shipbuilder:hull:${hull.id}`} hullId={hull.id} className="shipbuilder-hull-thumb" />
-              <span><strong>{t(hull.label)}</strong><small>{hull.authoritative ? t('shipbuilder.authoritative') : t('shipbuilder.visualPreview')}</small></span>
+              <span><strong>{t(hull.label)}</strong><small>{t(hull.status)}</small></span>
             </button>
           ))}
         </div>

@@ -110,3 +110,12 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Added an in-game Shipbuilder Gate-1 prototype: hull-size choice, repeated deterministic Generate, recent-history selection, Keep design and read-only authoritative equipment handoff.
 - Frigate is labelled current ruleset; Destroyer/Cruiser/Battleship/Titan are visual previews only until Slice 17 implements authoritative breadth.
 - Desktop 995x605 and mobile 360x646 browser QA passed; mobile has no horizontal overflow.
+
+## 2026-09-07 - Slice 15.3 Gate 1 hull scale + concavity grammar
+
+- Extended the visual Shipbuilder range from a small Scout role through Frigate, Destroyer, Cruiser, Battleship, Titan and Doom Star; Scout remains explicitly mapped to Frigate gameplay rules rather than becoming a seventh authoritative hull.
+- Replaced the narrow scalar ship silhouette model with class-specific visual profiles for length, beam, station count, engines and detail density.
+- Added deterministic external concave shoulder/notch/shoulder bays and transparent SVG-mask negative-space cutouts; complexity increases with hull scale.
+- Browser-measured representative body bounds increase monotonically from Scout 57x18 to Doom Star 114x82 SVG units.
+- Desktop 995x605 and mobile 360x646 Shipbuilder QA pass without horizontal overflow; Doom Star generations change the actual polygon path while retaining class constraints.
+- Fresh in-memory `game-1` was preserved; no server restart and no push performed.

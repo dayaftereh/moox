@@ -1571,6 +1571,18 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   vector-effect: non-scaling-stroke;
 }
 .procedural-ship-hardpoints circle { fill: var(--ship-vector-highlight); }
+.procedural-ship-cutouts ellipse {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: .9;
+  stroke-opacity: .68;
+  vector-effect: non-scaling-stroke;
+}
+.procedural-ship-glyph[data-hull-id="scout"] .procedural-ship-body { fill-opacity: .26; }
+.procedural-ship-glyph[data-hull-id="frigate"] .procedural-ship-body { fill-opacity: .32; }
+.procedural-ship-glyph[data-hull-id="battleship"] .procedural-ship-body,
+.procedural-ship-glyph[data-hull-id="titan"] .procedural-ship-body { fill-opacity: .44; }
+.procedural-ship-glyph[data-hull-id="doom_star"] .procedural-ship-body { fill-opacity: .5; stroke-width: 1.5; }
 .procedural-ship-engines path {
   fill: none;
   stroke: var(--ship-vector-engine);
@@ -2680,7 +2692,7 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 /* Slice 15.3 Gate-1 Shipbuilder visual-generation prototype */
 .main-menu-vector-glyph { width: 26px; height: 18px; color: var(--ship-vector); }
 .shipbuilder-size-card { margin-bottom: 12px; }
-.shipbuilder-hull-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.shipbuilder-hull-grid { display: grid; grid-template-columns: repeat(7, minmax(88px, 1fr)); gap: 8px; margin-top: 12px; }
 .shipbuilder-hull-option { display: grid; min-width: 0; min-height: 108px; align-content: center; gap: 6px; padding: 8px; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); background: rgba(7, 15, 26, .72); color: var(--muted-strong); text-align: left; }
 .shipbuilder-hull-option:hover, .shipbuilder-hull-option:focus-visible { border-color: var(--border); background: var(--surface-soft); }
 .shipbuilder-hull-option.selected { border-color: var(--accent); background: var(--accent-soft); color: var(--text); }
