@@ -148,3 +148,7 @@ Mobile acceptance at **360x646**:
 ## Hull-scale / concavity update (2026-09-07)
 
 The visual size selector now extends from a small **Scout role** through Frigate, Destroyer, Cruiser, Battleship, Titan and Doom Star. Scout is explicitly a visual role using Frigate rules, not a new authoritative hull. Larger classes use progressively larger perceptual envelopes, more forced concave side bays and, from Cruiser upward, transparent negative-space cutouts. Full measured profile/QA evidence is in docs/research/SLICE_15_3_HULL_SCALE_CONCAVITY_GRAMMAR_2026-09-07.md.
+
+## Directed-evolution v2 update (2026-09-07)
+
+The Shipbuilder now shows six candidates at once. Selecting a candidate makes its resolved Visual Genome v2 the parent for the next six deterministic mutations. A Shape Mutation slider controls mutation strength, New random family resets the root population, and Keep design pins a favorite independently. The geometry adds sharp Wedge/Spike/Pod primitives on top of the accepted class-scale/concavity grammar. Reference/provenance and implementation differences are documented in docs/research/SLICE_15_3_PROCEDURO_DIRECTED_EVOLUTION_REFERENCE_2026-09-07.md.

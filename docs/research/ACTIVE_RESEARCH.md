@@ -27,6 +27,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Vector/procedural graphics direction: `docs/research/SLICE_15_3_VECTOR_PROCEDURAL_GRAPHICS_DIRECTION_2026-09-07.md` - SVG-first icons/overlays plus deterministic procedural 2D ship geometry with a future 3D path.
 - Shipbuilder generation UX: docs/research/SLICE_15_3_SHIPBUILDER_GENERATION_UX_2026-09-07.md - choose hull size -> repeatedly Generate deterministic 2D concepts -> Keep favorite -> later authoritative equipment handoff in Slice 17.
 - Hull-scale/concavity grammar: docs/research/SLICE_15_3_HULL_SCALE_CONCAVITY_GRAMMAR_2026-09-07.md - Scout-to-Doom-Star perceptual scale progression, concave external bays and transparent negative-space cutouts.
+- Directed-evolution / Proceduro reference: docs/research/SLICE_15_3_PROCEDURO_DIRECTED_EVOLUTION_REFERENCE_2026-09-07.md - six-candidate deterministic visual-genome evolution with sharp Wedge/Spike/Pod primitives and documented Unlicense provenance.
 - Accepted Tactical roadmap amendment: `docs/research/SLICE_15_5_INTERACTIVE_TACTICAL_COMBAT_PRODUCT_DIRECTION_2026-09-04.md` - interactive Tactical is a dedicated Slice 15.5; the former final integration slice moves to 15.6.
 
 

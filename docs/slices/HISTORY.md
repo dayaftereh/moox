@@ -119,3 +119,11 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Browser-measured representative body bounds increase monotonically from Scout 57x18 to Doom Star 114x82 SVG units.
 - Desktop 995x605 and mobile 360x646 Shipbuilder QA pass without horizontal overflow; Doom Star generations change the actual polygon path while retaining class constraints.
 - Fresh in-memory `game-1` was preserved; no server restart and no push performed.
+
+## 2026-09-07 - Slice 15.3 Gate 1 directed evolution + primitive genome
+
+- Studied proceduro/spaceship-2d as an algorithmic/UI reference and documented its directed-evolution workflow, tetrahedron-based mirrored geometry, WebGL sprite outputs and Unlicense provenance.
+- Implemented an original MOOX Visual Genome v2 in TypeScript/SVG rather than vendoring the reference implementation.
+- Added deterministic Wedge/Spike/Pod primitive genes, parent-based mutation, primitive add/remove mutation and retained class-scale/concavity/cutout rules.
+- Replaced the one-at-a-time Shipbuilder roll with six candidates, parent selection, six mutated descendants, Shape Mutation control, New random family and independent Keep design.
+- Desktop 995x605 and mobile 360x646 browser QA pass with six candidates and no horizontal overflow.

@@ -50,6 +50,7 @@ Defer:
 - [x] Capture vector-first SVG direction and deterministic procedural-ship proof-of-concept contract.
 - [x] Capture and browser-prototype the Shipbuilder generate/keep/equip product flow against a fresh real New Game; broader authoritative hull/component/weapon breadth remains Slice 17.
 - [x] Add Scout-to-Doom-Star perceptual size scaling plus deterministic concave/negative-space silhouette grammar; Scout remains a Frigate-rules visual role.
+- [x] Add a directed-evolution six-candidate Shipbuilder population, deterministic Visual Genome v2 mutation, and sharp primitive geometry inspired by the documented Proceduro reference without vendoring its implementation.
 - [ ] Produce multiple styleboard/art-direction candidates for the OX+icon brand, shell, 2D Galaxy, star-system dialog, Colony Detail, planet, portrait, Fleet/ship and eight-category Research imagery.
 - [ ] Define target resolutions/aspect ratios and responsive/cropping requirements.
 - [ ] Define provenance/license rules for generated, commissioned, extracted/reference and third-party assets.

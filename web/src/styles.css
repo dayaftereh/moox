@@ -2737,3 +2737,119 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .shipbuilder-recent-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .shipbuilder-side-stack { grid-template-columns: 1fr; }
 }
+/* Slice 15.3 Gate-1 directed evolution + sharp primitive ship grammar. */
+.procedural-ship-primitives path {
+  fill: currentColor;
+  fill-opacity: .28;
+  stroke: currentColor;
+  stroke-width: .85;
+  stroke-opacity: .82;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.procedural-ship-glyph[data-hull-id="scout"] .procedural-ship-primitives path { fill-opacity: .2; }
+.procedural-ship-glyph[data-hull-id="doom_star"] .procedural-ship-primitives path { fill-opacity: .38; }
+
+.shipbuilder-evolution-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(260px, .68fr);
+  gap: 12px;
+  align-items: start;
+}
+.shipbuilder-evolution-card { min-width: 0; }
+.shipbuilder-evolution-heading > div { min-width: 0; }
+.shipbuilder-evolution-heading small { display: block; margin-top: 3px; max-width: 760px; line-height: 1.35; }
+.shipbuilder-evolution-controls {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto;
+  gap: 10px;
+  align-items: end;
+  margin: 12px 0;
+  padding: 9px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: rgba(6, 14, 24, .66);
+}
+.shipbuilder-mutation-control { display: grid; gap: 6px; }
+.shipbuilder-mutation-control > span { display: flex; justify-content: space-between; gap: 10px; }
+.shipbuilder-mutation-control strong { color: var(--text); font-size: .66rem; }
+.shipbuilder-mutation-control small { color: var(--muted-strong); font-size: .62rem; font-variant-numeric: tabular-nums; }
+.shipbuilder-mutation-control input { width: 100%; accent-color: var(--accent); }
+.shipbuilder-candidate-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+}
+.shipbuilder-candidate {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(180deg, rgba(10, 22, 36, .92), rgba(4, 10, 17, .96));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+.shipbuilder-candidate:hover { border-color: rgba(88, 153, 230, .72); }
+.shipbuilder-candidate-visual {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 172px;
+  place-items: center;
+  padding: 8px;
+  border: 0;
+  border-bottom: 1px solid var(--border-soft);
+  background: radial-gradient(circle at 50% 50%, rgba(54, 121, 191, .14), transparent 47%);
+  color: var(--ship-vector);
+  cursor: pointer;
+}
+.shipbuilder-candidate-visual:hover,
+.shipbuilder-candidate-visual:focus-visible { background: radial-gradient(circle at 50% 50%, rgba(71, 146, 224, .23), transparent 49%); outline: none; }
+.shipbuilder-candidate-ship { width: 96%; height: 145px; }
+.shipbuilder-candidate-number {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: rgba(6, 15, 26, .9);
+  color: var(--text);
+  font-size: .6rem;
+  font-weight: 900;
+}
+.shipbuilder-candidate-meta { display: grid; gap: 7px; padding: 7px; }
+.shipbuilder-candidate-meta > span { display: flex; min-width: 0; align-items: baseline; justify-content: space-between; gap: 7px; }
+.shipbuilder-candidate-meta strong { overflow: hidden; color: var(--text); font-size: .67rem; text-overflow: ellipsis; white-space: nowrap; }
+.shipbuilder-candidate-meta small { color: var(--muted); font-size: .52rem; white-space: nowrap; }
+.shipbuilder-candidate-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 5px; }
+.shipbuilder-candidate-actions button { min-width: 0; min-height: 28px; padding: 5px 7px; font-size: .55rem; }
+.shipbuilder-evolution-note { margin: 10px 1px 0; font-size: .58rem; line-height: 1.4; }
+.shipbuilder-side-stack.evolution { grid-template-columns: 1fr; }
+.shipbuilder-parent-card > small,
+.shipbuilder-kept-card > small { display: block; margin-top: 4px; }
+
+@media (max-width: 980px) {
+  .shipbuilder-evolution-layout { grid-template-columns: 1fr; }
+  .shipbuilder-side-stack.evolution { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 700px) {
+  .shipbuilder-candidate-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .shipbuilder-candidate-visual { min-height: 142px; }
+  .shipbuilder-candidate-ship { height: 118px; }
+  .shipbuilder-side-stack.evolution { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 430px) {
+  .shipbuilder-evolution-controls { grid-template-columns: 1fr; }
+  .shipbuilder-evolution-controls > button { width: 100%; }
+  .shipbuilder-candidate-grid { gap: 6px; }
+  .shipbuilder-candidate-visual { min-height: 118px; padding: 5px; }
+  .shipbuilder-candidate-ship { height: 96px; }
+  .shipbuilder-candidate-meta { padding: 5px; }
+  .shipbuilder-candidate-meta > span { display: grid; gap: 1px; }
+  .shipbuilder-candidate-actions { grid-template-columns: 1fr; }
+}

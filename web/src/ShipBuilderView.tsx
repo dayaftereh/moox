@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import type { PlayerSnapshot } from './api'
 import { ProceduralShipGlyph } from './components/ProceduralShipGlyph'
 import { Card, PageHeader } from './components/ui'
 import type { TranslationKey, TranslationVars } from './i18n'
+import { createShipGenome, mutateShipGenome, type ShipVisualGenome } from './shipVisualGenome'
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
 
@@ -11,8 +12,12 @@ type HullID = 'scout' | 'frigate' | 'destroyer' | 'cruiser' | 'battleship' | 'ti
 type Candidate = {
   hullID: HullID
   generation: number
+  index: number
   seed: string
+  genome: ShipVisualGenome
 }
+
+const populationSize = 6
 
 const hulls: Array<{ id: HullID; label: TranslationKey; status: TranslationKey }> = [
   { id: 'scout', label: 'shipbuilder.hull.scout', status: 'shipbuilder.scoutRole' },
@@ -24,40 +29,51 @@ const hulls: Array<{ id: HullID; label: TranslationKey; status: TranslationKey }
   { id: 'doom_star', label: 'shipbuilder.hull.doomStar', status: 'shipbuilder.visualPreview' },
 ]
 
-function candidateFor(gameID: string, hullID: HullID, generation: number): Candidate {
-  return { hullID, generation, seed: `shipbuilder:${gameID}:${hullID}:${generation}` }
+function hullLabel(t: Translator, hullID: HullID): string {
+  return t(hulls.find((hull) => hull.id === hullID)?.label ?? 'shipbuilder.hull.frigate')
 }
 
 export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: Translator }) {
   const [hullID, setHullID] = useState<HullID>('scout')
   const [generation, setGeneration] = useState(1)
-  const [recent, setRecent] = useState<Candidate[]>([])
+  const [familyRound, setFamilyRound] = useState(1)
+  const [mutation, setMutation] = useState(.32)
+  const [parent, setParent] = useState<Candidate | null>(null)
   const [kept, setKept] = useState<Candidate | null>(null)
-  const current = candidateFor(snapshot.view.game_id, hullID, generation)
   const currentHull = hulls.find((hull) => hull.id === hullID) ?? hulls[0]
   const designs = snapshot.decision?.strategic.ship_designs ?? []
   const baseline = designs[0]
   const baselineWeapons = baseline?.spec.weapons ?? []
 
-  function remember(candidate: Candidate) {
-    setRecent((items) => [candidate, ...items.filter((item) => item.seed !== candidate.seed)].slice(0, 6))
-  }
-
-  function generate() {
-    remember(current)
-    setGeneration((value) => value + 1)
-  }
+  const candidates = useMemo<Candidate[]>(() => {
+    return Array.from({ length: populationSize }, (_, index) => {
+      const seed = parent && parent.hullID === hullID
+        ? `shipbuilder:${snapshot.view.game_id}:${hullID}:evolve:${parent.seed}:g${generation}:c${index + 1}`
+        : `shipbuilder:${snapshot.view.game_id}:${hullID}:family:${familyRound}:c${index + 1}`
+      const genome = parent && parent.hullID === hullID
+        ? mutateShipGenome(parent.genome, seed, mutation)
+        : createShipGenome(seed, hullID)
+      return { hullID, generation, index, seed, genome }
+    })
+  }, [familyRound, generation, hullID, mutation, parent, snapshot.view.game_id])
 
   function selectHull(nextHullID: HullID) {
     if (nextHullID === hullID) return
-    remember(current)
     setHullID(nextHullID)
+    setParent(null)
     setGeneration(1)
+    setFamilyRound((value) => value + 1)
   }
 
-  function selectRecent(candidate: Candidate) {
-    setHullID(candidate.hullID)
-    setGeneration(candidate.generation)
+  function evolveFrom(candidate: Candidate) {
+    setParent(candidate)
+    setGeneration((value) => value + 1)
+  }
+
+  function freshFamily() {
+    setParent(null)
+    setGeneration(1)
+    setFamilyRound((value) => value + 1)
   }
 
   return (
@@ -85,47 +101,88 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
         </div>
       </Card>
 
-      <div className="shipbuilder-layout">
-        <Card className="shipbuilder-generator-card">
-          <div className="card-heading">
-            <div><p className="eyebrow">{t('shipbuilder.stepGenerate')}</p><h2>{t('shipbuilder.candidate')}</h2></div>
+      <div className="shipbuilder-evolution-layout">
+        <Card className="shipbuilder-evolution-card">
+          <div className="card-heading shipbuilder-evolution-heading">
+            <div>
+              <p className="eyebrow">{t('shipbuilder.stepGenerate')}</p>
+              <h2>{parent ? t('shipbuilder.evolutionChildren') : t('shipbuilder.evolutionPopulation')}</h2>
+              <small className="muted">
+                {parent
+                  ? t('shipbuilder.parentHint', { hull: hullLabel(t, parent.hullID), generation: parent.generation, candidate: parent.index + 1 })
+                  : t('shipbuilder.populationHint')}
+              </small>
+            </div>
             <span className="badge">{t('shipbuilder.generation', { count: generation })}</span>
           </div>
-          <div className="shipbuilder-stage">
-            <ProceduralShipGlyph seed={current.seed} hullId={current.hullID} className="shipbuilder-main-ship" label={`${t('shipbuilder.candidate')} ${generation}`} />
-          </div>
-          <div className="shipbuilder-actions">
-            <button type="button" className="button-primary" onClick={generate}>{t('shipbuilder.generate')}</button>
-            <button type="button" className="button-secondary" onClick={() => setKept(current)}>{t('shipbuilder.keep')}</button>
-          </div>
-          <p className="muted shipbuilder-seed">{t('shipbuilder.seed')}: <code>{current.seed}</code></p>
 
-          {recent.length > 0 && (
-            <div className="shipbuilder-recent">
-              <p className="eyebrow">{t('shipbuilder.recent')}</p>
-              <div className="shipbuilder-recent-grid">
-                {recent.map((candidate) => (
-                  <button type="button" key={candidate.seed} onClick={() => selectRecent(candidate)} className="shipbuilder-recent-item" title={candidate.seed}>
-                    <ProceduralShipGlyph seed={candidate.seed} hullId={candidate.hullID} className="shipbuilder-recent-ship" />
-                    <small>{t(hulls.find((hull) => hull.id === candidate.hullID)?.label ?? 'shipbuilder.hull.frigate')} · #{candidate.generation}</small>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+          <div className="shipbuilder-evolution-controls">
+            <label className="shipbuilder-mutation-control">
+              <span><strong>{t('shipbuilder.shapeMutation')}</strong><small>{Math.round(mutation * 100)}%</small></span>
+              <input
+                type="range"
+                min="0.05"
+                max="0.9"
+                step="0.05"
+                value={mutation}
+                onChange={(event) => setMutation(Number(event.target.value))}
+              />
+            </label>
+            <button type="button" className="button-secondary" onClick={freshFamily}>{t('shipbuilder.freshFamily')}</button>
+          </div>
+
+          <div className="shipbuilder-candidate-grid">
+            {candidates.map((candidate) => (
+              <article className="shipbuilder-candidate" key={candidate.seed} data-candidate-index={candidate.index + 1}>
+                <button type="button" className="shipbuilder-candidate-visual" onClick={() => evolveFrom(candidate)} title={t('shipbuilder.evolveTitle')}>
+                  <ProceduralShipGlyph
+                    seed={candidate.seed}
+                    hullId={candidate.hullID}
+                    genome={candidate.genome}
+                    className="shipbuilder-candidate-ship"
+                    label={`${hullLabel(t, candidate.hullID)} ${candidate.index + 1}`}
+                  />
+                  <span className="shipbuilder-candidate-number">{candidate.index + 1}</span>
+                </button>
+                <div className="shipbuilder-candidate-meta">
+                  <span><strong>{hullLabel(t, candidate.hullID)}</strong><small>{candidate.genome.primitives.length} {t('shipbuilder.primitives')}</small></span>
+                  <div className="shipbuilder-candidate-actions">
+                    <button type="button" className="button-primary" onClick={() => evolveFrom(candidate)}>{t('shipbuilder.evolve')}</button>
+                    <button type="button" className="button-secondary" onClick={() => setKept(candidate)}>{t('shipbuilder.keep')}</button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <p className="muted shipbuilder-evolution-note">{t('shipbuilder.evolutionNote')}</p>
         </Card>
 
-        <div className="shipbuilder-side-stack">
+        <div className="shipbuilder-side-stack evolution">
+          <Card className="shipbuilder-parent-card">
+            <p className="eyebrow">{t('shipbuilder.evolutionParent')}</p>
+            <h2>{parent ? t('shipbuilder.selectedParent') : t('shipbuilder.noParent')}</h2>
+            {parent ? (
+              <>
+                <div className="shipbuilder-kept-stage">
+                  <ProceduralShipGlyph seed={parent.seed} hullId={parent.hullID} genome={parent.genome} className="shipbuilder-kept-ship" />
+                </div>
+                <strong>{hullLabel(t, parent.hullID)} · #{parent.index + 1}</strong>
+                <small className="muted">{t('shipbuilder.generation', { count: parent.generation })} · {parent.genome.primitives.length} {t('shipbuilder.primitives')}</small>
+              </>
+            ) : <p className="muted">{t('shipbuilder.noParentHint')}</p>}
+          </Card>
+
           <Card className="shipbuilder-kept-card">
             <p className="eyebrow">{t('shipbuilder.stepKeep')}</p>
             <h2>{t('shipbuilder.kept')}</h2>
             {kept ? (
               <>
-                <div className="shipbuilder-kept-stage"><ProceduralShipGlyph seed={kept.seed} hullId={kept.hullID} className="shipbuilder-kept-ship" /></div>
-                <strong>{t(hulls.find((hull) => hull.id === kept.hullID)?.label ?? 'shipbuilder.hull.frigate')}</strong>
-                <small className="muted">{t('shipbuilder.generation', { count: kept.generation })}</small>
+                <div className="shipbuilder-kept-stage"><ProceduralShipGlyph seed={kept.seed} hullId={kept.hullID} genome={kept.genome} className="shipbuilder-kept-ship" /></div>
+                <strong>{hullLabel(t, kept.hullID)} · #{kept.index + 1}</strong>
+                <small className="muted">{t('shipbuilder.generation', { count: kept.generation })} · genome v{kept.genome.version}</small>
               </>
-            ) : <p className="muted">{t('shipbuilder.keepHint')}</p>}
+            ) : <p className="muted">{t('shipbuilder.keepHintEvolution')}</p>}
           </Card>
 
           <Card className="shipbuilder-equipment-card">
@@ -141,7 +198,7 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
                   <div><dt>{t('shipbuilder.armor')}</dt><dd>{baseline.spec.armor_id}</dd></div>
                   <div><dt>{t('shipbuilder.shield')}</dt><dd>{baseline.spec.shield_id ?? t('common.none')}</dd></div>
                   <div><dt>{t('shipbuilder.fuel')}</dt><dd>{baseline.spec.fuel_cell_id}</dd></div>
-                  <div><dt>{t('shipbuilder.weapons')}</dt><dd>{baselineWeapons.length > 0 ? baselineWeapons.map((mount) => `${mount.count}× ${mount.weapon_id}`).join(', ') : t('common.none')}</dd></div>
+                  <div><dt>{t('shipbuilder.weapons')}</dt><dd>{baselineWeapons.length > 0 ? baselineWeapons.map((mount) => `${mount.count}x ${mount.weapon_id}`).join(', ') : t('common.none')}</dd></div>
                 </dl>
               </>
             ) : <p className="muted">{t('shipbuilder.noBaseline')}</p>}
