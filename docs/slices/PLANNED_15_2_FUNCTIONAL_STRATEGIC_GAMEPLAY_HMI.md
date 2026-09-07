@@ -1,6 +1,6 @@
 # Planned slice 15.2 - Functional strategic gameplay HMI
 
-Status: **open; Gates 1-2 complete, Gate 3 implementation pending**.
+Status: **closed; Gates 1-4 complete (independent Gate-4 QA passed 2026-09-07)**.
 
 Queue position: **15.2 of Slice-15 family**.
 

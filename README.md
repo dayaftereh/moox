@@ -21,7 +21,7 @@ The short identifier `moox` is reserved for internal technical names where a com
 
 ## Project status
 
-Current snapshot: **2026-09-04**.
+Current snapshot: **2026-09-07**.
 
 Master of Orion X is now actively in deterministic headless runtime development. The repository contains the pure-Go MOO2 1.31 analyzer (`moox-analyze 0.22.0`), normalized runtime datasets, authoritative Core/Game/Session infrastructure and a growing set of original-evidence-backed strategic rules.
 
@@ -30,7 +30,7 @@ The deterministic runtime now provides its **first complete supported headless m
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slices **01-14 and 15.1 are closed**. Slice 15 is the browser-playability parent epic. **Slice 15.2 is open; Gates 1-3 are complete and Gate 4 independent QA/closure is pending.** Slices 15.3-15.6 and 16-17 remain prepared; **Slice 20 Espionage/Intelligence is now reserved/prepared** by product decision.
+**Slice state:** Slices **01-14 and 15.1-15.2 are closed**. Slice 15 is the browser-playability parent epic. **Slice 15.3 is open at Gate 1 (art/asset audit and direction exploration).** Slices 15.4-15.6 and 16-17 remain prepared; **Slice 20 Espionage/Intelligence is now reserved/prepared** by product decision.
 
 The Slice-15 browser roadmap now has six parts: **15.1 shell/navigation/i18n -> 15.2 strategic gameplay HMI -> 15.3 visual identity/assets -> 15.4 rich decisions/persistence UX -> 15.5 interactive 2D Tactical Combat -> 15.6 final browser vertical slice/QA**. Tactical Combat is deliberately its own gameplay slice because the current Slice-07 baseline supports deterministic fixed-position Laser combat but not player-controlled tactical movement/turning.
 
@@ -46,8 +46,8 @@ The Slice-15 browser roadmap now has six parts: **15.1 shell/navigation/i18n -> 
 | 13 | **closed** | Built-in strategic AI baseline |
 | 14 | **closed** | Live GameSession save/resume baseline |
 | 15.1 | **closed; Gates 1-4 complete** | UX/navigation/design-system/i18n shell |
-| 15.2 | **open; Gates 1-3 complete, Gate 4 pending** | Functional strategic gameplay HMI |
-| 15.3 | prepared | MOOX visual identity / graphics / asset pipeline |
+| 15.2 | **closed; Gates 1-4 complete** | Functional strategic gameplay HMI |
+| 15.3 | **open · Gate 1** | MOOX visual identity / graphics / asset pipeline |
 | 15.4 | prepared | Rich decisions / Encounter transitions / persistence UX |
 | 15.5 | prepared | Interactive 2D Tactical Combat |
 | 15.6 | prepared | Full browser vertical slice / polish / complete-game QA |

@@ -6,14 +6,14 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 
 - Branch: `main`.
 - Open slice marker: `docs/slices/_OPEN_15_2_FUNCTIONAL_STRATEGIC_GAMEPLAY_HMI_2026-09-04.md`.
-- Active implementation slice: **Slice 15.2 Gates 1-3 complete; Gate 4 remediation G4-A/G4-B and G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection complete; G4-B2-P construction workspace complete; G4-C independent QA/closure remains open**.
+- Active implementation slice: **Slice 15.3 Gate 1 - art/asset audit and direction exploration**. Slice 15.2 is closed after independent Gate-4 QA.
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
 - Economy ruleset schema: **8**.
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
-- Slices **13-14 and 15.1 are closed**; **15.2 is open with Gates 1-3 complete and Gate 4 pending**; 15.3-15.6, 16-17 and reserved Slice 20 remain prepared.
+- Slices **13-14 and 15.1-15.2 are closed**; **15.3 is open at Gate 1**; 15.4-15.6, 16-17 and reserved Slice 20 remain prepared.
 - Current objective: **Serve B2-Y for direct review: Planet `?` popover now closes via explicit `×` or click/tap outside. G4-C remains open.**
 - Slice-15.1 closure evidence: `docs/research/SLICE_15_1_MOBILE_FIRST_UX_GATE4_2026-09-04.md`.
 - Slice-15.2 Gate-1 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE1_2026-09-04.md`.
@@ -22,12 +22,14 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-15.2 Gate-4 blocker remediation: `docs/research/SLICE_15_2_GATE4_BLOCKER_REMEDIATION_2026-09-05.md`.
 - Prepared future Espionage mechanics: `docs/slices/PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md`.
 - Accepted downstream 15.2/15.3 strategic product direction: `docs/research/SLICE_15_2_STRATEGIC_HMI_PRODUCT_DIRECTION_2026-09-04.md` - 2D Galaxy primary view, orbital star-system dialog, legal Colonize confirmation, Colony table + full Colony Detail/build queue, location-grouped Fleets, eight-category Research, first-class Diplomacy and planned Espionage, plus retained OX lettermark / future spacecraft-space icon.
+
+- Active Slice 15.3 Gate-1 audit: docs/research/SLICE_15_3_GATE1_ART_ASSET_AUDIT_2026-09-07.md - initial web asset inventory, catalog starting point and visual/pipeline questions.
 - Accepted Tactical roadmap amendment: `docs/research/SLICE_15_5_INTERACTIVE_TACTICAL_COMBAT_PRODUCT_DIRECTION_2026-09-04.md` - interactive Tactical is a dedicated Slice 15.5; the former final integration slice moves to 15.6.
 
 
 ## Post-Slice-12 fidelity/depth audit - complete
 
-The milestone re-audit identified independent playability as the main post-lifecycle bottleneck. Slices 13 Built-in AI and 14 live GameSession persistence are closed. Slice 15 is now a six-part browser-playability family: 15.1 UX/navigation/design system, 15.2 functional strategic HMI, 15.3 MOOX visual identity/assets, 15.4 rich gameplay decisions/persistence UX, **15.5 interactive 2D Tactical Combat**, 15.6 final browser vertical slice. Slice 16 New Game/preset-race breadth and Slice 17 military design breadth remain later independent work. Slice 15.1 Gates 1-4 are complete and the slice is closed.
+The milestone re-audit identified independent playability as the main post-lifecycle bottleneck. Slices 13 Built-in AI and 14 live GameSession persistence are closed. Slice 15 is now a six-part browser-playability family: 15.1 UX/navigation/design system, 15.2 functional strategic HMI, 15.3 MOOX visual identity/assets, 15.4 rich gameplay decisions/persistence UX, **15.5 interactive 2D Tactical Combat**, 15.6 final browser vertical slice. Slice 16 New Game/preset-race breadth and Slice 17 military design breadth remain later independent work. Slices 15.1 and 15.2 are closed with Gates 1-4 complete. Slice 15.3 Gate 1 art/asset audit and direction exploration is active.
 
 Permanent audit: `docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md`.
 ## Closed Slice 12 - Empire elimination / first headless victory loop

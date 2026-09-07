@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-B2-R Colony density cleanup complete; G4-B2-S Planet/Colony profile split complete; G4-B2-T signed growth/resource cleanup complete; G4-B2-U build-management density cleanup complete; G4-B2-V Colony live breakdown/progress complete; G4-B2-W direct metric disclosures complete; G4-B2-X unified Information card complete; G4-B2-Y dismissible Planet Info complete; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-B2-R Colony density cleanup complete; G4-B2-S Planet/Colony profile split complete; G4-B2-T signed growth/resource cleanup complete; G4-B2-U build-management density cleanup complete; G4-B2-V Colony live breakdown/progress complete; G4-B2-W direct metric disclosures complete; G4-B2-X unified Information card complete; G4-B2-Y dismissible Planet Info complete; G4-C independent QA/closure complete**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -420,7 +420,7 @@ Status: **complete; direct user review pending**.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
 
-Status: **pending**.
+Status: **complete (2026-09-07)**.
 
 - Run the canonical strategic workflow on desktop and mobile form factors.
 - Verify no browser interaction bypasses server legality/authority.
@@ -439,3 +439,13 @@ Status: **pending**.
   - star selection still opens the existing system-detail path, confirming the G4-B dialog conversion can remain a separate block.
 
 No push is part of this remediation unless explicitly requested.
+
+## G4-C closure evidence (2026-09-07)
+
+- Canonical demo strategic Galaxy route smoke-tested at 995x605 desktop and 360x646 mobile browser form factors against the live preview with connected stream, authoritative resource strip, Galaxy/Colonies/Fleets/Diplomacy/Espionage navigation and persistent Done action present.
+- go test ./... -count=1 - **PASS**.
+- go vet ./... - **PASS**.
+-
+pm run build in web/ - **PASS** (index-DemeunYN.js).
+- git diff --check - **PASS**.
+- Slice 15.2 is closed; no push performed.

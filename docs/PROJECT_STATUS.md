@@ -38,14 +38,14 @@ Slices 01-14 are closed. Slice 14 Live GameSession save/resume passed independen
 8. Slice 15 - **prepared parent epic** - playable browser strategic HMI, decomposed into:
    - 15.1 **closed; Gates 1-4 complete** - mobile-first UX architecture / navigation / bilingual design-system shell.
    - 15.2 **open; Gates 1-3 complete, Gate 4 pending** - functional strategic gameplay HMI; Gate 2 freezes DecisionView transport, pure Planning previews, persistent gas-giant/asteroid/star metadata with Outpost targets, a real unbounded-UX construction queue, Colony Population transfer/table behavior, live build/research ETA and sticky strategic resources.
-   - 15.3 **prepared** - MOOX visual identity / graphics / asset pipeline.
+   - 15.3 **open · Gate 1** - MOOX visual identity / graphics / asset pipeline.
    - 15.4 **prepared** - rich gameplay decisions / Encounter transitions / persistence UX.
    - 15.5 **prepared** - interactive 2D Tactical Combat: authoritative movement/legal targets plus mouse/touch battlefield on the Slice-07 combat baseline.
    - 15.6 **prepared** - full browser vertical slice / polish / complete-game QA.
 9. Slice 16 - **prepared** - New Game + preset-race breadth.
 10. Slice 17 - **prepared** - military ship design component/weapon breadth.
 
-Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 15.1 is closed with independent Gate-4 QA complete. The accepted shell is mobile-first, desktop-adaptive, bilingual DE/EN and remains available over the LLO Desktop NetBird interface for review. **Slice 15.2 Gates 1-3 are complete; Gate 4 independent browser QA/closure is the active objective.** Slice 16/17 remain independent breadth work after the browser-playability family. **Slice 20 Espionage/Intelligence is reserved/prepared as a dedicated mechanics slice; 15.2 only reserves its navigation area.**
+Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 15.1 is closed with independent Gate-4 QA complete. The accepted shell is mobile-first, desktop-adaptive, bilingual DE/EN and remains available over the LLO Desktop NetBird interface for review. **Slice 15.2 is closed after independent Gate-4 QA. Slice 15.3 Gate 1 is the active objective.** Slice 16/17 remain independent breadth work after the browser-playability family. **Slice 20 Espionage/Intelligence is reserved/prepared as a dedicated mechanics slice; 15.2 only reserves its navigation area.**
 
 Important recent checkpoints:
 
