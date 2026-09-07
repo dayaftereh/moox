@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { decodeShipVisualGenome, submitMilitaryDesignVisual, type PlayerSnapshot } from './api'
 import { ProceduralShipGlyph } from './components/ProceduralShipGlyph'
+import { GameIcon } from './components/GameIcon'
 import { Card, PageHeader } from './components/ui'
 import type { TranslationKey, TranslationVars } from './i18n'
 import { createRandomShipGenome, createShipGenome, shipHullFootprint, shipHullSpace, type ShipMorphologyID, type ShipStyleID, type ShipVisualGenome } from './shipVisualGenome'
@@ -145,8 +146,8 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
           </div>
 
           <div className="shipbuilder-random-actions">
-            <button type="button" className="button-primary" onClick={reroll}>{t('shipbuilder.generate')}</button>
-            <button type="button" className="button-secondary" disabled={!baseline || saving} onClick={() => void keepCurrentDesign()}>{saving ? t('shipbuilder.saving') : t('shipbuilder.takeDesign')}</button>
+            <button type="button" className="button-primary" onClick={reroll}><GameIcon name="generate" />{t('shipbuilder.generate')}</button>
+            <button type="button" className="button-secondary" disabled={!baseline || saving} onClick={() => void keepCurrentDesign()}><GameIcon name="check" />{saving ? t('shipbuilder.saving') : t('shipbuilder.takeDesign')}</button>
           </div>
           {saveError && <p className="shipbuilder-save-state error">{saveError}</p>}
           {!saveError && kept && savedVisualRevision > 0 && <p className="shipbuilder-save-state">{t('shipbuilder.serverSaved', { revision: savedVisualRevision })}</p>}

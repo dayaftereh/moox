@@ -67,6 +67,10 @@ input, select {
 input:disabled { color: #a8b5c6; background: rgba(9, 19, 33, .6); }
 label { display: grid; gap: 7px; color: var(--muted-strong); font-size: .8rem; font-weight: 700; }
 .button-primary, .button-secondary, .button-ghost, .button-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   min-height: 44px;
   border-radius: var(--radius-sm);
   padding: 10px 14px;
@@ -486,9 +490,8 @@ body.modal-open { overflow: hidden; }
 .population-people { display: flex; min-height: 42px; flex-wrap: wrap; align-content: flex-start; gap: 4px; }
 .population-person { position: relative; display: grid; width: 27px; min-width: 27px; height: 34px; min-height: 34px; place-items: center; padding: 0; border: 1px solid #425d7d; border-radius: 8px; background: #10243d; color: #dce8f8; }
 .population-person:hover, .population-person:focus-visible { border-color: var(--accent); background: #17355d; }
-.population-person-glyph { position: relative; width: 13px; height: 18px; margin-top: 2px; }
-.population-person-glyph::before { content: ''; position: absolute; left: 4px; top: 0; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-.population-person-glyph::after { content: ''; position: absolute; left: 2px; bottom: 0; width: 10px; height: 10px; border-radius: 6px 6px 3px 3px; background: currentColor; }
+.population-person-glyph { display: grid; width: 18px; height: 18px; margin-top: 1px; place-items: center; }
+.population-person-glyph .game-icon { width: 18px; height: 18px; }
 .population-job-farmer .population-person { color: #b9df9c; }
 .population-job-worker .population-person { color: #e5c08d; }
 .population-job-scientist .population-person { color: #9ec8ff; }
@@ -3088,3 +3091,12 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 .population-empty .game-icon { width: 18px; height: 18px; opacity: .28; }
 .colony-planet-info summary .game-icon { width: 14px; height: 14px; }
 .colony-planet-info-close .game-icon { width: 13px; height: 13px; margin: auto; }
+
+.button-primary > .game-icon,
+.button-secondary > .game-icon,
+.button-ghost > .game-icon,
+.button-danger > .game-icon {
+  width: 15px;
+  height: 15px;
+}
+.button-compact > .game-icon { width: 13px; height: 13px; }

@@ -262,7 +262,7 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
           disabled={!onEndTurn || endTurnDisabled}
           onClick={onEndTurn}
         >
-          {endTurnLabel ?? t('planning.endTurn')}
+          <GameIcon name="check" />{endTurnLabel ?? t('planning.endTurn')}
         </button>
       </div>
     </div>

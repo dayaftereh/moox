@@ -543,7 +543,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
           <div className="system-dialog-footer-actions">
             {fleets.length > 0 && (
               <button type="button" className="button-secondary system-fleets-button" onClick={openFleetDialog}>
-                {t('system.fleetsShips')} <span className="badge">{fleetUnitCount}</span>
+                <GameIcon name="fleets" />{t('system.fleetsShips')} <span className="badge">{fleetUnitCount}</span>
               </button>
             )}
             {selectedBody && colonizeChoices.map((choice) => (
@@ -556,7 +556,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                   onPlanOrder({ key: 'fleet:' + choice.fleet_id, kind: 'empire.colonize_planet', payload: { fleet_id: choice.fleet_id, planet_id: choice.planet_id } })
                 }}
               >
-                {t('system.colonize')}
+                <GameIcon name="flag" />{t('system.colonize')}
               </button>
             ))}
             {selectedBody && outpostChoices.map((choice) => (
@@ -569,7 +569,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                   onPlanOrder({ key: 'fleet:' + choice.fleet_id, kind: 'fleet.deploy_outpost', payload: { fleet_id: choice.fleet_id, body_id: choice.body_id } })
                 }}
               >
-                {t('system.buildOutpost')}
+                <GameIcon name="outpost" />{t('system.buildOutpost')}
               </button>
             ))}
             <button type="button" className="button-secondary system-dialog-close" onClick={onClose}>{t('common.close')}</button>
@@ -584,7 +584,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
               <header className="system-fleet-dialog-header">
                 <div>
                   <p className="eyebrow">{system.name}</p>
-                  <h3 id={'system-fleet-dialog-title-' + system.id}>{t('system.fleetsShips')}</h3>
+                  <h3 id={'system-fleet-dialog-title-' + system.id}><GameIcon name="fleets" />{t('system.fleetsShips')}</h3>
                 </div>
                 <button type="button" className="button-ghost" aria-label={t('common.close')} onClick={() => setFleetDialogOpen(false)}>×</button>
               </header>
@@ -778,7 +778,7 @@ export function StrategicColoniesView({ snapshot, preview, draftOrders, selected
                     <td className="numeric-cell">{colony.adjusted_economy.production.toFixed(1)}</td>
                     <td className="numeric-cell">{colony.adjusted_economy.research.toFixed(1)}</td>
                     <td className="colony-build-cell"><strong>{build?.project.project_id ?? colony.construction?.project_id ?? t('construction.empty')}</strong><small>{formatEta(t, build?.eta_turns)}</small></td>
-                    <td><button type="button" className="button-secondary button-compact" onClick={() => onOpenColony(colony.id)}>{t('colonies.open')}</button></td>
+                    <td><button type="button" className="button-secondary button-compact" onClick={() => onOpenColony(colony.id)}><GameIcon name="open" />{t('colonies.open')}</button></td>
                   </tr>
                 )
               })}
@@ -963,7 +963,7 @@ function PopulationMoveControls({ colony, onPlan, t, compact = false, outputs }:
                       onPointerUp={finishPointerDrag}
                       onPointerCancel={finishPointerDrag}
                     >
-                      <span className="population-person-glyph" aria-hidden="true" />
+                      <span className="population-person-glyph" aria-hidden="true"><GameIcon name={populationJobIcons[job]} /></span>
                       {person.fractional && <small>{person.amount.toFixed(1)}</small>}
                     </button>
                   )
@@ -1230,7 +1230,7 @@ function ConstructionSummary({ colony, preview, draftOrders, onOpen, t }: {
         {(!current || currentCostPP === undefined || currentCostPP <= 0) && <span>{projected ? formatEta(t, projected.eta_turns) : t('common.noEta')}</span>}
         {items.length > 1 && <small>{items.slice(1, 4).map((item) => humanizeToken(item.project_id)).join(' · ')}{items.length > 4 ? ' …' : ''}</small>}
       </div>
-      <button type="button" className="button-secondary button-wide" onClick={onOpen}>{t('construction.openManager')}</button>
+      <button type="button" className="button-secondary button-wide" onClick={onOpen}><GameIcon name="build" />{t('construction.openManager')}</button>
     </Card>
   )
 }
@@ -1432,13 +1432,13 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
                     disabled={alreadyQueued}
                     onClick={() => save([...items, queueItemFromChoice(selectedChoice)])}
                   >
-                    {alreadyQueued ? t('construction.alreadyQueued') : t('construction.addToQueue')}
+                    <GameIcon name="build" />{alreadyQueued ? t('construction.alreadyQueued') : t('construction.addToQueue')}
                   </button>
                 )
               })()}
               {(selectedChoice.project_kind === 'military_ship' || selectedChoice.ship_design_id !== undefined) && (
                 <button type="button" className="button-secondary construction-designer-placeholder" disabled title={t('construction.shipDesignerUnavailable')}>
-                  {t('construction.openShipDesigner')}
+                  <GameIcon name="ship-designer" />{t('construction.openShipDesigner')}
                 </button>
               )}
             </div>
@@ -1561,7 +1561,7 @@ function PopulationTransferRow({ choice, onPlanOrder, t }: {
         <strong>{choice.source_colony_id} → {choice.destination_colony_id}</strong>
         <small>{choice.source_job} → {choice.destination_job} · {t('transfer.freighters')}: {choice.freighters_required} · {t('transfer.eta')}: {choice.eta}{choice.same_system ? ` · ${t('transfer.sameSystem')}` : ''}</small>
       </span>
-      <button type="button" className="button-secondary" onClick={confirmTransfer}>{t('transfer.confirm')}</button>
+      <button type="button" className="button-secondary" onClick={confirmTransfer}><GameIcon name="check" />{t('transfer.confirm')}</button>
     </div>
   )
 }
@@ -1831,7 +1831,7 @@ export function StrategicResearchView({ snapshot, preview, onPlanOrder, t }: {
                     </div>
                   ) : (
                     <button type="button" className="button-primary" onClick={() => planResearch(choice)}>
-                      {t('research.select')}
+                      <GameIcon name="research" />{t('research.select')}
                     </button>
                   )}
                 </>

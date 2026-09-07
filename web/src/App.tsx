@@ -20,6 +20,7 @@ import {
   type PlayerSnapshot,
 } from './api'
 import { AppShell, LanguageSwitch, StandaloneHeader, type ResourceChip } from './components/AppShell'
+import { GameIcon } from './components/GameIcon'
 import { Card, EmptyState, Metric, Notice, PageHeader } from './components/ui'
 import { type TranslationKey, type TranslationVars, useI18n } from './i18n'
 import { type AppRoute, type GameSection, navigate, parseRoute } from './navigation'
@@ -522,8 +523,8 @@ function App() {
             <h1>{t('menu.title')}</h1>
             <p>{t('menu.subtitle')}</p>
             <div className="hero-actions">
-              <button type="button" className="button-primary" onClick={() => navigate({ kind: 'new-game' })}>{t('menu.newGame')}</button>
-              {gameID && <button type="button" className="button-secondary" onClick={() => enterGame(gameID)}>{t('menu.resume')}</button>}
+              <button type="button" className="button-primary" onClick={() => navigate({ kind: 'new-game' })}><GameIcon name="star" />{t('menu.newGame')}</button>
+              {gameID && <button type="button" className="button-secondary" onClick={() => enterGame(gameID)}><GameIcon name="play" />{t('menu.resume')}</button>}
             </div>
           </section>
 
@@ -572,7 +573,7 @@ function App() {
                 <label>{t('newGame.humanEmpire')}<input value={humanName} onChange={(event) => setHumanName(event.target.value)} required /></label>
                 <label>{t('newGame.darlokEmpire')}<input value={darlokName} onChange={(event) => setDarlokName(event.target.value)} required /></label>
               </div>
-              <button type="submit" className="button-primary button-wide" disabled={creatingGame}>{creatingGame ? t('newGame.creating') : t('newGame.create')}</button>
+              <button type="submit" className="button-primary button-wide" disabled={creatingGame}><GameIcon name="star" />{creatingGame ? t('newGame.creating') : t('newGame.create')}</button>
             </form>
           </Card>
         </main>
@@ -797,7 +798,7 @@ function ColoniesView({ snapshot, assignment, setAssignment, totalDraft, onSubmi
                       <label>{t('colonies.workers')}<input type="number" min="0" step="0.1" value={assignment.workers} onChange={(event) => setAssignment((draft) => ({ ...draft, workers: event.target.value }))} /></label>
                       <label>{t('colonies.scientists')}<input type="number" min="0" step="0.1" value={assignment.scientists} onChange={(event) => setAssignment((draft) => ({ ...draft, scientists: event.target.value }))} /></label>
                     </div>
-                    <div className="form-footer"><span>{t('colonies.assignedTotal')}: <strong>{Number.isFinite(totalDraft) ? totalDraft : t('colonies.invalid')}</strong></span><button type="submit" className="button-primary">{t('colonies.submit')}</button></div>
+                    <div className="form-footer"><span>{t('colonies.assignedTotal')}: <strong>{Number.isFinite(totalDraft) ? totalDraft : t('colonies.invalid')}</strong></span><button type="submit" className="button-primary"><GameIcon name="check" />{t('colonies.submit')}</button></div>
                   </form>
                 )}
               </Card>

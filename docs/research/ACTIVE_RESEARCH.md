@@ -333,3 +333,5 @@ Original copyrighted assets remain private reference material and are not distri
 - Visual Genome v4 server persistence: docs/research/SLICE_15_3_VISUAL_GENOME_V4_SERVER_PERSISTENCE_2026-09-07.md - authoritative resolved genome, separate VisualRevision, immediate save, built-ship freeze and save/export/import round-trip contract.
 
 - Core SVG icon language implementation: docs/research/SLICE_15_3_CORE_SVG_ICON_LANGUAGE_IMPLEMENTATION_2026-09-07.md - typed 24x24 React/SVG registry, shell/resources/navigation/population-role integration and desktop/mobile QA.
+
+- Research/population/action icon refinement: docs/research/SLICE_15_3_ICON_REFINEMENT_RESEARCH_ACTIONS_2026-09-07.md - microscope Research identity, test-tube category primitive, role-specific population markers and selective leading action icons.

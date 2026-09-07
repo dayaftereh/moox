@@ -226,3 +226,7 @@ Recommended next block:
 3. add construction/building category primitives;
 4. replace remaining visible placeholder boxes/glyphs in Colony and strategic detail screens;
 5. only then review the whole family for Gate-2 grammar freeze.
+
+## Research/action refinement follow-up (2026-09-07)
+
+The shared `research` identity now renders a microscope, while `test-tube` is reserved for Chemistry/Biology/Pharma-style category use. Farmer/Worker/Scientist icons now appear on each draggable population marker, not only the role heading. Important actions gained small leading SVGs under a selective button-icon policy. See `docs/research/SLICE_15_3_ICON_REFINEMENT_RESEARCH_ACTIONS_2026-09-07.md`.

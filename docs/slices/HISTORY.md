@@ -183,3 +183,11 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Replaced menu/more/home/close shell glyphs with common vector icons.
 - Added dedicated Farmer/Worker/Scientist role figures plus Colony info/close vectors.
 - Desktop and 320px-mobile browser QA confirm responsive icon sizes and no actual horizontal document overflow; production web build passes.
+
+## 2026-09-07 - Slice 15.3 Research/population/action icon refinement
+
+- Changed global Research identity from an atom-like glyph to a microscope and added a separate test-tube primitive for future Chemistry/Biology/Pharma categories.
+- Replaced CSS-only generic population people with role-specific Farmer/Worker/Scientist SVG markers while preserving drag/fractional behavior.
+- Added typed action icons for generate/check/open/play/flag/outpost/build and applied them selectively to high-value Shipbuilder, planning, colony, system, construction and Research actions.
+- Standardized icon-bearing buttons on inline-flex with 7px label gap, 15px normal icons and 13px compact icons.
+- Desktop and 320px mobile browser QA pass without danger banners or actual horizontal overflow.

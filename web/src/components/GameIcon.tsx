@@ -27,6 +27,14 @@ export type GameIconName =
   | 'worker'
   | 'scientist'
   | 'info'
+  | 'test-tube'
+  | 'generate'
+  | 'check'
+  | 'open'
+  | 'play'
+  | 'flag'
+  | 'outpost'
+  | 'build'
 
 export type GameIconProps = Omit<SVGProps<SVGSVGElement>, 'name'> & {
   name: GameIconName
@@ -52,10 +60,11 @@ const icons: Record<GameIconName, ReactNode> = {
     <path d="m6.1 18.3-2 1.4M9.1 19.4l-1 1.8" />
   </>,
   research: <>
-    <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
-    <ellipse cx="12" cy="12" rx="8.3" ry="3.3" />
-    <ellipse cx="12" cy="12" rx="8.3" ry="3.3" transform="rotate(60 12 12)" />
-    <ellipse cx="12" cy="12" rx="8.3" ry="3.3" transform="rotate(120 12 12)" />
+    <path d="M9.2 4.3h4.2M11.3 4.3v4.4" />
+    <path d="m11.3 8.7 3.3 3.3M14.7 8.8l2.2 2.2-4.8 4.8-2.2-2.2 4.8-4.8Z" />
+    <path d="M8.7 12.9c-2 1.1-3.2 3-3.2 5.2h12.9" />
+    <path d="M12 18.1c0-2.2 1.7-4 3.9-4h2.6M6.7 20.2h12.6" />
+    <circle cx="16.7" cy="11.1" r=".7" fill="currentColor" stroke="none" />
   </>,
   diplomacy: <>
     <path d="m4.5 9.1 4.1-3.4 3 2.2 2.7-1.8 5.2 4.2" />
@@ -156,6 +165,43 @@ const icons: Record<GameIconName, ReactNode> = {
     <path d="M5.1 19c.5-4.2 2.2-6.3 5.1-6.3 1.6 0 2.9.6 3.8 1.7" />
     <path d="M7.8 7.4h4.8M8.1 6.4h1.6v2H8.1zM10.8 6.4h1.6v2h-1.6z" />
     <path d="M17 12.7v2.7l-2.4 3.9h5.7l-2.4-3.9v-2.7M15.9 16.7h3" />
+  </>,
+  'test-tube': <>
+    <path d="M9 4h6M10 4v6.1l-4.3 7.2c-.8 1.3.2 2.9 1.7 2.9h9.2c1.5 0 2.5-1.6 1.7-2.9L14 10.1V4" />
+    <path d="M8.2 14h7.6" />
+    <circle cx="10" cy="16.7" r=".8" fill="currentColor" stroke="none" />
+    <circle cx="14.6" cy="17.2" r=".65" fill="currentColor" stroke="none" />
+  </>,
+  generate: <>
+    <path d="M5.2 8.2h7.4l2-2M14.6 6.2l-2-2" />
+    <path d="M18.8 15.8h-7.4l-2 2M9.4 17.8l2 2" />
+    <path d="M5.2 15.8h2.5l7-7h4.1" />
+    <path d="m16.8 6.8 2-2 2 2M18.8 4.8v4" />
+  </>,
+  check: <>
+    <path d="m5 12.4 4.1 4.1L19 6.8" />
+  </>,
+  open: <>
+    <path d="M5 7.5v11h11" />
+    <path d="M10 5h9v9M19 5l-9.5 9.5" />
+  </>,
+  play: <>
+    <circle cx="12" cy="12" r="8" />
+    <path d="m10 8.3 5.4 3.7-5.4 3.7V8.3Z" fill="currentColor" stroke="none" />
+  </>,
+  flag: <>
+    <path d="M7 20V4" />
+    <path d="M7 5h9.5l-1.8 3 1.8 3H7" />
+  </>,
+  outpost: <>
+    <path d="M12 4v4M9.2 6.5h5.6M8 20h8l-1.2-8.5H9.2L8 20Z" />
+    <path d="M5 11.2c1.2-1.5 2.5-2.2 4.2-2.4M19 11.2c-1.2-1.5-2.5-2.2-4.2-2.4" />
+    <circle cx="12" cy="11.5" r="1.1" fill="currentColor" stroke="none" />
+  </>,
+  build: <>
+    <path d="M4.5 19V9.8l4.2 2.3V8.9l4.1 2.3V5h3.5v8.1l3.2 1.8V19h-15Z" />
+    <path d="M8 15.2h2M13 15.2h2M17.1 15.2h1.1" />
+    <path d="m18.5 5.2 1.8-1.8M19.4 8.2h2.2" />
   </>,
   info: <>
     <circle cx="12" cy="12" r="8" />
