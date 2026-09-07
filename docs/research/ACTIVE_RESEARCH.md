@@ -25,6 +25,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 
 - Active Slice 15.3 Gate-1 audit: `docs/research/SLICE_15_3_GATE1_ART_ASSET_AUDIT_2026-09-07.md` - initial web asset inventory, catalog starting point and visual/pipeline questions.
 - Vector/procedural graphics direction: `docs/research/SLICE_15_3_VECTOR_PROCEDURAL_GRAPHICS_DIRECTION_2026-09-07.md` - SVG-first icons/overlays plus deterministic procedural 2D ship geometry with a future 3D path.
+- Shipbuilder generation UX: docs/research/SLICE_15_3_SHIPBUILDER_GENERATION_UX_2026-09-07.md - choose hull size -> repeatedly Generate deterministic 2D concepts -> Keep favorite -> later authoritative equipment handoff in Slice 17.
 - Accepted Tactical roadmap amendment: `docs/research/SLICE_15_5_INTERACTIVE_TACTICAL_COMBAT_PRODUCT_DIRECTION_2026-09-04.md` - interactive Tactical is a dedicated Slice 15.5; the former final integration slice moves to 15.6.
 
 

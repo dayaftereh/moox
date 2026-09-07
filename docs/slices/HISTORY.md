@@ -100,3 +100,13 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Captured a deterministic procedural 2D ship-generation direction with stable design seeds and a future 2D-to-3D path.
 - Added the first React/SVG procedural ship proof of concept and integrated it into Fleet/Ship presentation paths without changing gameplay authority.
 - Web production build and `git diff --check` pass.
+
+## 2026-09-07 - Slice 15.3 Gate 1 real-game Shipbuilder prototype
+
+- Restarted the public development server without demo fixture or persistence, removing all previous in-memory games, and created a fresh real `game-1` through the normal New Game browser flow with seed `0x8009`.
+- Fresh game evidence: 20 systems, one authoritative `Scout`/Frigate design, two ships and two strategic fleets.
+- Hardened the Galaxy HMI for real generated systems whose optional planet/body collections serialize as JSON `null`; the real Galaxy now loads cleanly.
+- Verified the procedural SVG generator against real authoritative Fleet ships rather than the old demo fixture.
+- Added an in-game Shipbuilder Gate-1 prototype: hull-size choice, repeated deterministic Generate, recent-history selection, Keep design and read-only authoritative equipment handoff.
+- Frigate is labelled current ruleset; Destroyer/Cruiser/Battleship/Titan are visual previews only until Slice 17 implements authoritative breadth.
+- Desktop 995x605 and mobile 360x646 browser QA passed; mobile has no horizontal overflow.

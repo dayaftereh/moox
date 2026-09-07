@@ -289,7 +289,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
         >
           <div className="galaxy-map-layer" style={{ transform: 'translate3d(' + pan.x + 'px, ' + pan.y + 'px, 0) scale(' + zoom + ')' }}>
             {systems.map((system) => {
-              const ownsColony = system.planets.some((planet) => decision.colonies.some((colony) => colony.planet_id === planet.id))
+              const ownsColony = (system.planets ?? []).some((planet) => decision.colonies.some((colony) => colony.planet_id === planet.id))
               const ownOutpost = (system.bodies ?? []).some((body) => Boolean(body.outpost_id) && decision.strategic.outposts?.some((outpost) => outpost.id === body.outpost_id && outpost.empire_id === decision.empire.id))
               return (
                 <button
@@ -337,7 +337,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
   onPlanOrder: (order: DraftOrder) => void
   t: Translator
 }) {
-  const bodies = system.bodies ?? system.planets.map((planet) => ({
+  const bodies = system.bodies ?? (system.planets ?? []).map((planet) => ({
     id: planet.id,
     name: planet.name,
     orbit: planet.orbit,
@@ -409,7 +409,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
   }
 
   const selectedBody = orderedBodies.find((body) => body.id === selectedBodyID) ?? orderedBodies[0]
-  const selectedPlanet = selectedBody?.planet_id ? system.planets.find((planet) => planet.id === selectedBody.planet_id) : undefined
+  const selectedPlanet = selectedBody?.planet_id ? (system.planets ?? []).find((planet) => planet.id === selectedBody.planet_id) : undefined
   const selectedColony = selectedPlanet ? decision.colonies.find((colony) => colony.planet_id === selectedPlanet.id) : undefined
   const selectedPotential = selectedPlanet ? decision.strategic.planet_potentials?.find((item) => item.planet_id === selectedPlanet.id) : undefined
   const colonizeChoices = selectedPlanet
@@ -449,7 +449,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                 const angle = (((system.id * 31) + (body.id * 67) + (index * 103)) % 360) * Math.PI / 180
                 const x = 50 + Math.cos(angle) * radius
                 const y = 50 + Math.sin(angle) * radius
-                const planet = body.planet_id ? system.planets.find((item) => item.id === body.planet_id) : undefined
+                const planet = body.planet_id ? (system.planets ?? []).find((item) => item.id === body.planet_id) : undefined
                 const colony = planet ? decision.colonies.find((item) => item.planet_id === planet.id) : undefined
                 const selected = selectedBody?.id === body.id
                 const bodyClasses = [
@@ -1030,7 +1030,7 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
   const decision = snapshot.decision
   const galaxy = decision?.strategic.galaxy
   const planetContext = galaxy?.systems
-    .flatMap((system) => system.planets.map((item) => ({ system, planet: item })))
+    .flatMap((system) => (system.planets ?? []).map((item) => ({ system, planet: item })))
     .find((item) => item.planet.id === colony.planet_id)
   const planetPotential = planetContext
     ? decision?.strategic.planet_potentials?.find((item) => item.planet_id === planetContext.planet.id)

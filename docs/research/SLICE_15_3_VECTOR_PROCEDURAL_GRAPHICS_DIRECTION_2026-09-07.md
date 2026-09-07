@@ -134,3 +134,9 @@ This is a **Gate-1 exploratory implementation**, not the final frozen art style.
 - asset catalog schema and provenance metadata;
 - SVG source/storage conventions and optimization/build policy;
 - representative acceptance mockups for Galaxy, system, Colony, Fleet and Research screens.
+
+## Shipbuilder interaction contract added 2026-09-07
+
+The procedural generator is now exposed through the in-game Shipbuilder prototype using the accepted sequence **choose hull size -> Generate repeatedly -> Keep design -> equipment handoff**. The current Frigate is server-authoritative; Destroyer/Cruiser/Battleship/Titan remain explicitly labelled visual previews until Slice 17 supplies authoritative multi-hull/component/weapon breadth. The accepted visual seed must eventually be persisted with the ship design so save/resume/replay preserve the chosen appearance.
+
+See `docs/research/SLICE_15_3_SHIPBUILDER_GENERATION_UX_2026-09-07.md` for the complete browser/product contract and QA evidence.

@@ -2676,3 +2676,52 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
     font-size: .7rem;
   }
 }
+
+/* Slice 15.3 Gate-1 Shipbuilder visual-generation prototype */
+.main-menu-vector-glyph { width: 26px; height: 18px; color: var(--ship-vector); }
+.shipbuilder-size-card { margin-bottom: 12px; }
+.shipbuilder-hull-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.shipbuilder-hull-option { display: grid; min-width: 0; min-height: 108px; align-content: center; gap: 6px; padding: 8px; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); background: rgba(7, 15, 26, .72); color: var(--muted-strong); text-align: left; }
+.shipbuilder-hull-option:hover, .shipbuilder-hull-option:focus-visible { border-color: var(--border); background: var(--surface-soft); }
+.shipbuilder-hull-option.selected { border-color: var(--accent); background: var(--accent-soft); color: var(--text); }
+.shipbuilder-hull-option > span { display: grid; gap: 2px; }
+.shipbuilder-hull-option strong { font-size: .78rem; }
+.shipbuilder-hull-option small { color: var(--muted); font-size: .58rem; }
+.shipbuilder-hull-thumb { width: 100%; height: 54px; }
+.shipbuilder-layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(260px, .75fr); gap: 12px; align-items: start; }
+.shipbuilder-generator-card { min-width: 0; }
+.shipbuilder-stage { display: grid; min-height: 330px; place-items: center; margin: 12px 0; overflow: hidden; border: 1px solid var(--border-soft); border-radius: var(--radius); background: radial-gradient(circle at 50% 45%, rgba(46, 108, 174, .18), transparent 34%), linear-gradient(180deg, rgba(6, 13, 23, .78), rgba(3, 8, 15, .95)); }
+.shipbuilder-main-ship { width: min(92%, 560px); height: 270px; color: var(--ship-vector); }
+.shipbuilder-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.shipbuilder-seed { margin: 10px 0 0; font-size: .68rem; overflow-wrap: anywhere; }
+.shipbuilder-seed code { color: var(--muted-strong); }
+.shipbuilder-recent { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-soft); }
+.shipbuilder-recent-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.shipbuilder-recent-item { display: grid; min-width: 0; gap: 3px; padding: 6px; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); background: rgba(8, 16, 27, .72); color: var(--muted-strong); text-align: left; }
+.shipbuilder-recent-item:hover, .shipbuilder-recent-item:focus-visible { border-color: var(--accent); background: var(--accent-soft); }
+.shipbuilder-recent-ship { width: 100%; height: 62px; }
+.shipbuilder-recent-item small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .58rem; }
+.shipbuilder-side-stack { display: grid; gap: 12px; }
+.shipbuilder-kept-card, .shipbuilder-equipment-card { min-width: 0; }
+.shipbuilder-kept-card > small { display: block; margin-top: 3px; }
+.shipbuilder-kept-stage { display: grid; min-height: 130px; place-items: center; margin: 9px 0; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); background: rgba(6, 13, 23, .72); }
+.shipbuilder-kept-ship { width: 92%; height: 112px; }
+.shipbuilder-baseline-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 12px 0 8px; }
+.shipbuilder-equipment-card .detail-list dd { overflow-wrap: anywhere; text-align: right; }
+
+@media (max-width: 900px) {
+  .shipbuilder-hull-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .shipbuilder-layout { grid-template-columns: 1fr; }
+  .shipbuilder-side-stack { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .shipbuilder-hull-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .shipbuilder-hull-option { min-height: 96px; }
+  .shipbuilder-hull-thumb { height: 44px; }
+  .shipbuilder-stage { min-height: 220px; }
+  .shipbuilder-main-ship { height: 190px; }
+  .shipbuilder-actions > button { flex: 1 1 120px; }
+  .shipbuilder-recent-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .shipbuilder-side-stack { grid-template-columns: 1fr; }
+}

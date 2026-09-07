@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useRef, useState } from 'react'
 import { type GameSection } from '../navigation'
 import { type TranslationKey, useI18n } from '../i18n'
+import { ProceduralShipGlyph } from './ProceduralShipGlyph'
 
 const primaryNavItems: Array<{ section: GameSection; label: TranslationKey; glyph: string }> = [
   { section: 'galaxy', label: 'nav.galaxy', glyph: '\u25C8' },
@@ -95,7 +96,7 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
   const [activeResourceID, setActiveResourceID] = useState<string | null>(null)
   const menuRef = useRef<HTMLDivElement | null>(null)
   const resourcePopupRef = useRef<HTMLDivElement | null>(null)
-  const secondaryActive = activeSection === 'espionage' || activeSection === 'more'
+  const secondaryActive = activeSection === 'espionage' || activeSection === 'shipbuilder' || activeSection === 'more'
 
   useEffect(() => {
     if (!activeResourceID) return
@@ -166,6 +167,10 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
 
               <div className="main-menu-section">
                 <span className="main-menu-section-title">{t('gameMenu.game')}</span>
+                <button type="button" className="main-menu-item" onClick={() => navigateFromMenu('shipbuilder')}>
+                  <ProceduralShipGlyph seed="shipbuilder-menu" hullId="frigate" className="main-menu-vector-glyph" />
+                  <span><strong>{t('gameMenu.shipbuilder')}</strong><small>{t('gameMenu.shipbuilderHint')}</small></span>
+                </button>
                 <button type="button" className="main-menu-item" onClick={() => navigateFromMenu('more')}>
                   <span className="main-menu-item-glyph" aria-hidden="true">⚙</span>
                   <span><strong>{t('gameMenu.advanced')}</strong><small>{t('gameMenu.advancedHint')}</small></span>

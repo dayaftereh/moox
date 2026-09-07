@@ -23,6 +23,7 @@ import { AppShell, LanguageSwitch, StandaloneHeader } from './components/AppShel
 import { Card, EmptyState, Metric, Notice, PageHeader } from './components/ui'
 import { type TranslationKey, type TranslationVars, useI18n } from './i18n'
 import { type AppRoute, type GameSection, navigate, parseRoute } from './navigation'
+import { ShipBuilderView } from './ShipBuilderView'
 import {
   StrategicColoniesView,
   StrategicConstructionView,
@@ -688,7 +689,10 @@ function App() {
         <StrategicDiplomacyView snapshot={snapshot} busy={diplomacyBusy} closed={Boolean(diplomacyClosed)} onCommand={runDiplomacy} t={t} />
       ) : activeSection === 'espionage' ? (
         <StrategicEspionageView t={t} />
-      ) : (        <MoreView
+      ) : activeSection === 'shipbuilder' ? (
+        <ShipBuilderView snapshot={snapshot} t={t} />
+      ) : (
+        <MoreView
           snapshot={snapshot}
           games={games}
           gameID={gameID}
