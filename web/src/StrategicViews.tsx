@@ -7,6 +7,7 @@ import {
   type DraftOrder,
   type DiplomacyCommandKind,
   type DiplomaticStance,
+  type PlanningMetricBreakdown,
   type PlanningPreviewSnapshot,
   type PlayerSnapshot,
   type PopulationJob,
@@ -55,6 +56,51 @@ function planetTraitLabel(t: Translator, group: 'climate' | 'size' | 'mineral' |
 
 function formatEta(t: Translator, value: number | undefined): string {
   return value && value > 0 ? t('common.turns', { turns: value }) : t('common.noEta')
+}
+
+function metricTone(value: number): 'positive' | 'danger' | 'neutral' {
+  return value > 0.0000001 ? 'positive' : value < -0.0000001 ? 'danger' : 'neutral'
+}
+
+function metricComponentLabel(t: Translator, id: string): string {
+  switch (id) {
+    case 'natural': return t('colony.breakdownNatural')
+    case 'technology': return t('colony.breakdownTechnology')
+    case 'housing': return t('colony.breakdownHousing')
+    case 'cloning_center': return t('colony.breakdownCloningCenter')
+    case 'starvation': return t('colony.breakdownStarvation')
+    case 'population_tax': return t('colony.breakdownPopulationTax')
+    case 'government': return t('colony.breakdownGovernment')
+    case 'morale': return t('colony.breakdownMorale')
+    case 'other': return t('colony.breakdownOther')
+    default: return humanizeToken(id)
+  }
+}
+
+function MetricBreakdown({ title, breakdown, unit, digits, t }: {
+  title: string
+  breakdown: PlanningMetricBreakdown
+  unit: string
+  digits: number
+  t: Translator
+}) {
+  const components = breakdown.components ?? []
+  return (
+    <section className="colony-metric-breakdown">
+      <header>
+        <strong>{title}</strong>
+        <span className={`resource-text-${metricTone(breakdown.total)}`}>{breakdown.total > 0 ? '+' : ''}{breakdown.total.toFixed(digits)} {unit}</span>
+      </header>
+      <div className="colony-metric-components">
+        {components.length === 0 ? <span className="muted">{t('common.none')}</span> : components.map((component) => (
+          <div key={component.id}>
+            <span>{metricComponentLabel(t, component.id)}</span>
+            <strong className={`resource-text-${metricTone(component.value)}`}>{component.value > 0 ? '+' : ''}{component.value.toFixed(digits)} {unit}</strong>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
 }
 
 function bodyLabel(t: Translator, kind: string): string {
@@ -970,8 +1016,9 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
   const growth = preview?.population_growth_per_turn ?? Math.max(0, displayColony.population_dynamics.projected_growth)
   const loss = preview?.population_loss_per_turn ?? Math.max(0, displayColony.population_dynamics.projected_starvation)
   const signedGrowth = loss > 0 ? -loss : growth
-  const growthTone = signedGrowth > 0 ? 'positive' : signedGrowth < 0 ? 'danger' : 'neutral'
+  const growthTone = metricTone(signedGrowth)
   const nextPopulationETA = preview?.next_population_eta_turns
+  const metricBreakdowns = preview?.breakdowns
   const growthEta = signedGrowth > 0 && nextPopulationETA && nextPopulationETA > 0 ? ` (${formatEta(t, nextPopulationETA)})` : ''
   const transferChoices = decision?.decisions.population_transfers?.filter((item) => item.source_colony_id === colony.id) ?? []
   const jobOutputs: Partial<Record<PopulationJob, { total: number; unit: string }>> = {
@@ -1036,8 +1083,18 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
           </section>
 
           <section className="colony-colony-profile">
-            <div className="colony-profile-section-title">
+            <div className="colony-profile-section-title colony-profile-section-title-actions">
               <p className="eyebrow">{t('colony.colonyProfile')}</p>
+              {metricBreakdowns && (
+                <details className="colony-metric-info">
+                  <summary>{t('colony.colonyInfo')}</summary>
+                  <div className="colony-metric-info-popover">
+                    <MetricBreakdown title={t('colonies.growth')} breakdown={metricBreakdowns.growth} unit={t('colony.popUnit')} digits={2} t={t} />
+                    <MetricBreakdown title={t('colony.taxContribution')} breakdown={metricBreakdowns.tax_bc} unit="BC" digits={1} t={t} />
+                    <p className="muted colony-metric-info-note">{t('colony.breakdownLiveHint')}</p>
+                  </div>
+                </details>
+              )}
             </div>
             <dl className="colony-profile-stats">
               <div><dt>{t('colony.populationStatus')}</dt><dd>{population.total.toFixed(2)} / {displayColony.population_dynamics.capacity.toFixed(2)}</dd></div>
@@ -1105,6 +1162,10 @@ function ConstructionSummary({ colony, preview, draftOrders, onOpen, t }: {
   const items = Array.isArray(draftedItems) ? draftedItems as DraftQueueItem[] : queueItemsFromColony(colony)
   const current = items[0]
   const projected = preview?.construction?.[0]
+  const currentProgressPP = projected?.project.progress_pp ?? colony.construction?.progress_pp ?? 0
+  const currentCostPP = projected?.cost_pp
+  const currentProgressPercent = currentCostPP && currentCostPP > 0 ? Math.max(0, Math.min(100, (currentProgressPP / currentCostPP) * 100)) : 0
+  const futureQueueCount = Math.max(0, items.length - (current ? 1 : 0))
   return (
     <Card className="construction-summary-card">
       <div className="card-heading construction-summary-heading">
@@ -1112,10 +1173,21 @@ function ConstructionSummary({ colony, preview, draftOrders, onOpen, t }: {
           <p className="eyebrow">{t('colony.construction')}</p>
           <h2>{current ? humanizeToken(current.project_id) : t('construction.empty')}</h2>
         </div>
-        <span className="badge">{t('construction.queueCount', { count: items.length })}</span>
+        <span className="badge">{t('construction.queueCount', { count: futureQueueCount })}</span>
       </div>
+      {current && currentCostPP !== undefined && currentCostPP > 0 && (
+        <div className="construction-summary-progress">
+          <div className="construction-progress-track" aria-label={t('construction.progress')}>
+            <span style={{ width: `${currentProgressPercent}%` }} />
+          </div>
+          <div className="construction-summary-progress-meta">
+            <span>{currentProgressPP.toFixed(1)} / {currentCostPP.toFixed(0)} PP · {currentProgressPercent.toFixed(0)}%</span>
+            <strong>{projected ? formatEta(t, projected.eta_turns) : t('common.noEta')}</strong>
+          </div>
+        </div>
+      )}
       <div className="construction-summary-meta">
-        <span>{projected ? formatEta(t, projected.eta_turns) : t('common.noEta')}</span>
+        {(!current || currentCostPP === undefined || currentCostPP <= 0) && <span>{projected ? formatEta(t, projected.eta_turns) : t('common.noEta')}</span>}
         {items.length > 1 && <small>{items.slice(1, 4).map((item) => humanizeToken(item.project_id)).join(' · ')}{items.length > 4 ? ' …' : ''}</small>}
       </div>
       <button type="button" className="button-secondary button-wide" onClick={onOpen}>{t('construction.openManager')}</button>

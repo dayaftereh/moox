@@ -87,18 +87,9 @@ func (r *EconomyResolver) calculateRaceAwarePopulationDynamics(state *core.GameS
 	for _, technologyID := range owner.KnownTechnologyIDs {
 		technologyGrowthBonus += r.Rules.PopulationGrowthTechnologyBonusByID[technologyID]
 	}
-	housingGrowthBonus := 0.0
-	if colony.Construction != nil && colony.Construction.ProjectKind == core.ConstructionProjectHousing {
-		if colony.Construction.ProjectID != HousingProjectID {
-			return core.ColonyPopulationDynamics{}, fmt.Errorf("colony %d has invalid Housing project id %q", colony.ID, colony.Construction.ProjectID)
-		}
-		if totalPopulation > populationEpsilon && dynamics.ProductionAvailable > 0 {
-			housingPercent := r.Rules.HousingGrowthPercentPerPPPerPopulation * dynamics.ProductionAvailable / totalPopulation
-			if r.Rules.HousingGrowthPercentRounding == "down" {
-				housingPercent = math.Floor(housingPercent + populationEpsilon)
-			}
-			housingGrowthBonus = housingPercent / 100
-		}
+	housingGrowthBonus, err := r.housingPopulationGrowthBonus(colony, dynamics.ProductionAvailable, totalPopulation)
+	if err != nil {
+		return core.ColonyPopulationDynamics{}, err
 	}
 
 	eligibleForCloning := 0.0
@@ -169,6 +160,22 @@ func (r *EconomyResolver) calculateRaceAwarePopulationDynamics(state *core.GameS
 	return dynamics, nil
 }
 
+func (r *EconomyResolver) housingPopulationGrowthBonus(colony core.Colony, productionAvailable, totalPopulation float64) (float64, error) {
+	if colony.Construction == nil || colony.Construction.ProjectKind != core.ConstructionProjectHousing {
+		return 0, nil
+	}
+	if colony.Construction.ProjectID != HousingProjectID {
+		return 0, fmt.Errorf("colony %d has invalid Housing project id %q", colony.ID, colony.Construction.ProjectID)
+	}
+	if totalPopulation <= populationEpsilon || productionAvailable <= 0 {
+		return 0, nil
+	}
+	housingPercent := r.Rules.HousingGrowthPercentPerPPPerPopulation * productionAvailable / totalPopulation
+	if r.Rules.HousingGrowthPercentRounding == "down" {
+		housingPercent = math.Floor(housingPercent + populationEpsilon)
+	}
+	return housingPercent / 100, nil
+}
 func (r *EconomyResolver) refreshRaceAwarePopulationProjection(state *core.GameState, colony core.Colony, owner core.Empire, adjustedFood float64, dynamics *core.ColonyPopulationDynamics) error {
 	if dynamics == nil {
 		return fmt.Errorf("population dynamics must not be nil")

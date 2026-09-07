@@ -14,7 +14,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-14 and 15.1 are closed**; **15.2 is open with Gates 1-3 complete and Gate 4 pending**; 15.3-15.6, 16-17 and reserved Slice 20 remain prepared.
-- Current objective: **Serve B2-U for direct review: compact Build-management header, one Current build with PP/%/ETA, and a future-only Queue with no duplicate current project. G4-C remains open.**
+- Current objective: **Serve B2-V for direct review: Colony Build card now shows current PP/%/ETA progress; Kolonie-Info exposes live authoritative Growth and BC component breakdowns, including draft Housing. Bank/Planetary Stock Exchange BC mechanics remain unimplemented and therefore absent. G4-C remains open.**
 - Slice-15.1 closure evidence: `docs/research/SLICE_15_1_MOBILE_FIRST_UX_GATE4_2026-09-04.md`.
 - Slice-15.2 Gate-1 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE1_2026-09-04.md`.
 - Slice-15.2 Gate-2 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE2_2026-09-04.md`.

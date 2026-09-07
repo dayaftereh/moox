@@ -411,9 +411,14 @@ export type CommandBatch = {
   commands: ProtocolCommand[]
 }
 
+export type PlanningMetricComponent = { id: string; value: number }
+export type PlanningMetricBreakdown = { total: number; components?: PlanningMetricComponent[] }
+export type PlanningColonyBreakdowns = { growth: PlanningMetricBreakdown; tax_bc: PlanningMetricBreakdown }
+
 export type PlanningConstructionPreview = { project: ConstructionState; cost_pp: number; remaining_pp: number; eta_turns?: number }
 export type PlanningColonyPreview = {
   colony: Colony
+  breakdowns: PlanningColonyBreakdowns
   free_population_capacity: number
   population_growth_per_turn: number
   population_loss_per_turn: number

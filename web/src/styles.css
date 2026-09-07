@@ -2361,3 +2361,115 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .construction-queue-heading-compact h2 { font-size: .56rem; }
   .construction-current-build { padding: 6px; }
 }
+
+/* Slice 15.2 B2-V: Colony live metric breakdown + in-card construction progress. */
+.colony-profile-section-title-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.colony-metric-info {
+  position: relative;
+  flex: 0 0 auto;
+}
+.colony-metric-info > summary {
+  list-style: none;
+  min-height: 22px;
+  padding: 3px 6px;
+  border: 1px solid rgba(103, 128, 150, .38);
+  border-radius: 5px;
+  background: rgba(11, 21, 29, .68);
+  color: #9fb0bf;
+  cursor: pointer;
+  font-size: .43rem;
+  font-weight: 850;
+  user-select: none;
+}
+.colony-metric-info > summary::-webkit-details-marker { display: none; }
+.colony-metric-info[open] > summary,
+.colony-metric-info > summary:hover,
+.colony-metric-info > summary:focus-visible {
+  border-color: #7f9cb6;
+  color: #eef5fa;
+}
+.colony-metric-info-popover {
+  position: absolute;
+  z-index: 50;
+  top: calc(100% + 4px);
+  right: 0;
+  display: grid;
+  width: min(240px, calc(100vw - 24px));
+  gap: 7px;
+  padding: 7px;
+  border: 1px solid #526a7f;
+  border-radius: 7px;
+  background: rgba(7, 15, 22, .98);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, .55);
+  backdrop-filter: blur(5px);
+}
+.colony-metric-breakdown {
+  display: grid;
+  gap: 4px;
+}
+.colony-metric-breakdown + .colony-metric-breakdown {
+  padding-top: 6px;
+  border-top: 1px solid rgba(88, 109, 127, .24);
+}
+.colony-metric-breakdown > header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.colony-metric-breakdown > header strong { color: #e3edf4; font-size: .56rem; }
+.colony-metric-breakdown > header span { font-size: .57rem; font-weight: 900; }
+.colony-metric-components {
+  display: grid;
+  gap: 2px;
+}
+.colony-metric-components > div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(83, 104, 122, .12);
+}
+.colony-metric-components > div > span { color: #8a9dab; font-size: .46rem; }
+.colony-metric-components > div > strong { font-size: .48rem; }
+.colony-metric-info-note { margin: 0; font-size: .42rem; line-height: 1.25; }
+
+.construction-summary-progress {
+  display: grid;
+  gap: 4px;
+  margin: 3px 0 5px;
+}
+.construction-summary-progress-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  color: #8395a4;
+  font-size: .48rem;
+}
+.construction-summary-progress-meta strong {
+  color: #dce7ee;
+  font-size: .52rem;
+}
+
+@media (max-width: 699px) {
+  .colony-metric-info > summary { min-height: 20px; padding: 2px 5px; font-size: .4rem; }
+  .colony-metric-info-popover {
+    right: 0;
+    width: min(240px, calc(100vw - 24px));
+    gap: 6px;
+    padding: 6px;
+  }
+  .colony-metric-breakdown > header strong,
+  .colony-metric-breakdown > header span { font-size: .52rem; }
+  .colony-metric-components > div > span,
+  .colony-metric-components > div > strong { font-size: .44rem; }
+  .construction-summary-progress-meta { font-size: .44rem; }
+  .construction-summary-progress-meta strong { font-size: .48rem; }
+}

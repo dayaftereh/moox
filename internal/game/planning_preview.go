@@ -36,6 +36,7 @@ type PlanningConstructionPreview struct {
 
 type PlanningColonyPreview struct {
 	Colony                  core.Colony                   `json:"colony"`
+	Breakdowns              PlanningColonyBreakdowns      `json:"breakdowns"`
 	FreePopulationCapacity  float64                       `json:"free_population_capacity"`
 	PopulationGrowthPerTurn float64                       `json:"population_growth_per_turn"`
 	PopulationLossPerTurn   float64                       `json:"population_loss_per_turn"`
@@ -228,8 +229,13 @@ func (r *EconomyResolver) BuildPlanningPreview(state *core.GameState, empireID c
 }
 
 func (r *EconomyResolver) buildPlanningColonyPreview(state *core.GameState, colony *core.Colony) (PlanningColonyPreview, error) {
+	breakdowns, err := r.planningColonyBreakdowns(state, colony)
+	if err != nil {
+		return PlanningColonyPreview{}, err
+	}
 	out := PlanningColonyPreview{
 		Colony:                  *colony,
+		Breakdowns:              breakdowns,
 		FreePopulationCapacity:  math.Max(0, colony.PopulationDynamics.Capacity-colony.Population.Total()),
 		PopulationGrowthPerTurn: math.Max(0, colony.PopulationDynamics.ProjectedGrowth),
 		PopulationLossPerTurn:   math.Max(0, colony.PopulationDynamics.ProjectedStarvation),

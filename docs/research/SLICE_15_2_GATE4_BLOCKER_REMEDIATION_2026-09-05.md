@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-B2-R Colony density cleanup complete; G4-B2-S Planet/Colony profile split complete; G4-B2-T signed growth/resource cleanup complete; G4-B2-U build-management density cleanup complete; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-B2-R Colony density cleanup complete; G4-B2-S Planet/Colony profile split complete; G4-B2-T signed growth/resource cleanup complete; G4-B2-U build-management density cleanup complete; G4-B2-V Colony live breakdown/progress complete; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -362,6 +362,23 @@ Status: **complete; direct user review pending**.
 - Empty construction state renders only one `Kein Projekt eingeplant.` current-state message plus `Queue 0`; there is no duplicate empty/current queue row.
 - Responsive smoke at 320x640 retained the same stacked Catalog -> Project -> Current/Queue order, with a 40px compact header and no horizontal overflow.
 - `npm run build` - **PASS**.
+
+#### G4-B2-V - Colony construction progress + live metric breakdown
+
+Status: **complete; direct user review pending**.
+
+- Colony Detail's compact Build card now mirrors the manager's authoritative current-project progress: current PP / cost PP, explicit percentage, progress bar and projected ETA. The queue badge is future-only, matching B2-U semantics.
+- Browser smoke with Troop Transport: before resolution the Colony card showed `0.0 / 100 PP · 0%` and `34 Runde(n)`; after `Fertig` advanced to Turn 2 it showed `3.0 / 100 PP · 3%`, `32 Runde(n)`, and the progress fill measured 3% of the track.
+- Added additive player-safe `PlanningColonyBreakdowns` to the Planning Preview. The breakdown is server-derived and travels with the same disposable draft state used for live Planning Preview; React only formats/localizes it.
+- Growth breakdown components: natural/race growth, population-growth technology, Housing, Cloning Center, starvation and a guarded `other` residual. Housing's percentage calculation was extracted into one shared authoritative helper used by both actual population dynamics and the breakdown to prevent drift.
+- BC breakdown components: population tax base, government modifier, morale contribution and guarded `other` residual. Components sum to the exact projected `adjusted_economy.tax_bc` total.
+- Unit coverage verifies the breakdown sums to authoritative totals; Small Fixture baseline yields 4 BC population tax + 2 BC government = 6 BC. A Holo Simulator fixture produces a positive morale BC component. Cloning Center produces a positive growth component.
+- Colony Profile now exposes a small tap/click `Kolonie-Info` disclosure containing Growth and Colony-BC totals plus their component rows. Positive component values use the existing green signed tone, negative values red.
+- Live Housing smoke: planning Housing as the current project changed Colony growth from `+0.07 (14 turns)` to `+0.09 (11 turns)`, and `Kolonie-Info` changed from only `Natürlich / Volk +0.07` to `Natürlich / Volk +0.07` + `Housing +0.02`; BC remained 4 population tax + 2 government = 6.
+- Responsive QA: desktop metric popover is bounded to `240px` at x=24..264 with no horizontal overflow. 320x640 smoke: Colony Profile `308x113px`, metric popover `240x127px` at x=65..305, Build card `308x147px`, no horizontal overflow.
+- Important mechanics boundary: `cloning_center` and morale buildings are already implemented economy effects and therefore appear in authoritative breakdowns. `planetary_stock_exchange` / a Bank-style direct BC building bonus is catalogued but **not yet an implemented EconomyRules money modifier**, so Slice 15.2 does not fabricate that contribution; it remains economy/building fidelity work.
+- `npm run build` - **PASS**.
+- targeted Game breakdown tests - **PASS**.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure
 

@@ -311,3 +311,11 @@ The functional data already present in Core (`Colony.Buildings`, `ColonyPopulati
 - Slice 15.2 must nevertheless not display a guessed Morale number because `MoralePercent` / its source breakdown are not currently part of the player-safe browser DecisionView.
 - When Morale is projected player-safely, display it in the compact Colony Profile as a signed percentage (positive green, negative red, zero neutral) with a click/tap breakdown of authoritative sources rather than duplicating the full rule explanation in the main screen.
 - Full morale breadth (empire-wide morale technology, Capitol loss, conquered-population/assimilation morale) remains part of the evidence-driven economy/building/pollution/morale fidelity backlog after Slice 17; it should not reopen Economy as one monolithic rewrite.
+### Colony live-metric breakdown boundary
+
+- Colony Detail should expose current construction progress directly (authoritative PP/cost/percentage/ETA) rather than forcing a trip into Build management just to answer when the current project completes.
+- Compact Colony Profile metrics may offer tap/click detail disclosures, but their component sums must come from player-safe server projections produced from the same current/draft state as Planning Preview.
+- Growth breakdown should distinguish currently implemented sources where mechanically meaningful: natural/race, growth technologies, Housing, Cloning Center, starvation; additive sources must sum back to the projected signed Colony growth.
+- Colony BC breakdown should distinguish population tax, government and morale contributions and sum to authoritative `adjusted_economy.tax_bc`.
+- Future money buildings (for example Planetary Stock Exchange / Bank-style effects) must only appear after EconomyRules actually implements and projects the effect. Catalog/buildability presence alone is not enough to claim a BC modifier.
+- Planning a current Housing project must immediately change both the headline Growth value/ETA and the detailed Housing component through Planning Preview; the browser must not simulate that delta locally.
