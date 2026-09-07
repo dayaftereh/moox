@@ -14,7 +14,7 @@ After Slice 15.1 implementation/QA, a review server must be started on the LLO D
 
 Current infrastructure facts found during Gate 1:
 
-- `moox-server` default bind is `127.0.0.1:8080`.
+- `moox-server` default bind is `127.0.0.1:7171`.
 - non-loopback bind requires explicit `-insecure-allow-nonloopback`; the user explicitly chose a broad development bind on `0.0.0.0:7171` so the same preview can be reached through NetBird, LAN or localhost. This exposes the unauthenticated development server on every local interface, so the port is for trusted-network development only;
 - current NetBird interface is `wt0`, IPv4 **100.120.252.216/16**;
 - port **7171** was checked and free before preview startup;

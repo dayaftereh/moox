@@ -191,3 +191,9 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Added typed action icons for generate/check/open/play/flag/outpost/build and applied them selectively to high-value Shipbuilder, planning, colony, system, construction and Research actions.
 - Standardized icon-bearing buttons on inline-flex with 7px label gap, 15px normal icons and 13px compact icons.
 - Desktop and 320px mobile browser QA pass without danger banners or actual horizontal overflow.
+
+## 2026-09-07 - Canonical MOOX development port 7171
+
+- Changed the standalone `moox-server` default bind from `127.0.0.1:8080` to `127.0.0.1:7171`.
+- Updated the Vite API/health proxy and architecture/research references to use 7171 consistently.
+- Runtime review server was migrated from temporary 7172 back to 7171 after exporting/importing `game-1`; the restored snapshot matched the source SHA-256 exactly.

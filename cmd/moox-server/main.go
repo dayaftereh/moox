@@ -23,10 +23,11 @@ import (
 )
 
 const demoGameID = "demo"
+const defaultHTTPAddress = "127.0.0.1:7171"
 
 func main() {
 	var (
-		addr                  = flag.String("addr", "127.0.0.1:8080", "HTTP listen address")
+		addr                  = flag.String("addr", defaultHTTPAddress, "HTTP listen address")
 		rulesDir              = flag.String("rules", filepath.Join("data", "rulesets", "moo2-1.31"), "normalized ruleset directory")
 		webDir                = flag.String("web", filepath.Join("web", "dist"), "built web asset directory; omitted if index.html is absent")
 		enableObserver        = flag.Bool("enable-observer", false, "enable privileged observer snapshot endpoint")

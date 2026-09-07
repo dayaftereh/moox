@@ -203,7 +203,7 @@ Gate 1 recommends a deliberately safe local default rather than pretending produ
 
 Baseline security contract proposed for Gate 2:
 
-- default standalone bind: `127.0.0.1:8080` (configurable);
+- default standalone bind: `127.0.0.1:7171` (configurable);
 - future native wrapper starts the same server on `127.0.0.1:0`/an ephemeral loopback port and points its WebView at that URL;
 - production browser/API is same-origin; no wildcard CORS;
 - mutating browser HTTP requests require JSON and should reject a mismatched `Origin` when an Origin header is present;
@@ -521,7 +521,7 @@ Slice 08 intentionally solves gameplay authority, not Internet account identity.
 
 Accepted baseline:
 
-- standalone default bind: `127.0.0.1:8080`;
+- standalone default bind: `127.0.0.1:7171`;
 - future Wails wrapper: loopback ephemeral port (`127.0.0.1:0` or equivalent);
 - same-origin API/SPA/WebSocket operation; no wildcard CORS;
 - mutating browser requests validate Origin when present;
@@ -709,7 +709,7 @@ New executable `cmd/moox-server` provides the Slice-08 standalone application ho
 
 Default/runtime policy:
 
-- bind `127.0.0.1:8080`;
+- bind `127.0.0.1:7171`;
 - refuse non-loopback binds unless the operator explicitly supplies `-insecure-allow-nonloopback`;
 - privileged Observer endpoint is opt-in with `-enable-observer`;
 - finite `ReadHeaderTimeout` and `IdleTimeout` plus graceful interrupt shutdown;

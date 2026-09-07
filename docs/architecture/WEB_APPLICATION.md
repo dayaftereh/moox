@@ -42,7 +42,7 @@ go run ./cmd/moox-server
 Default URL:
 
 ```text
-http://127.0.0.1:8080/
+http://127.0.0.1:7171/
 ```
 
 Until Slice 09 adds real New Game generation, `moox-server` hosts one deterministic development game named `demo` based on `core.NewSmallFixture` with Seat 1 as a local developer human.
@@ -52,7 +52,7 @@ The standalone server only serves `web/dist` when a built `index.html` exists. T
 Useful options:
 
 ```text
--addr 127.0.0.1:8080
+-addr 127.0.0.1:7171
 -rules data/rulesets/moo2-1.31
 -web web/dist
 -enable-observer
@@ -85,7 +85,7 @@ Open:
 http://127.0.0.1:5173/
 ```
 
-Vite proxies `/api` and `/healthz` to `http://127.0.0.1:8080`. The WebSocket path is below `/api`, so the same proxy preserves a same-origin browser contract. `changeOrigin` is deliberately false.
+Vite proxies `/api` and `/healthz` to `http://127.0.0.1:7171`. The WebSocket path is below `/api`, so the same proxy preserves a same-origin browser contract. `changeOrigin` is deliberately false.
 
 ## API v1
 
