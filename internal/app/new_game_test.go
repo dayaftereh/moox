@@ -87,3 +87,64 @@ func TestHostCreateGameRejectsInvalidSettingsWithoutRegistration(t *testing.T) {
 		t.Fatalf("invalid game partially registered: %+v", games)
 	}
 }
+
+func TestGeneratedNewGameSupportsEmptyPlanningPreview(t *testing.T) {
+	host := loadNewGameHost(t)
+	created, err := host.CreateGame(CreateGameRequest{GameID: "preview-new-game", Seed: 0x8009, Settings: appNewGameSettings()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(created.Players) == 0 {
+		t.Fatal("generated game has no players")
+	}
+	seatID := created.Players[0].SeatID
+	snapshot, err := host.PlayerSnapshot("preview-new-game", seatID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	batch := protocol.CommandBatch{
+		SchemaVersion: protocol.CommandSchemaVersion,
+		GameID:        "preview-new-game",
+		SeatID:        seatID,
+		Turn:          snapshot.View.Turn,
+		BaseRevision:  snapshot.View.Revision,
+	}
+	if _, err := host.PlanningPreview("preview-new-game", seatID, batch); err != nil {
+		t.Fatalf("empty planning preview failed: %v", err)
+	}
+}
+func TestSubmittedSeatPlanningPreviewIsSessionRejected(t *testing.T) {
+	host := loadNewGameHost(t)
+	created, err := host.CreateGame(CreateGameRequest{GameID: "submitted-preview", Seed: 0x8010, Settings: appNewGameSettings()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	seatID := created.Players[0].SeatID
+	snapshot, err := host.PlayerSnapshot("submitted-preview", seatID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	batch := protocol.CommandBatch{
+		SchemaVersion: protocol.CommandSchemaVersion,
+		GameID:        "submitted-preview",
+		SeatID:        seatID,
+		Turn:          snapshot.View.Turn,
+		BaseRevision:  snapshot.View.Revision,
+	}
+	if _, err := host.SubmitTurn("submitted-preview", batch); err != nil {
+		t.Fatal(err)
+	}
+	snapshot, err = host.PlayerSnapshot("submitted-preview", seatID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !snapshot.View.Seat.Submitted {
+		t.Fatal("seat should be submitted while another local seat is still pending")
+	}
+	batch.Turn = snapshot.View.Turn
+	batch.BaseRevision = snapshot.View.Revision
+	_, err = host.PlanningPreview("submitted-preview", seatID, batch)
+	if !errors.Is(err, ErrSessionRejected) {
+		t.Fatalf("planning preview error=%v want ErrSessionRejected", err)
+	}
+}

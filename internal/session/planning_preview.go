@@ -1,11 +1,14 @@
 package session
 
 import (
+	"errors"
 	"fmt"
 
 	"moox/internal/game"
 	"moox/internal/protocol"
 )
+
+var ErrPlanningPreviewRejected = errors.New("planning preview rejected")
 
 type PlanningPreview struct {
 	GameID       string                         `json:"game_id"`
@@ -25,29 +28,29 @@ func (s *GameSession) PlanningPreview(batch protocol.CommandBatch, resolver *gam
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	if s.phase != PhasePlanning {
-		return PlanningPreview{}, fmt.Errorf("cannot preview turn in phase %q", s.phase)
+		return PlanningPreview{}, fmt.Errorf("%w: cannot preview turn in phase %q", ErrPlanningPreviewRejected, s.phase)
 	}
 	if err := batch.Validate(); err != nil {
-		return PlanningPreview{}, fmt.Errorf("invalid command batch: %w", err)
+		return PlanningPreview{}, fmt.Errorf("%w: invalid command batch: %v", ErrPlanningPreviewRejected, err)
 	}
 	if batch.GameID != s.gameID {
-		return PlanningPreview{}, fmt.Errorf("command batch targets game %q, expected %q", batch.GameID, s.gameID)
+		return PlanningPreview{}, fmt.Errorf("%w: command batch targets game %q, expected %q", ErrPlanningPreviewRejected, batch.GameID, s.gameID)
 	}
 	if batch.Turn != s.state.Turn {
-		return PlanningPreview{}, fmt.Errorf("command batch targets turn %d, expected %d", batch.Turn, s.state.Turn)
+		return PlanningPreview{}, fmt.Errorf("%w: command batch targets turn %d, expected %d", ErrPlanningPreviewRejected, batch.Turn, s.state.Turn)
 	}
 	if batch.BaseRevision != s.revision {
-		return PlanningPreview{}, fmt.Errorf("command batch base revision %d, expected %d", batch.BaseRevision, s.revision)
+		return PlanningPreview{}, fmt.Errorf("%w: command batch base revision %d, expected %d", ErrPlanningPreviewRejected, batch.BaseRevision, s.revision)
 	}
 	index := s.seatIndexLocked(batch.SeatID)
 	if index < 0 {
-		return PlanningPreview{}, fmt.Errorf("unknown seat %d", batch.SeatID)
+		return PlanningPreview{}, fmt.Errorf("%w: unknown seat %d", ErrPlanningPreviewRejected, batch.SeatID)
 	}
 	if s.empireEliminatedLocked(s.seats[index].seat.EmpireID) {
-		return PlanningPreview{}, fmt.Errorf("seat %d controls eliminated empire %d", batch.SeatID, s.seats[index].seat.EmpireID)
+		return PlanningPreview{}, fmt.Errorf("%w: seat %d controls eliminated empire %d", ErrPlanningPreviewRejected, batch.SeatID, s.seats[index].seat.EmpireID)
 	}
 	if s.seats[index].submission != nil {
-		return PlanningPreview{}, fmt.Errorf("seat %d already submitted turn %d", batch.SeatID, batch.Turn)
+		return PlanningPreview{}, fmt.Errorf("%w: seat %d already submitted turn %d", ErrPlanningPreviewRejected, batch.SeatID, batch.Turn)
 	}
 	clone, err := cloneState(s.state)
 	if err != nil {

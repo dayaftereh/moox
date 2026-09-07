@@ -220,6 +220,9 @@ func (h *Host) PlanningPreview(gameID string, seatID protocol.SeatID, batch prot
 	}
 	preview, err := hosted.session.PlanningPreview(batch, hosted.immediateResolver)
 	if err != nil {
+		if errors.Is(err, session.ErrPlanningPreviewRejected) {
+			return PlanningPreviewSnapshot{}, fmt.Errorf("%w: %v", ErrSessionRejected, err)
+		}
 		return PlanningPreviewSnapshot{}, err
 	}
 	return PlanningPreviewSnapshot{SchemaVersion: SchemaVersion, ChangeSequence: hosted.changeSequence, Preview: preview}, nil

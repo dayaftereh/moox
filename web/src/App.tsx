@@ -213,7 +213,7 @@ function App() {
   }, [gameID, seatID, loadSnapshot])
 
   useEffect(() => {
-    if (!snapshot || snapshot.view.phase !== 'planning') {
+    if (!snapshot || snapshot.view.phase !== 'planning' || snapshot.view.seat.submitted) {
       setPlanningPreview(null)
       setPreviewBusy(false)
       return

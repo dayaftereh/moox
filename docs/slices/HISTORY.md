@@ -141,3 +141,10 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Locked groups copy exact parent gene data; primitive add/remove is disabled only while Wings/Parts is locked.
 - Desktop QA proved all-four-lock descendants match the Doom Star parent geometry exactly, and partial-lock QA proved only the unlocked primitives mutate.
 - Mobile 360x646 renders four locks as 2x2 while retaining the six-candidate 2-column population without horizontal overflow.
+
+## 2026-09-07 - Slice 15.3 submitted-seat Planning-preview 500 fix
+
+- Diagnosed persistent internal_error in live game-1 as an automatic Planning-preview request after Seat 1 had already submitted while the phase remained Planning.
+- Client now suppresses Planning-preview for submitted local seats.
+- Session/App layers type expected Planning-preview boundary rejection as session_rejected instead of allowing HTTP 500 fallback.
+- Added generated-game and submitted-seat regression coverage; live reload of existing game-1 shows no error banner and no Planning-preview request.

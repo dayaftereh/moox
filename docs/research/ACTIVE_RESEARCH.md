@@ -323,3 +323,5 @@ Slice 06 is closed. Slice 07 has since closed via gameplay/data/evidence commit 
 - special/non-player Fleet owners.
 
 Original copyrighted assets remain private reference material and are not distributable MOOX content. Wails/network/MCP layers remain adapters and must not own gameplay legality or deterministic state transitions.
+
+- Submitted-seat Planning-preview fix: docs/research/SLICE_15_3_SUBMITTED_PLANNING_PREVIEW_ERROR_FIX_2026-09-07.md - prevents post-submit preview calls and maps expected preview rejection away from HTTP 500.
