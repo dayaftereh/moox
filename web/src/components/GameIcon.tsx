@@ -27,6 +27,14 @@ export type GameIconName =
   | 'worker'
   | 'scientist'
   | 'info'
+  | 'research-construction'
+  | 'research-computer'
+  | 'research-physics'
+  | 'research-energy'
+  | 'research-sociology'
+  | 'research-biology'
+  | 'research-force-field'
+  | 'star-system'
   | 'test-tube'
   | 'generate'
   | 'check'
@@ -165,6 +173,44 @@ const icons: Record<GameIconName, ReactNode> = {
     <path d="M5.1 19c.5-4.2 2.2-6.3 5.1-6.3 1.6 0 2.9.6 3.8 1.7" />
     <path d="M7.8 7.4h4.8M8.1 6.4h1.6v2H8.1zM10.8 6.4h1.6v2h-1.6z" />
     <path d="M17 12.7v2.7l-2.4 3.9h5.7l-2.4-3.9v-2.7M15.9 16.7h3" />
+  </>,
+  'research-construction': <>
+    <path d="M5 18.8h14M7.2 18.8v-7.2l4.8-3.1 4.8 3.1v7.2" />
+    <path d="M9.3 18.8v-4.4h5.4v4.4M12 4v3M8.7 5.2l1.5 2M15.3 5.2l-1.5 2" />
+  </>,
+  'research-computer': <>
+    <rect x="6.2" y="6.2" width="11.6" height="11.6" rx="1.7" />
+    <rect x="9" y="9" width="6" height="6" rx=".8" />
+    <path d="M9 3.8v2.4M12 3.8v2.4M15 3.8v2.4M9 17.8v2.4M12 17.8v2.4M15 17.8v2.4M3.8 9h2.4M3.8 12h2.4M3.8 15h2.4M17.8 9h2.4M17.8 12h2.4M17.8 15h2.4" />
+  </>,
+  'research-physics': <>
+    <circle cx="12" cy="12" r="1.35" fill="currentColor" stroke="none" />
+    <ellipse cx="12" cy="12" rx="8.2" ry="3.15" />
+    <ellipse cx="12" cy="12" rx="8.2" ry="3.15" transform="rotate(60 12 12)" />
+    <ellipse cx="12" cy="12" rx="8.2" ry="3.15" transform="rotate(120 12 12)" />
+  </>,
+  'research-energy': <>
+    <path d="M13.4 3.8 7.2 13h4.5l-1.1 7.2 6.2-9.2h-4.5l1.1-7.2Z" />
+    <path d="M5 6.5c1.5-1.5 3-2.3 4.6-2.6M19 17.5c-1.5 1.5-3 2.3-4.6 2.6" />
+  </>,
+  'research-sociology': <>
+    <circle cx="12" cy="6.6" r="2" />
+    <circle cx="6.4" cy="15.7" r="2" />
+    <circle cx="17.6" cy="15.7" r="2" />
+    <path d="m10.8 8.4-3.2 5.5M13.2 8.4l3.2 5.5M8.4 15.7h7.2" />
+  </>,
+  'research-biology': <>
+    <path d="M8 4.1c5 3.2 5 12.6 0 15.8M16 4.1c-5 3.2-5 12.6 0 15.8" />
+    <path d="M8.8 6.8h6.4M7.8 10.2h8.4M7.8 13.8h8.4M8.8 17.2h6.4" />
+  </>,
+  'research-force-field': <>
+    <path d="M12 3.8 18.2 6v5.1c0 4.2-2.4 7.3-6.2 9.1-3.8-1.8-6.2-4.9-6.2-9.1V6L12 3.8Z" />
+    <path d="M8.3 12c1.2-1.4 2.4-2.1 3.7-2.1s2.5.7 3.7 2.1M9.4 14.7c.8-.8 1.7-1.2 2.6-1.2s1.8.4 2.6 1.2" />
+  </>,
+  'star-system': <>
+    <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none" />
+    <circle cx="12" cy="12" r="6.8" />
+    <path d="M12 2.7v2M12 19.3v2M2.7 12h2M19.3 12h2M5.4 5.4l1.4 1.4M17.2 17.2l1.4 1.4M18.6 5.4l-1.4 1.4M6.8 17.2l-1.4 1.4" />
   </>,
   'test-tube': <>
     <path d="M9 4h6M10 4v6.1l-4.3 7.2c-.8 1.3.2 2.9 1.7 2.9h9.2c1.5 0 2.5-1.6 1.7-2.9L14 10.1V4" />

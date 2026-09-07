@@ -197,3 +197,11 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Changed the standalone `moox-server` default bind from `127.0.0.1:8080` to `127.0.0.1:7171`.
 - Updated the Vite API/health proxy and architecture/research references to use 7171 consistently.
 - Runtime review server was migrated from temporary 7172 back to 7171 after exporting/importing `game-1`; the restored snapshot matched the source SHA-256 exactly.
+
+## 2026-09-07 - Slice 15.3 Research categories and Galaxy markers
+
+- Added distinct SVG identities for Construction, Chemistry, Computer, Physics, Energy, Sociology, Biology and Force Fields while keeping the global Research microscope.
+- Replaced the Galaxy system CSS dot with a shared `star-system` SVG.
+- Added compact own Colony/Outpost/Fleet markers and diplomacy-toned foreign Colony/Outpost/Fleet contact markers; duplicate empire+kind contacts are collapsed.
+- Reused the same star/contact language in the System dialog.
+- Desktop and 320px-mobile browser QA on canonical port 7171 passes without danger banners or horizontal overflow.

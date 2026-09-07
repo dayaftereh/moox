@@ -3100,3 +3100,110 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   height: 15px;
 }
 .button-compact > .game-icon { width: 13px; height: 13px; }
+
+/* Slice 15.3 research categories and strategic markers. */
+.galaxy-node { overflow: visible; }
+.galaxy-node-fleet { box-shadow: 0 0 0 5px rgba(75, 141, 255, .09), 0 0 15px rgba(75, 141, 255, .16); }
+.galaxy-star {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  margin: auto;
+  place-items: center;
+  border-radius: 0;
+  background: transparent;
+  color: #dce9ff;
+}
+.galaxy-star .game-icon { width: 18px; height: 18px; filter: drop-shadow(0 0 4px rgba(182, 216, 255, .48)); }
+.galaxy-node-markers {
+  position: absolute;
+  top: -8px;
+  left: 22px;
+  z-index: 2;
+  display: flex;
+  gap: 2px;
+  pointer-events: none;
+}
+.galaxy-node-marker {
+  position: relative;
+  display: grid;
+  width: 15px;
+  height: 15px;
+  place-items: center;
+  border: 1px solid #587397;
+  border-radius: 999px;
+  background: #07111f;
+  color: #b8c9df;
+  box-shadow: 0 2px 7px rgba(0, 0, 0, .35);
+}
+.galaxy-node-marker .game-icon { width: 9px; height: 9px; }
+.galaxy-node-marker-colony { border-color: var(--success); color: var(--success); }
+.galaxy-node-marker-outpost { border-color: var(--warning); color: var(--warning); }
+.galaxy-node-marker-own-fleet { border-color: #74a8ff; color: #9bc0ff; }
+.galaxy-node-marker-contact.relation-friendly { border-color: var(--success); color: var(--success); }
+.galaxy-node-marker-contact.relation-neutral { border-color: #8192aa; color: #a8b7ca; }
+.galaxy-node-marker-contact.relation-hostile { border-color: var(--danger); color: var(--danger); }
+.galaxy-node-marker-contact.relation-own { border-color: #74a8ff; color: #9bc0ff; }
+.galaxy-node-marker small {
+  position: absolute;
+  right: -5px;
+  bottom: -6px;
+  min-width: 11px;
+  padding: 0 2px;
+  border-radius: 999px;
+  background: #132a49;
+  color: #e6f0ff;
+  font-size: .45rem;
+  line-height: 11px;
+  text-align: center;
+}
+.system-dialog-classic-header h2 { display: flex; align-items: center; gap: 7px; }
+.system-dialog-classic-header h2 .game-icon { width: 18px; height: 18px; color: #dce9ff; }
+.system-contact-badge { gap: 5px; }
+.system-contact-badge .game-icon { width: 12px; height: 12px; }
+.system-contact-badge.relation-friendly { border-color: rgba(99, 214, 154, .7); color: #a9ebc8; background: rgba(99, 214, 154, .1); }
+.system-contact-badge.relation-neutral { border-color: #536984; color: #bdcadb; background: rgba(112, 132, 159, .1); }
+.system-contact-badge.relation-hostile { border-color: rgba(255, 116, 135, .72); color: #ffacb8; background: rgba(255, 116, 135, .1); }
+.system-contact-badge.relation-own { border-color: rgba(75, 141, 255, .72); color: #b7d1ff; }
+.research-category-card { position: relative; overflow: hidden; }
+.research-category-heading {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin-bottom: 10px;
+}
+.research-category-heading > div { min-width: 0; }
+.research-category-heading .eyebrow { margin-bottom: 2px; }
+.research-category-heading h2 { margin: 0; }
+.research-category-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  place-items: center;
+  border: 1px solid rgba(96, 148, 218, .42);
+  border-radius: 11px;
+  background: linear-gradient(145deg, rgba(59, 108, 175, .2), rgba(14, 27, 45, .7));
+  color: #a9cfff;
+}
+.research-category-icon .game-icon { width: 25px; height: 25px; }
+.research-field-title {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  color: #d7dbe0 !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+}
+.research-field-title .game-icon { width: 15px; height: 15px; flex: 0 0 15px; color: #b9cee4; }
+.research-field-title strong { min-width: 0; }
+.research-field-select { display: inline-flex; align-items: center; gap: 6px; }
+.research-field-select .game-icon { width: 13px; height: 13px; }
+.research-overlay-close .game-icon { width: 14px; height: 14px; margin: auto; }
+@media (max-width: 700px) {
+  .research-category-icon { width: 36px; height: 36px; flex-basis: 36px; border-radius: 9px; }
+  .research-category-icon .game-icon { width: 22px; height: 22px; }
+  .galaxy-node-marker { width: 14px; height: 14px; }
+  .galaxy-node-marker .game-icon { width: 8px; height: 8px; }
+}

@@ -8,12 +8,14 @@ import {
   type DraftOrder,
   type DiplomacyCommandKind,
   type DiplomaticStance,
+  type DiplomacyView,
   type PlanningMetricBreakdown,
   type PlanningPreviewSnapshot,
   type PlayerSnapshot,
   type PopulationJob,
   type PopulationTransferChoice,
   type ResearchChoice,
+  type StrategicContact,
   type StarSystem,
 } from './api'
 import { ProceduralShipGlyph } from './components/ProceduralShipGlyph'
@@ -27,6 +29,37 @@ const populationJobIcons: Record<PopulationJob, GameIconName> = {
   farmer: 'farmer',
   worker: 'worker',
   scientist: 'scientist',
+}
+
+const researchCategoryIcons: readonly GameIconName[] = [
+  'research-construction',
+  'test-tube',
+  'research-computer',
+  'research-physics',
+  'research-energy',
+  'research-sociology',
+  'research-biology',
+  'research-force-field',
+]
+
+function researchCategoryIcon(order: number): GameIconName {
+  return researchCategoryIcons[order] ?? 'research'
+}
+
+type StrategicRelationTone = 'own' | 'friendly' | 'neutral' | 'hostile'
+
+function strategicRelationTone(ownEmpireID: number, otherEmpireID: number, diplomacy: DiplomacyView[] | undefined): StrategicRelationTone {
+  if (otherEmpireID === ownEmpireID) return 'own'
+  const stance = diplomacy?.find((item) => item.other_empire_id === otherEmpireID)?.stance
+  if (stance === 'war') return 'hostile'
+  if (stance === 'peace') return 'friendly'
+  return 'neutral'
+}
+
+function strategicContactIcon(kind: StrategicContact['kind']): GameIconName {
+  if (kind === 'colony') return 'colonies'
+  if (kind === 'outpost') return 'outpost'
+  return 'fleets'
 }
 
 function localizedPhase(t: Translator, phase: string): string {
@@ -299,11 +332,18 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
             {systems.map((system) => {
               const ownsColony = (system.planets ?? []).some((planet) => decision.colonies.some((colony) => colony.planet_id === planet.id))
               const ownOutpost = (system.bodies ?? []).some((body) => Boolean(body.outpost_id) && decision.strategic.outposts?.some((outpost) => outpost.id === body.outpost_id && outpost.empire_id === decision.empire.id))
+              const ownFleets = (decision.strategic.fleets ?? []).filter((fleet) => fleet.empire_id === decision.empire.id && fleet.at_system_id === system.id)
+              const ownFleetUnits = ownFleets.reduce((sum, fleet) => sum + (fleet.special_kind ? 1 : Math.max(1, fleet.ship_ids?.length ?? 0)), 0)
+              const foreignContacts = Array.from(new Map(
+                (decision.strategic.contacts ?? [])
+                  .filter((contact) => contact.system_id === system.id && contact.empire_id !== decision.empire.id)
+                  .map((contact) => [contact.empire_id + ':' + contact.kind, contact]),
+              ).values()).slice(0, 3)
               return (
                 <button
                   key={system.id}
                   type="button"
-                  className={'galaxy-node' + (selectedSystemID === system.id ? ' galaxy-node-selected' : '') + (ownsColony ? ' galaxy-node-colony' : ownOutpost ? ' galaxy-node-outpost' : '')}
+                  className={'galaxy-node' + (selectedSystemID === system.id ? ' galaxy-node-selected' : '') + (ownsColony ? ' galaxy-node-colony' : ownOutpost ? ' galaxy-node-outpost' : '') + (ownFleetUnits > 0 ? ' galaxy-node-fleet' : '')}
                   style={{
                     left: (8 + ((system.x - bounds.minX) / spanX) * 84) + '%',
                     top: (8 + ((system.y - bounds.minY) / spanY) * 84) + '%',
@@ -315,7 +355,25 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                   }}
                   title={system.name + ' (' + system.x + ', ' + system.y + ')'}
                 >
-                  <span className="galaxy-star" aria-hidden="true" />
+                  <span className="galaxy-star" aria-hidden="true"><GameIcon name="star-system" /></span>
+                  <span className="galaxy-node-markers" aria-hidden="true">
+                    {ownsColony && <span className="galaxy-node-marker galaxy-node-marker-colony"><GameIcon name="colonies" /></span>}
+                    {ownOutpost && !ownsColony && <span className="galaxy-node-marker galaxy-node-marker-outpost"><GameIcon name="outpost" /></span>}
+                    {ownFleetUnits > 0 && (
+                      <span className="galaxy-node-marker galaxy-node-marker-own-fleet">
+                        <GameIcon name="fleets" />
+                        {ownFleetUnits > 1 && <small>{ownFleetUnits}</small>}
+                      </span>
+                    )}
+                    {foreignContacts.map((contact, index) => {
+                      const tone = strategicRelationTone(decision.empire.id, contact.empire_id, decision.diplomacy)
+                      return (
+                        <span className={'galaxy-node-marker galaxy-node-marker-contact relation-' + tone} key={'marker-' + system.id + '-' + contact.empire_id + '-' + index}>
+                          <GameIcon name={strategicContactIcon(contact.kind)} />
+                        </span>
+                      )
+                    })}
+                  </span>
                   <span className="galaxy-node-label" aria-hidden="true">{system.name}</span>
                 </button>
               )
@@ -387,7 +445,11 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
   if (!decision) return null
 
   const fleets = decision.strategic.fleets?.filter((fleet) => fleet.at_system_id === system.id) ?? []
-  const contacts = decision.strategic.contacts?.filter((contact) => contact.system_id === system.id) ?? []
+  const contacts = Array.from(new Map(
+    (decision.strategic.contacts ?? [])
+      .filter((contact) => contact.system_id === system.id)
+      .map((contact) => [contact.empire_id + ':' + contact.kind, contact]),
+  ).values())
   const shipsByID = new Map((decision.strategic.ships ?? []).map((ship) => [ship.id, ship]))
   const selectedFleet = fleets.find((fleet) => fleet.id === selectedFleetID) ?? fleets[0]
   const selectedFleetShips = selectedFleet?.ship_ids
@@ -443,7 +505,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
         <header className="system-dialog-header system-dialog-classic-header">
           <div>
             <p className="eyebrow">{t('system.title', { system: system.name })}</p>
-            <h2 id={'system-dialog-title-' + system.id}>{system.name}</h2>
+            <h2 id={'system-dialog-title-' + system.id}><GameIcon name="star-system" />{system.name}</h2>
           </div>
           <span className="badge system-star-class">{t('system.starClass', { class: system.spectral_class })}</span>
         </header>
@@ -536,7 +598,15 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
           <div className="system-dialog-footer-left">
             {contacts.length > 0 && (
               <div className="system-traffic-strip" aria-label={t('system.fleets')}>
-                {contacts.map((contact, index) => <span className="badge" key={'contact-' + index + '-' + contact.empire_id}>{t('common.empireFallback', { id: contact.empire_id })} · {contact.kind}</span>)}
+                {contacts.map((contact, index) => {
+                  const tone = strategicRelationTone(decision.empire.id, contact.empire_id, decision.diplomacy)
+                  return (
+                    <span className={'badge system-contact-badge relation-' + tone} key={'contact-' + index + '-' + contact.empire_id}>
+                      <GameIcon name={strategicContactIcon(contact.kind)} />
+                      {t('common.empireFallback', { id: contact.empire_id })} · {contact.kind}
+                    </span>
+                  )
+                })}
               </div>
             )}
           </div>
@@ -1699,21 +1769,22 @@ export function StrategicResearchOverlay({ snapshot, preview, draftOrders, onPla
             <span>{t('research.rpRate')}</span><strong>{active?.rp_per_turn.toFixed(1) ?? '—'} RP</strong>
             <span>{t('research.eta')}</span><strong>{formatEta(t, active?.eta_turns)}</strong>
           </div>
-          <button type="button" className="button-ghost research-overlay-close" onClick={onClose} aria-label={t('common.close')}>×</button>
+          <button type="button" className="button-ghost research-overlay-close" onClick={onClose} aria-label={t('common.close')}><GameIcon name="close" /></button>
         </header>
 
         <div className="research-grid-classic">
           {categories.map((category) => {
+            const categoryIcon = researchCategoryIcon(category.order)
             const choice = choices.find((item) => item.category_id === category.id)
             if (!choice) {
-              return <section className="research-field-panel research-field-disabled" key={category.id}><div className="research-field-bar"><strong>{serverLabel(t, category.name_key, category.id)}</strong></div><p>{t('common.none')}</p></section>
+              return <section className="research-field-panel research-field-disabled" key={category.id}><div className="research-field-bar"><span className="research-field-title"><GameIcon name={categoryIcon} /><strong>{serverLabel(t, category.name_key, category.id)}</strong></span></div><p>{t('common.none')}</p></section>
             }
             const isActive = activeFieldID === choice.tech_field_id
             const fieldName = t('research.fieldNumber', { id: choice.tech_field_id })
             return (
               <section className={`research-field-panel${isActive ? ' active' : ''}`} key={category.id}>
                 <div className="research-field-bar">
-                  <strong>{serverLabel(t, category.name_key, category.id)}</strong>
+                  <span className="research-field-title"><GameIcon name={categoryIcon} /><strong>{serverLabel(t, category.name_key, category.id)}</strong></span>
                   <span>{choice.base_cost_rp.toFixed(0)} RP</span>
                 </div>
                 <div className="research-field-body">
@@ -1756,7 +1827,7 @@ export function StrategicResearchOverlay({ snapshot, preview, draftOrders, onPla
                             </span>
                           )
                         })}
-                        <button type="button" className="research-field-select" onClick={() => selectResearch(choice)}>{isActive ? t('research.reselect') : t('research.select')}</button>
+                        <button type="button" className="research-field-select" onClick={() => selectResearch(choice)}><GameIcon name={categoryIcon} />{isActive ? t('research.reselect') : t('research.select')}</button>
                       </>
                     )}
                   </div>
@@ -1808,11 +1879,14 @@ export function StrategicResearchView({ snapshot, preview, onPlanOrder, t }: {
       </Card>
       <div className="content-grid content-grid-2">
         {categories.length === 0 ? <EmptyState title={t('research.pending')} /> : categories.map((category) => {
+          const categoryIcon = researchCategoryIcon(category.order)
           const choice = choices.find((item) => item.category_id === category.id)
           return (
-            <Card key={category.id}>
-              <p className="eyebrow">{category.order}. {serverLabel(t, category.name_key, category.id)}</p>
-              <h2>{serverLabel(t, category.name_key, category.id)}</h2>
+            <Card className="research-category-card" key={category.id}>
+              <div className="research-category-heading">
+                <span className="research-category-icon" aria-hidden="true"><GameIcon name={categoryIcon} /></span>
+                <div><p className="eyebrow">{category.order}. {serverLabel(t, category.name_key, category.id)}</p><h2>{serverLabel(t, category.name_key, category.id)}</h2></div>
+              </div>
               {!choice ? <p className="muted">{t('common.none')}</p> : (
                 <>
                   <dl className="detail-list compact">

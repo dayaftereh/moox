@@ -86,3 +86,5 @@ Defer:
 - [ ] Verify asset provenance metadata and no accidental unapproved original-game asset shipping.
 - [ ] Verify runtime asset load/fallback paths and production web build.
 - [ ] Run relevant tests plus `git diff --check`, update evidence/status/HISTORY and close marker.
+
+- [x] Integrate the eight authoritative Research categories with distinct SVG identities and add first Galaxy/System/Fleet/contact markers with diplomacy tones; browser-verify desktop and 320px mobile on canonical port 7171.

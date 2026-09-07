@@ -124,3 +124,7 @@ Next relevant visual work remains:
 - Fleet/entity markers;
 - construction/building categories;
 - broader action-button review after more screens mature.
+
+## Research category and Galaxy integration follow-up (2026-09-07)
+
+The eight authoritative Research areas now have distinct SVG identities on both the full Research page and classic overlay. The same pass replaced the Galaxy CSS star dot with a `star-system` SVG and added compact own-colony/outpost/fleet plus diplomacy-toned foreign contact markers. See `docs/research/SLICE_15_3_RESEARCH_GALAXY_ICON_INTEGRATION_2026-09-07.md`.
