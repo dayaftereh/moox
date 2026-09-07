@@ -327,3 +327,5 @@ Original copyrighted assets remain private reference material and are not distri
 - Submitted-seat Planning-preview fix: docs/research/SLICE_15_3_SUBMITTED_PLANNING_PREVIEW_ERROR_FIX_2026-09-07.md - prevents post-submit preview calls and maps expected preview rejection away from HTTP 500.
 
 - Full-random Ship Morphology v3: docs/research/SLICE_15_3_FULL_RANDOM_SHIP_MORPHOLOGY_V3_2026-09-07.md - primary single-ship reroll UX with eight topology families spanning Needle through Bulb/Asymmetric.
+
+- Symmetric half-hull / class footprint v4: docs/research/SLICE_15_3_SYMMETRIC_HALF_HULL_SCALE_V4_2026-09-07.md - strict X-axis mirroring, asymmetric morphology removed from default pool, Space values surfaced, and Scout-to-Doom-Star visible footprint scaling.

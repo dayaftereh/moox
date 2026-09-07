@@ -156,3 +156,12 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Each roll independently randomizes morphology and Style DNA, then generates topology-specific envelope, signature primitives, details, concavity/cutouts and engines.
 - Desktop browser QA reached all eight topology families within 24 rolls, with structural aspect ratios spanning roughly 0.70:1 to 9.15:1.
 - Mobile 360x646 remains overflow-free across repeated extreme rerolls; Use this design preserves the exact chosen genome while later rolls continue independently.
+
+## 2026-09-07 - Slice 15.3 symmetric half-hull v4
+
+- Advanced procedural ship visuals to Visual Genome v4: lateral details are generated once and mirrored exactly across the longitudinal X axis.
+- Removed Asymmetric/Oddform from the standard random morphology pool; seven symmetric topology families remain.
+- Mirrored primitives, cutouts and hardpoints now have explicit QA metadata; engines remain axis-centered.
+- Added hull Space display: Scout/Frigate 25, Destroyer 60, Cruiser 120, Battleship 250, Titan 500, Doom Star 1200.
+- Added explicit visible class footprints 0.40/0.48/0.58/0.68/0.78/0.90/1.00 so Doom Star fills the shared preview while smaller hulls remain visibly smaller.
+- Desktop measured Scout ~184x136, Cruiser ~313x231, Doom Star ~461x340 in the same 512x390 stage; mobile Scout ~120x78 versus Doom Star ~299x195 in the same 311x220 stage.

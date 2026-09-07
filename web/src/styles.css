@@ -3032,3 +3032,17 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .shipbuilder-random-actions { grid-template-columns: 1fr; }
   .shipbuilder-side-stack.random { grid-template-columns: 1fr; }
 }
+/* Slice 15.3 symmetric half-hull footprint scaling. */
+.shipbuilder-random-ship,
+.shipbuilder-hull-thumb,
+.shipbuilder-kept-ship {
+  transform-origin: 50% 50%;
+}
+
+@media (max-width: 760px) {
+  .shipbuilder-random-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 520px) {
+  .shipbuilder-random-meta { grid-template-columns: 1fr; }
+}

@@ -3,7 +3,7 @@ import type { PlayerSnapshot } from './api'
 import { ProceduralShipGlyph } from './components/ProceduralShipGlyph'
 import { Card, PageHeader } from './components/ui'
 import type { TranslationKey, TranslationVars } from './i18n'
-import { createRandomShipGenome, createShipGenome, type ShipMorphologyID, type ShipStyleID, type ShipVisualGenome } from './shipVisualGenome'
+import { createRandomShipGenome, createShipGenome, shipHullFootprint, shipHullSpace, type ShipMorphologyID, type ShipStyleID, type ShipVisualGenome } from './shipVisualGenome'
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
 
@@ -27,7 +27,6 @@ const morphologyLabels: Record<ShipMorphologyID, TranslationKey> = {
   chevron: 'shipbuilder.morphology.chevron',
   hammer: 'shipbuilder.morphology.hammer',
   bulb: 'shipbuilder.morphology.bulb',
-  asymmetric: 'shipbuilder.morphology.asymmetric',
 }
 
 const styleLabels: Record<ShipStyleID, TranslationKey> = {
@@ -83,8 +82,8 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
               aria-pressed={hull.id === hullID}
               onClick={() => selectHull(hull.id)}
             >
-              <ProceduralShipGlyph seed={`shipbuilder:hull:${hull.id}`} hullId={hull.id} genome={createShipGenome(`shipbuilder:hull:${hull.id}`, hull.id, 'spear', 'manta')} className="shipbuilder-hull-thumb" />
-              <span><strong>{t(hull.label)}</strong><small>{t(hull.status)}</small></span>
+              <ProceduralShipGlyph seed={`shipbuilder:hull:${hull.id}`} hullId={hull.id} genome={createShipGenome(`shipbuilder:hull:${hull.id}`, hull.id, 'spear', 'manta')} footprint={shipHullFootprint(hull.id)} className="shipbuilder-hull-thumb" />
+              <span><strong>{t(hull.label)}</strong><small>{t(hull.status)}</small><small>{t('shipbuilder.spaceValue', { space: shipHullSpace(hull.id) })}</small></span>
             </button>
           ))}
         </div>
@@ -106,6 +105,7 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
               seed={candidate.seed}
               hullId={hullID}
               genome={candidate}
+              footprint={shipHullFootprint(hullID)}
               className="shipbuilder-random-ship"
               label={`${hullLabel(t, hullID)} ${roll}`}
             />
@@ -125,6 +125,10 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
               <span className="eyebrow">{t('shipbuilder.randomness')}</span>
               <strong>{candidate.primitives.length} {t('shipbuilder.primitives')}</strong>
             </div>
+            <div>
+              <span className="eyebrow">{t('shipbuilder.space')}</span>
+              <strong>{shipHullSpace(hullID)}</strong>
+            </div>
           </div>
 
           <div className="shipbuilder-random-actions">
@@ -140,10 +144,10 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
             {kept ? (
               <>
                 <div className="shipbuilder-kept-stage">
-                  <ProceduralShipGlyph seed={kept.seed} hullId={String(kept.hullId)} genome={kept} className="shipbuilder-kept-ship" />
+                  <ProceduralShipGlyph seed={kept.seed} hullId={String(kept.hullId)} genome={kept} footprint={shipHullFootprint(kept.hullId)} className="shipbuilder-kept-ship" />
                 </div>
                 <strong>{hullLabel(t, kept.hullId as HullID)}</strong>
-                <small className="muted">{t(morphologyLabels[kept.morphologyId])} · {t(styleLabels[kept.styleId])} · genome v{kept.version}</small>
+                <small className="muted">{t(morphologyLabels[kept.morphologyId])} · {t(styleLabels[kept.styleId])} · genome v{kept.version} · {t('shipbuilder.spaceValue', { space: shipHullSpace(kept.hullId) })}</small>
               </>
             ) : <p className="muted">{t('shipbuilder.randomKeepHint')}</p>}
           </Card>

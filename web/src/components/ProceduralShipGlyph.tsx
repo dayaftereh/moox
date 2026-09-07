@@ -9,6 +9,7 @@ type ProceduralShipGlyphProps = {
   className?: string
   label?: string
   genome?: ShipVisualGenome
+  footprint?: number
 }
 
 type Cutout = {
@@ -39,8 +40,7 @@ function pointPath(points: Point[]): string {
 
 function primitivePath(primitive: ShipPrimitiveGene, side: -1 | 1, centerX: number, centerY: number, length: number, beam: number): string {
   const x = centerX - length / 2 + primitive.t * length
-  const outward = side
-  const rootY = centerY + outward * beam * .34
+  const rootY = centerY + side * beam * .34
   const wingLength = primitive.length
   const wingWidth = primitive.width
   const sweep = primitive.sweep * wingLength * .18
@@ -48,25 +48,25 @@ function primitivePath(primitive: ShipPrimitiveGene, side: -1 | 1, centerX: numb
   if (primitive.kind === 'spike') {
     return pointPath([
       [x - wingLength * .42, rootY],
-      [x + wingLength * .54 + sweep, rootY + outward * wingWidth],
-      [x + wingLength * .12, rootY + outward * wingWidth * .12],
+      [x + wingLength * .54 + sweep, rootY + side * wingWidth],
+      [x + wingLength * .12, rootY + side * wingWidth * .12],
     ])
   }
 
   if (primitive.kind === 'pod') {
     return pointPath([
-      [x - wingLength * .48, rootY + outward * wingWidth * .22],
-      [x, rootY + outward * wingWidth],
-      [x + wingLength * .48, rootY + outward * wingWidth * .22],
-      [x, rootY - outward * wingWidth * .08],
+      [x - wingLength * .48, rootY + side * wingWidth * .22],
+      [x, rootY + side * wingWidth],
+      [x + wingLength * .48, rootY + side * wingWidth * .22],
+      [x, rootY - side * wingWidth * .08],
     ])
   }
 
   return pointPath([
     [x - wingLength * .48, rootY],
-    [x + sweep, rootY + outward * wingWidth * .44],
-    [x + wingLength * .56 + sweep, rootY + outward * wingWidth],
-    [x + wingLength * .18, rootY + outward * wingWidth * .08],
+    [x + sweep, rootY + side * wingWidth * .44],
+    [x + wingLength * .56 + sweep, rootY + side * wingWidth],
+    [x + wingLength * .18, rootY + side * wingWidth * .08],
   ])
 }
 
@@ -76,9 +76,11 @@ function makeGeometry(genome: ShipVisualGenome, weaponCount: number, canvas: { w
   const rearX = centerX - genome.length / 2
   const noseX = centerX + genome.length / 2
   const segment = genome.length / Math.max(1, genome.stationCount - 1)
+
+  // Generate one canonical half only. stationWidths/notchDepths are positive
+  // distances from the longitudinal X axis; the lower half is a strict mirror.
   const upper: Point[] = []
   let notchCount = 0
-
   for (let station = 0; station < genome.stationCount; station += 1) {
     const t = station / Math.max(1, genome.stationCount - 1)
     const x = rearX + t * genome.length
@@ -101,14 +103,15 @@ function makeGeometry(genome: ShipVisualGenome, weaponCount: number, canvas: { w
     }
   }
 
-  const lower: Point[] = [...upper].reverse().map(([x, y]) => [x, centerY + (centerY - y)] as Point)
+  const lower: Point[] = [...upper].reverse().map(([x, y]) => [x, 2 * centerY - y] as Point)
   const hullPath = pointPath([...upper, ...lower])
 
-  const primitivePaths: string[] = []
-  genome.primitives.forEach((primitive) => {
-    primitivePaths.push(primitivePath(primitive, primitive.side, centerX, centerY, genome.length, genome.beam))
-    if (primitive.mirrored) primitivePaths.push(primitivePath(primitive, primitive.side === 1 ? -1 : 1, centerX, centerY, genome.length, genome.beam))
-  })
+  // Every primitive exists only once in the genome and is always rendered as
+  // an exact upper/lower pair. This removes accidental whole-ship asymmetry.
+  const primitivePaths = genome.primitives.flatMap((primitive) => [
+    primitivePath(primitive, -1, centerX, centerY, genome.length, genome.beam),
+    primitivePath(primitive, 1, centerX, centerY, genome.length, genome.beam),
+  ])
 
   const panelLines: string[] = []
   for (let index = 0; index < genome.detailCount; index += 1) {
@@ -119,28 +122,39 @@ function makeGeometry(genome: ShipVisualGenome, weaponCount: number, canvas: { w
     panelLines.push(`M ${x.toFixed(1)} ${(centerY - half).toFixed(1)} L ${x.toFixed(1)} ${(centerY + half).toFixed(1)}`)
   }
 
+  // Engine placement is centered around the axis, so even and odd engine
+  // counts remain bilaterally symmetric.
   const engineSpacing = Math.min(9, Math.max(4.5, genome.beam * .34))
   const engineYs = Array.from({ length: genome.engineCount }, (_, index) => centerY + (index - (genome.engineCount - 1) / 2) * engineSpacing)
   const engineX = rearX + Math.max(1.8, genome.length * .018)
   const engineTrailX = Math.max(2, rearX - Math.max(7, genome.length * .085))
 
+  // Weapon dots also preserve bilateral symmetry. An odd final marker sits on
+  // the centerline rather than breaking the silhouette.
   const hardpointCount = Math.min(8, Math.max(0, weaponCount))
-  const hardpoints: Point[] = Array.from({ length: hardpointCount }, (_, index) => {
-    const t = .38 + (index / Math.max(1, hardpointCount - 1)) * .44
+  const pairCount = Math.floor(hardpointCount / 2)
+  const hardpoints: Point[] = []
+  for (let index = 0; index < pairCount; index += 1) {
+    const t = .42 + (index / Math.max(1, pairCount - 1)) * .34
     const x = rearX + t * genome.length
-    const side = index % 2 === 0 ? -1 : 1
     const envelope = Math.pow(Math.sin(Math.PI * t), .62)
-    const y = centerY + side * Math.max(4, envelope * genome.beam * .54)
-    return [x, y] as Point
-  })
+    const offset = Math.max(4, envelope * genome.beam * .54)
+    hardpoints.push([x, centerY - offset], [x, centerY + offset])
+  }
+  if (hardpointCount % 2 === 1) hardpoints.push([rearX + genome.length * .64, centerY])
 
-  const cutouts: Cutout[] = genome.cutouts.map((cutout) => ({
-    cx: rearX + cutout.t * genome.length,
-    cy: centerY + cutout.side * cutout.offset,
-    rx: cutout.rx,
-    ry: cutout.ry,
-    angle: cutout.angle,
-  }))
+  // Cutouts are also stored as one half-gene and mirrored. Centerline cutouts
+  // (offset 0, e.g. Fork) are emitted once.
+  const cutouts: Cutout[] = genome.cutouts.flatMap((cutout) => {
+    const cx = rearX + cutout.t * genome.length
+    if (Math.abs(cutout.offset) < .001) {
+      return [{ cx, cy: centerY, rx: cutout.rx, ry: cutout.ry, angle: 0 }]
+    }
+    return [
+      { cx, cy: centerY - cutout.offset, rx: cutout.rx, ry: cutout.ry, angle: cutout.angle },
+      { cx, cy: centerY + cutout.offset, rx: cutout.rx, ry: cutout.ry, angle: -cutout.angle },
+    ]
+  })
 
   return {
     hullPath,
@@ -157,7 +171,7 @@ function makeGeometry(genome: ShipVisualGenome, weaponCount: number, canvas: { w
   }
 }
 
-export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className = '', label, genome }: ProceduralShipGlyphProps) {
+export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className = '', label, genome, footprint = 1 }: ProceduralShipGlyphProps) {
   const resolvedGenome = genome ?? createShipGenome(seed, hullId ?? 'generic')
   const canvas = {
     width: Math.ceil(Math.max(180, resolvedGenome.length * 1.65)),
@@ -165,7 +179,7 @@ export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className =
   }
   const geometry = makeGeometry(resolvedGenome, weaponCount, canvas)
   const classes = `procedural-ship-glyph${className ? ` ${className}` : ''}`
-  const maskID = `ship-mask-${hashSeed(`${resolvedGenome.seed}|${geometry.profileKey}`).toString(16)}`
+  const maskID = `ship-mask-${hashSeed(`${resolvedGenome.seed}|${geometry.profileKey}|v4`).toString(16)}`
 
   return (
     <svg
@@ -175,10 +189,15 @@ export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className =
       aria-label={label}
       aria-hidden={label ? undefined : true}
       focusable="false"
+      style={{ transform: `scale(${footprint})`, transformOrigin: '50% 50%' }}
+      data-footprint={footprint.toFixed(2)}
       data-hull-id={geometry.profileKey}
+      data-symmetry="x-axis"
       data-notch-count={geometry.notchCount}
+      data-half-cutout-count={resolvedGenome.cutouts.length}
       data-cutout-count={geometry.cutouts.length}
-      data-primitive-count={resolvedGenome.primitives.length}
+      data-half-primitive-count={resolvedGenome.primitives.length}
+      data-primitive-count={geometry.primitivePaths.length}
       data-engine-count={resolvedGenome.engineCount}
       data-genome-version={resolvedGenome.version}
       data-style-id={resolvedGenome.styleId}

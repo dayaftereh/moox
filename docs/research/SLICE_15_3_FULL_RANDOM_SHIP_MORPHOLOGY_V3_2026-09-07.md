@@ -263,3 +263,6 @@ The next generator work should focus on **quality and persistence**, not reintro
 - persist the accepted Visual Genome v3 in the authoritative/save design contract;
 - define migration/fallback behavior for future genome versions;
 - later connect the kept visual design to Slice 17 ship equipment editing.
+## Superseded symmetry contract (2026-09-07)
+
+The full-random one-ship reroll UX remains accepted, but the generator semantics are now superseded by Visual Genome v4: only one lateral half is generated and all standard ships are mirrored across the X axis. The symmetric morphology is removed from the default pool. Hull Space and explicit Scout-to-Doom-Star preview footprint scaling were added at the same time. See docs/research/SLICE_15_3_SYMMETRIC_HALF_HULL_SCALE_V4_2026-09-07.md.
