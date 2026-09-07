@@ -175,3 +175,6 @@ The next useful review is visual rather than architectural:
 - sample each of the seven symmetric morphology families across Scout, Cruiser and Doom Star;
 - refine signature half-primitives so Manta/Chevron/Fork remain clearly different after mandatory mirroring;
 - then continue with accepted Visual Genome v4 persistence/versioning and faction/race weighting.
+## Server persistence follow-up (2026-09-07)
+
+Accepted Visual Genome v4 geometry is now authoritative server/save data with an independent VisualRevision. Use this design persists the full resolved half-hull genome through an immediate command; completed ships freeze the accepted genome and source visual revision. Details: docs/research/SLICE_15_3_VISUAL_GENOME_V4_SERVER_PERSISTENCE_2026-09-07.md.

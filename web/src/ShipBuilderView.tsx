@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import type { PlayerSnapshot } from './api'
+import { useEffect, useMemo, useState } from 'react'
+import { decodeShipVisualGenome, submitMilitaryDesignVisual, type PlayerSnapshot } from './api'
 import { ProceduralShipGlyph } from './components/ProceduralShipGlyph'
 import { Card, PageHeader } from './components/ui'
 import type { TranslationKey, TranslationVars } from './i18n'
@@ -40,13 +40,23 @@ function hullLabel(t: Translator, hullID: HullID): string {
 }
 
 export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: Translator }) {
-  const [hullID, setHullID] = useState<HullID>('scout')
-  const [roll, setRoll] = useState(1)
-  const [kept, setKept] = useState<ShipVisualGenome | null>(null)
-  const currentHull = hulls.find((hull) => hull.id === hullID) ?? hulls[0]
   const designs = snapshot.decision?.strategic.ship_designs ?? []
   const baseline = designs[0]
+  const persistedVisual = useMemo(() => decodeShipVisualGenome(baseline?.visual_genome), [baseline?.visual_genome])
+
+  const [hullID, setHullID] = useState<HullID>('scout')
+  const [roll, setRoll] = useState(1)
+  const [kept, setKept] = useState<ShipVisualGenome | null>(() => persistedVisual ?? null)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [savedVisualRevision, setSavedVisualRevision] = useState(baseline?.visual_revision ?? 0)
+  const currentHull = hulls.find((hull) => hull.id === hullID) ?? hulls[0]
   const baselineWeapons = baseline?.spec.weapons ?? []
+
+  useEffect(() => {
+    if (persistedVisual) setKept(persistedVisual)
+    setSavedVisualRevision(baseline?.visual_revision ?? 0)
+  }, [baseline?.visual_revision, persistedVisual])
 
   const candidate = useMemo(() => {
     const seed = `shipbuilder:${snapshot.view.game_id}:${hullID}:full-random:${roll}`
@@ -61,7 +71,22 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
     if (nextHullID === hullID) return
     setHullID(nextHullID)
     setRoll((value) => value + 1)
-    setKept(null)
+    setSaveError('')
+  }
+
+  async function keepCurrentDesign() {
+    if (!baseline || saving) return
+    setSaving(true)
+    setSaveError('')
+    try {
+      await submitMilitaryDesignVisual(snapshot, snapshot.view.seat.seat.id, baseline.id, candidate)
+      setKept(candidate)
+      setSavedVisualRevision((current) => Math.max(current + 1, (baseline.visual_revision ?? 0) + 1))
+    } catch (cause) {
+      setSaveError(cause instanceof Error ? cause.message : String(cause))
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -113,28 +138,18 @@ export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: 
           </button>
 
           <div className="shipbuilder-random-meta">
-            <div>
-              <span className="eyebrow">{t('shipbuilder.morphology')}</span>
-              <strong>{t(morphologyLabels[candidate.morphologyId])}</strong>
-            </div>
-            <div>
-              <span className="eyebrow">{t('shipbuilder.styleDNA')}</span>
-              <strong>{t(styleLabels[candidate.styleId])}</strong>
-            </div>
-            <div>
-              <span className="eyebrow">{t('shipbuilder.randomness')}</span>
-              <strong>{candidate.primitives.length} {t('shipbuilder.primitives')}</strong>
-            </div>
-            <div>
-              <span className="eyebrow">{t('shipbuilder.space')}</span>
-              <strong>{shipHullSpace(hullID)}</strong>
-            </div>
+            <div><span className="eyebrow">{t('shipbuilder.morphology')}</span><strong>{t(morphologyLabels[candidate.morphologyId])}</strong></div>
+            <div><span className="eyebrow">{t('shipbuilder.styleDNA')}</span><strong>{t(styleLabels[candidate.styleId])}</strong></div>
+            <div><span className="eyebrow">{t('shipbuilder.randomness')}</span><strong>{candidate.primitives.length} {t('shipbuilder.primitives')}</strong></div>
+            <div><span className="eyebrow">{t('shipbuilder.space')}</span><strong>{shipHullSpace(hullID)}</strong></div>
           </div>
 
           <div className="shipbuilder-random-actions">
             <button type="button" className="button-primary" onClick={reroll}>{t('shipbuilder.generate')}</button>
-            <button type="button" className="button-secondary" onClick={() => setKept(candidate)}>{t('shipbuilder.takeDesign')}</button>
+            <button type="button" className="button-secondary" disabled={!baseline || saving} onClick={() => void keepCurrentDesign()}>{saving ? t('shipbuilder.saving') : t('shipbuilder.takeDesign')}</button>
           </div>
+          {saveError && <p className="shipbuilder-save-state error">{saveError}</p>}
+          {!saveError && kept && savedVisualRevision > 0 && <p className="shipbuilder-save-state">{t('shipbuilder.serverSaved', { revision: savedVisualRevision })}</p>}
         </Card>
 
         <div className="shipbuilder-side-stack random">

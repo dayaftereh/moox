@@ -165,3 +165,12 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Added hull Space display: Scout/Frigate 25, Destroyer 60, Cruiser 120, Battleship 250, Titan 500, Doom Star 1200.
 - Added explicit visible class footprints 0.40/0.48/0.58/0.68/0.78/0.90/1.00 so Doom Star fills the shared preview while smaller hulls remain visibly smaller.
 - Desktop measured Scout ~184x136, Cruiser ~313x231, Doom Star ~461x340 in the same 512x390 stage; mobile Scout ~120x78 versus Doom Star ~299x195 in the same 311x220 stage.
+
+## 2026-09-07 - Slice 15.3 Visual Genome v4 server persistence
+
+- Added authoritative optional Visual Genome v4 payloads to ShipDesign/Ship and a separate visual revision stream so picture changes never invalidate gameplay design revisions.
+- Added immediate empire.set_military_design_visual; full resolved geometry is deep-copied and persisted rather than storing only a generator seed.
+- Submitted gameplay batches remain valid after a visual-only immediate revision by advancing only their base-revision boundary.
+- Completed ships freeze the design's Visual Genome/source visual revision; later design image changes do not mutate existing ships.
+- Web Shipbuilder now saves Use this design server-side and restores the kept design from snapshots; strategic fleet glyphs prefer concrete persisted ship genomes with legacy seed fallback.
+- Core state, GameSession live snapshot and Host export/import tests all round-trip the exact genome; gameplay revision independence is regression-covered.

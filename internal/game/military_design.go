@@ -366,13 +366,20 @@ func completeMilitaryShip(state *core.GameState, colony *core.Colony, design *co
 	}
 	shipSpec := design.Spec
 	shipSpec.Weapons = append([]core.ShipWeaponMount(nil), design.Spec.Weapons...)
+	var visual *core.ShipVisualGenome
+	if design.VisualGenome != nil {
+		clone := core.CloneShipVisualGenome(*design.VisualGenome)
+		visual = &clone
+	}
 	ship := core.Ship{
 		ID:                   state.NewID(),
 		EmpireID:             colony.EmpireID,
 		SourceDesignID:       design.ID,
 		SourceDesignRevision: design.Revision,
+		SourceVisualRevision: design.VisualRevision,
 		Name:                 design.Name,
 		Spec:                 shipSpec,
+		VisualGenome:         visual,
 	}
 	fleet := core.StrategicFleet{
 		ID:         state.NewID(),

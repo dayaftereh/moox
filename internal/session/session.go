@@ -822,6 +822,50 @@ func (s *GameSession) encounterOutcomesWithCandidateLocked(candidateBattleID uin
 	}
 	return outcomes, nil
 }
+func (s *GameSession) ResolveMilitaryDesignVisualCommand(seatID protocol.SeatID, baseRevision uint64, command protocol.Command) error {
+	if err := command.Validate(1); err != nil {
+		return fmt.Errorf("invalid military design visual command: %w", err)
+	}
+	if !game.IsMilitaryDesignVisualCommand(command.Kind) {
+		return fmt.Errorf("command kind %q is not a military design visual command", command.Kind)
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.phase != PhasePlanning {
+		return fmt.Errorf("cannot update military design visual in phase %q", s.phase)
+	}
+	if baseRevision != s.revision {
+		return fmt.Errorf("immediate command base revision %d, expected %d", baseRevision, s.revision)
+	}
+	index := s.seatIndexLocked(seatID)
+	if index < 0 {
+		return fmt.Errorf("unknown seat %d", seatID)
+	}
+	if s.empireEliminatedLocked(s.seats[index].seat.EmpireID) {
+		return fmt.Errorf("seat %d controls eliminated empire %d", seatID, s.seats[index].seat.EmpireID)
+	}
+	stateInput, err := cloneState(s.state)
+	if err != nil {
+		return err
+	}
+	events, err := game.ResolveMilitaryDesignVisualCommand(stateInput, s.seats[index].seat.EmpireID, seatID, command)
+	if err != nil {
+		return fmt.Errorf("resolve military design visual command: %w", err)
+	}
+	if err := s.commitImmediateStateLocked(stateInput, seatID, command, events, "military design visual"); err != nil {
+		return err
+	}
+	// This command changes presentation state only. Submitted gameplay batches
+	// remain semantically valid, so move their revision boundary forward with
+	// the visual-only authoritative revision instead of invalidating them.
+	for i := range s.seats {
+		if s.seats[i].submission != nil && s.seats[i].submission.Turn == s.state.Turn {
+			s.seats[i].submission.BaseRevision = s.revision
+		}
+	}
+	return nil
+}
 func (s *GameSession) ResolveColonyBaseCommand(seatID protocol.SeatID, baseRevision uint64, command protocol.Command, resolver *game.EconomyResolver) error {
 	if resolver == nil {
 		return fmt.Errorf("economy resolver must not be nil")

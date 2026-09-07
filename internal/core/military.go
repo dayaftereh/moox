@@ -31,20 +31,24 @@ type ShipDesignSpec struct {
 }
 
 type ShipDesign struct {
-	ID       ID             `json:"id"`
-	EmpireID ID             `json:"empire_id"`
-	Revision uint32         `json:"revision"`
-	Name     string         `json:"name"`
-	Spec     ShipDesignSpec `json:"spec"`
+	ID             ID                `json:"id"`
+	EmpireID       ID                `json:"empire_id"`
+	Revision       uint32            `json:"revision"`
+	VisualRevision uint32            `json:"visual_revision,omitempty"`
+	Name           string            `json:"name"`
+	Spec           ShipDesignSpec    `json:"spec"`
+	VisualGenome   *ShipVisualGenome `json:"visual_genome,omitempty"`
 }
 
 type Ship struct {
-	ID                   ID             `json:"id"`
-	EmpireID             ID             `json:"empire_id"`
-	SourceDesignID       ID             `json:"source_design_id"`
-	SourceDesignRevision uint32         `json:"source_design_revision"`
-	Name                 string         `json:"name"`
-	Spec                 ShipDesignSpec `json:"spec"`
+	ID                   ID                `json:"id"`
+	EmpireID             ID                `json:"empire_id"`
+	SourceDesignID       ID                `json:"source_design_id"`
+	SourceDesignRevision uint32            `json:"source_design_revision"`
+	SourceVisualRevision uint32            `json:"source_visual_revision,omitempty"`
+	Name                 string            `json:"name"`
+	Spec                 ShipDesignSpec    `json:"spec"`
+	VisualGenome         *ShipVisualGenome `json:"visual_genome,omitempty"`
 }
 
 func validateShipDesignSpec(spec ShipDesignSpec, label string) error {
@@ -99,6 +103,18 @@ func validateMilitaryState(state *GameState, empireIDs map[ID]struct{}, checkID 
 		if err := validateShipDesignSpec(design.Spec, label); err != nil {
 			return nil, err
 		}
+		if design.VisualGenome == nil {
+			if design.VisualRevision != 0 {
+				return nil, fmt.Errorf("%s has visual_revision %d without visual_genome", label, design.VisualRevision)
+			}
+		} else {
+			if design.VisualRevision == 0 {
+				return nil, fmt.Errorf("%s visual_genome requires positive visual_revision", label)
+			}
+			if err := ValidateShipVisualGenome(*design.VisualGenome); err != nil {
+				return nil, fmt.Errorf("%s visual_genome: %w", label, err)
+			}
+		}
 		designs[design.ID] = design
 		lastDesignID = design.ID
 	}
@@ -131,6 +147,21 @@ func validateMilitaryState(state *GameState, empireIDs map[ID]struct{}, checkID 
 		}
 		if err := validateShipDesignSpec(ship.Spec, label); err != nil {
 			return nil, err
+		}
+		if ship.VisualGenome == nil {
+			if ship.SourceVisualRevision != 0 {
+				return nil, fmt.Errorf("%s has source_visual_revision %d without visual_genome", label, ship.SourceVisualRevision)
+			}
+		} else {
+			if ship.SourceVisualRevision == 0 {
+				return nil, fmt.Errorf("%s visual_genome requires positive source_visual_revision", label)
+			}
+			if design.VisualRevision != 0 && ship.SourceVisualRevision > design.VisualRevision {
+				return nil, fmt.Errorf("%s source visual revision %d exceeds current design visual revision %d", label, ship.SourceVisualRevision, design.VisualRevision)
+			}
+			if err := ValidateShipVisualGenome(*ship.VisualGenome); err != nil {
+				return nil, fmt.Errorf("%s visual_genome: %w", label, err)
+			}
 		}
 		ships[ship.ID] = ship
 		lastShipID = ship.ID

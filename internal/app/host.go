@@ -267,6 +267,9 @@ func (h *Host) SubmitImmediateCommand(gameID string, seatID protocol.SeatID, bas
 		if game.IsInvasionCommand(command.Kind) {
 			return hosted.session.ResolveInvasionCommand(seatID, baseRevision, command)
 		}
+		if game.IsMilitaryDesignVisualCommand(command.Kind) {
+			return hosted.session.ResolveMilitaryDesignVisualCommand(seatID, baseRevision, command)
+		}
 		if hosted.immediateResolver == nil {
 			return fmt.Errorf("immediate command resolver is not configured")
 		}

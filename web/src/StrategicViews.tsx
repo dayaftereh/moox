@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type DragEvent as ReactDragEvent, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
 import {
   aggregatePopulation,
+  decodeShipVisualGenome,
   type Colony,
   type ConstructionChoice,
   type ConstructionState,
@@ -594,6 +595,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                             seed={fleetShips[0]
                               ? `${fleetShips[0].empire_id}:${fleetShips[0].source_design_id}:${fleetShips[0].source_design_revision}:${fleetShips[0].spec.strategic_picture_id}`
                               : `fleet:${fleet.empire_id}:${fleet.id}`}
+                            genome={decodeShipVisualGenome(fleetShips[0]?.visual_genome)}
                             hullId={fleetShips[0]?.spec.hull_id}
                             weaponCount={fleetShips[0]?.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0}
                           />
@@ -615,6 +617,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                                 <ProceduralShipGlyph
                                   className="system-fleet-roster-vector ship"
                                   seed={`${ship.empire_id}:${ship.source_design_id}:${ship.source_design_revision}:${ship.spec.strategic_picture_id}`}
+                                  genome={decodeShipVisualGenome(ship.visual_genome)}
                                   hullId={ship.spec.hull_id}
                                   weaponCount={ship.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0}
                                 />
@@ -1577,6 +1580,7 @@ export function StrategicFleetsView({ snapshot, onPlanOrder, t }: { snapshot: Pl
                     seed={leadShip
                       ? `${leadShip.empire_id}:${leadShip.source_design_id}:${leadShip.source_design_revision}:${leadShip.spec.strategic_picture_id}`
                       : `fleet:${fleet.empire_id}:${fleet.id}`}
+                    genome={decodeShipVisualGenome(leadShip?.visual_genome)}
                     hullId={leadShip?.spec.hull_id}
                     weaponCount={leadShip?.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0}
                   />

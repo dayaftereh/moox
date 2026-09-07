@@ -3046,3 +3046,10 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 @media (max-width: 520px) {
   .shipbuilder-random-meta { grid-template-columns: 1fr; }
 }
+.shipbuilder-save-state {
+  margin: 8px 1px 0;
+  color: var(--muted-strong);
+  font-size: .58rem;
+  line-height: 1.35;
+}
+.shipbuilder-save-state.error { color: var(--danger); }

@@ -1,3 +1,4 @@
+import type { ShipVisualGenome } from './shipVisualGenome'
 export type NewGamePlayer = {
   seat_id: number
   empire_id: number
@@ -204,6 +205,22 @@ export type PlanetPotential = {
 export type Outpost = { id: number; empire_id: number; body_id?: number; planet_id?: number }
 
 export type ShipWeaponMount = { slot: number; weapon_id: string; count: number }
+export type ShipVisualGenomeWire = {
+  version: 4
+  hull_id: string
+  style_id: 'spear' | 'sleek' | 'organic'
+  morphology_id: 'needle' | 'barge' | 'manta' | 'fork' | 'chevron' | 'hammer' | 'bulb'
+  seed: string
+  length: number
+  beam: number
+  station_count: number
+  station_widths: number[]
+  notch_depths: number[]
+  engine_count: number
+  detail_count: number
+  cutouts?: Array<{ t: number; offset: number; rx: number; ry: number; angle: number }>
+  primitives?: Array<{ kind: 'wedge' | 'spike' | 'pod'; t: number; length: number; width: number; sweep: number }>
+}
 export type ShipDesignSpec = {
   hull_id: string
   strategic_picture_id: number
@@ -217,8 +234,8 @@ export type ShipDesignSpec = {
   production_cost_pp: number
   weapons?: ShipWeaponMount[]
 }
-export type ShipDesign = { id: number; empire_id: number; revision: number; name: string; spec: ShipDesignSpec }
-export type Ship = { id: number; empire_id: number; source_design_id: number; source_design_revision: number; name: string; spec: ShipDesignSpec }
+export type ShipDesign = { id: number; empire_id: number; revision: number; visual_revision?: number; name: string; spec: ShipDesignSpec; visual_genome?: ShipVisualGenomeWire }
+export type Ship = { id: number; empire_id: number; source_design_id: number; source_design_revision: number; source_visual_revision?: number; name: string; spec: ShipDesignSpec; visual_genome?: ShipVisualGenomeWire }
 export type StrategicFleet = {
   id: number
   empire_id: number
@@ -500,6 +517,62 @@ export async function submitPlanning(snapshot: PlayerSnapshot, seatID: number, o
   })
 }
 
+export function encodeShipVisualGenome(genome: ShipVisualGenome): ShipVisualGenomeWire {
+  return {
+    version: 4,
+    hull_id: String(genome.hullId),
+    style_id: genome.styleId,
+    morphology_id: genome.morphologyId,
+    seed: genome.seed,
+    length: genome.length,
+    beam: genome.beam,
+    station_count: genome.stationCount,
+    station_widths: [...genome.stationWidths],
+    notch_depths: [...genome.notchDepths],
+    engine_count: genome.engineCount,
+    detail_count: genome.detailCount,
+    ...(genome.cutouts.length > 0 ? { cutouts: genome.cutouts.map((cutout) => ({ ...cutout })) } : {}),
+    ...(genome.primitives.length > 0 ? { primitives: genome.primitives.map((primitive) => ({ ...primitive })) } : {}),
+  }
+}
+
+export function decodeShipVisualGenome(genome?: ShipVisualGenomeWire): ShipVisualGenome | undefined {
+  if (!genome) return undefined
+  return {
+    version: 4,
+    hullId: genome.hull_id,
+    styleId: genome.style_id,
+    morphologyId: genome.morphology_id,
+    seed: genome.seed,
+    length: genome.length,
+    beam: genome.beam,
+    stationCount: genome.station_count,
+    stationWidths: [...genome.station_widths],
+    notchDepths: [...genome.notch_depths],
+    engineCount: genome.engine_count,
+    detailCount: genome.detail_count,
+    cutouts: (genome.cutouts ?? []).map((cutout) => ({ ...cutout })),
+    primitives: (genome.primitives ?? []).map((primitive) => ({ ...primitive })),
+  }
+}
+
+export async function submitMilitaryDesignVisual(snapshot: PlayerSnapshot, seatID: number, designID: number, genome: ShipVisualGenome): Promise<Receipt> {
+  return requestJSON<Receipt>(`/api/v1/games/${encodeURIComponent(snapshot.view.game_id)}/immediate-commands`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      schema_version: 1,
+      seat_id: seatID,
+      base_revision: snapshot.view.revision,
+      command: {
+        schema_version: 1,
+        sequence: 1,
+        kind: 'empire.set_military_design_visual',
+        payload: { design_id: designID, visual_genome: encodeShipVisualGenome(genome) },
+      },
+    }),
+  })
+}
 export async function submitDiplomacy(snapshot: PlayerSnapshot, seatID: number, kind: DiplomacyCommandKind, otherEmpireID: number): Promise<Receipt> {
   const payload = kind === 'diplomacy.accept_peace' ? { from_empire_id: otherEmpireID } : { target_empire_id: otherEmpireID }
   return requestJSON<Receipt>(`/api/v1/games/${encodeURIComponent(snapshot.view.game_id)}/immediate-commands`, {
