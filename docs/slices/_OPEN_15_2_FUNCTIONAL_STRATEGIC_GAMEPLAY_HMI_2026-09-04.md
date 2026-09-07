@@ -48,6 +48,7 @@ Permanent evidence:
     - [x] B2-V: show authoritative current-build PP/%/ETA progress directly on Colony Detail and add tap/click live Growth/BC breakdowns from Planning Preview, including Housing/Cloning/Morale effects that already exist in core.
     - [x] B2-W: remove standalone Colony Info button; make Growth and Colony-BC values themselves open their own authoritative breakdown, and reduce Planet Info to an accessible ? trigger.
     - [x] B2-X: collapse visible Planet Profile + Colony Profile sections into one compact Information card with the Planet ? disclosure and Colony metrics directly underneath.
+    - [x] B2-Y: make the Planet ? popover explicitly dismissible via × and click/tap outside, preserving all existing authority data.
   - [ ] G4-C: independent mobile/desktop workflow QA and Slice-15.2 closure.
 
 Live preview:

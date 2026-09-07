@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-B2-R Colony density cleanup complete; G4-B2-S Planet/Colony profile split complete; G4-B2-T signed growth/resource cleanup complete; G4-B2-U build-management density cleanup complete; G4-B2-V Colony live breakdown/progress complete; G4-B2-W direct metric disclosures complete; G4-B2-X unified Information card complete; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-B2-R Colony density cleanup complete; G4-B2-S Planet/Colony profile split complete; G4-B2-T signed growth/resource cleanup complete; G4-B2-U build-management density cleanup complete; G4-B2-V Colony live breakdown/progress complete; G4-B2-W direct metric disclosures complete; G4-B2-X unified Information card complete; G4-B2-Y dismissible Planet Info complete; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -405,6 +405,17 @@ Status: **complete; direct user review pending**.
 - Colony-state rows sit directly under the Information heading: population/capacity, clickable signed Growth, ground forces and clickable Colony-BC. B2-W direct metric breakdown behavior is unchanged.
 - Desktop smoke showed only `INFORMATION` + `?` before the four Colony rows; no duplicated Planet/Colony profile headings or planet name remain in the card.
 - 320x640 smoke: Information card reduced to ~82px total (`308px` wide), heading ~25px, `?` 20x20px. Planet popover remains `240x95px`; Growth value/popover remains `81x18px` / `232x44px`; no horizontal overflow.
+- `npm run build` - **PASS**.
+
+#### G4-B2-Y - Dismissible Planet Info popover
+
+Status: **complete; direct user review pending**.
+
+- Added an explicit compact `×` close action inside the Colony `?` Planet Info popover, using the existing localized `common.close` label for accessibility/title text.
+- Added document-level outside-click/tap dismissal scoped to the Colony Planet Info `details`; clicking anywhere outside the disclosure closes it while clicks inside the popover/`?` continue to work normally.
+- No PlanetPotential, climate/size/mineral/gravity data, Growth/BC breakdown or other authority changed; this is interaction-only.
+- Desktop smoke: `?` opens the Planet Info popover; `×` closes it; reopening and clicking the population/jobs area closes it as well. Popover remains 240px wide with no horizontal overflow.
+- 320x640 smoke: popover `240x107px` at x=65..305; `×` is 17x17px at x=283..300; both explicit `×` and outside click closed the popover; no horizontal overflow.
 - `npm run build` - **PASS**.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure

@@ -332,3 +332,8 @@ The functional data already present in Core (`Colony.Buildings`, `ColonyPopulati
 - Use one `Information` heading. Place the accessible Planet `?` disclosure at the right of that heading; keep permanent Colony-state metrics directly underneath.
 - Do not repeat the planet name inside the Information card when the immediate page toolbar already shows System + Planet.
 - Growth and Colony-BC retain direct metric-value breakdown interactions; the unified card changes hierarchy only, not server-derived Planning Preview authority.
+### Popover dismissal behavior
+
+- Compact informational popovers must provide an obvious explicit close action and should also dismiss when the player clicks/taps outside them.
+- The Colony Planet `?` disclosure therefore uses both a small `×` and outside-click/tap dismissal; this interaction does not change the authoritative Planet facts it displays.
+- The trigger itself remains toggleable, so a second click/tap on `?` also closes the popover.

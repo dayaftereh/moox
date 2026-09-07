@@ -1003,6 +1003,16 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
   t: Translator
 }) {
   void onRemoveOrder
+  const planetInfoRef = useRef<HTMLDetailsElement | null>(null)
+  useEffect(() => {
+    const closePlanetInfoOnOutsideClick = (event: MouseEvent) => {
+      const details = planetInfoRef.current
+      if (!details?.open) return
+      if (event.target instanceof Node && !details.contains(event.target)) details.open = false
+    }
+    document.addEventListener('click', closePlanetInfoOnOutsideClick)
+    return () => document.removeEventListener('click', closePlanetInfoOnOutsideClick)
+  }, [])
   const displayColony = preview?.colony ?? colony
   const decision = snapshot.decision
   const galaxy = decision?.strategic.galaxy
@@ -1051,9 +1061,10 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
           <section className="colony-information-heading">
             <p className="eyebrow">{t('colony.information')}</p>
             {planetContext && (
-              <details className="colony-planet-info">
+              <details className="colony-planet-info" ref={planetInfoRef}>
                 <summary aria-label={t('colony.planetInfo')} title={t('colony.planetInfo')}>?</summary>
                 <div className="colony-planet-info-popover">
+                  <button type="button" className="colony-planet-info-close" aria-label={t('common.close')} title={t('common.close')} onClick={() => { if (planetInfoRef.current) planetInfoRef.current.open = false }}>×</button>
                   <div className="colony-planet-info-item">
                     <span>{t('system.climate')}</span>
                     <strong>{planetTraitLabel(t, 'climate', planetContext.planet.climate_id)}</strong>

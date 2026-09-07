@@ -2594,3 +2594,46 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .colony-information-heading .eyebrow { font-size: .43rem; }
   .colony-information-stats { margin-top: 2px; }
 }
+
+
+/* Slice 15.2 B2-Y: dismissible Planet Info popover. */
+.colony-planet-info-popover {
+  padding-top: 18px;
+}
+.colony-planet-info-close {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  min-height: 16px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: #9fb0bf;
+  cursor: pointer;
+  font-size: .67rem;
+  font-weight: 900;
+  line-height: 1;
+}
+.colony-planet-info-close:hover,
+.colony-planet-info-close:focus-visible {
+  background: rgba(104, 128, 148, .18);
+  color: #f1f7fb;
+  outline: none;
+}
+
+@media (max-width: 699px) {
+  .colony-planet-info-popover { padding-top: 17px; }
+  .colony-planet-info-close {
+    width: 17px;
+    min-width: 17px;
+    height: 17px;
+    min-height: 17px;
+    font-size: .7rem;
+  }
+}
