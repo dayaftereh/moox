@@ -93,3 +93,10 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Removed the Slice 15.2 _OPEN marker and synchronized project/research status to closed.
 - Opened Slice 15.3 Gate 1: MOOX visual identity / graphics / asset-pipeline audit and direction exploration.
 - No push performed.
+
+## 2026-09-07 - Slice 15.3 Gate 1 vector/procedural direction started
+
+- Accepted a vector-first SVG direction for scalable MOOX UI/iconography while retaining modern raster delivery for rich textured artwork where appropriate.
+- Captured a deterministic procedural 2D ship-generation direction with stable design seeds and a future 2D-to-3D path.
+- Added the first React/SVG procedural ship proof of concept and integrated it into Fleet/Ship presentation paths without changing gameplay authority.
+- Web production build and `git diff --check` pass.

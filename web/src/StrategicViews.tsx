@@ -15,6 +15,7 @@ import {
   type ResearchChoice,
   type StarSystem,
 } from './api'
+import { ProceduralShipGlyph } from './components/ProceduralShipGlyph'
 import { Card, EmptyState, PageHeader } from './components/ui'
 import { type TranslationKey, type TranslationVars } from './i18n'
 
@@ -588,7 +589,14 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                     return (
                       <div className={'system-fleet-roster-group' + (selected ? ' selected' : '')} key={'fleet-roster-' + fleet.id}>
                         <button type="button" className="system-fleet-roster-head" aria-pressed={selected && !selectedShip} onClick={() => selectFleet(fleet.id, 0)}>
-                          <span className="system-fleet-roster-glyph" aria-hidden="true">▲</span>
+                          <ProceduralShipGlyph
+                            className="system-fleet-roster-vector"
+                            seed={fleetShips[0]
+                              ? `${fleetShips[0].empire_id}:${fleetShips[0].source_design_id}:${fleetShips[0].source_design_revision}:${fleetShips[0].spec.strategic_picture_id}`
+                              : `fleet:${fleet.empire_id}:${fleet.id}`}
+                            hullId={fleetShips[0]?.spec.hull_id}
+                            weaponCount={fleetShips[0]?.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0}
+                          />
                           <span>
                             <strong>{fleetName(fleet)}</strong>
                             <small>{fleet.special_kind ? t('system.specialVessel') : t('fleets.ships', { count: fleet.ship_ids?.length ?? 0 })}</small>
@@ -604,7 +612,12 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                                 aria-pressed={selected && selectedShip?.id === ship.id}
                                 onClick={() => selectFleet(fleet.id, ship.id)}
                               >
-                                <span aria-hidden="true">◆</span>
+                                <ProceduralShipGlyph
+                                  className="system-fleet-roster-vector ship"
+                                  seed={`${ship.empire_id}:${ship.source_design_id}:${ship.source_design_revision}:${ship.spec.strategic_picture_id}`}
+                                  hullId={ship.spec.hull_id}
+                                  weaponCount={ship.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0}
+                                />
                                 <span><strong>{ship.name}</strong><small>{humanizeToken(ship.spec.hull_id)}</small></span>
                               </button>
                             ))}
@@ -1546,16 +1559,29 @@ function PopulationTransferRow({ choice, onPlanOrder, t }: {
 export function StrategicFleetsView({ snapshot, onPlanOrder, t }: { snapshot: PlayerSnapshot; onPlanOrder: (order: DraftOrder) => void; t: Translator }) {
   const decision = snapshot.decision
   const fleets = decision?.strategic.fleets ?? []
+  const shipsByID = new Map((decision?.strategic.ships ?? []).map((ship) => [ship.id, ship]))
   return (
     <>
       <PageHeader eyebrow={t('fleets.eyebrow')} title={t('fleets.title')} subtitle={t('fleets.subtitle')} />
       <div className="content-grid content-grid-2">
         {fleets.length === 0 ? <EmptyState title={t('fleets.noProjection')} /> : fleets.map((fleet) => {
           const moves = decision?.decisions.fleet_moves?.filter((choice) => choice.fleet_id === fleet.id) ?? []
+          const fleetShips = fleet.ship_ids?.map((shipID) => shipsByID.get(shipID)).filter((ship): ship is NonNullable<typeof ship> => Boolean(ship)) ?? []
+          const leadShip = fleetShips[0]
           return (
             <Card key={fleet.id}>
               <div className="card-heading">
-                <div><p className="eyebrow">{t('galaxy.fleet', { id: fleet.id })}</p><h2>{fleet.role}</h2></div>
+                <div className="fleet-card-title">
+                  <ProceduralShipGlyph
+                    className="fleet-card-ship-visual"
+                    seed={leadShip
+                      ? `${leadShip.empire_id}:${leadShip.source_design_id}:${leadShip.source_design_revision}:${leadShip.spec.strategic_picture_id}`
+                      : `fleet:${fleet.empire_id}:${fleet.id}`}
+                    hullId={leadShip?.spec.hull_id}
+                    weaponCount={leadShip?.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0}
+                  />
+                  <div><p className="eyebrow">{t('galaxy.fleet', { id: fleet.id })}</p><h2>{fleet.role}</h2></div>
+                </div>
                 <span className="badge">{t('fleets.ships')}: {fleet.ship_ids?.length ?? 0}</span>
               </div>
               <dl className="detail-list compact">

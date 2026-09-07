@@ -19,18 +19,18 @@ Create a distinctive, coherent Master of Orion X visual language and a reproduci
 In scope:
 
 - MOOX corporate/brand direction, retaining/exploring the accepted **OX** lettermark plus a compact original spacecraft/star/orbit app icon, logo treatment and visual identity rules;
-- final color palette roles, typography hierarchy and icon language;
+- final color palette roles, typography hierarchy and **vector-first SVG icon language**;
 - starfield/background and **2D Galaxy-map** treatment;
 - star/system imagery plus the accepted orbital **star-system dialog** visual language (central sun, rocky/gas planets, asteroid belts, colony/fleet presence);
 - planet/Colony Detail imagery, buildings/infrastructure presentation rules and construction-queue visual language;
 - race/faction portrait direction for currently supported content;
-- ship/fleet imagery for location-grouped Fleet tiles and star-system presence;
+- ship/fleet imagery for location-grouped Fleet tiles and star-system presence, with a preferred **deterministic procedural 2D SVG ship generator** rather than a fixed ship-picture catalog;
 - Tactical-battle visual assets for Slice 15.5, such as battlefield backgrounds, ship markers/sprites, selection/movement/target overlays and non-authoritative effects;
 - building/infrastructure imagery strategy;
 - visual identity for the eight Research categories (Construction, Power, Chemistry, Sociology, Computers, Biology, Physics, Force Fields);
 - Diplomacy and Espionage icon/presentation language that can scale with future mechanics;
 - UI ornamentation, frames, hover/selection/disabled states and motion language;
-- 2D illustration, generated imagery and optional 3D-model -> render/sprite workflows;
+- 2D illustration, generated imagery and optional 3D-model -> render/sprite workflows; preserve a future 2D-geometry -> 3D/extrusion path without requiring runtime 3D in this slice;
 - asset naming, resolution/DPI/aspect-ratio variants, compression and runtime loading/fallback policy;
 - source/provenance/license metadata and clear separation of original MOO2 reference evidence from shippable MOOX assets;
 - integration contract between asset catalog and React components.
@@ -45,8 +45,9 @@ Defer:
 
 ## Gate 1 - Art/asset audit and direction exploration
 
-- [ ] Inventory current web visuals plus graphic/palette/catalog capabilities already present in the repo.
+- [x] Inventory current web visuals plus graphic/palette/catalog capabilities already present in the repo.
 - [ ] Define visual goals: readable strategy UI, recognizable MOOX identity, sci-fi tone and acceptable nostalgia/reference distance.
+- [x] Capture vector-first SVG direction and deterministic procedural-ship proof-of-concept contract.
 - [ ] Produce multiple styleboard/art-direction candidates for the OX+icon brand, shell, 2D Galaxy, star-system dialog, Colony Detail, planet, portrait, Fleet/ship and eight-category Research imagery.
 - [ ] Define target resolutions/aspect ratios and responsive/cropping requirements.
 - [ ] Define provenance/license rules for generated, commissioned, extracted/reference and third-party assets.
@@ -56,7 +57,8 @@ Defer:
 
 - [ ] Freeze MOOX visual direction, logo usage, palette, typography and icon grammar.
 - [ ] Freeze core asset categories and minimum asset set for the canonical match.
-- [ ] Freeze image/model/render pipeline, naming/versioning and fallback policy.
+- [ ] Freeze image/model/render pipeline, naming/versioning and fallback policy, including SVG source/runtime rules and modern raster fallback formats.
+- [ ] Freeze procedural ship generator grammar: design seed, hull/faction style, module zones, palette and optional per-ship serial variation.
 - [ ] Freeze provenance/license metadata requirements.
 - [ ] Freeze representative acceptance mockups for strategic shell, 2D Galaxy + star-system dialog, Colony table + Colony Detail/build queue, location-grouped Fleets, eight-category Research and battle presentation.
 

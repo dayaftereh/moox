@@ -43,3 +43,20 @@ The first art-direction pass should cover the accepted integration targets rathe
 - inventory `graphiccatalog` / `palettecatalog` capabilities and provenance constraints;
 - produce multiple representative visual-direction candidates for Galaxy, system, Colony and core iconography;
 - compare the candidates against desktop and mobile readability before Gate-2 freeze.
+
+## Gate-1 audit expansion - vector/glyph/catalog findings
+
+- Current shell navigation still uses Unicode glyph strings in `AppShell.tsx` (`Galaxy`, `Colonies`, `Fleets`, `Diplomacy`, `Espionage`). Treat these as temporary functional placeholders rather than final visual identity.
+- The current CSS already has a useful token baseline (`--bg`, surfaces, borders, text/muted, accent, semantic success/warning/danger, radii and shadow). Slice 15.3 should evolve these rather than hard-coding independent asset colors.
+- `internal/graphiccatalog` schema 2 is a reference/extraction catalog for original LBX graphics. It records source/archive/block hashes, dimensions, frame counts, palette context and optional exported PNG frames. This is valuable evidence/provenance infrastructure, not a license to ship extracted original-game artwork.
+- `internal/palettecatalog` schema 1 extracts source palette data to hashed JSON plus PNG swatches. It can support reference analysis and color-distance studies while keeping final MOOX palette decisions original.
+- Final icon direction is now **SVG/vector-first**; generic Unicode glyphs and icon fonts should not be the final MOOX icon system.
+- Rich textured/painted visuals remain a separate asset class and may use modern compressed raster delivery where vector graphics are a poor fit.
+
+## Procedural ship proof of concept
+
+- `web/src/components/ProceduralShipGlyph.tsx` now provides a dependency-free deterministic React/SVG generator.
+- Major silhouette is seeded from stable design identity rather than render-time randomness.
+- The initial geometry grammar covers hull envelope/wing station, engines, panel lines and weapon hardpoints.
+- The star-system Fleet/Ship roster is the first integration target; this replaces placeholder ship glyphs without changing any server/gameplay authority.
+- This is Gate-1 exploration only. Race/faction style grammars, empire palettes and optional per-ship serial variation remain Gate-2 decisions.

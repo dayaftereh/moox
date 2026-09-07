@@ -23,7 +23,8 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Prepared future Espionage mechanics: `docs/slices/PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md`.
 - Accepted downstream 15.2/15.3 strategic product direction: `docs/research/SLICE_15_2_STRATEGIC_HMI_PRODUCT_DIRECTION_2026-09-04.md` - 2D Galaxy primary view, orbital star-system dialog, legal Colonize confirmation, Colony table + full Colony Detail/build queue, location-grouped Fleets, eight-category Research, first-class Diplomacy and planned Espionage, plus retained OX lettermark / future spacecraft-space icon.
 
-- Active Slice 15.3 Gate-1 audit: docs/research/SLICE_15_3_GATE1_ART_ASSET_AUDIT_2026-09-07.md - initial web asset inventory, catalog starting point and visual/pipeline questions.
+- Active Slice 15.3 Gate-1 audit: `docs/research/SLICE_15_3_GATE1_ART_ASSET_AUDIT_2026-09-07.md` - initial web asset inventory, catalog starting point and visual/pipeline questions.
+- Vector/procedural graphics direction: `docs/research/SLICE_15_3_VECTOR_PROCEDURAL_GRAPHICS_DIRECTION_2026-09-07.md` - SVG-first icons/overlays plus deterministic procedural 2D ship geometry with a future 3D path.
 - Accepted Tactical roadmap amendment: `docs/research/SLICE_15_5_INTERACTIVE_TACTICAL_COMBAT_PRODUCT_DIRECTION_2026-09-04.md` - interactive Tactical is a dedicated Slice 15.5; the former final integration slice moves to 15.6.
 
 

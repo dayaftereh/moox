@@ -16,6 +16,9 @@
   --accent: #4b8dff;
   --accent-strong: #2675ff;
   --accent-soft: rgba(75, 141, 255, .15);
+  --ship-vector: #9cc9ee;
+  --ship-vector-engine: #7dd9ff;
+  --ship-vector-highlight: #d9efff;
   --success: #63d69a;
   --warning: #f2bf5e;
   --danger: #ff7487;
@@ -91,6 +94,9 @@ label { display: grid; gap: 7px; color: var(--muted-strong); font-size: .8rem; f
 }
 .card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .card-heading h2 { margin-bottom: 0; }
+.fleet-card-title { display: flex; min-width: 0; align-items: center; gap: 10px; }
+.fleet-card-title > div { min-width: 0; }
+.fleet-card-ship-visual { width: 72px; height: 44px; flex: 0 0 72px; color: var(--ship-vector); }
 .card-note { margin: 17px 0 0; padding-top: 14px; border-top: 1px solid var(--border-soft); }
 .page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
 .page-header h1 { margin-bottom: .4rem; }
@@ -1542,10 +1548,43 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 .system-fleet-roster-head small,
 .system-fleet-roster-ship small { color: #8295a7; font-size: .5rem; }
 .system-fleet-roster-glyph { color: #a7cae5; font-size: .72rem; transform: rotate(90deg); }
+.procedural-ship-glyph {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  color: var(--ship-vector);
+}
+.procedural-ship-body {
+  fill: currentColor;
+  fill-opacity: .38;
+  stroke: currentColor;
+  stroke-width: 1.25;
+  vector-effect: non-scaling-stroke;
+}
+.procedural-ship-spine,
+.procedural-ship-panels path {
+  fill: none;
+  stroke: currentColor;
+  stroke-opacity: .46;
+  stroke-width: .75;
+  vector-effect: non-scaling-stroke;
+}
+.procedural-ship-hardpoints circle { fill: var(--ship-vector-highlight); }
+.procedural-ship-engines path {
+  fill: none;
+  stroke: var(--ship-vector-engine);
+  stroke-linecap: round;
+  stroke-width: 2;
+  opacity: .58;
+}
+.procedural-ship-engines circle { fill: #d8f7ff; opacity: .9; }
+.system-fleet-roster-vector { width: 24px; height: 18px; }
+.system-fleet-roster-vector.ship { width: 18px; height: 13px; }
 .system-fleet-roster-ships { display: grid; padding: 0 5px 5px 27px; gap: 2px; }
 .system-fleet-roster-ship {
   display: grid;
-  grid-template-columns: 16px minmax(0, 1fr);
+  grid-template-columns: 20px minmax(0, 1fr);
   align-items: center;
   gap: 5px;
   min-height: 34px;
