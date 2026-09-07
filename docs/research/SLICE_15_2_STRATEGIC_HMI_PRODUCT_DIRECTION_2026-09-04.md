@@ -326,3 +326,9 @@ The functional data already present in Core (`Colony.Buildings`, `ColonyPopulati
 - Only one Colony metric breakdown should be open at a time to prevent overlapping popovers in the compact two-column profile.
 - Planet facts are broader than one metric, so Planet Profile retains a dedicated disclosure; its compact trigger is `?`, with an accessible label/title rather than visible `Planeten-Info` text.
 - Breakdown calculations remain exclusively server-derived through Planning Preview; direct-value interaction is a presentation change, not a new client-side formula path.
+### Unified Colony information hierarchy
+
+- Colony Detail should not visually split a compact facts card into `Planet Profile` and `Colony Profile` when the Colony toolbar already provides System/Planet identity.
+- Use one `Information` heading. Place the accessible Planet `?` disclosure at the right of that heading; keep permanent Colony-state metrics directly underneath.
+- Do not repeat the planet name inside the Information card when the immediate page toolbar already shows System + Planet.
+- Growth and Colony-BC retain direct metric-value breakdown interactions; the unified card changes hierarchy only, not server-derived Planning Preview authority.

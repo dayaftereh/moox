@@ -1047,12 +1047,9 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
       </header>
 
       <div className="colony-command-layout">
-        <Card className="colony-profile-card">
-          <section className="colony-planet-profile-summary">
-            <div>
-              <p className="eyebrow">{t('colony.planetProfile')}</p>
-              <strong>{planetContext?.planet.name ?? t('colonies.planet', { id: colony.planet_id })}</strong>
-            </div>
+        <Card className="colony-profile-card colony-information-card">
+          <section className="colony-information-heading">
+            <p className="eyebrow">{t('colony.information')}</p>
             {planetContext && (
               <details className="colony-planet-info">
                 <summary aria-label={t('colony.planetInfo')} title={t('colony.planetInfo')}>?</summary>
@@ -1082,41 +1079,36 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
             )}
           </section>
 
-          <section className="colony-colony-profile">
-            <div className="colony-profile-section-title">
-              <p className="eyebrow">{t('colony.colonyProfile')}</p>
+          <dl className="colony-profile-stats colony-information-stats">
+            <div><dt>{t('colony.populationStatus')}</dt><dd>{population.total.toFixed(2)} / {displayColony.population_dynamics.capacity.toFixed(2)}</dd></div>
+            <div>
+              <dt>{t('colonies.growth')}</dt>
+              <dd>
+                {metricBreakdowns ? (
+                  <details className="colony-metric-value-info" name={`colony-metric-${colony.id}`}>
+                    <summary className={`resource-text-${growthTone}`} aria-label={t('colonies.growth')}>{signedGrowth > 0 ? '+' : ''}{signedGrowth.toFixed(2)}{growthEta}</summary>
+                    <div className="colony-metric-value-popover">
+                      <MetricBreakdown title={t('colonies.growth')} breakdown={metricBreakdowns.growth} unit={t('colony.popUnit')} digits={2} t={t} />
+                    </div>
+                  </details>
+                ) : <span className={`resource-text-${growthTone}`}>{signedGrowth > 0 ? '+' : ''}{signedGrowth.toFixed(2)}{growthEta}</span>}
+              </dd>
             </div>
-            <dl className="colony-profile-stats">
-              <div><dt>{t('colony.populationStatus')}</dt><dd>{population.total.toFixed(2)} / {displayColony.population_dynamics.capacity.toFixed(2)}</dd></div>
-              <div>
-                <dt>{t('colonies.growth')}</dt>
-                <dd>
-                  {metricBreakdowns ? (
-                    <details className="colony-metric-value-info" name={`colony-metric-${colony.id}`}>
-                      <summary className={`resource-text-${growthTone}`} aria-label={t('colonies.growth')}>{signedGrowth > 0 ? '+' : ''}{signedGrowth.toFixed(2)}{growthEta}</summary>
-                      <div className="colony-metric-value-popover">
-                        <MetricBreakdown title={t('colonies.growth')} breakdown={metricBreakdowns.growth} unit={t('colony.popUnit')} digits={2} t={t} />
-                      </div>
-                    </details>
-                  ) : <span className={`resource-text-${growthTone}`}>{signedGrowth > 0 ? '+' : ''}{signedGrowth.toFixed(2)}{growthEta}</span>}
-                </dd>
-              </div>
-              <div><dt>{t('colony.groundForces')}</dt><dd>{displayColony.ground_forces?.infantry ?? 0}</dd></div>
-              <div>
-                <dt>{t('colony.taxContribution')}</dt>
-                <dd>
-                  {metricBreakdowns ? (
-                    <details className="colony-metric-value-info" name={`colony-metric-${colony.id}`}>
-                      <summary aria-label={t('colony.taxContribution')}>{displayColony.adjusted_economy.tax_bc.toFixed(1)} BC</summary>
-                      <div className="colony-metric-value-popover">
-                        <MetricBreakdown title={t('colony.taxContribution')} breakdown={metricBreakdowns.tax_bc} unit="BC" digits={1} t={t} />
-                      </div>
-                    </details>
-                  ) : <span>{displayColony.adjusted_economy.tax_bc.toFixed(1)} BC</span>}
-                </dd>
-              </div>
-            </dl>
-          </section>
+            <div><dt>{t('colony.groundForces')}</dt><dd>{displayColony.ground_forces?.infantry ?? 0}</dd></div>
+            <div>
+              <dt>{t('colony.taxContribution')}</dt>
+              <dd>
+                {metricBreakdowns ? (
+                  <details className="colony-metric-value-info" name={`colony-metric-${colony.id}`}>
+                    <summary aria-label={t('colony.taxContribution')}>{displayColony.adjusted_economy.tax_bc.toFixed(1)} BC</summary>
+                    <div className="colony-metric-value-popover">
+                      <MetricBreakdown title={t('colony.taxContribution')} breakdown={metricBreakdowns.tax_bc} unit="BC" digits={1} t={t} />
+                    </div>
+                  </details>
+                ) : <span>{displayColony.adjusted_economy.tax_bc.toFixed(1)} BC</span>}
+              </dd>
+            </div>
+          </dl>
         </Card>
         <Card className="colony-jobs-card">
           <div className="card-heading colony-panel-heading colony-panel-heading-compact">

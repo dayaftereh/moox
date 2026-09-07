@@ -2,7 +2,7 @@
 
 Date: **2026-09-05**
 
-Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-B2-R Colony density cleanup complete; G4-B2-S Planet/Colony profile split complete; G4-B2-T signed growth/resource cleanup complete; G4-B2-U build-management density cleanup complete; G4-B2-V Colony live breakdown/progress complete; G4-B2-W direct metric disclosures complete; G4-C independent QA/closure remains open**.
+Status: **G4-A/G4-B and iterative G4-B2 A-J complete; G4-B2-K Galaxy framing in progress; G4-B2-L/B2-M/B2-N/B2-O system inspection refinements complete; G4-B2-P construction workspace refinement complete; G4-B2-Q colony/planet economy presentation complete; G4-B2-R Colony density cleanup complete; G4-B2-S Planet/Colony profile split complete; G4-B2-T signed growth/resource cleanup complete; G4-B2-U build-management density cleanup complete; G4-B2-V Colony live breakdown/progress complete; G4-B2-W direct metric disclosures complete; G4-B2-X unified Information card complete; G4-C independent QA/closure remains open**.
 
 Gate 3 is technically complete, but direct mobile/desktop review exposed usability blockers that should be corrected before Slice 15.2 is independently closed. Visual identity, final iconography/artwork and richer presentation remain later 15.x work unless they are required for basic strategic usability.
 
@@ -393,6 +393,18 @@ Status: **complete; direct user review pending**.
 - Desktop smoke: Growth popover `240x46px` at x=23..263, BC popover `240x63px` at x=23..263, Planet `?` popover `240x105px` at x=24..264; no horizontal overflow.
 - 320x640 smoke: `?` trigger 20x20px at x=285..305; Planet popover `240x95px` at x=65..305; Growth value `81x18px` at x=226..307; Growth popover `232x44px` at x=72..304; no horizontal overflow.
 - Server-derived B2-V breakdown authority is unchanged; this block is presentation/navigation only.
+- `npm run build` - **PASS**.
+
+#### G4-B2-X - Unified Colony Information card
+
+Status: **complete; direct user review pending**.
+
+- Removed the visible `Planeten-Profil` and `Kolonie-Profil` subsection labels from Colony Detail. The left card is now one compact `Information` block.
+- Removed the redundant in-card planet name (`Alpha I` in the demo) because the compact Colony toolbar already provides `Alpha · Alpha I` context immediately above the command row.
+- The `?` remains on the right side of the single Information heading and continues to open the authoritative Planet facts/effects (climate, size, minerals, gravity) from B2-Q/B2-W.
+- Colony-state rows sit directly under the Information heading: population/capacity, clickable signed Growth, ground forces and clickable Colony-BC. B2-W direct metric breakdown behavior is unchanged.
+- Desktop smoke showed only `INFORMATION` + `?` before the four Colony rows; no duplicated Planet/Colony profile headings or planet name remain in the card.
+- 320x640 smoke: Information card reduced to ~82px total (`308px` wide), heading ~25px, `?` 20x20px. Planet popover remains `240x95px`; Growth value/popover remains `81x18px` / `232x44px`; no horizontal overflow.
 - `npm run build` - **PASS**.
 G4-C must not close Slice 15.2 until this B2 block has either been implemented and reviewed or explicitly re-scoped by product decision.
 ### G4-C - Independent QA and closure

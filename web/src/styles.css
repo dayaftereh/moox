@@ -2562,3 +2562,35 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
     padding: 6px;
   }
 }
+
+
+/* Slice 15.2 B2-X: unify Planet/Colony profile into one Information block. */
+.colony-information-card {
+  overflow: visible;
+}
+.colony-information-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 26px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(83, 104, 122, .22);
+}
+.colony-information-heading .eyebrow {
+  margin: 0;
+  font-size: .47rem;
+}
+.colony-information-stats {
+  margin-top: 3px;
+  border-top: 0;
+}
+
+@media (max-width: 699px) {
+  .colony-information-heading {
+    min-height: 23px;
+    padding-bottom: 3px;
+  }
+  .colony-information-heading .eyebrow { font-size: .43rem; }
+  .colony-information-stats { margin-top: 2px; }
+}
