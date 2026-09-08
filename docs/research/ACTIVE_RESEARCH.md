@@ -344,3 +344,5 @@ Original copyrighted assets remain private reference material and are not distri
 - Gate-2 visual/asset contract draft: `docs/research/SLICE_15_3_GATE2_VISUAL_ASSET_PIPELINE_CONTRACT_DRAFT_2026-09-07.md` - palette/icon grammar, responsive/raster targets, semantic IDs, provenance/license, fallback and procedural-ship contract.
 
 - Art-fidelity planets/buildings follow-up: `docs/research/SLICE_15_3_ART_FIDELITY_PLANETS_BUILDINGS_2026-09-08.md` - spherical climate/noise/cloud planets, rich runtime building/station illustrations, Art Fidelity Lab and future surface reuse boundary.
+
+- Spectral stars / building coverage / Construction layout review revision: `docs/research/SLICE_15_3_SPECTRAL_STARS_BUILDING_COVERAGE_LAYOUT_FIX_2026-09-08.md` - luminous class-colored StarArt, all-48 building visual routing, rich Housing project art and corrected rich-project grid sizing.

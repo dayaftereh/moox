@@ -231,3 +231,12 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Construction catalog/hero and Colony built-building tiles reuse the same building art source; non-building actions remain concise semantic icons.
 - Added a multi-entry runtime `/art-fidelity.html` review lab that renders the actual React components, including a future planet-surface composition concept.
 - This is a Gate-2 review revision; Gate 2 remains unfrozen pending user acceptance of the richer fidelity direction.
+
+## 2026-09-08 - Slice 15.3 spectral stars / building coverage / Construction layout revision
+
+- Replaced the Galaxy semantic star icon with a luminous runtime `StarArt` using class-specific core/corona colors, radial fade, deterministic texture and a separate black-hole composition.
+- Reused StarArt in the System dialog and changed raw normalized spectral integers to recognizable B/F/G/K/M/BD/BH labels.
+- Audited the authoritative 48-entry building ruleset; Housing remains correctly a repeatable non-persistent project but now receives rich habitat art.
+- Added deterministic family art for all building IDs not yet hand-authored, while retaining dedicated Capitol/Colony Base/Marine Barracks/Star Base/Battlestation/Star Fortress illustrations.
+- Fixed rich Construction layout: full-width 16:7 detail art, aligned PP/facts/description/actions, and catalog columns sized to 68px/60px rich thumbnails.
+- Expanded `/art-fidelity.html` to show all seven spectral identities and all 48 building art routes plus Housing; 320px review has no horizontal overflow.

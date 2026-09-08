@@ -102,3 +102,7 @@ Defer:
 ## Art-fidelity review revision (2026-09-08)
 
 User review accepted the broad Deep Space Command direction but requested materially richer game-world art before Gate-2 freeze. Implemented the first revision block: spherical procedural planets with climate/noise/cloud treatment and rich reusable BuildingArt illustrations. Star Base, Battlestation and Star Fortress are distinct runtime visuals keyed to their authoritative IDs. Live review artifact: `/art-fidelity.html`. Gate 1 remains formally complete; Gate 2 remains **unfrozen** pending fidelity review. See `docs/research/SLICE_15_3_ART_FIDELITY_PLANETS_BUILDINGS_2026-09-08.md`.
+
+## Spectral-star and building-coverage review revision (2026-09-08)
+
+A second user fidelity review requested real luminous class-colored Galaxy stars, broader building coverage and a fix for rich-art Construction layout. Implemented original MOOX `StarArt` with B/F/G/K/M/BD/BH visual identities, integrated it into Galaxy/System views, routed all 48 current ruleset building IDs through dedicated or deterministic family artwork, gave Housing rich project art without treating it as a persistent building, and corrected the rich catalog/detail grid. Review evidence remains live on `/art-fidelity.html`. Gate 2 remains **unfrozen**. See `docs/research/SLICE_15_3_SPECTRAL_STARS_BUILDING_COVERAGE_LAYOUT_FIX_2026-09-08.md`.

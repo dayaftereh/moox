@@ -3362,3 +3362,47 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .construction-catalog-glyph-rich, .construction-catalog-glyph-rich .building-art { width: 60px; height: 42px; }
   .construction-project-visual-rich, .construction-project-visual-rich .building-art { min-height: 150px; }
 }
+
+
+/* Slice 15.3 art fidelity: luminous spectral stars. */
+.star-art { display: block; overflow: visible; pointer-events: none; }
+.galaxy-node { width: 44px; height: 44px; border: 0; background: transparent; box-shadow: none; transition: filter .16s ease, transform .16s ease; }
+.galaxy-node-colony, .galaxy-node-outpost, .galaxy-node-fleet { border: 0; box-shadow: none; }
+.galaxy-node:hover, .galaxy-node:focus-visible { filter: brightness(1.12); }
+.galaxy-node:focus-visible { outline: 1px solid rgba(139,184,255,.72); outline-offset: 2px; }
+.galaxy-node-selected { outline: 0; background: transparent; }
+.galaxy-star { position: relative; display: grid; width: 48px; height: 48px; margin: -2px; place-items: center; overflow: visible; color: inherit; }
+.galaxy-star .star-art { width: 48px; height: 48px; transition: transform .16s ease, filter .16s ease; }
+.galaxy-node:hover .galaxy-star .star-art, .galaxy-node:focus-visible .galaxy-star .star-art { transform: scale(1.08); }
+.galaxy-node-selected .galaxy-star::after { content: ''; position: absolute; left: 50%; top: 50%; width: 27px; height: 27px; transform: translate(-50%, -50%); border: 1px solid rgba(112,169,255,.82); border-radius: 999px; box-shadow: 0 0 8px rgba(70,133,255,.34), inset 0 0 8px rgba(70,133,255,.12); }
+.galaxy-node-label { top: 38px; text-shadow: 0 1px 3px #000, 0 0 5px #000; }
+.galaxy-node-markers { top: -2px; left: 34px; }
+.system-star-core { width: 104px; height: 104px; }
+.system-star-core .star-art { width: 104px; height: 104px; filter: drop-shadow(0 0 10px rgba(126,170,255,.16)); }
+.system-star-core > span { display: none; }
+@media (max-width: 700px) {
+  .galaxy-node { width: 42px; height: 42px; }
+  .galaxy-star, .galaxy-star .star-art { width: 44px; height: 44px; }
+  .galaxy-star { margin: -1px; }
+  .galaxy-node-label { top: 35px; }
+  .galaxy-node-markers { left: 31px; }
+  .system-star-core, .system-star-core .star-art { width: 92px; height: 92px; }
+}
+
+
+/* Art-fidelity layout correction: rich building art owns the detail width. */
+.construction-project-hero-rich { grid-template-columns: minmax(0, 1fr); gap: 7px; align-items: stretch; }
+.construction-project-hero-rich .construction-project-visual-rich { width: 100%; min-height: 0; aspect-ratio: 16 / 7; }
+.construction-project-hero-rich .construction-project-visual-rich .building-art { width: 100%; height: 100%; min-height: 0; }
+.construction-project-hero-rich .construction-project-title { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: 'eyebrow badge' 'title badge'; align-items: center; gap: 2px 8px; padding-inline: 2px; }
+.construction-project-hero-rich .construction-project-title .eyebrow { grid-area: eyebrow; margin: 0; }
+.construction-project-hero-rich .construction-project-title h2 { grid-area: title; min-width: 0; }
+.construction-project-hero-rich .construction-project-title .badge { grid-area: badge; align-self: center; }
+.construction-project-actions { margin-top: 0; }
+@media (max-width: 700px) {
+  .construction-project-hero-rich .construction-project-visual-rich { min-height: 0; aspect-ratio: 16 / 7; }
+  .construction-project-hero-rich .construction-project-title { grid-template-columns: minmax(0, 1fr); grid-template-areas: 'eyebrow' 'title' 'badge'; }
+}
+
+.construction-catalog-item-rich { grid-template-columns: 68px minmax(0, 1fr) auto; min-height: 60px; }
+@media (max-width: 700px) { .construction-catalog-item-rich { grid-template-columns: 60px minmax(0, 1fr) auto; min-height: 54px; } }

@@ -25,6 +25,7 @@ import { ProceduralShipGlyph } from './components/ProceduralShipGlyph'
 import { GameIcon, type GameIconName } from './components/GameIcon'
 import { OrbitalBodyArt } from './components/OrbitalBodyArt'
 import { BuildingArt } from './components/BuildingArt'
+import { StarArt, starPalette } from './components/StarArt'
 import { Card, EmptyState, PageHeader } from './components/ui'
 import { type TranslationKey, type TranslationVars } from './i18n'
 
@@ -104,6 +105,14 @@ function constructionProjectIcon(kind: ConstructionProjectKind, projectID?: stri
     case 'planetary_transformation': return 'terraform'
     default: return 'build'
   }
+}
+
+function constructionProjectUsesRichArt(kind: ConstructionProjectKind): boolean {
+  return kind === 'building' || kind === 'housing' || kind === 'planetary_transformation'
+}
+
+function constructionProjectArtID(kind: ConstructionProjectKind, projectID: string): string {
+  return kind === 'housing' ? 'housing' : projectID
 }
 
 function localizedPhase(t: Translator, phase: string): string {
@@ -410,7 +419,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                   }}
                   title={system.name + ' (' + system.x + ', ' + system.y + ')'}
                 >
-                  <span className="galaxy-star" aria-hidden="true"><GameIcon name="star-system" /></span>
+                  <span className="galaxy-star" aria-hidden="true"><StarArt spectralClass={system.spectral_class} seed={system.id} /></span>
                   <span className="galaxy-node-markers" aria-hidden="true">
                     {ownsColony && <span className="galaxy-node-marker galaxy-node-marker-colony"><GameIcon name="colonies" /></span>}
                     {ownOutpost && !ownsColony && <span className="galaxy-node-marker galaxy-node-marker-outpost"><GameIcon name="outpost" /></span>}
@@ -562,13 +571,13 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
             <p className="eyebrow">{t('system.title', { system: system.name })}</p>
             <h2 id={'system-dialog-title-' + system.id}><GameIcon name="star-system" />{system.name}</h2>
           </div>
-          <span className="badge system-star-class">{t('system.starClass', { class: system.spectral_class })}</span>
+          <span className="badge system-star-class" title={starPalette(system.spectral_class).label}>{t('system.starClass', { class: starPalette(system.spectral_class).spectral })}</span>
         </header>
 
         <div className="system-dialog-scene">
           <div className="system-orbit-stage system-orbit-stage-classic" aria-label={t('system.bodies')}>
             <div className="system-orbit-canvas">
-              <div className={'system-star-core system-star-class-' + system.spectral_class} aria-hidden="true"><span /></div>
+              <div className={'system-star-core system-star-class-' + system.spectral_class} aria-hidden="true"><StarArt spectralClass={system.spectral_class} seed={system.id} /></div>
               {orderedBodies.map((body, index) => {
                 const radius = 17 + ((index + 1) / (orderedBodies.length + 1)) * 31
                 const angle = (((system.id * 31) + (body.id * 67) + (index * 103)) % 360) * Math.PI / 180
@@ -1507,12 +1516,12 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
               return (
                 <button
                   type="button"
-                  className={'construction-catalog-item' + (selected ? ' selected' : '')}
+                  className={'construction-catalog-item' + (selected ? ' selected' : '') + (constructionProjectUsesRichArt(choice.project_kind) ? ' construction-catalog-item-rich' : '')}
                   key={`${choice.project_kind}-${choice.project_id}-${choice.ship_design_id ?? 0}-${choice.ship_design_revision ?? 0}-${index}`}
                   aria-pressed={selected}
                   onClick={() => setSelectedChoiceIndex(index)}
                 >
-                  <span className={choice.project_kind === 'building' ? 'construction-catalog-glyph construction-catalog-glyph-rich' : 'construction-catalog-glyph'} data-kind={choice.project_kind} aria-hidden="true">{choice.project_kind === 'building' ? <BuildingArt buildingId={choice.project_id} variant="compact" /> : <GameIcon name={constructionProjectIcon(choice.project_kind, choice.project_id)} />}</span>
+                  <span className={constructionProjectUsesRichArt(choice.project_kind) ? 'construction-catalog-glyph construction-catalog-glyph-rich' : 'construction-catalog-glyph'} data-kind={choice.project_kind} aria-hidden="true">{constructionProjectUsesRichArt(choice.project_kind) ? <BuildingArt buildingId={constructionProjectArtID(choice.project_kind, choice.project_id)} variant="compact" /> : <GameIcon name={constructionProjectIcon(choice.project_kind, choice.project_id)} />}</span>
                   <span className="construction-catalog-copy">
                     <strong>{displayChoice(choice)}</strong>
                     <small>{humanizeToken(choice.project_kind)} · {t('construction.cost', { pp: choice.production_cost_pp.toFixed(0) })}</small>
@@ -1528,9 +1537,9 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
       <Card className="construction-project-panel">
         {selectedChoice ? (
           <>
-            <div className="construction-project-hero">
-              <div className={selectedChoice.project_kind === 'building' ? 'construction-project-visual construction-project-visual-rich' : 'construction-project-visual'} data-kind={selectedChoice.project_kind} aria-hidden="true">
-                {selectedChoice.project_kind === 'building' ? <BuildingArt buildingId={selectedChoice.project_id} variant="hero" /> : <GameIcon name={constructionProjectIcon(selectedChoice.project_kind, selectedChoice.project_id)} />}
+            <div className={constructionProjectUsesRichArt(selectedChoice.project_kind) ? 'construction-project-hero construction-project-hero-rich' : 'construction-project-hero'}>
+              <div className={constructionProjectUsesRichArt(selectedChoice.project_kind) ? 'construction-project-visual construction-project-visual-rich' : 'construction-project-visual'} data-kind={selectedChoice.project_kind} aria-hidden="true">
+                {constructionProjectUsesRichArt(selectedChoice.project_kind) ? <BuildingArt buildingId={constructionProjectArtID(selectedChoice.project_kind, selectedChoice.project_id)} variant="hero" /> : <GameIcon name={constructionProjectIcon(selectedChoice.project_kind, selectedChoice.project_id)} />}
               </div>
               <div className="construction-project-title">
                 <p className="eyebrow">{t('construction.selectedProject')}</p>

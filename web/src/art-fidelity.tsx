@@ -1,7 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BuildingArt } from './components/BuildingArt'
+import { StarArt, starPalette } from './components/StarArt'
 import { OrbitalBodyArt } from './components/OrbitalBodyArt'
+import { rulesetBuildingArtIDs } from './building-art-catalog'
 import './art-fidelity.css'
 
 const climates = [
@@ -41,6 +43,13 @@ function App() {
       </header>
 
       <section className="art-lab-section">
+        <div className="art-lab-section-title"><div><p>Spectral star fidelity</p><h2>Galaxy-map stars by primary class</h2></div><span>Luminous core · corona · radial fade · class color</span></div>
+        <div className="star-gallery">
+          {[0,1,2,3,4,5,6].map((spectralClass) => { const palette = starPalette(spectralClass); return <article className="star-card" key={spectralClass}><div className="star-card-art"><StarArt spectralClass={spectralClass} seed={700 + spectralClass} /></div><strong>{palette.label}</strong><small>{palette.spectral} · spectral {spectralClass}</small></article> })}
+        </div>
+      </section>
+
+      <section className="art-lab-section">
         <div className="art-lab-section-title"><div><p>Orbital body fidelity</p><h2>Climate-driven procedural planets</h2></div><span>Gradient · Fractal Noise · Clouds · deterministic seed</span></div>
         <div className="planet-gallery">
           {climates.map(([climate, label, id]) => (
@@ -73,6 +82,14 @@ function App() {
           {surfaceBuildings.map(([id, title]) => (
             <article className="surface-building-card" key={id}><BuildingArt buildingId={id} variant="surface" /><strong>{title}</strong><code>{id}</code></article>
           ))}
+        </div>
+      </section>
+
+      <section className="art-lab-section">
+        <div className="art-lab-section-title"><div><p>Ruleset building coverage</p><h2>All 48 persistent building/transformation IDs</h2></div><span>Dedicated major art + deterministic family variants</span></div>
+        <div className="building-coverage-gallery">
+          <article className="building-coverage-card housing-project-card"><BuildingArt buildingId="housing" variant="compact" /><strong>Housing</strong><code>repeatable project · not persistent</code></article>
+          {rulesetBuildingArtIDs.map((id) => <article className="building-coverage-card" key={id}><BuildingArt buildingId={id} variant="compact" /><strong>{id.replace(/_/g, ' ')}</strong><code>{id}</code></article>)}
         </div>
       </section>
 
