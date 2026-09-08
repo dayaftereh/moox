@@ -222,3 +222,12 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Defined target responsive tiers, rich-asset resolutions/crops, vector icon grammar, semantic asset IDs, fallback behavior and procedural-ship presentation boundaries.
 - Defined provenance/license classes and required metadata; private/original-game reference material remains non-distributable without explicit rights.
 - Prepared the Gate-2 visual identity / asset-pipeline contract draft and marked Gate 1 direction work complete; Gate 2 remains unfrozen pending explicit review.
+
+## 2026-09-08 - Slice 15.3 art-fidelity planets/buildings review revision
+
+- Replaced diagrammatic System body icons with spherical procedural world art using radial lighting, deterministic fractal-noise surfaces, climate palettes and cloud layers where appropriate.
+- Added richer gas-giant band/storm rendering and deterministic asteroid-belt bodies.
+- Added reusable `BuildingArt` illustrations for Capitol, Colony Base, Marine Barracks, Star Base, Battlestation and Star Fortress; command-station progression now has three genuinely different images.
+- Construction catalog/hero and Colony built-building tiles reuse the same building art source; non-building actions remain concise semantic icons.
+- Added a multi-entry runtime `/art-fidelity.html` review lab that renders the actual React components, including a future planet-surface composition concept.
+- This is a Gate-2 review revision; Gate 2 remains unfrozen pending user acceptance of the richer fidelity direction.

@@ -98,3 +98,7 @@ Defer:
 - [x] Integrate the eight authoritative Research categories with distinct SVG identities and add first Galaxy/System/Fleet/contact markers with diplomacy tones; browser-verify desktop and 320px mobile on canonical port 7171.
 
 - [x] Integrate system-body, settlement, fleet-role, construction/building and diplomacy icons; replace remaining obvious strategic CSS/text glyphs; browser-verify desktop and 320px mobile.
+
+## Art-fidelity review revision (2026-09-08)
+
+User review accepted the broad Deep Space Command direction but requested materially richer game-world art before Gate-2 freeze. Implemented the first revision block: spherical procedural planets with climate/noise/cloud treatment and rich reusable BuildingArt illustrations. Star Base, Battlestation and Star Fortress are distinct runtime visuals keyed to their authoritative IDs. Live review artifact: `/art-fidelity.html`. Gate 1 remains formally complete; Gate 2 remains **unfrozen** pending fidelity review. See `docs/research/SLICE_15_3_ART_FIDELITY_PLANETS_BUILDINGS_2026-09-08.md`.

@@ -23,6 +23,8 @@ import {
 } from './api'
 import { ProceduralShipGlyph } from './components/ProceduralShipGlyph'
 import { GameIcon, type GameIconName } from './components/GameIcon'
+import { OrbitalBodyArt } from './components/OrbitalBodyArt'
+import { BuildingArt } from './components/BuildingArt'
 import { Card, EmptyState, PageHeader } from './components/ui'
 import { type TranslationKey, type TranslationVars } from './i18n'
 
@@ -600,7 +602,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                       }}
                     >
                       <span className="system-orbit-body-reticle" aria-hidden="true">
-                        <span className="system-orbit-body-icon"><GameIcon name={orbitalBodyIcon(body.kind)} /></span>
+                        <span className="system-orbit-body-icon"><OrbitalBodyArt kind={body.kind} id={body.id} climateId={planet?.climate_id} /></span>
                         {colony && <span className="system-orbit-settlement system-orbit-settlement-colony"><GameIcon name="colonies" /></span>}
                         {!colony && body.outpost_id && <span className="system-orbit-settlement system-orbit-settlement-outpost"><GameIcon name="outpost" /></span>}
                       </span>
@@ -1297,7 +1299,7 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
         </div>
         <p className="muted colony-surface-hint">{t('colony.surfaceHint')}</p>
         {(displayColony.buildings ?? []).length === 0 ? <p className="muted">{t('colony.noBuildings')}</p> : (
-          <div className="building-grid colony-building-grid">{(displayColony.buildings ?? []).map((building) => <div className="building-tile" key={building}><span className="building-placeholder" aria-hidden="true"><GameIcon name={constructionProjectIcon('building', building)} /></span><strong>{humanizeToken(building)}</strong></div>)}</div>
+          <div className="building-grid colony-building-grid">{(displayColony.buildings ?? []).map((building) => <div className="building-tile building-tile-rich" key={building}><BuildingArt buildingId={building} variant="compact" className="building-tile-art" /><strong>{humanizeToken(building)}</strong></div>)}</div>
         )}
       </Card>
 
@@ -1510,7 +1512,7 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
                   aria-pressed={selected}
                   onClick={() => setSelectedChoiceIndex(index)}
                 >
-                  <span className="construction-catalog-glyph" data-kind={choice.project_kind} aria-hidden="true"><GameIcon name={constructionProjectIcon(choice.project_kind, choice.project_id)} /></span>
+                  <span className={choice.project_kind === 'building' ? 'construction-catalog-glyph construction-catalog-glyph-rich' : 'construction-catalog-glyph'} data-kind={choice.project_kind} aria-hidden="true">{choice.project_kind === 'building' ? <BuildingArt buildingId={choice.project_id} variant="compact" /> : <GameIcon name={constructionProjectIcon(choice.project_kind, choice.project_id)} />}</span>
                   <span className="construction-catalog-copy">
                     <strong>{displayChoice(choice)}</strong>
                     <small>{humanizeToken(choice.project_kind)} · {t('construction.cost', { pp: choice.production_cost_pp.toFixed(0) })}</small>
@@ -1527,8 +1529,8 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
         {selectedChoice ? (
           <>
             <div className="construction-project-hero">
-              <div className="construction-project-visual" data-kind={selectedChoice.project_kind} aria-hidden="true">
-                <GameIcon name={constructionProjectIcon(selectedChoice.project_kind, selectedChoice.project_id)} />
+              <div className={selectedChoice.project_kind === 'building' ? 'construction-project-visual construction-project-visual-rich' : 'construction-project-visual'} data-kind={selectedChoice.project_kind} aria-hidden="true">
+                {selectedChoice.project_kind === 'building' ? <BuildingArt buildingId={selectedChoice.project_id} variant="hero" /> : <GameIcon name={constructionProjectIcon(selectedChoice.project_kind, selectedChoice.project_id)} />}
               </div>
               <div className="construction-project-title">
                 <p className="eyebrow">{t('construction.selectedProject')}</p>

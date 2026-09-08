@@ -3335,3 +3335,30 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 .diplomacy-stance-badge.relation-friendly { border-color: rgba(99, 214, 154, .66); color: #a9ebc8; background: rgba(99, 214, 154, .1); }
 .diplomacy-stance-badge.relation-neutral { border-color: #536984; color: #bdcadb; background: rgba(112, 132, 159, .1); }
 .diplomacy-stance-badge.relation-hostile { border-color: rgba(255, 116, 135, .72); color: #ffacb8; background: rgba(255, 116, 135, .1); }
+
+
+/* Slice 15.3 art fidelity: rich orbital bodies and building illustrations. */
+.orbital-body-art { display: block; width: 100%; height: 100%; overflow: visible; }
+.system-orbit-body-icon { width: 38px; height: 38px; border: 0; background: transparent; box-shadow: none; overflow: visible; }
+.system-orbit-body-icon .orbital-body-art { width: 38px; height: 38px; filter: drop-shadow(0 4px 7px rgba(0,0,0,.48)); }
+.system-orbit-body-gas-giant .system-orbit-body-icon { width: 46px; height: 46px; border: 0; background: transparent; }
+.system-orbit-body-gas-giant .system-orbit-body-icon .orbital-body-art { width: 46px; height: 46px; }
+.system-orbit-body-asteroid-belt .system-orbit-body-icon { width: 50px; height: 32px; border: 0; background: transparent; }
+.system-orbit-body-asteroid-belt .system-orbit-body-icon .orbital-body-art { width: 50px; height: 32px; }
+.system-orbit-body.selected .system-orbit-body-icon { border: 0; box-shadow: none; filter: drop-shadow(0 0 7px rgba(100,166,255,.75)); }
+.system-orbit-settlement { top: -5px; right: -8px; z-index: 2; }
+.building-art { display: block; width: 100%; height: 100%; }
+.construction-catalog-glyph-rich { width: 68px; height: 48px; padding: 0; overflow: hidden; border: 1px solid rgba(91,133,177,.32); border-radius: 8px !important; background: #06101b !important; }
+.construction-catalog-glyph-rich .building-art { width: 68px; height: 48px; }
+.construction-project-visual-rich { min-height: 190px; padding: 0; overflow: hidden; border-color: rgba(90,139,195,.38); background: #030811; }
+.construction-project-visual-rich .building-art { width: 100%; height: 100%; min-height: 190px; }
+.building-tile-rich { min-height: 94px; align-content: start; gap: 6px; }
+.building-tile-art { display: block; width: 100%; height: 62px; overflow: hidden; border: 1px solid rgba(88,126,163,.28); border-radius: 7px; background: #050c14; }
+.building-tile-art .building-art { width: 100%; height: 100%; }
+@media (max-width: 700px) {
+  .system-orbit-body-icon, .system-orbit-body-icon .orbital-body-art { width: 34px; height: 34px; }
+  .system-orbit-body-gas-giant .system-orbit-body-icon, .system-orbit-body-gas-giant .system-orbit-body-icon .orbital-body-art { width: 41px; height: 41px; }
+  .system-orbit-body-asteroid-belt .system-orbit-body-icon, .system-orbit-body-asteroid-belt .system-orbit-body-icon .orbital-body-art { width: 44px; height: 29px; }
+  .construction-catalog-glyph-rich, .construction-catalog-glyph-rich .building-art { width: 60px; height: 42px; }
+  .construction-project-visual-rich, .construction-project-visual-rich .building-art { min-height: 150px; }
+}
