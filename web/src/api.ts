@@ -666,6 +666,23 @@ export async function submitInvasion(snapshot: PlayerSnapshot, seatID: number, a
   })
 }
 
+export async function submitColonyBase(snapshot: PlayerSnapshot, seatID: number, resolution: ColonyBaseResolution, action: 'colonize' | 'trash', planetID?: number): Promise<Receipt> {
+  const kind = action === 'colonize' ? 'colony.colonize_with_base' : 'colony.trash_colony_base'
+  const payload = action === 'colonize'
+    ? { source_colony_id: resolution.source_colony_id, planet_id: planetID }
+    : { source_colony_id: resolution.source_colony_id }
+  return requestJSON<Receipt>(`/api/v1/games/${encodeURIComponent(snapshot.view.game_id)}/immediate-commands`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      schema_version: 1,
+      seat_id: seatID,
+      base_revision: snapshot.view.revision,
+      command: { schema_version: 1, sequence: 1, kind, payload },
+    }),
+  })
+}
+
 export function streamURL(gameID: string): string {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
   return `${protocol}//${window.location.host}/api/v1/games/${encodeURIComponent(gameID)}/stream`

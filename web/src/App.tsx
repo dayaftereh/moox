@@ -11,6 +11,7 @@ import {
   replaceDraftOrder,
   restoreLiveSnapshot,
   streamURL,
+  submitColonyBase,
   submitDiplomacy,
   submitInvasion,
   submitPlanning,
@@ -25,6 +26,7 @@ import {
 } from './api'
 import { AppShell, LanguageSwitch, StandaloneHeader, type ResourceChip } from './components/AppShell'
 import { GameIcon } from './components/GameIcon'
+import { OrbitalBodyArt } from './components/OrbitalBodyArt'
 import { Card, EmptyState, Metric, Notice, PageHeader } from './components/ui'
 import { type TranslationKey, type TranslationVars, useI18n } from './i18n'
 import { type AppRoute, type GameSection, navigate, parseRoute } from './navigation'
@@ -128,6 +130,7 @@ function App() {
   const [error, setError] = useState('')
   const [diplomacyBusy, setDiplomacyBusy] = useState(false)
   const [invasionBusy, setInvasionBusy] = useState(false)
+  const [colonyBaseBusy, setColonyBaseBusy] = useState(false)
   const [researchOverlayOpen, setResearchOverlayOpen] = useState(false)
   const [persistenceBusy, setPersistenceBusy] = useState(false)
   const [pendingRestore, setPendingRestore] = useState<PendingRestore | null>(null)
@@ -304,6 +307,11 @@ function App() {
     [assignment],
   )
   const mutationLocked = lifecycle !== 'synced'
+  const colonyBaseDecision = snapshot?.decision?.decisions.colony_base?.[0]
+  const colonyBaseSourceColony = colonyBaseDecision ? snapshot?.decision?.colonies.find((colony) => colony.id === colonyBaseDecision.source_colony_id) : undefined
+  const colonyBaseSystem = colonyBaseDecision ? snapshot?.decision?.strategic.galaxy.systems.find((system) => system.id === colonyBaseDecision.system_id) : undefined
+  const colonyBaseSourcePlanet = colonyBaseSourceColony ? snapshot?.decision?.strategic.galaxy.systems.flatMap((system) => system.planets).find((planet) => planet.id === colonyBaseSourceColony.planet_id) : undefined
+  const colonyBaseTargets = colonyBaseDecision && colonyBaseSystem ? colonyBaseSystem.planets.filter((planet) => colonyBaseDecision.target_planet_ids.includes(planet.id)) : []
   const diplomacyClosed = mutationLocked || snapshot?.view.phase !== 'planning' || Boolean(snapshot?.view.seats.some((seat) => seat.submitted))
   const projectedResources = planningPreview?.preview.projection
   const projectedEmpire = snapshot?.decision?.empire
@@ -651,6 +659,22 @@ function App() {
     }
   }
 
+  async function runColonyBase(action: 'colonize' | 'trash', planetID?: number) {
+    if (!snapshot || !colonyBaseDecision || mutationLocked || colonyBaseBusy) return
+    setColonyBaseBusy(true)
+    setError('')
+    try {
+      const receipt = await submitColonyBase(snapshot, seatID, colonyBaseDecision, action, planetID)
+      setStatus({ key: action === 'colonize' ? 'status.colonyBaseColonized' : 'status.colonyBaseTrashed', vars: { change: receipt.change_sequence, revision: receipt.game_revision } })
+      await loadSnapshot(snapshot.view.game_id, seatID)
+    } catch (reason) {
+      setError(errorText(reason))
+      if (isAPIError(reason) && reason.status === 409) void loadSnapshot(snapshot.view.game_id, seatID).catch(() => undefined)
+    } finally {
+      setColonyBaseBusy(false)
+    }
+  }
+
   async function runInvasion(action: 'invade' | 'decline') {
     if (!snapshot?.view.invasion || mutationLocked) return
     setInvasionBusy(true)
@@ -801,6 +825,31 @@ function App() {
       endTurnLabel={planningBusy ? t('planning.resolving') : t('planning.endTurn')}
     >
       {persistenceControls}
+
+      {colonyBaseDecision && (
+        <div className="decision-dialog-backdrop colony-base-decision-backdrop" role="presentation">
+          <Card className="decision-dialog colony-base-decision" as="section">
+            <p className="eyebrow">{t('colonyBase.eyebrow')}</p>
+            <h2>{t('colonyBase.title')}</h2>
+            <p>{t('colonyBase.details', { source: colonyBaseSourcePlanet?.name ?? `#${colonyBaseDecision.source_colony_id}`, system: colonyBaseSystem?.name ?? `#${colonyBaseDecision.system_id}` })}</p>
+            <div className="colony-base-target-grid">
+              {colonyBaseTargets.map((planet) => (
+                <button type="button" className="colony-base-target" key={planet.id} disabled={mutationLocked || colonyBaseBusy} onClick={() => void runColonyBase('colonize', planet.id)}>
+                  <span className="colony-base-target-art" aria-hidden="true"><OrbitalBodyArt kind="planet" id={planet.id} climateId={planet.climate_id} /></span>
+                  <span><strong>{planet.name}</strong><small>{planet.climate_id} · {planet.size_id} · {planet.mineral_id}</small></span>
+                  <GameIcon name="flag" aria-hidden="true" />
+                </button>
+              ))}
+            </div>
+            {colonyBaseTargets.length === 0 && <p className="muted">{t('colonyBase.noTargets')}</p>}
+            <div className="decision-divider" />
+            <div className="colony-base-scrap-row">
+              <div><strong>{t('colonyBase.scrapTitle')}</strong><small>{t('colonyBase.scrapHint', { refund: colonyBaseDecision.trash_refund_bc.toFixed(0) })}</small></div>
+              <button type="button" className="button-secondary" disabled={mutationLocked || colonyBaseBusy} onClick={() => void runColonyBase('trash')}><GameIcon name="credits" />{t('colonyBase.scrapAction', { refund: colonyBaseDecision.trash_refund_bc.toFixed(0) })}</button>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {error && <Notice title={t('state.errorTitle')} tone="danger"><p>{error}</p></Notice>}
 
