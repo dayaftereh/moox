@@ -73,6 +73,7 @@ See `docs/research/SLICE_15_4_GATE2_RICH_INTERACTION_CONTRACT_DRAFT_2026-09-09.m
 - [x] Block 2 persistence UX: local Save, Home/In-Game Load, explicit Restore confirmation, new-ID Import and lifecycle-safe invalidation handling. Evidence: `docs/research/SLICE_15_4_GATE3_BLOCK2_SAVE_LOAD_RESTORE_UX_2026-09-09.md`.
 - [x] Block 3 Colony Base: mandatory Post-Resolution legal-target/Scrap blocking decision, both real server outcomes, desktop + 320px QA. Evidence: `docs/research/SLICE_15_4_GATE3_BLOCK3_COLONY_BASE_UX_2026-09-09.md`.
 - [x] Block 4 Invasion: player-safe public empire identity, contextual blocking decision and real Decline/Invade server outcomes. Evidence: `docs/research/SLICE_15_4_GATE3_BLOCK4_INVASION_UX_2026-09-09.md`.
+- [x] Block 5 resolution summary / Research / result: stable player-safe event-derived transition summaries, automatic Research Breakthrough presentation and dedicated read-only Victory surface. Evidence: `docs/research/SLICE_15_4_GATE3_BLOCK5_RESOLUTION_SUMMARY_RESEARCH_RESULT_2026-09-09.md`.
 
 ## Gate 4 - QA + close
 - [ ] Exercise every supported non-tactical interactive phase through browser surfaces.

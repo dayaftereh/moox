@@ -422,6 +422,72 @@ export type DecisionCatalog = {
   battles?: BattleDecision[]
 }
 export type PublicEmpireIdentity = { id: number; name: string; race_id: string }
+export type ResolutionSummaryKind =
+  | 'research_breakthrough'
+  | 'technology_granted'
+  | 'battle_completed'
+  | 'invasion_resolved'
+  | 'invasion_declined'
+  | 'empire_eliminated'
+  | 'game_completed'
+export type ResearchResolutionSummary = {
+  empire_id: number
+  tech_field_id: number
+  selection_mode: ResearchSelectionMode
+  technology_ids?: number[]
+  technology_keys?: string[]
+  completed_levels?: number
+  research_level?: number
+}
+export type TechnologyGrantResolutionSummary = {
+  empire_id: number
+  technology_id: number
+  technology_key: string
+  technology_name_key: string
+  tech_field_id: number
+  source_kind: string
+}
+export type BattleResolutionSummary = {
+  battle_id: number
+  system_id?: number
+  attacker_empire_id?: number
+  defender_empire_id?: number
+  winner_seat_id: number
+  winner_empire_id?: number
+  outcome: string
+  destroyed_ship_ids?: number[]
+  surviving_ship_ids?: number[]
+  defender_colony_ids?: number[]
+}
+export type InvasionResolutionSummary = {
+  system_id: number
+  colony_id: number
+  attacker_empire_id: number
+  defender_empire_id: number
+  outcome: string
+  selected_transport_fleet_ids?: number[]
+  initial_attacker_infantry?: number
+  initial_defender_infantry?: number
+  initial_defender_militia?: number
+  surviving_attacker_infantry?: number
+  surviving_defender_infantry?: number
+  surviving_defender_militia?: number
+  consumed_transport_fleet_ids?: number[]
+  surviving_transport_fleet_ids?: number[]
+}
+export type ResolutionSummary = {
+  id: string
+  event_sequence: number
+  turn: number
+  revision: number
+  kind: ResolutionSummaryKind
+  research?: ResearchResolutionSummary
+  technology_grant?: TechnologyGrantResolutionSummary
+  battle?: BattleResolutionSummary
+  invasion?: InvasionResolutionSummary
+  eliminated_empire_id?: number
+  result?: SessionResult
+}
 export type PlayerDecisionView = {
   game_id: string
   revision: number
@@ -449,6 +515,7 @@ export type PlayerView = {
   colonies: Colony[]
   diplomacy?: DiplomacyView[]
   invasion?: InvasionOpportunity
+  recent_resolutions?: ResolutionSummary[]
 }
 
 export type PlayerSnapshot = {

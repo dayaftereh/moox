@@ -293,3 +293,13 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Added a minimal player-safe public empire identity projection (ID/name/race only); no foreign economy/research state exposed.
 - Isolated E2E verified Decline -> Turn 2 Planning and Invade -> target capture plus conquest completion for the fixture.
 - Verified 320px mobile, 44px actions and no horizontal overflow.
+
+
+## 2026-09-09 - Slice 15.4 Gate 3 block 5
+
+- Added a bounded player-safe `recent_resolutions` projection derived from the existing authoritative event log, with stable `event-<sequence>` IDs and no new save-schema state.
+- Research completion/Technology grants are owner-only; Battle summaries are participant-only; Invasion summaries are limited to involved Empires; elimination/game completion remain public major results.
+- Added automatic Research Breakthrough transition presentation with presentation-only per-game/per-seat acknowledgement and navigation into the existing Research UI.
+- Replaced the small completed-game inline card with a dedicated read-only conquest result surface using public Empire names and a Main Menu action; ordinary strategic sections no longer render below a completed result.
+- Regression evidence: `go test ./...`, `go vet ./...`, `npm run build`, focused resolution privacy/stable-ID tests and `git diff --check` pass. Evidence: `docs/research/SLICE_15_4_GATE3_BLOCK5_RESOLUTION_SUMMARY_RESEARCH_RESULT_2026-09-09.md`.
+- Next Gate-3 block: Battle Entry/Return route and shell; interactive Tactical mechanics remain Slice 15.5.

@@ -23,6 +23,7 @@ import {
   type Notification,
   type PlanningPreviewSnapshot,
   type PlayerSnapshot,
+  type ResolutionSummary,
 } from './api'
 import { AppShell, LanguageSwitch, StandaloneHeader, type ResourceChip } from './components/AppShell'
 import { GameIcon } from './components/GameIcon'
@@ -87,6 +88,26 @@ type SaveFileMetadata = {
 }
 
 type PendingRestore = { file: File; metadata: SaveFileMetadata }
+function resolutionAckStorageKey(gameID: string, seatID: number): string {
+  return `moox:resolution-acks:${gameID}:seat-${seatID}`
+}
+
+function readResolutionAcks(gameID: string, seatID: number): Set<string> {
+  if (!gameID || seatID <= 0) return new Set()
+  try {
+    const raw = window.sessionStorage.getItem(resolutionAckStorageKey(gameID, seatID))
+    if (!raw) return new Set()
+    const values = JSON.parse(raw)
+    return new Set(Array.isArray(values) ? values.filter((value): value is string => typeof value === 'string') : [])
+  } catch {
+    return new Set()
+  }
+}
+
+function humanizeResolutionToken(value: string): string {
+  const normalized = value.replace(/^technology\./, '').replace(/[._-]+/g, ' ').trim()
+  return normalized ? normalized.charAt(0).toUpperCase() + normalized.slice(1) : value
+}
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
 
@@ -132,6 +153,7 @@ function App() {
   const [invasionBusy, setInvasionBusy] = useState(false)
   const [colonyBaseBusy, setColonyBaseBusy] = useState(false)
   const [researchOverlayOpen, setResearchOverlayOpen] = useState(false)
+  const [acknowledgedResolutionIDs, setAcknowledgedResolutionIDs] = useState<Set<string>>(() => new Set())
   const [persistenceBusy, setPersistenceBusy] = useState(false)
   const [pendingRestore, setPendingRestore] = useState<PendingRestore | null>(null)
   const [lastNotification, setLastNotification] = useState<Notification | null>(null)
@@ -151,6 +173,10 @@ function App() {
     if (!window.location.hash) navigate({ kind: 'home' })
     return () => window.removeEventListener('hashchange', syncRoute)
   }, [])
+  useEffect(() => {
+    setAcknowledgedResolutionIDs(readResolutionAcks(gameID, seatID))
+  }, [gameID, seatID])
+
 
   useEffect(() => {
     if (route.kind === 'game' && route.gameID !== gameID) {
@@ -734,6 +760,38 @@ function App() {
     </>
   )
 
+  const researchBreakthrough = useMemo<ResolutionSummary | undefined>(() => {
+    if (!snapshot || snapshot.view.phase === 'completed') return undefined
+    const summaries = snapshot.view.recent_resolutions ?? []
+    for (let index = summaries.length - 1; index >= 0; index -= 1) {
+      const summary = summaries[index]
+      if (summary.kind === 'research_breakthrough' && summary.research && !acknowledgedResolutionIDs.has(summary.id)) return summary
+    }
+    return undefined
+  }, [snapshot, acknowledgedResolutionIDs])
+
+  const publicEmpires = snapshot?.decision?.public_empires ?? []
+  const resultWinner = snapshot?.view.result
+    ? publicEmpires.find((empire) => empire.id === snapshot.view.result?.winner_empire_id)
+    : undefined
+  const eliminatedEmpireNames = (snapshot?.view.result?.eliminated_empire_ids ?? []).map((empireID) =>
+    publicEmpires.find((empire) => empire.id === empireID)?.name ?? t('result.empireFallback', { id: empireID }),
+  )
+
+  function acknowledgeResolution(summaryID: string) {
+    if (!gameID || seatID <= 0) return
+    setAcknowledgedResolutionIDs((current) => {
+      if (current.has(summaryID)) return current
+      const next = new Set(current)
+      next.add(summaryID)
+      try {
+        window.sessionStorage.setItem(resolutionAckStorageKey(gameID, seatID), JSON.stringify([...next].slice(-32)))
+      } catch {
+        // Presentation acknowledgement may remain in-memory when sessionStorage is unavailable.
+      }
+      return next
+    })
+  }
   if (route.kind === 'home') {
     return (
       <div className="standalone-shell">
@@ -904,20 +962,58 @@ function App() {
           </Card>
         </div>
       )}
+      {researchBreakthrough?.research && (
+        <div className="decision-dialog-backdrop research-breakthrough-backdrop" role="presentation">
+          <Card className="decision-dialog research-breakthrough-card" as="section">
+            <p className="eyebrow">{t('researchBreakthrough.eyebrow')}</p>
+            <h2>{t('researchBreakthrough.title')}</h2>
+            <p><strong>{t('researchBreakthrough.field', { field: researchBreakthrough.research.tech_field_id })}</strong></p>
+            {researchBreakthrough.research.research_level ? <p className="muted">{t('researchBreakthrough.level', { level: researchBreakthrough.research.research_level })}</p> : null}
+            {(researchBreakthrough.research.technology_keys?.length ?? 0) > 0 ? (
+              <div className="research-breakthrough-unlocks">
+                <span>{t('researchBreakthrough.unlocked')}</span>
+                <div className="research-breakthrough-chips">
+                  {researchBreakthrough.research.technology_keys?.map((key) => <span className="badge" key={key}>{humanizeResolutionToken(key)}</span>)}
+                </div>
+              </div>
+            ) : (researchBreakthrough.research.technology_ids?.length ?? 0) > 0 ? (
+              <div className="research-breakthrough-unlocks">
+                <span>{t('researchBreakthrough.unlocked')}</span>
+                <div className="research-breakthrough-chips">
+                  {researchBreakthrough.research.technology_ids?.map((technologyID) => <span className="badge" key={technologyID}>{t('researchBreakthrough.technologyFallback', { id: technologyID })}</span>)}
+                </div>
+              </div>
+            ) : <p className="muted">{t('researchBreakthrough.noApplications')}</p>}
+            <p className="muted research-breakthrough-authority">{t('researchBreakthrough.authority')}</p>
+            <div className="action-row research-breakthrough-actions">
+              <button type="button" className="button-primary" onClick={() => { acknowledgeResolution(researchBreakthrough.id); navigate({ kind: 'game', gameID: snapshot?.view.game_id ?? gameID, section: 'research' }) }}><GameIcon name="research" />{t('researchBreakthrough.chooseNext')}</button>
+              <button type="button" className="button-secondary" onClick={() => acknowledgeResolution(researchBreakthrough.id)}>{t('researchBreakthrough.continue')}</button>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {snapshot?.view.result && (
-        <Card className="result-card" as="article">
-          <p className="eyebrow">{t('result.eyebrow')}</p>
-          <h2>{t('result.title')}</h2>
-          <p><strong>{t('result.winner', { empire: snapshot.view.result.winner_empire_id, seat: snapshot.view.result.winner_seat_id })}</strong></p>
-          <p className="muted">{t('result.completed', { turn: snapshot.view.result.completed_turn, revision: snapshot.view.result.completed_revision })}</p>
-          <p className="muted">{t('result.eliminated', { empires: snapshot.view.result.eliminated_empire_ids.join(', ') || t('result.none') })}</p>
-        </Card>
+        <section className="result-surface" aria-labelledby="game-result-title">
+          <Card className="result-card result-card-dedicated" as="article">
+            <p className="eyebrow">{t('result.eyebrow')}</p>
+            <h2 id="game-result-title">{t('result.title')}</h2>
+            <p className="result-winner"><strong>{t('result.winnerNamed', { empire: resultWinner?.name ?? t('result.empireFallback', { id: snapshot.view.result.winner_empire_id }) })}</strong></p>
+            {resultWinner && <span className="badge result-race">{resultWinner.race_id}</span>}
+            <p className="muted">{t('result.completedTurn', { turn: snapshot.view.result.completed_turn })}</p>
+            <p className="muted">{t('result.eliminatedNamed', { empires: eliminatedEmpireNames.join(', ') || t('result.none') })}</p>
+            <p className="muted result-authority">{t('result.authority')}</p>
+            <div className="action-row result-actions">
+              <button type="button" className="button-primary" onClick={() => navigate({ kind: 'home' })}><GameIcon name="home" />{t('result.mainMenu')}</button>
+            </div>
+          </Card>
+        </section>
       )}
 
       {!snapshot ? (
         error ? null : <EmptyState title={t('state.loadingTitle')} body={t('state.loadingBody')} />
-      ) : activeSection === 'galaxy' ? (
+      ) : snapshot.view.phase === 'completed' ? null
+      : activeSection === 'galaxy' ? (
         <StrategicGalaxyView
           snapshot={snapshot}
           selectedSystemID={route.entityID}

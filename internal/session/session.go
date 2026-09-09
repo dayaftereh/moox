@@ -93,6 +93,7 @@ type PlayerView struct {
 	Diplomacy             []DiplomacyView             `json:"diplomacy,omitempty"`
 	Invasion              *game.InvasionOpportunity   `json:"invasion,omitempty"`
 	ColonyBaseResolutions []game.ColonyBaseResolution `json:"colony_base_resolutions,omitempty"`
+	RecentResolutions     []ResolutionSummary         `json:"recent_resolutions,omitempty"`
 	OwnSubmission         *protocol.CommandBatch      `json:"own_submission,omitempty"`
 }
 
@@ -1264,6 +1265,7 @@ func (s *GameSession) PlayerView(seatID protocol.SeatID) (PlayerView, error) {
 	if s.invasion != nil && s.invasion.AttackerSeatID == seatID {
 		view.Invasion = game.CloneInvasionOpportunity(s.invasion)
 	}
+	view.RecentResolutions = s.recentResolutionSummariesLocked(seatID, seat.seat.EmpireID)
 	if seat.submission != nil {
 		clone := protocol.CloneCommandBatch(*seat.submission)
 		view.OwnSubmission = &clone

@@ -5,16 +5,16 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: `docs/slices/_OPEN_15_2_FUNCTIONAL_STRATEGIC_GAMEPLAY_HMI_2026-09-04.md`.
-- Active implementation slice: **Slice 15.3 Gate 1 - art/asset audit and direction exploration**. Slice 15.2 is closed after independent Gate-4 QA.
+- Open slice marker: `docs/slices/_OPEN_15_4_RICH_GAMEPLAY_PERSISTENCE_UX_2026-09-09.md`.
+- Active implementation slice: **Slice 15.4 Gate 3**. Blocks 1-5 are complete; Block 6 Battle Entry/Return route + shell is next.
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
 - Economy ruleset schema: **8**.
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
-- Slices **13-14 and 15.1-15.2 are closed**; **15.3 is open at Gate 1**; 15.4-15.6, 16-17 and reserved Slice 20 remain prepared.
-- Current objective: **Serve B2-Y for direct review: Planet `?` popover now closes via explicit `×` or click/tap outside. G4-C remains open.**
+- Slices **13-14 and 15.1-15.2 are closed**; the **15.3 playability visual baseline is frozen/parked**; **15.4 Gate 3 is active with Blocks 1-5 complete**; 15.5-15.6, 16-17 and reserved Slice 20 remain prepared.
+- Current objective: **Slice 15.4 Gate 3 Block 6 - Battle Entry/Return route and shell, preserving the 15.5 Tactical boundary.**
 - Slice-15.1 closure evidence: `docs/research/SLICE_15_1_MOBILE_FIRST_UX_GATE4_2026-09-04.md`.
 - Slice-15.2 Gate-1 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE1_2026-09-04.md`.
 - Slice-15.2 Gate-2 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE2_2026-09-04.md`.
@@ -35,7 +35,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 
 ## Post-Slice-12 fidelity/depth audit - complete
 
-The milestone re-audit identified independent playability as the main post-lifecycle bottleneck. Slices 13 Built-in AI and 14 live GameSession persistence are closed. Slice 15 is now a six-part browser-playability family: 15.1 UX/navigation/design system, 15.2 functional strategic HMI, 15.3 MOOX visual identity/assets, 15.4 rich gameplay decisions/persistence UX, **15.5 interactive 2D Tactical Combat**, 15.6 final browser vertical slice. Slice 16 New Game/preset-race breadth and Slice 17 military design breadth remain later independent work. Slices 15.1 and 15.2 are closed with Gates 1-4 complete. Slice 15.3 Gate 1 art/asset audit and direction exploration is active.
+The milestone re-audit identified independent playability as the main post-lifecycle bottleneck. Slices 13 Built-in AI and 14 live GameSession persistence are closed. Slice 15 is now a six-part browser-playability family: 15.1 UX/navigation/design system, 15.2 functional strategic HMI, 15.3 MOOX visual identity/assets, 15.4 rich gameplay decisions/persistence UX, **15.5 interactive 2D Tactical Combat**, 15.6 final browser vertical slice. Slice 16 New Game/preset-race breadth and Slice 17 military design breadth remain later independent work. Slices 15.1 and 15.2 are closed with Gates 1-4 complete. Slice 15.3 reached its frozen playability visual baseline and is parked for richer-art follow-up; Slice 15.4 Gate 3 is active with Blocks 1-5 complete.
 
 Permanent audit: `docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md`.
 ## Closed Slice 12 - Empire elimination / first headless victory loop
@@ -353,3 +353,4 @@ Original copyrighted assets remain private reference material and are not distri
 - Slice 15.4 Gate-3 block 2: `docs/research/SLICE_15_4_GATE3_BLOCK2_SAVE_LOAD_RESTORE_UX_2026-09-09.md` - local Save/Load, explicit atomic Restore, fresh-server Import and desktop/320px E2E evidence.
 - Slice 15.4 Gate-3 block 3: `docs/research/SLICE_15_4_GATE3_BLOCK3_COLONY_BASE_UX_2026-09-09.md` - mandatory Post-Resolution Colony Base target/Scrap UX with isolated real-session E2E for both outcomes.
 - Slice 15.4 Gate-3 block 4: `docs/research/SLICE_15_4_GATE3_BLOCK4_INVASION_UX_2026-09-09.md` - public empire identity + rich blocking Invasion context with real Decline/Invade E2E and 320px QA.
+- Slice 15.4 Gate-3 block 5: `docs/research/SLICE_15_4_GATE3_BLOCK5_RESOLUTION_SUMMARY_RESEARCH_RESULT_2026-09-09.md` - stable player-safe event-derived resolution summaries, automatic Research Breakthrough presentation and dedicated read-only Victory result surface.
