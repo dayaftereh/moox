@@ -3637,3 +3637,11 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
     font-size: .56rem;
   }
 }
+
+.construction-building-info { display: grid; gap: 10px; margin-bottom: 10px; }
+.construction-building-effects, .construction-building-original { padding: 10px 12px; border: 1px solid #2b4053; border-radius: 8px; background: rgba(8, 18, 28, .55); }
+.construction-building-effects h3, .construction-building-original h3 { margin: 0 0 6px; color: #a8c5dd; font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; }
+.construction-building-effects ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; color: #d7e6d0; }
+.construction-building-effects p, .construction-building-original p { margin: 0; line-height: 1.45; }
+.construction-building-original p { color: #d7e6d0; font-size: .72rem; }
+.construction-queue-hint { margin-top: 8px; }

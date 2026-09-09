@@ -305,6 +305,11 @@ export type InvasionOpportunity = {
 }
 export type InvasionAction = 'invade' | 'decline'
 
+export type ConstructionEffect = {
+  kind: string
+  value: number
+}
+
 export type ConstructionChoice = {
   project_kind: ConstructionProjectKind
   project_id: string
@@ -312,6 +317,8 @@ export type ConstructionChoice = {
   technology_id?: number
   production_id?: number
   maintenance_bc?: number
+  original_description?: string
+  effects?: ConstructionEffect[]
   freighters_added?: number
   ship_design_id?: number
   ship_design_revision?: number

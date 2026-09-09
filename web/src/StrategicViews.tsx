@@ -4,6 +4,7 @@ import {
   decodeShipVisualGenome,
   type Colony,
   type ConstructionChoice,
+  type ConstructionEffect,
   type ConstructionProjectKind,
   type ConstructionState,
   type DraftOrder,
@@ -164,6 +165,17 @@ function researchSelectionModeLabel(t: Translator, mode: ResearchChoice['selecti
       : mode === 'fixed_one'
         ? t('research.modeFixedOne')
         : t('research.modeRepeatField')
+}
+
+function constructionEffectText(t: Translator, effect: ConstructionEffect) {
+  switch (effect.kind) {
+    case 'population_growth_flat': return t('construction.effectPopulationGrowth', { value: effect.value.toFixed(1) })
+    case 'population_capacity_flat': return t('construction.effectPopulationCapacity', { value: effect.value.toFixed(0) })
+    case 'morale_percent': return t('construction.effectMorale', { value: effect.value.toFixed(0) })
+    case 'morale_barracks_relief_percent': return t('construction.effectBarracksRelief', { value: effect.value.toFixed(0) })
+    case 'command_points': return t('construction.effectCommandPoints', { value: effect.value.toFixed(0) })
+    default: return t('construction.effectUnknown', { kind: humanizeToken(effect.kind), value: effect.value.toFixed(1) })
+  }
 }
 
 function researchEffectObjectName(t: Translator, effect: ResearchTechnologyEffect): string {
@@ -1604,7 +1616,27 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
             </dl>
 
             <div className="construction-project-description">
-              <p>{selectedQueueIndex >= 0 ? t('construction.projectQueuedHint') : t('construction.projectAvailableHint')}</p>
+              {selectedChoice.project_kind === 'building' && (
+                <div className="construction-building-info">
+                  <div className="construction-building-effects">
+                    <h3>{t('construction.runtimeEffects')}</h3>
+                    {(selectedChoice.effects?.length ?? 0) > 0 ? (
+                      <ul>
+                        {selectedChoice.effects?.map((effect, index) => <li key={`${effect.kind}:${index}`}>{constructionEffectText(t, effect)}</li>)}
+                      </ul>
+                    ) : (
+                      <p className="muted">{t('construction.noRuntimeEffect')}</p>
+                    )}
+                  </div>
+                  {selectedChoice.original_description && (
+                    <div className="construction-building-original">
+                      <h3>{t('construction.originalDescription')}</h3>
+                      <p>{selectedChoice.original_description}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+              <p className="construction-queue-hint">{selectedQueueIndex >= 0 ? t('construction.projectQueuedHint') : t('construction.projectAvailableHint')}</p>
             </div>
 
             <div className="construction-project-actions">

@@ -20,17 +20,24 @@ const FreighterFleetTechnologyID = 69
 const FreighterFleetProjectID = "freighter_fleet"
 const HousingProjectID = "housing"
 
+type ConstructionEffect struct {
+	Kind  string  `json:"kind"`
+	Value float64 `json:"value"`
+}
+
 type ConstructionChoice struct {
-	ProjectKind        core.ConstructionProjectKind `json:"project_kind"`
-	ProjectID          string                       `json:"project_id"`
-	ProductionCostPP   float64                      `json:"production_cost_pp"`
-	TechnologyID       int                          `json:"technology_id,omitempty"`
-	ProductionID       int                          `json:"production_id,omitempty"`
-	MaintenanceBC      int                          `json:"maintenance_bc,omitempty"`
-	FreightersAdded    int                          `json:"freighters_added,omitempty"`
-	ShipDesignID       core.ID                      `json:"ship_design_id,omitempty"`
-	ShipDesignRevision uint32                       `json:"ship_design_revision,omitempty"`
-	ShipDesignName     string                       `json:"ship_design_name,omitempty"`
+	ProjectKind         core.ConstructionProjectKind `json:"project_kind"`
+	ProjectID           string                       `json:"project_id"`
+	ProductionCostPP    float64                      `json:"production_cost_pp"`
+	TechnologyID        int                          `json:"technology_id,omitempty"`
+	ProductionID        int                          `json:"production_id,omitempty"`
+	MaintenanceBC       int                          `json:"maintenance_bc,omitempty"`
+	OriginalDescription string                       `json:"original_description,omitempty"`
+	Effects             []ConstructionEffect         `json:"effects,omitempty"`
+	FreightersAdded     int                          `json:"freighters_added,omitempty"`
+	ShipDesignID        core.ID                      `json:"ship_design_id,omitempty"`
+	ShipDesignRevision  uint32                       `json:"ship_design_revision,omitempty"`
+	ShipDesignName      string                       `json:"ship_design_name,omitempty"`
 }
 
 func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empireID, colonyID core.ID) ([]ConstructionChoice, error) {
@@ -51,13 +58,19 @@ func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empir
 	}
 	choices := make([]ConstructionChoice, 0, len(buildingChoices)+len(r.PlanetaryTransformations)+len(state.ShipDesigns)+4)
 	for _, choice := range buildingChoices {
+		description := r.TechnologyDescriptionByID[choice.TechnologyID]
+		if description == "" {
+			return nil, fmt.Errorf("building %q technology %d has no original description", choice.BuildingID, choice.TechnologyID)
+		}
 		choices = append(choices, ConstructionChoice{
-			ProjectKind:      core.ConstructionProjectBuilding,
-			ProjectID:        choice.BuildingID,
-			ProductionCostPP: choice.ProductionCostPP,
-			TechnologyID:     choice.TechnologyID,
-			ProductionID:     choice.ProductionID,
-			MaintenanceBC:    choice.MaintenanceBC,
+			ProjectKind:         core.ConstructionProjectBuilding,
+			ProjectID:           choice.BuildingID,
+			ProductionCostPP:    choice.ProductionCostPP,
+			TechnologyID:        choice.TechnologyID,
+			ProductionID:        choice.ProductionID,
+			MaintenanceBC:       choice.MaintenanceBC,
+			OriginalDescription: description,
+			Effects:             r.buildingConstructionEffects(choice.BuildingID),
 		})
 	}
 	planet := planetByID(state, colony.PlanetID)
@@ -163,6 +176,29 @@ func (r *EconomyRules) troopTransportProductionCostPP(empire *core.Empire) float
 		return math.Ceil((2 * TroopTransportBaseCostPP) / 3)
 	}
 	return TroopTransportBaseCostPP
+}
+
+func (r *EconomyRules) buildingConstructionEffects(buildingID string) []ConstructionEffect {
+	if r == nil || buildingID == "" {
+		return nil
+	}
+	effects := make([]ConstructionEffect, 0, 3)
+	if buildingID == r.CloningCenterBuildingID && r.CloningCenterFlatGrowth != 0 {
+		effects = append(effects, ConstructionEffect{Kind: "population_growth_flat", Value: r.CloningCenterFlatGrowth})
+	}
+	if buildingID == r.BiospheresBuildingID && r.BiospheresCapacityBonus != 0 {
+		effects = append(effects, ConstructionEffect{Kind: "population_capacity_flat", Value: r.BiospheresCapacityBonus})
+	}
+	if percent := r.MoraleBuildingBonusPercent[buildingID]; percent != 0 {
+		effects = append(effects, ConstructionEffect{Kind: "morale_percent", Value: float64(percent)})
+	}
+	if _, isBarracks := r.MoraleBarracksBuildingIDs[buildingID]; isBarracks && r.MoraleBarracksPenaltyPercent != 0 {
+		effects = append(effects, ConstructionEffect{Kind: "morale_barracks_relief_percent", Value: float64(-r.MoraleBarracksPenaltyPercent)})
+	}
+	if points := r.CommandPoints.StationPoints[buildingID]; points != 0 {
+		effects = append(effects, ConstructionEffect{Kind: "command_points", Value: float64(points)})
+	}
+	return effects
 }
 
 type BuildingChoice struct {
