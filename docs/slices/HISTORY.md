@@ -240,3 +240,10 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Added deterministic family art for all building IDs not yet hand-authored, while retaining dedicated Capitol/Colony Base/Marine Barracks/Star Base/Battlestation/Star Fortress illustrations.
 - Fixed rich Construction layout: full-width 16:7 detail art, aligned PP/facts/description/actions, and catalog columns sized to 68px/60px rich thumbnails.
 - Expanded `/art-fidelity.html` to show all seven spectral identities and all 48 building art routes plus Housing; 320px review has no horizontal overflow.
+
+## 2026-09-09 - Slice 15.3 playability visual baseline frozen
+
+- Accepted the current Deep Space Command visual direction as the stable baseline for pursuing playability rather than continuing art polish.
+- Froze Gate-2 baseline contracts for semantic palette/icon grammar, luminous spectral stars, spherical procedural planets, Visual Genome v4 ships, reusable building/station art, responsive floor and provenance policy.
+- Explicitly parked Colony planet-surface composition, bespoke late-building art, richer portraits/environments and further effects until full-game playthrough evidence justifies another visual pass.
+- Left Gate 3/4 visually parked rather than falsely marking final production art complete; Slice 15.4 may proceed against this baseline.

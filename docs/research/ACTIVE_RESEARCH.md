@@ -346,3 +346,4 @@ Original copyrighted assets remain private reference material and are not distri
 - Art-fidelity planets/buildings follow-up: `docs/research/SLICE_15_3_ART_FIDELITY_PLANETS_BUILDINGS_2026-09-08.md` - spherical climate/noise/cloud planets, rich runtime building/station illustrations, Art Fidelity Lab and future surface reuse boundary.
 
 - Spectral stars / building coverage / Construction layout review revision: `docs/research/SLICE_15_3_SPECTRAL_STARS_BUILDING_COVERAGE_LAYOUT_FIX_2026-09-08.md` - luminous class-colored StarArt, all-48 building visual routing, rich Housing project art and corrected rich-project grid sizing.
+- Slice 15.3 playability visual baseline freeze: `docs/research/SLICE_15_3_PLAYABILITY_VISUAL_BASELINE_FREEZE_2026-09-09.md` - current Deep Space Command/StarArt/OrbitalBodyArt/BuildingArt/Visual Genome v4 baseline frozen so 15.4-15.6 can pursue playability; richer art is parked, not cancelled.

@@ -1,6 +1,6 @@
 # Open slice 15.3 - MOOX visual identity / graphics / asset pipeline
 
-Status: **open; Gate 1 art/asset audit and direction package complete; awaiting Gate-2 visual-direction review**.
+Status: **visual baseline frozen / parked; Gate 2 baseline accepted 2026-09-09; further art-fidelity expansion deferred while Slice 15.4-15.6 pursue playability**.
 
 Queue position: **15.3 of Slice-15 family**.
 
@@ -73,12 +73,12 @@ Defer:
 
 ## Gate 2 - Visual identity / pipeline freeze
 
-- [ ] Freeze MOOX visual direction, logo usage, palette, typography and icon grammar.
-- [ ] Freeze core asset categories and minimum asset set for the canonical match.
-- [ ] Freeze image/model/render pipeline, naming/versioning and fallback policy, including SVG source/runtime rules and modern raster fallback formats.
-- [ ] Freeze procedural ship generator grammar: design seed, hull/faction style, module zones, palette and optional per-ship serial variation.
-- [ ] Freeze provenance/license metadata requirements.
-- [ ] Freeze representative acceptance mockups for strategic shell, 2D Galaxy + star-system dialog, Colony table + Colony Detail/build queue, location-grouped Fleets, eight-category Research and battle presentation.
+- [x] Freeze MOOX visual direction, logo usage, palette, typography and icon grammar for the playability baseline: Deep Space Command, OX treatment, semantic palette and typed SVG grammar.
+- [x] Freeze core asset categories and minimum baseline set: luminous spectral stars, spherical climate planets, strategic icons, procedural ship visuals and reusable building/station art with safe fallbacks.
+- [x] Freeze image/model/render pipeline, naming/versioning and fallback policy, including SVG source/runtime rules and modern raster fallback formats, per the Gate-2 contract.
+- [x] Freeze procedural ship baseline at persisted Visual Genome v4 with separate visual revision and stable built-ship snapshots; broader design/equipment breadth remains Slice 17.
+- [x] Freeze provenance/license metadata requirements: MOOX-original/licensed/generated provenance required; original-game reference assets remain non-distributable absent explicit rights.
+- [x] Freeze representative baseline acceptance surfaces using the live functional routes plus `/styleboard.html` and `/art-fidelity.html`; richer bespoke art remains iterative rather than a blocker for 15.4.
 
 ## Gate 3 - Implementation
 
@@ -106,3 +106,29 @@ User review accepted the broad Deep Space Command direction but requested materi
 ## Spectral-star and building-coverage review revision (2026-09-08)
 
 A second user fidelity review requested real luminous class-colored Galaxy stars, broader building coverage and a fix for rich-art Construction layout. Implemented original MOOX `StarArt` with B/F/G/K/M/BD/BH visual identities, integrated it into Galaxy/System views, routed all 48 current ruleset building IDs through dedicated or deterministic family artwork, gave Housing rich project art without treating it as a persistent building, and corrected the rich catalog/detail grid. Review evidence remains live on `/art-fidelity.html`. Gate 2 remains **unfrozen**. See `docs/research/SLICE_15_3_SPECTRAL_STARS_BUILDING_COVERAGE_LAYOUT_FIX_2026-09-08.md`.
+
+## Playability-baseline freeze (2026-09-09)
+
+The user accepted the current visual direction as **good enough to continue toward a playable game**, while explicitly reserving the right to return for richer art iterations. Gate 2 is therefore frozen as a **playability baseline**, not as a claim that all final production art is complete.
+
+Baseline carried forward into 15.4-15.6:
+
+- Deep Space Command strategic shell and semantic palette;
+- OX/typed SVG icon language;
+- luminous spectral Galaxy/System `StarArt`;
+- spherical climate/noise/cloud `OrbitalBodyArt`;
+- procedural Visual Genome v4 ship visuals;
+- reusable `BuildingArt`, including distinct Star Base/Battlestation/Star Fortress and deterministic coverage for the current 48-building ruleset;
+- corrected Construction rich-art layout;
+- 320 CSS px responsive floor and no document-level horizontal overflow;
+- original/licensed/provenance-safe asset policy.
+
+Explicitly deferred for later visual iteration, without blocking playability work:
+
+- Colony/planet-surface composition;
+- bespoke hand-authored art for every late-game building;
+- richer race portraits/colony environment art;
+- additional atmosphere, animation and effects;
+- further planet/star/building tuning after real full-game playthrough feedback.
+
+Gate 3/4 of this visual slice are **parked rather than falsely marked complete**. The existing implemented baseline is stable enough for Slice 15.4, 15.5 and 15.6 integration, and later art work can resume from this marker.
