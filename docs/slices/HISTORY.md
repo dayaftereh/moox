@@ -247,3 +247,13 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Froze Gate-2 baseline contracts for semantic palette/icon grammar, luminous spectral stars, spherical procedural planets, Visual Genome v4 ships, reusable building/station art, responsive floor and provenance policy.
 - Explicitly parked Colony planet-surface composition, bespoke late-building art, richer portraits/environments and further effects until full-game playthrough evidence justifies another visual pass.
 - Left Gate 3/4 visually parked rather than falsely marking final production art complete; Slice 15.4 may proceed against this baseline.
+
+## 2026-09-09 - Slice 15.4 opened; Gate 1 rich-state UX audit complete
+
+- Opened Slice 15.4 after freezing the 15.3 playability visual baseline.
+- Audited all strategic session phases and confirmed human interaction boundaries: Encounters, Invasion Decisions and Post-Resolution Colony Base decisions; Research completion is automatic and Completed is terminal.
+- Confirmed server DecisionView already projects Colony Base and Battle decisions, while current TypeScript omits Colony Base and leaves Battles untyped.
+- Confirmed the browser has functional but numeric/minimal Invasion UI, no Colony Base UI, no Battle Entry route/command wrapper, and only a minimal result card.
+- Audited persistence export/import/restore and WebSocket invalidation/reconnect; restore is atomic and publishes `game_loaded`, but the browser has no persistence UI/API wrappers and currently keeps a generic stale snapshot during reconnect.
+- Defined structured lifecycle/error states, player-safe public identity/resolution-summary additions and the Gate-2 blocking-decision/transition-summary contract.
+- Gate 2 remains unfrozen pending explicit review.

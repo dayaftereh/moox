@@ -49,7 +49,7 @@ Prepared queue:
    - `PLANNED_15_1_UX_NAVIGATION_DESIGN_SYSTEM.md` - UX architecture, navigation, responsive shell and design-system contract.
    - `PLANNED_15_2_FUNCTIONAL_STRATEGIC_GAMEPLAY_HMI.md` - functional authoritative galaxy/colony/research/fleet/diplomacy gameplay HMI.
    - `PLANNED_15_3_VISUAL_IDENTITY_GRAPHICS_ASSET_PIPELINE.md` - MOOX corporate/visual identity plus graphics/image/model asset pipeline.
-   - `PLANNED_15_4_RICH_GAMEPLAY_PERSISTENCE_UX.md` - rich Encounter/Invasion/decision presentation plus save/load/reconnect UX, stopping before the interactive battlefield.
+   - `_OPEN_15_4_RICH_GAMEPLAY_PERSISTENCE_UX_2026-09-09.md` - **open; Gate 1 complete** rich Encounter/Invasion/decision presentation plus save/load/reconnect UX, stopping before the interactive battlefield.
    - `PLANNED_15_5_INTERACTIVE_TACTICAL_COMBAT.md` - dedicated interactive 2D Tactical Combat with authoritative movement/legal targets and mouse/touch battlefield.
    - `PLANNED_15_6_FULL_BROWSER_VERTICAL_SLICE.md` - final complete-game browser integration, polish and end-to-end QA including the accepted Tactical path.
 2. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - widen narrow New Game settings and preset-race support.

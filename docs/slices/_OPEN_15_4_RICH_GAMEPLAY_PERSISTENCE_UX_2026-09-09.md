@@ -1,5 +1,5 @@
-# Planned slice 15.4 - Rich gameplay decisions / persistence UX
-Status: **planned / queued; not open**.
+# Open slice 15.4 - Rich gameplay decisions / persistence UX
+Status: **open; Gate 1 rich-state UX audit complete; Gate-2 rich-interaction review ready**.
 Queue position: **15.4 of Slice-15 family**.
 ## Objective
 Turn the functional strategic HMI and visual identity into coherent high-value presentation for non-tactical interactive resolution phases, Encounter/battle entry and return transitions, save/load/reconnect and exceptional states. The interactive 2D Tactical battlefield itself is deliberately separated into Slice 15.5.
@@ -27,12 +27,19 @@ Defer:
 - new diplomacy/research mechanics;
 - full cinematics/native shell packaging.
 ## Gate 1 - Rich-state UX audit
-- [ ] Inventory every non-Planning interactive phase and current DecisionView/action projection.
-- [ ] Map Encounter handoff/Invasion/Colony-Base/Research workflows to accepted 15.1 navigation and define the explicit transition boundary into Slice-15.5 Tactical Combat.
-- [ ] Map all live persistence and WebSocket invalidation/reconnect paths to explicit UX states.
-- [ ] Identify required player-safe read additions and animation-safe state boundaries.
-- [ ] Define error/conflict/retry behavior without hiding authoritative rejection reasons.
-- [ ] Present Gate-2 rich-interaction contract and mockups.
+- [x] Inventory every non-Planning interactive phase and current DecisionView/action projection.
+- [x] Map Encounter handoff/Invasion/Colony-Base/Research workflows to accepted 15.1 navigation and define the explicit transition boundary into Slice-15.5 Tactical Combat.
+- [x] Map all live persistence and WebSocket invalidation/reconnect paths to explicit UX states.
+- [x] Identify required player-safe read additions and animation-safe state boundaries.
+- [x] Define error/conflict/retry behavior without hiding authoritative rejection reasons.
+- [x] Present Gate-2 rich-interaction contract and mockups.
+## Gate-1 completion evidence (2026-09-09)
+
+- Rich-state / phase / persistence audit: `docs/research/SLICE_15_4_GATE1_RICH_STATE_UX_AUDIT_2026-09-09.md`.
+- Gate-2 interaction contract draft and textual mockups: `docs/research/SLICE_15_4_GATE2_RICH_INTERACTION_CONTRACT_DRAFT_2026-09-09.md`.
+- Canonical review server remains persistence-enabled on port **7171** with exact restored `game-1`.
+- Gate 2 is **not frozen** until explicit review/approval.
+
 ## Gate 2 - Rich presentation freeze
 - [ ] Freeze decision layouts plus Encounter -> Tactical entry and Tactical -> strategic return/summary transitions.
 - [ ] Freeze save/load/reconnect lifecycle and user-visible state machine.

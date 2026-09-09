@@ -24,7 +24,7 @@ Slice 15 is deliberately split into six gated sub-slices so functional authority
    - authoritative browser workflows for the accepted 2D Galaxy + star-system dialog, Colony table/detail, location-grouped Fleets, eight-category Research, Diplomacy and turn control using server-projected legality; Espionage is a first-class product area whose missing mechanics must be audited/split rather than faked in React.
 3. **15.3 - MOOX visual identity / graphics / asset pipeline**
    - corporate identity, typography/color/icon language, imagery/model/render strategy, asset provenance and runtime asset integration.
-4. **15.4 - Rich gameplay decisions / persistence UX**
+4. **15.4 - Rich gameplay decisions / persistence UX** - **OPEN; Gate 1 complete 2026-09-09**
    - Encounter entry/return, invasion/research/colony decision presentation plus save/load/reconnect/invalidation/error UX; the interactive battlefield is explicitly deferred to 15.5.
 5. **15.5 - Interactive 2D tactical combat**
    - extend the narrow Slice-07 fixed-position Laser baseline with server-authoritative movement/legal targets and a mouse/touch interactive 2D battlefield.

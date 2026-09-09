@@ -347,3 +347,5 @@ Original copyrighted assets remain private reference material and are not distri
 
 - Spectral stars / building coverage / Construction layout review revision: `docs/research/SLICE_15_3_SPECTRAL_STARS_BUILDING_COVERAGE_LAYOUT_FIX_2026-09-08.md` - luminous class-colored StarArt, all-48 building visual routing, rich Housing project art and corrected rich-project grid sizing.
 - Slice 15.3 playability visual baseline freeze: `docs/research/SLICE_15_3_PLAYABILITY_VISUAL_BASELINE_FREEZE_2026-09-09.md` - current Deep Space Command/StarArt/OrbitalBodyArt/BuildingArt/Visual Genome v4 baseline frozen so 15.4-15.6 can pursue playability; richer art is parked, not cancelled.
+- Slice 15.4 Gate-1 rich-state UX audit: `docs/research/SLICE_15_4_GATE1_RICH_STATE_UX_AUDIT_2026-09-09.md` - phase/DecisionView gaps, Encounter/Invasion/Colony Base/Research boundaries, persistence/reconnect/error audit.
+- Slice 15.4 Gate-2 rich interaction draft: `docs/research/SLICE_15_4_GATE2_RICH_INTERACTION_CONTRACT_DRAFT_2026-09-09.md` - blocking decisions, Battle handoff, local Save/Load, lifecycle/error contract and minimum player-safe reads.
