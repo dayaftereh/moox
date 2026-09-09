@@ -1,5 +1,5 @@
 # Open slice 15.4 - Rich gameplay decisions / persistence UX
-Status: **open; Gates 1-2 complete; Gate 3 implementation active**.
+Status: **closed; Gates 1-4 complete; handed off to Slice 15.5**.
 Queue position: **15.4 of Slice-15 family**.
 ## Objective
 Turn the functional strategic HMI and visual identity into coherent high-value presentation for non-tactical interactive resolution phases, Encounter/battle entry and return transitions, save/load/reconnect and exceptional states. The interactive 2D Tactical battlefield itself is deliberately separated into Slice 15.5.
@@ -79,8 +79,12 @@ See `docs/research/SLICE_15_4_GATE2_RICH_INTERACTION_CONTRACT_DRAFT_2026-09-09.m
 - [x] Block 6 Battle Entry/Return: stable /battle/<battleID> route, participant-safe encounter context, unresolved-Battle navigation lock, supported-Tactical shell boundary, unsupported-reason presentation and one-time attle_completed return summary that survives live BattleView release. Evidence: docs/research/SLICE_15_4_GATE3_BLOCK6_BATTLE_ENTRY_RETURN_2026-09-09.md.
 
 ## Gate 4 - QA + close
-- [ ] Exercise every supported non-tactical interactive phase through browser surfaces.
-- [ ] Verify Encounter transitions preserve enough authoritative context for Slice-15.5 Tactical entry/return without React-owned battle rules.
-- [ ] Verify save/reload/reconnect and stale-client invalidation behavior end to end.
-- [ ] Verify rejected commands/saves remain clear and non-destructive in UX.
-- [ ] Run full tests/vet/web build and `git diff --check`; update evidence/status/HISTORY and close marker.
+- [x] Exercise every supported non-tactical interactive phase through browser surfaces.
+- [x] Verify Encounter transitions preserve enough authoritative context for Slice-15.5 Tactical entry/return without React-owned battle rules.
+- [x] Verify save/reload/reconnect and stale-client invalidation behavior end to end.
+- [x] Verify rejected commands/saves remain clear and non-destructive in UX.
+- [x] Run full tests/vet/web build and `git diff --check`; update evidence/status/HISTORY and close marker.
+
+## Gate-4 close marker (2026-09-09)
+
+Slice 15.4 is **closed**. Gate-4 evidence: docs/research/SLICE_15_4_GATE4_CLOSE_2026-09-09.md. The strategic Battle Entry/Return contract is frozen for handoff; interactive Tactical battlefield mechanics remain Slice 15.5.
