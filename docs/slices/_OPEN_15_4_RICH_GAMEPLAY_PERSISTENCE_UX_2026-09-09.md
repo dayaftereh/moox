@@ -64,9 +64,9 @@ See `docs/research/SLICE_15_4_GATE2_RICH_INTERACTION_CONTRACT_DRAFT_2026-09-09.m
 ## Gate 3 - Implementation
 - [x] Implement supported Encounter-entry/Invasion/Colony-Base/Research rich workflows, excluding the Slice-15.5 battlefield.
 - [x] Implement save/export/import/restore/reconnect UX.
-- [ ] Implement snapshot invalidation/refetch/conflict/error presentation.
-- [ ] Integrate 15.3 assets and accepted motion/audio hooks.
-- [ ] Add browser/server regressions for critical decision, encounter-transition and persistence paths.
+- [x] Implement snapshot invalidation/refetch/conflict/error presentation.
+- [x] Integrate 15.3 assets and accepted motion/audio hooks.
+- [x] Add browser/server regressions for critical decision, encounter-transition and persistence paths.
 ### Gate-3 implementation progress
 
 - [x] Block 1 foundation: typed Colony Base/Battle contracts, structured `APIError`, explicit lifecycle state and synchronized-only direct mutation gate. Evidence: `docs/research/SLICE_15_4_GATE3_BLOCK1_CLIENT_AUTHORITY_LIFECYCLE_2026-09-09.md`.

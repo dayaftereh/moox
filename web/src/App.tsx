@@ -144,6 +144,7 @@ function App() {
   const [assignment, setAssignment] = useState<AssignmentDraft>({ farmers: '0', workers: '0', scientists: '0' })
   const [draftOrders, setDraftOrders] = useState<DraftOrder[]>([])
   const [planningPreview, setPlanningPreview] = useState<PlanningPreviewSnapshot | null>(null)
+  const [planningPreviewError, setPlanningPreviewError] = useState('')
   const [previewBusy, setPreviewBusy] = useState(false)
   const [planningBusy, setPlanningBusy] = useState(false)
   const [status, setStatus] = useState<StatusMessage>({ key: 'status.connecting' })
@@ -161,11 +162,13 @@ function App() {
   const loadFileInputRef = useRef<HTMLInputElement | null>(null)
   const socketConnectedRef = useRef(false)
   const snapshotRef = useRef<PlayerSnapshot | null>(null)
+  const draftOrdersRef = useRef<DraftOrder[]>([])
   const activeGameRef = useRef(gameID)
   const activeSeatRef = useRef(seatID)
   activeGameRef.current = gameID
   activeSeatRef.current = seatID
   snapshotRef.current = snapshot
+  draftOrdersRef.current = draftOrders
 
   useEffect(() => {
     const syncRoute = () => setRoute(parseRoute())
@@ -196,6 +199,7 @@ function App() {
       setSnapshot(next)
       setDraftOrders([])
       setPlanningPreview(null)
+      setPlanningPreviewError('')
       const firstColony = next.view.colonies[0]
       if (firstColony) {
         const population = aggregatePopulation(firstColony)
@@ -204,13 +208,40 @@ function App() {
       setLifecycle(socketConnectedRef.current ? 'synced' : 'connecting')
       setStatus({ key: 'status.snapshotSynced', vars: { change: next.change_sequence } })
       setError('')
+      return next
     } catch (reason) {
       if (!signal?.aborted && selectedGameID === activeGameRef.current && selectedSeatID === activeSeatRef.current) {
         setLifecycle(snapshotRef.current ? 'refresh-failed' : 'fatal')
+        setError(errorText(reason))
       }
       throw reason
     }
   }, [gameID, seatID])
+
+  const refreshAfterConflict = useCallback(async (reason: unknown, preservePlanningDraft = false) => {
+    if (!isAPIError(reason) || reason.status !== 409) return false
+    const current = snapshotRef.current
+    if (!current) return false
+    const preservedDraft = preservePlanningDraft ? [...draftOrdersRef.current] : []
+    try {
+      const next = await loadSnapshot(current.view.game_id, activeSeatRef.current)
+      if (!next) return true
+      if (preservedDraft.length > 0 && next.view.phase === 'planning') {
+        setDraftOrders(preservedDraft)
+        setStatus({ key: 'status.conflictRefreshedDraftPreserved', vars: { change: next.change_sequence, count: preservedDraft.length } })
+      } else if (preservedDraft.length > 0) {
+        setStatus({ key: 'status.conflictRefreshedDraftDropped', vars: { change: next.change_sequence, phase: next.view.phase } })
+      } else {
+        setStatus({ key: 'status.conflictRefreshed', vars: { change: next.change_sequence } })
+      }
+      // Keep the authoritative rejection visible after the successful refetch.
+      // The rejected mutation is never automatically resubmitted.
+      setError(errorText(reason))
+    } catch (refreshReason) {
+      setError(errorText(reason) + ' · ' + errorText(refreshReason))
+    }
+    return true
+  }, [loadSnapshot])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -306,6 +337,7 @@ function App() {
   useEffect(() => {
     if (!snapshot || snapshot.view.phase !== 'planning' || snapshot.view.seat.submitted) {
       setPlanningPreview(null)
+      setPlanningPreviewError('')
       setPreviewBusy(false)
       return
     }
@@ -315,11 +347,11 @@ function App() {
       .then((preview) => {
         if (!controller.signal.aborted) {
           setPlanningPreview(preview)
-          setError('')
+          setPlanningPreviewError('')
         }
       })
       .catch((cause) => {
-        if (!controller.signal.aborted) setError(errorText(cause))
+        if (!controller.signal.aborted) setPlanningPreviewError(errorText(cause))
       })
       .finally(() => {
         if (!controller.signal.aborted) setPreviewBusy(false)
@@ -676,6 +708,7 @@ function App() {
       await loadSnapshot(snapshot.view.game_id, seatID)
     } catch (cause) {
       setError(errorText(cause))
+      await refreshAfterConflict(cause, true)
     } finally {
       setPlanningBusy(false)
     }
@@ -690,6 +723,7 @@ function App() {
       await loadSnapshot(snapshot.view.game_id, seatID)
     } catch (reason) {
       setError(errorText(reason))
+      await refreshAfterConflict(reason)
     } finally {
       setDiplomacyBusy(false)
     }
@@ -705,7 +739,7 @@ function App() {
       await loadSnapshot(snapshot.view.game_id, seatID)
     } catch (reason) {
       setError(errorText(reason))
-      if (isAPIError(reason) && reason.status === 409) void loadSnapshot(snapshot.view.game_id, seatID).catch(() => undefined)
+      await refreshAfterConflict(reason)
     } finally {
       setColonyBaseBusy(false)
     }
@@ -721,7 +755,7 @@ function App() {
       await loadSnapshot()
     } catch (cause) {
       setError(errorText(cause))
-      if (isAPIError(cause) && cause.status === 409 && snapshot) void loadSnapshot(snapshot.view.game_id, seatID).catch(() => undefined)
+      await refreshAfterConflict(cause)
     } finally {
       setInvasionBusy(false)
     }
@@ -982,6 +1016,18 @@ function App() {
         </div>
       )}
 
+      {planningPreviewError && <Notice title={t('planning.previewErrorTitle')} tone="warning"><p>{planningPreviewError}</p></Notice>}
+
+      {lifecycle === 'refresh-failed' && snapshot && (
+        <Notice title={t('state.refreshFailedTitle')} tone="warning">
+          <p>{t('state.refreshFailedBody')}</p>
+          <button type="button" className="button-secondary" onClick={() => {
+            setError('')
+            void loadSnapshot(snapshot.view.game_id, seatID).catch(() => undefined)
+          }}>{t('state.retryRefresh')}</button>
+        </Notice>
+      )}
+
       {error && <Notice title={t('state.errorTitle')} tone="danger"><p>{error}</p></Notice>}
 
       {snapshot?.view.phase === 'planning' && (draftOrders.length > 0 || previewBusy) && (
@@ -1145,7 +1191,7 @@ function App() {
           seatID={seatID}
           setSeatID={setSeatID}
           selectHostedGame={selectHostedGame}
-          loadSnapshot={loadSnapshot}
+          loadSnapshot={async () => { await loadSnapshot() }}
           diplomacyBusy={diplomacyBusy}
           diplomacyClosed={Boolean(diplomacyClosed)}
           runDiplomacy={runDiplomacy}

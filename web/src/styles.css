@@ -3680,3 +3680,9 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .battle-versus { justify-self: center; padding: 0; }
   .battle-result-facts { grid-template-columns: repeat(2,minmax(0,1fr)); }
 }
+@media (max-width: 699px) {
+  .game-shell .button-primary,
+  .game-shell .button-secondary {
+    min-height: 44px;
+  }
+}
