@@ -80,3 +80,16 @@ The compact layout now uses 16 px desktop info controls (18 px in the narrow/mob
 - Technology rows and `?` controls at 16 px height;
 - no Technology choice row extends beyond its Research panel;
 - the `?` detail dialog remains clickable and opens normally.
+
+## Variable Technology-count layout hardening
+
+A follow-up review checked the actual Technology cardinality instead of only the initial screen geometry. TechField 4 is authoritatively a three-Technology `choose_one` field: Anti Missile Rockets, Reinforced Hull and Fighter Bays. Ruleset, server projection and rendered DOM all agree on exactly three entries.
+
+The full normalized ruleset also contains later TechFields with four and up to eight Technology applications. Therefore Research field cards must not rely on a fixed content height. The field panel now uses `height: max-content` with the compact minimum height retained. This preserves the compact initial eight-field desktop layout while allowing a card to grow whenever its Technology list needs more vertical space; the outer Research grid handles scrolling.
+
+Validation:
+
+- current desktop review: all 8 frontier fields visible, no clipped rows, grid `scrollHeight == clientHeight == 466 px`;
+- TechField 4: 3/3 technologies visible in DOM, no clipping;
+- narrow/mobile-style probe: 3-entry cards grow to 117 px automatically and no row clips;
+- synthetic 8-entry field probe: card grows to 196 px, `clipped=false`, outer grid becomes scrollable instead of hiding entries.

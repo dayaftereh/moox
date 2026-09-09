@@ -3570,6 +3570,7 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   padding: 5px;
 }
 .research-field-panel {
+  height: max-content;
   min-height: 106px;
 }
 .research-field-bar {
