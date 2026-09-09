@@ -26,4 +26,11 @@ func TestResearchTechnologyEffectsExposeNormalizedRuntimeUnlocks(t *testing.T) {
 	if !foundDrive {
 		t.Fatalf("fusion drive effects=%+v", fusionDrive)
 	}
+
+	if description := rules.TechnologyDescriptionByID[72]; description == "" {
+		t.Fatal("Fusion Drive original description missing")
+	}
+	if description := rules.TechnologyDescriptionByID[13]; description == "" {
+		t.Fatal("Anti-Missile Rockets original description missing")
+	}
 }

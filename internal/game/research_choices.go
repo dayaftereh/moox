@@ -28,6 +28,7 @@ type ResearchTechnologyInfo struct {
 	TechnologyID      int                        `json:"technology_id"`
 	TechnologyKey     string                     `json:"technology_key"`
 	TechnologyNameKey string                     `json:"technology_name_key"`
+	Description       string                     `json:"description,omitempty"`
 	Effects           []ResearchTechnologyEffect `json:"effects,omitempty"`
 }
 
@@ -170,10 +171,15 @@ func (r *EconomyRules) AvailableResearchChoices(state *core.GameState, empireID 
 			}
 			technologyKeys[i] = key
 			technologyNameKeys[i] = nameKey
+			description := r.TechnologyDescriptionByID[technologyID]
+			if description == "" {
+				return nil, fmt.Errorf("technology %d has no original description", technologyID)
+			}
 			technologyInfo[i] = ResearchTechnologyInfo{
 				TechnologyID:      technologyID,
 				TechnologyKey:     key,
 				TechnologyNameKey: nameKey,
+				Description:       description,
 				Effects:           r.researchTechnologyEffects(technologyID),
 			}
 		}

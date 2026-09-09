@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const TechnologiesSchemaVersion = 4
+const TechnologiesSchemaVersion = 5
 
 type TechnologiesFile struct {
 	SchemaVersion int                    `json:"schema_version"`
@@ -70,6 +70,8 @@ type Technology struct {
 	StrategicCombatSource    FieldProvenance `json:"strategic_combat_source"`
 	NameKey                  string          `json:"name_key"`
 	NameSource               FieldProvenance `json:"name_source"`
+	Description              string          `json:"description"`
+	DescriptionSource        FieldProvenance `json:"description_source"`
 }
 
 func LoadTechnologies(path string) (*TechnologiesFile, error) {
@@ -138,8 +140,8 @@ func (f *TechnologiesFile) Validate() error {
 	ids := make(map[string]struct{}, len(f.Technologies))
 	keys := make(map[string]struct{}, len(f.Technologies))
 	for order, tech := range f.Technologies {
-		if tech.ID == "" || tech.NameKey == "" || tech.NameSource.SourceID == "" || tech.TechFieldSource.SourceID == "" || tech.AIClassSource.SourceID == "" || tech.StrategicCombatSource.SourceID == "" {
-			return fmt.Errorf("technology id, name_key and source fields are required")
+		if tech.ID == "" || tech.NameKey == "" || tech.NameSource.SourceID == "" || tech.Description == "" || tech.DescriptionSource.SourceID == "" || tech.TechFieldSource.SourceID == "" || tech.AIClassSource.SourceID == "" || tech.StrategicCombatSource.SourceID == "" {
+			return fmt.Errorf("technology id, name_key, description and source fields are required")
 		}
 		if tech.TechFieldID < -1 || tech.TechFieldID > 82 {
 			return fmt.Errorf("technology %q tech_field_id=%d outside [-1,82]", tech.ID, tech.TechFieldID)

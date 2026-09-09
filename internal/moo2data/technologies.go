@@ -16,23 +16,26 @@ import (
 )
 
 const (
-	technologyNamesSourceID      = "moo2-1.31-techname-block0-technologies"
-	technologyTableSourceID      = "moo2-1.31-orion2-technology-table"
-	technologyFieldsSourceID     = "moo2-1.31-orion2-technology-fields"
-	newGameFieldsSourceID        = "moo2-1.31-orion2-new-game-techfields"
-	hyperAdvancedSourceID        = "moo2-1.31-orion2-hyper-advanced-research"
-	technologyAIResearchSourceID = "moo2-1.31-orion2-technology-ai-research"
-	technologyCount              = 203
-	technologyTableOffset        = 0x1FC720
-	technologyRecordSize         = 13
-	technologyFieldOffset        = 0x1FBFB5
-	technologyFieldSize          = 23
-	technologyFieldCount         = 82
-	newGameFieldsOffset          = 0x1FF7B0
-	technologyAIClassTableOffset = 0x1FB82A
-	technologyAIClassCount       = 41
-	technologyAIFieldGroupOffset = 0x201CA0
-	technologyAIFieldGroupCount  = 23
+	technologyNamesSourceID        = "moo2-1.31-techname-block0-technologies"
+	technologyDescriptionsSourceID = "moo2-1.31-help-block0-technology-descriptions"
+	technologyTableSourceID        = "moo2-1.31-orion2-technology-table"
+	technologyFieldsSourceID       = "moo2-1.31-orion2-technology-fields"
+	newGameFieldsSourceID          = "moo2-1.31-orion2-new-game-techfields"
+	hyperAdvancedSourceID          = "moo2-1.31-orion2-hyper-advanced-research"
+	technologyAIResearchSourceID   = "moo2-1.31-orion2-technology-ai-research"
+	technologyCount                = 203
+	technologyHelpHeaderSize       = 4
+	technologyHelpRecordSize       = 1403
+	technologyTableOffset          = 0x1FC720
+	technologyRecordSize           = 13
+	technologyFieldOffset          = 0x1FBFB5
+	technologyFieldSize            = 23
+	technologyFieldCount           = 82
+	newGameFieldsOffset            = 0x1FF7B0
+	technologyAIClassTableOffset   = 0x1FB82A
+	technologyAIClassCount         = 41
+	technologyAIFieldGroupOffset   = 0x201CA0
+	technologyAIFieldGroupCount    = 23
 )
 
 type TechnologiesBundle struct {
@@ -57,6 +60,22 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 	blockSum := sha256.Sum256(block)
 	blockIndex := 0
 
+	helpPath := filepath.Join(installationRoot, "HELP.LBX")
+	helpArchive, err := lbx.Open(helpPath)
+	if err != nil {
+		return nil, fmt.Errorf("open HELP.LBX: %w", err)
+	}
+	helpBlock, err := helpArchive.ReadEntry(0)
+	if err != nil {
+		return nil, fmt.Errorf("read HELP.LBX block 0: %w", err)
+	}
+	helpFileHash, err := sha256File(helpPath)
+	if err != nil {
+		return nil, err
+	}
+	helpBlockSum := sha256.Sum256(helpBlock)
+	helpBlockIndex := 0
+
 	exePath := filepath.Join(installationRoot, "Orion2.exe")
 	exeData, err := os.ReadFile(exePath)
 	if err != nil {
@@ -80,6 +99,10 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 	if err != nil {
 		return nil, err
 	}
+	helpDescriptions, err := decodeTechnologyHelpDescriptions(helpBlock, techRuns)
+	if err != nil {
+		return nil, err
+	}
 
 	out := &ruleset.TechnologiesFile{
 		SchemaVersion: ruleset.TechnologiesSchemaVersion,
@@ -93,6 +116,15 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 				Block:       &blockIndex,
 				SHA256:      fileHash,
 				BlockSHA256: hex.EncodeToString(blockSum[:]),
+			},
+			{
+				ID:          technologyDescriptionsSourceID,
+				Type:        "original-observed",
+				Description: "Master of Orion II 1.31 HELP.LBX block 0 fixed 1403-byte help records; records 1..203 align directly with concrete Technology IDs 1..203 and contain the original name plus explanatory description",
+				Archive:     "HELP.LBX",
+				Block:       &helpBlockIndex,
+				SHA256:      helpFileHash,
+				BlockSHA256: hex.EncodeToString(helpBlockSum[:]),
 			},
 			{
 				ID:          technologyTableSourceID,
@@ -167,6 +199,7 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 		}
 		nameKey := "technology." + id + ".name"
 		offset := run.Offset
+		helpDescription := helpDescriptions[order]
 		fieldOffset := technologyTableOffset + order*technologyRecordSize
 		out.Technologies = append(out.Technologies, ruleset.Technology{
 			ID:                       id,
@@ -180,6 +213,8 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 			StrategicCombatSource:    ruleset.FieldProvenance{SourceID: technologyTableSourceID, Offset: intPtr(fieldOffset + 5)},
 			NameKey:                  nameKey,
 			NameSource:               ruleset.FieldProvenance{SourceID: technologyNamesSourceID, Offset: &offset},
+			Description:              helpDescription.Text,
+			DescriptionSource:        ruleset.FieldProvenance{SourceID: technologyDescriptionsSourceID, Offset: intPtr(helpDescription.Offset)},
 		})
 		english.Strings[nameKey] = run.Value
 	}
@@ -191,6 +226,61 @@ func DecodeTechnologies(installationRoot string) (*TechnologiesBundle, error) {
 		return nil, err
 	}
 	return &TechnologiesBundle{Rules: out, English: english}, nil
+}
+
+type technologyHelpDescription struct {
+	Text   string
+	Offset int
+}
+
+func decodeTechnologyHelpDescriptions(block []byte, technologyRuns []textscan.String) ([]technologyHelpDescription, error) {
+	if len(technologyRuns) != technologyCount {
+		return nil, fmt.Errorf("technology help decode requires %d technology names, got %d", technologyCount, len(technologyRuns))
+	}
+	required := technologyHelpHeaderSize + (technologyCount+1)*technologyHelpRecordSize
+	if len(block) < required {
+		return nil, fmt.Errorf("HELP.LBX block 0 is too short for %d technology help records: %d < %d", technologyCount, len(block), required)
+	}
+	descriptions := make([]technologyHelpDescription, technologyCount)
+	knownAliases := map[int]string{
+		87:  "Hydroponic Farms",
+		98:  "Irridium Fuel Cells",
+		142: "Pollution Control Facility",
+		166: "Spy Networks",
+		196: "Warp Dissipator",
+	}
+	for order, technologyRun := range technologyRuns {
+		technologyID := order + 1
+		recordOffset := technologyHelpHeaderSize + technologyID*technologyHelpRecordSize
+		record := block[recordOffset : recordOffset+technologyHelpRecordSize]
+		runs := textscan.ASCII(record, 3)
+		if len(runs) < 2 {
+			return nil, fmt.Errorf("HELP.LBX technology %d record has %d printable runs, want at least 2", technologyID, len(runs))
+		}
+		helpName := strings.TrimSpace(runs[0].Value)
+		description := strings.TrimSpace(runs[1].Value)
+		if helpName == "" || description == "" {
+			return nil, fmt.Errorf("HELP.LBX technology %d has empty name/description", technologyID)
+		}
+		if compactTechnologyHelpName(helpName) != compactTechnologyHelpName(technologyRun.Value) {
+			alias, ok := knownAliases[technologyID]
+			if !ok || compactTechnologyHelpName(helpName) != compactTechnologyHelpName(alias) {
+				return nil, fmt.Errorf("HELP.LBX technology %d name %q does not match TECHNAME %q", technologyID, helpName, technologyRun.Value)
+			}
+		}
+		descriptions[order] = technologyHelpDescription{Text: description, Offset: recordOffset + runs[1].Offset}
+	}
+	return descriptions, nil
+}
+
+func compactTechnologyHelpName(value string) string {
+	var builder strings.Builder
+	for _, r := range strings.ToLower(value) {
+		if (r >= 'a' && r <= 'z') || (r >= '0' && r <= '9') {
+			builder.WriteRune(r)
+		}
+	}
+	return builder.String()
 }
 
 func decodeOriginalTechnologyAIResearch(exeData []byte) (ruleset.TechnologyAIResearch, error) {

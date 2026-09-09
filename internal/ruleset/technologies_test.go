@@ -50,4 +50,12 @@ func TestCommittedTechnologiesLoadAndValidate(t *testing.T) {
 			t.Fatalf("technology %d id=%q want=%q", id, got, want)
 		}
 	}
+	for _, technology := range file.Technologies {
+		if technology.Description == "" || technology.DescriptionSource.SourceID == "" {
+			t.Fatalf("technology %d missing original description provenance: %+v", technology.TechnologyID, technology)
+		}
+	}
+	if got := file.Technologies[2].Description; got != "Pre-planned, organized colony design techniques. The improvements in organization increase the maximum population that can live on all planets owned by the empire by +5 million colonists." {
+		t.Fatalf("Advanced City Planning description=%q", got)
+	}
 }

@@ -366,6 +366,7 @@ export type ResearchTechnologyInfo = {
   technology_id: number
   technology_key: string
   technology_name_key: string
+  description?: string
   effects?: ResearchTechnologyEffect[]
 }
 export type ResearchChoice = {

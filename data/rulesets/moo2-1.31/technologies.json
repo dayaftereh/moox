@@ -1,5 +1,5 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "ruleset": "moo2-1.31",
   "sources": [
     {
@@ -10,6 +10,15 @@
       "block": 0,
       "sha256": "917653c6d4b767166c2223bb72e3e8608b2eb8415cef0a4436ed9a7391d10a4e",
       "block_sha256": "3079adf60539bd200d0b55b750f52c1e5cd1d2b59bdf4e2243f1c17d6d3978e9"
+    },
+    {
+      "id": "moo2-1.31-help-block0-technology-descriptions",
+      "type": "original-observed",
+      "description": "Master of Orion II 1.31 HELP.LBX block 0 fixed 1403-byte help records; records 1..203 align directly with concrete Technology IDs 1..203 and contain the original name plus explanatory description",
+      "archive": "HELP.LBX",
+      "block": 0,
+      "sha256": "78f8f0b6b6d05426de5b36116fbc8d1e4863305ad3fb659ae0ad3d3bbe83d7dd",
+      "block_sha256": "6fa9a4c1b844a4688c3fc01ad66c8b364c0291525a7c7098f6a918b7132399c9"
     },
     {
       "id": "moo2-1.31-orion2-technology-table",
@@ -1491,6 +1500,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1418
+      },
+      "description": "Triples the chance of striking an enemy's weapon and shield systems and completely  bypasses the target ship's armor.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 1510
       }
     },
     {
@@ -1516,6 +1530,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1442
+      },
+      "description": "Ships with this armor have 8 times the base structure and armor points. The hit points of fighters are multiplied by 4. Adds +25 to ground troop combat strengths.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 2913
       }
     },
     {
@@ -1541,6 +1560,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1459
+      },
+      "description": "Pre-planned, organized colony design techniques. The improvements in organization increase the maximum population that can live on all planets owned by the empire by +5 million colonists.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 4316
       }
     },
     {
@@ -1566,6 +1590,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1482
+      },
+      "description": "Completely repairs ships between battles. Automatically included on all ships once the technology is researched.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 5719
       }
     },
     {
@@ -1591,6 +1620,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1506
+      },
+      "description": "Provides better control of occupied alien populations: aliens work harder, assimilate into your empire twice as fast, and are half as likely to revolt.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 7122
       }
     },
     {
@@ -1616,6 +1650,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1530
+      },
+      "description": "Mechanical workers with a +3 food production bonus. Require 1 production unit per turn instead of food. They are unaffected by morale, receive no racial bonuses, and generate no income.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 8525
       }
     },
     {
@@ -1641,6 +1680,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1546
+      },
+      "description": "Mechanical workers that generate 3 research points per turn. Require 1 production unit per turn instead of food. They are unaffected by morale, receive no racial bonuses, and cannot generate income.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 9928
       }
     },
     {
@@ -1666,6 +1710,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1565
+      },
+      "description": "Mechanical workers with a +3 production bonus. Require 1 production unit per turn instead of food. They are unaffected by morale, receive no racial bonuses, and cannot generate income.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 11331
       }
     },
     {
@@ -1691,6 +1740,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1581
+      },
+      "description": "Allows ground troops and armor to fly, increasing their mobility and defense. Adds +10 to their ground combat rating.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 12734
       }
     },
     {
@@ -1716,6 +1770,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1599
+      },
+      "description": "A high-yield orbital bombardment device engineered to destroy ground forces and colony installations, inflicting 5-40 points of damage per bomb.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 14137
       }
     },
     {
@@ -1741,6 +1800,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1616
+      },
+      "description": "Capable of moving a ship 5 parsecs a turn. All ship drives are automatically upgraded when this technology is discovered.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 15540
       }
     },
     {
@@ -1766,6 +1830,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1634
+      },
+      "description": "These torpedoes are balls of antimatter that explode on contact. They travel at a speed of 20 and inflict 25 points of damage and fire every other turn.  Modifications: overloaded, enveloping and ECCM.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 16943
       }
     },
     {
@@ -1791,6 +1860,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1656
+      },
+      "description": "Can only target missiles. They have a maximum range of 15 squares and will fire defensively against approaching missiles if not yet fired in that turn. The  chance to score a hit is 85% minus 5% per square distance.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 18346
       }
     },
     {
@@ -1816,6 +1890,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1677
+      },
+      "description": "Creates tank battalions. It has 2 units when built, and adds 1 unit every 10 turns, up to half the planet's population. Eliminates the morale penalty for dictatorships and feudal governments.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 19749
       }
     },
     {
@@ -1841,6 +1920,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1692
+      },
+      "description": "Network of mines. Ships have a chance of damage based on size: frigate-20%, destroyer-30%, cruiser-40%, battleship-50%, titan-80%, doomstar-100%. Damage is 100-500 points less shields.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 21152
       }
     },
     {
@@ -1866,6 +1950,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1711
+      },
+      "description": "A colony that has an asteroid field or gas giant within its star system can create a complete artificial planet capable of supporting life.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 22555
       }
     },
     {
@@ -1891,6 +1980,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1731
+      },
+      "description": "Squadron of 4 shuttles used to move 1 unit of marines each from the launching ship  onto enemy ships. They take 3 hits to destroy, modified by your best armor, and move at a speed of 6.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 23958
       }
     },
     {
@@ -1916,6 +2010,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1748
+      },
+      "description": "Using the most advanced teaching methods available, the efficiency of farmers, workers, and scientists is increased. Each receives a +1 bonus.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 25361
       }
     },
     {
@@ -1941,6 +2040,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1765
+      },
+      "description": "Eliminates many dangerous particles from the atmosphere of a planet. The amount of production is quartered before calculating pollution. Effects are cumulative with a pollution processor.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 26764
       }
     },
     {
@@ -1966,6 +2070,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1785
+      },
+      "description": "Increases ship's combat speed by +5.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 28167
       }
     },
     {
@@ -1991,6 +2100,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1803
+      },
+      "description": "A completely automated research facility. Generates 30 research points.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 29570
       }
     },
     {
@@ -2016,6 +2130,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1811
+      },
+      "description": "Aid industry workers in their building of finished products. Generates 5  production and increases the production each worker generates by +1.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 30973
       }
     },
     {
@@ -2041,6 +2160,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1831
+      },
+      "description": "Repairs a ship during combat, restoring 20% of the armor or structure and 10% of the ship's internal systems each turn during combat. After combat, the ship is completely repaired.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 32376
       }
     },
     {
@@ -2066,6 +2190,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1853
+      },
+      "description": "Giant robot fighting vehicles superior in power and mobility to conventional tanks. They have a +10 bonus to their combat rating and take 3 hits to destroy.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 33779
       }
     },
     {
@@ -2091,6 +2220,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1864
+      },
+      "description": "Battle Pods increase the available space on a ship by 50%.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 35182
       }
     },
     {
@@ -2116,6 +2250,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1876
+      },
+      "description": "Increases a ship's chance to hit with beam weapons by +50%. Adds +2 parsecs to galactic scanning range.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 36585
       }
     },
     {
@@ -2141,6 +2280,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1891
+      },
+      "description": "Heavily armed star base, with +4 parsec scanning range bonus. Adds +10% to the offense of ships in combat around it. Replaces a star base.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 37988
       }
     },
     {
@@ -2166,6 +2310,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1905
+      },
+      "description": "The most advanced biochemical weapon ever devised, with a 20% chance of killing one million colonists. Use of biological weapons incurs a major diplomatic penalty with all other races.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 39391
       }
     },
     {
@@ -2191,6 +2340,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1920
+      },
+      "description": "Edible plants that grow anywhere, increasing the food output of all planets by +1 food per farmer, including worlds with 0 food output.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 40794
       }
     },
     {
@@ -2216,6 +2370,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1937
+      },
+      "description": "Creates an artificial black hole. The target ship is trapped in an intense gravity pocket and cannot move. Unless the generator or the equipped ship can be destroyed in 2 turns, the black hole will destroy the target.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 42197
       }
     },
     {
@@ -2241,6 +2400,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1958
+      },
+      "description": "Short range ships carrying a bomb that can be dropped on a planet or detonated on a ship. They carry one bomb each of the best type available. They move in groups of 4 at a speed of 10.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 43600
       }
     },
     {
@@ -2266,6 +2430,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1970
+      },
+      "description": "The heart of your empire's government, the capitol is required to maintain proper order. Losing the colony that has the capitol building will have severe effects,  depending on your type of government. It can be rebuilt if destroyed,  but otherwise can not be built.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 45003
       }
     },
     {
@@ -2291,6 +2460,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1978
+      },
+      "description": "Protects ships from physical and energy attacks. Absorbs up to 5 times the ship's size in damage before failing, with each attack reduced by 1 point of damage. Regenerates 30% per combat turn.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 46406
       }
     },
     {
@@ -2316,6 +2490,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 1993
+      },
+      "description": "Protects ships from physical and energy attacks. Absorbs up to 15 times the ship's size in damage before failing, with each attack reduced by 3 points of damage. Regenerates 30% per combat turn.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 47809
       }
     },
     {
@@ -2341,6 +2520,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2010
+      },
+      "description": "Protects ships from physical and energy attacks. Absorbs up to 25 times the ship's size in damage before failing, with each attack reduced by 5 points of damage. Regenerates 30% per combat turn.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 49212
       }
     },
     {
@@ -2366,6 +2550,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2025
+      },
+      "description": "Protects ships from physical and energy attacks. Absorbs up to 35 times the ship's size in damage before failing with each attack reduced by 7 points of damage. Regenerates 30% per combat turn.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 50615
       }
     },
     {
@@ -2391,6 +2580,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2042
+      },
+      "description": "Protects ships from physical and energy attacks. Absorbs up to 50 times the ship's size in damage before failing, with each attack reduced by 10 points of damage. Regenerates 30% per combat turn.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 52018
       }
     },
     {
@@ -2416,6 +2610,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2057
+      },
+      "description": "Completely hides a ship from long range scans. In combat, it adds +80 to the ship's beam defense and missiles have a 50% chance to miss as long as the ship does not attack. Must wait one turn without firing to recloak.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 53421
       }
     },
     {
@@ -2441,6 +2640,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2073
+      },
+      "description": "Allows doctors to replace failing or damaged organs, increasing the population growth by +100K each turn as long as the current population is below the planetary maximum.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 54824
       }
     },
     {
@@ -2466,6 +2670,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2088
+      },
+      "description": "Creates a colony on another planet inside the same star system as the building colony.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 56227
       }
     },
     {
@@ -2491,6 +2700,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2100
+      },
+      "description": "Capable of creating a colony in a distant star system. Will not engage in combat and will be destroyed when attacked if not escorted by a military ship.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 57630
       }
     },
     {
@@ -2516,6 +2730,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2112
+      },
+      "description": "An advanced form of feudal government on a galactic scale. Eliminates automatic assimilation into enemy empires and reduces the cost of building ships to 1/3 normal costs.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 59033
       }
     },
     {
@@ -2541,6 +2760,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2126
+      },
+      "description": "Provides a direct mental link to computers, allowing spies to circumvent many automated security systems. Adds +10 to all spy rolls.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 60436
       }
     },
     {
@@ -2566,6 +2790,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2146
+      },
+      "description": "Learns and adapts using a neural net similar to the biological brain. Equipped on all ships, it adds +100% chance to hit with beam weapons.  Attack bonuses are eliminated if the computer is damaged or destroyed.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 61839
       }
     },
     {
@@ -2591,6 +2820,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2167
+      },
+      "description": "Surrounds a ship with an energy dampening field that reduces the damage a ship takes by 3/4. Has a 50% chance of distorting a transporter beam attempting to move troops onto the equipped ship, killing the troops instantly.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 63242
       }
     },
     {
@@ -2616,6 +2850,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2180
+      },
+      "description": "Provides friend-or-foe recognition guidance to missiles and torpedoes. They will retarget the nearest enemy ship if their first target is destroyed.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 64645
       }
     },
     {
@@ -2641,6 +2880,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2206
+      },
+      "description": "Fires an intense beam of cosmic rays inflicting 50-100 points of damage. Any damage that penetrates the shields kills 1 marine unit for every 5 points of internal damage. Modifications: heavy mount, continuous.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 66048
       }
     },
     {
@@ -2666,6 +2910,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2216
+      },
+      "description": "Engineered viruses that attack organic lifeforms. Introduced by orbital bombardment, each launch has a 10% chance to kill one million colonists. Use of biological  weapons incurs a major diplomatic penalty with all other races.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 67451
       }
     },
     {
@@ -2691,6 +2940,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2229
+      },
+      "description": "Allows miners to build stable tunnels deep into a planet. Generates 15  production and increases the productivity of each worker by +3 production each.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 68854
       }
     },
     {
@@ -2716,6 +2970,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2246
+      },
+      "description": "Take man-made toxic/polluting agents and store them deep within the surface of a planet, far below surface water supplies. Planetary pollution is completely  eliminated.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 70257
       }
     },
     {
@@ -2741,6 +3000,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2263
+      },
+      "description": "Supplies sufficient energy to propel a ship up to 6 parsecs before refueling.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 71660
       }
     },
     {
@@ -2766,6 +3030,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2284
+      },
+      "description": "Allows ships to cross into the dimension of the Antaran home world. To use it, select a fleet in the same system as the portal and press the 'Attack Antarans' button on the fleet pop-up.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 73063
       }
     },
     {
@@ -2791,6 +3060,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2303
+      },
+      "description": "All weapons targeted against an equipped ship have a 30% chance of missing completely, regardless of any other considerations.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 74466
       }
     },
     {
@@ -2816,6 +3090,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2323
+      },
+      "description": "Fires intense bolts of energy that inflict 40 points of damage. Damage from  disrupter bolts is not reduced by range. Modifications: autofire, heavy mount.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 75869
       }
     },
     {
@@ -2841,6 +3120,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2340
+      },
+      "description": "Mobile planetoid bases. They are the largest ships that can be built.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 77272
       }
     },
     {
@@ -2866,6 +3150,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2363
+      },
+      "description": "Triples the structural integrity of a ship and provides more protection for the ship's drive system, tripling the amount of damage required to destroy it.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 78675
       }
     },
     {
@@ -2891,6 +3180,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2379
+      },
+      "description": "Creates a magnetic pulse jamming both weapon tracking systems and missile guidance units, adding +70% to the ship's missile evasion.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 80078
       }
     },
     {
@@ -2916,6 +3210,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2390
+      },
+      "description": "Directs starship weapons' fire and is automatically equipped on all ships, increasing chance to hit by +25%. This bonus is lost if the computer is damaged or destroyed.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 81481
       }
     },
     {
@@ -2941,6 +3240,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2410
+      },
+      "description": "Tracks the warp signature of a vehicle. If the missile penetrates the shields, all damage is applied to the ship's drive, bypassing any armor. Requires 4 times the space and costs 4 times more than regular missiles.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 82884
       }
     },
     {
@@ -2966,6 +3270,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2436
+      },
+      "description": "One quarter of all damage inflicted on a ship is instead stored in the  energy absorber.  The ship must fire this stored energy at an enemy ship in the next turn or it is lost.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 84287
       }
     },
     {
@@ -2991,6 +3300,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2452
+      },
+      "description": "Enables a colony to better control environmental conditions, allowing  colonization of the more intolerable areas of the planet. Maximum planetary population is increased by +2 million.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 85690
       }
     },
     {
@@ -3016,6 +3330,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2463
+      },
+      "description": "Allows you to mutate your race, altering their abilities. When evolutionary mutation is researched, you may choose 4 additional points of race development picks, to either remove disadvantages or increase advantages.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 87093
       }
     },
     {
@@ -3041,6 +3360,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2485
+      },
+      "description": "Increase the overall range of a ship by +50%, but at the cost of a considerable amount of space.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 88496
       }
     },
     {
@@ -3066,6 +3390,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2505
+      },
+      "description": "Allow a ship to fire two volleys of missiles in one turn. Will only fire one per turn after that, unless the ship takes one full turn without firing missiles to reload.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 89899
       }
     },
     {
@@ -3091,6 +3420,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2524
+      },
+      "description": "Advanced form of Democracy. The research and income bonus is increased to +75%.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 91302
       }
     },
     {
@@ -3116,6 +3450,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2535
+      },
+      "description": "Allows a ship to carry a group of 4 short-range fighters. They carry one beam  weapon of the best type that can have the point defense modification, and can  fire it 4 times before returning to the launching ship.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 92705
       }
     },
     {
@@ -3141,6 +3480,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2548
+      },
+      "description": "Planetary base that houses 10-interceptors.  Fighter garrisons are equipped  with 6-bomber, or 4-heavy fighter squadrons when the appropriate technology becomes available. New fighters become available every 10 combat turns.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 94108
       }
     },
     {
@@ -3166,6 +3510,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2565
+      },
+      "description": "Alter the molecular structure of inorganic material to create edible food. Having a facility in a colony allows you to convert 2 units of production (energy) into 1 unit of food, as needed by the colony.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 95511
       }
     },
     {
@@ -3191,6 +3540,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2582
+      },
+      "description": "A group of ships to transport food or colonists as needed between worlds. Each fleet contains 5 freighters. The fleet can transport 5 food units or one population unit per turn.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 96914
       }
     },
     {
@@ -3216,6 +3570,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2593
+      },
+      "description": "Projects a tetrium stream of charged particles, inflicting 2-6 points of damage Modifications: heavy mount, continuous, point defense, enveloping.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 98317
       }
     },
     {
@@ -3241,6 +3600,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2605
+      },
+      "description": "A high-yield orbital bombardment device engineered to destroy ground forces and colony installations, inflicting 4-24 points of damage.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 99720
       }
     },
     {
@@ -3266,6 +3630,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2617
+      },
+      "description": "Capable of faster than light travel, moving a ship 3 parsecs a turn. All ship  drives are automatically upgraded when this technology is discovered.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 101123
       }
     },
     {
@@ -3291,6 +3660,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2630
+      },
+      "description": "A powerful hand-held rifle that increases the combat rating of militia, troops, and armor by +10. The bonus is not cumulative with other rifles.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 102526
       }
     },
     {
@@ -3316,6 +3690,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2643
+      },
+      "description": "Creates an environment suited to both plant and animal growth by introducing genetically-engineered microorganisms into the world. Can only be applied to terran environments.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 103929
       }
     },
     {
@@ -3341,6 +3720,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2663
+      },
+      "description": "Eliminates the need for hard currency, replacing it with instantaneous electronic exchanges. Increases the money generated by all colonies by +50%.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 105332
       }
     },
     {
@@ -3366,6 +3750,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2690
+      },
+      "description": "Nearly instantaneous galaxy-wide communications, allowing quick exchange of information and ideas. The cybernet generates 15 research points and each scientist generates +3 research each.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 106735
       }
     },
     {
@@ -3391,6 +3780,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2708
+      },
+      "description": "Connects all beings within the race in a collective consciousness, allowing each to act in total harmony.  Farmer and worker production is increased by +100%. Only races that began with unification can research it.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 108138
       }
     },
     {
@@ -3416,6 +3810,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2729
+      },
+      "description": "An extremely powerful linear accelerator which inflicts 18 points of damage regardless of range. Modifications: autofire, armor piercing, heavy mount.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 109541
       }
     },
     {
@@ -3441,6 +3840,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2742
+      },
+      "description": "Gravitic waves that tear a target apart. Inflicts 3-15 points of damage. Any damage penetrating the ship's shields inflicts extra structural damage. Modifications: heavy mount, continuous.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 110944
       }
     },
     {
@@ -3466,6 +3870,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2756
+      },
+      "description": "Creates a sudden rift in a ship's subspace field. Weakens the inertial controls of the ship, spinning it in random directions, inflicting 1-4 points of structural damage times the ship's size class. Range is 15 squares.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 112347
       }
     },
     {
@@ -3491,6 +3900,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2774
+      },
+      "description": "Reduces the damage of any attack by an additional 3 points. Allows operation of all shields in a nebula and prevents the use of enemy transporters even after  shields have been dropped. Immune to shield-piercing weapons.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 113750
       }
     },
     {
@@ -3516,6 +3930,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2787
+      },
+      "description": "Heavy armor negates armor piercing effects and reinforces the armor of a ship, tripling the amount of damage the armor can absorb.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 115153
       }
     },
     {
@@ -3541,6 +3960,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2799
+      },
+      "description": "Allow ships to carry heavy fighters equipped with 2 of the best point defense  beam weapons and 2 of the best bombs available. They have 5 hits, modified by your best armor, and move at speed 12.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 116556
       }
     },
     {
@@ -3566,6 +3990,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2818
+      },
+      "description": "Through genetic engineering, the average intelligence of the entire race is substantially improved, increasing the research of all scientists by +1.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 117959
       }
     },
     {
@@ -3591,6 +4020,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2842
+      },
+      "description": "Allows a ship to channel the fire of its energy weapons more efficiently, increasing damage by +50% over base regardless of range. It does not improve the chances of hitting distant targets.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 119362
       }
     },
     {
@@ -3616,6 +4050,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2860
+      },
+      "description": "Capable of creating realistic 3-D images from holographic projections. Increases a planet's morale by +20%.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 120765
       }
     },
     {
@@ -3641,6 +4080,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2875
+      },
+      "description": "An automated, sealed environment in which food can be grown, even on lifeless worlds. It increases the food output of a world by +2 food.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 122168
       }
     },
     {
@@ -3666,6 +4110,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2891
+      },
+      "description": "Capable of moving a ship 6 parsecs a turn. All ship drives are automatically  upgraded when this technology is discovered.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 123571
       }
     },
     {
@@ -3691,6 +4140,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2903
+      },
+      "description": "Conduct and magnify energy transmission in less space, giving a ship more space for equipment. Increases the amount of equipment it can carry by +25%. Megafluxers  are used automatically on all ships once acquired.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 124974
       }
     },
     {
@@ -3716,6 +4170,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2915
+      },
+      "description": "Allow ship beam weapons to fire twice in a turn. After firing twice, one turn must be spent without firing beam weapons; otherwise the weapons can only fire once per turn.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 126377
       }
     },
     {
@@ -3741,6 +4200,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2934
+      },
+      "description": "Allow you to communicate with any ship already in hyperspace so you can change its destination. Increases the command points of star bases, battle stations and star fortresses by +3 points.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 127780
       }
     },
     {
@@ -3766,6 +4230,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2960
+      },
+      "description": "Advanced form of dictatorship. Total command points generated are increased by +50% and all defensive spy rolls are at +20.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 129183
       }
     },
     {
@@ -3791,6 +4260,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2969
+      },
+      "description": "Creates a warp field that can operate in normal space. Increases ship mobility and makes it harder to target. Adds +100 to the ship's beam defense, and allows it to change direction without movement cost.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 130586
       }
     },
     {
@@ -3816,6 +4290,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 2988
+      },
+      "description": "Creates a partial warp field that can operate in normal space. It vastly  improves the ship's mobility and makes it considerably harder to target, adding +50 to ship's beam defense and halving movement cost for turning.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 131989
       }
     },
     {
@@ -3841,6 +4320,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3008
+      },
+      "description": "Capable of moving a ship 7 parsecs a turn. All ship drives are automatically  upgraded when this technology is discovered.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 133392
       }
     },
     {
@@ -3866,6 +4350,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3026
+      },
+      "description": "Capable of moving a ship 4 parsecs a turn. All ship drives are automatically  upgraded when this technology is discovered.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 134795
       }
     },
     {
@@ -3891,6 +4380,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3036
+      },
+      "description": "Fires a particle wave that overloads ships' systems and inflicts 2-10 points of  damage, bypassing all armor and structure. Completely ineffective against  monsters and Antaran ships. Modifications: autofire, and continuous.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 136198
       }
     },
     {
@@ -3916,6 +4410,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3053
+      },
+      "description": "Supplies sufficient energy to propel a ship 9 parsecs before refueling.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 137601
       }
     },
     {
@@ -3941,6 +4440,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3072
+      },
+      "description": "Forms a controlled wormhole between two points, increasing the speed of ships moving through it by 3 parsecs a turn. Once discovered, all colonies will automatically be equipped with one.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 139004
       }
     },
     {
@@ -3966,6 +4470,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3082
+      },
+      "description": "Highly focused, coherent beams of light which deliver 1-4 points of damage. Modifications: autofire, armor piercing, heavy mount, continuous, point defense, no range dissipation.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 140407
       }
     },
     {
@@ -3991,6 +4500,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3095
+      },
+      "description": "A hand-held weapon that increases the combat rating of militia, troops, and armor by +5. The bonus is not cumulative with other rifles.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 141810
       }
     },
     {
@@ -4016,6 +4530,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3107
+      },
+      "description": "Surrounds a ship in a powerful energized field capable of overloading the targeting system of any missile, torpedo or fighter. Has a 50% chance of destroying these weapons before they damage the ship.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 143213
       }
     },
     {
@@ -4041,6 +4560,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3123
+      },
+      "description": "Lets the colony train troops for ground invasion protection. Begins with 4 marine units, then trains 1 unit every 5 turns, up to the planet's maximum population. Eliminates morale penalties for dictatorships and feudal governments.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 144616
       }
     },
     {
@@ -4066,6 +4590,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3139
+      },
+      "description": "A rail gun firing a hyper-velocity projectile. Inflicts 6 points of damage. Damage is not reduced by range. Modifications: autofire, armor piercing, heavy mount, point defense.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 146019
       }
     },
     {
@@ -4091,6 +4620,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3151
+      },
+      "description": "Fires a bolt of pure energy that always hits. Inflicts 100 points of damage, but with double the range penalties for dissipation. Modifications: heavy mount.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 147422
       }
     },
     {
@@ -4116,6 +4650,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3165
+      },
+      "description": "Carries a powerful, chemically-based explosive warhead capable of delivering 14 points of damage. Modifications: MIRV, emissions guidance, fast, armored, and ECCM.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 148825
       }
     },
     {
@@ -4141,6 +4680,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3183
+      },
+      "description": "Microorganisms used to create drugs. Increases the population growth rate of all planets by +25% and halves the percentage chance for death spores and bio-terminators to kill colonists.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 150228
       }
     },
     {
@@ -4166,6 +4710,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3196
+      },
+      "description": "Uses microscopic nano-machines to construct buildings and ships with less metal, but with the same strength and durability. Increases productivity of all workers by +1 production.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 151631
       }
     },
     {
@@ -4191,6 +4740,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3219
+      },
+      "description": "Capable of creating an outpost on any uninhabited planet. Outposts function like a colony, except no population units may be moved there. Outpost ships are unarmed and will be destroyed if not escorted by military ships.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 153034
       }
     },
     {
@@ -4216,6 +4770,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3232
+      },
+      "description": "Directs all starship weapon fire, adding +125% to the chance to hit. If the computer is destroyed, the ship loses the bonus.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 154437
       }
     },
     {
@@ -4241,6 +4800,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3257
+      },
+      "description": "Jamming frequencies across the entire spectrum this device adds +100 to the ships missile evasion rating.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 155840
       }
     },
     {
@@ -4266,6 +4830,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3279
+      },
+      "description": "Allow ships to rapidly change the frequency of their shields, increasing the maximum strength by +50%.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 157243
       }
     },
     {
@@ -4291,6 +4860,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3300
+      },
+      "description": "Microscopic nano-machines capable of breaking down environmental contaminants. Doubles the number of production units a planet can produce before any pollution is created.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 158646
       }
     },
     {
@@ -4316,6 +4890,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3319
+      },
+      "description": "With improved data processing methods, the pathways of the brain can be mapped and analyzed. Provides a near perfect lie detector used by spies to elicit information, adding +10 to all spy rolls.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 160049
       }
     },
     {
@@ -4341,6 +4920,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3334
+      },
+      "description": "Fires an intense beam of lethal radiation. Inflicts 3-12 points of damage to shields. Any damage that penetrates the shields kills 1 marine unit for every 5 points of internal damage. Modifications: heavy mount, continuous.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 161452
       }
     },
     {
@@ -4366,6 +4950,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3350
+      },
+      "description": "Detects enemy ships. Has a base detection range of 5 parsecs. Ships in transit can be detected at 1 parsec per size class of ship greater range. Neutron scanners  reduce enemy ship's missile evasion by -40.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 162855
       }
     },
     {
@@ -4391,6 +4980,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3366
+      },
+      "description": "Ships with this armor have 6 times the base structure and armor points. The hit points of fighters are multiplied by 5. Adds +20 to ground troop combat strengths.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 164258
       }
     },
     {
@@ -4416,6 +5010,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3383
+      },
+      "description": "A high-yield orbital bombardment device engineered to destroy ground forces and colony installations, inflicting 10-60 points of damage.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 165661
       }
     },
     {
@@ -4441,6 +5040,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3399
+      },
+      "description": "A high-yield orbital bombardment device engineered to destroy ground forces and colony installations, inflicting 3-12 points of damage.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 167064
       }
     },
     {
@@ -4466,6 +5070,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3412
+      },
+      "description": "Capable of moving a ship 2 parsecs per turn. This is the first ship drive that makes interstellar travel possible.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 168467
       }
     },
     {
@@ -4491,6 +5100,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3426
+      },
+      "description": "Carries a high-yield nuclear warhead that inflicts 8 points of damage.  Modifications: MIRV, emissions guidance, fast, heavily armored and ECCM.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 169870
       }
     },
     {
@@ -4516,6 +5130,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3442
+      },
+      "description": "Directs all starship weapons fire, adding +50 to the chance to hit. Bonus is lost if the computer is destroyed.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 171273
       }
     },
     {
@@ -4541,6 +5160,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3460
+      },
+      "description": "Fires a stream of matter in a focused energy beam that is naturally shield piercing,  and inflicts 10-30 points of damage. Modifications: continous, heavy mount, and  point defense.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 172676
       }
     },
     {
@@ -4566,6 +5190,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3474
+      },
+      "description": "Deflects physical and energy attacks, increasing the combat rating of militia, troops and armor by +20.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 174079
       }
     },
     {
@@ -4591,6 +5220,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3490
+      },
+      "description": "A derivative of a subspace teleporter that allows the equipped ship to teleport itself or another ship 18 squares in combat.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 175482
       }
     },
     {
@@ -4616,6 +5250,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3504
+      },
+      "description": "Allows a ship to temporarily enter another dimension instead of just visually disappearing. While cloaked, the ship cannot be detected or attacked. Can only function for 10 turns, after which it will act like an ordinary cloaking device.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 176885
       }
     },
     {
@@ -4641,6 +5280,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3518
+      },
+      "description": "Fires a trans-warp beam of phased energy that actually exists in several dimensions simultaneously, inflicting 5-20 points of damage. Modifications: autofire, continuous, heavy mount, point defense, shield piercing.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 178288
       }
     },
     {
@@ -4666,6 +5310,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3525
+      },
+      "description": "A hand held rifle that can almost disintegrate an opponent with one blast, increasing the combat rating of militia, troops and armor by +20. The bonus is not cumulative with other rifles.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 179691
       }
     },
     {
@@ -4691,6 +5340,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3538
+      },
+      "description": "Seals a planet in an energy field. Converts Radiated climates to Barren climates. Reduces damage against a planet by 20 points. Ground troops and biological weapons cannot pass.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 181094
       }
     },
     {
@@ -4716,6 +5370,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3563
+      },
+      "description": "Seals planet in an energy field. Converts Radiated climates into Barren. Reduces damage against the planet 10 points. It replaces any planetary radiation shield already built.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 182497
       }
     },
     {
@@ -4741,6 +5400,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3585
+      },
+      "description": "Creates artificial gravity to normalize a planet to standard gravity limits. Gravity generators eliminate the negative effects of low and heavy gravity fields.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 183900
       }
     },
     {
@@ -4766,6 +5430,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3613
+      },
+      "description": "Contains 300 space units of your best missiles, with unlimited ammo.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 185303
       }
     },
     {
@@ -4791,6 +5460,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3636
+      },
+      "description": "Ground installation that contains 300 space units of heavy mount and point defense  versions of the best available beam weapons.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 186706
       }
     },
     {
@@ -4816,6 +5490,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3653
+      },
+      "description": "Reduces solar and cosmic bombardment so lifeforms can comfortably move about the surface. Radiated climates become Barren.  Reduces damage against a planet by 5 points.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 188109
       }
     },
     {
@@ -4841,6 +5520,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3680
+      },
+      "description": "Increases the revenues earned on a planet by +100%.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 189512
       }
     },
     {
@@ -4866,6 +5550,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3705
+      },
+      "description": "Supplies researchers with a vast amount of information. Generates 10 research  points and increases the research each scientist produces by +2.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 190915
       }
     },
     {
@@ -4891,6 +5580,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3729
+      },
+      "description": "Fires a blast of plasma energy inflicting 6-30 points of damage to all 4 shields of  the target. Only focuses well over a short range, doubling all range penalties.  Modifications: heavy mount, and continuous fire.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 192318
       }
     },
     {
@@ -4916,6 +5610,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3743
+      },
+      "description": "The most powerful held weapon, increasing the combat rating of militia, troops, and armor by +30. The bonus is not cumulative with other rifle bonuses.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 193721
       }
     },
     {
@@ -4941,6 +5640,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3756
+      },
+      "description": "Plasma warhead capable of 120 points of damage. Travels with a combat speed of 24, losing 5 points of strength for each square traveled and firing every other turn.  Modifications: overloaded, enveloping, ECCM, no range dissipation.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 195124
       }
     },
     {
@@ -4966,6 +5670,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3773
+      },
+      "description": "An energy web that envelopes a target within a 15 square range. Inflicts 5-25  points of damage per turn. This damage persists, dissipating at a rate of  5 points per turn.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 196527
       }
     },
     {
@@ -4991,6 +5700,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3784
+      },
+      "description": "The ultimate in virtual holographic entertainment, creating completely immersive entertainment environments. It increases morale by +30% and is  cumulative with holo simulator.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 197930
       }
     },
     {
@@ -5016,6 +5730,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3798
+      },
+      "description": "Uses advanced chemicals to process factory waste. Only half of  the actual production of the planet used to calculate pollution.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 199333
       }
     },
     {
@@ -5041,6 +5760,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3818
+      },
+      "description": "Directs all ship beam weapons fire, adding a +75% chance to hit.  If the computer is damaged or destroyed, the ship loses the attack bonus.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 200736
       }
     },
     {
@@ -5066,6 +5790,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3838
+      },
+      "description": "Provides troops with superior power and mobility by mechanically magnifying their natural strength. Powered armor equipped troops have a +10 bonus to their combat rating and take +1 hits to kill.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 202139
       }
     },
     {
@@ -5091,6 +5820,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3852
+      },
+      "description": "Hand-held weapon that fires high-velocity projectiles.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 203542
       }
     },
     {
@@ -5116,6 +5850,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3864
+      },
+      "description": "Energy projectiles traveling at trans-warp speed, striking their target the turn they are fired. They inflict 40 points of damage. Can be fired every other turn, with a max range of 24 squares. Modifications: overloaded, enveloping, ECCM.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 204945
       }
     },
     {
@@ -5141,6 +5880,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3881
+      },
+      "description": "Allows you to create psychic beings of immense power. Spying bonuses are raised by +10. Morale on all planets is increased by 10% for dictatorships and imperium government.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 206348
       }
     },
     {
@@ -5166,6 +5910,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3890
+      },
+      "description": "When fired, causes violent vibrations in ships, missiles and fighters adjacent to the equipped ships. Inflicts 2-24 points of damage per size class of the ship damaged.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 207751
       }
     },
     {
@@ -5191,6 +5940,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3897
+      },
+      "description": "Carries a powerful high-energy pulse capable of delivering 20 points of damage. Modifications: MIRV, emissions guidance, fast, armored, and ECCM.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 209154
       }
     },
     {
@@ -5216,6 +5970,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3912
+      },
+      "description": "Creates an interphase reaction when the ship is destroyed or self destructs, tripling the destructive power of the ship's explosion.  Ships equipped with  a quantum detonator have a 50% chance to self-destruct when captured.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 210557
       }
     },
     {
@@ -5241,6 +6000,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3930
+      },
+      "description": "Corrects for long-range targeting inaccuracies, the actual range is  divided by three for purposes of to-hit bonuses only.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 211960
       }
     },
     {
@@ -5266,6 +6030,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3947
+      },
+      "description": "Allows scrap material reuse, reducing construction costs. Every unit of population generates +1 production. This increase does not count toward the planetary pollution level.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 213363
       }
     },
     {
@@ -5291,6 +6060,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3959
+      },
+      "description": "Subspace field that reflects beam weapons back on the attacker. Chance to reflect is the ratio of reflection field strength of 10 to the sum of weapon attack damage and reflection field strength.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 214766
       }
     },
     {
@@ -5316,6 +6090,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3976
+      },
+      "description": "Builds mechanical workers that add production dependent on a colony's mineral resources 5, 8, 10, 15 or 20.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 216169
       }
     },
     {
@@ -5341,6 +6120,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 3992
+      },
+      "description": "Houses state-of-the-art computer equipment, creating a superior research environment. Generates 5 research points and increases the research each  scientist produces by +1.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 217572
       }
     },
     {
@@ -5366,6 +6150,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4012
+      },
+      "description": "Automate many difficult tasks, increasing the productivity of industrial workers. Generates 10 production and increases the production each worker  produces by +2.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 218975
       }
     },
     {
@@ -5391,6 +6180,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4024
+      },
+      "description": "Detects enemy ships. Base detection range is 1 parsec. Ships in transit can  be detected 1 parsec further per size class of ship.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 220378
       }
     },
     {
@@ -5416,6 +6210,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4038
+      },
+      "description": "A computer assisted laboratory that generates an amount of research dependent on ship size: 1, 2, 4, 8, 16, or 32. Also adds +10 per size class to the attack roll of all ships in a fleet fighting space monsters or Antarans.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 221781
       }
     },
     {
@@ -5441,6 +6240,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4048
+      },
+      "description": "Automatically controls and monitors vital sections of ship, attacking intruders with computer-controlled weapons. Adds +20 to the combat rolls of marines when defending against enemy boarders.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 223184
       }
     },
     {
@@ -5466,6 +6270,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4066
+      },
+      "description": "Detects enemy ships. Has a base detection range of 8 parsecs.  Ships in transit can be detected 1 parsec further per size class of ship. Sensors reduce enemy  ship's missile evasion by -70.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 224587
       }
     },
     {
@@ -5491,6 +6300,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4074
+      },
+      "description": "Increases the recharge rate of ship shields by +70% of their maximum strength.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 225990
       }
     },
     {
@@ -5516,6 +6330,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4092
+      },
+      "description": "Using nano-machines, planetary soil can be molecularly enriched and fertilized, increasing the food a farmer can harvest by +1. Soil enrichment will not work in barren, radiated, and toxic planets.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 227393
       }
     },
     {
@@ -5541,6 +6360,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4108
+      },
+      "description": "Trains ship crews, adding 1 to their starting level. Ships stationed in the system gain 2 experience each turn.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 228796
       }
     },
     {
@@ -5566,6 +6390,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4122
+      },
+      "description": "Site for commercial transactions, increasing the money generation of a colony by +50%.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 230199
       }
     },
     {
@@ -5591,6 +6420,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4132
+      },
+      "description": "Creates an instantaneous subspace distortion in a 2-square radius about the equipped ship.  Everything in the area sustains 4-32 structural hits times its size class, ignoring shields.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 231602
       }
     },
     {
@@ -5616,6 +6450,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4151
+      },
+      "description": "Trains a number of spies that you can either use as defensive agents or active spies to steal technology or sabotage enemy installations.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 233005
       }
     },
     {
@@ -5641,6 +6480,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4163
+      },
+      "description": "Supplies sufficient energy to propel a ship 4 parsecs before refueling.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 234408
       }
     },
     {
@@ -5666,6 +6510,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4183
+      },
+      "description": "Armed orbital platforms used to service military ships.  They are equipped with extensive weaponry, the best available scanner with a +2 scanning range bonus and a star dock capable of building ships larger than destroyers.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 235811
       }
     },
     {
@@ -5691,6 +6540,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4193
+      },
+      "description": "A large military orbital platform. Has a +6 parsec scan range bonus and adds +20% to both the offense and defense of all ships in combat around it. Replaces battlestations and star bases.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 237214
       }
     },
     {
@@ -5716,6 +6570,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4207
+      },
+      "description": "Allows instantaneous movement between any of your colonies. All colonies are automatically equipped with one once the technology is researched.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 238617
       }
     },
     {
@@ -5741,6 +6600,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4217
+      },
+      "description": "Places target in suspended animation. It cannot fire, recharge weapons, cloak or be attacked. Field has a 3-square range and will hold the  target ship until the stasis field is turned off or destroyed.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 240020
       }
     },
     {
@@ -5766,6 +6630,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4230
+      },
+      "description": "Reduces the gravitic emissions from FTL drives. Ships equipped with stealth fields can not be detected at any range on the main screen.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 241423
       }
     },
     {
@@ -5791,6 +6660,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4244
+      },
+      "description": "Renders a person virtually invisible, blending the wearer into the background. Adds +10 all spy rolls.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 242826
       }
     },
     {
@@ -5816,6 +6690,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4257
+      },
+      "description": "A plasma cannon that can be mounted on a ship or a planet. Automatically inflicts 400 hits to all shields of any ship, regardless of range and defense. Completely destroys a planet when used for orbital bombardment.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 244229
       }
     },
     {
@@ -5841,6 +6720,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4275
+      },
+      "description": "Links to ship's weapons array to more accurately choose target's weak armor points. All damage that penetrates the target's shields is doubled.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 245632
       }
     },
     {
@@ -5866,6 +6750,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4295
+      },
+      "description": "Allows you to issue orders to any ship within 6 squares of a star system with a starbase, battlestation, or star fortress. Increases the command points given by a base by +2 points.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 247035
       }
     },
     {
@@ -5891,6 +6780,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4320
+      },
+      "description": "Allows a ship to execute a hyperspace jump of up to 20 squares. The jump does not change the ship's direction; it must rotate normally to change facing.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 248438
       }
     },
     {
@@ -5916,6 +6810,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4341
+      },
+      "description": "An underground cavern system of automated farms. Increases the food output of a planet by +4.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 249841
       }
     },
     {
@@ -5941,6 +6840,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4360
+      },
+      "description": "Provide suspended animation facilities for legendary officers if their ship is destroyed. At least one friendly ship must survive the combat to rescue any  surviving officers.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 251244
       }
     },
     {
@@ -5966,6 +6870,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4374
+      },
+      "description": "Integrated into star bases, battlestations and star fortresses. Emits  signals which penetrate hyperspace. Ships within 3 parsecs can receive your orders.  Increases the command points of these bases by +1.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 252647
       }
     },
     {
@@ -5991,6 +6900,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4397
+      },
+      "description": "Detect enemy ships. Has a base detection range of 3 parsecs. Ships in transit  can be detected 1 parsec further per size class of ship. Tachyon scanners reduce enemy ship's missile evasion by -20.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 254050
       }
     },
     {
@@ -6016,6 +6930,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4413
+      },
+      "description": "Develops the talents of naturally telepathic members of your race. Enables you to form a more effective police force with an ability to get at the truth in a new way. Adds +5% to all spying rolls.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 255453
       }
     },
     {
@@ -6041,6 +6960,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4433
+      },
+      "description": "Makes a planet more hospitable. Barren becomes desert or tundra, deserts become arid, tundras become swamp, oceans, swamps and arid become terran. Each use on  a planet increases cost by 250 production.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 256856
       }
     },
     {
@@ -6066,6 +6990,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4446
+      },
+      "description": "Advanced fuel system that self-regenerates, providing all ships with an unlimited fuel supply and range.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 258259
       }
     },
     {
@@ -6091,6 +7020,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4465
+      },
+      "description": "Allows a ship to shift in and out of the time-space continuum, enabling it to take an additional turn at the end of every combat turn.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 259662
       }
     },
     {
@@ -6116,6 +7050,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4487
+      },
+      "description": "The titan class of starship is gigantic in proportion to other ships, and requires advanced engineering techniques to both construct and integrate ship systems.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 261065
       }
     },
     {
@@ -6141,6 +7080,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4506
+      },
+      "description": "The standard armor of ships.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 262468
       }
     },
     {
@@ -6166,6 +7110,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4521
+      },
+      "description": "It requires 1 tractor beam per size class of target ship to completely stop  the target. Ships not held completely lose a portion of movement. Motionless  ships can be boarded and are easy targets to hit.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 263871
       }
     },
     {
@@ -6191,6 +7140,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4534
+      },
+      "description": "Troop carrier for landing 4 marine units on a planet. They do not engage in combat and will be destroyed when attacked if not escorted by military ships. Once used, they are dismantled. Can only be built on planets with marine barracks.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 265274
       }
     },
     {
@@ -6216,6 +7170,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4544
+      },
+      "description": "Allow a ship to move marines to an enemy ship at a range of 12 squares, as long as the shield facing the ship is down. Can also be used to drop bombs on planets up to 12 squares away.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 266677
       }
     },
     {
@@ -6241,6 +7200,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4557
+      },
+      "description": "Ships with this armor have twice the base structure and armor points. The hit points of fighters are multiplied by 1.5. Adds +10 to ground troop combat strengths.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 268080
       }
     },
     {
@@ -6266,6 +7230,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4573
+      },
+      "description": "Troop pods house additional detachments of space marines, doubling the number of marines on board a ship. The additional marines can defend the ship or board enemy ships.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 269483
       }
     },
     {
@@ -6291,6 +7260,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4584
+      },
+      "description": "Increases the population growth rate of all colonies by +50% and quarters the chance for death spores and bio-terminators to kill a population.  Not cumulative with microbiotics.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 270886
       }
     },
     {
@@ -6316,6 +7290,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4603
+      },
+      "description": "Supply sufficient energy to propel a ship 12 parsecs before refueling.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 272289
       }
     },
     {
@@ -6341,6 +7320,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4623
+      },
+      "description": "Creates a galaxy wide cyberspace connection which individuals can tap into to experience alternate realities. Increases morale +20% throughout your entire empire.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 273692
       }
     },
     {
@@ -6366,6 +7350,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4647
+      },
+      "description": "Creates a large radius field about a ship that prevents any ship from entering into hyperspace. Enemy ships cannot retreat while the dissipator is functioning.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 275095
       }
     },
     {
@@ -6391,6 +7380,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4663
+      },
+      "description": "Creates a warp destabilizing field around the star system in which it is built. Generates a field 2 parsecs in radius about the system that slows all enemy movement to 1 parsec per turn.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 276498
       }
     },
     {
@@ -6416,6 +7410,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4680
+      },
+      "description": "Modifies a planet's weather patterns to create a more stable farming environment. Food production is increased by +2 per farmer.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 277901
       }
     },
     {
@@ -6441,6 +7440,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4703
+      },
+      "description": "Adds +130 to a ship's missile evasion rating, adds +70 to the missile evasion of other ships in the fleet. The fleet's bonus is not  cumulative with any missile evasion bonus given by other jammers. Only the best  bonus will apply.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 279304
       }
     },
     {
@@ -6466,6 +7470,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4720
+      },
+      "description": "Focuses on the motivations of other races in an attempt to form deals that are more appealing. The effect is to permanently add +30 diplomatic points to every deal offered to your opponents.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 280707
       }
     },
     {
@@ -6491,6 +7500,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4736
+      },
+      "description": "Ships with this armor have 10 times the base structure and armor points. The hit points of fighters are multiplied by 5. Adds +30 to ground troop combat strengths.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 282110
       }
     },
     {
@@ -6516,6 +7530,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4753
+      },
+      "description": "Carries a powerful explosive warhead capable of delivering 30 points of damage. Modifications: MIRV, emissions guidance, fast traveling, armored and ECCM.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 283513
       }
     },
     {
@@ -6541,6 +7560,11 @@
       "name_source": {
         "source_id": "moo2-1.31-techname-block0-technologies",
         "offset": 4766
+      },
+      "description": "Ships with this armor have 4 times the base structure and armor points. The hit points of fighters are multiplied by 2. Adds +15 to ground troop combat strengths.",
+      "description_source": {
+        "source_id": "moo2-1.31-help-block0-technology-descriptions",
+        "offset": 284916
       }
     }
   ]

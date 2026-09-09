@@ -2025,6 +2025,12 @@ export function StrategicResearchOverlay({ snapshot, preview, draftOrders, onPla
                 ) : (
                   <p className="muted">{t('research.info.notNormalized')}</p>
                 )}
+                {inspectedTechnology.info.description && (
+                  <div className="research-tech-info-original">
+                    <h4>{t('research.info.originalDescription')}</h4>
+                    <p>{inspectedTechnology.info.description}</p>
+                  </div>
+                )}
                 <p className="research-tech-info-authority">{t('research.info.authority')}</p>
               </div>
               <footer className="research-tech-info-actions">

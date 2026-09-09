@@ -19,6 +19,10 @@ func TestDecodeTechnologiesUsesOriginalBoundedSequence(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(root, "TECHNAME.LBX"), buildAssetTestLBX([][]byte{block}), 0o644); err != nil {
 		t.Fatal(err)
 	}
+	techNames := values[2 : 2+technologyCount]
+	if err := os.WriteFile(filepath.Join(root, "HELP.LBX"), buildAssetTestLBX([][]byte{syntheticTechnologyHelpBlock(techNames)}), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	writeSyntheticTechnologyExe(t, filepath.Join(root, "Orion2.exe"))
 
 	bundle, err := DecodeTechnologies(root)
@@ -28,7 +32,7 @@ func TestDecodeTechnologiesUsesOriginalBoundedSequence(t *testing.T) {
 	if len(bundle.Rules.Technologies) != 203 || len(bundle.English.Strings) != 203 || len(bundle.Rules.Fields) != 82 {
 		t.Fatalf("technologies=%d strings=%d fields=%d", len(bundle.Rules.Technologies), len(bundle.English.Strings), len(bundle.Rules.Fields))
 	}
-	if got := bundle.Rules.Technologies[0]; got.TechnologyID != 1 || got.ID != "achilles_targeting_unit" || got.TechFieldID != 0 || !got.StrategicCombatAvailable {
+	if got := bundle.Rules.Technologies[0]; got.TechnologyID != 1 || got.ID != "achilles_targeting_unit" || got.TechFieldID != 0 || !got.StrategicCombatAvailable || got.Description != "Synthetic help for Achilles Targeting Unit." || got.DescriptionSource.SourceID != technologyDescriptionsSourceID {
 		t.Fatalf("first=%+v", got)
 	}
 	if got := bundle.Rules.Technologies[202]; got.TechnologyID != 203 || got.ID != "zortrium_armor" || got.TechFieldID != 36 {
@@ -87,6 +91,25 @@ func writeSyntheticTechnologyExe(t *testing.T, path string) {
 	if err := os.WriteFile(path, data, 0o644); err != nil {
 		t.Fatal(err)
 	}
+}
+
+func syntheticTechnologyHelpBlock(names []string) []byte {
+	if len(names) != technologyCount {
+		panic(fmt.Sprintf("synthetic Technology HELP names=%d want=%d", len(names), technologyCount))
+	}
+	block := make([]byte, technologyHelpHeaderSize+(technologyCount+1)*technologyHelpRecordSize)
+	putTechnologyHelpRecord(block, 0, "No Tech", "No description")
+	for i, name := range names {
+		putTechnologyHelpRecord(block, i+1, name, "Synthetic help for "+name+".")
+	}
+	return block
+}
+
+func putTechnologyHelpRecord(block []byte, technologyID int, name, description string) {
+	offset := technologyHelpHeaderSize + technologyID*technologyHelpRecordSize
+	copy(block[offset:], []byte(name))
+	descriptionOffset := offset + 103
+	copy(block[descriptionOffset:], []byte(description))
 }
 
 func TestStableTechnologyID(t *testing.T) {

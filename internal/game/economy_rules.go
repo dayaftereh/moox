@@ -139,6 +139,7 @@ type EconomyRules struct {
 	TechnologyFieldByID                           map[int]int
 	TechnologyKeyByID                             map[int]string
 	TechnologyNameKeyByID                         map[int]string
+	TechnologyDescriptionByID                     map[int]string
 	TechnologyStrategicAvailable                  map[int]bool
 	TechnologyAIClassByID                         map[int]int
 	TechnologyAIClasses                           map[int]TechnologyAIClassDefinition
@@ -300,6 +301,7 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	technologyKeyByID := make(map[int]string, len(technologies.Technologies))
 	technologyIDByKey := make(map[string]int, len(technologies.Technologies))
 	technologyNameKeyByID := make(map[int]string, len(technologies.Technologies))
+	technologyDescriptionByID := make(map[int]string, len(technologies.Technologies))
 	technologyStrategicAvailable := make(map[int]bool, len(technologies.Technologies))
 	technologyAIClassByID := make(map[int]int, len(technologies.Technologies))
 	for _, technology := range technologies.Technologies {
@@ -307,6 +309,7 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		technologyKeyByID[technology.TechnologyID] = technology.ID
 		technologyIDByKey[technology.ID] = technology.TechnologyID
 		technologyNameKeyByID[technology.TechnologyID] = technology.NameKey
+		technologyDescriptionByID[technology.TechnologyID] = technology.Description
 		technologyStrategicAvailable[technology.TechnologyID] = technology.StrategicCombatAvailable
 		technologyAIClassByID[technology.TechnologyID] = technology.AIClass
 		technologyIDsByField[technology.TechFieldID] = append(technologyIDsByField[technology.TechFieldID], technology.TechnologyID)
@@ -561,6 +564,7 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		TechnologyFieldByID:            technologyFieldByID,
 		TechnologyKeyByID:              technologyKeyByID,
 		TechnologyNameKeyByID:          technologyNameKeyByID,
+		TechnologyDescriptionByID:      technologyDescriptionByID,
 		TechnologyStrategicAvailable:   technologyStrategicAvailable,
 		TechnologyAIClassByID:          technologyAIClassByID,
 		TechnologyAIClasses:            technologyAIClasses,

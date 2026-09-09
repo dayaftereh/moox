@@ -322,3 +322,4 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Full Go tests/vet and web production build pass. Evidence: `docs/research/SLICE_15_4_GATE3_RESEARCH_UX_TECH_INFO_2026-09-09.md`.
 - Post-review layout hotfix compacted the `?` controls and Research field rows so all eight fields fit the visible two-column chooser again; browser geometry confirms no grid scrolling or clipped Technology rows at the managed desktop review viewport.
 - Research field cards now size to `max-content`, preventing later 4-8 Technology fields from being clipped; TechField 4 was verified as exactly three authoritative choices and an 8-row browser probe grows the card instead of hiding entries.
+- Research Technology help now includes source-backed original MOO2 HELP.LBX descriptions for all 203 Technologies, shown separately from normalized MOOX runtime effects so unimplemented original mechanics are informative without being misrepresented as implemented.

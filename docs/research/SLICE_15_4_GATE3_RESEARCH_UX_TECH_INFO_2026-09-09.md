@@ -93,3 +93,22 @@ Validation:
 - TechField 4: 3/3 technologies visible in DOM, no clipping;
 - narrow/mobile-style probe: 3-entry cards grow to 117 px automatically and no row clips;
 - synthetic 8-entry field probe: card grows to 196 px, `clipped=false`, outer grid becomes scrollable instead of hiding entries.
+## Source-backed Technology descriptions
+
+Follow-up manual review showed that technologies without a currently normalized MOOX gameplay effect still fell back to a generic explanation. The original MOO2 data already contains a stronger authoritative source: `HELP.LBX` block 0 is a fixed array of 707 records x 1403 bytes, and records 1..203 align directly with the 203 concrete Technology IDs normalized from `TECHNAME.LBX`.
+
+The normalized Technology ruleset now carries the original explanatory text and field provenance for every Technology:
+
+- `technologies.json` schema version 5;
+- `Technology.description` plus `description_source`;
+- source `moo2-1.31-help-block0-technology-descriptions` from `HELP.LBX` block 0;
+- 203/203 Technologies have a non-empty description with provenance;
+- the technology normalizer reads and validates `HELP.LBX` together with `TECHNAME.LBX` and `Orion2.exe`;
+- punctuation-only name differences are normalized for validation, while five known source naming/spelling variants remain explicitly accepted.
+
+The Research `?` dialog deliberately separates two authority levels:
+
+1. **What you get / Was du bekommst**: concrete effects that the current MOOX runtime has normalized, such as building unlock cost/maintenance, drive speed, fuel range, armor/shield/computer unlocks, or modeled population bonuses.
+2. **Original MOO2 description**: the source-backed English HELP.LBX explanation of the intended technology behavior. This may describe mechanics that MOOX has not implemented yet, so it is never presented as current runtime truth.
+
+Browser QA verified both sides of that contract. A previously generic-only example such as Augmented Engines now exposes the original +5 combat-speed behavior after the runtime-normalization notice. A normalized example such as Research Laboratory keeps its current MOOX building-unlock metadata and additionally shows the source explanation of the laboratory's research behavior. The dialog remains within the managed viewport and its content area retains scrolling for longer descriptions.

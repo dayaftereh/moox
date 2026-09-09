@@ -26,6 +26,11 @@ func TestAvailableResearchChoicesReturnsServerAuthoritativeFrontier(t *testing.T
 		if choice.BaseCostRP <= 0 || len(choice.TechnologyIDs) == 0 || len(choice.TechnologyIDs) != len(choice.TechnologyKeys) || len(choice.TechnologyIDs) != len(choice.TechnologyNameKeys) || len(choice.TechnologyIDs) != len(choice.TechnologyInfo) {
 			t.Fatalf("incomplete research choice: %+v", choice)
 		}
+		for _, info := range choice.TechnologyInfo {
+			if info.Description == "" {
+				t.Fatalf("technology %d has no projected original description", info.TechnologyID)
+			}
+		}
 	}
 	wantFields := []int{4, 7, 10, 18, 22, 28, 55, 57}
 	if !reflect.DeepEqual(gotFields, wantFields) {
