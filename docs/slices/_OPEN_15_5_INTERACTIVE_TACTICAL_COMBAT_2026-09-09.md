@@ -1,5 +1,5 @@
 # Open slice 15.5 - Interactive 2D tactical combat
-Status: **open; Gate 1 audit complete; Gate 2 contract review pending**.
+Status: **open; Gates 1-2 complete; Gate 3 implementation active**.
 Queue position: **15.5 of Slice-15 family**.
 ## Objective
 Turn the deliberately narrow Slice-07 fixed-position Laser BattleSession baseline into the first genuinely **interactive, turn-based 2D Tactical Combat** experience in the browser: the player selects an active ship, sees server-authoritative legal movement/target choices, moves on the tactical battlefield, fires supported weapons, ends activations/rounds and returns the deterministic battle result to the strategic game.
@@ -91,15 +91,15 @@ Defer unless explicitly accepted at Gate 2:
 - [x] Define deterministic/browser regression strategy from strategic Encounter entry through battle result return.
 - [x] Present the Gate-2 authoritative Tactical contract before implementation.
 ## Gate 2 - Interactive Tactical contract freeze
-- [ ] Freeze the accepted tactical coordinate/grid and movement-cost model.
-- [ ] Freeze BattleSession movement command semantics, sequencing and zero-mutation rejection behavior.
-- [ ] Freeze legal movement/fire/target projections and player-safe state shape.
-- [ ] Freeze minimum supported ship-count/battle-shape breadth and explicit unsupported boundaries.
-- [ ] Freeze battlefield selection/movement/weapon/target/end-activation interaction model for desktop and phone.
-- [ ] Freeze battle-entry/return, reconnect/stale-state and error behavior.
-- [ ] Freeze Tactical Scan/inspection visibility and read-only detail projection.
-- [ ] Freeze effectively unbounded battlefield/camera semantics with no normal fixed arena edge.
-- [ ] Freeze the minimum browser/server acceptance scenarios.
+- [x] Freeze the accepted tactical coordinate/grid and movement-cost model.
+- [x] Freeze BattleSession movement command semantics, sequencing and zero-mutation rejection behavior.
+- [x] Freeze legal movement/fire/target projections and player-safe state shape.
+- [x] Freeze minimum supported ship-count/battle-shape breadth and explicit unsupported boundaries.
+- [x] Freeze battlefield selection/movement/weapon/target/end-activation interaction model for desktop and phone.
+- [x] Freeze battle-entry/return, reconnect/stale-state and error behavior.
+- [x] Freeze Tactical Scan/inspection visibility and read-only detail projection.
+- [x] Freeze effectively unbounded battlefield/camera semantics with no normal fixed arena edge.
+- [x] Freeze the minimum browser/server acceptance scenarios.
 ## Gate 3 - Implementation
 - [ ] Implement authoritative tactical movement state/rules/commands and deterministic legal-action projection in Go.
 - [ ] Integrate movement with initiative, range, existing Laser readiness/fire, damage/destruction and battle completion.
@@ -124,3 +124,7 @@ Milestone on closure: **first interactive server-authoritative 2D Tactical Comba
 ## Gate-1 close marker (2026-09-09)
 
 Gate 1 is **complete**. Evidence: docs/research/SLICE_15_5_GATE1_TACTICAL_MECHANICS_UX_AUDIT_2026-09-09.md. A proposed Gate-2 contract is available at docs/research/SLICE_15_5_GATE2_TACTICAL_CONTRACT_DRAFT_2026-09-09.md and remains **DRAFT / awaiting user acceptance**. No 15.5 Tactical implementation starts until Gate 2 is accepted/frozen.
+
+## Gate-2 accepted freeze marker (2026-09-10)
+
+Gate 2 is **complete and frozen** by explicit user acceptance. Frozen evidence: `docs/research/SLICE_15_5_GATE2_FREEZE_2026-09-10.md`. Gate 3 implementation is authorized within this boundary.

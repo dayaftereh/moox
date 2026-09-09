@@ -1,9 +1,9 @@
 # Slice 15.5 Gate 2 - Interactive Tactical contract DRAFT
 
 Date: 2026-09-09
-Status: **DRAFT - awaiting user acceptance; NOT FROZEN**
+Status: **FROZEN / accepted by user on 2026-09-10**
 
-This contract translates the completed Gate-1 research into an implementation boundary. Nothing in this document is frozen until user acceptance.
+This contract translates the completed Gate-1 research into the frozen implementation boundary accepted by the user on 2026-09-10.
 
 ## Decision 1 - battlefield authority
 
@@ -279,7 +279,7 @@ At minimum:
 13. representative desktop and 320px phone/touch QA has no catastrophic overflow, no required hover and no visible artificial arena boundary;
 14. full Go tests/vet/web build/diff checks pass.
 
-## Gate-2 review points requiring user acceptance
+## Gate-2 accepted product decisions
 
 The key product choices to approve before freeze are:
 
