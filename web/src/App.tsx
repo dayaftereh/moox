@@ -15,6 +15,7 @@ import {
   type DiplomaticStance,
   type DraftOrder,
   type GameSummary,
+  isAPIError,
   type Notification,
   type PlanningPreviewSnapshot,
   type PlayerSnapshot,
@@ -46,6 +47,27 @@ type AssignmentDraft = {
 type StatusMessage = {
   key: TranslationKey
   vars?: TranslationVars
+}
+
+type GameLifecycle = 'initial-loading' | 'connecting' | 'synced' | 'refreshing' | 'reconnecting' | 'refresh-failed' | 'restoring' | 'importing' | 'fatal'
+
+function lifecycleKey(lifecycle: GameLifecycle): TranslationKey {
+  switch (lifecycle) {
+    case 'initial-loading': return 'lifecycle.initialLoading'
+    case 'connecting': return 'lifecycle.connecting'
+    case 'synced': return 'lifecycle.synced'
+    case 'refreshing': return 'lifecycle.refreshing'
+    case 'reconnecting': return 'lifecycle.reconnecting'
+    case 'refresh-failed': return 'lifecycle.refreshFailed'
+    case 'restoring': return 'lifecycle.restoring'
+    case 'importing': return 'lifecycle.importing'
+    case 'fatal': return 'lifecycle.fatal'
+  }
+}
+
+function errorText(reason: unknown): string {
+  if (isAPIError(reason)) return `${reason.code}: ${reason.message}`
+  return errorText(reason)
 }
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
@@ -86,16 +108,20 @@ function App() {
   const [previewBusy, setPreviewBusy] = useState(false)
   const [planningBusy, setPlanningBusy] = useState(false)
   const [status, setStatus] = useState<StatusMessage>({ key: 'status.connecting' })
+  const [lifecycle, setLifecycle] = useState<GameLifecycle>('initial-loading')
   const [error, setError] = useState('')
   const [diplomacyBusy, setDiplomacyBusy] = useState(false)
   const [invasionBusy, setInvasionBusy] = useState(false)
   const [researchOverlayOpen, setResearchOverlayOpen] = useState(false)
   const [lastNotification, setLastNotification] = useState<Notification | null>(null)
   const reconnectTimer = useRef<number | null>(null)
+  const socketConnectedRef = useRef(false)
+  const snapshotRef = useRef<PlayerSnapshot | null>(null)
   const activeGameRef = useRef(gameID)
   const activeSeatRef = useRef(seatID)
   activeGameRef.current = gameID
   activeSeatRef.current = seatID
+  snapshotRef.current = snapshot
 
   useEffect(() => {
     const syncRoute = () => setRoute(parseRoute())
@@ -107,6 +133,7 @@ function App() {
   useEffect(() => {
     if (route.kind === 'game' && route.gameID !== gameID) {
       setSnapshot(null)
+      setLifecycle('initial-loading')
       setError('')
       setGameID(route.gameID)
     }
@@ -114,22 +141,27 @@ function App() {
 
   const loadSnapshot = useCallback(async (selectedGameID = gameID, selectedSeatID = seatID, signal?: AbortSignal) => {
     if (!selectedGameID || selectedSeatID <= 0) return
-    const next = await getPlayerSnapshot(selectedGameID, selectedSeatID, signal)
-    if (selectedGameID !== activeGameRef.current || selectedSeatID !== activeSeatRef.current) return
-    setSnapshot(next)
-    setDraftOrders([])
-    setPlanningPreview(null)
-    const firstColony = next.view.colonies[0]
-    if (firstColony) {
-      const population = aggregatePopulation(firstColony)
-      setAssignment({
-        farmers: String(population.farmers),
-        workers: String(population.workers),
-        scientists: String(population.scientists),
-      })
+    setLifecycle((current) => current === 'synced' || current === 'refresh-failed' ? 'refreshing' : current)
+    try {
+      const next = await getPlayerSnapshot(selectedGameID, selectedSeatID, signal)
+      if (selectedGameID !== activeGameRef.current || selectedSeatID !== activeSeatRef.current) return
+      setSnapshot(next)
+      setDraftOrders([])
+      setPlanningPreview(null)
+      const firstColony = next.view.colonies[0]
+      if (firstColony) {
+        const population = aggregatePopulation(firstColony)
+        setAssignment({ farmers: String(population.farmers), workers: String(population.workers), scientists: String(population.scientists) })
+      }
+      setLifecycle(socketConnectedRef.current ? 'synced' : 'connecting')
+      setStatus({ key: 'status.snapshotSynced', vars: { change: next.change_sequence } })
+      setError('')
+    } catch (reason) {
+      if (!signal?.aborted && selectedGameID === activeGameRef.current && selectedSeatID === activeSeatRef.current) {
+        setLifecycle(snapshotRef.current ? 'refresh-failed' : 'fatal')
+      }
+      throw reason
     }
-    setStatus({ key: 'status.snapshotSynced', vars: { change: next.change_sequence } })
-    setError('')
   }, [gameID, seatID])
 
   useEffect(() => {
@@ -150,7 +182,7 @@ function App() {
       })
       .catch((reason: unknown) => {
         if (!controller.signal.aborted) {
-          setError(reason instanceof Error ? reason.message : String(reason))
+          setError(errorText(reason))
           setStatus({ key: 'status.discoverFailed' })
         }
       })
@@ -161,7 +193,7 @@ function App() {
     if (!gameID || seatID <= 0) return
     const controller = new AbortController()
     void loadSnapshot(gameID, seatID, controller.signal).catch((reason: unknown) => {
-      if (!controller.signal.aborted) setError(reason instanceof Error ? reason.message : String(reason))
+      if (!controller.signal.aborted) setError(errorText(reason))
     })
     return () => controller.abort()
   }, [gameID, seatID, loadSnapshot])
@@ -173,28 +205,37 @@ function App() {
 
     const connect = () => {
       if (disposed) return
+      socketConnectedRef.current = false
+      setLifecycle(snapshotRef.current ? 'reconnecting' : 'connecting')
       void loadSnapshot(gameID, seatID).catch(() => undefined)
       socket = new WebSocket(streamURL(gameID))
-      socket.onopen = () => setStatus({ key: 'status.liveConnected' })
+      socket.onopen = () => {
+        socketConnectedRef.current = true
+        if (snapshotRef.current) setLifecycle('synced')
+        setStatus({ key: 'status.liveConnected' })
+      }
       socket.onmessage = (event) => {
         try {
           const notification = JSON.parse(String(event.data)) as Notification
           setLastNotification(notification)
           setStatus({ key: 'status.invalidated', vars: { reason: notification.reason } })
+          setLifecycle('refreshing')
           setSnapshot((current) => {
             if (!current || notification.change_sequence > current.change_sequence) {
               void loadSnapshot(gameID, seatID).catch((reason: unknown) => {
-                setError(reason instanceof Error ? reason.message : String(reason))
+                setError(errorText(reason))
               })
             }
             return current
           })
         } catch (reason) {
-          setError(reason instanceof Error ? reason.message : String(reason))
+          setError(errorText(reason))
         }
       }
       socket.onclose = () => {
+        socketConnectedRef.current = false
         if (!disposed) {
+          setLifecycle(snapshotRef.current ? 'reconnecting' : 'connecting')
           setStatus({ key: 'status.liveDisconnected' })
           reconnectTimer.current = window.setTimeout(connect, 1000)
         }
@@ -209,6 +250,7 @@ function App() {
         window.clearTimeout(reconnectTimer.current)
         reconnectTimer.current = null
       }
+      socketConnectedRef.current = false
       socket?.close(1000, 'component disposed')
     }
   }, [gameID, seatID, loadSnapshot])
@@ -229,7 +271,7 @@ function App() {
         }
       })
       .catch((cause) => {
-        if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : String(cause))
+        if (!controller.signal.aborted) setError(errorText(cause))
       })
       .finally(() => {
         if (!controller.signal.aborted) setPreviewBusy(false)
@@ -242,7 +284,8 @@ function App() {
     () => Number(assignment.farmers || 0) + Number(assignment.workers || 0) + Number(assignment.scientists || 0),
     [assignment],
   )
-  const diplomacyClosed = snapshot?.view.phase !== 'planning' || Boolean(snapshot?.view.seats.some((seat) => seat.submitted))
+  const mutationLocked = lifecycle !== 'synced'
+  const diplomacyClosed = mutationLocked || snapshot?.view.phase !== 'planning' || Boolean(snapshot?.view.seats.some((seat) => seat.submitted))
   const projectedResources = planningPreview?.preview.projection
   const projectedEmpire = snapshot?.decision?.empire
   const projectedColonies = projectedResources?.colonies?.map((item) => item.colony) ?? snapshot?.decision?.colonies ?? snapshot?.view.colonies ?? []
@@ -387,12 +430,13 @@ function App() {
       ],
     },
   ] : []
-  const statusText = t(status.key, status.vars)
-  const statusTone: 'neutral' | 'success' | 'warning' | 'danger' = error
+  const eventStatusText = t(status.key, status.vars)
+  const statusText = lifecycle === 'synced' ? eventStatusText : t(lifecycleKey(lifecycle))
+  const statusTone: 'neutral' | 'success' | 'warning' | 'danger' = error && (lifecycle === 'fatal' || lifecycle === 'refresh-failed')
     ? 'danger'
-    : status.key === 'status.liveDisconnected'
+    : lifecycle === 'reconnecting' || lifecycle === 'refresh-failed'
       ? 'warning'
-      : ['status.liveConnected', 'status.snapshotSynced', 'status.commandAccepted', 'status.diplomacyAccepted', 'status.invasionAccepted'].includes(status.key)
+      : lifecycle === 'synced'
         ? 'success'
         : 'neutral'
 
@@ -423,7 +467,7 @@ function App() {
       setStatus({ key: 'status.createdGame', vars: { game: created.game.game_id, seed: newGameSeed } })
       navigate({ kind: 'game', gameID: created.game.game_id, section: 'galaxy' })
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : String(reason))
+      setError(errorText(reason))
     } finally {
       setCreatingGame(false)
     }
@@ -452,7 +496,7 @@ function App() {
   }
 
   async function endTurn() {
-    if (!snapshot || planningBusy || snapshot.view.phase !== 'planning') return
+    if (!snapshot || mutationLocked || planningBusy || snapshot.view.phase !== 'planning') return
     setPlanningBusy(true)
     setError('')
     try {
@@ -462,13 +506,13 @@ function App() {
       setStatus({ key: 'status.commandAccepted', vars: { change: receipt.change_sequence, revision: receipt.game_revision } })
       await loadSnapshot(snapshot.view.game_id, seatID)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : String(cause))
+      setError(errorText(cause))
     } finally {
       setPlanningBusy(false)
     }
   }
   async function runDiplomacy(kind: DiplomacyCommandKind, otherEmpireID: number) {
-    if (!snapshot) return
+    if (!snapshot || mutationLocked) return
     setDiplomacyBusy(true)
     setError('')
     try {
@@ -476,14 +520,14 @@ function App() {
       setStatus({ key: 'status.diplomacyAccepted', vars: { change: receipt.change_sequence, revision: receipt.game_revision } })
       await loadSnapshot(snapshot.view.game_id, seatID)
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : String(reason))
+      setError(errorText(reason))
     } finally {
       setDiplomacyBusy(false)
     }
   }
 
   async function runInvasion(action: 'invade' | 'decline') {
-    if (!snapshot?.view.invasion) return
+    if (!snapshot?.view.invasion || mutationLocked) return
     setInvasionBusy(true)
     setError('')
     try {
@@ -491,7 +535,7 @@ function App() {
       setStatus({ key: 'status.invasionAccepted', vars: { change: receipt.change_sequence, revision: receipt.game_revision } })
       await loadSnapshot()
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : String(cause))
+      setError(errorText(cause))
     } finally {
       setInvasionBusy(false)
     }
@@ -501,10 +545,11 @@ function App() {
     const reloadSelectedGame = selectedGameID === gameID
     setGameID(selectedGameID)
     setSnapshot(null)
+    setLifecycle('initial-loading')
     navigate({ kind: 'game', gameID: selectedGameID, section })
     if (reloadSelectedGame) {
       void loadSnapshot(selectedGameID, seatID).catch((cause: unknown) => {
-        setError(cause instanceof Error ? cause.message : String(cause))
+        setError(errorText(cause))
       })
     }
   }
@@ -592,6 +637,7 @@ function App() {
       phaseLabel={phaseText}
       status={statusText}
       statusTone={statusTone}
+      lifecycle={lifecycle}
       resources={resourceChips}
       onNavigate={(section) => navigate({ kind: 'game', gameID: route.gameID, section })}
       onResourceActivate={(resourceID) => {
@@ -601,7 +647,7 @@ function App() {
       }}
       onHome={() => navigate({ kind: 'home' })}
       onEndTurn={snapshot ? () => void endTurn() : undefined}
-      endTurnDisabled={!snapshot || snapshot.view.phase !== 'planning' || planningBusy || previewBusy}
+      endTurnDisabled={!snapshot || mutationLocked || snapshot.view.phase !== 'planning' || planningBusy || previewBusy}
       endTurnLabel={planningBusy ? t('planning.resolving') : t('planning.endTurn')}
     >
       {error && <Notice title={t('state.errorTitle')} tone="danger"><p>{error}</p></Notice>}
@@ -627,8 +673,8 @@ function App() {
           })}</p>
           <p className="muted">{t('invasion.transports', { count: snapshot.view.invasion.eligible_transport_fleet_ids.length })}</p>
           <div className="action-row">
-            <button type="button" className="button-primary" disabled={invasionBusy || snapshot.view.phase !== 'invasion_decisions'} onClick={() => void runInvasion('invade')}>{t('invasion.invade')}</button>
-            <button type="button" className="button-secondary" disabled={invasionBusy || snapshot.view.phase !== 'invasion_decisions'} onClick={() => void runInvasion('decline')}>{t('invasion.decline')}</button>
+            <button type="button" className="button-primary" disabled={mutationLocked || invasionBusy || snapshot.view.phase !== 'invasion_decisions'} onClick={() => void runInvasion('invade')}>{t('invasion.invade')}</button>
+            <button type="button" className="button-secondary" disabled={mutationLocked || invasionBusy || snapshot.view.phase !== 'invasion_decisions'} onClick={() => void runInvasion('decline')}>{t('invasion.decline')}</button>
           </div>
         </Card>
       )}

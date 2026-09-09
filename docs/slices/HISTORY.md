@@ -264,3 +264,10 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Froze blocking decisions for Encounter/Invasion/Colony Base and transition summaries for Research/Battle return/Game Loaded/Victory.
 - Froze stable Battle handoff route to Slice 15.5, local-file Save/Load/Restore semantics, read-only stale reconnect state, structured API errors/lifecycle and minimum player-safe identity/resolution reads.
 - Gate 3 implementation is now active.
+
+## 2026-09-09 - Slice 15.4 Gate 3 block 1
+
+- Added typed client contracts for already-authoritative Colony Base and Battle projections.
+- Added structured APIError preserving HTTP status/code/message.
+- Added explicit authoritative lifecycle state and synchronized-only direct mutation gating.
+- Browser-verified synced -> fatal/not_found -> synced recovery on canonical 7171 without changing game state.

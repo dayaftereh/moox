@@ -33,6 +33,7 @@ type AppShellProps = {
   phaseLabel?: string
   status: string
   statusTone: 'neutral' | 'success' | 'warning' | 'danger'
+  lifecycle?: string
   resources?: ResourceChip[]
   onNavigate: (section: GameSection) => void
   onResourceActivate?: (resourceID: string) => boolean
@@ -91,7 +92,7 @@ function NavItems({ items, activeSection, onNavigate }: {
   </>
 }
 
-export function AppShell({ activeSection, gameID, turn, phaseLabel, status, statusTone, resources = [], onNavigate, onResourceActivate, onHome, onEndTurn, endTurnDisabled = false, endTurnLabel, children }: AppShellProps) {
+export function AppShell({ activeSection, gameID, turn, phaseLabel, status, statusTone, lifecycle, resources = [], onNavigate, onResourceActivate, onHome, onEndTurn, endTurnDisabled = false, endTurnLabel, children }: AppShellProps) {
   const { t } = useI18n()
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeResourceID, setActiveResourceID] = useState<string | null>(null)
@@ -136,7 +137,7 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
   }
 
   return (
-    <div className={'game-shell section-' + activeSection}>
+    <div className={'game-shell section-' + activeSection} data-lifecycle={lifecycle}>
       <header className="topbar">
         <div className="main-menu-anchor" ref={menuRef}>
           <button

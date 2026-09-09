@@ -366,6 +366,47 @@ export type ResearchChoice = {
   completed_levels?: number
   research_level?: number
 }
+export type ColonyBaseResolution = {
+  empire_id: number
+  source_colony_id: number
+  system_id: number
+  target_planet_ids: number[]
+  trash_refund_bc: number
+}
+export type BattleSide = {
+  empire_id: number
+  seat_id: number
+  combat_fleet_ids: number[]
+  ship_ids: number[]
+  civilian_fleet_ids?: number[]
+}
+export type BattleSpec = {
+  id: number
+  game_id: string
+  strategic_turn: number
+  system_id?: number
+  attacker?: BattleSide
+  defender?: BattleSide
+  defender_colony_ids?: number[]
+  participants: number[]
+  seed: number
+  tactical?: unknown
+  tactical_unsupported_reason?: string
+}
+export type BattleResult = {
+  winner_seat: number
+  winner_seats?: number[]
+  outcome: string
+  destroyed_ship_ids?: number[]
+}
+export type BattleView = {
+  spec: BattleSpec
+  phase: string
+  result?: BattleResult
+  tactical?: unknown
+}
+export type ProtocolCommand = { schema_version: 1; sequence: number; kind: string; payload: Record<string, unknown> }
+export type BattleDecision = { battle_id: number; actions: ProtocolCommand[] }
 export type DecisionCatalog = {
   research_categories?: ResearchCategory[]
   research?: ResearchChoice[]
@@ -376,8 +417,9 @@ export type DecisionCatalog = {
   colonization?: ColonizationChoice[]
   outpost_deployment?: OutpostDeploymentChoice[]
   diplomacy?: DiplomacyDecision[]
+  colony_base?: ColonyBaseResolution[]
   invasion?: InvasionOpportunity
-  battles?: unknown[]
+  battles?: BattleDecision[]
 }
 export type PlayerDecisionView = {
   game_id: string
@@ -407,7 +449,6 @@ export type PlayerView = {
   invasion?: InvasionOpportunity
 }
 
-export type BattleView = { spec: { id: number; participants: number[]; tactical_unsupported_reason?: string }; phase: string; tactical?: unknown }
 export type PlayerSnapshot = {
   schema_version: number
   change_sequence: number
@@ -418,7 +459,6 @@ export type PlayerSnapshot = {
 
 export type PlanningCommandPayload = Record<string, unknown>
 export type DraftOrder = { key: string; kind: string; payload: PlanningCommandPayload }
-export type ProtocolCommand = { schema_version: 1; sequence: number; kind: string; payload: PlanningCommandPayload }
 export type CommandBatch = {
   schema_version: 1
   game_id: string
@@ -480,7 +520,23 @@ export type Notification = {
   reason: string
 }
 
-type APIError = { schema_version: number; error: { code: string; message: string } }
+type APIErrorEnvelope = { schema_version: number; error: { code: string; message: string } }
+
+export class APIError extends Error {
+  readonly status: number
+  readonly code: string
+
+  constructor(status: number, code: string, message: string) {
+    super(message)
+    this.name = 'APIError'
+    this.status = status
+    this.code = code
+  }
+}
+
+export function isAPIError(reason: unknown): reason is APIError {
+  return reason instanceof APIError
+}
 
 export async function createGame(request: CreateGameRequest): Promise<CreateGameResponse> {
   return requestJSON<CreateGameResponse>('/api/v1/games', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(request) })
@@ -598,14 +654,16 @@ export function streamURL(gameID: string): string {
 async function requestJSON<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const response = await fetch(input, init)
   if (!response.ok) {
+    let code = 'http_error'
     let message = `${response.status} ${response.statusText}`
     try {
-      const payload = (await response.json()) as APIError
-      if (payload?.error?.message) message = `${payload.error.code}: ${payload.error.message}`
+      const payload = (await response.json()) as APIErrorEnvelope
+      if (payload?.error?.code) code = payload.error.code
+      if (payload?.error?.message) message = payload.error.message
     } catch {
-      // Retain HTTP status.
+      // Retain HTTP status and fallback code.
     }
-    throw new Error(message)
+    throw new APIError(response.status, code, message)
   }
   return (await response.json()) as T
 }

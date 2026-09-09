@@ -67,6 +67,10 @@ See `docs/research/SLICE_15_4_GATE2_RICH_INTERACTION_CONTRACT_DRAFT_2026-09-09.m
 - [ ] Implement snapshot invalidation/refetch/conflict/error presentation.
 - [ ] Integrate 15.3 assets and accepted motion/audio hooks.
 - [ ] Add browser/server regressions for critical decision, encounter-transition and persistence paths.
+### Gate-3 implementation progress
+
+- [x] Block 1 foundation: typed Colony Base/Battle contracts, structured `APIError`, explicit lifecycle state and synchronized-only direct mutation gate. Evidence: `docs/research/SLICE_15_4_GATE3_BLOCK1_CLIENT_AUTHORITY_LIFECYCLE_2026-09-09.md`.
+
 ## Gate 4 - QA + close
 - [ ] Exercise every supported non-tactical interactive phase through browser surfaces.
 - [ ] Verify Encounter transitions preserve enough authoritative context for Slice-15.5 Tactical entry/return without React-owned battle rules.
