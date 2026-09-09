@@ -34,6 +34,19 @@ Development slices follow `docs/slices/README.md`. Before starting a new slice, 
 
 The Slice-15 browser roadmap now has six parts: **15.1 shell/navigation/i18n -> 15.2 strategic gameplay HMI -> 15.3 visual identity/assets -> 15.4 rich decisions/persistence UX -> 15.5 interactive 2D Tactical Combat -> 15.6 final browser vertical slice/QA**. Tactical Combat is deliberately its own gameplay slice because the current Slice-07 baseline supports deterministic fixed-position Laser combat but not player-controlled tactical movement/turning.
 
+### Manual review / canonical test-game hygiene
+
+Manual browser review state is **disposable**. After every completed implementation block, blocker fix or review commit that is handed to the user for testing:
+
+- stop the canonical development server on port `7171` and restart it with an **empty hosted-game state**;
+- **do not import, restore or continue the previous review game/save** for normal feature review;
+- create exactly one **fresh review game** from the current build using canonical deterministic seed `0x8009`;
+- configure Seat 1 as `local_human` and Seat 2 as `builtin_ai`;
+- name the fresh game after the reviewed revision where practical, for example `review-<short-commit>`;
+- before handing out the review URL, verify the fresh game starts at Turn 1 / `planning`, has no Human submission, and reports the expected Human/Built-in-AI controllers;
+- keep persistence/restore/reconnect testing isolated to dedicated temporary games or dedicated test servers. Reusing an old live snapshot is allowed only when the task explicitly tests persistence/recovery or when the user explicitly asks to preserve a specific game state.
+
+This rule prevents stale commands, old controller assignments, resolved events or previous-turn state from masking regressions in the current implementation. The deterministic seed keeps the initial galaxy reproducible while the actual review session remains clean.
 ### Current / prepared slice queue
 
 | Slice | Status | Main purpose |
