@@ -43,6 +43,12 @@ type StrategicView struct {
 	Contacts            []StrategicContact        `json:"contacts,omitempty"`
 }
 
+type PublicEmpireIdentity struct {
+	ID     core.ID `json:"id"`
+	Name   string  `json:"name"`
+	RaceID string  `json:"race_id"`
+}
+
 type ColonyConstructionDecision struct {
 	ColonyID core.ID                   `json:"colony_id"`
 	Choices  []game.ConstructionChoice `json:"choices"`
@@ -82,16 +88,17 @@ type DecisionCatalog struct {
 // strategic HMI clients. It is derived from a deep state clone and intentionally
 // excludes observer-only enemy economy/research/queue/submission information.
 type PlayerDecisionView struct {
-	GameID    string          `json:"game_id"`
-	Revision  uint64          `json:"revision"`
-	Turn      uint64          `json:"turn"`
-	Phase     Phase           `json:"phase"`
-	Seat      SeatView        `json:"seat"`
-	Empire    core.Empire     `json:"empire"`
-	Colonies  []core.Colony   `json:"colonies"`
-	Diplomacy []DiplomacyView `json:"diplomacy,omitempty"`
-	Strategic StrategicView   `json:"strategic"`
-	Decisions DecisionCatalog `json:"decisions"`
+	GameID        string                 `json:"game_id"`
+	Revision      uint64                 `json:"revision"`
+	Turn          uint64                 `json:"turn"`
+	Phase         Phase                  `json:"phase"`
+	Seat          SeatView               `json:"seat"`
+	Empire        core.Empire            `json:"empire"`
+	PublicEmpires []PublicEmpireIdentity `json:"public_empires,omitempty"`
+	Colonies      []core.Colony          `json:"colonies"`
+	Diplomacy     []DiplomacyView        `json:"diplomacy,omitempty"`
+	Strategic     StrategicView          `json:"strategic"`
+	Decisions     DecisionCatalog        `json:"decisions"`
 }
 
 func (s *GameSession) DecisionView(seatID protocol.SeatID, resolver *game.EconomyResolver) (PlayerDecisionView, error) {
@@ -125,6 +132,10 @@ func (s *GameSession) DecisionView(seatID protocol.SeatID, resolver *game.Econom
 	if view.Empire.ID == 0 {
 		return PlayerDecisionView{}, fmt.Errorf("seat %d references unknown empire %d", seatID, seat.EmpireID)
 	}
+	for _, empire := range state.Empires {
+		view.PublicEmpires = append(view.PublicEmpires, PublicEmpireIdentity{ID: empire.ID, Name: empire.Name, RaceID: empire.RaceID})
+	}
+	sort.Slice(view.PublicEmpires, func(i, j int) bool { return view.PublicEmpires[i].ID < view.PublicEmpires[j].ID })
 	for _, colony := range state.Colonies {
 		if colony.EmpireID == seat.EmpireID {
 			view.Colonies = append(view.Colonies, colony)

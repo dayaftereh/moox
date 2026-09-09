@@ -307,6 +307,12 @@ function App() {
     [assignment],
   )
   const mutationLocked = lifecycle !== 'synced'
+  const invasionDecision = snapshot?.view.invasion
+  const invasionSystem = invasionDecision ? snapshot?.decision?.strategic.galaxy.systems.find((system) => system.id === invasionDecision.system_id) : undefined
+  const invasionColonyContact = invasionDecision ? snapshot?.decision?.strategic.contacts?.find((contact) => contact.kind === 'colony' && contact.colony_id === invasionDecision.colony_id) : undefined
+  const invasionPlanet = invasionSystem && invasionColonyContact?.planet_id ? invasionSystem.planets.find((planet) => planet.id === invasionColonyContact.planet_id) : undefined
+  const invasionDefender = invasionDecision ? snapshot?.decision?.public_empires?.find((empire) => empire.id === invasionDecision.defender_empire_id) : undefined
+  const invasionTransportFleets = invasionDecision ? snapshot?.decision?.strategic.fleets?.filter((fleet) => invasionDecision.eligible_transport_fleet_ids.includes(fleet.id)) ?? [] : []
   const colonyBaseDecision = snapshot?.decision?.decisions.colony_base?.[0]
   const colonyBaseSourceColony = colonyBaseDecision ? snapshot?.decision?.colonies.find((colony) => colony.id === colonyBaseDecision.source_colony_id) : undefined
   const colonyBaseSystem = colonyBaseDecision ? snapshot?.decision?.strategic.galaxy.systems.find((system) => system.id === colonyBaseDecision.system_id) : undefined
@@ -685,6 +691,7 @@ function App() {
       await loadSnapshot()
     } catch (cause) {
       setError(errorText(cause))
+      if (isAPIError(cause) && cause.status === 409 && snapshot) void loadSnapshot(snapshot.view.game_id, seatID).catch(() => undefined)
     } finally {
       setInvasionBusy(false)
     }
@@ -863,21 +870,39 @@ function App() {
         </Card>
       )}
 
-      {snapshot?.view.invasion && (
-        <Card className="priority-card">
-          <p className="eyebrow">{t('invasion.eyebrow')}</p>
-          <h2>{t('invasion.title')}</h2>
-          <p>{t('invasion.details', {
-            colony: snapshot.view.invasion.colony_id,
-            system: snapshot.view.invasion.system_id,
-            defender: snapshot.view.invasion.defender_empire_id,
-          })}</p>
-          <p className="muted">{t('invasion.transports', { count: snapshot.view.invasion.eligible_transport_fleet_ids.length })}</p>
-          <div className="action-row">
-            <button type="button" className="button-primary" disabled={mutationLocked || invasionBusy || snapshot.view.phase !== 'invasion_decisions'} onClick={() => void runInvasion('invade')}>{t('invasion.invade')}</button>
-            <button type="button" className="button-secondary" disabled={mutationLocked || invasionBusy || snapshot.view.phase !== 'invasion_decisions'} onClick={() => void runInvasion('decline')}>{t('invasion.decline')}</button>
-          </div>
-        </Card>
+      {invasionDecision && (
+        <div className="decision-dialog-backdrop invasion-decision-backdrop" role="presentation">
+          <Card className="decision-dialog invasion-decision" as="section">
+            <p className="eyebrow">{t('invasion.eyebrow')}</p>
+            <h2>{t('invasion.title')}</h2>
+            <div className="invasion-brief-grid">
+              <div className="invasion-target-art" aria-hidden="true">
+                {invasionPlanet ? <OrbitalBodyArt kind="planet" id={invasionPlanet.id} climateId={invasionPlanet.climate_id} /> : <GameIcon name="planet" />}
+              </div>
+              <div className="invasion-target-copy">
+                <span className="badge">{invasionSystem?.name ?? t('invasion.systemFallback', { id: invasionDecision.system_id })}</span>
+                <strong>{invasionPlanet?.name ?? t('invasion.colonyFallback', { id: invasionDecision.colony_id })}</strong>
+                <small>{invasionPlanet ? `${invasionPlanet.climate_id} · ${invasionPlanet.size_id} · ${invasionPlanet.mineral_id}` : t('invasion.colonyId', { id: invasionDecision.colony_id })}</small>
+              </div>
+              <div className="invasion-defender-card">
+                <span>{t('invasion.defender')}</span>
+                <strong>{invasionDefender?.name ?? t('invasion.empireFallback', { id: invasionDecision.defender_empire_id })}</strong>
+                <small>{invasionDefender?.race_id ?? t('invasion.unknown')}</small>
+              </div>
+            </div>
+            <div className="invasion-transport-summary">
+              <div><GameIcon name="transport" /><span><strong>{t('invasion.transportTitle')}</strong><small>{t('invasion.transports', { count: invasionDecision.eligible_transport_fleet_ids.length })}</small></span></div>
+              <div className="invasion-transport-chips">
+                {invasionDecision.eligible_transport_fleet_ids.map((fleetID) => { const fleet = invasionTransportFleets.find((candidate) => candidate.id === fleetID); return <span className="badge" key={fleetID}>{t('invasion.fleet', { id: fleetID })}{fleet?.special_kind ? ` · ${fleet.special_kind}` : ''}</span> })}
+              </div>
+            </div>
+            <p className="muted invasion-authority-note">{t('invasion.authorityNote')}</p>
+            <div className="action-row invasion-actions">
+              <button type="button" className="button-primary" disabled={mutationLocked || invasionBusy || snapshot.view.phase !== 'invasion_decisions'} onClick={() => void runInvasion('invade')}><GameIcon name="flag" />{t('invasion.invade')}</button>
+              <button type="button" className="button-secondary" disabled={mutationLocked || invasionBusy || snapshot.view.phase !== 'invasion_decisions'} onClick={() => void runInvasion('decline')}><GameIcon name="close" />{t('invasion.decline')}</button>
+            </div>
+          </Card>
+        </div>
       )}
 
       {snapshot?.view.result && (

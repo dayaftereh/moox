@@ -286,3 +286,10 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Added legal target planet cards using existing OrbitalBodyArt and exact server-projected 100 BC Scrap refund; no React-owned legality or refund math.
 - Isolated E2E verified both Colonize -> new Colony / Turn 2 Planning and Scrap -> +100 BC / Turn 2 Planning.
 - Verified 320px sheet with 44px minimum action targets and no horizontal overflow; canonical 7171 remained untouched/healthy during fixture QA.
+
+## 2026-09-09 - Slice 15.4 Gate 3 block 4
+
+- Replaced ID-heavy Invasion card with a blocking contextual decision showing target planet/system, defender public identity and exact eligible transport fleets.
+- Added a minimal player-safe public empire identity projection (ID/name/race only); no foreign economy/research state exposed.
+- Isolated E2E verified Decline -> Turn 2 Planning and Invade -> target capture plus conquest completion for the fixture.
+- Verified 320px mobile, 44px actions and no horizontal overflow.

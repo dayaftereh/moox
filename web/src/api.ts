@@ -421,6 +421,7 @@ export type DecisionCatalog = {
   invasion?: InvasionOpportunity
   battles?: BattleDecision[]
 }
+export type PublicEmpireIdentity = { id: number; name: string; race_id: string }
 export type PlayerDecisionView = {
   game_id: string
   revision: number
@@ -428,6 +429,7 @@ export type PlayerDecisionView = {
   phase: string
   seat: PlayerView['seat']
   empire: Empire
+  public_empires?: PublicEmpireIdentity[]
   colonies: Colony[]
   diplomacy?: DiplomacyView[]
   strategic: StrategicView

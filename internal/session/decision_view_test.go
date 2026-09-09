@@ -56,6 +56,21 @@ func TestPlayerDecisionViewIsPlayerSafeDeepCopyAndDeterministic(t *testing.T) {
 	if view.Empire.ID != generated.Players[0].EmpireID {
 		t.Fatalf("decision empire=%d want=%d", view.Empire.ID, generated.Players[0].EmpireID)
 	}
+	if len(view.PublicEmpires) != len(generated.State.Empires) {
+		t.Fatalf("public empire identities=%d want=%d", len(view.PublicEmpires), len(generated.State.Empires))
+	}
+	foundPublicDarlok := false
+	for _, identity := range view.PublicEmpires {
+		if identity.ID == generated.Players[1].EmpireID {
+			foundPublicDarlok = true
+			if identity.Name != "Darlok" || identity.RaceID != "darlok" {
+				t.Fatalf("public Darlok identity=%+v", identity)
+			}
+		}
+	}
+	if !foundPublicDarlok {
+		t.Fatal("decision view missing public Darlok identity")
+	}
 	for _, colony := range view.Colonies {
 		if colony.EmpireID != view.Empire.ID {
 			t.Fatalf("decision view leaked foreign colony %+v", colony)

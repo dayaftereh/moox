@@ -352,3 +352,4 @@ Original copyrighted assets remain private reference material and are not distri
 - Slice 15.4 Gate-3 block 1: `docs/research/SLICE_15_4_GATE3_BLOCK1_CLIENT_AUTHORITY_LIFECYCLE_2026-09-09.md` - typed Colony Base/Battle contracts, structured APIError and explicit authoritative connection lifecycle.
 - Slice 15.4 Gate-3 block 2: `docs/research/SLICE_15_4_GATE3_BLOCK2_SAVE_LOAD_RESTORE_UX_2026-09-09.md` - local Save/Load, explicit atomic Restore, fresh-server Import and desktop/320px E2E evidence.
 - Slice 15.4 Gate-3 block 3: `docs/research/SLICE_15_4_GATE3_BLOCK3_COLONY_BASE_UX_2026-09-09.md` - mandatory Post-Resolution Colony Base target/Scrap UX with isolated real-session E2E for both outcomes.
+- Slice 15.4 Gate-3 block 4: `docs/research/SLICE_15_4_GATE3_BLOCK4_INVASION_UX_2026-09-09.md` - public empire identity + rich blocking Invasion context with real Decline/Invade E2E and 320px QA.
