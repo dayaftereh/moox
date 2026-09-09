@@ -352,6 +352,22 @@ export type PopulationTransferChoice = {
 }
 export type ResearchSelectionMode = 'all' | 'choose_one' | 'fixed_one' | 'repeat_field'
 export type ResearchCategory = { id: string; order: number; name_key: string; root_tech_field_id: number }
+export type ResearchTechnologyEffect = {
+  kind: 'building_unlock' | 'planetary_project_unlock' | 'ship_drive_unlock' | 'ship_computer_unlock' | 'ship_armor_unlock' | 'ship_shield_unlock' | 'ship_fuel_cell_unlock' | 'population_growth_bonus' | 'population_capacity_bonus' | string
+  id?: string
+  production_cost_pp?: number
+  maintenance_bc?: number
+  ftl_speed?: number
+  range_parsecs?: number
+  population_bonus?: number
+  growth_bonus?: number
+}
+export type ResearchTechnologyInfo = {
+  technology_id: number
+  technology_key: string
+  technology_name_key: string
+  effects?: ResearchTechnologyEffect[]
+}
 export type ResearchChoice = {
   category_id: string
   category_order: number
@@ -364,6 +380,7 @@ export type ResearchChoice = {
   technology_ids: number[]
   technology_keys: string[]
   technology_name_keys: string[]
+  technology_info?: ResearchTechnologyInfo[]
   completed_levels?: number
   research_level?: number
 }

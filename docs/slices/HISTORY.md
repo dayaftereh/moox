@@ -311,3 +311,12 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Preserved the user's exact submitted `marine_barracks` construction + TechField 4 / Technology 13 Research batch, repaired Seat 2, and re-submitted the exact batch through the normal authoritative endpoint.
 - Verified canonical live game at Turn 2 Planning with Darlok as Built-in AI, Research at 9 RP and Marine Barracks at 6 PP.
 - Focused Human-vs-AI/server controller tests and web production build pass. Evidence: `docs/research/SLICE_15_4_GATE3_ENDTURN_BUILTIN_AI_BLOCKER_2026-09-09.md`.
+
+## 2026-09-09 - Slice 15.4 Gate 3 - Research UX unification and technology information
+
+- Removed the duplicate standalone Research selection surface; HUD, `/research` and Research Breakthrough now use the same `StrategicResearchOverlay`.
+- Added a touch/keyboard-capable `?` action to every concrete Research Technology.
+- Extended the authoritative Research choice projection with normalized Technology effect metadata for Buildings, planetary projects, ship mandatory components and modeled population bonuses.
+- Detail UI reports only effects supported by current normalized rules and explicitly labels still-unmodeled Technology details rather than inventing descriptions.
+- Browser QA verified both known-effect and unnormalized-effect dialogs and the full Breakthrough -> same chooser -> next Research flow.
+- Full Go tests/vet and web production build pass. Evidence: `docs/research/SLICE_15_4_GATE3_RESEARCH_UX_TECH_INFO_2026-09-09.md`.

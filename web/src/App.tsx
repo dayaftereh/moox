@@ -40,7 +40,6 @@ import {
   StrategicFleetsView,
   StrategicGalaxyView,
   StrategicResearchOverlay,
-  StrategicResearchView,
 } from './StrategicViews'
 import './styles.css'
 
@@ -990,7 +989,7 @@ function App() {
             ) : <p className="muted">{t('researchBreakthrough.noApplications')}</p>}
             <p className="muted research-breakthrough-authority">{t('researchBreakthrough.authority')}</p>
             <div className="action-row research-breakthrough-actions">
-              <button type="button" className="button-primary" onClick={() => { acknowledgeResolution(researchBreakthrough.id); navigate({ kind: 'game', gameID: snapshot?.view.game_id ?? gameID, section: 'research' }) }}><GameIcon name="research" />{t('researchBreakthrough.chooseNext')}</button>
+              <button type="button" className="button-primary" onClick={() => { acknowledgeResolution(researchBreakthrough.id); setResearchOverlayOpen(true) }}><GameIcon name="research" />{t('researchBreakthrough.chooseNext')}</button>
               <button type="button" className="button-secondary" onClick={() => acknowledgeResolution(researchBreakthrough.id)}>{t('researchBreakthrough.continue')}</button>
             </div>
           </Card>
@@ -1057,7 +1056,7 @@ function App() {
       ) : activeSection === 'fleets' ? (
         <StrategicFleetsView snapshot={snapshot} onPlanOrder={planOrder} t={t} />
       ) : activeSection === 'research' ? (
-        <StrategicResearchView snapshot={snapshot} preview={planningPreview} onPlanOrder={planOrder} t={t} />
+        <div className="research-route-host" aria-hidden="true" />
       ) : activeSection === 'diplomacy' ? (
         <StrategicDiplomacyView snapshot={snapshot} busy={diplomacyBusy} closed={Boolean(diplomacyClosed)} onCommand={runDiplomacy} t={t} />
       ) : activeSection === 'espionage' ? (
@@ -1081,7 +1080,7 @@ function App() {
           t={t}
         />
       )}
-      {researchOverlayOpen && snapshot && (
+      {(researchOverlayOpen || activeSection === 'research') && snapshot && (
         <StrategicResearchOverlay
           snapshot={snapshot}
           preview={planningPreview}
@@ -1089,9 +1088,12 @@ function App() {
           onPlanOrder={(order) => {
             planOrder(order)
             setResearchOverlayOpen(false)
-            navigate({ kind: 'game', gameID: route.gameID, section: 'galaxy' })
+            if (activeSection === 'research') navigate({ kind: 'game', gameID: route.gameID, section: 'galaxy' })
           }}
-          onClose={() => setResearchOverlayOpen(false)}
+          onClose={() => {
+            setResearchOverlayOpen(false)
+            if (activeSection === 'research') navigate({ kind: 'game', gameID: route.gameID, section: 'galaxy' })
+          }}
           t={t}
         />
       )}    </AppShell>

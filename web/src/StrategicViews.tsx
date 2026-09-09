@@ -17,6 +17,8 @@ import {
   type PopulationJob,
   type PopulationTransferChoice,
   type ResearchChoice,
+  type ResearchTechnologyEffect,
+  type ResearchTechnologyInfo,
   type StrategicContact,
   type StrategicFleet,
   type StarSystem,
@@ -152,6 +154,49 @@ function serverLabel(t: Translator, key: string | undefined, fallback: string): 
 
 function humanizeToken(value: string): string {
   return value.replace(/_/g, ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
+}
+
+function researchSelectionModeLabel(t: Translator, mode: ResearchChoice['selection_mode']): string {
+  return mode === 'choose_one'
+    ? t('research.modeChooseOne')
+    : mode === 'all'
+      ? t('research.modeAll')
+      : mode === 'fixed_one'
+        ? t('research.modeFixedOne')
+        : t('research.modeRepeatField')
+}
+
+function researchEffectObjectName(t: Translator, effect: ResearchTechnologyEffect): string {
+  if (!effect.id) return t('research.info.unknownEffect')
+  const fallback = humanizeToken(effect.id)
+  if (effect.kind === 'building_unlock') return serverLabel(t, `building.${effect.id}.name`, fallback)
+  return serverLabel(t, `technology.${effect.id}.name`, fallback)
+}
+
+function researchEffectText(t: Translator, effect: ResearchTechnologyEffect): string {
+  const name = researchEffectObjectName(t, effect)
+  switch (effect.kind) {
+    case 'building_unlock':
+      return t('research.info.effectBuilding', { name, cost: effect.production_cost_pp ?? 0, maintenance: effect.maintenance_bc ?? 0 })
+    case 'planetary_project_unlock':
+      return t('research.info.effectPlanetaryProject', { name, cost: effect.production_cost_pp ?? 0 })
+    case 'ship_drive_unlock':
+      return t('research.info.effectShipDrive', { name, speed: effect.ftl_speed ?? 0 })
+    case 'ship_computer_unlock':
+      return t('research.info.effectShipComputer', { name })
+    case 'ship_armor_unlock':
+      return t('research.info.effectShipArmor', { name })
+    case 'ship_shield_unlock':
+      return t('research.info.effectShipShield', { name })
+    case 'ship_fuel_cell_unlock':
+      return t('research.info.effectFuelCell', { name, range: effect.range_parsecs ?? 0 })
+    case 'population_growth_bonus':
+      return t('research.info.effectGrowth', { bonus: effect.growth_bonus ?? 0 })
+    case 'population_capacity_bonus':
+      return t('research.info.effectCapacity', { bonus: effect.population_bonus ?? 0 })
+    default:
+      return t('research.info.effectGeneric', { name })
+  }
 }
 
 function planetTraitLabel(t: Translator, group: 'climate' | 'size' | 'mineral' | 'gravity', id: string): string {
@@ -1790,6 +1835,12 @@ export function StrategicResearchOverlay({ snapshot, preview, draftOrders, onPla
   const categories = [...(decision?.decisions.research_categories ?? [])].sort((a, b) => a.order - b.order)
   const choices = decision?.decisions.research ?? []
   const active = preview?.preview.projection.research
+  const [inspectedTechnology, setInspectedTechnology] = useState<{
+    choice: ResearchChoice
+    info: ResearchTechnologyInfo
+    name: string
+    categoryName: string
+  } | null>(null)
   const researchDraft = draftOrders.find((order) => order.key === 'research' && order.kind === 'empire.select_research')
   const draftFieldID = typeof researchDraft?.payload.tech_field_id === 'number' ? researchDraft.payload.tech_field_id : undefined
   const draftTechnologyID = typeof researchDraft?.payload.technology_id === 'number' ? researchDraft.payload.technology_id : undefined
@@ -1806,7 +1857,9 @@ export function StrategicResearchOverlay({ snapshot, preview, draftOrders, onPla
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
+      if (event.key !== 'Escape') return
+      if (inspectedTechnology) setInspectedTechnology(null)
+      else onClose()
     }
     document.body.classList.add('modal-open')
     window.addEventListener('keydown', onKey)
@@ -1814,7 +1867,25 @@ export function StrategicResearchOverlay({ snapshot, preview, draftOrders, onPla
       document.body.classList.remove('modal-open')
       window.removeEventListener('keydown', onKey)
     }
-  }, [onClose])
+  }, [inspectedTechnology, onClose])
+
+  function inspectTechnology(choice: ResearchChoice, technologyID: number, index: number) {
+    const technologyKey = choice.technology_keys[index] ?? String(technologyID)
+    const technologyNameKey = choice.technology_name_keys[index] ?? `technology.${technologyKey}.name`
+    const name = serverLabel(t, technologyNameKey, humanizeToken(technologyKey))
+    const info = choice.technology_info?.find((candidate) => candidate.technology_id === technologyID) ?? {
+      technology_id: technologyID,
+      technology_key: technologyKey,
+      technology_name_key: technologyNameKey,
+      effects: [],
+    }
+    setInspectedTechnology({
+      choice,
+      info,
+      name,
+      categoryName: serverLabel(t, choice.category_name_key, choice.category_id),
+    })
+  }
 
   function selectResearch(choice: ResearchChoice, technologyID = 0) {
     onPlanOrder({
@@ -1874,28 +1945,46 @@ export function StrategicResearchOverlay({ snapshot, preview, draftOrders, onPla
                       const selected = isActive && activeTechnologyIDs.has(technologyID)
                       const technologyName = serverLabel(t, choice.technology_name_keys[index], humanizeToken(choice.technology_keys[index] ?? String(technologyID)))
                       return (
-                        <button
-                          type="button"
-                          className={`research-tech-choice${selected ? ' selected' : ''}`}
-                          key={technologyID}
-                          aria-pressed={selected}
-                          onClick={() => selectResearch(choice, technologyID)}
-                        >
-                          {selected
-                            ? <strong className="research-tech-name selected-name">{technologyName}</strong>
-                            : <span className="research-tech-name">{technologyName}</span>}
-                          {selected && <strong className="research-current-badge">✓ {t('research.currentChoice')}</strong>}
-                        </button>
+                        <div className="research-tech-choice-row" key={technologyID}>
+                          <button
+                            type="button"
+                            className={`research-tech-choice${selected ? ' selected' : ''}`}
+                            aria-pressed={selected}
+                            onClick={() => selectResearch(choice, technologyID)}
+                          >
+                            {selected
+                              ? <strong className="research-tech-name selected-name">{technologyName}</strong>
+                              : <span className="research-tech-name">{technologyName}</span>}
+                            {selected && <strong className="research-current-badge">{'\u2713'} {t('research.currentChoice')}</strong>}
+                          </button>
+                          <button
+                            type="button"
+                            className="research-tech-info-button"
+                            aria-label={t('research.info.open', { technology: technologyName })}
+                            title={t('research.info.open', { technology: technologyName })}
+                            onClick={() => inspectTechnology(choice, technologyID, index)}
+                          >?</button>
+                        </div>
                       )
                     }) : (
                       <>
                         {choice.technology_ids.map((technologyID, index) => {
                           const selected = isActive && activeTechnologyIDs.has(technologyID)
+                          const technologyName = serverLabel(t, choice.technology_name_keys[index], humanizeToken(choice.technology_keys[index] ?? String(technologyID)))
                           return (
-                            <span className={selected ? 'selected' : ''} key={technologyID}>
-                              {serverLabel(t, choice.technology_name_keys[index], humanizeToken(choice.technology_keys[index] ?? String(technologyID)))}
-                              {selected && <strong>{t('research.currentChoice')}</strong>}
-                            </span>
+                            <div className="research-tech-choice-row" key={technologyID}>
+                              <span className={`research-tech-passive${selected ? ' selected' : ''}`}>
+                                {technologyName}
+                                {selected && <strong>{t('research.currentChoice')}</strong>}
+                              </span>
+                              <button
+                                type="button"
+                                className="research-tech-info-button"
+                                aria-label={t('research.info.open', { technology: technologyName })}
+                                title={t('research.info.open', { technology: technologyName })}
+                                onClick={() => inspectTechnology(choice, technologyID, index)}
+                              >?</button>
+                            </div>
                           )
                         })}
                         <button type="button" className="research-field-select" onClick={() => selectResearch(choice)}><GameIcon name={categoryIcon} />{isActive ? t('research.reselect') : t('research.select')}</button>
@@ -1911,84 +2000,43 @@ export function StrategicResearchOverlay({ snapshot, preview, draftOrders, onPla
         <footer className="research-overlay-footer">
           <button type="button" className="button-secondary" onClick={onClose}>{t('common.cancel')}</button>
         </footer>
+
+        {inspectedTechnology && (
+          <div className="research-tech-info-layer" role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) setInspectedTechnology(null) }}>
+            <section className="research-tech-info-dialog" role="dialog" aria-modal="true" aria-labelledby="research-tech-info-title">
+              <header className="research-tech-info-header">
+                <div>
+                  <p className="eyebrow">{inspectedTechnology.categoryName}</p>
+                  <h3 id="research-tech-info-title">{inspectedTechnology.name}</h3>
+                </div>
+                <button type="button" className="button-ghost research-tech-info-close" onClick={() => setInspectedTechnology(null)} aria-label={t('common.close')}><GameIcon name="close" /></button>
+              </header>
+              <dl className="research-tech-info-meta">
+                <div><dt>{t('research.cost')}</dt><dd>{inspectedTechnology.choice.base_cost_rp.toFixed(0)} RP</dd></div>
+                <div><dt>{t('research.info.field')}</dt><dd>#{inspectedTechnology.choice.tech_field_id}</dd></div>
+                <div><dt>{t('research.info.mode')}</dt><dd>{researchSelectionModeLabel(t, inspectedTechnology.choice.selection_mode)}</dd></div>
+              </dl>
+              <div className="research-tech-info-content">
+                <h4>{t('research.info.whatYouGet')}</h4>
+                {(inspectedTechnology.info.effects?.length ?? 0) > 0 ? (
+                  <ul>
+                    {inspectedTechnology.info.effects?.map((effect, index) => <li key={`${effect.kind}:${effect.id ?? index}`}>{researchEffectText(t, effect)}</li>)}
+                  </ul>
+                ) : (
+                  <p className="muted">{t('research.info.notNormalized')}</p>
+                )}
+                <p className="research-tech-info-authority">{t('research.info.authority')}</p>
+              </div>
+              <footer className="research-tech-info-actions">
+                <button type="button" className="button-secondary" onClick={() => setInspectedTechnology(null)}>{t('common.close')}</button>
+              </footer>
+            </section>
+          </div>
+        )}
       </section>
     </div>
   )
 }
-export function StrategicResearchView({ snapshot, preview, onPlanOrder, t }: {
-  snapshot: PlayerSnapshot
-  preview: PlanningPreviewSnapshot | null
-  onPlanOrder: (order: DraftOrder) => void
-  t: Translator
-}) {
-  const decision = snapshot.decision
-  const categories = [...(decision?.decisions.research_categories ?? [])].sort((a, b) => a.order - b.order)
-  const choices = decision?.decisions.research ?? []
-  const active = preview?.preview.projection.research
-
-  function planResearch(choice: ResearchChoice, technologyID = 0) {
-    onPlanOrder({
-      key: 'research',
-      kind: 'empire.select_research',
-      payload: {
-        tech_field_id: choice.tech_field_id,
-        ...(technologyID ? { technology_id: technologyID } : {}),
-      },
-    })
-  }
-
-  return (
-    <>
-      <PageHeader eyebrow={t('research.eyebrow')} title={t('research.title')} subtitle={t('research.subtitle')} />
-      <Card className="research-active">
-        <p className="eyebrow">{t('research.active')}</p>
-        <div className="summary-stats">
-          <div><span>{t('research.rpRate')}</span><strong>{active?.rp_per_turn.toFixed(1) ?? '—'}</strong></div>
-          <div><span>{t('research.eta')}</span><strong>{formatEta(t, active?.eta_turns)}</strong></div>
-          <div><span>RP</span><strong>{active ? `${active.progress_rp.toFixed(0)} / ${active.cost_rp.toFixed(0)}` : '—'}</strong></div>
-        </div>
-      </Card>
-      <div className="content-grid content-grid-2">
-        {categories.length === 0 ? <EmptyState title={t('research.pending')} /> : categories.map((category) => {
-          const categoryIcon = researchCategoryIcon(category.order)
-          const choice = choices.find((item) => item.category_id === category.id)
-          return (
-            <Card className="research-category-card" key={category.id}>
-              <div className="research-category-heading">
-                <span className="research-category-icon" aria-hidden="true"><GameIcon name={categoryIcon} /></span>
-                <div><p className="eyebrow">{category.order}. {serverLabel(t, category.name_key, category.id)}</p><h2>{serverLabel(t, category.name_key, category.id)}</h2></div>
-              </div>
-              {!choice ? <p className="muted">{t('common.none')}</p> : (
-                <>
-                  <dl className="detail-list compact">
-                    <div><dt>Field</dt><dd>{choice.tech_field_id}</dd></div>
-                    <div><dt>{t('research.cost')}</dt><dd>{choice.base_cost_rp.toFixed(0)} RP</dd></div>
-                    <div><dt>Mode</dt><dd>{choice.selection_mode}</dd></div>
-                  </dl>
-                  {choice.selection_mode === 'choose_one' ? (
-                    <div className="choice-grid">
-                      {choice.technology_ids.map((technologyID, index) => (
-                        <button type="button" className="choice-button" key={technologyID} onClick={() => planResearch(choice, technologyID)}>
-                          <strong>{serverLabel(t, choice.technology_name_keys[index], humanizeToken(choice.technology_keys[index] ?? String(technologyID)))}</strong>
-                          <small>{t('research.chooseApplication')}</small>
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <button type="button" className="button-primary" onClick={() => planResearch(choice)}>
-                      <GameIcon name="research" />{t('research.select')}
-                    </button>
-                  )}
-                </>
-              )}
-            </Card>
-          )
-        })}
-      </div>
-    </>
-  )
-}
-
 export function StrategicDiplomacyView({ snapshot, busy, closed, onCommand, t }: {
   snapshot: PlayerSnapshot
   busy: boolean

@@ -13,6 +13,24 @@ type ResearchCategory struct {
 	NameKey         string `json:"name_key"`
 	RootTechFieldID int    `json:"root_tech_field_id"`
 }
+type ResearchTechnologyEffect struct {
+	Kind             string  `json:"kind"`
+	ID               string  `json:"id,omitempty"`
+	ProductionCostPP float64 `json:"production_cost_pp,omitempty"`
+	MaintenanceBC    int     `json:"maintenance_bc,omitempty"`
+	FTLSpeed         int     `json:"ftl_speed,omitempty"`
+	RangeParsecs     int     `json:"range_parsecs,omitempty"`
+	PopulationBonus  float64 `json:"population_bonus,omitempty"`
+	GrowthBonus      float64 `json:"growth_bonus,omitempty"`
+}
+
+type ResearchTechnologyInfo struct {
+	TechnologyID      int                        `json:"technology_id"`
+	TechnologyKey     string                     `json:"technology_key"`
+	TechnologyNameKey string                     `json:"technology_name_key"`
+	Effects           []ResearchTechnologyEffect `json:"effects,omitempty"`
+}
+
 type ResearchChoice struct {
 	CategoryID          string                     `json:"category_id"`
 	CategoryOrder       int                        `json:"category_order"`
@@ -25,6 +43,7 @@ type ResearchChoice struct {
 	TechnologyIDs       []int                      `json:"technology_ids"`
 	TechnologyKeys      []string                   `json:"technology_keys"`
 	TechnologyNameKeys  []string                   `json:"technology_name_keys"`
+	TechnologyInfo      []ResearchTechnologyInfo   `json:"technology_info,omitempty"`
 	CompletedLevels     int                        `json:"completed_levels,omitempty"`
 	ResearchLevel       int                        `json:"research_level,omitempty"`
 }
@@ -139,6 +158,7 @@ func (r *EconomyRules) AvailableResearchChoices(state *core.GameState, empireID 
 
 		technologyKeys := make([]string, len(technologyIDs))
 		technologyNameKeys := make([]string, len(technologyIDs))
+		technologyInfo := make([]ResearchTechnologyInfo, len(technologyIDs))
 		for i, technologyID := range technologyIDs {
 			key, ok := r.TechnologyKeyByID[technologyID]
 			if !ok || key == "" {
@@ -150,6 +170,12 @@ func (r *EconomyRules) AvailableResearchChoices(state *core.GameState, empireID 
 			}
 			technologyKeys[i] = key
 			technologyNameKeys[i] = nameKey
+			technologyInfo[i] = ResearchTechnologyInfo{
+				TechnologyID:      technologyID,
+				TechnologyKey:     key,
+				TechnologyNameKey: nameKey,
+				Effects:           r.researchTechnologyEffects(technologyID),
+			}
 		}
 		choices = append(choices, ResearchChoice{
 			CategoryID:          categoryID,
@@ -163,11 +189,77 @@ func (r *EconomyRules) AvailableResearchChoices(state *core.GameState, empireID 
 			TechnologyIDs:       technologyIDs,
 			TechnologyKeys:      technologyKeys,
 			TechnologyNameKeys:  technologyNameKeys,
+			TechnologyInfo:      technologyInfo,
 		})
 	}
 	return choices, nil
 }
 
+func (r *EconomyRules) researchTechnologyEffects(technologyID int) []ResearchTechnologyEffect {
+	if r == nil || technologyID == 0 {
+		return nil
+	}
+	effects := make([]ResearchTechnologyEffect, 0)
+	buildingIDs := make([]string, 0)
+	for buildingID, definition := range r.BuildingDefinitions {
+		if definition.TechnologyID == technologyID {
+			buildingIDs = append(buildingIDs, buildingID)
+		}
+	}
+	sort.Strings(buildingIDs)
+	for _, buildingID := range buildingIDs {
+		definition := r.BuildingDefinitions[buildingID]
+		effects = append(effects, ResearchTechnologyEffect{
+			Kind:             "building_unlock",
+			ID:               buildingID,
+			ProductionCostPP: definition.ProductionCostPP,
+			MaintenanceBC:    definition.MaintenanceBC,
+		})
+	}
+	projectIDs := make([]string, 0)
+	for projectID, definition := range r.PlanetaryTransformations {
+		if definition.TechnologyID == technologyID {
+			projectIDs = append(projectIDs, projectID)
+		}
+	}
+	sort.Strings(projectIDs)
+	for _, projectID := range projectIDs {
+		definition := r.PlanetaryTransformations[projectID]
+		effects = append(effects, ResearchTechnologyEffect{Kind: "planetary_project_unlock", ID: projectID, ProductionCostPP: definition.ProductionCostPP})
+	}
+	for _, definition := range r.ShipDrives {
+		if definition.TechnologyID == technologyID {
+			effects = append(effects, ResearchTechnologyEffect{Kind: "ship_drive_unlock", ID: definition.ID, FTLSpeed: definition.FTLSpeed})
+		}
+	}
+	for _, definition := range r.ShipComputers {
+		if definition.TechnologyID == technologyID {
+			effects = append(effects, ResearchTechnologyEffect{Kind: "ship_computer_unlock", ID: definition.ID})
+		}
+	}
+	for _, definition := range r.ShipArmors {
+		if definition.TechnologyID == technologyID {
+			effects = append(effects, ResearchTechnologyEffect{Kind: "ship_armor_unlock", ID: definition.ID})
+		}
+	}
+	for _, definition := range r.ShipShields {
+		if definition.TechnologyID == technologyID {
+			effects = append(effects, ResearchTechnologyEffect{Kind: "ship_shield_unlock", ID: definition.ID})
+		}
+	}
+	for _, definition := range r.ShipFuelCells {
+		if definition.TechnologyID == technologyID {
+			effects = append(effects, ResearchTechnologyEffect{Kind: "ship_fuel_cell_unlock", ID: definition.ID, RangeParsecs: definition.RangeParsecs})
+		}
+	}
+	if bonus, ok := r.PopulationGrowthTechnologyBonusByID[technologyID]; ok && bonus != 0 {
+		effects = append(effects, ResearchTechnologyEffect{Kind: "population_growth_bonus", GrowthBonus: bonus})
+	}
+	if technologyID == r.AdvancedCityPlanningTechnologyID && r.AdvancedCityPlanningCapacityBonus != 0 {
+		effects = append(effects, ResearchTechnologyEffect{Kind: "population_capacity_bonus", PopulationBonus: r.AdvancedCityPlanningCapacityBonus})
+	}
+	return effects
+}
 func (r *EconomyRules) AvailableResearchCategories() []ResearchCategory {
 	if r == nil || len(r.ResearchCategories) == 0 {
 		return nil

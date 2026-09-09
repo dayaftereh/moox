@@ -23,7 +23,7 @@ func TestAvailableResearchChoicesReturnsServerAuthoritativeFrontier(t *testing.T
 	gotFields := make([]int, len(choices))
 	for i, choice := range choices {
 		gotFields[i] = choice.TechFieldID
-		if choice.BaseCostRP <= 0 || len(choice.TechnologyIDs) == 0 || len(choice.TechnologyIDs) != len(choice.TechnologyKeys) || len(choice.TechnologyIDs) != len(choice.TechnologyNameKeys) {
+		if choice.BaseCostRP <= 0 || len(choice.TechnologyIDs) == 0 || len(choice.TechnologyIDs) != len(choice.TechnologyKeys) || len(choice.TechnologyIDs) != len(choice.TechnologyNameKeys) || len(choice.TechnologyIDs) != len(choice.TechnologyInfo) {
 			t.Fatalf("incomplete research choice: %+v", choice)
 		}
 	}
