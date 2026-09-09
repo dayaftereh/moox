@@ -2,7 +2,11 @@
 
 Date: **2026-09-09**
 
-Status: **proposal; requires explicit Gate-2 approval before implementation freeze**.
+Status: **accepted / frozen for Gate 3 on 2026-09-09**.
+
+## Approval
+
+Approved by the user on 2026-09-09 without requested changes. This document is the frozen Gate-2 interaction contract for Slice 15.4.
 
 ## 1. Interaction principle
 

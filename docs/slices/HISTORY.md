@@ -257,3 +257,10 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Audited persistence export/import/restore and WebSocket invalidation/reconnect; restore is atomic and publishes `game_loaded`, but the browser has no persistence UI/API wrappers and currently keeps a generic stale snapshot during reconnect.
 - Defined structured lifecycle/error states, player-safe public identity/resolution-summary additions and the Gate-2 blocking-decision/transition-summary contract.
 - Gate 2 remains unfrozen pending explicit review.
+
+## 2026-09-09 - Slice 15.4 Gate 2 rich interaction contract frozen
+
+- User approved the Gate-2 proposal without changes.
+- Froze blocking decisions for Encounter/Invasion/Colony Base and transition summaries for Research/Battle return/Game Loaded/Victory.
+- Froze stable Battle handoff route to Slice 15.5, local-file Save/Load/Restore semantics, read-only stale reconnect state, structured API errors/lifecycle and minimum player-safe identity/resolution reads.
+- Gate 3 implementation is now active.

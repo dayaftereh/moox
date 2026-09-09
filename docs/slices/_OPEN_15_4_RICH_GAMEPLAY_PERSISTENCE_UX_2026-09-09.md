@@ -1,5 +1,5 @@
 # Open slice 15.4 - Rich gameplay decisions / persistence UX
-Status: **open; Gate 1 rich-state UX audit complete; Gate-2 rich-interaction review ready**.
+Status: **open; Gates 1-2 complete; Gate 3 implementation active**.
 Queue position: **15.4 of Slice-15 family**.
 ## Objective
 Turn the functional strategic HMI and visual identity into coherent high-value presentation for non-tactical interactive resolution phases, Encounter/battle entry and return transitions, save/load/reconnect and exceptional states. The interactive 2D Tactical battlefield itself is deliberately separated into Slice 15.5.
@@ -41,11 +41,26 @@ Defer:
 - Gate 2 is **not frozen** until explicit review/approval.
 
 ## Gate 2 - Rich presentation freeze
-- [ ] Freeze decision layouts plus Encounter -> Tactical entry and Tactical -> strategic return/summary transitions.
-- [ ] Freeze save/load/reconnect lifecycle and user-visible state machine.
-- [ ] Freeze invalidation/refetch/error/conflict presentation.
-- [ ] Freeze result/victory transition and major-event feedback.
-- [ ] Freeze accepted motion/audio hooks without gameplay timing authority.
+- [x] Freeze decision layouts plus Encounter -> Tactical entry and Tactical -> strategic return/summary transitions.
+- [x] Freeze save/load/reconnect lifecycle and user-visible state machine.
+- [x] Freeze invalidation/refetch/error/conflict presentation.
+- [x] Freeze result/victory transition and major-event feedback.
+- [x] Freeze accepted motion/audio hooks without gameplay timing authority.
+## Gate-2 approval evidence (2026-09-09)
+
+User approved the Gate-2 rich-interaction proposal without requested changes. The following are now frozen for Gate 3:
+
+- blocking decision model for Encounter, Invasion and Colony Base;
+- transition-summary model for Research breakthrough, Battle return, loaded game and Victory;
+- stable Battle handoff route `#/game/<gameID>/battle/<battleID>`, with actual Tactical interaction owned by 15.5;
+- local-file Save/Load contract using server export/import/atomic restore and explicit overwrite confirmation;
+- stale last-known snapshot remains inspectable but read-only while reconnecting/refreshing;
+- structured API errors and explicit lifecycle states;
+- player-safe public identity and resolution-summary read additions only where the current server projection is insufficient;
+- motion/audio remain presentation-only and never gate simulation or submit commands.
+
+See `docs/research/SLICE_15_4_GATE2_RICH_INTERACTION_CONTRACT_DRAFT_2026-09-09.md`, now accepted as the Gate-2 contract.
+
 ## Gate 3 - Implementation
 - [ ] Implement supported Encounter-entry/Invasion/Colony-Base/Research rich workflows, excluding the Slice-15.5 battlefield.
 - [ ] Implement save/export/import/restore/reconnect UX.
