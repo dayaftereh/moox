@@ -70,6 +70,7 @@ See `docs/research/SLICE_15_4_GATE2_RICH_INTERACTION_CONTRACT_DRAFT_2026-09-09.m
 ### Gate-3 implementation progress
 
 - [x] Block 1 foundation: typed Colony Base/Battle contracts, structured `APIError`, explicit lifecycle state and synchronized-only direct mutation gate. Evidence: `docs/research/SLICE_15_4_GATE3_BLOCK1_CLIENT_AUTHORITY_LIFECYCLE_2026-09-09.md`.
+- [x] Block 2 persistence UX: local Save, Home/In-Game Load, explicit Restore confirmation, new-ID Import and lifecycle-safe invalidation handling. Evidence: `docs/research/SLICE_15_4_GATE3_BLOCK2_SAVE_LOAD_RESTORE_UX_2026-09-09.md`.
 
 ## Gate 4 - QA + close
 - [ ] Exercise every supported non-tactical interactive phase through browser surfaces.

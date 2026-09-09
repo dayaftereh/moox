@@ -1,12 +1,15 @@
-import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { type ChangeEvent, type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   aggregatePopulation,
   createGame,
+  exportLiveSnapshot,
   getPlayerSnapshot,
+  importLiveSnapshot,
   listGames,
   previewPlanning,
   removeDraftOrder,
   replaceDraftOrder,
+  restoreLiveSnapshot,
   streamURL,
   submitDiplomacy,
   submitInvasion,
@@ -49,7 +52,7 @@ type StatusMessage = {
   vars?: TranslationVars
 }
 
-type GameLifecycle = 'initial-loading' | 'connecting' | 'synced' | 'refreshing' | 'reconnecting' | 'refresh-failed' | 'restoring' | 'importing' | 'fatal'
+type GameLifecycle = 'initial-loading' | 'connecting' | 'synced' | 'refreshing' | 'reconnecting' | 'refresh-failed' | 'exporting' | 'loading-file' | 'restoring' | 'importing' | 'loaded' | 'fatal'
 
 function lifecycleKey(lifecycle: GameLifecycle): TranslationKey {
   switch (lifecycle) {
@@ -59,8 +62,11 @@ function lifecycleKey(lifecycle: GameLifecycle): TranslationKey {
     case 'refreshing': return 'lifecycle.refreshing'
     case 'reconnecting': return 'lifecycle.reconnecting'
     case 'refresh-failed': return 'lifecycle.refreshFailed'
+    case 'exporting': return 'lifecycle.exporting'
+    case 'loading-file': return 'lifecycle.loadingFile'
     case 'restoring': return 'lifecycle.restoring'
     case 'importing': return 'lifecycle.importing'
+    case 'loaded': return 'lifecycle.loaded'
     case 'fatal': return 'lifecycle.fatal'
   }
 }
@@ -69,6 +75,16 @@ function errorText(reason: unknown): string {
   if (isAPIError(reason)) return `${reason.code}: ${reason.message}`
   return errorText(reason)
 }
+
+type SaveFileMetadata = {
+  gameID: string
+  turn?: number
+  revision?: number
+  phase?: string
+  schemaVersion?: number
+}
+
+type PendingRestore = { file: File; metadata: SaveFileMetadata }
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
 
@@ -113,8 +129,11 @@ function App() {
   const [diplomacyBusy, setDiplomacyBusy] = useState(false)
   const [invasionBusy, setInvasionBusy] = useState(false)
   const [researchOverlayOpen, setResearchOverlayOpen] = useState(false)
+  const [persistenceBusy, setPersistenceBusy] = useState(false)
+  const [pendingRestore, setPendingRestore] = useState<PendingRestore | null>(null)
   const [lastNotification, setLastNotification] = useState<Notification | null>(null)
   const reconnectTimer = useRef<number | null>(null)
+  const loadFileInputRef = useRef<HTMLInputElement | null>(null)
   const socketConnectedRef = useRef(false)
   const snapshotRef = useRef<PlayerSnapshot | null>(null)
   const activeGameRef = useRef(gameID)
@@ -219,9 +238,9 @@ function App() {
           const notification = JSON.parse(String(event.data)) as Notification
           setLastNotification(notification)
           setStatus({ key: 'status.invalidated', vars: { reason: notification.reason } })
-          setLifecycle('refreshing')
           setSnapshot((current) => {
             if (!current || notification.change_sequence > current.change_sequence) {
+              setLifecycle('refreshing')
               void loadSnapshot(gameID, seatID).catch((reason: unknown) => {
                 setError(errorText(reason))
               })
@@ -431,7 +450,8 @@ function App() {
     },
   ] : []
   const eventStatusText = t(status.key, status.vars)
-  const statusText = lifecycle === 'synced' ? eventStatusText : t(lifecycleKey(lifecycle))
+  const lifecycleOwnsStatus = route.kind === 'game' || persistenceBusy || pendingRestore !== null
+  const statusText = lifecycleOwnsStatus && lifecycle !== 'synced' ? t(lifecycleKey(lifecycle)) : eventStatusText
   const statusTone: 'neutral' | 'success' | 'warning' | 'danger' = error && (lifecycle === 'fatal' || lifecycle === 'refresh-failed')
     ? 'danger'
     : lifecycle === 'reconnecting' || lifecycle === 'refresh-failed'
@@ -493,6 +513,111 @@ function App() {
     event.preventDefault()
     if (!firstColony) return
     planPopulation(firstColony.id, Number(assignment.farmers), Number(assignment.workers), Number(assignment.scientists))
+  }
+
+  function restoreConnectionLifecycle() {
+    setLifecycle(snapshotRef.current ? (socketConnectedRef.current ? 'synced' : 'reconnecting') : 'connecting')
+  }
+
+  function parseSaveMetadata(fileText: string): SaveFileMetadata {
+    const raw = JSON.parse(fileText) as { schema_version?: unknown; game_id?: unknown; revision?: unknown; phase?: unknown; state?: { turn?: unknown } }
+    if (typeof raw.game_id !== 'string' || raw.game_id.trim() === '') throw new Error(t('persistence.invalidMetadata'))
+    return {
+      gameID: raw.game_id,
+      turn: typeof raw.state?.turn === 'number' ? raw.state.turn : undefined,
+      revision: typeof raw.revision === 'number' ? raw.revision : undefined,
+      phase: typeof raw.phase === 'string' ? raw.phase : undefined,
+      schemaVersion: typeof raw.schema_version === 'number' ? raw.schema_version : undefined,
+    }
+  }
+
+  async function saveGame() {
+    if (!gameID || !snapshot || persistenceBusy || lifecycle !== 'synced') return
+    setPersistenceBusy(true)
+    setLifecycle('exporting')
+    setError('')
+    try {
+      const save = await exportLiveSnapshot(gameID)
+      const objectURL = URL.createObjectURL(save)
+      const link = document.createElement('a')
+      const safeGameID = gameID.replace(/[^a-zA-Z0-9._-]+/g, '-')
+      link.href = objectURL
+      link.download = `moox-${safeGameID}-turn-${snapshot.view.turn}.json`
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.setTimeout(() => URL.revokeObjectURL(objectURL), 0)
+      setStatus({ key: 'status.saveExported', vars: { game: gameID, turn: snapshot.view.turn } })
+    } catch (reason) {
+      setError(errorText(reason))
+    } finally {
+      setPersistenceBusy(false)
+      restoreConnectionLifecycle()
+    }
+  }
+
+  function chooseLoadGame() {
+    if (persistenceBusy) return
+    loadFileInputRef.current?.click()
+  }
+
+  async function loadSelectedFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0]
+    event.currentTarget.value = ''
+    if (!file || persistenceBusy) return
+    setPersistenceBusy(true)
+    setPendingRestore(null)
+    setLifecycle('loading-file')
+    setError('')
+    try {
+      const metadata = parseSaveMetadata(await file.text())
+      const hosted = await listGames()
+      setGames(hosted)
+      if (hosted.some((item) => item.game_id === metadata.gameID)) {
+        setPendingRestore({ file, metadata })
+        return
+      }
+      setLifecycle('importing')
+      const imported = await importLiveSnapshot(file)
+      setStatus({ key: 'status.gameImported', vars: { game: imported.game_id } })
+      setPersistenceBusy(false)
+      enterGame(imported.game_id)
+    } catch (reason) {
+      setError(errorText(reason))
+      restoreConnectionLifecycle()
+    } finally {
+      setPersistenceBusy(false)
+    }
+  }
+
+  function cancelRestore() {
+    setPendingRestore(null)
+    restoreConnectionLifecycle()
+  }
+
+  async function confirmRestore() {
+    if (!pendingRestore || persistenceBusy) return
+    const { file, metadata } = pendingRestore
+    setPersistenceBusy(true)
+    setLifecycle('restoring')
+    setError('')
+    try {
+      const receipt = await restoreLiveSnapshot(metadata.gameID, file)
+      setPendingRestore(null)
+      setStatus({ key: 'status.gameRestored', vars: { game: metadata.gameID, revision: receipt.game_revision } })
+      if (metadata.gameID === gameID) {
+        await loadSnapshot(metadata.gameID, seatID)
+        setLifecycle('loaded')
+        window.setTimeout(() => restoreConnectionLifecycle(), 650)
+      } else {
+        enterGame(metadata.gameID)
+      }
+    } catch (reason) {
+      setError(errorText(reason))
+      restoreConnectionLifecycle()
+    } finally {
+      setPersistenceBusy(false)
+    }
   }
 
   async function endTurn() {
@@ -558,9 +683,30 @@ function App() {
     enterGame(selectedGameID, route.kind === 'game' ? route.section : 'galaxy')
   }
 
+  const persistenceControls = (
+    <>
+      <input ref={loadFileInputRef} className="persistence-file-input" type="file" accept="application/json,.json" onChange={(event) => void loadSelectedFile(event)} aria-hidden="true" tabIndex={-1} />
+      {pendingRestore && (
+        <div className="persistence-dialog-backdrop" role="presentation">
+          <Card className="persistence-dialog" as="section">
+            <p className="eyebrow">{t('persistence.loadEyebrow')}</p>
+            <h2>{t('persistence.restoreTitle')}</h2>
+            <p>{t('persistence.restoreDetails', { game: pendingRestore.metadata.gameID, turn: pendingRestore.metadata.turn ?? '?' })}</p>
+            <p className="muted">{t('persistence.restoreWarning')}</p>
+            <div className="action-row">
+              <button type="button" className="button-primary" disabled={persistenceBusy} onClick={() => void confirmRestore()}>{t('persistence.restoreConfirm')}</button>
+              <button type="button" className="button-secondary" disabled={persistenceBusy} onClick={cancelRestore}>{t('common.cancel')}</button>
+            </div>
+          </Card>
+        </div>
+      )}
+    </>
+  )
+
   if (route.kind === 'home') {
     return (
       <div className="standalone-shell">
+        {persistenceControls}
         <StandaloneHeader />
         <main className="standalone-content home-content">
           <section className="home-hero">
@@ -569,6 +715,7 @@ function App() {
             <p>{t('menu.subtitle')}</p>
             <div className="hero-actions">
               <button type="button" className="button-primary" onClick={() => navigate({ kind: 'new-game' })}><GameIcon name="star" />{t('menu.newGame')}</button>
+              <button type="button" className="button-secondary" disabled={persistenceBusy} onClick={chooseLoadGame}><GameIcon name="open" />{t('gameMenu.loadGame')}</button>
               {gameID && <button type="button" className="button-secondary" onClick={() => enterGame(gameID)}><GameIcon name="play" />{t('menu.resume')}</button>}
             </div>
           </section>
@@ -646,10 +793,15 @@ function App() {
         return true
       }}
       onHome={() => navigate({ kind: 'home' })}
+      onSaveGame={() => void saveGame()}
+      onLoadGame={chooseLoadGame}
+      persistenceBusy={persistenceBusy}
       onEndTurn={snapshot ? () => void endTurn() : undefined}
       endTurnDisabled={!snapshot || mutationLocked || snapshot.view.phase !== 'planning' || planningBusy || previewBusy}
       endTurnLabel={planningBusy ? t('planning.resolving') : t('planning.endTurn')}
     >
+      {persistenceControls}
+
       {error && <Notice title={t('state.errorTitle')} tone="danger"><p>{error}</p></Notice>}
 
       {snapshot?.view.phase === 'planning' && (draftOrders.length > 0 || previewBusy) && (

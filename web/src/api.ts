@@ -548,6 +548,26 @@ export async function getPlayerSnapshot(gameID: string, seatID: number, signal?:
   return requestJSON<PlayerSnapshot>(`/api/v1/games/${encodeURIComponent(gameID)}/seats/${seatID}/snapshot`, { signal })
 }
 
+export async function exportLiveSnapshot(gameID: string): Promise<Blob> {
+  return requestBlob(`/api/v1/games/${encodeURIComponent(gameID)}/live-snapshot`)
+}
+
+export async function importLiveSnapshot(save: Blob): Promise<GameSummary> {
+  return requestJSON<GameSummary>('/api/v1/games/import', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: save,
+  })
+}
+
+export async function restoreLiveSnapshot(gameID: string, save: Blob): Promise<Receipt> {
+  return requestJSON<Receipt>(`/api/v1/games/${encodeURIComponent(gameID)}/live-snapshot`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: save,
+  })
+}
+
 export function buildCommandBatch(snapshot: PlayerSnapshot, seatID: number, orders: DraftOrder[]): CommandBatch {
   return {
     schema_version: 1,
@@ -651,20 +671,28 @@ export function streamURL(gameID: string): string {
   return `${protocol}//${window.location.host}/api/v1/games/${encodeURIComponent(gameID)}/stream`
 }
 
+async function readAPIError(response: Response): Promise<APIError> {
+  let code = 'http_error'
+  let message = `${response.status} ${response.statusText}`
+  try {
+    const payload = (await response.json()) as APIErrorEnvelope
+    if (payload?.error?.code) code = payload.error.code
+    if (payload?.error?.message) message = payload.error.message
+  } catch {
+    // Retain HTTP status and fallback code.
+  }
+  return new APIError(response.status, code, message)
+}
+
+async function requestBlob(input: RequestInfo | URL, init?: RequestInit): Promise<Blob> {
+  const response = await fetch(input, init)
+  if (!response.ok) throw await readAPIError(response)
+  return response.blob()
+}
+
 async function requestJSON<T>(input: RequestInfo | URL, init?: RequestInit): Promise<T> {
   const response = await fetch(input, init)
-  if (!response.ok) {
-    let code = 'http_error'
-    let message = `${response.status} ${response.statusText}`
-    try {
-      const payload = (await response.json()) as APIErrorEnvelope
-      if (payload?.error?.code) code = payload.error.code
-      if (payload?.error?.message) message = payload.error.message
-    } catch {
-      // Retain HTTP status and fallback code.
-    }
-    throw new APIError(response.status, code, message)
-  }
+  if (!response.ok) throw await readAPIError(response)
   return (await response.json()) as T
 }
 

@@ -350,3 +350,4 @@ Original copyrighted assets remain private reference material and are not distri
 - Slice 15.4 Gate-1 rich-state UX audit: `docs/research/SLICE_15_4_GATE1_RICH_STATE_UX_AUDIT_2026-09-09.md` - phase/DecisionView gaps, Encounter/Invasion/Colony Base/Research boundaries, persistence/reconnect/error audit.
 - Slice 15.4 Gate-2 rich interaction draft: `docs/research/SLICE_15_4_GATE2_RICH_INTERACTION_CONTRACT_DRAFT_2026-09-09.md` - blocking decisions, Battle handoff, local Save/Load, lifecycle/error contract and minimum player-safe reads.
 - Slice 15.4 Gate-3 block 1: `docs/research/SLICE_15_4_GATE3_BLOCK1_CLIENT_AUTHORITY_LIFECYCLE_2026-09-09.md` - typed Colony Base/Battle contracts, structured APIError and explicit authoritative connection lifecycle.
+- Slice 15.4 Gate-3 block 2: `docs/research/SLICE_15_4_GATE3_BLOCK2_SAVE_LOAD_RESTORE_UX_2026-09-09.md` - local Save/Load, explicit atomic Restore, fresh-server Import and desktop/320px E2E evidence.

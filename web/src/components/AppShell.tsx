@@ -38,6 +38,9 @@ type AppShellProps = {
   onNavigate: (section: GameSection) => void
   onResourceActivate?: (resourceID: string) => boolean
   onHome: () => void
+  onSaveGame?: () => void
+  onLoadGame?: () => void
+  persistenceBusy?: boolean
   onEndTurn?: () => void
   endTurnDisabled?: boolean
   endTurnLabel?: string
@@ -92,7 +95,7 @@ function NavItems({ items, activeSection, onNavigate }: {
   </>
 }
 
-export function AppShell({ activeSection, gameID, turn, phaseLabel, status, statusTone, lifecycle, resources = [], onNavigate, onResourceActivate, onHome, onEndTurn, endTurnDisabled = false, endTurnLabel, children }: AppShellProps) {
+export function AppShell({ activeSection, gameID, turn, phaseLabel, status, statusTone, lifecycle, resources = [], onNavigate, onResourceActivate, onHome, onSaveGame, onLoadGame, persistenceBusy = false, onEndTurn, endTurnDisabled = false, endTurnLabel, children }: AppShellProps) {
   const { t } = useI18n()
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeResourceID, setActiveResourceID] = useState<string | null>(null)
@@ -169,6 +172,14 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
 
               <div className="main-menu-section">
                 <span className="main-menu-section-title">{t('gameMenu.game')}</span>
+                <button type="button" className="main-menu-item" disabled={!onSaveGame || persistenceBusy} onClick={() => { setMenuOpen(false); onSaveGame?.() }}>
+                  <span className="main-menu-item-glyph" aria-hidden="true"><GameIcon name="check" /></span>
+                  <span><strong>{t('gameMenu.saveGame')}</strong><small>{t('gameMenu.saveGameHint')}</small></span>
+                </button>
+                <button type="button" className="main-menu-item" disabled={!onLoadGame || persistenceBusy} onClick={() => { setMenuOpen(false); onLoadGame?.() }}>
+                  <span className="main-menu-item-glyph" aria-hidden="true"><GameIcon name="open" /></span>
+                  <span><strong>{t('gameMenu.loadGame')}</strong><small>{t('gameMenu.loadGameHint')}</small></span>
+                </button>
                 <button type="button" className="main-menu-item" onClick={() => navigateFromMenu('shipbuilder')}>
                   <ProceduralShipGlyph seed="shipbuilder-menu" hullId="frigate" className="main-menu-vector-glyph" />
                   <span><strong>{t('gameMenu.shipbuilder')}</strong><small>{t('gameMenu.shipbuilderHint')}</small></span>

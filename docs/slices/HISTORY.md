@@ -271,3 +271,11 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Added structured APIError preserving HTTP status/code/message.
 - Added explicit authoritative lifecycle state and synchronized-only direct mutation gating.
 - Browser-verified synced -> fatal/not_found -> synced recovery on canonical 7171 without changing game state.
+
+## 2026-09-09 - Slice 15.4 Gate 3 block 2
+
+- Added local Save Game export through the authoritative live-snapshot endpoint.
+- Added Load Game to both the in-game menu and Main Menu so fresh servers can import saves.
+- Added explicit atomic Restore confirmation for already-hosted game IDs and automatic Import for new IDs.
+- Browser-E2E verified canonical game-1 Restore without state drift and isolated fresh-server Import on temporary 7191; desktop and 320px mobile remain overflow-free.
+- Hardened WebSocket lifecycle so duplicate/old invalidations cannot leave the client stuck in refreshing.
