@@ -11,6 +11,7 @@ import {
   replaceDraftOrder,
   restoreLiveSnapshot,
   streamURL,
+  submitBattleCommand,
   submitColonyBase,
   submitDiplomacy,
   submitInvasion,
@@ -23,6 +24,7 @@ import {
   type Notification,
   type PlanningPreviewSnapshot,
   type PlayerSnapshot,
+  type ProtocolCommand,
   type ResolutionSummary,
 } from './api'
 import { AppShell, LanguageSwitch, StandaloneHeader, type ResourceChip } from './components/AppShell'
@@ -761,6 +763,18 @@ function App() {
     }
   }
 
+  async function runBattleCommand(battleID: number, command: ProtocolCommand) {
+    if (!snapshot || mutationLocked) return
+    setError('')
+    try {
+      await submitBattleCommand(snapshot.view.game_id, battleID, seatID, command)
+      await loadSnapshot(snapshot.view.game_id, seatID)
+    } catch (cause) {
+      setError(errorText(cause))
+      await refreshAfterConflict(cause)
+    }
+  }
+
   function enterGame(selectedGameID: string, section: GameSection = 'galaxy') {
     const reloadSelectedGame = selectedGameID === gameID
     setGameID(selectedGameID)
@@ -1133,6 +1147,8 @@ function App() {
             if (summaryID) acknowledgeResolution(summaryID)
             navigate({ kind: 'game', gameID: route.gameID, section: 'galaxy' })
           }}
+          onBattleCommand={(command) => runBattleCommand(route.entityID!, command)}
+          commandsDisabled={mutationLocked}
           t={t}
         />
       ) : snapshot.view.phase === 'completed' ? null

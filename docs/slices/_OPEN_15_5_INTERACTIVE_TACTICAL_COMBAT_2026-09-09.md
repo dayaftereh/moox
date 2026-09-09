@@ -104,9 +104,9 @@ Defer unless explicitly accepted at Gate 2:
 - [x] Implement authoritative tactical movement state/rules/commands and deterministic legal-action projection in Go.
 - [x] Integrate movement with initiative, range, existing Laser readiness/fire, damage/destruction and battle completion.
 - [x] Add player-safe BattleSession/App/server reads required by the browser without leaking hidden state.
-- [ ] Implement the interactive 2D battlefield with active-ship, legal-move, weapon and legal-target overlays on an effectively unbounded coordinate plane.
-- [ ] Implement Tactical Scan/ship inspection with participant-safe weapon/readiness and damage/status details.
-- [ ] Implement responsive mouse/touch interaction and 15.1 DE/EN localization.
+- [x] Implement the interactive 2D battlefield with active-ship, legal-move, weapon and legal-target overlays on an effectively unbounded coordinate plane.
+- [x] Implement Tactical Scan/ship inspection with participant-safe weapon/readiness and damage/status details.
+- [x] Implement responsive mouse/touch interaction and 15.1 DE/EN localization.
 - [ ] Integrate 15.3 accepted ship/battle visuals with safe fallbacks.
 - [ ] Add deterministic Go and browser regressions for movement, firing, rejection/rollback and strategic result handoff.
 ## Gate 4 - Independent Tactical QA + close
@@ -131,3 +131,4 @@ Gate 2 is **complete and frozen** by explicit user acceptance. Frozen evidence: 
 
 - [x] Gate 3 Block 1 server core: 16-way Facing, original move-cost authority, Movement Points, `battle.move_ship`, deterministic legal-move projection, 2v2 activation/round flow and 1v1-2v2 strategic Tactical metadata. Evidence: `docs/research/SLICE_15_5_GATE3_BLOCK1_TACTICAL_MOVEMENT_CORE_2026-09-10.md`.
 - [x] Gate 3 Block 2 participant projection/API: seat-filtered command catalogs, RNG redaction, Scan/status ship views, legal Laser target projection and typed browser Battle-command helpers. Evidence: `docs/research/SLICE_15_5_GATE3_BLOCK2_TACTICAL_PROJECTION_API_2026-09-10.md`.
+- [x] Gate 3 Block 3 battlefield UI: real SVG Tactical plane, authoritative Move/Fire/End-Activation actions, read-only Scan, open-field pan/zoom/pinch, EN/DE responsive controls and real 2v2 browser QA through Round 2. Evidence: `docs/research/SLICE_15_5_GATE3_BLOCK3_TACTICAL_BATTLEFIELD_UI_2026-09-10.md`.

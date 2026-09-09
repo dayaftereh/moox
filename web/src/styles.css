@@ -3686,3 +3686,82 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
     min-height: 44px;
   }
 }
+/* Slice 15.5 interactive Tactical battlefield */
+.tactical-battlefield {
+  display: grid;
+  gap: 12px;
+  margin-top: 4px;
+  padding: 12px;
+  border: 1px solid rgba(79, 122, 151, .7);
+  border-radius: 12px;
+  background: radial-gradient(circle at 50% 20%, rgba(28, 58, 79, .42), rgba(4, 12, 20, .93) 62%);
+}
+.tactical-battlefield-topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; }
+.tactical-battlefield-topbar h3 { margin: 2px 0 4px; font-size: 1.15rem; }
+.tactical-camera-controls, .tactical-modebar { display: flex; flex-wrap: wrap; gap: 7px; align-items: center; }
+.tactical-modebar { padding: 8px; border-radius: 9px; background: rgba(8, 23, 35, .82); }
+.tactical-modebar button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+.tactical-modebar svg { width: 16px; height: 16px; }
+.tactical-icon-button { min-width: 38px; padding-inline: 10px; font-size: 1rem; font-weight: 900; }
+.tactical-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(250px, 305px); gap: 12px; align-items: stretch; min-width: 0; }
+.tactical-viewport-shell { position: relative; min-width: 0; min-height: 500px; overflow: hidden; border: 1px solid rgba(72, 117, 148, .66); border-radius: 11px; background: #050d15; }
+.tactical-viewport { display: block; width: 100%; height: 100%; min-height: 500px; touch-action: none; user-select: none; cursor: grab; outline: none; }
+.tactical-viewport:active { cursor: grabbing; }
+.tactical-space { fill: rgba(2, 9, 16, .94); }
+.tactical-grid-line { fill: none; stroke: rgba(99, 145, 173, .16); stroke-width: .045; vector-effect: non-scaling-stroke; }
+.tactical-move-node { cursor: pointer; outline: none; }
+.tactical-move-node > circle:first-child { fill: rgba(85, 211, 227, .8); stroke: rgba(184, 247, 255, .9); stroke-width: .075; vector-effect: non-scaling-stroke; }
+.tactical-move-node:hover > circle:first-child, .tactical-move-node:focus > circle:first-child { fill: #d2fbff; stroke: #fff; }
+.tactical-move-hit { fill: transparent; stroke: none; pointer-events: all; }
+.tactical-ship { cursor: pointer; outline: none; }
+.tactical-ship-hull { stroke-width: .09; vector-effect: non-scaling-stroke; }
+.tactical-ship.own .tactical-ship-hull { fill: #74cfdf; stroke: #d1f8ff; }
+.tactical-ship.enemy .tactical-ship-hull { fill: #d47976; stroke: #ffd4cf; }
+.tactical-ship-engine { fill: #f0d682; filter: drop-shadow(0 0 .18px #f0d682); }
+.tactical-ship.destroyed { opacity: .32; filter: grayscale(1); }
+.tactical-active-ring, .tactical-target-ring, .tactical-scan-ring { fill: none; stroke-width: .11; vector-effect: non-scaling-stroke; }
+.tactical-active-ring { stroke: #f0c56d; stroke-dasharray: .35 .22; }
+.tactical-target-ring { stroke: #ff6f61; }
+.tactical-scan-ring { stroke: #76e39a; stroke-dasharray: .2 .15; }
+.tactical-ship-label { fill: #eef8ff; font-size: .66px; font-weight: 800; paint-order: stroke; stroke: rgba(0, 0, 0, .92); stroke-width: .16px; stroke-linejoin: round; pointer-events: none; }
+.tactical-viewport-hint { position: absolute; left: 10px; bottom: 9px; max-width: calc(100% - 20px); padding: 5px 8px; border-radius: 6px; background: rgba(3, 11, 18, .78); color: #91a8b9; font-size: .66rem; pointer-events: none; }
+.tactical-command-panel { display: grid; align-content: start; gap: 10px; min-width: 0; }
+.tactical-command-panel .card { min-width: 0; }
+.tactical-command-panel h4 { margin: 2px 0 4px; font-size: .95rem; }
+.tactical-quick-stats, .tactical-scan-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 10px 0 0; }
+.tactical-quick-stats > div, .tactical-scan-facts > div { min-width: 0; padding: 7px; border-radius: 7px; background: rgba(13, 34, 48, .72); }
+.tactical-quick-stats dt, .tactical-scan-facts dt { color: #8da5b6; font-size: .58rem; text-transform: uppercase; letter-spacing: .04em; }
+.tactical-quick-stats dd, .tactical-scan-facts dd { margin: 3px 0 0; font-size: .75rem; font-weight: 800; overflow-wrap: anywhere; }
+.tactical-action-card { display: grid; gap: 7px; }
+.tactical-target-list { display: grid; gap: 5px; }
+.tactical-scan-details { display: grid; gap: 10px; min-width: 0; }
+.tactical-health-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 8px; align-items: center; font-size: .72rem; }
+.tactical-health-meter { grid-column: 1 / -1; height: 7px; overflow: hidden; border-radius: 999px; background: rgba(3, 11, 18, .9); }
+.tactical-health-meter > span { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #7cc9dd, #d8eff4); }
+.tactical-scan-weapons { display: grid; gap: 6px; }
+.tactical-weapon-row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 7px; align-items: center; padding: 6px 7px; border-radius: 7px; background: rgba(9, 28, 41, .75); font-size: .69rem; }
+.tactical-primary-actions { display: grid; gap: 7px; }
+.tactical-primary-actions button { width: 100%; }
+
+@media (max-width: 899px) {
+  .tactical-layout { grid-template-columns: minmax(0, 1fr); }
+  .tactical-viewport-shell, .tactical-viewport { min-height: 420px; }
+  .tactical-command-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tactical-primary-actions { grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 699px) {
+  .tactical-battlefield { padding: 8px; border-radius: 9px; }
+  .tactical-battlefield-topbar { flex-direction: column; }
+  .tactical-camera-controls { width: 100%; }
+  .tactical-camera-controls .button-secondary:not(.tactical-icon-button) { flex: 1 1 auto; }
+  .tactical-modebar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tactical-modebar button { min-width: 0; padding-inline: 5px; }
+  .tactical-viewport-shell, .tactical-viewport { min-height: min(56vh, 430px); }
+  .tactical-command-panel { grid-template-columns: minmax(0, 1fr); }
+  .tactical-primary-actions { grid-column: auto; grid-template-columns: minmax(0, 1fr); }
+  .tactical-quick-stats, .tactical-scan-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tactical-weapon-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .tactical-weapon-row .badge { grid-column: 1 / -1; justify-self: start; }
+  .tactical-viewport-hint { font-size: .61rem; }
+}

@@ -1,5 +1,6 @@
 ﻿import { useEffect, useMemo, useState } from 'react'
-import { type BattleSide, type PlayerSnapshot, type ResolutionSummary } from './api'
+import { type BattleSide, type PlayerSnapshot, type ProtocolCommand, type ResolutionSummary } from './api'
+import { TacticalBattlefield } from './TacticalBattlefield'
 import { GameIcon } from './components/GameIcon'
 import { StarArt } from './components/StarArt'
 import { Card, EmptyState, Notice } from './components/ui'
@@ -12,6 +13,8 @@ type BattleRouteViewProps = {
   battleID: number
   resolution?: ResolutionSummary
   onContinue: (summaryID?: string) => void
+  onBattleCommand: (command: ProtocolCommand) => Promise<void>
+  commandsDisabled: boolean
   t: Translator
 }
 
@@ -20,7 +23,7 @@ function humanize(value: string | undefined) {
   return value.replace(/[_-]+/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
-export function BattleRouteView({ snapshot, battleID, resolution, onContinue, t }: BattleRouteViewProps) {
+export function BattleRouteView({ snapshot, battleID, resolution, onContinue, onBattleCommand, commandsDisabled, t }: BattleRouteViewProps) {
   const [tacticalShellOpen, setTacticalShellOpen] = useState(false)
   const battle = snapshot.battles.find((candidate) => candidate.spec.id === battleID)
   const battleSummary = resolution?.kind === 'battle_completed' && resolution.battle?.battle_id === battleID ? resolution.battle : undefined
@@ -116,13 +119,19 @@ export function BattleRouteView({ snapshot, battleID, resolution, onContinue, t 
               <p>{t('battle.entryBody')}</p>
               {!tacticalShellOpen ? (
                 <button type="button" className="button-primary" onClick={() => setTacticalShellOpen(true)}><GameIcon name="ship" />{t('battle.enterTactical')}</button>
+              ) : battle.tactical ? (
+                <TacticalBattlefield
+                  battle={battle}
+                  ownSeatID={snapshot.view.seat.seat.id}
+                  shipName={shipName}
+                  empireName={empireName}
+                  commandsDisabled={commandsDisabled}
+                  onCommand={onBattleCommand}
+                  onBack={() => setTacticalShellOpen(false)}
+                  t={t}
+                />
               ) : (
-                <div className="battle-tactical-placeholder">
-                  <p className="eyebrow">{t('battle.tacticalShellEyebrow')}</p>
-                  <h3>{t('battle.tacticalShellTitle')}</h3>
-                  <p>{t('battle.tacticalShellBody')}</p>
-                  <button type="button" className="button-secondary" onClick={() => setTacticalShellOpen(false)}>{t('battle.backToEncounter')}</button>
-                </div>
+                <Notice title={t('battle.tacticalUnavailableTitle')} tone="warning">{t('battle.noTacticalSpec')}</Notice>
               )}
             </>
           ) : (
