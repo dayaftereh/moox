@@ -80,36 +80,14 @@ func tacticalMetadataForEncounter(state *core.GameState, encounter Encounter, ru
 	if rules == nil {
 		return nil, "", fmt.Errorf("tactical encounter rules are nil")
 	}
-	if len(encounter.Attacker.ShipIDs) != 1 || len(encounter.Defender.ShipIDs) != 1 {
-		return nil, "Slice 07 tactical baseline requires exactly one combat Ship per side", nil
+	if len(encounter.Attacker.ShipIDs) < 1 || len(encounter.Attacker.ShipIDs) > 2 || len(encounter.Defender.ShipIDs) < 1 || len(encounter.Defender.ShipIDs) > 2 {
+		return nil, "Slice 15.5 tactical baseline supports one or two combat Ships per side", nil
 	}
 	if len(encounter.Attacker.CivilianFleetIDs) != 0 || len(encounter.Defender.CivilianFleetIDs) != 0 {
-		return nil, "Slice 07 tactical baseline does not support civilian Fleet context", nil
+		return nil, "Slice 15.5 tactical baseline does not support civilian Fleet context", nil
 	}
 	if len(encounter.DefenderColonyIDs) != 0 {
-		return nil, "Slice 07 tactical baseline does not support Colony or planet defense", nil
-	}
-	attacker := shipByID(state, encounter.Attacker.ShipIDs[0])
-	defender := shipByID(state, encounter.Defender.ShipIDs[0])
-	if attacker == nil || defender == nil {
-		return nil, "", fmt.Errorf("encounter tactical snapshot references missing strategic Ship")
-	}
-	if attacker.EmpireID != encounter.Attacker.EmpireID || defender.EmpireID != encounter.Defender.EmpireID {
-		return nil, "", fmt.Errorf("encounter tactical Ship ownership differs from strategic side identity")
-	}
-	fusion, ok := tacticalDriveRule(rules, "fusion_drive")
-	if !ok {
-		return nil, "", fmt.Errorf("tactical rules have no fusion_drive")
-	}
-	nuclear, ok := tacticalDriveRule(rules, "nuclear_drive")
-	if !ok {
-		return nil, "", fmt.Errorf("tactical rules have no nuclear_drive")
-	}
-	if reason := baselineAttackerUnsupportedReason(*attacker, rules); reason != "" {
-		return nil, reason, nil
-	}
-	if reason := baselineDefenderUnsupportedReason(*defender, rules); reason != "" {
-		return nil, reason, nil
+		return nil, "Slice 15.5 tactical baseline does not support Colony or planet defense", nil
 	}
 
 	tactical := &battle.TacticalSpec{
@@ -126,51 +104,89 @@ func tacticalMetadataForEncounter(state *core.GameState, encounter Encounter, ru
 		},
 		InitiativeEnabled: true,
 		InitialRNGState:   battle.BaselineTacticalRNGState,
-		Ships: []battle.TacticalShipSpec{
-			baselineTacticalShip(*attacker, encounter.Attacker.SeatID, 10, 10, fusion.MaxSpeed, rules, true),
-			baselineTacticalShip(*defender, encounter.Defender.SeatID, 11, 10, nuclear.MaxSpeed, rules, false),
-		},
+		Ships:             make([]battle.TacticalShipSpec, 0, len(encounter.Attacker.ShipIDs)+len(encounter.Defender.ShipIDs)),
 	}
+
+	laserCount := 0
+	appendSide := func(side EncounterSide, x, facing int) (string, error) {
+		for i, shipID := range side.ShipIDs {
+			ship := shipByID(state, shipID)
+			if ship == nil {
+				return "", fmt.Errorf("encounter tactical snapshot references missing strategic Ship %d", shipID)
+			}
+			if ship.EmpireID != side.EmpireID {
+				return "", fmt.Errorf("encounter tactical Ship %d ownership differs from strategic side identity", shipID)
+			}
+			if reason := baselineCombatantUnsupportedReason(*ship, rules); reason != "" {
+				return reason, nil
+			}
+			drive, ok := tacticalDriveRule(rules, ship.Spec.WarpDriveID)
+			if !ok {
+				return "", fmt.Errorf("tactical rules have no drive %q", ship.Spec.WarpDriveID)
+			}
+			if len(ship.Spec.Weapons) == 1 {
+				laserCount++
+			}
+			y := tacticalDeploymentY(len(side.ShipIDs), i)
+			tactical.Ships = append(tactical.Ships, baselineTacticalShip(*ship, side.SeatID, x, y, facing, drive.MaxSpeed, rules))
+		}
+		return "", nil
+	}
+
+	multiShip := len(encounter.Attacker.ShipIDs) > 1 || len(encounter.Defender.ShipIDs) > 1
+	attackerX, defenderX := 10, 11
+	if multiShip {
+		defenderX = 14
+	}
+	if reason, err := appendSide(encounter.Attacker, attackerX, 0); err != nil || reason != "" {
+		return nil, reason, err
+	}
+	if reason, err := appendSide(encounter.Defender, defenderX, 8); err != nil || reason != "" {
+		return nil, reason, err
+	}
+	if laserCount == 0 {
+		return nil, "Slice 15.5 Tactical Laser baseline requires at least one supported Laser across the battle", nil
+	}
+
 	sort.Slice(tactical.Ships, func(i, j int) bool { return tactical.Ships[i].ShipID < tactical.Ships[j].ShipID })
 	return tactical, "", nil
 }
 
-func tacticalDriveRule(rules *ruleset.TacticalCombatFile, id string) (ruleset.TacticalDriveSpeedRule, bool) {
-	for _, drive := range rules.Drives {
-		if drive.DriveID == id {
-			return drive, true
+func tacticalDeploymentY(count, index int) int {
+	if count <= 1 {
+		return 10
+	}
+	return 9 + index*2
+}
+
+func baselineCombatantUnsupportedReason(ship core.Ship, rules *ruleset.TacticalCombatFile) string {
+	if ship.Spec.HullID != rules.Frigate.HullID || ship.Spec.ComputerID != rules.Computer.ComputerID || ship.Spec.ArmorID != rules.Frigate.ArmorID || ship.Spec.ShieldID != "" || ship.Spec.FuelCellID != rules.Frigate.FuelCellID {
+		return "Slice 15.5 tactical combatant requires Frigate/Electronic/Titanium/no-shield/standard-fuel equipment"
+	}
+	if _, ok := tacticalDriveRule(rules, ship.Spec.WarpDriveID); !ok {
+		return fmt.Sprintf("Slice 15.5 tactical combatant drive %q is unsupported", ship.Spec.WarpDriveID)
+	}
+	if len(ship.Spec.Weapons) > 1 {
+		return "Slice 15.5 tactical combatant supports at most one standard Laser"
+	}
+	if len(ship.Spec.Weapons) == 1 {
+		weapon := ship.Spec.Weapons[0]
+		if weapon.Slot != 0 || weapon.WeaponID != rules.Weapon.ID || weapon.Count != 1 {
+			return "Slice 15.5 tactical combatant weapon must be exactly one slot-0 standard Laser"
 		}
 	}
-	return ruleset.TacticalDriveSpeedRule{}, false
-}
-
-func baselineAttackerUnsupportedReason(ship core.Ship, rules *ruleset.TacticalCombatFile) string {
-	if ship.Spec.HullID != rules.Frigate.HullID || ship.Spec.WarpDriveID != "fusion_drive" || ship.Spec.ComputerID != rules.Computer.ComputerID || ship.Spec.ArmorID != rules.Frigate.ArmorID || ship.Spec.ShieldID != "" || ship.Spec.FuelCellID != rules.Frigate.FuelCellID {
-		return "Slice 07 tactical attacker requires Frigate/Fusion/Electronic/Titanium/no-shield/standard-fuel equipment"
-	}
-	if len(ship.Spec.Weapons) != 1 || ship.Spec.Weapons[0].Slot != 0 || ship.Spec.Weapons[0].WeaponID != rules.Weapon.ID || ship.Spec.Weapons[0].Count != 1 {
-		return "Slice 07 tactical attacker requires exactly one slot-0 standard Laser"
-	}
 	return ""
 }
 
-func baselineDefenderUnsupportedReason(ship core.Ship, rules *ruleset.TacticalCombatFile) string {
-	if ship.Spec.HullID != rules.Frigate.HullID || ship.Spec.WarpDriveID != "nuclear_drive" || ship.Spec.ComputerID != rules.Computer.ComputerID || ship.Spec.ArmorID != rules.Frigate.ArmorID || ship.Spec.ShieldID != "" || ship.Spec.FuelCellID != rules.Frigate.FuelCellID {
-		return "Slice 07 tactical defender requires Frigate/Nuclear/Electronic/Titanium/no-shield/standard-fuel equipment"
-	}
-	if len(ship.Spec.Weapons) != 0 {
-		return "Slice 07 tactical defender must be unarmed"
-	}
-	return ""
-}
-
-func baselineTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, speed int, rules *ruleset.TacticalCombatFile, armed bool) battle.TacticalShipSpec {
+func baselineTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing, speed int, rules *ruleset.TacticalCombatFile) battle.TacticalShipSpec {
 	out := battle.TacticalShipSpec{
 		ShipID:             ship.ID,
 		EmpireID:           ship.EmpireID,
 		SeatID:             seatID,
 		X:                  x,
 		Y:                  y,
+		Facing:             facing,
+		TurningMode:        battle.TacticalTurningNormal,
 		HullID:             ship.Spec.HullID,
 		WarpDriveID:        ship.Spec.WarpDriveID,
 		ComputerID:         ship.Spec.ComputerID,
@@ -181,8 +197,17 @@ func baselineTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, speed in
 		ArmorMax:           rules.Frigate.ArmorHits,
 		StructureMax:       rules.Frigate.Structure,
 	}
-	if armed {
+	if len(ship.Spec.Weapons) == 1 {
 		out.Weapons = []battle.TacticalWeaponSpec{{Slot: 0, WeaponID: rules.Weapon.ID, Count: 1, MinDamage: rules.Weapon.MinDamage, MaxDamage: rules.Weapon.MaxDamage}}
 	}
 	return out
+}
+
+func tacticalDriveRule(rules *ruleset.TacticalCombatFile, id string) (ruleset.TacticalDriveSpeedRule, bool) {
+	for _, drive := range rules.Drives {
+		if drive.DriveID == id {
+			return drive, true
+		}
+	}
+	return ruleset.TacticalDriveSpeedRule{}, false
 }

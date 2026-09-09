@@ -314,3 +314,168 @@ func mustFireCommand(t *testing.T, sequence uint32, shipID, targetID core.ID, sl
 	}
 	return cmd
 }
+
+func TestTacticalMoveCostFacingAndTurningModes(t *testing.T) {
+	cost, facing := tacticalMoveCost(10, 10, 0, 13, 10, 2)
+	if cost != 3 || facing != 0 {
+		t.Fatalf("straight move cost/facing=%d/%d want 3/0", cost, facing)
+	}
+	cost, facing = tacticalMoveCost(10, 10, 0, 10, 13, 2)
+	if cost != 11 || facing != 4 {
+		t.Fatalf("normal quarter-turn cost/facing=%d/%d want 11/4", cost, facing)
+	}
+	cost, facing = tacticalMoveCost(10, 10, 0, 10, 13, 1)
+	if cost != 7 || facing != 4 {
+		t.Fatalf("stabilizer quarter-turn cost/facing=%d/%d want 7/4", cost, facing)
+	}
+	cost, facing = tacticalMoveCost(10, 10, 0, 10, 13, 0)
+	if cost != 3 || facing != 4 {
+		t.Fatalf("nullifier quarter-turn cost/facing=%d/%d want 3/4", cost, facing)
+	}
+	cost, facing = tacticalMoveCost(10, 10, 15, 13, 9, 2)
+	if facing != 15 || cost != 4 {
+		t.Fatalf("diagonal move cost/facing=%d/%d want 4/15", cost, facing)
+	}
+}
+
+func TestTacticalMoveCommandProjectsAndCommitsAuthoritatively(t *testing.T) {
+	s := newStartedTacticalSession(t)
+	initial := s.View()
+	if initial.Tactical == nil || !initial.Tactical.CanEndActivation {
+		t.Fatalf("initial tactical view=%+v", initial.Tactical)
+	}
+	var straight *TacticalMoveOption
+	for i := range initial.Tactical.LegalMoves {
+		move := &initial.Tactical.LegalMoves[i]
+		if move.X == 13 && move.Y == 10 {
+			straight = move
+			break
+		}
+	}
+	if straight == nil || straight.MoveCost != 3 || straight.ResultingFacing != 0 || straight.MovementRemainingAfter != 19 {
+		t.Fatalf("straight legal move=%+v", straight)
+	}
+	for _, move := range initial.Tactical.LegalMoves {
+		if move.X == 11 && move.Y == 10 {
+			t.Fatal("occupied defender coordinate was projected as legal")
+		}
+	}
+	beforeRNG := initial.Tactical.State.RNGState
+	move := mustMoveCommand(t, 1, 100, 13, 10)
+	submitPrepared(t, s, 1, move)
+	after := s.View()
+	ship := after.Tactical.State.Ships[0]
+	if ship.X != 13 || ship.Y != 10 || ship.Facing != 0 || ship.MovementCurrent != 19 || ship.MovementMax != 22 {
+		t.Fatalf("moved ship=%+v", ship)
+	}
+	if after.Tactical.State.RNGState != beforeRNG {
+		t.Fatalf("movement consumed RNG: before=%08X after=%08X", beforeRNG, after.Tactical.State.RNGState)
+	}
+	if after.Tactical.State.NextCommandSequence != 2 || after.Tactical.Events[len(after.Tactical.Events)-1].Kind != "ship_moved" {
+		t.Fatalf("movement sequence/events=%d/%v", after.Tactical.State.NextCommandSequence, after.Tactical.Events)
+	}
+}
+
+func TestTacticalRejectedMovesDoNotMutate(t *testing.T) {
+	tests := []struct {
+		name string
+		seat protocol.SeatID
+		cmd  protocol.Command
+	}{
+		{name: "wrong seat", seat: 2, cmd: mustMoveCommand(t, 1, 100, 13, 10)},
+		{name: "wrong sequence", seat: 1, cmd: mustMoveCommand(t, 2, 100, 13, 10)},
+		{name: "wrong active ship", seat: 1, cmd: mustMoveCommand(t, 1, 200, 13, 10)},
+		{name: "same coordinate", seat: 1, cmd: mustMoveCommand(t, 1, 100, 10, 10)},
+		{name: "occupied", seat: 1, cmd: mustMoveCommand(t, 1, 100, 11, 10)},
+		{name: "over budget", seat: 1, cmd: mustMoveCommand(t, 1, 100, 100, 10)},
+		{name: "technical envelope", seat: 1, cmd: mustMoveCommand(t, 1, 100, TacticalCoordinateSafetyLimit+1, 10)},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			s := newStartedTacticalSession(t)
+			before := s.View()
+			if _, err := s.PrepareCommand(tc.seat, tc.cmd); err == nil {
+				t.Fatal("expected move rejection")
+			}
+			if after := s.View(); !reflect.DeepEqual(before, after) {
+				t.Fatalf("rejected move mutated battle: before=%+v after=%+v", before, after)
+			}
+		})
+	}
+}
+
+func TestTacticalTwoByTwoActivationAndRoundReset(t *testing.T) {
+	spec := baselineTacticalBattleSpec()
+	spec.Attacker.ShipIDs = []core.ID{100, 101}
+	spec.Defender.ShipIDs = []core.ID{200, 201}
+	attackerLead := spec.Tactical.Ships[0]
+	defenderLead := spec.Tactical.Ships[1]
+	attackerWing := defenderLead
+	attackerWing.ShipID = 101
+	attackerWing.EmpireID = 1
+	attackerWing.SeatID = 1
+	attackerWing.X = 10
+	attackerWing.Y = 12
+	attackerWing.Facing = 0
+	defenderLead.X = 20
+	defenderLead.Y = 10
+	defenderLead.Facing = 8
+	defenderWing := attackerLead
+	defenderWing.ShipID = 201
+	defenderWing.EmpireID = 2
+	defenderWing.SeatID = 2
+	defenderWing.X = 20
+	defenderWing.Y = 12
+	defenderWing.Facing = 8
+	spec.Tactical.Ships = []TacticalShipSpec{attackerLead, attackerWing, defenderLead, defenderWing}
+	s, err := NewSession(spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Start(); err != nil {
+		t.Fatal(err)
+	}
+	view := s.View()
+	wantOrder := []core.ID{100, 201, 101, 200}
+	if !reflect.DeepEqual(view.Tactical.State.InitiativeOrder, wantOrder) || view.Tactical.State.ActiveShipID != 100 {
+		t.Fatalf("2v2 initiative=%v active=%d", view.Tactical.State.InitiativeOrder, view.Tactical.State.ActiveShipID)
+	}
+	sequence := uint32(1)
+	for _, step := range []struct {
+		seat       protocol.SeatID
+		ship, next core.ID
+	}{{1, 100, 201}, {2, 201, 101}, {1, 101, 200}, {2, 200, 100}} {
+		cmd, _ := NewEndActivationCommand(sequence, EndActivationPayload{ShipID: step.ship})
+		submitPrepared(t, s, step.seat, cmd)
+		sequence++
+		if got := s.View().Tactical.State.ActiveShipID; got != step.next {
+			t.Fatalf("after ship %d active=%d want %d", step.ship, got, step.next)
+		}
+	}
+	round2 := s.View().Tactical.State
+	if round2.Round != 2 {
+		t.Fatalf("round=%d want 2", round2.Round)
+	}
+	for _, ship := range round2.Ships {
+		if !ship.Destroyed && (ship.ActivationComplete || ship.MovementCurrent != ship.MovementMax) {
+			t.Fatalf("round reset ship=%+v", ship)
+		}
+	}
+}
+
+func TestTacticalTwoByTwoRejectsThirdShipPerSide(t *testing.T) {
+	spec := baselineTacticalBattleSpec()
+	spec.Attacker.ShipIDs = []core.ID{100, 101, 102}
+	if _, err := NewSession(spec); err == nil || !strings.Contains(err.Error(), "one or two combat Ships per side") {
+		t.Fatalf("unexpected 3-ship validation error: %v", err)
+	}
+}
+
+func mustMoveCommand(t *testing.T, sequence uint32, shipID core.ID, x, y int) protocol.Command {
+	t.Helper()
+	cmd, err := NewMoveShipCommand(sequence, MoveShipPayload{ShipID: shipID, X: x, Y: y})
+	if err != nil {
+		t.Fatal(err)
+	}
+	return cmd
+}

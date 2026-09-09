@@ -362,14 +362,14 @@ func TestParallelTacticalBattlesKeepLocalEventsAndGlobalStableCompletionOrder(t 
 
 func TestUnsupportedStrategicEncounterRemainsExplicitManualLifecycleBattle(t *testing.T) {
 	state, seats, fixture := makeTacticalStrategicFixture(t, 1)
-	// Arm the defender too: this remains a structurally valid strategic Ship,
-	// but it is deliberately outside the Slice-07 tactical baseline.
+	// Give the defender a two-cannon mount: this remains a structurally valid strategic Ship,
+	// but it is deliberately outside the frozen Slice-15.5 one-standard-Laser baseline.
 	for i := range state.Ships {
 		if state.Ships[i].ID == fixture.defenderShipIDs[0] {
 			state.Ships[i].Spec.SpaceUsed = 10
 			state.Ships[i].Spec.BaseDesignCostPP = 30
 			state.Ships[i].Spec.ProductionCostPP = 30
-			state.Ships[i].Spec.Weapons = []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1}}
+			state.Ships[i].Spec.Weapons = []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 2}}
 		}
 	}
 	if err := state.Validate(); err != nil {

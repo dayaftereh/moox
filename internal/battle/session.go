@@ -286,8 +286,13 @@ func (s *Session) View() View {
 		result.DestroyedShipIDs = append([]core.ID(nil), s.result.DestroyedShipIDs...)
 		view.Result = &result
 	}
-	if s.tactical != nil {
-		view.Tactical = &TacticalView{State: cloneTacticalState(s.tactical.state), Events: cloneTacticalEvents(s.tactical.events)}
+	if s.tactical != nil && s.spec.Tactical != nil {
+		tactical := buildTacticalView(*s.spec.Tactical, *s.tactical)
+		if s.phase != PhaseActive {
+			tactical.LegalMoves = nil
+			tactical.CanEndActivation = false
+		}
+		view.Tactical = &tactical
 	}
 	return view
 }

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"math"
 	"sort"
 
 	"moox/internal/core"
@@ -11,11 +12,17 @@ import (
 )
 
 const (
+	CommandMoveShip        = "battle.move_ship"
 	CommandFireBeam        = "battle.fire_beam"
 	CommandEndActivation   = "battle.end_activation"
 	TacticalOutcomeVictory = "tactical_victory"
 
 	BaselineTacticalRNGState uint32 = 0x001500BD
+
+	TacticalTurningNormal             = "normal"
+	TacticalTurningInertialStabilizer = "inertial_stabilizer"
+	TacticalTurningInertialNullifier  = "inertial_nullifier"
+	TacticalCoordinateSafetyLimit     = 1_000_000
 )
 
 type TacticalRulesSnapshot struct {
@@ -44,6 +51,8 @@ type TacticalShipSpec struct {
 	SeatID             protocol.SeatID      `json:"seat_id"`
 	X                  int                  `json:"x"`
 	Y                  int                  `json:"y"`
+	Facing             int                  `json:"facing"`
+	TurningMode        string               `json:"turning_mode,omitempty"`
 	HullID             string               `json:"hull_id"`
 	WarpDriveID        string               `json:"warp_drive_id"`
 	ComputerID         string               `json:"computer_id"`
@@ -69,11 +78,17 @@ type TacticalWeaponState struct {
 }
 
 type TacticalShipState struct {
-	ShipID          core.ID               `json:"ship_id"`
-	ArmorCurrent    int                   `json:"armor_current"`
-	StructureDamage int                   `json:"structure_damage"`
-	Weapons         []TacticalWeaponState `json:"weapons,omitempty"`
-	Destroyed       bool                  `json:"destroyed"`
+	ShipID             core.ID               `json:"ship_id"`
+	X                  int                   `json:"x"`
+	Y                  int                   `json:"y"`
+	Facing             int                   `json:"facing"`
+	MovementCurrent    int                   `json:"movement_current"`
+	MovementMax        int                   `json:"movement_max"`
+	ActivationComplete bool                  `json:"activation_complete"`
+	ArmorCurrent       int                   `json:"armor_current"`
+	StructureDamage    int                   `json:"structure_damage"`
+	Weapons            []TacticalWeaponState `json:"weapons,omitempty"`
+	Destroyed          bool                  `json:"destroyed"`
 }
 
 type TacticalState struct {
@@ -93,9 +108,25 @@ type TacticalEvent struct {
 	Data            json.RawMessage `json:"data,omitempty"`
 }
 
+type TacticalMoveOption struct {
+	X                      int `json:"x"`
+	Y                      int `json:"y"`
+	MoveCost               int `json:"move_cost"`
+	ResultingFacing        int `json:"resulting_facing"`
+	MovementRemainingAfter int `json:"movement_remaining_after"`
+}
+
 type TacticalView struct {
-	State  TacticalState   `json:"state"`
-	Events []TacticalEvent `json:"events"`
+	State            TacticalState        `json:"state"`
+	Events           []TacticalEvent      `json:"events"`
+	LegalMoves       []TacticalMoveOption `json:"legal_moves,omitempty"`
+	CanEndActivation bool                 `json:"can_end_activation"`
+}
+
+type MoveShipPayload struct {
+	ShipID core.ID `json:"ship_id"`
+	X      int     `json:"x"`
+	Y      int     `json:"y"`
 }
 
 type FireBeamPayload struct {
@@ -130,6 +161,10 @@ func (p *PreparedCommand) Result() *Result {
 	return &out
 }
 
+func NewMoveShipCommand(sequence uint32, payload MoveShipPayload) (protocol.Command, error) {
+	return protocol.NewCommand(sequence, CommandMoveShip, payload)
+}
+
 func NewFireBeamCommand(sequence uint32, payload FireBeamPayload) (protocol.Command, error) {
 	return protocol.NewCommand(sequence, CommandFireBeam, payload)
 }
@@ -158,32 +193,91 @@ func validateTacticalSpec(spec Spec) error {
 	if err := validateBaselineRules(t.Rules); err != nil {
 		return err
 	}
-	if len(spec.Attacker.ShipIDs) != 1 || len(spec.Defender.ShipIDs) != 1 || len(t.Ships) != 2 {
-		return fmt.Errorf("Slice 07 tactical fixture requires exactly one combat Ship per side")
+	if len(spec.Attacker.ShipIDs) < 1 || len(spec.Attacker.ShipIDs) > 2 || len(spec.Defender.ShipIDs) < 1 || len(spec.Defender.ShipIDs) > 2 {
+		return fmt.Errorf("Slice 15.5 tactical baseline supports one or two combat Ships per side")
+	}
+	if len(t.Ships) != len(spec.Attacker.ShipIDs)+len(spec.Defender.ShipIDs) {
+		return fmt.Errorf("tactical ship count does not match strategic sides")
 	}
 	if len(spec.Attacker.CivilianFleetIDs) != 0 || len(spec.Defender.CivilianFleetIDs) != 0 || len(spec.DefenderColonyIDs) != 0 {
-		return fmt.Errorf("Slice 07 tactical fixture does not support civilian or colony context")
+		return fmt.Errorf("Slice 15.5 tactical baseline does not support civilian or colony context")
 	}
-	if t.Ships[0].ShipID >= t.Ships[1].ShipID {
-		return fmt.Errorf("tactical ships must be strictly ascending by strategic ship id")
+	byID := make(map[core.ID]TacticalShipSpec, len(t.Ships))
+	occupied := make(map[[2]int]core.ID, len(t.Ships))
+	var previous core.ID
+	for i, ship := range t.Ships {
+		if ship.ShipID == 0 || (i > 0 && ship.ShipID <= previous) {
+			return fmt.Errorf("tactical ships must be strictly ascending by strategic ship id")
+		}
+		previous = ship.ShipID
+		if ship.Facing < 0 || ship.Facing > 15 {
+			return fmt.Errorf("tactical ship %d facing %d is outside 0..15", ship.ShipID, ship.Facing)
+		}
+		if absInt(ship.X) > TacticalCoordinateSafetyLimit || absInt(ship.Y) > TacticalCoordinateSafetyLimit {
+			return fmt.Errorf("tactical ship %d coordinate is outside technical safety envelope", ship.ShipID)
+		}
+		if prior := occupied[[2]int{ship.X, ship.Y}]; prior != 0 {
+			return fmt.Errorf("tactical ships %d and %d share coordinate (%d,%d)", prior, ship.ShipID, ship.X, ship.Y)
+		}
+		occupied[[2]int{ship.X, ship.Y}] = ship.ShipID
+		if err := validateBaselineCombatant(ship); err != nil {
+			return err
+		}
+		byID[ship.ShipID] = ship
 	}
-	byID := map[core.ID]TacticalShipSpec{t.Ships[0].ShipID: t.Ships[0], t.Ships[1].ShipID: t.Ships[1]}
-	attacker, ok := byID[spec.Attacker.ShipIDs[0]]
-	if !ok {
-		return fmt.Errorf("tactical snapshot is missing attacker ship %d", spec.Attacker.ShipIDs[0])
+	for _, id := range spec.Attacker.ShipIDs {
+		ship, ok := byID[id]
+		if !ok {
+			return fmt.Errorf("tactical snapshot is missing attacker ship %d", id)
+		}
+		if ship.EmpireID != spec.Attacker.EmpireID || ship.SeatID != spec.Attacker.SeatID {
+			return fmt.Errorf("tactical attacker ship %d authority does not match strategic side", id)
+		}
 	}
-	defender, ok := byID[spec.Defender.ShipIDs[0]]
-	if !ok {
-		return fmt.Errorf("tactical snapshot is missing defender ship %d", spec.Defender.ShipIDs[0])
+	for _, id := range spec.Defender.ShipIDs {
+		ship, ok := byID[id]
+		if !ok {
+			return fmt.Errorf("tactical snapshot is missing defender ship %d", id)
+		}
+		if ship.EmpireID != spec.Defender.EmpireID || ship.SeatID != spec.Defender.SeatID {
+			return fmt.Errorf("tactical defender ship %d authority does not match strategic side", id)
+		}
 	}
-	if attacker.EmpireID != spec.Attacker.EmpireID || attacker.SeatID != spec.Attacker.SeatID || defender.EmpireID != spec.Defender.EmpireID || defender.SeatID != spec.Defender.SeatID {
-		return fmt.Errorf("tactical ship authority does not match strategic sides")
+	return nil
+}
+
+func validateBaselineCombatant(s TacticalShipSpec) error {
+	if s.HullID != "frigate" || s.ComputerID != "electronic_computer" || s.ArmorID != "titanium_armor" || s.ArmorMax != 4 || s.StructureMax != 4 {
+		return fmt.Errorf("tactical ship %d is outside the Slice 15.5 Frigate/Electronic/Titanium baseline", s.ShipID)
 	}
-	if err := validateBaselineAttacker(attacker); err != nil {
-		return err
+	switch s.WarpDriveID {
+	case "fusion_drive":
+		if s.CurrentCombatSpeed != 22 {
+			return fmt.Errorf("fusion tactical ship %d requires combat speed 22", s.ShipID)
+		}
+	case "nuclear_drive":
+		if s.CurrentCombatSpeed != 20 {
+			return fmt.Errorf("nuclear tactical ship %d requires combat speed 20", s.ShipID)
+		}
+	default:
+		return fmt.Errorf("tactical ship %d drive %q is outside the Slice 15.5 baseline", s.ShipID, s.WarpDriveID)
 	}
-	if err := validateBaselineDefender(defender); err != nil {
-		return err
+	if s.BeamOffense != 25 || s.BeamDefense != 0 {
+		return fmt.Errorf("tactical ship %d offense/defense is outside the Slice 15.5 baseline", s.ShipID)
+	}
+	switch s.TurningMode {
+	case "", TacticalTurningNormal, TacticalTurningInertialStabilizer, TacticalTurningInertialNullifier:
+	default:
+		return fmt.Errorf("tactical ship %d turning mode %q is unsupported", s.ShipID, s.TurningMode)
+	}
+	if len(s.Weapons) > 1 {
+		return fmt.Errorf("tactical ship %d supports at most one standard Laser in Slice 15.5", s.ShipID)
+	}
+	if len(s.Weapons) == 1 {
+		w := s.Weapons[0]
+		if w.Slot != 0 || w.WeaponID != "laser_cannon" || w.Count != 1 || w.MinDamage != 1 || w.MaxDamage != 4 {
+			return fmt.Errorf("tactical ship %d weapon is outside the Slice 15.5 standard Laser baseline", s.ShipID)
+		}
 	}
 	return nil
 }
@@ -196,27 +290,6 @@ func validateBaselineRules(r TacticalRulesSnapshot) error {
 	wantDamage := []int{0, 0, -10, -20, -30, -40, -50, -60, -65}
 	if !equalInts(r.BeamToHitRangeModifiers, wantHit) || !equalInts(r.BeamDamageRangeModifiers, wantDamage) {
 		return fmt.Errorf("unsupported Slice 07 Beam range tables")
-	}
-	return nil
-}
-
-func validateBaselineAttacker(s TacticalShipSpec) error {
-	if s.X != 10 || s.Y != 10 || s.HullID != "frigate" || s.WarpDriveID != "fusion_drive" || s.ComputerID != "electronic_computer" || s.ArmorID != "titanium_armor" || s.CurrentCombatSpeed != 22 || s.BeamOffense != 25 || s.BeamDefense != 0 || s.ArmorMax != 4 || s.StructureMax != 4 {
-		return fmt.Errorf("attacker is outside the Slice 07 tactical fixture")
-	}
-	if len(s.Weapons) != 1 {
-		return fmt.Errorf("Slice 07 attacker requires exactly one Laser mount")
-	}
-	w := s.Weapons[0]
-	if w.Slot != 0 || w.WeaponID != "laser_cannon" || w.Count != 1 || w.MinDamage != 1 || w.MaxDamage != 4 {
-		return fmt.Errorf("attacker weapon is outside the Slice 07 Laser fixture")
-	}
-	return nil
-}
-
-func validateBaselineDefender(s TacticalShipSpec) error {
-	if s.X != 11 || s.Y != 10 || s.HullID != "frigate" || s.WarpDriveID != "nuclear_drive" || s.ComputerID != "electronic_computer" || s.ArmorID != "titanium_armor" || s.CurrentCombatSpeed != 20 || s.BeamOffense != 25 || s.BeamDefense != 0 || s.ArmorMax != 4 || s.StructureMax != 4 || len(s.Weapons) != 0 {
-		return fmt.Errorf("defender is outside the Slice 07 tactical fixture")
 	}
 	return nil
 }
@@ -244,7 +317,7 @@ func newTacticalRuntime(spec TacticalSpec) (tacticalRuntime, error) {
 		nextEventSequence: 1,
 	}
 	for i, ship := range spec.Ships {
-		state := TacticalShipState{ShipID: ship.ShipID, ArmorCurrent: ship.ArmorMax, Weapons: make([]TacticalWeaponState, len(ship.Weapons))}
+		state := TacticalShipState{ShipID: ship.ShipID, X: ship.X, Y: ship.Y, Facing: ship.Facing, MovementCurrent: ship.CurrentCombatSpeed, MovementMax: ship.CurrentCombatSpeed, ArmorCurrent: ship.ArmorMax, Weapons: make([]TacticalWeaponState, len(ship.Weapons))}
 		for j, weapon := range ship.Weapons {
 			state.Weapons[j] = TacticalWeaponState{Slot: weapon.Slot, Ready: true}
 		}
@@ -358,6 +431,11 @@ func (s *Session) PrepareCommand(seatID protocol.SeatID, command protocol.Comman
 	var result *Result
 	var err error
 	switch command.Kind {
+	case CommandMoveShip:
+		var payload MoveShipPayload
+		if err = decodeBattlePayload(command, &payload); err == nil {
+			err = prepareMoveShip(s.spec, &prepared.runtime, seatID, command.Sequence, payload)
+		}
 	case CommandFireBeam:
 		var payload FireBeamPayload
 		if err = decodeBattlePayload(command, &payload); err == nil {
@@ -401,6 +479,128 @@ func decodeBattlePayload(command protocol.Command, dst any) error {
 	return nil
 }
 
+func prepareMoveShip(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, commandSequence uint32, payload MoveShipPayload) error {
+	activeSpec := tacticalShipSpec(*spec.Tactical, r.state.ActiveShipID)
+	activeState := r.shipState(r.state.ActiveShipID)
+	if activeSpec == nil || activeState == nil {
+		return fmt.Errorf("active tactical ship %d is missing", r.state.ActiveShipID)
+	}
+	if seatID == 0 || activeSpec.SeatID != seatID {
+		return fmt.Errorf("seat %d does not control active ship %d", seatID, r.state.ActiveShipID)
+	}
+	if payload.ShipID != r.state.ActiveShipID {
+		return fmt.Errorf("move ship %d is not active ship %d", payload.ShipID, r.state.ActiveShipID)
+	}
+	if activeState.Destroyed || activeState.ActivationComplete {
+		return fmt.Errorf("active ship %d cannot move", payload.ShipID)
+	}
+	option, err := tacticalMoveOption(r, *activeSpec, *activeState, payload.X, payload.Y)
+	if err != nil {
+		return err
+	}
+	fromX, fromY, fromFacing := activeState.X, activeState.Y, activeState.Facing
+	activeState.X, activeState.Y, activeState.Facing, activeState.MovementCurrent = option.X, option.Y, option.ResultingFacing, option.MovementRemainingAfter
+	return r.appendEvent("ship_moved", seatID, commandSequence, map[string]any{"ship_id": payload.ShipID, "from_x": fromX, "from_y": fromY, "to_x": option.X, "to_y": option.Y, "facing_before": fromFacing, "facing_after": option.ResultingFacing, "move_cost": option.MoveCost, "movement_remaining": option.MovementRemainingAfter})
+}
+
+func tacticalMoveOption(r *tacticalRuntime, shipSpec TacticalShipSpec, shipState TacticalShipState, x, y int) (TacticalMoveOption, error) {
+	if x == shipState.X && y == shipState.Y {
+		return TacticalMoveOption{}, fmt.Errorf("same-coordinate Tactical move is not a rotate-only command")
+	}
+	if absInt(x) > TacticalCoordinateSafetyLimit || absInt(y) > TacticalCoordinateSafetyLimit {
+		return TacticalMoveOption{}, fmt.Errorf("Tactical destination (%d,%d) exceeds technical coordinate safety envelope", x, y)
+	}
+	if absInt(x-shipState.X) > shipState.MovementCurrent || absInt(y-shipState.Y) > shipState.MovementCurrent {
+		return TacticalMoveOption{}, fmt.Errorf("Tactical destination (%d,%d) exceeds ship %d movement budget", x, y, shipState.ShipID)
+	}
+	for _, other := range r.state.Ships {
+		if other.ShipID != shipState.ShipID && !other.Destroyed && other.X == x && other.Y == y {
+			return TacticalMoveOption{}, fmt.Errorf("Tactical destination (%d,%d) is occupied by ship %d", x, y, other.ShipID)
+		}
+	}
+	cost, facing := tacticalMoveCost(shipState.X, shipState.Y, shipState.Facing, x, y, turnCostPerFacing(shipSpec))
+	if cost > shipState.MovementCurrent {
+		return TacticalMoveOption{}, fmt.Errorf("Tactical move costs %d movement points but ship %d has %d remaining", cost, shipState.ShipID, shipState.MovementCurrent)
+	}
+	return TacticalMoveOption{X: x, Y: y, MoveCost: cost, ResultingFacing: facing, MovementRemainingAfter: shipState.MovementCurrent - cost}, nil
+}
+
+func legalMoves(spec TacticalSpec, r *tacticalRuntime) []TacticalMoveOption {
+	state := r.shipState(r.state.ActiveShipID)
+	ship := tacticalShipSpec(spec, r.state.ActiveShipID)
+	if state == nil || ship == nil || state.Destroyed || state.ActivationComplete || state.MovementCurrent <= 0 {
+		return nil
+	}
+	radius := state.MovementCurrent
+	out := make([]TacticalMoveOption, 0, (radius*2+1)*(radius*2+1)/2)
+	for dy := -radius; dy <= radius; dy++ {
+		for dx := -radius; dx <= radius; dx++ {
+			if dx == 0 && dy == 0 {
+				continue
+			}
+			option, err := tacticalMoveOption(r, *ship, *state, state.X+dx, state.Y+dy)
+			if err == nil {
+				out = append(out, option)
+			}
+		}
+	}
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].MoveCost != out[j].MoveCost {
+			return out[i].MoveCost < out[j].MoveCost
+		}
+		if out[i].Y != out[j].Y {
+			return out[i].Y < out[j].Y
+		}
+		return out[i].X < out[j].X
+	})
+	return out
+}
+
+func tacticalMoveCost(fromX, fromY, currentFacing, toX, toY, turnCost int) (int, int) {
+	dx, dy := toX-fromX, toY-fromY
+	if dx == 0 && dy == 0 {
+		return 0, currentFacing
+	}
+	distanceSquared := int64(dx)*int64(dx) + int64(dy)*int64(dy)
+	translation := 0
+	for int64(translation)*int64(translation) < distanceSquared {
+		translation++
+	}
+	resultingFacing := tacticalFacing(dx, dy)
+	facingSteps := absInt(resultingFacing - currentFacing)
+	if facingSteps > 8 {
+		facingSteps = 16 - facingSteps
+	}
+	return translation + facingSteps*turnCost, resultingFacing
+}
+
+func tacticalFacing(dx, dy int) int {
+	angle := math.Atan2(float64(dy), float64(dx))
+	if angle < 0 {
+		angle += 2 * math.Pi
+	}
+	return int(math.Floor(angle/(2*math.Pi)*16+0.5)) % 16
+}
+func turnCostPerFacing(ship TacticalShipSpec) int {
+	switch ship.TurningMode {
+	case TacticalTurningInertialStabilizer:
+		return 1
+	case TacticalTurningInertialNullifier:
+		return 0
+	default:
+		return 2
+	}
+}
+func buildTacticalView(spec TacticalSpec, r tacticalRuntime) TacticalView {
+	view := TacticalView{State: cloneTacticalState(r.state), Events: cloneTacticalEvents(r.events)}
+	state := r.shipState(r.state.ActiveShipID)
+	if state != nil && !state.Destroyed && !state.ActivationComplete {
+		view.CanEndActivation = true
+		view.LegalMoves = legalMoves(spec, &r)
+	}
+	return view
+}
+
 func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, commandSequence uint32, payload FireBeamPayload) (*Result, error) {
 	active := tacticalShipSpec(*spec.Tactical, r.state.ActiveShipID)
 	if active == nil {
@@ -433,7 +633,11 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 		return nil, fmt.Errorf("weapon slot %d is outside the Slice 07 Laser fixture", payload.WeaponSlot)
 	}
 
-	rangeIndex := tacticalRangeIndex(active.X, active.Y, targetSpec.X, targetSpec.Y)
+	activePosition := r.shipState(active.ShipID)
+	if activePosition == nil {
+		return nil, fmt.Errorf("active tactical ship %d has no runtime position", active.ShipID)
+	}
+	rangeIndex := tacticalRangeIndex(activePosition.X, activePosition.Y, targetState.X, targetState.Y)
 	if rangeIndex < 0 || rangeIndex >= len(spec.Tactical.Rules.BeamToHitRangeModifiers) {
 		return nil, fmt.Errorf("Beam range index %d is outside the evidenced table", rangeIndex)
 	}
@@ -513,7 +717,7 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 			if err := r.appendEvent("winner_determined", seatID, commandSequence, map[string]any{"winner_seat": winner}); err != nil {
 				return nil, err
 			}
-			return &Result{WinnerSeat: winner, Outcome: TacticalOutcomeVictory, DestroyedShipIDs: []core.ID{targetSpec.ShipID}}, nil
+			return &Result{WinnerSeat: winner, Outcome: TacticalOutcomeVictory, DestroyedShipIDs: destroyedShipIDs(r)}, nil
 		}
 	}
 	return nil, nil
@@ -530,6 +734,11 @@ func prepareEndActivation(spec Spec, r *tacticalRuntime, seatID protocol.SeatID,
 	if payload.ShipID != r.state.ActiveShipID {
 		return fmt.Errorf("end-activation ship %d is not active ship %d", payload.ShipID, r.state.ActiveShipID)
 	}
+	activeState := r.shipState(payload.ShipID)
+	if activeState == nil || activeState.Destroyed || activeState.ActivationComplete {
+		return fmt.Errorf("ship %d cannot end activation", payload.ShipID)
+	}
+	activeState.ActivationComplete = true
 	if err := r.appendEvent("activation_ended", seatID, commandSequence, map[string]any{"ship_id": payload.ShipID, "round": r.state.Round}); err != nil {
 		return err
 	}
@@ -542,7 +751,7 @@ func prepareEndActivation(spec Spec, r *tacticalRuntime, seatID protocol.SeatID,
 	}
 	for i := currentIndex + 1; i < len(r.state.InitiativeOrder); i++ {
 		state := r.shipState(r.state.InitiativeOrder[i])
-		if state != nil && !state.Destroyed {
+		if state != nil && !state.Destroyed && !state.ActivationComplete {
 			r.state.ActiveShipID = state.ShipID
 			return nil
 		}
@@ -552,6 +761,8 @@ func prepareEndActivation(spec Spec, r *tacticalRuntime, seatID protocol.SeatID,
 		if r.state.Ships[i].Destroyed {
 			continue
 		}
+		r.state.Ships[i].ActivationComplete = false
+		r.state.Ships[i].MovementCurrent = r.state.Ships[i].MovementMax
 		for j := range r.state.Ships[i].Weapons {
 			r.state.Ships[i].Weapons[j].Ready = true
 		}
@@ -617,6 +828,17 @@ func (r *tacticalRuntime) random(n uint32, rules TacticalRulesSnapshot) (int, er
 			return int(r.state.RNGState/q) + 1, nil
 		}
 	}
+}
+
+func destroyedShipIDs(r *tacticalRuntime) []core.ID {
+	ids := make([]core.ID, 0)
+	for _, ship := range r.state.Ships {
+		if ship.Destroyed {
+			ids = append(ids, ship.ShipID)
+		}
+	}
+	sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+	return ids
 }
 
 func remainingWinner(spec Spec, r *tacticalRuntime) protocol.SeatID {
