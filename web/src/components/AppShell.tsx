@@ -44,6 +44,7 @@ type AppShellProps = {
   onEndTurn?: () => void
   endTurnDisabled?: boolean
   endTurnLabel?: string
+  navigationLocked?: boolean
   children: ReactNode
 }
 
@@ -70,10 +71,11 @@ export function StandaloneHeader({ onHome }: { onHome?: () => void }) {
   )
 }
 
-function NavItems({ items, activeSection, onNavigate }: {
+function NavItems({ items, activeSection, onNavigate, disabled = false }: {
   items: typeof primaryNavItems
   activeSection: GameSection
   onNavigate: (section: GameSection) => void
+  disabled?: boolean
 }) {
   const { t } = useI18n()
   return <>
@@ -85,6 +87,7 @@ function NavItems({ items, activeSection, onNavigate }: {
           key={item.section}
           className={`nav-item ${active ? 'active' : ''}`}
           aria-current={active ? 'page' : undefined}
+          disabled={disabled}
           onClick={() => onNavigate(item.section)}
         >
           <span className="nav-glyph" aria-hidden="true"><GameIcon name={item.icon} /></span>
@@ -95,7 +98,7 @@ function NavItems({ items, activeSection, onNavigate }: {
   </>
 }
 
-export function AppShell({ activeSection, gameID, turn, phaseLabel, status, statusTone, lifecycle, resources = [], onNavigate, onResourceActivate, onHome, onSaveGame, onLoadGame, persistenceBusy = false, onEndTurn, endTurnDisabled = false, endTurnLabel, children }: AppShellProps) {
+export function AppShell({ activeSection, gameID, turn, phaseLabel, status, statusTone, lifecycle, resources = [], onNavigate, onResourceActivate, onHome, onSaveGame, onLoadGame, persistenceBusy = false, onEndTurn, endTurnDisabled = false, endTurnLabel, navigationLocked = false, children }: AppShellProps) {
   const { t } = useI18n()
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeResourceID, setActiveResourceID] = useState<string | null>(null)
@@ -135,6 +138,7 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
   }, [menuOpen])
 
   function navigateFromMenu(section: GameSection) {
+    if (navigationLocked) return
     setMenuOpen(false)
     onNavigate(section)
   }
@@ -180,11 +184,11 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
                   <span className="main-menu-item-glyph" aria-hidden="true"><GameIcon name="open" /></span>
                   <span><strong>{t('gameMenu.loadGame')}</strong><small>{t('gameMenu.loadGameHint')}</small></span>
                 </button>
-                <button type="button" className="main-menu-item" onClick={() => navigateFromMenu('shipbuilder')}>
+                <button type="button" className="main-menu-item" disabled={navigationLocked} onClick={() => navigateFromMenu('shipbuilder')}>
                   <ProceduralShipGlyph seed="shipbuilder-menu" hullId="frigate" className="main-menu-vector-glyph" />
                   <span><strong>{t('gameMenu.shipbuilder')}</strong><small>{t('gameMenu.shipbuilderHint')}</small></span>
                 </button>
-                <button type="button" className="main-menu-item" onClick={() => navigateFromMenu('more')}>
+                <button type="button" className="main-menu-item" disabled={navigationLocked} onClick={() => navigateFromMenu('more')}>
                   <span className="main-menu-item-glyph" aria-hidden="true"><GameIcon name="more" /></span>
                   <span><strong>{t('gameMenu.advanced')}</strong><small>{t('gameMenu.advancedHint')}</small></span>
                 </button>
@@ -259,19 +263,19 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
 
       <div className="shell-layout">
         <aside className="side-nav" aria-label={t('a11y.primaryNavigation')}>
-          <div className="side-nav-items"><NavItems items={primaryNavItems} activeSection={activeSection} onNavigate={onNavigate} /></div>
+          <div className="side-nav-items"><NavItems items={primaryNavItems} activeSection={activeSection} onNavigate={onNavigate} disabled={navigationLocked} /></div>
         </aside>
         <main className="game-content">{children}</main>
       </div>
 
       <div className="bottom-command-bar">
         <nav className="bottom-nav" aria-label={t('a11y.primaryNavigation')}>
-          <NavItems items={primaryNavItems} activeSection={activeSection} onNavigate={onNavigate} />
+          <NavItems items={primaryNavItems} activeSection={activeSection} onNavigate={onNavigate} disabled={navigationLocked} />
         </nav>
         <button
           type="button"
           className="button-primary bottom-end-turn"
-          disabled={!onEndTurn || endTurnDisabled}
+          disabled={!onEndTurn || endTurnDisabled || navigationLocked}
           onClick={onEndTurn}
         >
           <GameIcon name="check" />{endTurnLabel ?? t('planning.endTurn')}

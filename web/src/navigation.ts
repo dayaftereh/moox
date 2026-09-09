@@ -1,4 +1,4 @@
-export type GameSection = 'galaxy' | 'colonies' | 'fleets' | 'research' | 'diplomacy' | 'espionage' | 'shipbuilder' | 'more'
+export type GameSection = 'galaxy' | 'colonies' | 'fleets' | 'research' | 'diplomacy' | 'espionage' | 'shipbuilder' | 'more' | 'battle'
 export type GameSubview = 'build'
 
 export type AppRoute =
@@ -6,7 +6,7 @@ export type AppRoute =
   | { kind: 'new-game' }
   | { kind: 'game'; gameID: string; section: GameSection; entityID?: number; subview?: GameSubview }
 
-const sections = new Set<GameSection>(['galaxy', 'colonies', 'fleets', 'research', 'diplomacy', 'espionage', 'shipbuilder', 'more'])
+const sections = new Set<GameSection>(['galaxy', 'colonies', 'fleets', 'research', 'diplomacy', 'espionage', 'shipbuilder', 'more', 'battle'])
 const subviews = new Set<GameSubview>(['build'])
 
 export function parseRoute(hash = window.location.hash): AppRoute {

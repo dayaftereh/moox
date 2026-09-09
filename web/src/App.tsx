@@ -26,6 +26,7 @@ import {
   type ResolutionSummary,
 } from './api'
 import { AppShell, LanguageSwitch, StandaloneHeader, type ResourceChip } from './components/AppShell'
+import { BattleRouteView } from './BattleRouteView'
 import { GameIcon } from './components/GameIcon'
 import { OrbitalBodyArt } from './components/OrbitalBodyArt'
 import { Card, EmptyState, Metric, Notice, PageHeader } from './components/ui'
@@ -774,6 +775,64 @@ function App() {
   }, [snapshot, acknowledgedResolutionIDs])
 
   const publicEmpires = snapshot?.decision?.public_empires ?? []
+  const unresolvedBattle = useMemo(() => snapshot?.battles.find((battle) => battle.phase !== 'completed'), [snapshot])
+  const pendingBattleResolution = useMemo<ResolutionSummary | undefined>(() => {
+    if (!snapshot) return undefined
+    const summaries = snapshot.view.recent_resolutions ?? []
+    for (let index = summaries.length - 1; index >= 0; index -= 1) {
+      const summary = summaries[index]
+      if (summary.kind === 'battle_completed' && summary.battle && !acknowledgedResolutionIDs.has(summary.id)) return summary
+    }
+    return undefined
+  }, [snapshot, acknowledgedResolutionIDs])
+  const blockingBattleID = unresolvedBattle?.spec.id ?? pendingBattleResolution?.battle?.battle_id
+  const routeBattleID = route.kind === 'game' && route.section === 'battle' ? route.entityID : undefined
+  const battleResolution = useMemo<ResolutionSummary | undefined>(() => {
+    if (!snapshot || !routeBattleID) return undefined
+    const summaries = snapshot.view.recent_resolutions ?? []
+    for (let index = summaries.length - 1; index >= 0; index -= 1) {
+      const summary = summaries[index]
+      if (summary.kind === 'battle_completed' && summary.battle?.battle_id === routeBattleID) return summary
+    }
+    return undefined
+  }, [snapshot, routeBattleID])
+
+  useEffect(() => {
+    if (!snapshot || route.kind !== 'game') return
+    const active = snapshot.battles.find((battle) => battle.phase !== 'completed')
+    if (active) {
+      setResearchOverlayOpen(false)
+      if (route.section !== 'battle' || route.entityID !== active.spec.id) {
+        navigate({ kind: 'game', gameID: route.gameID, section: 'battle', entityID: active.spec.id })
+      }
+      return
+    }
+
+    const summaries = snapshot.view.recent_resolutions ?? []
+    let pendingSummary: ResolutionSummary | undefined
+    for (let index = summaries.length - 1; index >= 0; index -= 1) {
+      const summary = summaries[index]
+      if (summary.kind === 'battle_completed' && summary.battle && !acknowledgedResolutionIDs.has(summary.id)) {
+        pendingSummary = summary
+        break
+      }
+    }
+    if (pendingSummary?.battle) {
+      setResearchOverlayOpen(false)
+      if (route.section !== 'battle' || route.entityID !== pendingSummary.battle.battle_id) {
+        navigate({ kind: 'game', gameID: route.gameID, section: 'battle', entityID: pendingSummary.battle.battle_id })
+      }
+      return
+    }
+
+    if (route.section !== 'battle') return
+    const routedBattle = route.entityID ? snapshot.battles.find((battle) => battle.spec.id === route.entityID) : undefined
+    const routedSummary = route.entityID ? summaries.find((summary) => summary.kind === 'battle_completed' && summary.battle?.battle_id === route.entityID) : undefined
+    if (!routedBattle || (routedSummary && acknowledgedResolutionIDs.has(routedSummary.id))) {
+      navigate({ kind: 'game', gameID: route.gameID, section: 'galaxy' })
+    }
+  }, [snapshot, route, acknowledgedResolutionIDs])
+
   const resultWinner = snapshot?.view.result
     ? publicEmpires.find((empire) => empire.id === snapshot.view.result?.winner_empire_id)
     : undefined
@@ -878,8 +937,11 @@ function App() {
       statusTone={statusTone}
       lifecycle={lifecycle}
       resources={resourceChips}
-      onNavigate={(section) => navigate({ kind: 'game', gameID: route.gameID, section })}
+      onNavigate={(section) => blockingBattleID
+        ? navigate({ kind: 'game', gameID: route.gameID, section: 'battle', entityID: blockingBattleID })
+        : navigate({ kind: 'game', gameID: route.gameID, section })}
       onResourceActivate={(resourceID) => {
+        if (blockingBattleID) return false
         if (resourceID !== 'research') return false
         setResearchOverlayOpen(true)
         return true
@@ -891,6 +953,7 @@ function App() {
       onEndTurn={snapshot ? () => void endTurn() : undefined}
       endTurnDisabled={!snapshot || mutationLocked || snapshot.view.phase !== 'planning' || planningBusy || previewBusy}
       endTurnLabel={planningBusy ? t('planning.resolving') : t('planning.endTurn')}
+      navigationLocked={Boolean(blockingBattleID)}
     >
       {persistenceControls}
 
@@ -965,7 +1028,7 @@ function App() {
           </Card>
         </div>
       )}
-      {researchBreakthrough?.research && (
+      {!blockingBattleID && researchBreakthrough?.research && (
         <div className="decision-dialog-backdrop research-breakthrough-backdrop" role="presentation">
           <Card className="decision-dialog research-breakthrough-card" as="section">
             <p className="eyebrow">{t('researchBreakthrough.eyebrow')}</p>
@@ -996,7 +1059,7 @@ function App() {
         </div>
       )}
 
-      {snapshot?.view.result && (
+      {snapshot?.view.result && !blockingBattleID && (
         <section className="result-surface" aria-labelledby="game-result-title">
           <Card className="result-card result-card-dedicated" as="article">
             <p className="eyebrow">{t('result.eyebrow')}</p>
@@ -1015,6 +1078,17 @@ function App() {
 
       {!snapshot ? (
         error ? null : <EmptyState title={t('state.loadingTitle')} body={t('state.loadingBody')} />
+      ) : activeSection === 'battle' && route.entityID ? (
+        <BattleRouteView
+          snapshot={snapshot}
+          battleID={route.entityID}
+          resolution={battleResolution}
+          onContinue={(summaryID) => {
+            if (summaryID) acknowledgeResolution(summaryID)
+            navigate({ kind: 'game', gameID: route.gameID, section: 'galaxy' })
+          }}
+          t={t}
+        />
       ) : snapshot.view.phase === 'completed' ? null
       : activeSection === 'galaxy' ? (
         <StrategicGalaxyView

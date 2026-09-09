@@ -62,8 +62,8 @@ User approved the Gate-2 rich-interaction proposal without requested changes. Th
 See `docs/research/SLICE_15_4_GATE2_RICH_INTERACTION_CONTRACT_DRAFT_2026-09-09.md`, now accepted as the Gate-2 contract.
 
 ## Gate 3 - Implementation
-- [ ] Implement supported Encounter-entry/Invasion/Colony-Base/Research rich workflows, excluding the Slice-15.5 battlefield.
-- [ ] Implement save/export/import/restore/reconnect UX.
+- [x] Implement supported Encounter-entry/Invasion/Colony-Base/Research rich workflows, excluding the Slice-15.5 battlefield.
+- [x] Implement save/export/import/restore/reconnect UX.
 - [ ] Implement snapshot invalidation/refetch/conflict/error presentation.
 - [ ] Integrate 15.3 assets and accepted motion/audio hooks.
 - [ ] Add browser/server regressions for critical decision, encounter-transition and persistence paths.
@@ -76,6 +76,7 @@ See `docs/research/SLICE_15_4_GATE2_RICH_INTERACTION_CONTRACT_DRAFT_2026-09-09.m
 - [x] Block 5 resolution summary / Research / result: stable player-safe event-derived transition summaries, automatic Research Breakthrough presentation and dedicated read-only Victory surface. Evidence: `docs/research/SLICE_15_4_GATE3_BLOCK5_RESOLUTION_SUMMARY_RESEARCH_RESULT_2026-09-09.md`.
 - [x] Blocker remediation: browser New Game now sends explicit Human/Built-in-AI controllers; End Turn advances correctly and canonical `game-1` was recovered to Turn 2 with the submitted Research + construction choices applied. Evidence: `docs/research/SLICE_15_4_GATE3_ENDTURN_BUILTIN_AI_BLOCKER_2026-09-09.md`.
 - [x] Research UX correction: HUD Research, `/research` and Research Breakthrough now share one canonical chooser; every Technology has a `?` information dialog fed by normalized server-side unlock/effect metadata, and missing detail semantics are explicitly marked. Evidence: `docs/research/SLICE_15_4_GATE3_RESEARCH_UX_TECH_INFO_2026-09-09.md`.
+- [x] Block 6 Battle Entry/Return: stable /battle/<battleID> route, participant-safe encounter context, unresolved-Battle navigation lock, supported-Tactical shell boundary, unsupported-reason presentation and one-time attle_completed return summary that survives live BattleView release. Evidence: docs/research/SLICE_15_4_GATE3_BLOCK6_BATTLE_ENTRY_RETURN_2026-09-09.md.
 
 ## Gate 4 - QA + close
 - [ ] Exercise every supported non-tactical interactive phase through browser surfaces.
