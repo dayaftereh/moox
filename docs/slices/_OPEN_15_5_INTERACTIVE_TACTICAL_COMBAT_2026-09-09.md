@@ -59,9 +59,11 @@ The browser must never compute hidden movement legality, hit chance, damage, tar
 In scope:
 - original-evidence-backed tactical coordinate/grid and movement baseline;
 - authoritative move command plus player-safe legal-move projection;
-- interactive 2D battlefield with movement/selection/target overlays;
+- interactive 2D battlefield with movement/selection/target overlays and no normal visible arena edge;
 - existing Laser fire and end-activation flows integrated into the battlefield UX;
 - range/readiness/damage/destruction presentation for the accepted weapon baseline;
+- read-only Tactical Scan/ship inspection for player-visible combatants;
+- effectively unbounded Tactical coordinate/camera presentation without a normal fixed combat width/height;
 - BattleSession -> strategic GameSession return flow;
 - data/UI structures that do not assume the forever-final combat model is one ship versus one ship;
 - Gate-1 decision on the minimum multi-ship breadth required for a credible first interactive Tactical slice;
@@ -95,12 +97,15 @@ Defer unless explicitly accepted at Gate 2:
 - [ ] Freeze minimum supported ship-count/battle-shape breadth and explicit unsupported boundaries.
 - [ ] Freeze battlefield selection/movement/weapon/target/end-activation interaction model for desktop and phone.
 - [ ] Freeze battle-entry/return, reconnect/stale-state and error behavior.
+- [ ] Freeze Tactical Scan/inspection visibility and read-only detail projection.
+- [ ] Freeze effectively unbounded battlefield/camera semantics with no normal fixed arena edge.
 - [ ] Freeze the minimum browser/server acceptance scenarios.
 ## Gate 3 - Implementation
 - [ ] Implement authoritative tactical movement state/rules/commands and deterministic legal-action projection in Go.
 - [ ] Integrate movement with initiative, range, existing Laser readiness/fire, damage/destruction and battle completion.
 - [ ] Add player-safe BattleSession/App/server reads required by the browser without leaking hidden state.
-- [ ] Implement the interactive 2D battlefield with active-ship, legal-move, weapon and legal-target overlays.
+- [ ] Implement the interactive 2D battlefield with active-ship, legal-move, weapon and legal-target overlays on an effectively unbounded coordinate plane.
+- [ ] Implement Tactical Scan/ship inspection with participant-safe weapon/readiness and damage/status details.
 - [ ] Implement responsive mouse/touch interaction and 15.1 DE/EN localization.
 - [ ] Integrate 15.3 accepted ship/battle visuals with safe fallbacks.
 - [ ] Add deterministic Go and browser regressions for movement, firing, rejection/rollback and strategic result handoff.
@@ -111,7 +116,8 @@ Defer unless explicitly accepted at Gate 2:
 - [ ] Exercise activation/round progression through the browser until the battle resolves.
 - [ ] Verify destroyed/surviving strategic ship identities reconcile correctly after returning to the strategic game.
 - [ ] Verify rejected/stale/illegal moves and shots are non-destructive and understandable in the UI.
-- [ ] Verify representative desktop plus phone/touch behavior with no required hover and no catastrophic overflow.
+- [ ] Verify Tactical Scan can inspect friendly/enemy visible ships without consuming or mutating Tactical state.
+- [ ] Verify representative desktop plus phone/touch behavior with no required hover, no catastrophic overflow and no visible artificial arena boundary.
 - [ ] Run full Go tests/vet/web build plus `git diff --check`; update evidence/status/HISTORY and close marker.
 Milestone on closure: **first interactive server-authoritative 2D Tactical Combat battle playable from the browser and reconciled back into the strategic match**.
 

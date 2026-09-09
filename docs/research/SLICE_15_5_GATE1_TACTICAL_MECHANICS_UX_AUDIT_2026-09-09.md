@@ -50,6 +50,29 @@ Original HELP directly establishes the following tactical semantics:
 - **Inertial Stabilizer** halves movement cost for turning;
 - **Inertial Nullifier** allows direction changes without movement cost.
 
+## Original Tactical Scan / ship inspection
+
+Original HELP has a dedicated **Scan Button** in Tactical Combat. It toggles scan mode; while scan mode is active, clicking **any ship** opens a detailed display of that ship, and moving the viewport is the only other accepted command. This is distinct from the `Battle Scanner` ship technology: HELP describes Battle Scanner as a beam-to-hit / galactic scanning bonus, not as a prerequisite for the Tactical Scan UI.
+
+The surrounding original Tactical UI evidence also exposes:
+
+- a Damage Bar with separate Armor, Structure and internal-system damage;
+- an Internals/Target display that switches to target information when pointing at a ship;
+- a Weapons Display with per-weapon readiness/status;
+- executable functions `Scan_Ship_Info_`, `Scan_Ship_D_Info_` and `Get_Ship_Strength_Info_`.
+
+For MOOX this supports a participant-safe **read-only scan/inspection mode**. The first Tactical slice should expose concrete authoritative combat facts rather than invent an opaque client-side strength score:
+
+- ship identity / design / size where player-safe;
+- weapon loadout and supported readiness;
+- Armor and Structure current/max plus clear damage percentages;
+- internal-system damage when that subsystem is later normalized;
+- current movement allowance, position and facing;
+- authoritative offense/defense or other normalized combat ratings when present.
+
+A single composite `combat_strength` number should only be added after its original/runtime formula is separately closed; the UI can already answer "how strong is it?" through the concrete offensive, defensive, weapon and survivability data above.
+
+Scan itself does not need to be a mutating battle command. It can be a client presentation mode over player-safe server projection. To mirror the original interaction safely, scan mode may disable move/fire target selection while remaining pannable/zoomable; exiting Scan restores normal command selection.
 The initiative baseline remains:
 
 `initiative = modified beam offense / 10 + current combat speed`
@@ -230,6 +253,22 @@ Keep and integrate:
 - no workflow depends on hover;
 - the server-projected move/target overlays remain the source of interactive legality.
 
+## Battlefield extent: original evidence versus MOOX direction
+
+Original HELP says the reduced combat map shows the **entire area of the combat**, and the executable contains `Ship_In_Legal_Square_` / `Set_Legal_Moves_`. The original therefore has a defined combat area/legal-square concept; an actually unbounded battlefield is **not** an original-fidelity claim.
+
+For MOOX the preferred product direction is intentionally different: the battlefield should feel effectively **unbounded**.
+
+- do not put a fixed `battle_width` / `battle_height` into the first public Tactical contract;
+- do not render a visible arena edge or wall;
+- Tactical X/Y remain authoritative integer world coordinates;
+- initial deployment is relative to an encounter origin, not to permanent board corners;
+- the camera may pan/zoom freely and initially fits the participating ships;
+- legal destinations are still a finite server-projected local set because movement points are finite each activation;
+- collision/occupancy/other accepted legality still applies;
+- implementation may retain a very large technical integer safety envelope, but it must not function as a normal gameplay boundary.
+
+This keeps authentic movement economics while avoiding an artificial small-arena feel. It also scales better to later larger fleets because the camera/coordinate model is not tied to a fixed board rectangle.
 ## MOOX modernization versus original fidelity
 
 Evidence-backed mechanics to preserve:
@@ -243,8 +282,8 @@ Evidence-backed mechanics to preserve:
 
 Presentation that may be modernized without changing authority:
 
-- a smooth scalable 2D board rather than reproducing original pixels;
-- highlighted legal destination points/cells;
+- a smooth scalable, effectively unbounded 2D coordinate plane rather than reproducing the original finite combat-area pixels;
+- highlighted finite server-projected legal destinations around the active ship, with no visible global arena edge;
 - pan/zoom gestures;
 - mobile bottom sheet instead of original fixed side panels;
 - optional desktop hover alongside equivalent click/tap selection;

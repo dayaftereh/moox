@@ -181,16 +181,46 @@ Hidden opponent information must not be added merely for convenience; use only p
 - no required hover;
 - phone interaction submits exactly the same commands as desktop.
 
-## Decision 12 - camera/pan/zoom
+## Decision 12 - Tactical Scan / ship inspection
+
+Add an explicit **Scan** presentation mode to the battlefield.
+
+- Scan is available for normal Tactical participants; the generic Scan UI is not gated behind the Battle Scanner technology.
+- Scan does not consume movement, weapon readiness, activation or RNG and does not mutate BattleSession state.
+- While Scan is active, click/tap any player-visible combat ship to open its participant-safe detail view.
+- Pan/zoom/recenter remains available in Scan mode.
+- Move/fire target selection is disabled while Scan is active so inspection cannot accidentally submit a command; exiting Scan restores normal interaction.
+
+The server/player-safe Battle projection must provide the information that Scan is allowed to reveal. The first accepted detail set is:
+
+- stable ship identity / owner / design or class where player-safe;
+- supported weapon loadout and readiness/status;
+- Armor current/max and damage state;
+- Structure current/max and damage state;
+- current position, facing and movement current/max;
+- normalized combat offense/defense data already authoritative in the Tactical model;
+- supported special/system state only when that subsystem is actually normalized and player-safe.
+
+Internal-system damage should appear once the internal-damage subsystem exists; Slice 15.5 must not fake it from Armor/Structure.
+
+The UI may group these facts under a `Kampfstärke / Combat strength` section, but it must not invent a single composite score in React. A future server-projected composite strength value requires separately proven runtime/original semantics.
+## Decision 13 - camera/pan/zoom
 
 Camera state is client presentation state only and must never affect Tactical authority.
 
-- desktop: wheel/pinch-equivalent zoom plus drag/pan;
+The first MOOX Tactical battlefield has **no normal fixed combat width/height and no visible arena edge**. It is an effectively unbounded integer-coordinate plane:
+
+- no public `battle_width` / `battle_height` is required for ordinary movement legality;
+- initial deployment is positioned around an encounter origin;
+- desktop: wheel zoom plus drag/pan;
 - touch: pinch zoom and one-finger pan when not choosing an explicit legal destination;
-- fit-to-battle/active-ship recenter is allowed;
+- fit-to-battle / active-ship / scanned-ship recenter is allowed;
+- the camera can continue panning beyond the currently occupied region;
+- legal moves remain finite because the active ship has a finite movement budget;
+- a large technical coordinate safety envelope is permitted for overflow protection but is not presented as a gameplay wall;
 - no camera coordinate is sent as a game-rule input.
 
-## Decision 13 - stale/reconnect semantics
+## Decision 14 - stale/reconnect semantics
 
 Reuse the frozen Slice-15.4 lifecycle contract:
 
@@ -202,7 +232,7 @@ Reuse the frozen Slice-15.4 lifecycle contract:
 
 No local optimistic mutation of authoritative ship position/damage is permitted.
 
-## Decision 14 - Battle completion and return
+## Decision 15 - Battle completion and return
 
 Terminal Tactical result continues through the existing server/session reconciliation and frozen Slice-15.4 Battle Return surface.
 
@@ -213,7 +243,7 @@ Exact strategic ship identities are authoritative:
 - losing survivors/retreat/blockade handling stays in strategic continuation;
 - React never edits strategic fleets directly.
 
-## Decision 15 - explicit deferrals
+## Decision 16 - explicit deferrals
 
 Not part of this Gate-2 draft unless separately pulled in before freeze:
 
@@ -230,7 +260,7 @@ Not part of this Gate-2 draft unless separately pulled in before freeze:
 - monsters/Antarans;
 - timing-sensitive cinematics/animation as authority.
 
-## Decision 16 - required Gate-3/4 acceptance scenarios
+## Decision 17 - required Gate-3/4 acceptance scenarios
 
 At minimum:
 
@@ -245,8 +275,9 @@ At minimum:
 9. round reset restores authoritative movement/readiness correctly;
 10. reconnect mid-Tactical restores exact state/sequence without duplicate command;
 11. Battle resolves and destroyed/surviving strategic identities match the Slice-15.4 return summary;
-12. representative desktop and 320px phone/touch QA has no catastrophic overflow and no required hover;
-13. full Go tests/vet/web build/diff checks pass.
+12. Scan mode can inspect a friendly and enemy ship without consuming/mutating Tactical state and shows authoritative weapons/readiness plus current damage/status;
+13. representative desktop and 320px phone/touch QA has no catastrophic overflow, no required hover and no visible artificial arena boundary;
+14. full Go tests/vet/web build/diff checks pass.
 
 ## Gate-2 review points requiring user acceptance
 
@@ -256,6 +287,8 @@ The key product choices to approve before freeze are:
 2. **authentic 16-way facing and original turn-cost movement** are included now;
 3. the first UI uses a modern pan/zoom battlefield with server-projected movement overlays instead of a literal original-pixel combat screen;
 4. broad shields/arcs/missiles/etc. remain deferred;
-5. mobile uses the same game semantics with touch/bottom-sheet ergonomics.
+5. mobile uses the same game semantics with touch/bottom-sheet ergonomics;
+6. Tactical Scan is included as a read-only inspect mode for any player-visible ship;
+7. the battlefield is effectively unbounded in presentation/coordinates, with no normal fixed arena width/height or visible edge.
 
 Until these are accepted, this file remains DRAFT and Gate 3 does not begin.
