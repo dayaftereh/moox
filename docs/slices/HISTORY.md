@@ -320,3 +320,4 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Detail UI reports only effects supported by current normalized rules and explicitly labels still-unmodeled Technology details rather than inventing descriptions.
 - Browser QA verified both known-effect and unnormalized-effect dialogs and the full Breakthrough -> same chooser -> next Research flow.
 - Full Go tests/vet and web production build pass. Evidence: `docs/research/SLICE_15_4_GATE3_RESEARCH_UX_TECH_INFO_2026-09-09.md`.
+- Post-review layout hotfix compacted the `?` controls and Research field rows so all eight fields fit the visible two-column chooser again; browser geometry confirms no grid scrolling or clipped Technology rows at the managed desktop review viewport.

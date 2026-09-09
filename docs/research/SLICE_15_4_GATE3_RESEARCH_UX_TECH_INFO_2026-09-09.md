@@ -68,3 +68,15 @@ Therefore the UI deliberately does **not** fabricate prose. If a technology is r
 ## Scope boundary
 
 This is a Slice 15.4 Gate-3 UX correction/enrichment before Block 6. It changes neither Research resolution semantics nor Slice 15.5 Tactical scope.
+## Post-review layout hotfix
+
+Manual review found that the first `?` control styling forced each Technology row to 30 px height. In the managed review viewport this made the Research grid 584 px tall while only 490 px was available, and child rows could extend below the fixed-height Research field panels.
+
+The compact layout now uses 16 px desktop info controls (18 px in the narrow/mobile rule), tighter row/body spacing, and a reduced field-panel minimum height. Browser geometry verification at a 791 x 605 viewport now reports:
+
+- all 8 Research fields inside the visible grid;
+- grid `scrollHeight == clientHeight == 466 px`;
+- four two-column field rows at 111 px each;
+- Technology rows and `?` controls at 16 px height;
+- no Technology choice row extends beyond its Research panel;
+- the `?` detail dialog remains clickable and opens normally.
