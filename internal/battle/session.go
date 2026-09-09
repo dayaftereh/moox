@@ -276,6 +276,26 @@ func normalizeResult(spec Spec, result Result) (Result, error) {
 	return result, nil
 }
 
+func (s *Session) PlayerView(seatID protocol.SeatID) (View, error) {
+	view := s.View()
+	if !containsSeat(view.Spec.Participants, seatID) {
+		return View{}, fmt.Errorf("seat %d is not a battle participant", seatID)
+	}
+	if view.Spec.Tactical != nil {
+		view.Spec.Tactical.InitialRNGState = 0
+	}
+	if view.Tactical != nil {
+		view.Tactical.State.RNGState = 0
+		active := tacticalShipSpec(*view.Spec.Tactical, view.Tactical.State.ActiveShipID)
+		if active == nil || active.SeatID != seatID || view.Phase != PhaseActive {
+			view.Tactical.LegalMoves = nil
+			view.Tactical.LegalFireActions = nil
+			view.Tactical.CanEndActivation = false
+		}
+	}
+	return view, nil
+}
+
 func (s *Session) View() View {
 	s.mu.RLock()
 	defer s.mu.RUnlock()

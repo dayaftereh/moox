@@ -406,6 +406,39 @@ export type BattleSide = {
   ship_ids: number[]
   civilian_fleet_ids?: number[]
 }
+export type TacticalWeaponSpec = { slot: number; weapon_id: string; count: number; min_damage: number; max_damage: number }
+export type TacticalShipSpec = {
+  ship_id: number; empire_id: number; seat_id: number; x: number; y: number; facing: number; turning_mode?: string
+  hull_id: string; warp_drive_id: string; computer_id: string; armor_id: string
+  current_combat_speed: number; beam_offense: number; beam_defense: number; armor_max: number; structure_max: number
+  weapons?: TacticalWeaponSpec[]
+}
+export type TacticalSpec = {
+  rules: Record<string, unknown>; initiative_enabled: boolean; initial_rng_state?: number; ships: TacticalShipSpec[]
+}
+export type TacticalWeaponView = { slot: number; weapon_id: string; count: number; min_damage: number; max_damage: number; ready: boolean }
+export type TacticalShipView = {
+  ship_id: number; empire_id: number; seat_id: number; hull_id: string; warp_drive_id: string; computer_id: string; armor_id: string
+  x: number; y: number; facing: number; movement_current: number; movement_max: number; activation_complete: boolean
+  armor_current: number; armor_max: number; structure_current: number; structure_max: number
+  beam_offense: number; beam_defense: number; weapons?: TacticalWeaponView[]; destroyed: boolean
+}
+export type TacticalShipState = {
+  ship_id: number; x: number; y: number; facing: number; movement_current: number; movement_max: number; activation_complete: boolean
+  armor_current: number; structure_damage: number; weapons?: { slot: number; ready: boolean }[]; destroyed: boolean
+}
+export type TacticalState = {
+  round: number; initiative_order: number[]; active_ship_id: number; next_command_sequence: number; rng_state?: number; ships: TacticalShipState[]
+}
+export type TacticalMoveOption = { x: number; y: number; move_cost: number; resulting_facing: number; movement_remaining_after: number }
+export type TacticalFireTarget = { target_ship_id: number; range_index: number }
+export type TacticalFireAction = { ship_id: number; weapon_slot: number; weapon_id: string; targets: TacticalFireTarget[] }
+export type TacticalEvent = { sequence: number; kind: string; seat_id?: number; command_sequence?: number; data?: Record<string, unknown> }
+export type TacticalView = {
+  state: TacticalState; events: TacticalEvent[]; ships: TacticalShipView[]
+  legal_moves?: TacticalMoveOption[]; legal_fire_actions?: TacticalFireAction[]; can_end_activation: boolean
+}
+
 export type BattleSpec = {
   id: number
   game_id: string
@@ -416,7 +449,7 @@ export type BattleSpec = {
   defender_colony_ids?: number[]
   participants: number[]
   seed: number
-  tactical?: unknown
+  tactical?: TacticalSpec
   tactical_unsupported_reason?: string
 }
 export type BattleResult = {
@@ -429,7 +462,7 @@ export type BattleView = {
   spec: BattleSpec
   phase: string
   result?: BattleResult
-  tactical?: unknown
+  tactical?: TacticalView
 }
 export type ProtocolCommand = { schema_version: 1; sequence: number; kind: string; payload: Record<string, unknown> }
 export type BattleDecision = { battle_id: number; actions: ProtocolCommand[] }
@@ -679,6 +712,24 @@ export async function previewPlanning(snapshot: PlayerSnapshot, seatID: number, 
   return requestJSON<PlanningPreviewSnapshot>(`/api/v1/games/${encodeURIComponent(snapshot.view.game_id)}/seats/${seatID}/planning-preview`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal,
   })
+}
+
+export async function submitBattleCommand(gameID: string, battleID: number, seatID: number, command: ProtocolCommand): Promise<Receipt> {
+  return requestJSON<Receipt>(`/api/v1/games/${encodeURIComponent(gameID)}/battles/${battleID}/commands`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ schema_version: 1, seat_id: seatID, command }),
+  })
+}
+
+export function tacticalMoveCommand(tactical: TacticalView, shipID: number, x: number, y: number): ProtocolCommand {
+  return { schema_version: 1, sequence: tactical.state.next_command_sequence, kind: 'battle.move_ship', payload: { ship_id: shipID, x, y } }
+}
+
+export function tacticalFireBeamCommand(tactical: TacticalView, shipID: number, targetShipID: number, weaponSlot: number): ProtocolCommand {
+  return { schema_version: 1, sequence: tactical.state.next_command_sequence, kind: 'battle.fire_beam', payload: { ship_id: shipID, target_ship_id: targetShipID, weapon_slot: weaponSlot } }
+}
+
+export function tacticalEndActivationCommand(tactical: TacticalView, shipID: number): ProtocolCommand {
+  return { schema_version: 1, sequence: tactical.state.next_command_sequence, kind: 'battle.end_activation', payload: { ship_id: shipID } }
 }
 
 export async function submitPlanning(snapshot: PlayerSnapshot, seatID: number, orders: DraftOrder[]): Promise<Receipt> {

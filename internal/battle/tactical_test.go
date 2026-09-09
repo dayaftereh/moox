@@ -479,3 +479,58 @@ func mustMoveCommand(t *testing.T, sequence uint32, shipID core.ID, x, y int) pr
 	}
 	return cmd
 }
+
+func TestTacticalPlayerViewProjectsScanDataAndSeatOwnedActions(t *testing.T) {
+	s := newStartedTacticalSession(t)
+	observer := s.View()
+	if observer.Tactical == nil || observer.Tactical.State.RNGState == 0 || observer.Spec.Tactical == nil || observer.Spec.Tactical.InitialRNGState == 0 {
+		t.Fatalf("observer Tactical authority unexpectedly redacted: %+v", observer.Tactical)
+	}
+
+	attacker, err := s.PlayerView(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defender, err := s.PlayerView(2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if attacker.Tactical == nil || defender.Tactical == nil {
+		t.Fatalf("participant Tactical views missing: attacker=%+v defender=%+v", attacker.Tactical, defender.Tactical)
+	}
+	if attacker.Tactical.State.RNGState != 0 || attacker.Spec.Tactical.InitialRNGState != 0 || defender.Tactical.State.RNGState != 0 || defender.Spec.Tactical.InitialRNGState != 0 {
+		t.Fatal("participant Tactical view leaked current/initial RNG state")
+	}
+	if !attacker.Tactical.CanEndActivation || len(attacker.Tactical.LegalMoves) == 0 || len(attacker.Tactical.LegalFireActions) != 1 {
+		t.Fatalf("active attacker action projection incomplete: %+v", attacker.Tactical)
+	}
+	fire := attacker.Tactical.LegalFireActions[0]
+	if fire.ShipID != 100 || fire.WeaponID != "laser_cannon" || len(fire.Targets) != 1 || fire.Targets[0].TargetShipID != 200 {
+		t.Fatalf("attacker legal fire projection=%+v", fire)
+	}
+	if defender.Tactical.CanEndActivation || len(defender.Tactical.LegalMoves) != 0 || len(defender.Tactical.LegalFireActions) != 0 {
+		t.Fatalf("non-active defender received command authority: %+v", defender.Tactical)
+	}
+	if len(attacker.Tactical.Ships) != 2 || len(defender.Tactical.Ships) != 2 {
+		t.Fatalf("scan ship projection counts attacker=%d defender=%d", len(attacker.Tactical.Ships), len(defender.Tactical.Ships))
+	}
+	var attackerScan, defenderScan *TacticalShipView
+	for i := range attacker.Tactical.Ships {
+		ship := &attacker.Tactical.Ships[i]
+		switch ship.ShipID {
+		case 100:
+			attackerScan = ship
+		case 200:
+			defenderScan = ship
+		}
+	}
+	if attackerScan == nil || len(attackerScan.Weapons) != 1 || !attackerScan.Weapons[0].Ready || attackerScan.ArmorCurrent != 4 || attackerScan.StructureCurrent != 4 || attackerScan.MovementCurrent != 22 {
+		t.Fatalf("friendly scan projection=%+v", attackerScan)
+	}
+	if defenderScan == nil || len(defenderScan.Weapons) != 0 || defenderScan.ArmorCurrent != 4 || defenderScan.ArmorMax != 4 || defenderScan.StructureCurrent != 4 || defenderScan.StructureMax != 4 || defenderScan.MovementCurrent != 20 {
+		t.Fatalf("enemy scan projection=%+v", defenderScan)
+	}
+	if _, err := s.PlayerView(99); err == nil {
+		t.Fatal("expected non-participant player battle projection to reject")
+	}
+}

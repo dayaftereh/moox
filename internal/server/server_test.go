@@ -360,20 +360,57 @@ func TestBattleCommandEndpointAcceptsParticipantTacticalCommand(t *testing.T) {
 	if battleID != 1 {
 		t.Fatalf("expected first battle ID 1, got %d", battleID)
 	}
-	fire, err := battle.NewFireBeamCommand(1, battle.FireBeamPayload{ShipID: attackerShipID, TargetShipID: defenderShipID, WeaponSlot: 0})
+	tactical := snapshot.Battles[0].Tactical
+	if tactical.State.RNGState != 0 || snapshot.Battles[0].Spec.Tactical.InitialRNGState != 0 {
+		t.Fatal("player snapshot leaked Tactical RNG authority")
+	}
+	if len(tactical.Ships) != 2 || len(tactical.LegalMoves) == 0 || len(tactical.LegalFireActions) != 1 || !tactical.CanEndActivation {
+		t.Fatalf("participant Tactical projection incomplete: %+v", tactical)
+	}
+	moveOption := tactical.LegalMoves[0]
+	move, err := battle.NewMoveShipCommand(1, battle.MoveShipPayload{ShipID: attackerShipID, X: moveOption.X, Y: moveOption.Y})
 	if err != nil {
 		t.Fatal(err)
 	}
 	var receipt app.Receipt
 	postJSON(t, server.URL+"/api/v1/games/battle-demo/battles/1/commands", commandRequest{
-		SchemaVersion: 1, SeatID: 1, Command: fire,
+		SchemaVersion: 1, SeatID: 1, Command: move,
 	}, "", http.StatusOK, &receipt)
 	if receipt.ChangeSequence != 4 || receipt.GameRevision != 2 {
-		t.Fatalf("battle command receipt=%+v", receipt)
+		t.Fatalf("battle move receipt=%+v", receipt)
 	}
 	getJSON(t, server.URL+"/api/v1/games/battle-demo/seats/1/snapshot", &snapshot)
-	if len(snapshot.Battles) != 1 || snapshot.Battles[0].Tactical == nil || snapshot.Battles[0].Tactical.State.NextCommandSequence != 2 {
-		t.Fatalf("accepted battle command not visible in player snapshot: %+v", snapshot.Battles)
+	tactical = snapshot.Battles[0].Tactical
+	if tactical.State.NextCommandSequence != 2 || tactical.State.RNGState != 0 {
+		t.Fatalf("accepted battle move not visible/redacted correctly: %+v", tactical.State)
+	}
+	var moved *battle.TacticalShipView
+	for i := range tactical.Ships {
+		if tactical.Ships[i].ShipID == attackerShipID {
+			moved = &tactical.Ships[i]
+			break
+		}
+	}
+	if moved == nil || moved.X != moveOption.X || moved.Y != moveOption.Y || moved.Facing != moveOption.ResultingFacing || moved.MovementCurrent != moveOption.MovementRemainingAfter {
+		t.Fatalf("player scan projection did not reflect move: moved=%+v option=%+v", moved, moveOption)
+	}
+	if len(tactical.LegalFireActions) != 1 || len(tactical.LegalFireActions[0].Targets) == 0 {
+		t.Fatalf("post-move fire projection missing: %+v", tactical.LegalFireActions)
+	}
+	fireAction := tactical.LegalFireActions[0]
+	fire, err := battle.NewFireBeamCommand(2, battle.FireBeamPayload{ShipID: attackerShipID, TargetShipID: defenderShipID, WeaponSlot: fireAction.WeaponSlot})
+	if err != nil {
+		t.Fatal(err)
+	}
+	postJSON(t, server.URL+"/api/v1/games/battle-demo/battles/1/commands", commandRequest{
+		SchemaVersion: 1, SeatID: 1, Command: fire,
+	}, "", http.StatusOK, &receipt)
+	if receipt.ChangeSequence != 5 || receipt.GameRevision != 2 {
+		t.Fatalf("battle fire receipt=%+v", receipt)
+	}
+	getJSON(t, server.URL+"/api/v1/games/battle-demo/seats/1/snapshot", &snapshot)
+	if len(snapshot.Battles) != 1 || snapshot.Battles[0].Tactical == nil || snapshot.Battles[0].Tactical.State.NextCommandSequence != 3 {
+		t.Fatalf("accepted battle commands not visible in player snapshot: %+v", snapshot.Battles)
 	}
 }
 

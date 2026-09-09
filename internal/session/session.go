@@ -1203,10 +1203,15 @@ func (s *GameSession) PlayerBattleViews(seatID protocol.SeatID) ([]battle.View, 
 	}
 	views := make([]battle.View, 0, len(s.battles))
 	for _, child := range s.battles {
-		view := child.View()
-		if containsSeatID(view.Spec.Participants, seatID) {
-			views = append(views, view)
+		observer := child.View()
+		if !containsSeatID(observer.Spec.Participants, seatID) {
+			continue
 		}
+		view, err := child.PlayerView(seatID)
+		if err != nil {
+			return nil, fmt.Errorf("project battle %d for seat %d: %w", observer.Spec.ID, seatID, err)
+		}
+		views = append(views, view)
 	}
 	sort.Slice(views, func(i, j int) bool { return views[i].Spec.ID < views[j].Spec.ID })
 	return views, nil
