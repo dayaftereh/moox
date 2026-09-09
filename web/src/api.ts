@@ -23,6 +23,7 @@ export type CreateGameRequest = {
   game_id: string
   seed: string
   settings: NewGameSettings
+  controllers?: Array<{ seat_id: number; controller: 'local_human' | 'builtin_ai' | 'remote_human' }>
 }
 
 export type SessionResult = {

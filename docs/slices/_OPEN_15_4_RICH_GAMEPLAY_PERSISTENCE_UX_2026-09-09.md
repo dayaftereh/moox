@@ -74,6 +74,7 @@ See `docs/research/SLICE_15_4_GATE2_RICH_INTERACTION_CONTRACT_DRAFT_2026-09-09.m
 - [x] Block 3 Colony Base: mandatory Post-Resolution legal-target/Scrap blocking decision, both real server outcomes, desktop + 320px QA. Evidence: `docs/research/SLICE_15_4_GATE3_BLOCK3_COLONY_BASE_UX_2026-09-09.md`.
 - [x] Block 4 Invasion: player-safe public empire identity, contextual blocking decision and real Decline/Invade server outcomes. Evidence: `docs/research/SLICE_15_4_GATE3_BLOCK4_INVASION_UX_2026-09-09.md`.
 - [x] Block 5 resolution summary / Research / result: stable player-safe event-derived transition summaries, automatic Research Breakthrough presentation and dedicated read-only Victory surface. Evidence: `docs/research/SLICE_15_4_GATE3_BLOCK5_RESOLUTION_SUMMARY_RESEARCH_RESULT_2026-09-09.md`.
+- [x] Blocker remediation: browser New Game now sends explicit Human/Built-in-AI controllers; End Turn advances correctly and canonical `game-1` was recovered to Turn 2 with the submitted Research + construction choices applied. Evidence: `docs/research/SLICE_15_4_GATE3_ENDTURN_BUILTIN_AI_BLOCKER_2026-09-09.md`.
 
 ## Gate 4 - QA + close
 - [ ] Exercise every supported non-tactical interactive phase through browser surfaces.

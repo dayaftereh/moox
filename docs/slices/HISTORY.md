@@ -303,3 +303,11 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Replaced the small completed-game inline card with a dedicated read-only conquest result surface using public Empire names and a Main Menu action; ordinary strategic sections no longer render below a completed result.
 - Regression evidence: `go test ./...`, `go vet ./...`, `npm run build`, focused resolution privacy/stable-ID tests and `git diff --check` pass. Evidence: `docs/research/SLICE_15_4_GATE3_BLOCK5_RESOLUTION_SUMMARY_RESEARCH_RESULT_2026-09-09.md`.
 - Next Gate-3 block: Battle Entry/Return route and shell; interactive Tactical mechanics remain Slice 15.5.
+
+## 2026-09-09 - Slice 15.4 Gate 3 - End Turn / Built-in AI blocker remediation
+
+- Diagnosed live `game-1`: Seat 1 submission was accepted, but Seat 2 was incorrectly `local_human`, so Turn 1 Planning waited forever for a second Human submission.
+- Fixed browser New Game to send the already-supported controller map explicitly: Seat 1 `local_human`, Seat 2 `builtin_ai`.
+- Preserved the user's exact submitted `marine_barracks` construction + TechField 4 / Technology 13 Research batch, repaired Seat 2, and re-submitted the exact batch through the normal authoritative endpoint.
+- Verified canonical live game at Turn 2 Planning with Darlok as Built-in AI, Research at 9 RP and Marine Barracks at 6 PP.
+- Focused Human-vs-AI/server controller tests and web production build pass. Evidence: `docs/research/SLICE_15_4_GATE3_ENDTURN_BUILTIN_AI_BLOCKER_2026-09-09.md`.

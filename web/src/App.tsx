@@ -509,6 +509,10 @@ function App() {
         schema_version: 1,
         game_id: newGameID,
         seed: newGameSeed,
+        controllers: [
+          { seat_id: 1, controller: 'local_human' },
+          { seat_id: 2, controller: 'builtin_ai' },
+        ],
         settings: {
           galaxy_size: 'small',
           galaxy_age: 'normal',
