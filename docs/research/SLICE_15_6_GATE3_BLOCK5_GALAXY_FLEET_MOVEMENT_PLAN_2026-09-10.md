@@ -22,36 +22,59 @@ This blocks the normal Galaxy -> fleet movement -> encounter -> Tactical Combat 
 5. Ships are individually selectable. Default may select all ships in the active source fleet. Subset movement continues to use authoritative `ship_ids` on `empire.move_fleet`.
 6. The panel has a drag handle/header. Dragging the panel across the map and releasing it on a star attempts to use that star as the movement target. Releasing over empty map space only repositions the panel.
 7. While dragging, candidate destination stars remain visible and the current hovered/drop target is highlighted. A route/target preview may be drawn without taking over the map.
-8. A non-drag equivalent is mandatory for touch/accessibility: `Ziel wählen` enters target-pick mode, then the player taps/clicks a star.
+8. A non-drag equivalent is mandatory for touch/accessibility: `Ziel wÃƒÂ¤hlen` enters target-pick mode, then the player taps/clicks a star.
 9. Map pan/zoom must continue to work outside the fleet panel. Panel dragging/ship selection must not accidentally pan the Galaxy.
-10. A legal target stages the existing `empire.move_fleet` planning order and shows an authoritative confirmation such as `System 02 · ETA 1 Runde · 2 pc / 4 pc`.
-11. An illegal target must not create a draft order. The player receives a concise authoritative reason, e.g. `Ziel außer Reichweite: 5 pc, verfügbar 4 pc.` The UI must not recompute strategic distance, fuel range or legality itself.
+10. A legal target stages the existing `empire.move_fleet` planning order and shows an authoritative confirmation such as `System 02 Ã‚Â· ETA 1 Runde Ã‚Â· 2 pc / 4 pc`.
+11. An illegal target must not create a draft order. The player receives a concise authoritative reason, e.g. `Ziel auÃƒÅ¸er Reichweite: 5 pc, verfÃƒÂ¼gbar 4 pc.` The UI must not recompute strategic distance, fuel range or legality itself.
 
-## Exploration / player-knowledge contract
+## Visited-system / player-knowledge contract
 
-This block must close the existing strategic information leak before fleet-target UX is built on top of it. The current `buildStrategicView()` copies the complete authoritative galaxy into every player decision view, including planet/body data for systems the empire has never visited, and currently also projects foreign strategic contacts without an exploration boundary.
+This block must close the existing strategic information leak before fleet-target UX is built on top of it. The current `buildStrategicView()` copies the complete authoritative galaxy into every player decision view, including true system names and planet/body data for systems the empire has never visited. `PublicEmpires` and `Diplomacy` likewise currently expose every empire from game start.
 
-Use two explicit knowledge levels for the current vertical slice:
+Use `visited` as the canonical system-knowledge term for this vertical slice.
 
-- `charted`: the star itself is known on the Galaxy map. Its stable system ID, map position, display name and visible stellar/spectral presentation may be projected, so it can be selected as a blind exploration destination.
-- `explored`: at least one owned fleet has reached the system (or the empire owns a colony/outpost there). Only then may detailed system contents such as planets/bodies and their properties be projected for normal inspection.
+### Unvisited star
 
-Required persistence/authority behavior:
+An unvisited star remains present on the Galaxy map so the player can navigate and send a fleet toward it, but the player-safe projection may reveal only information visible from the galactic map:
 
-- Exploration knowledge belongs to the empire/server state, not React local state, so save/load/reconnect preserves it deterministically.
-- Each empire's starting/home system is explored at New Game creation.
-- When an owned strategic fleet arrives at a destination system, that system becomes explored for that empire before the resulting system/encounter UI is projected.
-- Once explored, a system remains explored even after the fleet leaves.
-- Planet potentials and other planet-derived player-safe projections must not include unexplored planets.
-- Static foreign colony/outpost/fleet presence tied to an unexplored system must not be leaked through the player snapshot merely because it exists in authoritative state. Full long-range sensor/intelligence rules are outside this block; the safe baseline is to reveal system-local detail on exploration/arrival.
-- Built-in AI should consume the same player-safe knowledge boundary where it uses `PlayerDecisionView`; it must not require React-only or privileged planet knowledge to function.
+- stable opaque system ID required by commands;
+- map position;
+- visible stellar/spectral color/art.
 
-Galaxy UX:
+It must NOT reveal before visit:
 
-- Charted but unexplored stars stay visible on the map, visually marked as `Nicht erkundet`/unknown.
-- A normal click/tap on an unexplored star must not show its planet list or hidden ownership details. A compact unexplored-state dialog/message is acceptable and should offer the movement workflow when the player has a selectable fleet.
-- In fleet target-pick mode, an unexplored star remains a valid candidate. Reachability/range/ETA still come from the server target projection.
-- After first arrival, the same star immediately transitions to explored presentation and its authoritative planet/system details become inspectable.
+- the true system name (including in `title`, `aria-label`, hidden DOM text or client data);
+- planet/body list or properties;
+- colony/outpost ownership tied to that system;
+- system specials, monsters/guardians or special-system identity such as Orion;
+- other system-local details that would identify the destination in advance.
+
+The UI labels such a target generically, e.g. `Unbekannter Stern` / `Nicht besucht`. The home system is visited from game creation and therefore named immediately.
+
+### Visited system
+
+A system becomes visited for an empire when an owned strategic fleet reaches it, or when the empire already owns a colony/outpost there. The server records this persistently before projecting the resulting system/encounter state. Once visited, the empire keeps the system knowledge across departure, save/load and reconnect.
+
+After visit, the player-safe projection may reveal the true system name, planets/bodies and the supported local details. Planet potentials and any other planet-derived projection must be generated only for visited systems.
+
+### Race discovery / first contact
+
+System knowledge and diplomatic contact are separate concepts.
+
+- Do not expose every race identity through `PublicEmpires` or every diplomacy row at game start.
+- Before first contact, another empire's name/race/diplomatic state must not be available to the player UI merely because that empire exists in authoritative state.
+- When the supported first-contact rule becomes true, the server records/projects that the race is known and the Diplomacy UI becomes available for that race.
+- Visiting a system that actually reveals foreign presence can therefore lead into first contact, but merely sharing historical visit data for an otherwise empty system must not magically reveal a race.
+- For MOO2 fidelity, the first-contact rule should be based on authoritative inter-empire reachability/encounter state rather than React. Original MOO2 documentation describes diplomacy beginning when either empire's ships are capable of reaching one of the other's colonies. Implement the narrow server-side condition required by the current two-empire vertical slice and cover it with focused tests; broader contact-loss/sensor/intelligence behavior can be deferred.
+- Knowledge of an empire identity after first contact should not be erased merely by leaving a system; any later distinction between `known race` and currently active diplomatic contact is a separate expansion.
+
+### Galaxy UX
+
+- Unvisited stars remain visible and targetable, but have no true name label.
+- Clicking/tapping an unvisited star must not open the normal detailed System dialog. It may open a compact `Nicht besucht` prompt and offer fleet target selection.
+- In fleet target-pick mode an unvisited star remains a candidate. Reachability/range/ETA still come exclusively from the server target projection.
+- Target/rejection copy must not accidentally reveal the hidden system name: use `Unbekannter Stern Â· 5 pc Â· Reichweite 4 pc`, for example.
+- After first arrival, the star gains its real name on the map and the detailed System dialog becomes available immediately.
 ## Authority / projection change
 
 Current `fleet_moves` contains legal choices only. That is insufficient for drop-on-invalid-target UX because React cannot explain why a visible star is illegal without duplicating simulation rules.
@@ -78,16 +101,16 @@ Do not change the normal Small-Galaxy generator and do not change the canonical 
 
 Proposed fixed layout (30 coordinate units = 1 pc):
 
-- Far Beacon: `(100, 100)` -> exactly 5 pc from Human Home, deliberately outside the initial 4 pc range.
+- Darlok Home / Far Beacon: `(100, 100)` -> exactly 5 pc from Human Home, deliberately outside the initial 4 pc range; its true identity/name is hidden while unvisited.
 - Human Home: `(250, 100)`
-- Darlok Contact: `(310, 100)` -> exactly 2 pc from Human Home, reachable with standard 4 pc fuel cells; Nuclear Drive speed 2 gives ETA 1 turn.
+- Contact Star: `(310, 100)` -> exactly 2 pc from Human Home, reachable with standard 4 pc fuel cells; Nuclear Drive speed 2 gives ETA 1 turn. The fixture places a Darlok combat fleet here without exposing Darlok identity to Human before encounter.
 
 This one three-star horizontal fixture tests both success and rejection without relying on random generation:
 
-- drop on Far Beacon -> rejected as 5 pc > 4 pc, no draft order;
-- drop on Darlok Contact -> legal, ETA 1, order staged;
-- Darlok combat fleet at Darlok Contact allows the arrival to enter the already accepted Tactical path.
-- the fixture must guarantee the Darlok combat fleet remains at Darlok Contact until the Human arrival resolves, so the Tactical encounter cannot disappear because both fleets move past one another; use fixture/controller setup rather than production-rule exceptions.
+- drop on Darlok Home / Far Beacon -> rejected as 5 pc > 4 pc, no draft order and no hidden true name/race leak;
+- drop on Contact Star -> legal, ETA 1, order staged while the target is still shown generically as unvisited;
+- Darlok combat fleet at Contact Star allows Human arrival to establish the supported first-contact/known-race state and enter the already accepted Tactical path.
+- the fixture must guarantee the Darlok combat fleet remains at Contact Star until the Human arrival resolves, so first contact/Tactical cannot disappear because both fleets move past one another; use fixture/controller setup rather than production-rule exceptions.
 
 For fast movement/Tactical regression, the QA fixture may contain one prebuilt Human Laser test ship. This fixture is not a substitute for the final Slice 15.6/15 Gate-4 canonical browser playthrough, where Ship Designer -> Construction -> fleet -> Tactical remains exercised through normal UI.
 
@@ -95,13 +118,13 @@ The fixture should be clearly QA-only and reproducible (for example a versioned 
 
 ## Implementation blocks
 
-### 5A - Exploration / player-knowledge boundary
+### 5A - Visited-system / player-knowledge boundary
 
-- Add persistent per-empire explored-system knowledge and initialize each empire home system.
-- Mark destinations explored on authoritative fleet arrival and preserve through save/load/reconnect.
-- Sanitize player strategic Galaxy projection: charted star metadata remains; unexplored planet/body/detail data is omitted.
-- Stop static system-local foreign contact leakage from unexplored systems within the current supported baseline.
-- Add resolver/session projection tests proving an unexplored system cannot leak its planet details and becomes visible after arrival.
+- Add persistent per-empire visited-system knowledge and initialize each empire home system as visited.
+- Mark destinations visited on authoritative fleet arrival and preserve through save/load/reconnect.
+- Sanitize player strategic Galaxy projection: unvisited stars expose only opaque ID + position + stellar appearance; true name and planet/body/detail data are omitted until visited.
+- Stop foreign race/diplomacy and static system-local contact leakage before authoritative first contact; filter `PublicEmpires`, `Diplomacy` and strategic contacts accordingly.
+- Add resolver/session projection tests proving an unvisited system cannot leak its true name, Orion/special identity or planet details; prove it becomes named/inspectable after arrival; prove unknown empires stay out of diplomacy until first contact.
 
 ### 5B - Authority target projection
 
@@ -114,7 +137,7 @@ The fixture should be clearly QA-only and reproducible (for example a versioned 
 - Split fleet marker interaction from the system/star button without nested interactive elements.
 - Compact draggable panel with fleet grouping and selectable ship thumbnails.
 - Exact persisted ship SVGs in the picker.
-- Click/tap `Ziel wählen` fallback.
+- Click/tap `Ziel wÃƒÂ¤hlen` fallback.
 
 ### 5D - Drag/drop targeting + route feedback
 
@@ -127,22 +150,22 @@ The fixture should be clearly QA-only and reproducible (for example a versioned 
 ### 5E - Micro fixture + browser QA
 
 - Add/recreate `qa-fleet-tactical-v1` beside the canonical game.
-- Start with Human Home explored while Darlok Contact and Far Beacon are charted-but-unexplored; prove their planet/system detail is hidden before arrival.
-- After Human arrival at Darlok Contact, prove it becomes explored and detailed system data is then visible.
-- Verify fleet-marker click, ship selection, panel drag, invalid 5 pc drop, valid 2 pc drop, ETA 1 and planned order.
+- Start with Human Home visited while Contact Star and Darlok Home/Far Beacon are visible-but-unvisited; prove their true names, Darlok identity and planet/system detail are hidden before first contact/visit.
+- After Human arrival at Contact Star, prove it becomes visited, gains its real name/details, Darlok becomes a known race through the supported encounter/first-contact path, and Tactical opens.
+- Verify fleet-marker click, ship selection, panel drag, invalid 5 pc drop, valid 2 pc drop, ETA 1, planned order, no pre-contact Darlok identity leak and post-encounter Diplomacy availability.
 - Finish the turn through the visible browser and verify strategic arrival/encounter enters Tactical Combat.
 - Exercise at least one Laser fire action and return to strategic view.
 - Repeat the essential interaction on touch-sized viewport using the non-drag fallback and confirm the drag path remains usable.
 
 ## Acceptance for Block 5
 
-Block 5 is complete when unexplored systems no longer leak planet/system detail, exploration knowledge persists authoritatively, and a user can remain on the Galaxy map, select an owned fleet from its marker, inspect/select its ships, attempt a charted target by drag/drop or tap target mode, receive server-derived range/ETA feedback, stage a legal movement order, reveal the destination only upon arrival, and use the deterministic micro fixture to reach the integrated Tactical battle without direct API/dev-tool milestone actions.
+Block 5 is complete when unvisited systems no longer leak their true name/special identity/planet detail, visited-system knowledge persists authoritatively, unknown races no longer leak through diplomacy before first contact, and a user can remain on the Galaxy map, select an owned fleet from its marker, inspect/select its ships, attempt an unvisited target by drag/drop or tap target mode, receive server-derived range/ETA feedback, stage a legal movement order, reveal/name the destination only upon arrival, establish supported first contact when appropriate, and use the deterministic micro fixture to reach the integrated Tactical battle without direct API/dev-tool milestone actions.
 
 ## Non-goals
 
 - Do not rebalance or rescale the normal seed `0x8009` galaxy in this block.
-- Do not hide charted star positions entirely; unexplored stars must remain available as blind movement/exploration targets.
-- Do not implement broad sensor/spy/intelligence fog-of-war rules beyond the system-exploration knowledge boundary required here.
+- Do not hide unvisited star positions or stellar colors; unvisited stars must remain available as blind movement/visit targets.
+- Do not implement broad sensor/spy/intelligence fog-of-war or full MOO2 contact-loss rules beyond the visited-system + initial-contact boundary required here.
 - Do not make the QA micro fixture a normal game mode.
 - Do not duplicate strategic distance, fuel, ETA or legality rules in React.
 - Do not require drag as the only movement input.
