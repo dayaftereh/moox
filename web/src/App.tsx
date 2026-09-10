@@ -1172,6 +1172,7 @@ function App() {
             draftOrders={draftOrders}
             colonyID={route.entityID}
             onBack={() => navigate({ kind: 'game', gameID: route.gameID, section: 'colonies', entityID: route.entityID })}
+            onOpenShipDesigner={(designID) => navigate({ kind: 'game', gameID: route.gameID, section: 'shipbuilder', entityID: designID })}
             onPlanOrder={planOrder}
             onRemoveOrder={removePlannedOrder}
             t={t}
@@ -1200,7 +1201,7 @@ function App() {
       ) : activeSection === 'espionage' ? (
         <StrategicEspionageView t={t} />
       ) : activeSection === 'shipbuilder' ? (
-        <ShipBuilderView snapshot={snapshot} reloadSnapshot={() => loadSnapshot()} t={t} />
+        <ShipBuilderView snapshot={snapshot} initialDesignID={route.entityID} reloadSnapshot={() => loadSnapshot()} t={t} />
       ) : (
         <MoreView
           snapshot={snapshot}

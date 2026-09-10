@@ -18,6 +18,7 @@ type Translator = (key: TranslationKey, vars?: TranslationVars) => string
 
 type Props = {
   snapshot: PlayerSnapshot
+  initialDesignID?: number
   reloadSnapshot: () => Promise<PlayerSnapshot | undefined>
   t: Translator
 }
@@ -48,13 +49,13 @@ function lockLabel(t: Translator, hull?: MilitaryDesignerHullChoice): string {
   return t('shipbuilder.lockScope')
 }
 
-export function ShipBuilderView({ snapshot, reloadSnapshot, t }: Props) {
+export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }: Props) {
   const designs = snapshot.decision?.strategic.ship_designs ?? []
   const designer = snapshot.decision?.decisions.ship_designer
   const hulls = designer?.hulls ?? []
   const firstAvailableHull = hulls.find((hull) => hull.save_available) ?? hulls[0]
 
-  const [selectedDesignID, setSelectedDesignID] = useState<number | null>(() => designs[0]?.id ?? null)
+  const [selectedDesignID, setSelectedDesignID] = useState<number | null>(() => designs.find((design) => design.id === initialDesignID)?.id ?? designs[0]?.id ?? null)
   const selectedDesign = designs.find((design) => design.id === selectedDesignID)
   const [name, setName] = useState(() => selectedDesign?.name ?? '')
   const [hullID, setHullID] = useState(() => selectedDesign?.spec.hull_id ?? firstAvailableHull?.id ?? 'frigate')

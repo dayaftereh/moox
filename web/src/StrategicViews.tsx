@@ -1433,12 +1433,13 @@ function ConstructionSummary({ colony, preview, draftOrders, onOpen, t }: {
   )
 }
 
-export function StrategicConstructionView({ snapshot, preview, draftOrders, colonyID, onBack, onPlanOrder, onRemoveOrder, t }: {
+export function StrategicConstructionView({ snapshot, preview, draftOrders, colonyID, onBack, onOpenShipDesigner, onPlanOrder, onRemoveOrder, t }: {
   snapshot: PlayerSnapshot
   preview: PlanningPreviewSnapshot | null
   draftOrders: DraftOrder[]
   colonyID: number
   onBack: () => void
+  onOpenShipDesigner: (designID?: number) => void
   onPlanOrder: (order: DraftOrder) => void
   onRemoveOrder: (key: string) => void
   t: Translator
@@ -1462,6 +1463,7 @@ export function StrategicConstructionView({ snapshot, preview, draftOrders, colo
         preview={projected}
         choices={constructionDecision?.choices ?? []}
         draftOrders={draftOrders}
+        onOpenShipDesigner={onOpenShipDesigner}
         onPlanOrder={onPlanOrder}
         onRemoveOrder={onRemoveOrder}
         t={t}
@@ -1470,11 +1472,12 @@ export function StrategicConstructionView({ snapshot, preview, draftOrders, colo
   )
 }
 
-function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder, onRemoveOrder, t }: {
+function ConstructionEditor({ colony, preview, choices, draftOrders, onOpenShipDesigner, onPlanOrder, onRemoveOrder, t }: {
   colony: Colony
   preview?: PlanningPreviewSnapshot['preview']['projection']['colonies'][number]
   choices: ConstructionChoice[]
   draftOrders: DraftOrder[]
+  onOpenShipDesigner: (designID?: number) => void
   onPlanOrder: (order: DraftOrder) => void
   onRemoveOrder: (key: string) => void
   t: Translator
@@ -1655,14 +1658,14 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onPlanOrder
                 )
               })()}
               {(selectedChoice.project_kind === 'military_ship' || selectedChoice.ship_design_id !== undefined) && (
-                <button type="button" className="button-secondary construction-designer-placeholder" disabled title={t('construction.shipDesignerUnavailable')}>
+                <button type="button" className="button-secondary construction-designer-placeholder" onClick={() => onOpenShipDesigner(selectedChoice.ship_design_id)} title={t('construction.shipDesignerHint')}>
                   <GameIcon name="ship-designer" />{t('construction.openShipDesigner')}
                 </button>
               )}
             </div>
 
             {(selectedChoice.project_kind === 'military_ship' || selectedChoice.ship_design_id !== undefined) && (
-              <p className="muted construction-designer-note">{t('construction.shipDesignerUnavailable')}</p>
+              <p className="muted construction-designer-note">{t('construction.shipDesignerHint')}</p>
             )}
           </>
         ) : (
