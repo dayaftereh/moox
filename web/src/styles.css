@@ -1843,14 +1843,20 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 .construction-queue-row.current { border-color: rgba(175, 118, 66, .42); }
 .construction-queue-copy {
   display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
   min-width: 0;
-  gap: 2px;
+  align-items: center;
+  gap: 6px;
   padding: 0;
   border: 0;
   background: transparent;
   color: inherit;
   text-align: left;
 }
+.construction-queue-art { display: grid; width: 42px; height: 30px; place-items: center; overflow: hidden; border: 1px solid rgba(74, 98, 121, .28); border-radius: 6px; background: rgba(4, 10, 17, .72); color: #afc9e7; }
+.construction-queue-art .game-icon { width: 18px; height: 18px; }
+.construction-queue-art .construction-queue-ship-glyph { width: 40px; height: 28px; padding: 2px 3px; color: var(--ship-vector); }
+.construction-queue-copy-text { display: grid; min-width: 0; gap: 2px; }
 .construction-queue-copy strong { overflow: hidden; color: #cdd7df; font-size: .59rem; text-overflow: ellipsis; white-space: nowrap; }
 .construction-queue-copy small { color: #7f909f; font-size: .49rem; }
 .construction-queue-actions { flex-wrap: nowrap; gap: 3px; }
@@ -3311,6 +3317,7 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 .construction-current-title > div { min-width: 0; }
 .construction-current-kind-icon { display: grid; width: 30px; height: 30px; flex: 0 0 30px; place-items: center; border: 1px solid var(--border); border-radius: 8px; background: rgba(45, 77, 112, .16); color: #afc9e7; }
 .construction-current-kind-icon .game-icon { width: 18px; height: 18px; }
+.construction-current-kind-icon .construction-current-ship-glyph { width: 28px; height: 22px; color: var(--ship-vector); }
 @media (max-width: 700px) {
   .fleet-role-chip { width: 25px; height: 25px; }
   .fleet-role-chip .game-icon { width: 16px; height: 16px; }

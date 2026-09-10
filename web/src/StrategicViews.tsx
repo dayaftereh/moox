@@ -127,7 +127,7 @@ function constructionProjectUsesLargeArt(kind: ConstructionProjectKind): boolean
   return constructionProjectUsesRichArt(kind) || constructionProjectUsesShipArt(kind)
 }
 
-function constructionShipDesign(choice: ConstructionChoice, shipDesigns: ShipDesign[]): ShipDesign | undefined {
+function constructionShipDesign(choice: Pick<ConstructionChoice, 'project_kind' | 'ship_design_id' | 'ship_design_revision'>, shipDesigns: ShipDesign[]): ShipDesign | undefined {
   if (choice.project_kind !== 'military_ship' || !choice.ship_design_id) return undefined
   return shipDesigns.find((design) => design.id === choice.ship_design_id
     && (choice.ship_design_revision === undefined || design.revision === choice.ship_design_revision))
@@ -1575,6 +1575,22 @@ function ConstructionEditor({ colony, preview, choices, shipDesigns, draftOrders
     return choice ? displayChoice(choice) : humanizeToken(item.project_id)
   }
 
+  function queueItemArt(item: DraftQueueItem, className: string) {
+    const design = constructionShipDesign(item, shipDesigns)
+    if (design) {
+      return (
+        <ProceduralShipGlyph
+          className={className}
+          seed={`${design.empire_id}:${design.id}:${design.revision}:${design.spec.strategic_picture_id}`}
+          genome={decodeShipVisualGenome(design.visual_genome)}
+          hullId={design.spec.hull_id}
+          weaponCount={design.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0}
+        />
+      )
+    }
+    return <GameIcon name={constructionProjectIcon(item.project_kind, item.project_id)} />
+  }
+
   function selectQueueItem(item: DraftQueueItem) {
     const index = choices.findIndex((choice) => matchesChoice(item, choice))
     if (index >= 0) setSelectedChoiceIndex(index)
@@ -1718,7 +1734,9 @@ function ConstructionEditor({ colony, preview, choices, shipDesigns, draftOrders
           <section className="construction-current-build">
             <div className="construction-current-head">
               <div className="construction-current-title">
-                <span className="construction-current-kind-icon"><GameIcon name={constructionProjectIcon(currentItem.project_kind, currentItem.project_id)} /></span>
+                <span className="construction-current-kind-icon">
+                  {queueItemArt(currentItem, 'construction-current-ship-glyph')}
+                </span>
                 <div><p className="eyebrow">{t('construction.current')}</p><strong>{displayItem(currentItem)}</strong></div>
               </div>
               <button type="button" className="button-danger construction-abort-button" onClick={() => setAbortConfirmOpen(true)}>{t('construction.abort')}</button>
@@ -1746,8 +1764,13 @@ function ConstructionEditor({ colony, preview, choices, shipDesigns, draftOrders
                 <div className="queue-row construction-queue-row" key={`${item.project_kind}-${item.project_id}-${item.ship_design_id ?? 0}-${item.ship_design_revision ?? 0}-${index}`}>
                   <span className="queue-position">{queueIndex + 1}</span>
                   <button type="button" className="construction-queue-copy" onClick={() => selectQueueItem(item)}>
-                    <strong>{displayItem(item)}</strong>
-                    <small>{humanizeToken(item.project_kind)} · {projectedItem ? formatEta(t, projectedItem.eta_turns) : t('common.noEta')}</small>
+                    <span className="construction-queue-art">
+                      {queueItemArt(item, 'construction-queue-ship-glyph')}
+                    </span>
+                    <span className="construction-queue-copy-text">
+                      <strong>{displayItem(item)}</strong>
+                      <small>{humanizeToken(item.project_kind)} · {projectedItem ? formatEta(t, projectedItem.eta_turns) : t('common.noEta')}</small>
+                    </span>
                   </button>
                   <div className="action-row compact-actions construction-queue-actions">
                     <button type="button" className="button-ghost" disabled={queueIndex === 0} onClick={() => move(index, -1)} aria-label={t('construction.moveUp')}><GameIcon name="arrow-up" /></button>
