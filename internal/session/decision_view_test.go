@@ -86,23 +86,24 @@ func TestPlayerDecisionViewIsPlayerSafeDeepCopyAndDeterministic(t *testing.T) {
 			t.Fatalf("decision view leaked foreign fleet composition %+v", fleet)
 		}
 	}
-	foreignColonyContact, foreignFleetContact := false, false
-	for _, contact := range view.Strategic.Contacts {
-		if contact.EmpireID == view.Empire.ID {
-			t.Fatalf("own asset projected redundantly as foreign contact %+v", contact)
-		}
-		switch contact.Kind {
-		case StrategicContactColony:
-			foreignColonyContact = true
-		case StrategicContactFleet:
-			foreignFleetContact = true
-		}
+	if len(view.Strategic.Contacts) != 0 {
+		t.Fatalf("unvisited foreign home leaked strategic contacts: %+v", view.Strategic.Contacts)
 	}
-	if !foreignColonyContact || !foreignFleetContact {
-		t.Fatalf("symmetric strategic contacts missing colony=%v fleet=%v contacts=%+v", foreignColonyContact, foreignFleetContact, view.Strategic.Contacts)
+	if len(view.Strategic.VisitedSystemIDs) != 1 {
+		t.Fatalf("visited systems=%v want only Human home", view.Strategic.VisitedSystemIDs)
 	}
+	visitedSystemID := view.Strategic.VisitedSystemIDs[0]
 	planetCount := 0
 	for _, system := range view.Strategic.Galaxy.Systems {
+		if system.ID != visitedSystemID {
+			if system.Name != "" || len(system.Planets) != 0 || len(system.Bodies) != 0 {
+				t.Fatalf("unvisited system leaked details id=%d name=%q planets=%d bodies=%d", system.ID, system.Name, len(system.Planets), len(system.Bodies))
+			}
+			continue
+		}
+		if system.Name == "" || len(system.Planets) == 0 {
+			t.Fatalf("visited home system not projected in detail: %+v", system)
+		}
 		if len(system.BlockadedEmpireIDs) != 0 {
 			t.Fatalf("decision galaxy leaked blockade internals for system %d: %v", system.ID, system.BlockadedEmpireIDs)
 		}

@@ -285,6 +285,9 @@ func (r *EconomyResolver) advanceStrategicFleetTransit(state *core.GameState) ([
 			return nil, err
 		}
 		fleet.AtSystemID = destination.ID
+		if empire := empireByID(state, fleet.EmpireID); empire != nil {
+			empire.MarkSystemVisited(destination.ID)
+		}
 		fleet.DestinationSystemID = 0
 		fleet.RemainingTurns = 0
 		events = append(events, event)

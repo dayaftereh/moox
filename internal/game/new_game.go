@@ -159,6 +159,7 @@ func (r *EconomyRules) NewGame(seed uint64, settings NewGameSettings) (NewGameRe
 		}
 		homeworld := &system.Planets[0]
 		empire := &state.Empires[playerIndex]
+		empire.MarkSystemVisited(system.ID)
 		colony := core.Colony{
 			ID:         state.NewID(),
 			EmpireID:   empire.ID,

@@ -308,6 +308,7 @@ export type StrategicContact = {
 }
 export type StrategicView = {
   galaxy: Galaxy
+  visited_system_ids?: number[]
   planet_potentials?: PlanetPotential[]
   outposts?: Outpost[]
   ship_designs?: ShipDesign[]

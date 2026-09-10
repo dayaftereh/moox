@@ -234,4 +234,7 @@ func TestCombatFleetArrivalDrivesSameResolutionBlockade(t *testing.T) {
 	if !reflect.DeepEqual(result.State.Galaxy.Systems[1].BlockadedEmpireIDs, []core.ID{fixture.targetEmpireID}) {
 		t.Fatalf("arrival blockade=%v want target empire %d", result.State.Galaxy.Systems[1].BlockadedEmpireIDs, fixture.targetEmpireID)
 	}
+	if !result.State.Empires[0].HasVisitedSystem(destination.ID) {
+		t.Fatalf("arrival did not persist visited system %d: %v", destination.ID, result.State.Empires[0].VisitedSystemIDs)
+	}
 }

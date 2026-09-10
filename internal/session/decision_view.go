@@ -34,6 +34,7 @@ type StrategicContact struct {
 
 type StrategicView struct {
 	Galaxy              core.Galaxy               `json:"galaxy"`
+	VisitedSystemIDs    []core.ID                 `json:"visited_system_ids,omitempty"`
 	PlanetPotentials    []game.PlanetPotential    `json:"planet_potentials,omitempty"`
 	Outposts            []core.Outpost            `json:"outposts,omitempty"`
 	ShipDesigns         []core.ShipDesign         `json:"ship_designs,omitempty"`
@@ -217,18 +218,30 @@ func (s *GameSession) DecisionView(seatID protocol.SeatID, resolver *game.Econom
 }
 
 func buildStrategicView(state *core.GameState, empireID core.ID) StrategicView {
+	visitedSystemIDs := playerVisitedSystemIDs(state, empireID)
+	visited := make(map[core.ID]struct{}, len(visitedSystemIDs))
+	for _, systemID := range visitedSystemIDs {
+		visited[systemID] = struct{}{}
+	}
 	galaxy := state.Galaxy
 	galaxy.Systems = make([]core.StarSystem, len(state.Galaxy.Systems))
 	for i, system := range state.Galaxy.Systems {
 		galaxy.Systems[i] = system
 		galaxy.Systems[i].BlockadedEmpireIDs = nil
+		if _, ok := visited[system.ID]; !ok {
+			galaxy.Systems[i].Name = ""
+			galaxy.Systems[i].Planets = nil
+			galaxy.Systems[i].Bodies = nil
+			continue
+		}
 		galaxy.Systems[i].Planets = append([]core.Planet(nil), system.Planets...)
+		galaxy.Systems[i].Bodies = append([]core.OrbitalBody(nil), system.Bodies...)
 		for pi := range galaxy.Systems[i].Planets {
 			galaxy.Systems[i].Planets[pi].ColonyID = 0
 			galaxy.Systems[i].Planets[pi].OutpostID = 0
 		}
 	}
-	out := StrategicView{Galaxy: galaxy}
+	out := StrategicView{Galaxy: galaxy, VisitedSystemIDs: visitedSystemIDs}
 	for _, outpost := range state.Outposts {
 		if outpost.EmpireID == empireID {
 			out.Outposts = append(out.Outposts, outpost)
@@ -248,8 +261,10 @@ func buildStrategicView(state *core.GameState, empireID core.ID) StrategicView {
 		if fleet.EmpireID == empireID {
 			fleet.ShipIDs = append([]core.ID(nil), fleet.ShipIDs...)
 			out.Fleets = append(out.Fleets, fleet)
-		} else {
-			out.Contacts = append(out.Contacts, StrategicContact{Kind: StrategicContactFleet, EmpireID: fleet.EmpireID, FleetID: fleet.ID, SystemID: fleet.AtSystemID, DestinationSystemID: fleet.DestinationSystemID, RemainingTurns: fleet.RemainingTurns, Role: fleet.Role, SpecialKind: fleet.SpecialKind})
+		} else if fleet.AtSystemID != 0 {
+			if _, ok := visited[fleet.AtSystemID]; ok {
+				out.Contacts = append(out.Contacts, StrategicContact{Kind: StrategicContactFleet, EmpireID: fleet.EmpireID, FleetID: fleet.ID, SystemID: fleet.AtSystemID, Role: fleet.Role, SpecialKind: fleet.SpecialKind})
+			}
 		}
 	}
 	for _, transfer := range state.PopulationTransfers {
@@ -262,7 +277,9 @@ func buildStrategicView(state *core.GameState, empireID core.ID) StrategicView {
 			continue
 		}
 		if systemID := systemIDForPlanet(state, colony.PlanetID); systemID != 0 {
-			out.Contacts = append(out.Contacts, StrategicContact{Kind: StrategicContactColony, EmpireID: colony.EmpireID, ColonyID: colony.ID, SystemID: systemID, PlanetID: colony.PlanetID})
+			if _, ok := visited[systemID]; ok {
+				out.Contacts = append(out.Contacts, StrategicContact{Kind: StrategicContactColony, EmpireID: colony.EmpireID, ColonyID: colony.ID, SystemID: systemID, PlanetID: colony.PlanetID})
+			}
 		}
 	}
 	for _, outpost := range state.Outposts {
@@ -270,7 +287,9 @@ func buildStrategicView(state *core.GameState, empireID core.ID) StrategicView {
 			continue
 		}
 		if systemID := systemIDForPlanet(state, outpost.PlanetID); systemID != 0 {
-			out.Contacts = append(out.Contacts, StrategicContact{Kind: StrategicContactOutpost, EmpireID: outpost.EmpireID, OutpostID: outpost.ID, SystemID: systemID, PlanetID: outpost.PlanetID})
+			if _, ok := visited[systemID]; ok {
+				out.Contacts = append(out.Contacts, StrategicContact{Kind: StrategicContactOutpost, EmpireID: outpost.EmpireID, OutpostID: outpost.ID, SystemID: systemID, PlanetID: outpost.PlanetID})
+			}
 		}
 	}
 	sort.Slice(out.Outposts, func(i, j int) bool { return out.Outposts[i].ID < out.Outposts[j].ID })
@@ -294,6 +313,66 @@ func buildStrategicView(state *core.GameState, empireID core.ID) StrategicView {
 		return out.Contacts[i].FleetID < out.Contacts[j].FleetID
 	})
 	return out
+}
+
+func playerVisitedSystemIDs(state *core.GameState, empireID core.ID) []core.ID {
+	visited := make(map[core.ID]struct{})
+	for i := range state.Empires {
+		if state.Empires[i].ID != empireID {
+			continue
+		}
+		for _, systemID := range state.Empires[i].VisitedSystemIDs {
+			visited[systemID] = struct{}{}
+		}
+		break
+	}
+	// Compatibility for saves created before visited-system persistence existed:
+	// current owned assets prove that their systems have necessarily been visited.
+	for _, colony := range state.Colonies {
+		if colony.EmpireID == empireID {
+			if systemID := systemIDForPlanet(state, colony.PlanetID); systemID != 0 {
+				visited[systemID] = struct{}{}
+			}
+		}
+	}
+	for _, outpost := range state.Outposts {
+		if outpost.EmpireID != empireID {
+			continue
+		}
+		if systemID := systemIDForOutpost(state, outpost); systemID != 0 {
+			visited[systemID] = struct{}{}
+		}
+	}
+	for _, fleet := range state.StrategicFleets {
+		if fleet.EmpireID == empireID && fleet.AtSystemID != 0 {
+			visited[fleet.AtSystemID] = struct{}{}
+		}
+	}
+	ids := make([]core.ID, 0, len(visited))
+	for systemID := range visited {
+		ids = append(ids, systemID)
+	}
+	sort.Slice(ids, func(i, j int) bool { return ids[i] < ids[j] })
+	return ids
+}
+
+func systemIDForOutpost(state *core.GameState, outpost core.Outpost) core.ID {
+	if outpost.PlanetID != 0 {
+		if systemID := systemIDForPlanet(state, outpost.PlanetID); systemID != 0 {
+			return systemID
+		}
+	}
+	if outpost.BodyID == 0 {
+		return 0
+	}
+	for _, system := range state.Galaxy.Systems {
+		for _, body := range system.Bodies {
+			if body.ID == outpost.BodyID {
+				return system.ID
+			}
+		}
+	}
+	return 0
 }
 
 func systemIDForPlanet(state *core.GameState, planetID core.ID) core.ID {

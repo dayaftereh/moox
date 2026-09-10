@@ -74,6 +74,7 @@ type Empire struct {
 	FoodLogistics             EmpireFoodLogistics          `json:"food_logistics"`
 	UncreativeResearchChoices []FixedResearchChoice        `json:"uncreative_research_choices,omitempty"`
 	HyperAdvancedResearch     []HyperAdvancedResearchLevel `json:"hyper_advanced_research,omitempty"`
+	VisitedSystemIDs          []ID                         `json:"visited_system_ids,omitempty"`
 	KnownTechnologyIDs        []int                        `json:"known_technology_ids,omitempty"`
 	KnownTechnologyFieldIDs   []int                        `json:"known_technology_field_ids,omitempty"`
 	Research                  *ResearchState               `json:"research,omitempty"`
@@ -397,6 +398,19 @@ func (s *GameState) Validate() error {
 		}
 		if err := checkID(empire.ID, fmt.Sprintf("empire[%d]", i)); err != nil {
 			return err
+		}
+		lastVisitedSystemID := ID(0)
+		for vi, systemID := range empire.VisitedSystemIDs {
+			if systemID == 0 {
+				return fmt.Errorf("empire[%d] visited system id must be non-zero", i)
+			}
+			if _, ok := systemIDs[systemID]; !ok {
+				return fmt.Errorf("empire[%d] references unknown visited system %d", i, systemID)
+			}
+			if vi > 0 && systemID <= lastVisitedSystemID {
+				return fmt.Errorf("empire[%d] visited system ids must be strictly ascending", i)
+			}
+			lastVisitedSystemID = systemID
 		}
 		if empire.Freighters < 0 {
 			return fmt.Errorf("empire[%d] freighters must be non-negative", i)
