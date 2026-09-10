@@ -142,6 +142,16 @@ Implementation status (2026-09-10): **5A COMPLETE**
 - Add focused resolver/session tests for 2 pc legal and 5 pc out-of-range targets.
 - Preserve hidden-information boundaries and existing command validation.
 
+Implementation status (2026-09-11): **5B COMPLETE**
+
+- `09a5b03` adds server-authoritative `FleetMoveTarget` projection for every visible non-source star and every supported whole/subset fleet movement profile.
+- Projected data is explicit and client-ready: `legal`, stable `reason` (`no_supply`, `out_of_fuel_range`, `invalid_eta`), direct `distance_parsecs`, `eta`, `fuel_range_parsecs`, `supply_distance_parsecs`, plus optional `ship_ids`.
+- Existing legal `fleet_moves` are now derived from the same target authority, so legal buttons/AI and future invalid-target feedback cannot drift into separate range or ETA formulas.
+- Focused 3-star fixture proves: 2 pc target is legal at 4 pc range with ETA 1; 5 pc target remains visible but illegal with `out_of_fuel_range`, 4 pc range and ETA 3; the actual `empire.move_fleet` validator rejects that same 5 pc command.
+- `PlayerDecisionView.decisions.fleet_move_targets` projects the authority to clients; the web wire types mirror it without adding any client-side legality calculation.
+- Session coverage proves a target can point at an unvisited/anonymous star while the StrategicView still omits its true name and detail data.
+- Validation: focused resolver/session tests green; full `go test ./...` green; web `npm run build` green (main JS 258.20 kB, gzip 67.11 kB); `git diff --check` green.
+- Canonical 7171 is intentionally not restarted for this backend-only block; deploy the new target wire together with the first consuming Galaxy fleet UI in 5C.
 ### 5C - Galaxy fleet marker + floating picker
 
 - Split fleet marker interaction from the system/star button without nested interactive elements.
