@@ -124,6 +124,15 @@ func TestPlayerDecisionViewIsPlayerSafeDeepCopyAndDeterministic(t *testing.T) {
 	if len(view.Decisions.Research) == 0 || len(view.Decisions.Construction) == 0 || len(view.Decisions.Population) == 0 {
 		t.Fatalf("decision catalog incomplete: %+v", view.Decisions)
 	}
+	if len(view.Decisions.ShipDesigner.Hulls) != 6 || view.Decisions.ShipDesigner.Hulls[0].ID != "frigate" || !view.Decisions.ShipDesigner.Hulls[0].SaveAvailable {
+		t.Fatalf("decision Ship Designer hulls=%+v", view.Decisions.ShipDesigner.Hulls)
+	}
+	if len(view.Decisions.ShipDesigner.Weapons) != 1 || view.Decisions.ShipDesigner.Weapons[0].ID != "laser_cannon" || !view.Decisions.ShipDesigner.Weapons[0].Available {
+		t.Fatalf("decision Ship Designer weapons=%+v", view.Decisions.ShipDesigner.Weapons)
+	}
+	if len(view.Decisions.ShipDesigner.Variants) != 2 || view.Decisions.ShipDesigner.Variants[1].Spec.ProductionCostPP <= view.Decisions.ShipDesigner.Variants[0].Spec.ProductionCostPP {
+		t.Fatalf("decision Ship Designer variants=%+v", view.Decisions.ShipDesigner.Variants)
+	}
 
 	firstBytes, err := json.Marshal(view)
 	if err != nil {

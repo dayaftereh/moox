@@ -81,6 +81,7 @@ type DecisionCatalog struct {
 	Diplomacy           []DiplomacyDecision             `json:"diplomacy,omitempty"`
 	ColonyBase          []game.ColonyBaseResolution     `json:"colony_base,omitempty"`
 	Invasion            *game.InvasionOpportunity       `json:"invasion,omitempty"`
+	ShipDesigner        game.MilitaryDesignerCatalog    `json:"ship_designer"`
 	Battles             []BattleDecision                `json:"battles,omitempty"`
 }
 
@@ -170,6 +171,10 @@ func (s *GameSession) DecisionView(seatID protocol.SeatID, resolver *game.Econom
 	view.Decisions.Research, err = resolver.Rules.AvailableResearchChoices(state, seat.EmpireID)
 	if err != nil {
 		return PlayerDecisionView{}, fmt.Errorf("research choices: %w", err)
+	}
+	view.Decisions.ShipDesigner, err = resolver.Rules.MilitaryDesignerCatalog(&view.Empire)
+	if err != nil {
+		return PlayerDecisionView{}, fmt.Errorf("ship designer choices: %w", err)
 	}
 	for _, colony := range view.Colonies {
 		construction, err := resolver.Rules.AvailableConstructionQueueChoices(state, seat.EmpireID, colony.ID)
