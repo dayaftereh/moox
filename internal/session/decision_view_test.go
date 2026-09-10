@@ -230,3 +230,58 @@ func TestDecisionViewRevealsEmpireOnlyAfterFirstContact(t *testing.T) {
 		t.Fatal("post-contact diplomacy commands missing")
 	}
 }
+func TestDecisionViewProjectsFleetTargetsWithoutRevealingUnvisitedSystem(t *testing.T) {
+	rules, err := game.LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	generated, err := rules.NewGame(0x8009, game.NewGameSettings{
+		GalaxySize: game.GalaxySizeSmall, GalaxyAge: game.GalaxyAgeNormal, TechnologyLevel: game.NewGameTechnologyAverage,
+		Players: []game.NewGamePlayerSpec{{SeatID: 1, EmpireName: "Human", RaceID: "human"}, {SeatID: 2, EmpireName: "Darlok", RaceID: "darlok"}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, err := NewGameSession("fleet-target-view", generated.State, []Seat{
+		{ID: 1, EmpireID: generated.Players[0].EmpireID, Name: "Human", Controller: ControllerBuiltinAI},
+		{ID: 2, EmpireID: generated.Players[1].EmpireID, Name: "Darlok", Controller: ControllerBuiltinAI},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	resolver, err := game.NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	view, err := s.DecisionView(1, resolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(view.Decisions.FleetMoveTargets) == 0 {
+		t.Fatal("decision view missing visible fleet target projection")
+	}
+	var checked bool
+	for _, target := range view.Decisions.FleetMoveTargets {
+		if target.SourceSystemID == target.DestinationSystemID || target.DistanceParsecs <= 0 || target.ETA <= 0 || target.FuelRangeParsecs <= 0 {
+			t.Fatalf("invalid target projection: %+v", target)
+		}
+		for _, system := range view.Strategic.Galaxy.Systems {
+			if system.ID != target.DestinationSystemID {
+				continue
+			}
+			if system.Name == "" {
+				if target.Legal || target.Reason != game.FleetMoveTargetReasonOutOfFuelRange {
+					t.Fatalf("canonical hidden target legality/reason=%+v", target)
+				}
+				checked = true
+			}
+			break
+		}
+		if checked {
+			break
+		}
+	}
+	if !checked {
+		t.Fatal("no anonymous unvisited fleet target was projected")
+	}
+}

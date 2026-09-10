@@ -114,3 +114,61 @@ func TestDecisionQueriesAreAuthoritativeDeterministicAndNonMutating(t *testing.T
 		t.Fatal("population decision catalog is not deterministic")
 	}
 }
+func TestFleetMoveTargetsProjectLegalAndOutOfRangeDestinations(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	resolver, err := NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := core.NewSmallFixture(0x5B)
+	empireID := state.Empires[0].ID
+	state.Empires[0].KnownTechnologyIDs = []int{standardFuelCellsTechnologyID}
+	source := &state.Galaxy.Systems[0]
+	legalSystem := &state.Galaxy.Systems[1]
+	farSystem := &state.Galaxy.Systems[2]
+	source.X, source.Y = 0, 0
+	legalSystem.X, legalSystem.Y = 60, 0
+	farSystem.X, farSystem.Y = 150, 0
+	fleetID := state.NewID()
+	state.StrategicFleets = append(state.StrategicFleets, core.StrategicFleet{
+		ID: fleetID, EmpireID: empireID, Role: core.StrategicFleetRoleCivilian,
+		SpecialKind: core.StrategicFleetSpecialColonyShip, AtSystemID: source.ID, FTLSpeed: 2,
+	})
+
+	targets, err := resolver.AvailableFleetMoveTargets(state, empireID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(targets) != 2 {
+		t.Fatalf("targets=%+v want exactly two non-source systems", targets)
+	}
+	legal := targets[0]
+	illegal := targets[1]
+	if legal.DestinationSystemID != legalSystem.ID || !legal.Legal || legal.Reason != "" || legal.DistanceParsecs != 2 || legal.SupplyDistanceParsecs != 2 || legal.FuelRangeParsecs != 4 || legal.ETA != 1 {
+		t.Fatalf("2 pc target=%+v", legal)
+	}
+	if illegal.DestinationSystemID != farSystem.ID || illegal.Legal || illegal.Reason != FleetMoveTargetReasonOutOfFuelRange || illegal.DistanceParsecs != 5 || illegal.SupplyDistanceParsecs != 5 || illegal.FuelRangeParsecs != 4 || illegal.ETA != 3 {
+		t.Fatalf("5 pc target=%+v", illegal)
+	}
+	choices, err := resolver.AvailableFleetMoveChoices(state, empireID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(choices) != 1 || choices[0].DestinationSystemID != legalSystem.ID || choices[0].ETA != legal.ETA || choices[0].FuelRangeParsecs != legal.FuelRangeParsecs || choices[0].SupplyDistanceParsecs != legal.SupplyDistanceParsecs {
+		t.Fatalf("legal choices=%+v want only the 2 pc target derived from target authority", choices)
+	}
+	farMove, err := NewMoveFleetCommand(1, MoveFleetPayload{FleetID: fleetID, DestinationSystemID: farSystem.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.moveFleetEvents(state, empireID, 1, farMove); err == nil {
+		t.Fatal("5 pc out-of-range target was projected illegal but accepted by move command validation")
+	}
+	encoded, err := json.Marshal(targets)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if bytes.Contains(encoded, []byte(legalSystem.Name)) || bytes.Contains(encoded, []byte(farSystem.Name)) {
+		t.Fatalf("target projection leaked star names: %s", encoded)
+	}
+}

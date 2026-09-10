@@ -34,6 +34,30 @@ type FleetMoveChoice struct {
 	ShipIDs               []core.ID `json:"ship_ids,omitempty"`
 }
 
+type FleetMoveTargetReason string
+
+const (
+	FleetMoveTargetReasonNoSupply       FleetMoveTargetReason = "no_supply"
+	FleetMoveTargetReasonOutOfFuelRange FleetMoveTargetReason = "out_of_fuel_range"
+	FleetMoveTargetReasonInvalidETA     FleetMoveTargetReason = "invalid_eta"
+)
+
+// FleetMoveTarget is the server-authoritative projection for one visible
+// destination and one movable fleet profile. Legal targets can be staged as
+// empire.move_fleet; illegal targets remain visible with a stable rejection
+// reason so clients never reproduce range/ETA legality.
+type FleetMoveTarget struct {
+	FleetID               core.ID               `json:"fleet_id"`
+	SourceSystemID        core.ID               `json:"source_system_id"`
+	DestinationSystemID   core.ID               `json:"destination_system_id"`
+	Legal                 bool                  `json:"legal"`
+	Reason                FleetMoveTargetReason `json:"reason,omitempty"`
+	DistanceParsecs       int                   `json:"distance_parsecs"`
+	ETA                   int                   `json:"eta"`
+	FuelRangeParsecs      int                   `json:"fuel_range_parsecs"`
+	SupplyDistanceParsecs int                   `json:"supply_distance_parsecs"`
+	ShipIDs               []core.ID             `json:"ship_ids,omitempty"`
+}
 type ColonizationChoice struct {
 	FleetID  core.ID `json:"fleet_id"`
 	SystemID core.ID `json:"system_id"`
@@ -139,7 +163,7 @@ func (r *EconomyResolver) AvailablePopulationChoices(state *core.GameState, empi
 	return choices, nil
 }
 
-func (r *EconomyResolver) AvailableFleetMoveChoices(state *core.GameState, empireID core.ID) ([]FleetMoveChoice, error) {
+func (r *EconomyResolver) AvailableFleetMoveTargets(state *core.GameState, empireID core.ID) ([]FleetMoveTarget, error) {
 	if r == nil || r.Rules == nil {
 		return nil, fmt.Errorf("economy resolver has no rules")
 	}
@@ -155,7 +179,7 @@ func (r *EconomyResolver) AvailableFleetMoveChoices(state *core.GameState, empir
 		fuelRange int
 		shipIDs   []core.ID
 	}
-	choices := make([]FleetMoveChoice, 0)
+	targets := make([]FleetMoveTarget, 0)
 	for i := range state.StrategicFleets {
 		fleet := &state.StrategicFleets[i]
 		if fleet.EmpireID != empireID || fleet.AtSystemID == 0 || fleet.DestinationSystemID != 0 || fleet.RemainingTurns != 0 {
@@ -195,46 +219,67 @@ func (r *EconomyResolver) AvailableFleetMoveChoices(state *core.GameState, empir
 			if destination.ID == source.ID {
 				continue
 			}
-			supplyDistance, ok := nearestEmpireSupplyDistanceParsecs(state, empireID, *destination)
-			if !ok {
-				continue
-			}
+			distance := strategicDistanceParsecs(*source, *destination)
+			supplyDistance, hasSupply := nearestEmpireSupplyDistanceParsecs(state, empireID, *destination)
 			for _, movement := range profiles {
-				if supplyDistance > movement.fuelRange {
-					continue
-				}
 				eta := strategicTravelETA(*source, *destination, movement.ftlSpeed)
-				if eta < 1 {
-					continue
-				}
-				choices = append(choices, FleetMoveChoice{
+				target := FleetMoveTarget{
 					FleetID: fleet.ID, SourceSystemID: source.ID, DestinationSystemID: destination.ID,
-					ETA: eta, FuelRangeParsecs: movement.fuelRange, SupplyDistanceParsecs: supplyDistance,
-					ShipIDs: append([]core.ID(nil), movement.shipIDs...),
-				})
+					DistanceParsecs: distance, ETA: eta, FuelRangeParsecs: movement.fuelRange,
+					SupplyDistanceParsecs: supplyDistance, ShipIDs: append([]core.ID(nil), movement.shipIDs...),
+				}
+				switch {
+				case !hasSupply:
+					target.Reason = FleetMoveTargetReasonNoSupply
+				case supplyDistance > movement.fuelRange:
+					target.Reason = FleetMoveTargetReasonOutOfFuelRange
+				case eta < 1:
+					target.Reason = FleetMoveTargetReasonInvalidETA
+				default:
+					target.Legal = true
+				}
+				targets = append(targets, target)
 			}
 		}
 	}
-	sort.Slice(choices, func(i, j int) bool {
-		if choices[i].FleetID != choices[j].FleetID {
-			return choices[i].FleetID < choices[j].FleetID
+	sort.Slice(targets, func(i, j int) bool {
+		if targets[i].FleetID != targets[j].FleetID {
+			return targets[i].FleetID < targets[j].FleetID
 		}
-		if choices[i].DestinationSystemID != choices[j].DestinationSystemID {
-			return choices[i].DestinationSystemID < choices[j].DestinationSystemID
+		if targets[i].DestinationSystemID != targets[j].DestinationSystemID {
+			return targets[i].DestinationSystemID < targets[j].DestinationSystemID
 		}
-		if len(choices[i].ShipIDs) != len(choices[j].ShipIDs) {
-			return len(choices[i].ShipIDs) < len(choices[j].ShipIDs)
+		if len(targets[i].ShipIDs) != len(targets[j].ShipIDs) {
+			return len(targets[i].ShipIDs) < len(targets[j].ShipIDs)
 		}
-		for k := range choices[i].ShipIDs {
-			if choices[i].ShipIDs[k] != choices[j].ShipIDs[k] {
-				return choices[i].ShipIDs[k] < choices[j].ShipIDs[k]
+		for k := range targets[i].ShipIDs {
+			if targets[i].ShipIDs[k] != targets[j].ShipIDs[k] {
+				return targets[i].ShipIDs[k] < targets[j].ShipIDs[k]
 			}
 		}
 		return false
 	})
-	return choices, nil
+	return targets, nil
 }
 
+func (r *EconomyResolver) AvailableFleetMoveChoices(state *core.GameState, empireID core.ID) ([]FleetMoveChoice, error) {
+	targets, err := r.AvailableFleetMoveTargets(state, empireID)
+	if err != nil {
+		return nil, err
+	}
+	choices := make([]FleetMoveChoice, 0, len(targets))
+	for _, target := range targets {
+		if !target.Legal {
+			continue
+		}
+		choices = append(choices, FleetMoveChoice{
+			FleetID: target.FleetID, SourceSystemID: target.SourceSystemID, DestinationSystemID: target.DestinationSystemID,
+			ETA: target.ETA, FuelRangeParsecs: target.FuelRangeParsecs, SupplyDistanceParsecs: target.SupplyDistanceParsecs,
+			ShipIDs: append([]core.ID(nil), target.ShipIDs...),
+		})
+	}
+	return choices, nil
+}
 func (r *EconomyResolver) AvailableColonizationChoices(state *core.GameState, empireID core.ID) ([]ColonizationChoice, error) {
 	if r == nil || r.Rules == nil {
 		return nil, fmt.Errorf("economy resolver has no rules")

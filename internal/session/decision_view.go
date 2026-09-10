@@ -76,6 +76,7 @@ type DecisionCatalog struct {
 	Construction        []ColonyConstructionDecision    `json:"construction,omitempty"`
 	Population          []ColonyPopulationDecision      `json:"population,omitempty"`
 	PopulationTransfers []game.PopulationTransferChoice `json:"population_transfers,omitempty"`
+	FleetMoveTargets    []game.FleetMoveTarget          `json:"fleet_move_targets,omitempty"`
 	FleetMoves          []game.FleetMoveChoice          `json:"fleet_moves,omitempty"`
 	Colonization        []game.ColonizationChoice       `json:"colonization,omitempty"`
 	OutpostDeployment   []game.OutpostDeploymentChoice  `json:"outpost_deployment,omitempty"`
@@ -195,6 +196,10 @@ func (s *GameSession) DecisionView(seatID protocol.SeatID, resolver *game.Econom
 	view.Decisions.PopulationTransfers, err = resolver.AvailablePopulationTransferChoices(state, seat.EmpireID)
 	if err != nil {
 		return PlayerDecisionView{}, fmt.Errorf("population transfer choices: %w", err)
+	}
+	view.Decisions.FleetMoveTargets, err = resolver.AvailableFleetMoveTargets(state, seat.EmpireID)
+	if err != nil {
+		return PlayerDecisionView{}, fmt.Errorf("fleet move targets: %w", err)
 	}
 	view.Decisions.FleetMoves, err = resolver.AvailableFleetMoveChoices(state, seat.EmpireID)
 	if err != nil {

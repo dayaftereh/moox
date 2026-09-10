@@ -377,6 +377,19 @@ export type FleetMoveChoice = {
   supply_distance_parsecs: number
   ship_ids?: number[]
 }
+export type FleetMoveTargetReason = 'no_supply' | 'out_of_fuel_range' | 'invalid_eta'
+export type FleetMoveTarget = {
+  fleet_id: number
+  source_system_id: number
+  destination_system_id: number
+  legal: boolean
+  reason?: FleetMoveTargetReason
+  distance_parsecs: number
+  eta: number
+  fuel_range_parsecs: number
+  supply_distance_parsecs: number
+  ship_ids?: number[]
+}
 export type ColonizationChoice = { fleet_id: number; system_id: number; planet_id: number }
 export type OutpostDeploymentChoice = { fleet_id: number; system_id: number; body_id: number; planet_id?: number }
 export type PopulationTransferChoice = {
@@ -505,6 +518,7 @@ export type DecisionCatalog = {
   construction?: ColonyConstructionDecision[]
   population?: ColonyPopulationDecision[]
   population_transfers?: PopulationTransferChoice[]
+  fleet_move_targets?: FleetMoveTarget[]
   fleet_moves?: FleetMoveChoice[]
   colonization?: ColonizationChoice[]
   outpost_deployment?: OutpostDeploymentChoice[]
