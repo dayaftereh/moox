@@ -77,6 +77,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const [selectedWeaponSlot, setSelectedWeaponSlot] = useState<number | null>(() => legalFireActions[0]?.weapon_slot ?? null)
   const [scannedShipID, setScannedShipID] = useState<number | null>(() => activeShip?.ship_id ?? ships[0]?.ship_id ?? null)
   const [busy, setBusy] = useState(false)
+  const [commandError, setCommandError] = useState('')
 
   const points = useMemo(() => {
     const shipPoints = ships.map((ship) => ({ x: ship.x, y: ship.y }))
@@ -137,8 +138,11 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const runCommand = async (command: ProtocolCommand) => {
     if (commandsDisabled || busy) return
     setBusy(true)
+    setCommandError('')
     try {
       await onCommand(command)
+    } catch (reason) {
+      setCommandError(reason instanceof Error ? reason.message : String(reason))
     } finally {
       setBusy(false)
     }
@@ -222,6 +226,8 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         <button type="button" className={mode === 'fire' ? 'button-primary' : 'button-secondary'} disabled={!ownActivation || legalFireActions.length === 0 || commandsDisabled || busy} onClick={() => setMode('fire')}><GameIcon name="fleet-combat" />{t('battlefield.fire')}</button>
         <button type="button" className={mode === 'scan' ? 'button-primary' : 'button-secondary'} onClick={() => { setMode('scan'); setScannedShipID(activeShip?.ship_id ?? scannedShipID) }}><GameIcon name="info" />{t('battlefield.scan')}</button>
       </div>
+
+      {commandError && <Notice title={t('battlefield.commandRejectedTitle')} tone="warning">{commandError} · {t('battlefield.commandRejectedBody')}</Notice>}
 
       <div className="tactical-layout">
         <div className="tactical-viewport-shell">

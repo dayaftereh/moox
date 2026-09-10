@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 	"testing/fstest"
@@ -412,6 +413,81 @@ func TestBattleCommandEndpointAcceptsParticipantTacticalCommand(t *testing.T) {
 	if len(snapshot.Battles) != 1 || snapshot.Battles[0].Tactical == nil || snapshot.Battles[0].Tactical.State.NextCommandSequence != 3 {
 		t.Fatalf("accepted battle commands not visible in player snapshot: %+v", snapshot.Battles)
 	}
+}
+
+func TestBattleCommandEndpointRejectsStaleAndIllegalWithoutMutation(t *testing.T) {
+	server, attackerShipID, defenderShipID := newTacticalServerFixture(t)
+	defer server.Close()
+
+	postJSON(t, server.URL+"/api/v1/games/battle-demo/turn-submissions", protocol.CommandBatch{
+		SchemaVersion: 1, GameID: "battle-demo", SeatID: 1, Turn: 1, BaseRevision: 1,
+	}, "", http.StatusOK, &app.Receipt{})
+	postJSON(t, server.URL+"/api/v1/games/battle-demo/turn-submissions", protocol.CommandBatch{
+		SchemaVersion: 1, GameID: "battle-demo", SeatID: 2, Turn: 1, BaseRevision: 1,
+	}, "", http.StatusOK, &app.Receipt{})
+
+	var before app.PlayerSnapshot
+	getJSON(t, server.URL+"/api/v1/games/battle-demo/seats/1/snapshot", &before)
+	if len(before.Battles) != 1 || before.Battles[0].Tactical == nil || len(before.Battles[0].Tactical.LegalMoves) == 0 {
+		t.Fatalf("expected supported Tactical battle, got %+v", before.Battles)
+	}
+	if before.Battles[0].Spec.ID != 1 {
+		t.Fatalf("battle ID=%d want 1", before.Battles[0].Spec.ID)
+	}
+	tactical := before.Battles[0].Tactical
+	moveOption := tactical.LegalMoves[0]
+
+	assertUnchanged := func(label string) {
+		t.Helper()
+		var after app.PlayerSnapshot
+		getJSON(t, server.URL+"/api/v1/games/battle-demo/seats/1/snapshot", &after)
+		if after.ChangeSequence != before.ChangeSequence || after.View.Revision != before.View.Revision || !reflect.DeepEqual(after.Battles, before.Battles) {
+			t.Fatalf("%s rejection mutated/refreshed authority unexpectedly: before=%+v after=%+v", label, before, after)
+		}
+	}
+
+	stale, err := battle.NewMoveShipCommand(99, battle.MoveShipPayload{ShipID: attackerShipID, X: moveOption.X, Y: moveOption.Y})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var apiErr apiErrorEnvelope
+	postJSON(t, server.URL+"/api/v1/games/battle-demo/battles/1/commands", commandRequest{SchemaVersion: 1, SeatID: 1, Command: stale}, "", http.StatusConflict, &apiErr)
+	if apiErr.Error.Code != "session_rejected" || !strings.Contains(apiErr.Error.Message, "command sequence 99, expected 1") {
+		t.Fatalf("stale command error=%+v", apiErr)
+	}
+	assertUnchanged("stale")
+
+	var defender *battle.TacticalShipView
+	for i := range tactical.Ships {
+		if tactical.Ships[i].ShipID == defenderShipID {
+			defender = &tactical.Ships[i]
+			break
+		}
+	}
+	if defender == nil {
+		t.Fatal("missing defender Tactical projection")
+	}
+	illegalMove, err := battle.NewMoveShipCommand(1, battle.MoveShipPayload{ShipID: attackerShipID, X: defender.X, Y: defender.Y})
+	if err != nil {
+		t.Fatal(err)
+	}
+	apiErr = apiErrorEnvelope{}
+	postJSON(t, server.URL+"/api/v1/games/battle-demo/battles/1/commands", commandRequest{SchemaVersion: 1, SeatID: 1, Command: illegalMove}, "", http.StatusConflict, &apiErr)
+	if apiErr.Error.Code != "session_rejected" || !strings.Contains(apiErr.Error.Message, "is occupied by ship") {
+		t.Fatalf("illegal move error=%+v", apiErr)
+	}
+	assertUnchanged("illegal move")
+
+	illegalFire, err := battle.NewFireBeamCommand(1, battle.FireBeamPayload{ShipID: attackerShipID, TargetShipID: attackerShipID, WeaponSlot: 0})
+	if err != nil {
+		t.Fatal(err)
+	}
+	apiErr = apiErrorEnvelope{}
+	postJSON(t, server.URL+"/api/v1/games/battle-demo/battles/1/commands", commandRequest{SchemaVersion: 1, SeatID: 1, Command: illegalFire}, "", http.StatusConflict, &apiErr)
+	if apiErr.Error.Code != "session_rejected" || !strings.Contains(apiErr.Error.Message, "is not an opponent") {
+		t.Fatalf("illegal fire error=%+v", apiErr)
+	}
+	assertUnchanged("illegal fire")
 }
 
 func newTacticalServerFixture(t *testing.T) (*httptest.Server, core.ID, core.ID) {

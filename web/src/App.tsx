@@ -78,7 +78,8 @@ function lifecycleKey(lifecycle: GameLifecycle): TranslationKey {
 
 function errorText(reason: unknown): string {
   if (isAPIError(reason)) return `${reason.code}: ${reason.message}`
-  return errorText(reason)
+  if (reason instanceof Error) return reason.message
+  return String(reason)
 }
 
 type SaveFileMetadata = {
@@ -772,6 +773,7 @@ function App() {
     } catch (cause) {
       setError(errorText(cause))
       await refreshAfterConflict(cause)
+      throw cause
     }
   }
 
