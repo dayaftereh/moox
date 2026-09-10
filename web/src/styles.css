@@ -3714,10 +3714,14 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 .tactical-move-node:hover > circle:first-child, .tactical-move-node:focus > circle:first-child { fill: #d2fbff; stroke: #fff; }
 .tactical-move-hit { fill: transparent; stroke: none; pointer-events: all; }
 .tactical-ship { cursor: pointer; outline: none; }
-.tactical-ship-hull { stroke-width: .09; vector-effect: non-scaling-stroke; }
-.tactical-ship.own .tactical-ship-hull { fill: #74cfdf; stroke: #d1f8ff; }
-.tactical-ship.enemy .tactical-ship-hull { fill: #d47976; stroke: #ffd4cf; }
-.tactical-ship-engine { fill: #f0d682; filter: drop-shadow(0 0 .18px #f0d682); }
+.tactical-ship-fallback { stroke-width: .09; vector-effect: non-scaling-stroke; opacity: .2; }
+.tactical-ship.own .tactical-ship-fallback { fill: #74cfdf; stroke: #d1f8ff; }
+.tactical-ship.enemy .tactical-ship-fallback { fill: #d47976; stroke: #ffd4cf; }
+.tactical-ship-art { overflow: visible; pointer-events: none; }
+.tactical-procedural-ship { width: 100%; height: 100%; display: grid; place-items: center; pointer-events: none; }
+.tactical-procedural-ship .procedural-ship-glyph { width: 100%; height: 100%; max-width: none; }
+.tactical-ship.own .tactical-procedural-ship { --ship-vector: #74cfdf; --ship-vector-highlight: #d1f8ff; --ship-vector-engine: #f0d682; }
+.tactical-ship.enemy .tactical-procedural-ship { --ship-vector: #d47976; --ship-vector-highlight: #ffd4cf; --ship-vector-engine: #f0a982; }
 .tactical-ship.destroyed { opacity: .32; filter: grayscale(1); }
 .tactical-active-ring, .tactical-target-ring, .tactical-scan-ring { fill: none; stroke-width: .11; vector-effect: non-scaling-stroke; }
 .tactical-active-ring { stroke: #f0c56d; stroke-dasharray: .35 .22; }

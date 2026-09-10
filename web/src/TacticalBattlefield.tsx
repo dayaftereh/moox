@@ -9,6 +9,7 @@ import {
   type TacticalShipView,
 } from './api'
 import { GameIcon } from './components/GameIcon'
+import { ProceduralShipGlyph } from './components/ProceduralShipGlyph'
 import { Card, Notice } from './components/ui'
 import { type TranslationKey, type TranslationVars } from './i18n'
 
@@ -269,8 +270,17 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                   {isActive && <circle r={1.25} className="tactical-active-ring" />}
                   {isLegalTarget && <circle r={1.05} className="tactical-target-ring" />}
                   {isScanned && <circle r={0.95} className="tactical-scan-ring" />}
-                  <path d="M 0.82 0 L -0.58 -0.5 L -0.32 0 L -0.58 0.5 Z" className="tactical-ship-hull" />
-                  <circle cx={-0.48} cy={0} r={0.15} className="tactical-ship-engine" />
+                  <path d="M 0.82 0 L -0.58 -0.5 L -0.32 0 L -0.58 0.5 Z" className="tactical-ship-fallback" />
+                  <foreignObject x={-0.92} y={-0.64} width={1.84} height={1.28} className="tactical-ship-art" pointerEvents="none">
+                    <div className="tactical-procedural-ship">
+                      <ProceduralShipGlyph
+                        seed={`tactical|empire:${ship.empire_id}|ship:${ship.ship_id}`}
+                        hullId={ship.hull_id}
+                        weaponCount={(ship.weapons ?? []).reduce((sum, weapon) => sum + weapon.count, 0)}
+                        footprint={1}
+                      />
+                    </div>
+                  </foreignObject>
                   <text x={0} y={1.6} textAnchor="middle" className="tactical-ship-label" transform={`rotate(${-angle})`}>{shipName(ship.ship_id)}</text>
                 </g>
               )

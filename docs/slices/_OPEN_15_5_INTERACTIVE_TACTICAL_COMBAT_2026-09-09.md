@@ -107,17 +107,17 @@ Defer unless explicitly accepted at Gate 2:
 - [x] Implement the interactive 2D battlefield with active-ship, legal-move, weapon and legal-target overlays on an effectively unbounded coordinate plane.
 - [x] Implement Tactical Scan/ship inspection with participant-safe weapon/readiness and damage/status details.
 - [x] Implement responsive mouse/touch interaction and 15.1 DE/EN localization.
-- [ ] Integrate 15.3 accepted ship/battle visuals with safe fallbacks.
+- [x] Integrate 15.3 accepted ship/battle visuals with safe fallbacks.
 - [ ] Add deterministic Go and browser regressions for movement, firing, rejection/rollback and strategic result handoff.
 ## Gate 4 - Independent Tactical QA + close
-- [ ] Enter a supported Tactical battle through normal browser gameplay rather than direct dev/API injection.
-- [ ] Move at least one player ship through server-projected legal movement targets.
-- [ ] Fire a supported weapon at a server-projected legal target and observe authoritative damage/state refresh.
-- [ ] Exercise activation/round progression through the browser until the battle resolves.
-- [ ] Verify destroyed/surviving strategic ship identities reconcile correctly after returning to the strategic game.
+- [x] Enter a supported Tactical battle through normal browser gameplay rather than direct dev/API injection.
+- [x] Move at least one player ship through server-projected legal movement targets.
+- [x] Fire a supported weapon at a server-projected legal target and observe authoritative damage/state refresh.
+- [x] Exercise activation/round progression through the browser until the battle resolves.
+- [x] Verify destroyed/surviving strategic ship identities reconcile correctly after returning to the strategic game.
 - [ ] Verify rejected/stale/illegal moves and shots are non-destructive and understandable in the UI.
-- [ ] Verify Tactical Scan can inspect friendly/enemy visible ships without consuming or mutating Tactical state.
-- [ ] Verify representative desktop plus phone/touch behavior with no required hover, no catastrophic overflow and no visible artificial arena boundary.
+- [x] Verify Tactical Scan can inspect friendly/enemy visible ships without consuming or mutating Tactical state.
+- [x] Verify representative desktop plus phone/touch behavior with no required hover, no catastrophic overflow and no visible artificial arena boundary.
 - [ ] Run full Go tests/vet/web build plus `git diff --check`; update evidence/status/HISTORY and close marker.
 Milestone on closure: **first interactive server-authoritative 2D Tactical Combat battle playable from the browser and reconciled back into the strategic match**.
 
@@ -133,3 +133,4 @@ Gate 2 is **complete and frozen** by explicit user acceptance. Frozen evidence: 
 - [x] Gate 3 Block 2 participant projection/API: seat-filtered command catalogs, RNG redaction, Scan/status ship views, legal Laser target projection and typed browser Battle-command helpers. Evidence: `docs/research/SLICE_15_5_GATE3_BLOCK2_TACTICAL_PROJECTION_API_2026-09-10.md`.
 - [x] Gate 3 Block 3 battlefield UI: real SVG Tactical plane, authoritative Move/Fire/End-Activation actions, read-only Scan, open-field pan/zoom/pinch, EN/DE responsive controls and real 2v2 browser QA through Round 2. Evidence: `docs/research/SLICE_15_5_GATE3_BLOCK3_TACTICAL_BATTLEFIELD_UI_2026-09-10.md`.
 - [x] Gate 3 Block 4a browser-found damage blocker: Armor overflow now continues into aggregate Structure without inventing internal subsystem damage. Evidence: `docs/research/SLICE_15_5_GATE3_BLOCK4A_STRUCTURE_DAMAGE_FIX_2026-09-10.md`.
+- [x] Gate 3 Block 4b visuals/full-return QA: Slice-15.3 procedural ship glyphs integrated with fallback; real 2v2 browser battle completed through Tactical Victory and authoritative destroyed [60,61] / surviving [57,58] return to Turn 2 Planning. Evidence: `docs/research/SLICE_15_5_GATE3_BLOCK4B_TACTICAL_VISUALS_FULL_RETURN_QA_2026-09-10.md`.
