@@ -68,10 +68,11 @@ User feedback identified fleet movement from the Galaxy map as the next integrat
 
 Planned Block 5 is now documented in `docs/research/SLICE_15_6_GATE3_BLOCK5_GALAXY_FLEET_MOVEMENT_PLAN_2026-09-10.md`:
 
+- persistent per-empire explored-system knowledge and player-safe Galaxy projection: charted stars remain visible, but planets/system-local detail stay hidden until an owned fleet arrives;
 - authoritative legal + visible-illegal fleet target projection with range/ETA/reason feedback;
 - independently clickable Galaxy fleet marker;
 - compact draggable fleet picker with selectable exact ship SVGs;
-- drag/drop-to-star plus tap/click `Ziel wählen` fallback;
+- drag/drop-to-star plus tap/click `Ziel wÃ¤hlen` fallback;
 - deterministic QA-only three-star micro fixture (`2 pc` reachable target, `5 pc` out-of-range target) beside, not instead of, canonical seed `0x8009`;
 - visible-browser movement -> encounter -> Tactical regression, including Laser fire and strategic return.
 
