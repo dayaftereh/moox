@@ -1,7 +1,7 @@
 # Slice 15.6 Gate 2 - Full browser vertical-slice acceptance contract DRAFT
 
 Date: 2026-09-10
-Status: **DRAFT - awaiting explicit user acceptance; NOT FROZEN**
+Status: **ACCEPTED / superseded by `SLICE_15_6_GATE2_FREEZE_2026-09-10.md`**
 
 Source audit: `docs/research/SLICE_15_6_GATE1_INTEGRATION_READINESS_AUDIT_2026-09-10.md`.
 

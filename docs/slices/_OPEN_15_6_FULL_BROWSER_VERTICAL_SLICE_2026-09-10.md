@@ -1,5 +1,5 @@
 # Planned slice 15.6 - Full browser vertical slice / polish / complete-game QA
-Status: **open; Gate 1 integration-readiness audit complete; Gate 2 contract review pending**.
+Status: **open; Gate 2 frozen; Gate 3 implementation ready**.
 Queue position: **15.6 of Slice-15 family**.
 ## Objective
 Integrate and polish Slices 15.1-15.5 into the first complete browser-playable Master of Orion X vertical slice: Main Menu -> New Game -> strategic play -> save/reload/resume -> supported decisions and interactive Tactical battle -> victory.
@@ -32,11 +32,11 @@ Defer:
 - [x] Define automated/manual browser E2E strategy including save/reload/reconnect and strategic <-> Tactical transitions.
 - [x] Present Gate-2 final vertical-slice acceptance contract.
 ## Gate 2 - Vertical-slice freeze
-- [ ] Freeze canonical start-to-victory browser scenario and allowed setup.
-- [ ] Freeze final navigation/polish/performance acceptance thresholds.
-- [ ] Freeze save/reload/reconnect and failure-recovery acceptance cases.
-- [ ] Freeze browser/E2E evidence requirements and no-dev-tool rule.
-- [ ] Freeze expected strategic -> Tactical -> strategic integration checkpoints.
+- [x] Freeze canonical start-to-victory browser scenario and allowed setup.
+- [x] Freeze final navigation/polish/performance acceptance thresholds.
+- [x] Freeze save/reload/reconnect and failure-recovery acceptance cases.
+- [x] Freeze browser/E2E evidence requirements and no-dev-tool rule.
+- [x] Freeze expected strategic -> Tactical -> strategic integration checkpoints.
 ## Gate 3 - Integration and polish
 - [ ] Close cross-screen/navigation/data-refresh seams.
 - [ ] Complete Main Menu/New Game/Resume/result integration.
@@ -57,3 +57,7 @@ Milestone on closure: **first saveable, resumable and finishable Human-vs-built-
 ## Gate-1 evidence (2026-09-10)
 
 Gate 1 is complete. Evidence: docs/research/SLICE_15_6_GATE1_INTEGRATION_READINESS_AUDIT_2026-09-10.md. Gate-2 draft: docs/research/SLICE_15_6_GATE2_VERTICAL_SLICE_CONTRACT_DRAFT_2026-09-10.md. Gate 3 remains blocked until explicit user acceptance/freeze.
+
+## Gate-2 freeze (2026-09-10)
+
+Explicitly accepted by user after Ship Designer UX refinements. Frozen evidence: docs/research/SLICE_15_6_GATE2_FREEZE_2026-09-10.md. Gate 3 may now implement in small checkpointed/recovered blocks.
