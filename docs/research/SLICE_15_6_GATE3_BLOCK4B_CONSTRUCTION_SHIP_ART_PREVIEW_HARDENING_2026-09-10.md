@@ -1,7 +1,7 @@
 # Slice 15.6 Gate 3 Block 4B - Construction ship art and planning-preview hardening
 
 Date: 2026-09-10
-Status: **implemented and isolated-browser QA passed; canonical service refresh pending**
+Status: **implemented; isolated and canonical browser QA passed**
 
 ## User feedback
 
@@ -39,10 +39,10 @@ The temporary browser was closed and the 7181 QA server was stopped.
 
 ## Remaining acceptance
 
-Restart canonical 7171 from the resulting commit and verify in managed Chrome:
+Canonical 7171 was restarted from the resulting code and verified in managed Chrome:
 
-1. Construction catalog shows exact SVG thumbnails for both the baseline Scout and saved Laser design.
-2. Selecting a Military Ship shows the same design in the project hero.
-3. `Einplanen` produces authoritative remaining PP / ETA.
+1. Baseline Scout renders as an exact 68x48 Frigate SVG in the Construction catalog.
+2. Selecting Scout renders the same design in the project hero.
+3. `Einplanen` produces 25.0 PP remaining / 5 turns from authoritative preview.
 4. No `Planungsvorschau nicht verfügbar` warning appears in the normal route.
 5. Other construction artwork remains intact.
