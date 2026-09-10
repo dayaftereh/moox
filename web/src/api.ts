@@ -232,10 +232,42 @@ export type ShipDesignSpec = {
   shield_id?: string
   fuel_cell_id: string
   fuel_range_parsecs: number
+  hull_base_cost_pp: number
+  hull_space: number
+  space_used: number
+  base_design_cost_pp: number
   production_cost_pp: number
   weapons?: ShipWeaponMount[]
 }
 export type ShipDesign = { id: number; empire_id: number; revision: number; visual_revision?: number; name: string; spec: ShipDesignSpec; visual_genome?: ShipVisualGenomeWire }
+export type MilitaryDesignerHullChoice = {
+  id: string
+  size_index: number
+  name_key: string
+  base_cost_pp: number
+  base_space: number
+  command_point_cost: number
+  strategic_picture_ids: number[]
+  required_technology_id?: number
+  required_technology_key?: string
+  technology_known: boolean
+  save_available: boolean
+  lock_reason?: 'technology_required' | 'current_design_scope' | string
+}
+export type MilitaryDesignerWeaponChoice = {
+  id: string
+  name_key: string
+  kind: string
+  technology_id: number
+  technology_known: boolean
+  available: boolean
+  lock_reason?: string
+  base_space: number
+  base_cost_pp: number
+}
+export type MilitaryDesignerVariant = { key: string; hull_id: string; weapons?: ShipWeaponMount[]; spec: ShipDesignSpec; command_point_cost: number }
+export type MilitaryDesignerCatalog = { hulls: MilitaryDesignerHullChoice[]; weapons: MilitaryDesignerWeaponChoice[]; variants: MilitaryDesignerVariant[] }
+export type SaveMilitaryDesignPayload = { design_id?: number; name: string; hull_id: string; strategic_picture_id: number; weapons?: ShipWeaponMount[] }
 export type Ship = { id: number; empire_id: number; source_design_id: number; source_design_revision: number; source_visual_revision?: number; name: string; spec: ShipDesignSpec; visual_genome?: ShipVisualGenomeWire }
 export type StrategicFleet = {
   id: number
@@ -478,6 +510,7 @@ export type DecisionCatalog = {
   diplomacy?: DiplomacyDecision[]
   colony_base?: ColonyBaseResolution[]
   invasion?: InvasionOpportunity
+  ship_designer?: MilitaryDesignerCatalog
   battles?: BattleDecision[]
 }
 export type PublicEmpireIdentity = { id: number; name: string; race_id: string }
@@ -776,6 +809,19 @@ export function decodeShipVisualGenome(genome?: ShipVisualGenomeWire): ShipVisua
     cutouts: (genome.cutouts ?? []).map((cutout) => ({ ...cutout })),
     primitives: (genome.primitives ?? []).map((primitive) => ({ ...primitive })),
   }
+}
+
+export async function submitMilitaryDesign(snapshot: PlayerSnapshot, seatID: number, payload: SaveMilitaryDesignPayload): Promise<Receipt> {
+  return requestJSON<Receipt>(`/api/v1/games/${encodeURIComponent(snapshot.view.game_id)}/immediate-commands`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      schema_version: 1,
+      seat_id: seatID,
+      base_revision: snapshot.view.revision,
+      command: { schema_version: 1, sequence: 1, kind: 'empire.save_military_design', payload },
+    }),
+  })
 }
 
 export async function submitMilitaryDesignVisual(snapshot: PlayerSnapshot, seatID: number, designID: number, genome: ShipVisualGenome): Promise<Receipt> {

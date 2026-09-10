@@ -10,6 +10,7 @@ import (
 const (
 	ShipDesignerLockTechnologyRequired = "technology_required"
 	ShipDesignerLockCurrentScope       = "current_design_scope"
+	ShipDesignerLockMandatorySystems   = "mandatory_systems_required"
 )
 
 var shipDesignerHullTechnologyKeys = map[string]string{
@@ -115,7 +116,14 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 	pictureID := frigate.StrategicPictureIDs[0]
 	baseSpec, err := r.clearedMilitaryDesignSpec(empire, SupportedMilitaryHullID, pictureID, nil)
 	if err != nil {
-		return MilitaryDesignerCatalog{}, fmt.Errorf("military designer base preview: %w", err)
+		for i := range catalog.Hulls {
+			if catalog.Hulls[i].ID == SupportedMilitaryHullID {
+				catalog.Hulls[i].SaveAvailable = false
+				catalog.Hulls[i].LockReason = ShipDesignerLockMandatorySystems
+				break
+			}
+		}
+		return catalog, nil
 	}
 	catalog.Variants = append(catalog.Variants, MilitaryDesignerVariant{
 		Key: "frigate:none", HullID: SupportedMilitaryHullID, Spec: baseSpec,

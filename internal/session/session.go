@@ -823,6 +823,48 @@ func (s *GameSession) encounterOutcomesWithCandidateLocked(candidateBattleID uin
 	}
 	return outcomes, nil
 }
+func (s *GameSession) ResolveMilitaryDesignCommand(seatID protocol.SeatID, baseRevision uint64, command protocol.Command, resolver *game.EconomyResolver) error {
+	if resolver == nil {
+		return fmt.Errorf("economy resolver must not be nil")
+	}
+	if err := command.Validate(1); err != nil {
+		return fmt.Errorf("invalid military design command: %w", err)
+	}
+	if !game.IsMilitaryDesignCommand(command.Kind) {
+		return fmt.Errorf("command kind %q is not a military design command", command.Kind)
+	}
+
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.phase != PhasePlanning {
+		return fmt.Errorf("cannot update military design in phase %q", s.phase)
+	}
+	if baseRevision != s.revision {
+		return fmt.Errorf("immediate command base revision %d, expected %d", baseRevision, s.revision)
+	}
+	for _, seat := range s.seats {
+		if seat.submission != nil {
+			return fmt.Errorf("military design is closed after the first turn submission")
+		}
+	}
+	index := s.seatIndexLocked(seatID)
+	if index < 0 {
+		return fmt.Errorf("unknown seat %d", seatID)
+	}
+	if s.empireEliminatedLocked(s.seats[index].seat.EmpireID) {
+		return fmt.Errorf("seat %d controls eliminated empire %d", seatID, s.seats[index].seat.EmpireID)
+	}
+	stateInput, err := cloneState(s.state)
+	if err != nil {
+		return err
+	}
+	events, err := resolver.ResolveMilitaryDesignCommand(stateInput, s.seats[index].seat.EmpireID, seatID, command)
+	if err != nil {
+		return fmt.Errorf("resolve military design command: %w", err)
+	}
+	return s.commitImmediateStateLocked(stateInput, seatID, command, events, "military design")
+}
+
 func (s *GameSession) ResolveMilitaryDesignVisualCommand(seatID protocol.SeatID, baseRevision uint64, command protocol.Command) error {
 	if err := command.Validate(1); err != nil {
 		return fmt.Errorf("invalid military design visual command: %w", err)

@@ -1200,7 +1200,7 @@ function App() {
       ) : activeSection === 'espionage' ? (
         <StrategicEspionageView t={t} />
       ) : activeSection === 'shipbuilder' ? (
-        <ShipBuilderView snapshot={snapshot} t={t} />
+        <ShipBuilderView snapshot={snapshot} reloadSnapshot={() => loadSnapshot()} t={t} />
       ) : (
         <MoreView
           snapshot={snapshot}

@@ -29,6 +29,10 @@ type MilitaryDesignSavedEvent struct {
 	Created bool            `json:"created"`
 }
 
+func IsMilitaryDesignCommand(kind string) bool {
+	return kind == CommandSaveMilitaryDesign
+}
+
 func NewSaveMilitaryDesignCommand(sequence uint32, payload SaveMilitaryDesignPayload) (protocol.Command, error) {
 	if err := validateSaveMilitaryDesignPayload(payload); err != nil {
 		return protocol.Command{}, err
@@ -87,6 +91,23 @@ func shipDesignByID(state *core.GameState, id core.ID) (int, *core.ShipDesign) {
 		}
 	}
 	return -1, nil
+}
+
+func (r *EconomyResolver) ResolveMilitaryDesignCommand(state *core.GameState, empireID core.ID, seatID protocol.SeatID, command protocol.Command) ([]DomainEvent, error) {
+	if r == nil || r.Rules == nil {
+		return nil, fmt.Errorf("economy resolver has no rules")
+	}
+	if state == nil {
+		return nil, fmt.Errorf("game state must not be nil")
+	}
+	if !IsMilitaryDesignCommand(command.Kind) {
+		return nil, fmt.Errorf("command kind %q is not a military design command", command.Kind)
+	}
+	event, err := r.saveMilitaryDesign(state, empireID, seatID, command)
+	if err != nil {
+		return nil, err
+	}
+	return []DomainEvent{event}, nil
 }
 
 func (r *EconomyResolver) saveMilitaryDesign(state *core.GameState, empireID core.ID, seatID protocol.SeatID, command protocol.Command) (DomainEvent, error) {

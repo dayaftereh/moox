@@ -1,190 +1,297 @@
 import { useEffect, useMemo, useState } from 'react'
-import { decodeShipVisualGenome, submitMilitaryDesignVisual, type PlayerSnapshot } from './api'
+import {
+  decodeShipVisualGenome,
+  isAPIError,
+  submitMilitaryDesign,
+  submitMilitaryDesignVisual,
+  type MilitaryDesignerHullChoice,
+  type PlayerSnapshot,
+  type ShipDesign,
+} from './api'
 import { ProceduralShipGlyph } from './components/ProceduralShipGlyph'
 import { GameIcon } from './components/GameIcon'
 import { Card, PageHeader } from './components/ui'
 import type { TranslationKey, TranslationVars } from './i18n'
-import { createRandomShipGenome, createShipGenome, shipHullFootprint, shipHullSpace, type ShipMorphologyID, type ShipStyleID, type ShipVisualGenome } from './shipVisualGenome'
+import { createRandomShipGenome, shipHullFootprint, type ShipVisualGenome } from './shipVisualGenome'
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
 
-type HullID = 'scout' | 'frigate' | 'destroyer' | 'cruiser' | 'battleship' | 'titan' | 'doom_star'
-
-const hulls: Array<{ id: HullID; label: TranslationKey; status: TranslationKey }> = [
-  { id: 'scout', label: 'shipbuilder.hull.scout', status: 'shipbuilder.scoutRole' },
-  { id: 'frigate', label: 'shipbuilder.hull.frigate', status: 'shipbuilder.authoritative' },
-  { id: 'destroyer', label: 'shipbuilder.hull.destroyer', status: 'shipbuilder.visualPreview' },
-  { id: 'cruiser', label: 'shipbuilder.hull.cruiser', status: 'shipbuilder.visualPreview' },
-  { id: 'battleship', label: 'shipbuilder.hull.battleship', status: 'shipbuilder.visualPreview' },
-  { id: 'titan', label: 'shipbuilder.hull.titan', status: 'shipbuilder.visualPreview' },
-  { id: 'doom_star', label: 'shipbuilder.hull.doomStar', status: 'shipbuilder.visualPreview' },
-]
-
-const morphologyLabels: Record<ShipMorphologyID, TranslationKey> = {
-  needle: 'shipbuilder.morphology.needle',
-  barge: 'shipbuilder.morphology.barge',
-  manta: 'shipbuilder.morphology.manta',
-  fork: 'shipbuilder.morphology.fork',
-  chevron: 'shipbuilder.morphology.chevron',
-  hammer: 'shipbuilder.morphology.hammer',
-  bulb: 'shipbuilder.morphology.bulb',
+type Props = {
+  snapshot: PlayerSnapshot
+  reloadSnapshot: () => Promise<PlayerSnapshot | undefined>
+  t: Translator
 }
 
-const styleLabels: Record<ShipStyleID, TranslationKey> = {
-  spear: 'shipbuilder.style.spear',
-  sleek: 'shipbuilder.style.sleek',
-  organic: 'shipbuilder.style.organic',
+const hullTranslationKeys: Record<string, TranslationKey> = {
+  frigate: 'shipbuilder.hull.frigate',
+  destroyer: 'shipbuilder.hull.destroyer',
+  cruiser: 'shipbuilder.hull.cruiser',
+  battleship: 'shipbuilder.hull.battleship',
+  titan: 'shipbuilder.hull.titan',
+  doom_star: 'shipbuilder.hull.doomStar',
 }
 
-function hullLabel(t: Translator, hullID: HullID): string {
-  return t(hulls.find((hull) => hull.id === hullID)?.label ?? 'shipbuilder.hull.frigate')
+function hullLabel(t: Translator, hullID: string): string {
+  return t(hullTranslationKeys[hullID] ?? 'shipbuilder.hull.frigate')
 }
 
-export function ShipBuilderView({ snapshot, t }: { snapshot: PlayerSnapshot; t: Translator }) {
+function designVisual(design: ShipDesign): ShipVisualGenome {
+  return decodeShipVisualGenome(design.visual_genome)
+    ?? createRandomShipGenome(`shipbuilder:catalog:${design.id}:${design.revision}`, design.spec.hull_id)
+}
+
+function lockLabel(t: Translator, hull?: MilitaryDesignerHullChoice): string {
+  if (!hull?.lock_reason) return ''
+  if (hull.lock_reason === 'technology_required') {
+    return t('shipbuilder.lockTechnology', { technology: hull.required_technology_key ?? hull.required_technology_id ?? '?' })
+  }
+  return t('shipbuilder.lockScope')
+}
+
+export function ShipBuilderView({ snapshot, reloadSnapshot, t }: Props) {
   const designs = snapshot.decision?.strategic.ship_designs ?? []
-  const baseline = designs[0]
-  const persistedVisual = useMemo(() => decodeShipVisualGenome(baseline?.visual_genome), [baseline?.visual_genome])
+  const designer = snapshot.decision?.decisions.ship_designer
+  const hulls = designer?.hulls ?? []
+  const firstAvailableHull = hulls.find((hull) => hull.save_available) ?? hulls[0]
 
-  const [hullID, setHullID] = useState<HullID>('scout')
+  const [selectedDesignID, setSelectedDesignID] = useState<number | null>(() => designs[0]?.id ?? null)
+  const selectedDesign = designs.find((design) => design.id === selectedDesignID)
+  const [name, setName] = useState(() => selectedDesign?.name ?? '')
+  const [hullID, setHullID] = useState(() => selectedDesign?.spec.hull_id ?? firstAvailableHull?.id ?? 'frigate')
+  const [laserInstalled, setLaserInstalled] = useState(() => selectedDesign?.spec.weapons?.some((mount) => mount.weapon_id === 'laser_cannon') ?? false)
+  const [visualOverride, setVisualOverride] = useState<ShipVisualGenome | null>(() => selectedDesign ? designVisual(selectedDesign) : null)
   const [roll, setRoll] = useState(1)
-  const [kept, setKept] = useState<ShipVisualGenome | null>(() => persistedVisual ?? null)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
-  const [savedVisualRevision, setSavedVisualRevision] = useState(baseline?.visual_revision ?? 0)
-  const currentHull = hulls.find((hull) => hull.id === hullID) ?? hulls[0]
-  const baselineWeapons = baseline?.spec.weapons ?? []
+  const [saveNotice, setSaveNotice] = useState('')
 
   useEffect(() => {
-    if (persistedVisual) setKept(persistedVisual)
-    setSavedVisualRevision(baseline?.visual_revision ?? 0)
-  }, [baseline?.visual_revision, persistedVisual])
+    if (!selectedDesign) return
+    setName(selectedDesign.name)
+    setHullID(selectedDesign.spec.hull_id)
+    setLaserInstalled(selectedDesign.spec.weapons?.some((mount) => mount.weapon_id === 'laser_cannon') ?? false)
+    setVisualOverride(designVisual(selectedDesign))
+    setSaveError('')
+  }, [selectedDesign?.id, selectedDesign?.revision, selectedDesign?.visual_revision])
 
+  const currentHullIndex = Math.max(0, hulls.findIndex((hull) => hull.id === hullID))
+  const currentHull = hulls[currentHullIndex]
+  const laser = designer?.weapons.find((weapon) => weapon.id === 'laser_cannon')
+  const variantKey = hullID === 'frigate' ? `frigate:${laserInstalled ? 'laser_cannon' : 'none'}` : ''
+  const currentVariant = designer?.variants.find((variant) => variant.key === variantKey)
   const candidate = useMemo(() => {
-    const seed = `shipbuilder:${snapshot.view.game_id}:${hullID}:full-random:${roll}`
-    return createRandomShipGenome(seed, hullID)
-  }, [hullID, roll, snapshot.view.game_id])
+    if (visualOverride && String(visualOverride.hullId) === hullID) return visualOverride
+    return createRandomShipGenome(`shipbuilder:${snapshot.view.game_id}:${selectedDesignID ?? 'new'}:${hullID}:${roll}`, hullID)
+  }, [hullID, roll, selectedDesignID, snapshot.view.game_id, visualOverride])
 
-  function reroll() {
-    setRoll((value) => value + 1)
-  }
-
-  function selectHull(nextHullID: HullID) {
-    if (nextHullID === hullID) return
-    setHullID(nextHullID)
+  function selectDesign(design: ShipDesign) {
+    setSelectedDesignID(design.id)
+    setName(design.name)
+    setHullID(design.spec.hull_id)
+    setLaserInstalled(design.spec.weapons?.some((mount) => mount.weapon_id === 'laser_cannon') ?? false)
+    setVisualOverride(designVisual(design))
     setRoll((value) => value + 1)
     setSaveError('')
+    setSaveNotice('')
   }
 
-  async function keepCurrentDesign() {
-    if (!baseline || saving) return
+  function startNewDesign() {
+    setSelectedDesignID(null)
+    setName('')
+    setHullID(firstAvailableHull?.id ?? 'frigate')
+    setLaserInstalled(false)
+    setVisualOverride(null)
+    setRoll((value) => value + 1)
+    setSaveError('')
+    setSaveNotice('')
+  }
+
+  function stepHull(delta: number) {
+    if (hulls.length === 0) return
+    const nextIndex = Math.min(hulls.length - 1, Math.max(0, currentHullIndex + delta))
+    const next = hulls[nextIndex]
+    if (!next || next.id === hullID) return
+    setHullID(next.id)
+    setLaserInstalled(false)
+    setVisualOverride(null)
+    setRoll((value) => value + 1)
+    setSaveError('')
+    setSaveNotice('')
+  }
+
+  function rerollVisual() {
+    setVisualOverride(null)
+    setRoll((value) => value + 1)
+    setSaveNotice('')
+  }
+
+  const planningWritable = snapshot.view.phase === 'planning' && !snapshot.view.seat.submitted
+  const canSave = Boolean(currentHull?.save_available && currentVariant && name.trim() && planningWritable && !saving)
+
+  async function saveDesign() {
+    if (!canSave || !currentHull || !currentVariant) return
     setSaving(true)
     setSaveError('')
+    setSaveNotice('')
+    const beforeIDs = new Set(designs.map((design) => design.id))
+    let gameplaySaved = false
     try {
-      await submitMilitaryDesignVisual(snapshot, snapshot.view.seat.seat.id, baseline.id, candidate)
-      setKept(candidate)
-      setSavedVisualRevision((current) => Math.max(current + 1, (baseline.visual_revision ?? 0) + 1))
+      await submitMilitaryDesign(snapshot, snapshot.view.seat.seat.id, {
+        ...(selectedDesignID ? { design_id: selectedDesignID } : {}),
+        name: name.trim(),
+        hull_id: currentHull.id,
+        strategic_picture_id: selectedDesign?.spec.strategic_picture_id ?? currentHull.strategic_picture_ids[0] ?? 0,
+        ...(laserInstalled ? { weapons: [{ slot: 0, weapon_id: 'laser_cannon', count: 1 }] } : {}),
+      })
+      gameplaySaved = true
+
+      const afterDesign = await reloadSnapshot()
+      const refreshedDesigns = afterDesign?.decision?.strategic.ship_designs ?? []
+      const savedID = selectedDesignID
+        ?? refreshedDesigns.find((design) => !beforeIDs.has(design.id))?.id
+        ?? [...refreshedDesigns].sort((a, b) => b.id - a.id)[0]?.id
+      if (!afterDesign || !savedID) throw new Error(t('shipbuilder.savedDesignMissing'))
+
+      setSelectedDesignID(savedID)
+      await submitMilitaryDesignVisual(afterDesign, afterDesign.view.seat.seat.id, savedID, candidate)
+      const finalSnapshot = await reloadSnapshot()
+      const finalDesign = finalSnapshot?.decision?.strategic.ship_designs?.find((design) => design.id === savedID)
+      if (finalDesign) {
+        setVisualOverride(designVisual(finalDesign))
+        setName(finalDesign.name)
+        setHullID(finalDesign.spec.hull_id)
+        setLaserInstalled(finalDesign.spec.weapons?.some((mount) => mount.weapon_id === 'laser_cannon') ?? false)
+        setSaveNotice(t('shipbuilder.designSaved', { revision: finalDesign.revision, visualRevision: finalDesign.visual_revision ?? 0 }))
+      } else {
+        setSaveNotice(t('shipbuilder.designSavedSimple'))
+      }
     } catch (cause) {
-      setSaveError(cause instanceof Error ? cause.message : String(cause))
+      if (isAPIError(cause) && cause.status === 409) {
+        try { await reloadSnapshot() } catch { /* keep the original rejection visible */ }
+      }
+      const message = cause instanceof Error ? cause.message : String(cause)
+      setSaveError(gameplaySaved ? `${t('shipbuilder.visualSaveFailed')} ${message}` : message)
     } finally {
       setSaving(false)
     }
   }
 
+  if (!designer || hulls.length === 0) {
+    return (
+      <>
+        <PageHeader eyebrow={t('shipbuilder.eyebrow')} title={t('shipbuilder.title')} subtitle={t('shipbuilder.designerSubtitle')} />
+        <Card><p className="muted">{t('shipbuilder.designerUnavailable')}</p></Card>
+      </>
+    )
+  }
+
+  const spec = currentVariant?.spec
+  const hullLock = lockLabel(t, currentHull)
+
   return (
     <>
-      <PageHeader eyebrow={t('shipbuilder.eyebrow')} title={t('shipbuilder.title')} subtitle={t('shipbuilder.randomSubtitle')} />
+      <PageHeader eyebrow={t('shipbuilder.eyebrow')} title={t('shipbuilder.title')} subtitle={t('shipbuilder.designerSubtitle')} />
 
-      <Card className="shipbuilder-size-card">
-        <div className="card-heading">
-          <div><p className="eyebrow">{t('shipbuilder.stepSize')}</p><h2>{t('shipbuilder.size')}</h2></div>
-          <span className="badge">{t(currentHull.status)}</span>
-        </div>
-        <div className="shipbuilder-hull-grid" role="list" aria-label={t('shipbuilder.size')}>
-          {hulls.map((hull) => (
-            <button
-              type="button"
-              className={`shipbuilder-hull-option${hull.id === hullID ? ' selected' : ''}`}
-              key={hull.id}
-              aria-pressed={hull.id === hullID}
-              onClick={() => selectHull(hull.id)}
-            >
-              <ProceduralShipGlyph seed={`shipbuilder:hull:${hull.id}`} hullId={hull.id} genome={createShipGenome(`shipbuilder:hull:${hull.id}`, hull.id, 'spear', 'manta')} footprint={shipHullFootprint(hull.id)} className="shipbuilder-hull-thumb" />
-              <span><strong>{t(hull.label)}</strong><small>{t(hull.status)}</small><small>{t('shipbuilder.spaceValue', { space: shipHullSpace(hull.id) })}</small></span>
-            </button>
-          ))}
-        </div>
-      </Card>
-
-      <div className="shipbuilder-random-layout">
-        <Card className="shipbuilder-random-card">
+      <div className="shipdesigner-layout">
+        <Card className="shipdesigner-catalog-card">
           <div className="card-heading">
-            <div>
-              <p className="eyebrow">{t('shipbuilder.stepGenerate')}</p>
-              <h2>{t('shipbuilder.randomTitle')}</h2>
-              <small className="muted">{t('shipbuilder.randomHint')}</small>
-            </div>
-            <span className="badge">#{roll}</span>
+            <div><p className="eyebrow">{t('shipbuilder.designLibrary')}</p><h2>{t('shipbuilder.designs')}</h2></div>
+            <button type="button" className="button-secondary shipdesigner-new" onClick={startNewDesign}>{t('shipbuilder.newDesign')}</button>
           </div>
-
-          <button type="button" className="shipbuilder-random-stage" onClick={reroll} title={t('shipbuilder.clickToReroll')}>
-            <ProceduralShipGlyph
-              seed={candidate.seed}
-              hullId={hullID}
-              genome={candidate}
-              footprint={shipHullFootprint(hullID)}
-              className="shipbuilder-random-ship"
-              label={`${hullLabel(t, hullID)} ${roll}`}
-            />
-            <span className="shipbuilder-random-overlay">{t('shipbuilder.clickToReroll')}</span>
-          </button>
-
-          <div className="shipbuilder-random-meta">
-            <div><span className="eyebrow">{t('shipbuilder.morphology')}</span><strong>{t(morphologyLabels[candidate.morphologyId])}</strong></div>
-            <div><span className="eyebrow">{t('shipbuilder.styleDNA')}</span><strong>{t(styleLabels[candidate.styleId])}</strong></div>
-            <div><span className="eyebrow">{t('shipbuilder.randomness')}</span><strong>{candidate.primitives.length} {t('shipbuilder.primitives')}</strong></div>
-            <div><span className="eyebrow">{t('shipbuilder.space')}</span><strong>{shipHullSpace(hullID)}</strong></div>
+          <p className="muted">{t('shipbuilder.designLibraryHint')}</p>
+          <div className="shipdesigner-design-list" role="list">
+            {designs.map((design) => {
+              const genome = designVisual(design)
+              return (
+                <button
+                  type="button"
+                  key={design.id}
+                  className={`shipdesigner-design-item${selectedDesignID === design.id ? ' selected' : ''}`}
+                  onClick={() => selectDesign(design)}
+                  aria-pressed={selectedDesignID === design.id}
+                >
+                  <ProceduralShipGlyph seed={genome.seed} hullId={design.spec.hull_id} genome={genome} footprint={shipHullFootprint(design.spec.hull_id)} className="shipdesigner-design-thumb" />
+                  <span><strong>{design.name}</strong><small>{hullLabel(t, design.spec.hull_id)} · r{design.revision}</small></span>
+                </button>
+              )
+            })}
+            {designs.length === 0 && <p className="muted">{t('shipbuilder.noDesigns')}</p>}
           </div>
-
-          <div className="shipbuilder-random-actions">
-            <button type="button" className="button-primary" onClick={reroll}><GameIcon name="generate" />{t('shipbuilder.generate')}</button>
-            <button type="button" className="button-secondary" disabled={!baseline || saving} onClick={() => void keepCurrentDesign()}><GameIcon name="check" />{saving ? t('shipbuilder.saving') : t('shipbuilder.takeDesign')}</button>
-          </div>
-          {saveError && <p className="shipbuilder-save-state error">{saveError}</p>}
-          {!saveError && kept && savedVisualRevision > 0 && <p className="shipbuilder-save-state">{t('shipbuilder.serverSaved', { revision: savedVisualRevision })}</p>}
         </Card>
 
-        <div className="shipbuilder-side-stack random">
-          <Card className="shipbuilder-kept-card">
-            <p className="eyebrow">{t('shipbuilder.stepKeep')}</p>
-            <h2>{t('shipbuilder.kept')}</h2>
-            {kept ? (
-              <>
-                <div className="shipbuilder-kept-stage">
-                  <ProceduralShipGlyph seed={kept.seed} hullId={String(kept.hullId)} genome={kept} footprint={shipHullFootprint(kept.hullId)} className="shipbuilder-kept-ship" />
+        <div className="shipdesigner-editor-stack">
+          <Card className="shipdesigner-editor-card">
+            <div className="shipdesigner-name-row">
+              <label htmlFor="ship-design-name"><span className="eyebrow">{t('shipbuilder.designName')}</span></label>
+              <input id="ship-design-name" value={name} onChange={(event) => { setName(event.target.value); setSaveNotice('') }} maxLength={80} placeholder={t('shipbuilder.designNamePlaceholder')} />
+            </div>
+
+            <div className="shipdesigner-hull-section">
+              <p className="eyebrow">{t('shipbuilder.hullSize')}</p>
+              <div className="shipdesigner-hull-stepper">
+                <button type="button" className="shipdesigner-arrow" onClick={() => stepHull(-1)} disabled={currentHullIndex <= 0} aria-label={t('shipbuilder.previousHull')}>‹</button>
+                <div className={`shipdesigner-hull-current${currentHull?.save_available ? '' : ' locked'}`}>
+                  <strong>{hullLabel(t, currentHull?.id ?? hullID)}</strong>
+                  <small>{currentHull?.command_point_cost ?? '—'} CP · {currentHull?.base_space ?? '—'} {t('shipbuilder.space')}</small>
+                  {hullLock && <span className="badge warning">{hullLock}</span>}
                 </div>
-                <strong>{hullLabel(t, kept.hullId as HullID)}</strong>
-                <small className="muted">{t(morphologyLabels[kept.morphologyId])} · {t(styleLabels[kept.styleId])} · genome v{kept.version} · {t('shipbuilder.spaceValue', { space: shipHullSpace(kept.hullId) })}</small>
-              </>
-            ) : <p className="muted">{t('shipbuilder.randomKeepHint')}</p>}
+                <button type="button" className="shipdesigner-arrow" onClick={() => stepHull(1)} disabled={currentHullIndex >= hulls.length - 1} aria-label={t('shipbuilder.nextHull')}>›</button>
+              </div>
+            </div>
+
+            <button type="button" className="shipdesigner-preview" onClick={rerollVisual} title={t('shipbuilder.clickToReroll')}>
+              <ProceduralShipGlyph seed={candidate.seed} hullId={hullID} genome={candidate} footprint={shipHullFootprint(hullID)} className="shipdesigner-preview-ship" label={name.trim() || hullLabel(t, hullID)} />
+              <span className="shipdesigner-preview-overlay"><GameIcon name="generate" />{t('shipbuilder.clickToReroll')}</span>
+            </button>
+
+            <div className="shipdesigner-component-columns">
+              <section className="shipdesigner-component-section">
+                <div className="card-heading"><div><p className="eyebrow">{t('shipbuilder.available')}</p><h3>{t('shipbuilder.availableComponents')}</h3></div></div>
+                {laser ? (
+                  <div className={`shipdesigner-component-row${laser.available ? '' : ' locked'}`}>
+                    <div><strong>{t('shipbuilder.laserCannon')}</strong><small>{laser.base_space} {t('shipbuilder.space')} · {laser.base_cost_pp} PP</small></div>
+                    <button type="button" className="button-secondary" disabled={!laser.available || laserInstalled || !currentHull?.save_available} onClick={() => { setLaserInstalled(true); setSaveNotice('') }}>{laser.available ? t('shipbuilder.add') : t('shipbuilder.locked')}</button>
+                  </div>
+                ) : <p className="muted">{t('shipbuilder.noAvailableComponents')}</p>}
+              </section>
+
+              <section className="shipdesigner-component-section">
+                <div className="card-heading"><div><p className="eyebrow">{t('shipbuilder.installed')}</p><h3>{t('shipbuilder.installedComponents')}</h3></div></div>
+                {spec ? (
+                  <div className="shipdesigner-installed-list">
+                    <div className="shipdesigner-installed-row"><span>{t('shipbuilder.drive')}</span><strong>{spec.warp_drive_id}</strong></div>
+                    <div className="shipdesigner-installed-row"><span>{t('shipbuilder.computer')}</span><strong>{spec.computer_id}</strong></div>
+                    <div className="shipdesigner-installed-row"><span>{t('shipbuilder.armor')}</span><strong>{spec.armor_id}</strong></div>
+                    {spec.shield_id && <div className="shipdesigner-installed-row"><span>{t('shipbuilder.shield')}</span><strong>{spec.shield_id}</strong></div>}
+                    <div className="shipdesigner-installed-row"><span>{t('shipbuilder.fuel')}</span><strong>{spec.fuel_cell_id}</strong></div>
+                    {laserInstalled && (
+                      <div className="shipdesigner-installed-row weapon">
+                        <span>{t('shipbuilder.slot', { slot: 1 })}</span>
+                        <strong>1× {t('shipbuilder.laserCannon')}</strong>
+                        <button type="button" className="button-ghost" onClick={() => { setLaserInstalled(false); setSaveNotice('') }}>{t('shipbuilder.remove')}</button>
+                      </div>
+                    )}
+                  </div>
+                ) : <p className="muted">{hullLock || t('shipbuilder.noAuthoritativePreview')}</p>}
+                <p className="muted shipdesigner-future-note">{t('shipbuilder.futureMounts')}</p>
+              </section>
+            </div>
           </Card>
 
-          <Card className="shipbuilder-equipment-card">
-            <p className="eyebrow">{t('shipbuilder.stepEquipment')}</p>
-            <h2>{t('shipbuilder.equipment')}</h2>
-            <p className="muted">{t('shipbuilder.equipmentHint')}</p>
-            {baseline ? (
-              <>
-                <div className="shipbuilder-baseline-title"><strong>{baseline.name}</strong><span className="badge">{baseline.spec.hull_id}</span></div>
-                <dl className="detail-list compact">
-                  <div><dt>{t('shipbuilder.drive')}</dt><dd>{baseline.spec.warp_drive_id}</dd></div>
-                  <div><dt>{t('shipbuilder.computer')}</dt><dd>{baseline.spec.computer_id}</dd></div>
-                  <div><dt>{t('shipbuilder.armor')}</dt><dd>{baseline.spec.armor_id}</dd></div>
-                  <div><dt>{t('shipbuilder.shield')}</dt><dd>{baseline.spec.shield_id ?? t('common.none')}</dd></div>
-                  <div><dt>{t('shipbuilder.fuel')}</dt><dd>{baseline.spec.fuel_cell_id}</dd></div>
-                  <div><dt>{t('shipbuilder.weapons')}</dt><dd>{baselineWeapons.length > 0 ? baselineWeapons.map((mount) => `${mount.count}x ${mount.weapon_id}`).join(', ') : t('common.none')}</dd></div>
-                </dl>
-              </>
-            ) : <p className="muted">{t('shipbuilder.noBaseline')}</p>}
+          <Card className="shipdesigner-summary-card">
+            <div className="shipdesigner-summary-grid">
+              <div><span className="eyebrow">{t('shipbuilder.productionCost')}</span><strong>{spec ? `${spec.production_cost_pp} PP` : '—'}</strong></div>
+              <div><span className="eyebrow">{t('shipbuilder.commandPoints')}</span><strong>{currentVariant ? `${currentVariant.command_point_cost} CP` : currentHull ? `${currentHull.command_point_cost} CP` : '—'}</strong></div>
+              <div><span className="eyebrow">{t('shipbuilder.designSpace')}</span><strong>{spec ? `${spec.space_used} / ${spec.hull_space}` : `— / ${currentHull?.base_space ?? '—'}`}</strong></div>
+            </div>
+            <div className="shipdesigner-save-row">
+              <div>
+                {saveError && <p className="shipbuilder-save-state error">{saveError}</p>}
+                {!saveError && saveNotice && <p className="shipbuilder-save-state">{saveNotice}</p>}
+                {!planningWritable && <p className="muted">{t('shipbuilder.savePlanningOnly')}</p>}
+              </div>
+              <button type="button" className="button-primary" disabled={!canSave} onClick={() => void saveDesign()}><GameIcon name="check" />{saving ? t('shipbuilder.saving') : t('shipbuilder.saveDesign')}</button>
+            </div>
           </Card>
         </div>
       </div>

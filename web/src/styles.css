@@ -3769,3 +3769,206 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .tactical-weapon-row .badge { grid-column: 1 / -1; justify-self: start; }
   .tactical-viewport-hint { font-size: .61rem; }
 }
+
+
+/* Slice 15.6 Gate 3 Block 2: durable server-authoritative Ship Designer shell. */
+.shipdesigner-layout {
+  display: grid;
+  grid-template-columns: minmax(230px, .72fr) minmax(0, 2fr);
+  gap: 14px;
+  align-items: start;
+}
+.shipdesigner-catalog-card { position: sticky; top: 72px; min-width: 0; }
+.shipdesigner-new { min-height: 40px; }
+.shipdesigner-design-list { display: grid; gap: 8px; margin-top: 12px; }
+.shipdesigner-design-item {
+  display: grid;
+  grid-template-columns: 78px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 74px;
+  padding: 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: rgba(7, 15, 26, .72);
+  color: var(--muted-strong);
+  text-align: left;
+}
+.shipdesigner-design-item:hover,
+.shipdesigner-design-item:focus-visible { border-color: var(--border); background: var(--surface-soft); }
+.shipdesigner-design-item.selected { border-color: var(--accent); background: var(--accent-soft); color: var(--text); }
+.shipdesigner-design-item > span { display: grid; gap: 3px; min-width: 0; }
+.shipdesigner-design-item strong,
+.shipdesigner-design-item small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shipdesigner-design-thumb { width: 72px; height: 52px; color: var(--ship-vector); }
+.shipdesigner-editor-stack { display: grid; gap: 12px; min-width: 0; }
+.shipdesigner-editor-card,
+.shipdesigner-summary-card { min-width: 0; }
+.shipdesigner-name-row { display: grid; gap: 6px; }
+.shipdesigner-name-row input {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 11px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: rgba(4, 10, 18, .88);
+  color: var(--text);
+}
+.shipdesigner-name-row input:focus { border-color: var(--accent); outline: none; }
+.shipdesigner-hull-section { margin-top: 14px; }
+.shipdesigner-hull-stepper {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  gap: 8px;
+  align-items: stretch;
+  margin-top: 6px;
+}
+.shipdesigner-arrow {
+  min-width: 44px;
+  min-height: 60px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: rgba(7, 15, 26, .82);
+  color: var(--text);
+  font-size: 2rem;
+  line-height: 1;
+}
+.shipdesigner-arrow:hover:not(:disabled),
+.shipdesigner-arrow:focus-visible:not(:disabled) { border-color: var(--accent); background: var(--accent-soft); }
+.shipdesigner-arrow:disabled { opacity: .35; }
+.shipdesigner-hull-current {
+  display: flex;
+  min-width: 0;
+  min-height: 60px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: linear-gradient(180deg, rgba(13, 29, 47, .94), rgba(5, 12, 21, .94));
+  text-align: center;
+}
+.shipdesigner-hull-current strong { font-size: 1rem; }
+.shipdesigner-hull-current small { color: var(--muted-strong); }
+.shipdesigner-hull-current.locked strong { text-decoration: line-through; text-decoration-thickness: 1px; }
+.shipdesigner-hull-current.locked { opacity: .68; }
+.shipdesigner-preview {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 260px;
+  place-items: center;
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: radial-gradient(circle at 50% 48%, rgba(52, 119, 190, .18), transparent 44%), linear-gradient(180deg, rgba(6, 13, 23, .84), rgba(3, 8, 15, .97));
+  color: var(--ship-vector);
+  cursor: pointer;
+}
+.shipdesigner-preview:hover,
+.shipdesigner-preview:focus-visible { border-color: var(--accent); background: radial-gradient(circle at 50% 48%, rgba(68, 145, 223, .24), transparent 46%), linear-gradient(180deg, rgba(7, 16, 28, .88), rgba(3, 8, 15, .97)); outline: none; }
+.shipdesigner-preview-ship { width: min(96%, 650px); height: 220px; }
+.shipdesigner-preview-overlay {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  background: rgba(3, 9, 16, .86);
+  color: var(--muted-strong);
+  font-size: .65rem;
+}
+.shipdesigner-component-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+.shipdesigner-component-section {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: rgba(5, 12, 21, .64);
+}
+.shipdesigner-component-section h3 { margin: 0; font-size: .9rem; }
+.shipdesigner-component-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: rgba(8, 17, 29, .78);
+}
+.shipdesigner-component-row > div { display: grid; gap: 3px; min-width: 0; }
+.shipdesigner-component-row small { color: var(--muted); }
+.shipdesigner-component-row.locked { opacity: .55; }
+.shipdesigner-installed-list { display: grid; gap: 6px; margin-top: 8px; }
+.shipdesigner-installed-row {
+  display: grid;
+  grid-template-columns: minmax(82px, .65fr) minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-width: 0;
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.shipdesigner-installed-row > span { color: var(--muted); font-size: .67rem; }
+.shipdesigner-installed-row > strong { overflow-wrap: anywhere; font-size: .72rem; }
+.shipdesigner-installed-row.weapon { border: 1px solid var(--accent); border-radius: var(--radius-sm); background: var(--accent-soft); }
+.shipdesigner-installed-row .button-ghost { min-height: 34px; padding: 5px 8px; }
+.shipdesigner-future-note { margin: 10px 0 0; font-size: .63rem; line-height: 1.4; }
+.shipdesigner-summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.shipdesigner-summary-grid > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: rgba(6, 14, 24, .72);
+}
+.shipdesigner-summary-grid strong { font-size: 1.2rem; font-variant-numeric: tabular-nums; }
+.shipdesigner-save-row { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-top: 12px; }
+.shipdesigner-save-row > div { min-width: 0; }
+.shipdesigner-save-row .button-primary { min-height: 44px; flex: 0 0 auto; }
+
+@media (max-width: 900px) {
+  .shipdesigner-layout { grid-template-columns: 1fr; }
+  .shipdesigner-catalog-card { position: static; }
+  .shipdesigner-design-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 620px) {
+  .shipdesigner-design-list,
+  .shipdesigner-component-columns,
+  .shipdesigner-summary-grid { grid-template-columns: 1fr; }
+  .shipdesigner-preview { min-height: 210px; }
+  .shipdesigner-preview-ship { height: 180px; }
+  .shipdesigner-component-row > button { min-height: 44px; }
+  .shipdesigner-save-row { flex-direction: column; align-items: stretch; }
+  .shipdesigner-save-row .button-primary { width: 100%; min-height: 44px; }
+}
+
+@media (max-width: 360px) {
+  .shipdesigner-hull-stepper { grid-template-columns: 44px minmax(0, 1fr) 44px; gap: 4px; }
+  .shipdesigner-design-item { grid-template-columns: 62px minmax(0, 1fr); }
+  .shipdesigner-design-thumb { width: 56px; height: 44px; }
+  .shipdesigner-preview { min-height: 190px; }
+  .shipdesigner-preview-ship { height: 160px; }
+  .shipdesigner-component-section { padding: 8px; }
+  .shipdesigner-installed-row { grid-template-columns: 72px minmax(0, 1fr) auto; gap: 5px; }
+}
