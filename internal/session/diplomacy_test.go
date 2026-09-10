@@ -88,6 +88,7 @@ func TestDiplomacyImmediateLifecycleRevisionEventsAndProjection(t *testing.T) {
 
 func TestDiplomacyImmediateClosesAtFirstTurnSubmission(t *testing.T) {
 	state, seats := twoSeatFixture(t)
+	state.MarkEmpiresKnown(state.Empires[0].ID, state.Empires[1].ID)
 	s, err := NewGameSession("diplomacy-submit", state, seats)
 	if err != nil {
 		t.Fatal(err)
@@ -111,6 +112,7 @@ func TestDiplomacyImmediateClosesAtFirstTurnSubmission(t *testing.T) {
 
 func TestDiplomacyImmediateRequiresSequenceOne(t *testing.T) {
 	state, seats := twoSeatFixture(t)
+	state.MarkEmpiresKnown(state.Empires[0].ID, state.Empires[1].ID)
 	s, err := NewGameSession("diplomacy-sequence", state, seats)
 	if err != nil {
 		t.Fatal(err)

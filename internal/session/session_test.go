@@ -104,8 +104,11 @@ func TestPlayerViewDoesNotExposeEnemyEmpireState(t *testing.T) {
 			t.Fatalf("enemy colony leaked into player view: %+v", colony)
 		}
 	}
-	if len(view.Seats) != 2 || view.Seats[0].Seat.ID != 1 || view.Seats[1].Seat.ID != 2 {
-		t.Fatalf("seat status projection not stable: %+v", view.Seats)
+	if len(view.Seats) != 1 || view.Seats[0].Seat.ID != 1 {
+		t.Fatalf("pre-contact player view leaked unknown seat identity: %+v", view.Seats)
+	}
+	if len(view.Diplomacy) != 0 {
+		t.Fatalf("pre-contact player view leaked diplomacy: %+v", view.Diplomacy)
 	}
 }
 

@@ -1280,12 +1280,17 @@ func (s *GameSession) PlayerView(seatID protocol.SeatID) (PlayerView, error) {
 		EliminatedEmpireIDs: append([]core.ID(nil), s.eliminatedEmpires...),
 		Result:              cloneResult(s.result),
 		Seat:                seatView(seat),
-		Seats:               s.seatViewsLocked(),
 	}
 	for _, empire := range s.state.Empires {
 		if empire.ID == seat.seat.EmpireID {
 			view.Empire = empire
 			break
+		}
+	}
+	for i := range s.seats {
+		candidate := seatView(s.seats[i])
+		if candidate.Seat.ID == seatID || s.state.EmpiresHaveContact(seat.seat.EmpireID, candidate.Seat.EmpireID) {
+			view.Seats = append(view.Seats, candidate)
 		}
 	}
 	for _, colony := range s.state.Colonies {
@@ -1294,7 +1299,7 @@ func (s *GameSession) PlayerView(seatID protocol.SeatID) (PlayerView, error) {
 		}
 	}
 	for _, other := range s.state.Empires {
-		if other.ID == seat.seat.EmpireID {
+		if other.ID == seat.seat.EmpireID || !s.state.EmpiresHaveContact(seat.seat.EmpireID, other.ID) {
 			continue
 		}
 		view.Diplomacy = append(view.Diplomacy, DiplomacyView{
