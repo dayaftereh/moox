@@ -229,14 +229,15 @@ func TestTacticalRejectedCommandsDoNotMutate(t *testing.T) {
 	}
 }
 
-func TestUnsupportedInternalSelectionRejectsAtomically(t *testing.T) {
+func TestDeferredInternalSelectionFallsBackToAggregateStructure(t *testing.T) {
 	s := newStartedTacticalSession(t)
 	fire := mustFireCommand(t, 1, 100, 200, 0)
 	submitPrepared(t, s, 1, fire)
 
 	// Test-only setup: return the attacker Laser to ready and choose a deterministic
-	// RNG state whose next shot hits but whose following Select_Internal roll is not
-	// 100. The public PrepareCommand must still reject without mutating this state.
+	// RNG state whose next shot hits while the historical Select_Internal roll is
+	// not 100. Slice 15.5 must keep that RNG consumption but apply the supported
+	// aggregate Structure model instead of rejecting or inventing subsystem damage.
 	s.mu.Lock()
 	s.tactical.state.Ships[0].Weapons[0].Ready = true
 	chosen := uint32(0)
@@ -261,20 +262,24 @@ func TestUnsupportedInternalSelectionRejectsAtomically(t *testing.T) {
 	}
 	if chosen == 0 {
 		s.mu.Unlock()
-		t.Fatal("failed to find unsupported internal-selection seed")
+		t.Fatal("failed to find non-100 internal-selection seed")
 	}
 	s.tactical.state.RNGState = chosen
 	s.mu.Unlock()
 
 	before := s.View()
+	beforeDamage := before.Tactical.State.Ships[1].StructureDamage
 	second := mustFireCommand(t, 2, 100, 200, 0)
-	_, err := s.PrepareCommand(1, second)
-	if err == nil || !strings.Contains(err.Error(), "unsupported tactical internal subsystem selection") {
-		t.Fatalf("unexpected unsupported-internal error: %v", err)
+	prepared, err := s.PrepareCommand(1, second)
+	if err != nil {
+		t.Fatalf("deferred internal selection unexpectedly rejected: %v", err)
+	}
+	if err := s.CommitPreparedCommand(prepared); err != nil {
+		t.Fatal(err)
 	}
 	after := s.View()
-	if !reflect.DeepEqual(before, after) {
-		t.Fatal("unsupported internal damage mutated authoritative battle")
+	if after.Tactical.State.Ships[1].StructureDamage <= beforeDamage {
+		t.Fatalf("aggregate Structure damage did not advance: before=%d after=%d", beforeDamage, after.Tactical.State.Ships[1].StructureDamage)
 	}
 }
 
@@ -532,5 +537,62 @@ func TestTacticalPlayerViewProjectsScanDataAndSeatOwnedActions(t *testing.T) {
 	}
 	if _, err := s.PlayerView(99); err == nil {
 		t.Fatal("expected non-participant player battle projection to reject")
+	}
+}
+
+func TestTacticalLaserArmorOverflowContinuesIntoStructure(t *testing.T) {
+	s := newStartedTacticalSession(t)
+	target := s.tactical.shipState(200)
+	if target == nil {
+		t.Fatal("missing defender runtime state")
+	}
+	target.ArmorCurrent = 1
+	beforeRNG := s.View().Tactical.State.RNGState
+
+	fire, _ := NewFireBeamCommand(1, FireBeamPayload{ShipID: 100, TargetShipID: 200, WeaponSlot: 0})
+	submitPrepared(t, s, 1, fire)
+
+	after := s.View()
+	defender := after.Tactical.State.Ships[1]
+	if defender.ArmorCurrent != 0 || defender.StructureDamage != 3 || defender.Destroyed {
+		t.Fatalf("overflow defender=%+v want armor=0 structure_damage=3 alive", defender)
+	}
+	if after.Tactical.State.RNGState == beforeRNG {
+		t.Fatal("beam fire did not consume deterministic RNG")
+	}
+	var damageEvent *TacticalEvent
+	for i := range after.Tactical.Events {
+		if after.Tactical.Events[i].Kind == "battle_damage_applied" {
+			damageEvent = &after.Tactical.Events[i]
+		}
+	}
+	if damageEvent == nil || !strings.Contains(string(damageEvent.Data), `"layer":"armor_structure"`) {
+		t.Fatalf("overflow damage event=%+v want armor_structure", damageEvent)
+	}
+}
+
+func TestTacticalLaserWithNoArmorUsesAggregateStructureBaseline(t *testing.T) {
+	s := newStartedTacticalSession(t)
+	target := s.tactical.shipState(200)
+	if target == nil {
+		t.Fatal("missing defender runtime state")
+	}
+	target.ArmorCurrent = 0
+
+	fire, _ := NewFireBeamCommand(1, FireBeamPayload{ShipID: 100, TargetShipID: 200, WeaponSlot: 0})
+	prepared, err := s.PrepareCommand(1, fire)
+	if err != nil {
+		t.Fatalf("aggregate Structure damage unexpectedly rejected: %v", err)
+	}
+	candidate := prepared.Result()
+	if candidate == nil || candidate.WinnerSeat != 1 || !reflect.DeepEqual(candidate.DestroyedShipIDs, []core.ID{200}) {
+		t.Fatalf("terminal aggregate-Structure result=%+v", candidate)
+	}
+	if err := s.CommitPreparedCommand(prepared); err != nil {
+		t.Fatal(err)
+	}
+	final := s.View().Tactical.State.Ships[1]
+	if final.ArmorCurrent != 0 || final.StructureDamage != 4 || !final.Destroyed {
+		t.Fatalf("final aggregate-Structure defender=%+v", final)
 	}
 }

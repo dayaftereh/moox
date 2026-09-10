@@ -784,23 +784,32 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 		if err != nil {
 			return nil, err
 		}
+		remainingDamage := damage
 		if targetState.ArmorCurrent > 0 {
-			if damage > targetState.ArmorCurrent {
-				return nil, fmt.Errorf("unsupported tactical damage overflow from Armor into internal systems")
+			absorbed := remainingDamage
+			if absorbed > targetState.ArmorCurrent {
+				absorbed = targetState.ArmorCurrent
 			}
-			layer = "armor"
-			targetState.ArmorCurrent -= damage
+			targetState.ArmorCurrent -= absorbed
+			remainingDamage -= absorbed
 			afterArmor = targetState.ArmorCurrent
-		} else {
-			if selectionRoll != 100 {
-				return nil, fmt.Errorf("unsupported tactical internal subsystem selection roll %d", selectionRoll)
-			}
-			layer = "structure"
-			targetState.StructureDamage += damage
+		}
+		if remainingDamage > 0 {
+			// Slice 15.5 keeps internal subsystem damage deferred. Damage that is
+			// not absorbed by Armor therefore applies to aggregate Structure.
+			targetState.StructureDamage += remainingDamage
 			if targetState.StructureDamage > targetSpec.StructureMax {
 				targetState.StructureDamage = targetSpec.StructureMax
 			}
 			afterStructure = targetState.StructureDamage
+		}
+		switch {
+		case beforeArmor > 0 && afterStructure > beforeStructure:
+			layer = "armor_structure"
+		case beforeArmor > afterArmor:
+			layer = "armor"
+		case afterStructure > beforeStructure:
+			layer = "structure"
 		}
 	}
 	ready.Ready = false
