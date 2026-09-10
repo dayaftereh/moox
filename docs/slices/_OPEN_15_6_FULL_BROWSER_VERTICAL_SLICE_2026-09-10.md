@@ -68,6 +68,8 @@ User feedback identified fleet movement from the Galaxy map as the next integrat
 
 Planned Block 5 is now documented in `docs/research/SLICE_15_6_GATE3_BLOCK5_GALAXY_FLEET_MOVEMENT_PLAN_2026-09-10.md`:
 
+Block 5A COMPLETE (`0f6c262`, `0588a9f`, `850350e`): persistent visited-system and known-empire authority, anonymous unvisited stars, hidden planets/special identity, pre-contact diplomacy/seat/contact filtering, server-side first-contact persistence, player-safe built-in AI exploration, full Go regression green, web build green, and visible canonical browser QA proving 1 named home + 19 anonymous stars + no pre-contact Diplomacy contact.
+
 - persistent per-empire visited-system knowledge and player-safe Galaxy projection: unvisited stars expose position + stellar appearance only (no true name, planets or special identity such as Orion); arrival reveals and names the system; unknown race/diplomacy identity remains hidden until authoritative first contact;
 - authoritative legal + visible-illegal fleet target projection with range/ETA/reason feedback;
 - independently clickable Galaxy fleet marker;

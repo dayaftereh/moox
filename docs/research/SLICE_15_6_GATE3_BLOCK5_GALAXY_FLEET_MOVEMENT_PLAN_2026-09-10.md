@@ -126,6 +126,16 @@ The fixture should be clearly QA-only and reproducible (for example a versioned 
 - Stop foreign race/diplomacy and static system-local contact leakage before authoritative first contact; filter `PublicEmpires`, `Diplomacy` and strategic contacts accordingly.
 - Add resolver/session projection tests proving an unvisited system cannot leak its true name, Orion/special identity or planet details; prove it becomes named/inspectable after arrival; prove unknown empires stay out of diplomacy until first contact.
 
+Implementation status (2026-09-10): **5A COMPLETE**
+
+- `0f6c262` persists sorted per-empire `visited_system_ids`, initializes home-system knowledge and records fleet-arrival visits; unvisited player projection strips true names, planets/bodies and static local contacts.
+- `0588a9f` adds sorted persistent `known_empire_ids`, symmetric first contact on authoritative arrival/shared-visit presence, pre-contact filtering for `PublicEmpires`, DecisionView diplomacy/commands and strategic contacts, plus anonymous Galaxy presentation and the compact `Nicht besucht` dialog. Built-in AI now explores only through server-projected legal fleet moves and the legacy full-conquest regressions explicitly preserve their prior post-contact/full-map fixture premise.
+- `850350e` closes the older `PlayerView` leak as well: pre-contact foreign seat identities and diplomacy rows are omitted.
+- Regression: `go test ./...` green; web `npm run build` green (main JS 258.20 kB, gzip 67.11 kB); `git diff --check` green before commits.
+- Visible browser QA on fresh canonical seed `0x8009`: exactly one named system (Human home `System 01`) and 19 anonymous stars; selecting an anonymous star opens only `Nicht besucht / Unbekannter Stern` with no planet dialog; Diplomacy shows `Keine diplomatischen Kontakte.`
+- Player-snapshot evidence on the same game: `public_empires` contains Human only; `view.seats` contains Human only; both DecisionView and PlayerView diplomacy properties are omitted pre-contact; `visited_system_ids=[4]`.
+- Actual post-arrival visit + symmetric first-contact persistence is covered by `TestFleetArrivalEstablishesFirstContactAtPreviouslyVisitedSystem`; visible arrival/reveal QA remains naturally coupled to the upcoming fleet-movement blocks.
+
 ### 5B - Authority target projection
 
 - Project legal and visible-illegal destinations with reason/distance/range/ETA data.
