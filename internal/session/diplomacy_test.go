@@ -10,6 +10,8 @@ import (
 func TestDiplomacyImmediateLifecycleRevisionEventsAndProjection(t *testing.T) {
 	state, seats := twoSeatFixture(t)
 	first, second := state.Empires[0].ID, state.Empires[1].ID
+	state.MarkEmpiresKnown(first, second)
+
 	s, err := NewGameSession("diplomacy", state, seats)
 	if err != nil {
 		t.Fatal(err)

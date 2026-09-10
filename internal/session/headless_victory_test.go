@@ -47,6 +47,8 @@ func runCanonicalHeadlessConquest(t *testing.T) []byte {
 	}
 	humanID := generated.Players[0].EmpireID
 	darlokID := generated.Players[1].EmpireID
+	generated.State.MarkEmpiresKnown(humanID, darlokID)
+
 	seats := []Seat{
 		{ID: 1, EmpireID: humanID, Name: "Human", Controller: ControllerLocalHuman},
 		{ID: 2, EmpireID: darlokID, Name: "Darlok", Controller: ControllerLocalHuman},

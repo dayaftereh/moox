@@ -144,6 +144,9 @@ func validateDiplomacyTarget(state *core.GameState, actor, other core.ID) error 
 	if empireByID(state, other) == nil {
 		return fmt.Errorf("target empire %d is unknown", other)
 	}
+	if !state.EmpiresHaveContact(actor, other) {
+		return fmt.Errorf("empire %d has not established contact with empire %d", actor, other)
+	}
 	return nil
 }
 func setDiplomaticPair(state *core.GameState, a, b core.ID, stance core.DiplomaticStance) {

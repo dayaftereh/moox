@@ -18,6 +18,8 @@ func newDiplomacyServerFixture(t *testing.T, staticFS fs.FS) (*httptest.Server, 
 	state := core.NewSmallFixture(0xD1A10)
 	secondEmpire := core.Empire{ID: state.NewID(), Name: "Darlok", RaceID: "darlok"}
 	state.Empires = append(state.Empires, secondEmpire)
+	state.MarkEmpiresKnown(state.Empires[0].ID, secondEmpire.ID)
+
 	if err := state.Validate(); err != nil {
 		t.Fatal(err)
 	}

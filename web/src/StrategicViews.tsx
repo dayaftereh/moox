@@ -317,6 +317,12 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
 }) {
   const decision = snapshot.decision
   const systems = decision?.strategic.galaxy.systems ?? []
+  const visitedSystemIDs = useMemo(() => {
+    const projected = decision?.strategic.visited_system_ids
+    if (projected) return new Set(projected)
+    // Compatibility while a pre-visited-authority server is still running.
+    return new Set(systems.filter((system) => system.name !== '' && (system.planets?.length ?? 0) > 0).map((system) => system.id))
+  }, [decision?.strategic.visited_system_ids, systems])
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [dragging, setDragging] = useState(false)
@@ -374,6 +380,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
     )
   }
   const selected = systems.find((system) => system.id === selectedSystemID)
+  const selectedVisited = selected ? visitedSystemIDs.has(selected.id) : false
 
   const changeZoom = (factor: number) => setZoom((current) => Math.round(clampZoom(current * factor) * 100) / 100)
 
@@ -485,6 +492,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
         >
           <div className="galaxy-map-layer" style={{ transform: 'translate3d(' + pan.x + 'px, ' + pan.y + 'px, 0) scale(' + zoom + ')' }}>
             {systems.map((system) => {
+              const isVisited = visitedSystemIDs.has(system.id)
               const ownsColony = (system.planets ?? []).some((planet) => decision.colonies.some((colony) => colony.planet_id === planet.id))
               const ownOutpost = (system.bodies ?? []).some((body) => Boolean(body.outpost_id) && decision.strategic.outposts?.some((outpost) => outpost.id === body.outpost_id && outpost.empire_id === decision.empire.id))
               const ownFleets = (decision.strategic.fleets ?? []).filter((fleet) => fleet.empire_id === decision.empire.id && fleet.at_system_id === system.id)
@@ -503,12 +511,12 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                     left: (8 + ((system.x - bounds.minX) / spanX) * 84) + '%',
                     top: (8 + ((system.y - bounds.minY) / spanY) * 84) + '%',
                   }}
-                  aria-label={system.name}
+                  aria-label={isVisited ? system.name : t('galaxy.unknownStar')}
                   onClick={() => {
                     if (ignoreClickRef.current) return
                     onSelectSystem(system.id)
                   }}
-                  title={system.name + ' (' + system.x + ', ' + system.y + ')'}
+                  title={isVisited ? system.name + ' (' + system.x + ', ' + system.y + ')' : t('galaxy.unvisitedTitle')}
                 >
                   <span className="galaxy-star" aria-hidden="true"><StarArt spectralClass={system.spectral_class} seed={system.id} /></span>
                   <span className="galaxy-node-markers" aria-hidden="true">
@@ -529,14 +537,24 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                       )
                     })}
                   </span>
-                  <span className="galaxy-node-label" aria-hidden="true">{system.name}</span>
+                  {isVisited && <span className="galaxy-node-label" aria-hidden="true">{system.name}</span>}
                 </button>
               )
             })}
           </div>
         </div>
       </Card>
-      {selected && (
+      {selected && !selectedVisited && (
+        <aside className="galaxy-unvisited-dialog" role="dialog" aria-label={t('galaxy.unvisitedTitle')}>
+          <div>
+            <small>{t('galaxy.unvisitedTitle')}</small>
+            <strong>{t('galaxy.unknownStar')}</strong>
+            <p>{t('galaxy.unvisitedBody')}</p>
+          </div>
+          <button type="button" className="ghost-button" onClick={onCloseSystem}>{t('common.close')}</button>
+        </aside>
+      )}
+      {selected && selectedVisited && (
         <SystemDialog
           snapshot={snapshot}
           system={selected}
@@ -762,7 +780,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                   return (
                     <span className={'badge system-contact-badge relation-' + tone} key={'contact-' + index + '-' + contact.empire_id}>
                       <GameIcon name={strategicContactIcon(contact.kind)} />
-                      {t('common.empireFallback', { id: contact.empire_id })} · {contact.kind}
+                      {t('common.empireFallback', { id: contact.empire_id })} Â· {contact.kind}
                     </span>
                   )
                 })}
@@ -890,7 +908,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                         <div><dt>{t('system.fuelCell')}</dt><dd>{humanizeToken(selectedShip.spec.fuel_cell_id)}</dd></div>
                         <div><dt>{t('system.range')}</dt><dd>{selectedShip.spec.fuel_range_parsecs}</dd></div>
                         <div><dt>{t('system.productionCost')}</dt><dd>{selectedShip.spec.production_cost_pp} PP</dd></div>
-                        <div><dt>{t('system.design')}</dt><dd>#{selectedShip.source_design_id} · r{selectedShip.source_design_revision}</dd></div>
+                        <div><dt>{t('system.design')}</dt><dd>#{selectedShip.source_design_id} Â· r{selectedShip.source_design_revision}</dd></div>
                       </dl>
                       <section className="system-ship-weapons">
                         <h4>{t('system.weapons')}</h4>
@@ -898,7 +916,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
                           <div className="system-ship-weapon-list">
                             {selectedShip.spec.weapons?.map((weapon) => (
                               <div className="system-ship-weapon" key={'weapon-' + weapon.slot}>
-                                <span>{weapon.count}×</span>
+                                <span>{weapon.count}Ã—</span>
                                 <strong>{humanizeToken(weapon.weapon_id)}</strong>
                                 <small>{t('system.weaponSlot', { slot: weapon.slot + 1 })}</small>
                               </div>
@@ -1306,7 +1324,7 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
       <header className="colony-detail-toolbar">
         <div className="colony-detail-toolbar-title">
           <strong>{t('colonies.colony', { id: colony.id })}</strong>
-          <span>{planetContext ? `${planetContext.system.name} · ${planetContext.planet.name}` : t('colonies.planet', { id: colony.planet_id })}</span>
+          <span>{planetContext ? `${planetContext.system.name} Â· ${planetContext.planet.name}` : t('colonies.planet', { id: colony.planet_id })}</span>
         </div>
         <button type="button" className="button-ghost colony-detail-back" onClick={onBack}>{t('common.back')}</button>
       </header>
@@ -1453,14 +1471,14 @@ function ConstructionSummary({ colony, preview, draftOrders, onOpen, t }: {
             <span style={{ width: `${currentProgressPercent}%` }} />
           </div>
           <div className="construction-summary-progress-meta">
-            <span>{currentProgressPP.toFixed(1)} / {currentCostPP.toFixed(0)} PP · {currentProgressPercent.toFixed(0)}%</span>
+            <span>{currentProgressPP.toFixed(1)} / {currentCostPP.toFixed(0)} PP Â· {currentProgressPercent.toFixed(0)}%</span>
             <strong>{projected ? formatEta(t, projected.eta_turns) : t('common.noEta')}</strong>
           </div>
         </div>
       )}
       <div className="construction-summary-meta">
         {(!current || currentCostPP === undefined || currentCostPP <= 0) && <span>{projected ? formatEta(t, projected.eta_turns) : t('common.noEta')}</span>}
-        {items.length > 1 && <small>{items.slice(1, 4).map((item) => humanizeToken(item.project_id)).join(' · ')}{items.length > 4 ? ' …' : ''}</small>}
+        {items.length > 1 && <small>{items.slice(1, 4).map((item) => humanizeToken(item.project_id)).join(' Â· ')}{items.length > 4 ? ' â€¦' : ''}</small>}
       </div>
       <button type="button" className="button-secondary button-wide" onClick={onOpen}><GameIcon name="build" />{t('construction.openManager')}</button>
     </Card>
@@ -1636,7 +1654,7 @@ function ConstructionEditor({ colony, preview, choices, shipDesigns, draftOrders
                   <span className={constructionProjectUsesLargeArt(choice.project_kind) ? 'construction-catalog-glyph construction-catalog-glyph-rich' : 'construction-catalog-glyph'} data-kind={choice.project_kind} aria-hidden="true"><ConstructionChoiceArt choice={choice} shipDesigns={shipDesigns} variant="compact" /></span>
                   <span className="construction-catalog-copy">
                     <strong>{displayChoice(choice)}</strong>
-                    <small>{humanizeToken(choice.project_kind)} · {t('construction.cost', { pp: choice.production_cost_pp.toFixed(0) })}</small>
+                    <small>{humanizeToken(choice.project_kind)} Â· {t('construction.cost', { pp: choice.production_cost_pp.toFixed(0) })}</small>
                   </span>
                   {alreadyQueued && <span className="badge">{t('construction.queued')}</span>}
                 </button>
@@ -1745,7 +1763,7 @@ function ConstructionEditor({ colony, preview, choices, shipDesigns, draftOrders
               <span style={{ width: `${currentProgressPercent}%` }} />
             </div>
             <div className="construction-current-meta">
-              <span>{currentCostPP ? `${currentProgressPP.toFixed(1)} / ${currentCostPP.toFixed(0)} PP · ${currentProgressPercent.toFixed(0)}%` : `${currentProgressPP.toFixed(1)} PP`}</span>
+              <span>{currentCostPP ? `${currentProgressPP.toFixed(1)} / ${currentCostPP.toFixed(0)} PP Â· ${currentProgressPercent.toFixed(0)}%` : `${currentProgressPP.toFixed(1)} PP`}</span>
               <span>{currentProjected ? formatEta(t, currentProjected.eta_turns) : t('common.noEta')}</span>
             </div>
           </section>
@@ -1769,7 +1787,7 @@ function ConstructionEditor({ colony, preview, choices, shipDesigns, draftOrders
                     </span>
                     <span className="construction-queue-copy-text">
                       <strong>{displayItem(item)}</strong>
-                      <small>{humanizeToken(item.project_kind)} · {projectedItem ? formatEta(t, projectedItem.eta_turns) : t('common.noEta')}</small>
+                      <small>{humanizeToken(item.project_kind)} Â· {projectedItem ? formatEta(t, projectedItem.eta_turns) : t('common.noEta')}</small>
                     </span>
                   </button>
                   <div className="action-row compact-actions construction-queue-actions">
@@ -1815,8 +1833,8 @@ function PopulationTransferRow({ choice, onPlanOrder, t }: {
   function confirmTransfer() {
     const message = [
       t('transfer.title'),
-      `${choice.source_colony_id} → ${choice.destination_colony_id}`,
-      `${choice.source_job} → ${choice.destination_job}`,
+      `${choice.source_colony_id} â†’ ${choice.destination_colony_id}`,
+      `${choice.source_job} â†’ ${choice.destination_job}`,
       `${t('transfer.freighters')}: ${choice.freighters_required}`,
       `${t('transfer.eta')}: ${choice.eta}`,
     ].join('\n')
@@ -1838,8 +1856,8 @@ function PopulationTransferRow({ choice, onPlanOrder, t }: {
   return (
     <div className="list-row">
       <span>
-        <strong>{choice.source_colony_id} → {choice.destination_colony_id}</strong>
-        <small>{choice.source_job} → {choice.destination_job} · {t('transfer.freighters')}: {choice.freighters_required} · {t('transfer.eta')}: {choice.eta}{choice.same_system ? ` · ${t('transfer.sameSystem')}` : ''}</small>
+        <strong>{choice.source_colony_id} â†’ {choice.destination_colony_id}</strong>
+        <small>{choice.source_job} â†’ {choice.destination_job} Â· {t('transfer.freighters')}: {choice.freighters_required} Â· {t('transfer.eta')}: {choice.eta}{choice.same_system ? ` Â· ${t('transfer.sameSystem')}` : ''}</small>
       </span>
       <button type="button" className="button-secondary" onClick={confirmTransfer}><GameIcon name="check" />{t('transfer.confirm')}</button>
     </div>
@@ -1876,9 +1894,9 @@ export function StrategicFleetsView({ snapshot, onPlanOrder, t }: { snapshot: Pl
                 <span className="badge fleet-role-badge"><GameIcon name={fleetRoleIcon(fleet)} />{t('fleets.ships')}: {fleet.ship_ids?.length ?? 0}</span>
               </div>
               <dl className="detail-list compact">
-                <div><dt>{t('fleets.atSystem')}</dt><dd>{fleet.at_system_id ?? '—'}</dd></div>
-                <div><dt>{t('fleets.destination')}</dt><dd>{fleet.destination_system_id ?? '—'}</dd></div>
-                <div><dt>{t('fleets.eta')}</dt><dd>{fleet.remaining_turns ?? '—'}</dd></div>
+                <div><dt>{t('fleets.atSystem')}</dt><dd>{fleet.at_system_id ?? 'â€”'}</dd></div>
+                <div><dt>{t('fleets.destination')}</dt><dd>{fleet.destination_system_id ?? 'â€”'}</dd></div>
+                <div><dt>{t('fleets.eta')}</dt><dd>{fleet.remaining_turns ?? 'â€”'}</dd></div>
               </dl>
               {moves.length === 0 ? <p className="muted">{t('fleets.noMoves')}</p> : (
                 <div className="choice-grid">
@@ -1897,7 +1915,7 @@ export function StrategicFleetsView({ snapshot, onPlanOrder, t }: { snapshot: Pl
                         },
                       })}
                     >
-                      <strong>{t('fleets.move')} → {choice.destination_system_id}</strong>
+                      <strong>{t('fleets.move')} â†’ {choice.destination_system_id}</strong>
                       <small>{t('fleets.eta')}: {choice.eta}</small>
                     </button>
                   ))}
@@ -2002,7 +2020,7 @@ export function StrategicResearchOverlay({ snapshot, preview, draftOrders, onPla
             <h2>{t('research.changeTitle')}</h2>
           </div>
           <div className="research-overlay-current">
-            <span>{t('research.rpRate')}</span><strong>{active?.rp_per_turn.toFixed(1) ?? '—'} RP</strong>
+            <span>{t('research.rpRate')}</span><strong>{active?.rp_per_turn.toFixed(1) ?? 'â€”'} RP</strong>
             <span>{t('research.eta')}</span><strong>{formatEta(t, active?.eta_turns)}</strong>
           </div>
           <button type="button" className="button-ghost research-overlay-close" onClick={onClose} aria-label={t('common.close')}><GameIcon name="close" /></button>

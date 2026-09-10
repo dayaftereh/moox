@@ -135,6 +135,9 @@ func (s *GameSession) DecisionView(seatID protocol.SeatID, resolver *game.Econom
 		return PlayerDecisionView{}, fmt.Errorf("seat %d references unknown empire %d", seatID, seat.EmpireID)
 	}
 	for _, empire := range state.Empires {
+		if empire.ID != seat.EmpireID && !state.EmpiresHaveContact(seat.EmpireID, empire.ID) {
+			continue
+		}
 		view.PublicEmpires = append(view.PublicEmpires, PublicEmpireIdentity{ID: empire.ID, Name: empire.Name, RaceID: empire.RaceID})
 	}
 	sort.Slice(view.PublicEmpires, func(i, j int) bool { return view.PublicEmpires[i].ID < view.PublicEmpires[j].ID })
@@ -145,7 +148,7 @@ func (s *GameSession) DecisionView(seatID protocol.SeatID, resolver *game.Econom
 	}
 	sort.Slice(view.Colonies, func(i, j int) bool { return view.Colonies[i].ID < view.Colonies[j].ID })
 	for _, other := range state.Empires {
-		if other.ID == seat.EmpireID {
+		if other.ID == seat.EmpireID || !state.EmpiresHaveContact(seat.EmpireID, other.ID) {
 			continue
 		}
 		view.Diplomacy = append(view.Diplomacy, DiplomacyView{
@@ -261,7 +264,7 @@ func buildStrategicView(state *core.GameState, empireID core.ID) StrategicView {
 		if fleet.EmpireID == empireID {
 			fleet.ShipIDs = append([]core.ID(nil), fleet.ShipIDs...)
 			out.Fleets = append(out.Fleets, fleet)
-		} else if fleet.AtSystemID != 0 {
+		} else if fleet.AtSystemID != 0 && state.EmpiresHaveContact(empireID, fleet.EmpireID) {
 			if _, ok := visited[fleet.AtSystemID]; ok {
 				out.Contacts = append(out.Contacts, StrategicContact{Kind: StrategicContactFleet, EmpireID: fleet.EmpireID, FleetID: fleet.ID, SystemID: fleet.AtSystemID, Role: fleet.Role, SpecialKind: fleet.SpecialKind})
 			}
@@ -273,7 +276,7 @@ func buildStrategicView(state *core.GameState, empireID core.ID) StrategicView {
 		}
 	}
 	for _, colony := range state.Colonies {
-		if colony.EmpireID == empireID {
+		if colony.EmpireID == empireID || !state.EmpiresHaveContact(empireID, colony.EmpireID) {
 			continue
 		}
 		if systemID := systemIDForPlanet(state, colony.PlanetID); systemID != 0 {
@@ -283,7 +286,7 @@ func buildStrategicView(state *core.GameState, empireID core.ID) StrategicView {
 		}
 	}
 	for _, outpost := range state.Outposts {
-		if outpost.EmpireID == empireID {
+		if outpost.EmpireID == empireID || !state.EmpiresHaveContact(empireID, outpost.EmpireID) {
 			continue
 		}
 		if systemID := systemIDForPlanet(state, outpost.PlanetID); systemID != 0 {
@@ -389,7 +392,7 @@ func systemIDForPlanet(state *core.GameState, planetID core.ID) core.ID {
 func diplomacyDecisionCatalog(state *core.GameState, empireID core.ID) []DiplomacyDecision {
 	var out []DiplomacyDecision
 	for _, other := range state.Empires {
-		if other.ID == empireID {
+		if other.ID == empireID || !state.EmpiresHaveContact(empireID, other.ID) {
 			continue
 		}
 		stance := state.DiplomaticStanceBetween(empireID, other.ID)

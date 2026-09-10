@@ -178,6 +178,8 @@ func TestPopulationTransferWaitsForFinalEncounterWaveAndSeesPostBattleBlockade(t
 func TestDiplomacyWarEnablesSameSystemEncounterAtNextBoundary(t *testing.T) {
 	fixture := newBlockadeTestFixture(t, 2214)
 	state := fixture.state
+	state.MarkEmpiresKnown(fixture.blockaderEmpireID, fixture.targetEmpireID)
+
 	setCombatFleetTestTech(&state.Empires[0])
 	setCombatFleetTestTech(&state.Empires[1])
 	addCombatFleetTestFleet(state, fixture.blockaderEmpireID, fixture.targetSystemID, 1)

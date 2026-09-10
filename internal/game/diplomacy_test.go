@@ -15,10 +15,22 @@ func diplomacyTestState(t *testing.T) (*core.GameState, core.ID, core.ID) {
 	first := state.Empires[0].ID
 	second := state.NewID()
 	state.Empires = append(state.Empires, core.Empire{ID: second, Name: "Second", RaceID: "darlok"})
+	state.MarkEmpiresKnown(first, second)
 	if err := state.Validate(); err != nil {
 		t.Fatal(err)
 	}
 	return state, first, second
+}
+
+func TestDiplomacyRejectsBeforeFirstContact(t *testing.T) {
+	state := core.NewSmallFixture(0xD1A11)
+	first := state.Empires[0].ID
+	second := state.NewID()
+	state.Empires = append(state.Empires, core.Empire{ID: second, Name: "Unknown", RaceID: "darlok"})
+	declare, _ := NewDeclareWarCommand(1, second)
+	if _, err := ResolveDiplomacyCommand(state, first, 1, declare); err == nil {
+		t.Fatal("expected diplomacy against an unknown empire to fail before first contact")
+	}
 }
 
 func TestDiplomacyWarOfferAcceptLifecycle(t *testing.T) {

@@ -215,6 +215,16 @@ func planTurn(view session.PlayerDecisionView) (protocol.CommandBatch, error) {
 		}
 
 		target, hasTarget := targetEnemyColony(view)
+		if !hasTarget {
+			if move, ok := bestExplorationMove(view); ok {
+				selected := move
+				if err := appendCommand(func(seq uint32) (protocol.Command, error) {
+					return game.NewMoveFleetCommand(seq, game.MoveFleetPayload{FleetID: selected.FleetID, DestinationSystemID: selected.DestinationSystemID, ShipIDs: append([]core.ID(nil), selected.ShipIDs...)})
+				}); err != nil {
+					return protocol.CommandBatch{}, err
+				}
+			}
+		}
 		if hasTarget {
 			stanceWar := false
 			for _, diplomacy := range view.Diplomacy {
@@ -382,6 +392,60 @@ func bestOutpostDeployments(view session.PlayerDecisionView) []game.OutpostDeplo
 	return out
 }
 
+func bestExplorationMove(view session.PlayerDecisionView) (game.FleetMoveChoice, bool) {
+	visited := make(map[core.ID]struct{}, len(view.Strategic.VisitedSystemIDs))
+	for _, systemID := range view.Strategic.VisitedSystemIDs {
+		visited[systemID] = struct{}{}
+	}
+	fleetByID := make(map[core.ID]core.StrategicFleet, len(view.Strategic.Fleets))
+	for _, fleet := range view.Strategic.Fleets {
+		fleetByID[fleet.ID] = fleet
+	}
+	priority := func(fleet core.StrategicFleet) int {
+		if fleet.Role == core.StrategicFleetRoleCombat && fleet.SpecialKind == core.StrategicFleetSpecialNone {
+			return 0
+		}
+		switch fleet.SpecialKind {
+		case core.StrategicFleetSpecialColonyShip:
+			return 1
+		case core.StrategicFleetSpecialOutpostShip:
+			return 2
+		default:
+			return 3
+		}
+	}
+	var best game.FleetMoveChoice
+	bestPriority := math.MaxInt
+	bestDistance := int64(math.MaxInt64)
+	found := false
+	for _, move := range view.Decisions.FleetMoves {
+		if len(move.ShipIDs) != 0 {
+			continue
+		}
+		if _, known := visited[move.DestinationSystemID]; known {
+			continue
+		}
+		fleet, ok := fleetByID[move.FleetID]
+		if !ok || fleet.AtSystemID == 0 {
+			continue
+		}
+		if fleet.SpecialKind == core.StrategicFleetSpecialColonyShip && hasColonizationForFleet(view.Decisions.Colonization, fleet.ID) {
+			continue
+		}
+		if fleet.SpecialKind == core.StrategicFleetSpecialOutpostShip && hasOutpostDeploymentForFleet(view.Decisions.OutpostDeployment, fleet.ID) {
+			continue
+		}
+		distance, ok := systemDistanceSquared(view, fleet.AtSystemID, move.DestinationSystemID)
+		if !ok {
+			continue
+		}
+		p := priority(fleet)
+		if !found || p < bestPriority || (p == bestPriority && (distance < bestDistance || (distance == bestDistance && (move.DestinationSystemID < best.DestinationSystemID || (move.DestinationSystemID == best.DestinationSystemID && move.FleetID < best.FleetID))))) {
+			best, bestPriority, bestDistance, found = move, p, distance, true
+		}
+	}
+	return best, found
+}
 func targetEnemyColony(view session.PlayerDecisionView) (session.StrategicContact, bool) {
 	supplySystems := ownSupplySystems(view)
 	var best session.StrategicContact
@@ -653,7 +717,12 @@ func defensivePatrolMove(view session.PlayerDecisionView) (game.FleetMoveChoice,
 			ownedColonySystems[systemID] = struct{}{}
 		}
 	}
+	visited := make(map[core.ID]struct{}, len(view.Strategic.VisitedSystemIDs))
+	for _, systemID := range view.Strategic.VisitedSystemIDs {
+		visited[systemID] = struct{}{}
+	}
 	var best game.FleetMoveChoice
+	bestVisited := true
 	bestDistance := int64(math.MaxInt64)
 	found := false
 	for _, fleet := range view.Strategic.Fleets {
@@ -671,8 +740,9 @@ func defensivePatrolMove(view session.PlayerDecisionView) (game.FleetMoveChoice,
 			if !ok {
 				continue
 			}
-			if !found || distance < bestDistance || (distance == bestDistance && (move.DestinationSystemID < best.DestinationSystemID || (move.DestinationSystemID == best.DestinationSystemID && lessShipIDs(move.ShipIDs, best.ShipIDs)))) {
-				best, bestDistance, found = move, distance, true
+			_, destinationVisited := visited[move.DestinationSystemID]
+			if !found || (bestVisited && !destinationVisited) || (bestVisited == destinationVisited && (distance < bestDistance || (distance == bestDistance && (move.DestinationSystemID < best.DestinationSystemID || (move.DestinationSystemID == best.DestinationSystemID && lessShipIDs(move.ShipIDs, best.ShipIDs)))))) {
+				best, bestVisited, bestDistance, found = move, destinationVisited, distance, true
 			}
 		}
 	}

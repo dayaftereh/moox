@@ -288,11 +288,67 @@ func (r *EconomyResolver) advanceStrategicFleetTransit(state *core.GameState) ([
 		if empire := empireByID(state, fleet.EmpireID); empire != nil {
 			empire.MarkSystemVisited(destination.ID)
 		}
+		establishFirstContactsAtSystem(state, fleet.EmpireID, destination.ID)
 		fleet.DestinationSystemID = 0
 		fleet.RemainingTurns = 0
 		events = append(events, event)
 	}
 	return events, nil
+}
+
+func establishFirstContactsAtSystem(state *core.GameState, visitingEmpireID, systemID core.ID) {
+	visitor := empireByID(state, visitingEmpireID)
+	if visitor == nil || systemID == 0 {
+		return
+	}
+	for i := range state.Empires {
+		other := &state.Empires[i]
+		if other.ID == visitingEmpireID || state.EmpiresHaveContact(visitingEmpireID, other.ID) {
+			continue
+		}
+		if other.HasVisitedSystem(systemID) || empireHasPresenceAtSystem(state, other.ID, systemID) {
+			state.MarkEmpiresKnown(visitingEmpireID, other.ID)
+		}
+	}
+}
+
+func empireHasPresenceAtSystem(state *core.GameState, empireID, systemID core.ID) bool {
+	for _, fleet := range state.StrategicFleets {
+		if fleet.EmpireID == empireID && fleet.AtSystemID == systemID {
+			return true
+		}
+	}
+	system := systemByID(state, systemID)
+	if system == nil {
+		return false
+	}
+	planetIDs := make(map[core.ID]struct{}, len(system.Planets))
+	bodyIDs := make(map[core.ID]struct{}, len(system.Bodies))
+	for _, planet := range system.Planets {
+		planetIDs[planet.ID] = struct{}{}
+	}
+	for _, body := range system.Bodies {
+		bodyIDs[body.ID] = struct{}{}
+	}
+	for _, colony := range state.Colonies {
+		if colony.EmpireID == empireID {
+			if _, ok := planetIDs[colony.PlanetID]; ok {
+				return true
+			}
+		}
+	}
+	for _, outpost := range state.Outposts {
+		if outpost.EmpireID != empireID {
+			continue
+		}
+		if _, ok := planetIDs[outpost.PlanetID]; ok && outpost.PlanetID != 0 {
+			return true
+		}
+		if _, ok := bodyIDs[outpost.BodyID]; ok && outpost.BodyID != 0 {
+			return true
+		}
+	}
+	return false
 }
 
 func (r *EconomyResolver) colonizePlanet(state *core.GameState, empireID core.ID, seatID protocol.SeatID, command protocol.Command) ([]DomainEvent, error) {

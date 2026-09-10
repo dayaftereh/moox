@@ -3981,3 +3981,24 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .shipdesigner-component-section { padding: 8px; }
   .shipdesigner-installed-row { grid-template-columns: 72px minmax(0, 1fr) auto; gap: 5px; }
 }
+.galaxy-unvisited-dialog {
+  position: fixed;
+  z-index: 45;
+  right: clamp(16px, 4vw, 56px);
+  bottom: clamp(72px, 10vh, 120px);
+  width: min(320px, calc(100vw - 32px));
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  background: rgba(7, 15, 26, .94);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .42);
+  backdrop-filter: blur(14px);
+}
+.galaxy-unvisited-dialog small,
+.galaxy-unvisited-dialog strong { display: block; }
+.galaxy-unvisited-dialog strong { margin-top: 3px; }
+.galaxy-unvisited-dialog p { margin: 6px 0 0; font-size: .84rem; color: var(--text-muted); }

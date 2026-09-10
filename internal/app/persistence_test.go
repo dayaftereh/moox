@@ -18,18 +18,8 @@ const persistenceCanonicalGameID = "live-ai-canonical"
 func newPersistenceCanonicalAIHost(t *testing.T) *Host {
 	t.Helper()
 	host := loadNewGameHost(t)
-	_, err := host.CreateGame(CreateGameRequest{
-		GameID:   persistenceCanonicalGameID,
-		Seed:     0x8009,
-		Settings: appNewGameSettings(),
-		Controllers: []PlayerControllerSpec{
-			{SeatID: 1, Controller: session.ControllerBuiltinAI},
-			{SeatID: 2, Controller: session.ControllerBuiltinAI},
-		},
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	registerPostContactCanonicalAIGame(t, host, persistenceCanonicalGameID)
+
 	return host
 }
 

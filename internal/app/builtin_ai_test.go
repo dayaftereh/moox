@@ -9,6 +9,37 @@ import (
 	"moox/internal/session"
 )
 
+func registerPostContactCanonicalAIGame(t *testing.T, host *Host, gameID string) {
+	t.Helper()
+	generated, err := host.newGameRules.NewGame(0x8009, appNewGameSettings())
+	if err != nil {
+		t.Fatal(err)
+	}
+	// This legacy completion regression predates fog-of-knowledge. Preserve its
+	// original post-contact/full-map premise so it continues to test deterministic
+	// AI conquest rather than the separate discovery/range integration path.
+	for ei := range generated.State.Empires {
+		for _, system := range generated.State.Galaxy.Systems {
+			generated.State.Empires[ei].MarkSystemVisited(system.ID)
+		}
+	}
+	for i := 0; i < len(generated.State.Empires); i++ {
+		for j := i + 1; j < len(generated.State.Empires); j++ {
+			generated.State.MarkEmpiresKnown(generated.State.Empires[i].ID, generated.State.Empires[j].ID)
+		}
+	}
+	seats := make([]session.Seat, len(generated.Players))
+	for i, player := range generated.Players {
+		seats[i] = session.Seat{ID: player.SeatID, EmpireID: player.EmpireID, Name: player.Name, Controller: session.ControllerBuiltinAI}
+	}
+	gameSession, err := session.NewGameSession(gameID, generated.State, seats)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := host.Register(Registration{Session: gameSession, Resolver: host.newGameResolver, ImmediateResolver: host.newGameImmediateResolver}); err != nil {
+		t.Fatal(err)
+	}
+}
 func TestBuiltinAICanonicalNewGameCompletesAndReplaysExactly(t *testing.T) {
 	first := runCanonicalBuiltinAIMatch(t)
 	second := runCanonicalBuiltinAIMatch(t)
@@ -21,18 +52,7 @@ func runCanonicalBuiltinAIMatch(t *testing.T) []byte {
 	t.Helper()
 	host := loadNewGameHost(t)
 	const gameID = "builtin-ai-canonical"
-	_, err := host.CreateGame(CreateGameRequest{
-		GameID:   gameID,
-		Seed:     0x8009,
-		Settings: appNewGameSettings(),
-		Controllers: []PlayerControllerSpec{
-			{SeatID: 1, Controller: session.ControllerBuiltinAI},
-			{SeatID: 2, Controller: session.ControllerBuiltinAI},
-		},
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
+	registerPostContactCanonicalAIGame(t, host, gameID)
 
 	completed := false
 	for step := 0; step < 1000; step++ {

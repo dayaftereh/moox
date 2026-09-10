@@ -75,6 +75,7 @@ type Empire struct {
 	UncreativeResearchChoices []FixedResearchChoice        `json:"uncreative_research_choices,omitempty"`
 	HyperAdvancedResearch     []HyperAdvancedResearchLevel `json:"hyper_advanced_research,omitempty"`
 	VisitedSystemIDs          []ID                         `json:"visited_system_ids,omitempty"`
+	KnownEmpireIDs            []ID                         `json:"known_empire_ids,omitempty"`
 	KnownTechnologyIDs        []int                        `json:"known_technology_ids,omitempty"`
 	KnownTechnologyFieldIDs   []int                        `json:"known_technology_field_ids,omitempty"`
 	Research                  *ResearchState               `json:"research,omitempty"`
@@ -398,6 +399,26 @@ func (s *GameState) Validate() error {
 		}
 		if err := checkID(empire.ID, fmt.Sprintf("empire[%d]", i)); err != nil {
 			return err
+		}
+		lastKnownEmpireID := ID(0)
+		for ki, knownEmpireID := range empire.KnownEmpireIDs {
+			if knownEmpireID == 0 || knownEmpireID == empire.ID {
+				return fmt.Errorf("empire[%d] known empire id %d is invalid", i, knownEmpireID)
+			}
+			knownEmpireExists := false
+			for _, candidate := range s.Empires {
+				if candidate.ID == knownEmpireID {
+					knownEmpireExists = true
+					break
+				}
+			}
+			if !knownEmpireExists {
+				return fmt.Errorf("empire[%d] references unknown known empire %d", i, knownEmpireID)
+			}
+			if ki > 0 && knownEmpireID <= lastKnownEmpireID {
+				return fmt.Errorf("empire[%d] known empire ids must be strictly ascending", i)
+			}
+			lastKnownEmpireID = knownEmpireID
 		}
 		lastVisitedSystemID := ID(0)
 		for vi, systemID := range empire.VisitedSystemIDs {

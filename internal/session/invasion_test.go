@@ -246,6 +246,8 @@ func TestDeclaredWarTransitArrivalFlowsIntoInvasionCapture(t *testing.T) {
 	// Gate-2 integration starts neutral and with the attacker support group already
 	// in ordinary strategic transit toward the enemy Colony system.
 	s.state.DiplomaticRelations = nil
+	s.state.MarkEmpiresKnown(attackerID, defenderID)
+
 	var targetSystemID core.ID
 	for si := range s.state.Galaxy.Systems {
 		for pi := range s.state.Galaxy.Systems[si].Planets {

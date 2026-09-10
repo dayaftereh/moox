@@ -56,20 +56,11 @@ func TestPlayerDecisionViewIsPlayerSafeDeepCopyAndDeterministic(t *testing.T) {
 	if view.Empire.ID != generated.Players[0].EmpireID {
 		t.Fatalf("decision empire=%d want=%d", view.Empire.ID, generated.Players[0].EmpireID)
 	}
-	if len(view.PublicEmpires) != len(generated.State.Empires) {
-		t.Fatalf("public empire identities=%d want=%d", len(view.PublicEmpires), len(generated.State.Empires))
+	if len(view.PublicEmpires) != 1 || view.PublicEmpires[0].ID != generated.Players[0].EmpireID {
+		t.Fatalf("pre-contact public empire identities=%+v want only Human", view.PublicEmpires)
 	}
-	foundPublicDarlok := false
-	for _, identity := range view.PublicEmpires {
-		if identity.ID == generated.Players[1].EmpireID {
-			foundPublicDarlok = true
-			if identity.Name != "Darlok" || identity.RaceID != "darlok" {
-				t.Fatalf("public Darlok identity=%+v", identity)
-			}
-		}
-	}
-	if !foundPublicDarlok {
-		t.Fatal("decision view missing public Darlok identity")
+	if len(view.Diplomacy) != 0 || len(view.Decisions.Diplomacy) != 0 {
+		t.Fatalf("pre-contact diplomacy leaked other empire: view=%+v decisions=%+v", view.Diplomacy, view.Decisions.Diplomacy)
 	}
 	for _, colony := range view.Colonies {
 		if colony.EmpireID != view.Empire.ID {
@@ -202,5 +193,40 @@ func TestDecisionViewCatalogsSupportedTacticalActions(t *testing.T) {
 	before := s.Status()
 	if before.Revision != status.Revision {
 		t.Fatalf("building battle catalog mutated session revision: before=%d after=%d", status.Revision, before.Revision)
+	}
+}
+func TestDecisionViewRevealsEmpireOnlyAfterFirstContact(t *testing.T) {
+	rules, err := game.LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	generated, err := rules.NewGame(0x8009, game.NewGameSettings{
+		GalaxySize: game.GalaxySizeSmall, GalaxyAge: game.GalaxyAgeNormal, TechnologyLevel: game.NewGameTechnologyAverage,
+		Players: []game.NewGamePlayerSpec{{SeatID: 1, EmpireName: "Human", RaceID: "human"}, {SeatID: 2, EmpireName: "Darlok", RaceID: "darlok"}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	generated.State.MarkEmpiresKnown(generated.Players[0].EmpireID, generated.Players[1].EmpireID)
+	s, err := NewGameSession("known-empire-view", generated.State, []Seat{{ID: 1, EmpireID: generated.Players[0].EmpireID, Name: "Human", Controller: ControllerBuiltinAI}, {ID: 2, EmpireID: generated.Players[1].EmpireID, Name: "Darlok", Controller: ControllerBuiltinAI}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	resolver, err := game.NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	view, err := s.DecisionView(1, resolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(view.PublicEmpires) != 2 || view.PublicEmpires[1].Name != "Darlok" {
+		t.Fatalf("post-contact public empires=%+v", view.PublicEmpires)
+	}
+	if len(view.Diplomacy) != 1 || view.Diplomacy[0].OtherEmpireID != generated.Players[1].EmpireID {
+		t.Fatalf("post-contact diplomacy=%+v", view.Diplomacy)
+	}
+	if len(view.Decisions.Diplomacy) == 0 {
+		t.Fatal("post-contact diplomacy commands missing")
 	}
 }
