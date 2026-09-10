@@ -1,7 +1,7 @@
 # Slice 15.6 Gate 3 Block 4B - Construction ship art and planning-preview hardening
 
 Date: 2026-09-10
-Status: implemented; browser QA pending canonical service refresh
+Status: **implemented and isolated-browser QA passed; canonical service refresh pending**
 
 ## User feedback
 
@@ -22,7 +22,7 @@ Status: implemented; browser QA pending canonical service refresh
 - `npm run build` passed (`tsc -b` + Vite production build).
 - Main JS remains below the frozen 350 KiB single-chunk guardrail.
 
-## Remaining acceptance
+## Browser QA evidence`n`nManaged Chrome against isolated 7181 / game `qa-52d5f74` verified:`n`n- baseline Scout catalog row renders an exact `ProceduralShipGlyph` at 68x48 with hull `frigate`;`n- selected Scout hero renders the same design at 432x190;`n- planning Scout shows 25.0 PP remaining / 5 turns with no Planning Preview warning;`n- a new design was created entirely through visible Ship Designer UI as `Laser Test Mk I`, rerolled visually once, equipped with 1x Laser, and saved at 30 PP / 1 CP / 10 of 25 space;`n- returning to Construction shows both Scout and Laser Test Mk I with distinct persisted SVG genomes (Scout `spear/chevron`, Laser Test Mk I `organic/needle` in this run);`n- selecting Laser Test Mk I renders its exact persisted `organic/needle` hero;`n- planning it shows 30.0 PP remaining / 5 turns and no `Planungsvorschau nicht verfügbar` warning.`n`nThe temporary browser was closed and the 7181 QA server was stopped.`n`n## Remaining acceptance
 
 Restart canonical 7171 from the resulting commit and verify in managed Chrome:
 
