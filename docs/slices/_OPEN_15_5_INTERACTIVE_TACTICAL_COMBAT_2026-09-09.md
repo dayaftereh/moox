@@ -1,5 +1,5 @@
 # Open slice 15.5 - Interactive 2D tactical combat
-Status: **open; Gates 1-2 complete; Gate 3 implementation active**.
+Status: **closed; Gates 1-4 complete; handed off to Slice 15.6**.
 Queue position: **15.5 of Slice-15 family**.
 ## Objective
 Turn the deliberately narrow Slice-07 fixed-position Laser BattleSession baseline into the first genuinely **interactive, turn-based 2D Tactical Combat** experience in the browser: the player selects an active ship, sees server-authoritative legal movement/target choices, moves on the tactical battlefield, fires supported weapons, ends activations/rounds and returns the deterministic battle result to the strategic game.
@@ -118,7 +118,7 @@ Defer unless explicitly accepted at Gate 2:
 - [x] Verify rejected/stale/illegal moves and shots are non-destructive and understandable in the UI.
 - [x] Verify Tactical Scan can inspect friendly/enemy visible ships without consuming or mutating Tactical state.
 - [x] Verify representative desktop plus phone/touch behavior with no required hover, no catastrophic overflow and no visible artificial arena boundary.
-- [ ] Run full Go tests/vet/web build plus `git diff --check`; update evidence/status/HISTORY and close marker.
+- [x] Run full Go tests/vet/web build plus `git diff --check`; update evidence/status/HISTORY and close marker.
 Milestone on closure: **first interactive server-authoritative 2D Tactical Combat battle playable from the browser and reconciled back into the strategic match**.
 
 ## Gate-1 close marker (2026-09-09)
@@ -135,3 +135,7 @@ Gate 2 is **complete and frozen** by explicit user acceptance. Frozen evidence: 
 - [x] Gate 3 Block 4a browser-found damage blocker: Armor overflow now continues into aggregate Structure without inventing internal subsystem damage. Evidence: `docs/research/SLICE_15_5_GATE3_BLOCK4A_STRUCTURE_DAMAGE_FIX_2026-09-10.md`.
 - [x] Gate 3 Block 4b visuals/full-return QA: Slice-15.3 procedural ship glyphs integrated with fallback; real 2v2 browser battle completed through Tactical Victory and authoritative destroyed [60,61] / surviving [57,58] return to Turn 2 Planning. Evidence: `docs/research/SLICE_15_5_GATE3_BLOCK4B_TACTICAL_VISUALS_FULL_RETURN_QA_2026-09-10.md`.
 - [x] Gate 3 Block 5 rejection UX/regression: stale move, occupied move and own-ship fire each produce one rejected POST, one 409 refetch where applicable, zero state mutation, no resubmit and an in-Battle warning; repeatable server/API regression added. Evidence: `docs/research/SLICE_15_5_GATE3_BLOCK5_TACTICAL_REJECTION_UX_2026-09-10.md`.
+
+## Gate-4 close marker (2026-09-10)
+
+Slice 15.5 is **closed**. Independent Gate-4 evidence: docs/research/SLICE_15_5_GATE4_CLOSE_2026-09-10.md. The frozen browser-playable 1v1-2v2 Tactical baseline hands off to Slice 15.6 for full start-to-victory browser integration/polish.
