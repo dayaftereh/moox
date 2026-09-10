@@ -61,3 +61,18 @@ Gate 1 is complete. Evidence: docs/research/SLICE_15_6_GATE1_INTEGRATION_READINE
 ## Gate-2 freeze (2026-09-10)
 
 Explicitly accepted by user after Ship Designer UX refinements. Frozen evidence: docs/research/SLICE_15_6_GATE2_FREEZE_2026-09-10.md. Gate 3 may now implement in small checkpointed/recovered blocks.
+
+## Gate-3 Block 5 plan - Galaxy fleet direct manipulation (2026-09-10)
+
+User feedback identified fleet movement from the Galaxy map as the next integration blocker. The current home-system markers are colony presence plus aggregate own-fleet ship count, but the fleet marker is not independently interactive. The existing Fleets view can stage `empire.move_fleet` only when server-projected legal targets exist.
+
+Planned Block 5 is now documented in `docs/research/SLICE_15_6_GATE3_BLOCK5_GALAXY_FLEET_MOVEMENT_PLAN_2026-09-10.md`:
+
+- authoritative legal + visible-illegal fleet target projection with range/ETA/reason feedback;
+- independently clickable Galaxy fleet marker;
+- compact draggable fleet picker with selectable exact ship SVGs;
+- drag/drop-to-star plus tap/click `Ziel wählen` fallback;
+- deterministic QA-only three-star micro fixture (`2 pc` reachable target, `5 pc` out-of-range target) beside, not instead of, canonical seed `0x8009`;
+- visible-browser movement -> encounter -> Tactical regression, including Laser fire and strategic return.
+
+The normal Small-Galaxy generator and canonical `0x8009` seed are explicitly not to be altered merely to make this focused QA case reachable.
