@@ -171,3 +171,18 @@ No particular E2E framework is frozen. Add a browser-test dependency only if it 
 - no-dev-tool milestone rule and framework-neutral evidence strategy.
 
 Until those points are accepted, this document remains **DRAFT** and Gate 3 implementation does not begin.
+
+## Gate-2 user refinement: durable Ship Designer shell
+
+Before freeze, the Ship Designer target is refined so Gate 3 does not build a disposable one-off Laser toggle.
+
+- **Name first:** every saved Ship Design has a player-editable name.
+- **Hull size via left/right arrows:** use a stepper/carousel, not image tiles. Ruleset order is Frigate -> Destroyer -> Cruiser -> Battleship -> Titan -> Doom Star. The current `Scout` is a design name on a Frigate, not a separate hull size.
+- **Technology/availability locks:** unavailable hulls/components may remain visible for progression context but are clearly locked/disabled/struck and cannot be saved or built. Availability must be projected by server authority, never inferred in React. The ruleset already contains `titan_construction` and `doom_star_construction`; complete unlock mapping still needs an authoritative projection.
+- **Available list then installed list:** player-visible weapons/components appear in an available list; installed components appear separately below with stable mount/slot identity.
+- **Future-ready mount rows:** the UI structure must allow later separate weapon slots, per-mount quantity +/- and weapon modifiers/upgrades without redesign. Current 15.6 authority must not falsely enable those mechanics: the present save contract still supports only none or one slot-0 Laser Cannon count 1.
+- **Authoritative totals:** show Production Cost, Command Point cost/impact and used/available design space from server authority. Current engine already derives Production Cost and normal-ship Command Point usage from hull size index + 1 (1..6 CP for the six hull sizes), but React must not duplicate that gameplay formula as authority.
+- **Persistent design catalog:** saving/revising creates a named design/revision visible again in the player's Ship Design list together with its visual identity/loadout.
+- **Colony build handoff:** that exact named design must appear as a Military Ship construction choice on Colonies carrying `ship_design_id`, `ship_design_revision` and `ship_design_name`. Completed ships retain their source design identity/revision.
+
+This refinement changes the **15.6 UI foundation**, not the already-frozen Tactical-15.5 combat breadth. Broader hull save support, multiple live weapon mounts/count >1, weapon modifiers and per-slot Tactical destruction remain disabled until their server/Tactical contracts are explicitly expanded.

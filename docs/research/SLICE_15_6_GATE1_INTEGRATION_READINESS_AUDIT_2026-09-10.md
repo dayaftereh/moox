@@ -231,3 +231,7 @@ Slices 15.1-15.5 are integration-ready with one concrete browser blocker before 
 The complete Human-vs-Built-in-AI browser victory remains the principal 15.6 evidence target. No additional simulation breadth is justified by this audit unless the real canonical run exposes a specific integration dead-end.
 
 Gate 2 may be reviewed/frozen after user acceptance of the accompanying draft contract.
+
+## Post-audit Ship Designer UX refinement
+
+User review clarified the durable target before Gate-2 freeze: name-first design editing, left/right hull-size stepping through the six committed MOO2 hull classes, authoritative technology locks, available-vs-installed component lists, future-ready slot/count rows, server-derived Production/Command-Point totals, persistent named design catalog, and exact design-revision handoff into Colony construction. The current backend already carries design ID/revision/name into construction and completed ships; current functional save breadth remains Frigate plus none/one Laser until deliberately expanded.
