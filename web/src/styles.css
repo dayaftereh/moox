@@ -3350,8 +3350,10 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 .building-art { display: block; width: 100%; height: 100%; }
 .construction-catalog-glyph-rich { width: 68px; height: 48px; padding: 0; overflow: hidden; border: 1px solid rgba(91,133,177,.32); border-radius: 8px !important; background: #06101b !important; }
 .construction-catalog-glyph-rich .building-art { width: 68px; height: 48px; }
+.construction-catalog-glyph-rich .construction-catalog-ship-glyph { width: 68px; height: 48px; padding: 4px 5px; color: var(--ship-vector); }
 .construction-project-visual-rich { min-height: 190px; padding: 0; overflow: hidden; border-color: rgba(90,139,195,.38); background: #030811; }
 .construction-project-visual-rich .building-art { width: 100%; height: 100%; min-height: 190px; }
+.construction-project-visual-rich .construction-project-ship-glyph { width: 100%; height: 100%; min-height: 190px; padding: 18px 28px; color: var(--ship-vector); }
 .building-tile-rich { min-height: 94px; align-content: start; gap: 6px; }
 .building-tile-art { display: block; width: 100%; height: 62px; overflow: hidden; border: 1px solid rgba(88,126,163,.28); border-radius: 7px; background: #050c14; }
 .building-tile-art .building-art { width: 100%; height: 100%; }
@@ -3359,8 +3361,8 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .system-orbit-body-icon, .system-orbit-body-icon .orbital-body-art { width: 34px; height: 34px; }
   .system-orbit-body-gas-giant .system-orbit-body-icon, .system-orbit-body-gas-giant .system-orbit-body-icon .orbital-body-art { width: 41px; height: 41px; }
   .system-orbit-body-asteroid-belt .system-orbit-body-icon, .system-orbit-body-asteroid-belt .system-orbit-body-icon .orbital-body-art { width: 44px; height: 29px; }
-  .construction-catalog-glyph-rich, .construction-catalog-glyph-rich .building-art { width: 60px; height: 42px; }
-  .construction-project-visual-rich, .construction-project-visual-rich .building-art { min-height: 150px; }
+  .construction-catalog-glyph-rich, .construction-catalog-glyph-rich .building-art, .construction-catalog-glyph-rich .construction-catalog-ship-glyph { width: 60px; height: 42px; }
+  .construction-project-visual-rich, .construction-project-visual-rich .building-art, .construction-project-visual-rich .construction-project-ship-glyph { min-height: 150px; }
 }
 
 

@@ -1,0 +1,33 @@
+# Slice 15.6 Gate 3 Block 4B - Construction ship art and planning-preview hardening
+
+Date: 2026-09-10
+Status: implemented; browser QA pending canonical service refresh
+
+## User feedback
+
+- Colony Construction catalog showed saved Military Ship designs only as a generic ship icon instead of the exact procedural design artwork.
+- The browser could surface a global `Planning preview unavailable` warning during lifecycle/revision churn.
+
+## Changes
+
+- Construction catalog Military Ship rows now resolve the exact player-safe `ship_design_id` + `ship_design_revision` against `decision.strategic.ship_designs` and render its `ProceduralShipGlyph` with the persisted visual genome, hull and weapon count.
+- The selected Military Ship project hero uses the same exact design artwork rather than a generic icon.
+- Building/housing/transformation rich artwork remains unchanged; non-rich non-military projects retain their normal icons.
+- Planning preview now records the game/turn/revision that started the request. A result is discarded when the current snapshot has already moved beyond that identity.
+- Lifecycle-only `session_rejected` preview conflicts (base revision/turn/submitted/phase moved) are treated as obsolete read-only previews rather than user-facing failures. Genuine invalid draft/internal preview errors remain visible.
+
+## Validation before service refresh
+
+- `git diff --check` passed.
+- `npm run build` passed (`tsc -b` + Vite production build).
+- Main JS remains below the frozen 350 KiB single-chunk guardrail.
+
+## Remaining acceptance
+
+Restart canonical 7171 from the resulting commit and verify in managed Chrome:
+
+1. Construction catalog shows exact SVG thumbnails for both the baseline Scout and saved Laser design.
+2. Selecting a Military Ship shows the same design in the project hero.
+3. `Einplanen` produces authoritative remaining PP / ETA.
+4. No `Planungsvorschau nicht verfügbar` warning appears in the normal route.
+5. Other construction artwork remains intact.

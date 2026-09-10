@@ -20,6 +20,7 @@ import {
   type ResearchChoice,
   type ResearchTechnologyEffect,
   type ResearchTechnologyInfo,
+  type ShipDesign,
   type StrategicContact,
   type StrategicFleet,
   type StarSystem,
@@ -116,6 +117,39 @@ function constructionProjectUsesRichArt(kind: ConstructionProjectKind): boolean 
 
 function constructionProjectArtID(kind: ConstructionProjectKind, projectID: string): string {
   return kind === 'housing' ? 'housing' : projectID
+}
+
+function constructionProjectUsesShipArt(kind: ConstructionProjectKind): boolean {
+  return kind === 'military_ship'
+}
+
+function constructionProjectUsesLargeArt(kind: ConstructionProjectKind): boolean {
+  return constructionProjectUsesRichArt(kind) || constructionProjectUsesShipArt(kind)
+}
+
+function constructionShipDesign(choice: ConstructionChoice, shipDesigns: ShipDesign[]): ShipDesign | undefined {
+  if (choice.project_kind !== 'military_ship' || !choice.ship_design_id) return undefined
+  return shipDesigns.find((design) => design.id === choice.ship_design_id
+    && (choice.ship_design_revision === undefined || design.revision === choice.ship_design_revision))
+}
+
+function ConstructionChoiceArt({ choice, shipDesigns, variant }: { choice: ConstructionChoice; shipDesigns: ShipDesign[]; variant: 'compact' | 'hero' }) {
+  const design = constructionShipDesign(choice, shipDesigns)
+  if (design) {
+    return (
+      <ProceduralShipGlyph
+        className={variant === 'compact' ? 'construction-catalog-ship-glyph' : 'construction-project-ship-glyph'}
+        seed={`${design.empire_id}:${design.id}:${design.revision}:${design.spec.strategic_picture_id}`}
+        genome={decodeShipVisualGenome(design.visual_genome)}
+        hullId={design.spec.hull_id}
+        weaponCount={design.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0}
+      />
+    )
+  }
+  if (constructionProjectUsesRichArt(choice.project_kind)) {
+    return <BuildingArt buildingId={constructionProjectArtID(choice.project_kind, choice.project_id)} variant={variant} />
+  }
+  return <GameIcon name={constructionProjectIcon(choice.project_kind, choice.project_id)} />
 }
 
 function localizedPhase(t: Translator, phase: string): string {
@@ -1462,6 +1496,7 @@ export function StrategicConstructionView({ snapshot, preview, draftOrders, colo
         colony={displayColony}
         preview={projected}
         choices={constructionDecision?.choices ?? []}
+        shipDesigns={snapshot.decision?.strategic.ship_designs ?? []}
         draftOrders={draftOrders}
         onOpenShipDesigner={onOpenShipDesigner}
         onPlanOrder={onPlanOrder}
@@ -1472,10 +1507,11 @@ export function StrategicConstructionView({ snapshot, preview, draftOrders, colo
   )
 }
 
-function ConstructionEditor({ colony, preview, choices, draftOrders, onOpenShipDesigner, onPlanOrder, onRemoveOrder, t }: {
+function ConstructionEditor({ colony, preview, choices, shipDesigns, draftOrders, onOpenShipDesigner, onPlanOrder, onRemoveOrder, t }: {
   colony: Colony
   preview?: PlanningPreviewSnapshot['preview']['projection']['colonies'][number]
   choices: ConstructionChoice[]
+  shipDesigns: ShipDesign[]
   draftOrders: DraftOrder[]
   onOpenShipDesigner: (designID?: number) => void
   onPlanOrder: (order: DraftOrder) => void
@@ -1576,12 +1612,12 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onOpenShipD
               return (
                 <button
                   type="button"
-                  className={'construction-catalog-item' + (selected ? ' selected' : '') + (constructionProjectUsesRichArt(choice.project_kind) ? ' construction-catalog-item-rich' : '')}
+                  className={'construction-catalog-item' + (selected ? ' selected' : '') + (constructionProjectUsesLargeArt(choice.project_kind) ? ' construction-catalog-item-rich' : '')}
                   key={`${choice.project_kind}-${choice.project_id}-${choice.ship_design_id ?? 0}-${choice.ship_design_revision ?? 0}-${index}`}
                   aria-pressed={selected}
                   onClick={() => setSelectedChoiceIndex(index)}
                 >
-                  <span className={constructionProjectUsesRichArt(choice.project_kind) ? 'construction-catalog-glyph construction-catalog-glyph-rich' : 'construction-catalog-glyph'} data-kind={choice.project_kind} aria-hidden="true">{constructionProjectUsesRichArt(choice.project_kind) ? <BuildingArt buildingId={constructionProjectArtID(choice.project_kind, choice.project_id)} variant="compact" /> : <GameIcon name={constructionProjectIcon(choice.project_kind, choice.project_id)} />}</span>
+                  <span className={constructionProjectUsesLargeArt(choice.project_kind) ? 'construction-catalog-glyph construction-catalog-glyph-rich' : 'construction-catalog-glyph'} data-kind={choice.project_kind} aria-hidden="true"><ConstructionChoiceArt choice={choice} shipDesigns={shipDesigns} variant="compact" /></span>
                   <span className="construction-catalog-copy">
                     <strong>{displayChoice(choice)}</strong>
                     <small>{humanizeToken(choice.project_kind)} · {t('construction.cost', { pp: choice.production_cost_pp.toFixed(0) })}</small>
@@ -1597,9 +1633,9 @@ function ConstructionEditor({ colony, preview, choices, draftOrders, onOpenShipD
       <Card className="construction-project-panel">
         {selectedChoice ? (
           <>
-            <div className={constructionProjectUsesRichArt(selectedChoice.project_kind) ? 'construction-project-hero construction-project-hero-rich' : 'construction-project-hero'}>
-              <div className={constructionProjectUsesRichArt(selectedChoice.project_kind) ? 'construction-project-visual construction-project-visual-rich' : 'construction-project-visual'} data-kind={selectedChoice.project_kind} aria-hidden="true">
-                {constructionProjectUsesRichArt(selectedChoice.project_kind) ? <BuildingArt buildingId={constructionProjectArtID(selectedChoice.project_kind, selectedChoice.project_id)} variant="hero" /> : <GameIcon name={constructionProjectIcon(selectedChoice.project_kind, selectedChoice.project_id)} />}
+            <div className={constructionProjectUsesLargeArt(selectedChoice.project_kind) ? 'construction-project-hero construction-project-hero-rich' : 'construction-project-hero'}>
+              <div className={constructionProjectUsesLargeArt(selectedChoice.project_kind) ? 'construction-project-visual construction-project-visual-rich' : 'construction-project-visual'} data-kind={selectedChoice.project_kind} aria-hidden="true">
+                <ConstructionChoiceArt choice={selectedChoice} shipDesigns={shipDesigns} variant="hero" />
               </div>
               <div className="construction-project-title">
                 <p className="eyebrow">{t('construction.selectedProject')}</p>

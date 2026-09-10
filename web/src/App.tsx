@@ -82,6 +82,14 @@ function errorText(reason: unknown): string {
   return String(reason)
 }
 
+function isObsoletePlanningPreviewConflict(reason: unknown): boolean {
+  if (!isAPIError(reason) || reason.status !== 409 || reason.code !== 'session_rejected') return false
+  return reason.message.includes('command batch base revision')
+    || reason.message.includes('command batch targets turn')
+    || reason.message.includes('already submitted turn')
+    || reason.message.includes('cannot preview turn in phase')
+}
+
 type SaveFileMetadata = {
   gameID: string
   turn?: number
@@ -345,6 +353,9 @@ function App() {
       return
     }
     const controller = new AbortController()
+    const previewGameID = snapshot.view.game_id
+    const previewTurn = snapshot.view.turn
+    const previewRevision = snapshot.view.revision
     setPreviewBusy(true)
     void previewPlanning(snapshot, seatID, draftOrders, controller.signal)
       .then((preview) => {
@@ -354,7 +365,19 @@ function App() {
         }
       })
       .catch((cause) => {
-        if (!controller.signal.aborted) setPlanningPreviewError(errorText(cause))
+        if (controller.signal.aborted) return
+        const current = snapshotRef.current
+        const snapshotMoved = !current
+          || current.view.game_id !== previewGameID
+          || current.view.turn !== previewTurn
+          || current.view.revision !== previewRevision
+          || current.view.phase !== 'planning'
+          || current.view.seat.submitted
+        if (snapshotMoved || isObsoletePlanningPreviewConflict(cause)) {
+          setPlanningPreviewError('')
+          return
+        }
+        setPlanningPreviewError(errorText(cause))
       })
       .finally(() => {
         if (!controller.signal.aborted) setPreviewBusy(false)
