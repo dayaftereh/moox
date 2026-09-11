@@ -198,6 +198,19 @@ OPEN FOLLOW-UP - persisted visual genomes for strategic special ships
 - Show authoritative route/ETA/range feedback and rejection messaging.
 - Preserve pan/zoom and responsive behavior.
 
+5D implementation status (2026-09-11): **COMPLETE** (`ee9f60e`)
+
+- The compact shared system-unit picker now has a real `Ziel wählen` / `Choose target` mode. It remains available even when the canonical start has `0/19` legal destinations so the player can inspect why a destination is rejected.
+- Candidate state is derived only from the already authoritative `fleet_move_targets`. Common destinations are intersected across every selected source-fleet profile; React does not calculate strategic distance, supply, fuel range, ETA, or legality.
+- Legal common destinations receive a green target ring; server-rejected destinations receive a red dashed target ring. The source system is not projected as a movement target.
+- Clicking/tapping a projected destination in target mode is intercepted before normal SystemDialog/unknown-star inspection. Hidden targets therefore remain `Unbekannter Stern` / `Unknown star`; no true system name is introduced through title, feedback, or target state.
+- Illegal targets stage **no** draft order. Canonical seed `0x8009` visible QA selected the first anonymous target and showed `Unbekannter Stern · Außer Reichweite`, `8 pc · Reichweite 4 pc · ETA 4`, with no SystemDialog/unvisited dialog and no planning draft indicator.
+- Legal target wiring stages one existing `empire.move_fleet` draft per selected authoritative source profile using the exact projected `target.fleet_id`, `target.destination_system_id`, and projected optional `target.ship_ids`. Existing draft keys remain `fleet:<fleet_id>`, so later selection changes replace the source fleet's planned move rather than duplicating it.
+- Drag/drop uses the same `planFleetDestination` path as tap/click. Dragging the compact picker header more than 6 px temporarily exposes target highlighting; dropping over a star resolves its `data-galaxy-system-id` with `elementsFromPoint`. Dropping on empty Galaxy space only repositions the picker and clears stale feedback.
+- Canonical visible drag QA reproduced the same 8 pc / range 4 / ETA 4 rejection with target mode off; empty-space drop moved the picker without target feedback or an order.
+- Picker remains compact after feedback (canonical measured about 292x250 px) and still has zero nested buttons.
+- Validation: web `npm run build` green (main JS 272.77 kB / 71.15 kB gzip, below the 350 KiB guardrail); focused authoritative fleet-target tests green; full `go test ./...` green; `git diff --check` green.
+- The canonical `0x8009` start intentionally has no legal destination, so **positive visible green-target -> staged order -> turn resolution -> actual arrival acceptance remains the first 5E micro-fixture action**, not a reason to alter normal galaxy generation/range.
 ### 5E - Micro fixture + browser QA
 
 - Add/recreate `qa-fleet-tactical-v1` beside the canonical game.
