@@ -4436,3 +4436,104 @@ button.galaxy-node-marker-player-fleet.is-open {
   color: var(--fleet-player-color);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--fleet-player-color) 22%, transparent), 0 0 10px color-mix(in srgb, var(--fleet-player-color) 38%, transparent);
 }
+/* Slice 15.6 Gate3 Block5D: authoritative Galaxy fleet targeting. */
+.galaxy-map-targeting { cursor: crosshair; }
+.galaxy-node-target-legal,
+.galaxy-node-target-blocked { cursor: pointer; }
+.galaxy-node-target-legal .galaxy-star::before,
+.galaxy-node-target-blocked .galaxy-star::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  transform: translate(-50%, -50%);
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  pointer-events: none;
+  animation: galaxy-target-pulse 1.45s ease-in-out infinite;
+}
+.galaxy-node-target-legal { color: #65d99a; }
+.galaxy-node-target-legal .galaxy-star::before {
+  box-shadow: 0 0 10px rgba(101, 217, 154, .5), inset 0 0 9px rgba(101, 217, 154, .12);
+}
+.galaxy-node-target-blocked { color: #ff7887; }
+.galaxy-node-target-blocked .galaxy-star::before {
+  border-style: dashed;
+  box-shadow: 0 0 9px rgba(255, 120, 135, .35), inset 0 0 8px rgba(255, 120, 135, .08);
+}
+.galaxy-node-target-legal .galaxy-star .star-art,
+.galaxy-node-target-blocked .galaxy-star .star-art { filter: drop-shadow(0 0 6px currentColor); }
+@keyframes galaxy-target-pulse {
+  0%, 100% { opacity: .55; transform: translate(-50%, -50%) scale(.92); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+}
+
+.galaxy-fleet-picker-footer-compact {
+  flex-wrap: wrap;
+}
+.galaxy-fleet-target-feedback {
+  width: 100%;
+  display: grid;
+  gap: 2px;
+  padding: 5px 6px;
+  border: 1px solid var(--border-soft);
+  border-radius: 7px;
+  background: rgba(6, 15, 26, .76);
+}
+.galaxy-fleet-target-feedback strong,
+.galaxy-fleet-target-feedback small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.galaxy-fleet-target-feedback strong { font-size: .61rem; }
+.galaxy-fleet-target-feedback small { color: var(--muted); font-size: .55rem; }
+.galaxy-fleet-target-feedback.is-planned {
+  border-color: rgba(101,217,154,.52);
+  background: rgba(34,91,63,.2);
+}
+.galaxy-fleet-target-feedback.is-blocked {
+  border-color: rgba(255,120,135,.5);
+  background: rgba(100,31,43,.2);
+}
+.galaxy-fleet-picker-target-button {
+  min-height: 27px;
+  display: inline-grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 7px;
+  border: 1px solid rgba(116,168,255,.5);
+  border-radius: 7px;
+  background: rgba(28,62,105,.35);
+  color: #c8dcff;
+  font-size: .59rem;
+  font-weight: 800;
+}
+.galaxy-fleet-picker-target-button:hover,
+.galaxy-fleet-picker-target-button:focus-visible,
+.galaxy-fleet-picker-target-button.is-active {
+  border-color: rgba(101,217,154,.78);
+  background: rgba(37,92,66,.3);
+  color: #aef0ca;
+}
+.galaxy-fleet-picker-target-button:disabled {
+  opacity: .48;
+  cursor: not-allowed;
+}
+.galaxy-fleet-picker-target-button .game-icon { width: 12px; height: 12px; }
+.galaxy-fleet-picker-target-button > small {
+  min-width: 29px;
+  padding: 2px 4px;
+  border-radius: 999px;
+  background: rgba(0,0,0,.22);
+  color: inherit;
+  font-size: .53rem;
+  text-align: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .galaxy-node-target-legal .galaxy-star::before,
+  .galaxy-node-target-blocked .galaxy-star::before { animation: none; }
+}

@@ -8,6 +8,8 @@ import {
   type ConstructionProjectKind,
   type ConstructionState,
   type DraftOrder,
+  type FleetMoveTarget,
+  type FleetMoveTargetReason,
   type DiplomacyCommandKind,
   type DiplomaticStance,
   type DiplomacyView,
@@ -40,6 +42,13 @@ type GalaxyFleetPickerUnit = {
   key: string
   fleet: StrategicFleet
   ship?: Ship
+}
+
+type GalaxyFleetTargetFeedback = {
+  systemID: number
+  outcome: 'planned' | 'blocked' | 'unavailable'
+  target?: FleetMoveTarget
+  orderCount?: number
 }
 
 const populationJobIcons: Record<PopulationJob, GameIconName> = {
@@ -89,6 +98,13 @@ function specialFleetShipLabel(t: Translator, kind: SpecialShipKind): string {
   if (kind === 'colony_ship') return t('system.colonyShip')
   if (kind === 'outpost_ship') return t('system.outpostShip')
   return t('system.troopTransport')
+}
+
+function fleetTargetReasonLabel(t: Translator, reason: FleetMoveTargetReason | undefined): string {
+  if (reason === 'no_supply') return t('galaxy.fleetTargetNoSupply')
+  if (reason === 'out_of_fuel_range') return t('galaxy.fleetTargetOutOfRange')
+  if (reason === 'invalid_eta') return t('galaxy.fleetTargetInvalidEta')
+  return t('galaxy.fleetTargetUnavailable')
 }
 
 function playerColorSlotClass(slot: number | undefined): string {
@@ -357,7 +373,17 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   } | null>(null)
   const [fleetPickerPosition, setFleetPickerPosition] = useState<{ x: number; y: number } | null>(null)
   const fleetPickerRef = useRef<HTMLElement | null>(null)
-  const fleetPickerDragRef = useRef<{ pointerID: number; offsetX: number; offsetY: number } | null>(null)
+  const fleetPickerDragRef = useRef<{
+    pointerID: number
+    offsetX: number
+    offsetY: number
+    startX: number
+    startY: number
+    moved: boolean
+  } | null>(null)
+  const [fleetTargetMode, setFleetTargetMode] = useState(false)
+  const [fleetTargetDragActive, setFleetTargetDragActive] = useState(false)
+  const [fleetTargetFeedback, setFleetTargetFeedback] = useState<GalaxyFleetTargetFeedback | null>(null)
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [dragging, setDragging] = useState(false)
@@ -481,6 +507,57 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
     pickerTargetGroups.every((group) => group.find((target) => target.destination_system_id === destinationID)?.legal === true)
   )).length
   const pickerTotalTargets = pickerCommonDestinationIDs.length
+  const pickerTargetsByDestination = new Map<number, FleetMoveTarget[]>()
+  if (pickerProfilesSupported) {
+    for (const destinationSystemID of pickerCommonDestinationIDs) {
+      const targets = pickerTargetGroups
+        .map((group) => group.find((target) => target.destination_system_id === destinationSystemID))
+        .filter((target): target is FleetMoveTarget => Boolean(target))
+      if (targets.length === pickerProfiles.length) pickerTargetsByDestination.set(destinationSystemID, targets)
+    }
+  }
+  const fleetTargetVisualActive = (fleetTargetMode || fleetTargetDragActive)
+    && pickerProfilesSupported
+    && pickerSelectedUnits.length > 0
+  const fleetTargetFeedbackSystem = fleetTargetFeedback
+    ? systems.find((system) => system.id === fleetTargetFeedback.systemID)
+    : undefined
+  const fleetTargetFeedbackLabel = fleetTargetFeedbackSystem && visitedSystemIDs.has(fleetTargetFeedbackSystem.id)
+    ? fleetTargetFeedbackSystem.name
+    : t('galaxy.unknownStar')
+
+  const planFleetDestination = (destinationSystemID: number): boolean => {
+    if (!fleetPicker || !pickerProfilesSupported || pickerSelectedUnits.length === 0) return false
+    const targets = pickerTargetsByDestination.get(destinationSystemID)
+    if (!targets || targets.length !== pickerProfiles.length) {
+      setFleetTargetFeedback({ systemID: destinationSystemID, outcome: 'unavailable' })
+      return true
+    }
+    const blocked = targets.find((target) => !target.legal)
+    if (blocked) {
+      setFleetTargetFeedback({ systemID: destinationSystemID, outcome: 'blocked', target: blocked })
+      return true
+    }
+    for (const target of targets) {
+      onPlanOrder({
+        key: `fleet:${target.fleet_id}`,
+        kind: 'empire.move_fleet',
+        payload: {
+          fleet_id: target.fleet_id,
+          destination_system_id: target.destination_system_id,
+          ...(target.ship_ids?.length ? { ship_ids: [...target.ship_ids] } : {}),
+        },
+      })
+    }
+    setFleetTargetFeedback({
+      systemID: destinationSystemID,
+      outcome: 'planned',
+      target: targets[0],
+      orderCount: targets.length,
+    })
+    setFleetTargetMode(false)
+    return true
+  }
 
   const clampFleetPickerPosition = (x: number, y: number) => {
     const rect = fleetPickerRef.current?.getBoundingClientRect()
@@ -503,6 +580,9 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
     if (unitKeys.length === 0) return
     onCloseSystem()
     setFleetPicker({ systemID, selectedUnitKeys: unitKeys })
+    setFleetTargetMode(false)
+    setFleetTargetDragActive(false)
+    setFleetTargetFeedback(null)
     const width = Math.min(292, Math.max(220, window.innerWidth * 0.76))
     const height = Math.min(340, Math.max(220, window.innerHeight * 0.5))
     const x = clientX + 14 + width <= window.innerWidth ? clientX + 14 : clientX - width - 14
@@ -511,6 +591,8 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   }
 
   const togglePickerUnit = (unitKey: string) => {
+    setFleetTargetMode(false)
+    setFleetTargetFeedback(null)
     setFleetPicker((current) => {
       if (!current) return current
       const selected = new Set(current.selectedUnitKeys)
@@ -529,8 +611,12 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
       pointerID: event.pointerId,
       offsetX: event.clientX - rect.left,
       offsetY: event.clientY - rect.top,
+      startX: event.clientX,
+      startY: event.clientY,
+      moved: false,
     }
     setFleetPickerPosition({ x: rect.left, y: rect.top })
+    setFleetTargetDragActive(false)
     event.currentTarget.setPointerCapture(event.pointerId)
     event.preventDefault()
   }
@@ -538,6 +624,12 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   const moveFleetPickerDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
     const drag = fleetPickerDragRef.current
     if (!drag || drag.pointerID !== event.pointerId) return
+    if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) >= 6) {
+      drag.moved = true
+      setFleetTargetDragActive(true)
+      setFleetTargetFeedback(null)
+    }
+    if (!drag.moved) return
     setFleetPickerPosition(clampFleetPickerPosition(event.clientX - drag.offsetX, event.clientY - drag.offsetY))
   }
 
@@ -545,7 +637,16 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
     const drag = fleetPickerDragRef.current
     if (!drag || drag.pointerID !== event.pointerId) return
     fleetPickerDragRef.current = null
+    setFleetTargetDragActive(false)
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
+    if (!drag.moved) return
+    const targetElement = document.elementsFromPoint(event.clientX, event.clientY)
+      .map((element) => element.closest<HTMLElement>('[data-galaxy-system-id]'))
+      .find((element): element is HTMLElement => Boolean(element))
+    const destinationSystemID = Number(targetElement?.dataset.galaxySystemId)
+    if (Number.isInteger(destinationSystemID) && destinationSystemID > 0) {
+      planFleetDestination(destinationSystemID)
+    }
   }
 
   const pointerPair = () => Array.from(gestureRef.current.pointers.values()).slice(0, 2)
@@ -645,7 +746,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
 
         <div
           ref={mapRef}
-          className={'galaxy-map' + (dragging ? ' galaxy-map-dragging' : '')}
+          className={'galaxy-map' + (dragging ? ' galaxy-map-dragging' : '') + (fleetTargetVisualActive ? ' galaxy-map-targeting' : '')}
           role="list"
           aria-label={t('galaxy.mapTitle')}
           onWheel={handleWheel}
@@ -670,10 +771,21 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                 ...(ownFleets.length > 0 ? [{ empireID: decision.empire.id, own: true }] : []),
                 ...foreignFleetEmpireIDs.map((empireID) => ({ empireID, own: false })),
               ]
+              const fleetTargetBundle = fleetTargetVisualActive ? pickerTargetsByDestination.get(system.id) : undefined
+              const fleetTargetCandidate = Boolean(fleetTargetBundle?.length)
+              const fleetTargetLegal = fleetTargetCandidate && fleetTargetBundle?.every((target) => target.legal) === true
+              const fleetTargetReference = fleetTargetBundle?.find((target) => !target.legal) ?? fleetTargetBundle?.[0]
+              const normalSystemTitle = isVisited
+                ? system.name + ' (' + system.x + ', ' + system.y + ')'
+                : t('galaxy.unvisitedTitle')
+              const fleetTargetTitle = fleetTargetCandidate && fleetTargetReference
+                ? `${isVisited ? system.name : t('galaxy.unknownStar')} · ${fleetTargetReference.distance_parsecs} pc · ${t('galaxy.fleetTargetRange', { range: fleetTargetReference.fuel_range_parsecs })} · ${t('galaxy.fleetTargetEta', { eta: fleetTargetReference.eta })}`
+                : normalSystemTitle
               return (
                 <div
                   key={system.id}
                   role="listitem"
+                  data-galaxy-system-id={system.id}
                   className="galaxy-node-cluster"
                   style={{
                     left: (8 + ((system.x - bounds.minX) / spanX) * 84) + '%',
@@ -682,13 +794,14 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                 >
                   <button
                     type="button"
-                    className={'galaxy-node' + (selectedSystemID === system.id ? ' galaxy-node-selected' : '') + (ownsColony ? ' galaxy-node-colony' : ownOutpost ? ' galaxy-node-outpost' : '') + (ownFleetUnits > 0 ? ' galaxy-node-fleet' : '')}
+                    className={'galaxy-node' + (selectedSystemID === system.id ? ' galaxy-node-selected' : '') + (ownsColony ? ' galaxy-node-colony' : ownOutpost ? ' galaxy-node-outpost' : '') + (ownFleetUnits > 0 ? ' galaxy-node-fleet' : '') + (fleetTargetCandidate ? (fleetTargetLegal ? ' galaxy-node-target-legal' : ' galaxy-node-target-blocked') : '')}
                     aria-label={isVisited ? system.name : t('galaxy.unknownStar')}
                     onClick={() => {
                       if (ignoreClickRef.current) return
+                      if (fleetTargetMode && planFleetDestination(system.id)) return
                       onSelectSystem(system.id)
                     }}
-                    title={isVisited ? system.name + ' (' + system.x + ', ' + system.y + ')' : t('galaxy.unvisitedTitle')}
+                    title={fleetTargetTitle}
                   >
                     <span className="galaxy-star" aria-hidden="true"><StarArt spectralClass={system.spectral_class} seed={system.id} /></span>
                     {isVisited && (
@@ -781,6 +894,9 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
               onClick={() => {
                 setFleetPicker(null)
                 setFleetPickerPosition(null)
+                setFleetTargetMode(false)
+                setFleetTargetDragActive(false)
+                setFleetTargetFeedback(null)
               }}
             >
               <GameIcon name="close" />
@@ -794,10 +910,14 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                 type="button"
                 className="ghost-button"
                 disabled={pickerAllUnitsSelected}
-                onClick={() => setFleetPicker((current) => current ? {
-                  ...current,
-                  selectedUnitKeys: pickerUnits.map((unit) => unit.key),
-                } : current)}
+                onClick={() => {
+                  setFleetTargetMode(false)
+                  setFleetTargetFeedback(null)
+                  setFleetPicker((current) => current ? {
+                    ...current,
+                    selectedUnitKeys: pickerUnits.map((unit) => unit.key),
+                  } : current)
+                }}
               >
                 {t('galaxy.fleetPickerSelectAll')}
               </button>
@@ -844,9 +964,38 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
           </div>
 
           <div className="galaxy-fleet-picker-footer galaxy-fleet-picker-footer-compact">
+            {fleetTargetFeedback && (
+              <div className={'galaxy-fleet-target-feedback is-' + fleetTargetFeedback.outcome} role="status">
+                <strong>
+                  {fleetTargetFeedbackLabel} · {fleetTargetFeedback.outcome === 'planned'
+                    ? t('galaxy.fleetTargetPlanned', { count: fleetTargetFeedback.orderCount ?? 1 })
+                    : fleetTargetFeedback.outcome === 'blocked'
+                      ? fleetTargetReasonLabel(t, fleetTargetFeedback.target?.reason)
+                      : t('galaxy.fleetTargetUnavailable')}
+                </strong>
+                {fleetTargetFeedback.target && (
+                  <small>
+                    {fleetTargetFeedback.target.distance_parsecs} pc · {t('galaxy.fleetTargetRange', { range: fleetTargetFeedback.target.fuel_range_parsecs })} · {t('galaxy.fleetTargetEta', { eta: fleetTargetFeedback.target.eta })}
+                  </small>
+                )}
+              </div>
+            )}
             <span className="galaxy-fleet-picker-selection-count">{pickerSelectedUnits.length}/{pickerUnits.length}</span>
             {pickerProfilesSupported ? (
-              <span className="badge galaxy-fleet-picker-target-summary">{t('galaxy.fleetPickerTargetsCompact', { reachable: pickerReachableTargets, total: pickerTotalTargets })}</span>
+              <button
+                type="button"
+                className={'galaxy-fleet-picker-target-button' + (fleetTargetMode ? ' is-active' : '')}
+                aria-pressed={fleetTargetMode}
+                disabled={pickerSelectedUnits.length === 0 || pickerTotalTargets === 0}
+                onClick={() => {
+                  setFleetTargetFeedback(null)
+                  setFleetTargetMode((current) => !current)
+                }}
+              >
+                <GameIcon name="star-system" />
+                <span>{fleetTargetMode ? t('galaxy.fleetTargetCancel') : t('galaxy.fleetTargetChoose')}</span>
+                <small>{pickerReachableTargets}/{pickerTotalTargets}</small>
+              </button>
             ) : (
               <small>{t('galaxy.fleetPickerSubsetProfile')}</small>
             )}
