@@ -381,9 +381,8 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
     startY: number
     moved: boolean
   } | null>(null)
-  const [fleetTargetMode, setFleetTargetMode] = useState(false)
-  const [fleetTargetDragActive, setFleetTargetDragActive] = useState(false)
   const [fleetTargetFeedback, setFleetTargetFeedback] = useState<GalaxyFleetTargetFeedback | null>(null)
+  const [fleetInfoUnitKey, setFleetInfoUnitKey] = useState<string | null>(null)
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [dragging, setDragging] = useState(false)
@@ -473,6 +472,12 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   })
   const pickerSelectedUnitKeys = new Set(fleetPicker?.selectedUnitKeys ?? [])
   const pickerSelectedUnits = pickerUnits.filter((unit) => pickerSelectedUnitKeys.has(unit.key))
+  const fleetInfoUnit = pickerUnits.find((unit) => unit.key === fleetInfoUnitKey)
+  const fleetInfoLabel = fleetInfoUnit?.ship
+    ? fleetInfoUnit.ship.name
+    : fleetInfoUnit
+      ? specialFleetShipLabel(t, fleetInfoUnit.fleet.special_kind as SpecialShipKind)
+      : ''
   const pickerAllUnitsSelected = pickerUnits.length > 0 && pickerSelectedUnits.length === pickerUnits.length
   const pickerProfiles = pickerFleets.flatMap((fleet) => {
     const selected = pickerSelectedUnits.filter((unit) => unit.fleet.id === fleet.id)
@@ -516,7 +521,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
       if (targets.length === pickerProfiles.length) pickerTargetsByDestination.set(destinationSystemID, targets)
     }
   }
-  const fleetTargetVisualActive = (fleetTargetMode || fleetTargetDragActive)
+  const fleetTargetVisualActive = Boolean(fleetPicker)
     && pickerProfilesSupported
     && pickerSelectedUnits.length > 0
   const fleetTargetFeedbackSystem = fleetTargetFeedback
@@ -555,7 +560,6 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
       target: targets[0],
       orderCount: targets.length,
     })
-    setFleetTargetMode(false)
     return true
   }
 
@@ -580,9 +584,8 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
     if (unitKeys.length === 0) return
     onCloseSystem()
     setFleetPicker({ systemID, selectedUnitKeys: unitKeys })
-    setFleetTargetMode(false)
-    setFleetTargetDragActive(false)
     setFleetTargetFeedback(null)
+    setFleetInfoUnitKey(null)
     const width = Math.min(292, Math.max(220, window.innerWidth * 0.76))
     const height = Math.min(340, Math.max(220, window.innerHeight * 0.5))
     const x = clientX + 14 + width <= window.innerWidth ? clientX + 14 : clientX - width - 14
@@ -591,8 +594,8 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   }
 
   const togglePickerUnit = (unitKey: string) => {
-    setFleetTargetMode(false)
     setFleetTargetFeedback(null)
+    setFleetInfoUnitKey(null)
     setFleetPicker((current) => {
       if (!current) return current
       const selected = new Set(current.selectedUnitKeys)
@@ -616,7 +619,6 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
       moved: false,
     }
     setFleetPickerPosition({ x: rect.left, y: rect.top })
-    setFleetTargetDragActive(false)
     event.currentTarget.setPointerCapture(event.pointerId)
     event.preventDefault()
   }
@@ -626,7 +628,6 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
     if (!drag || drag.pointerID !== event.pointerId) return
     if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) >= 6) {
       drag.moved = true
-      setFleetTargetDragActive(true)
       setFleetTargetFeedback(null)
     }
     if (!drag.moved) return
@@ -637,7 +638,6 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
     const drag = fleetPickerDragRef.current
     if (!drag || drag.pointerID !== event.pointerId) return
     fleetPickerDragRef.current = null
-    setFleetTargetDragActive(false)
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
     if (!drag.moved) return
     const targetElement = document.elementsFromPoint(event.clientX, event.clientY)
@@ -798,7 +798,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                     aria-label={isVisited ? system.name : t('galaxy.unknownStar')}
                     onClick={() => {
                       if (ignoreClickRef.current) return
-                      if (fleetTargetMode && planFleetDestination(system.id)) return
+                      if (fleetTargetVisualActive && planFleetDestination(system.id)) return
                       onSelectSystem(system.id)
                     }}
                     title={fleetTargetTitle}
@@ -894,9 +894,8 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
               onClick={() => {
                 setFleetPicker(null)
                 setFleetPickerPosition(null)
-                setFleetTargetMode(false)
-                setFleetTargetDragActive(false)
-                setFleetTargetFeedback(null)
+                            setFleetTargetFeedback(null)
+                setFleetInfoUnitKey(null)
               }}
             >
               <GameIcon name="close" />
@@ -911,8 +910,8 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                 className="ghost-button"
                 disabled={pickerAllUnitsSelected}
                 onClick={() => {
-                  setFleetTargetMode(false)
                   setFleetTargetFeedback(null)
+                  setFleetInfoUnitKey(null)
                   setFleetPicker((current) => current ? {
                     ...current,
                     selectedUnitKeys: pickerUnits.map((unit) => unit.key),
@@ -932,35 +931,106 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                   ? `${label} · ${humanizeToken(unit.ship.spec.hull_id)} · R${unit.ship.source_design_revision}`
                   : `${label} · ${t('galaxy.fleet')} #${unit.fleet.id}`
                 return (
-                  <button
-                    type="button"
-                    key={unit.key}
-                    className={'galaxy-fleet-picker-ship galaxy-fleet-picker-tile' + (isSelected ? ' is-selected' : '')}
-                    aria-pressed={isSelected}
-                    aria-label={label}
-                    title={title}
-                    onClick={() => togglePickerUnit(unit.key)}
-                  >
-                    {unit.ship ? (
-                      <ProceduralShipGlyph
-                        className="galaxy-fleet-picker-ship-glyph"
-                        seed={`${unit.ship.empire_id}:${unit.ship.source_design_id}:${unit.ship.source_design_revision}:${unit.ship.spec.strategic_picture_id}`}
-                        genome={decodeShipVisualGenome(unit.ship.visual_genome)}
-                        hullId={unit.ship.spec.hull_id}
-                        weaponCount={unit.ship.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0}
-                      />
-                    ) : (
-                      <SpecialShipGlyph
-                        className="galaxy-fleet-picker-ship-glyph galaxy-fleet-picker-special-ship-glyph"
-                        kind={unit.fleet.special_kind as SpecialShipKind}
-                      />
-                    )}
-                    <span className="galaxy-fleet-picker-ship-copy"><strong>{label}</strong></span>
-                    <span className="galaxy-fleet-picker-ship-check" aria-hidden="true">{isSelected && <GameIcon name="check" />}</span>
-                  </button>
+                  <div className="galaxy-fleet-picker-tile-wrap" key={unit.key}>
+                    <button
+                      type="button"
+                      className={'galaxy-fleet-picker-ship galaxy-fleet-picker-tile' + (isSelected ? ' is-selected' : '')}
+                      aria-pressed={isSelected}
+                      aria-label={label}
+                      title={title}
+                      onClick={() => togglePickerUnit(unit.key)}
+                    >
+                      {unit.ship ? (
+                        <ProceduralShipGlyph
+                          className="galaxy-fleet-picker-ship-glyph"
+                          seed={`${unit.ship.empire_id}:${unit.ship.source_design_id}:${unit.ship.source_design_revision}:${unit.ship.spec.strategic_picture_id}`}
+                          genome={decodeShipVisualGenome(unit.ship.visual_genome)}
+                          hullId={unit.ship.spec.hull_id}
+                          weaponCount={unit.ship.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0}
+                        />
+                      ) : (
+                        <SpecialShipGlyph
+                          className="galaxy-fleet-picker-ship-glyph galaxy-fleet-picker-special-ship-glyph"
+                          kind={unit.fleet.special_kind as SpecialShipKind}
+                        />
+                      )}
+                      <span className="galaxy-fleet-picker-ship-copy"><strong>{label}</strong></span>
+                      <span className="galaxy-fleet-picker-ship-check" aria-hidden="true">{isSelected && <GameIcon name="check" />}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className={'galaxy-fleet-picker-ship-info' + (fleetInfoUnitKey === unit.key ? ' is-open' : '')}
+                      aria-label={t('galaxy.fleetInfoOpen', { ship: label })}
+                      aria-pressed={fleetInfoUnitKey === unit.key}
+                      title={t('galaxy.fleetInfoOpen', { ship: label })}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        setFleetTargetFeedback(null)
+                        setFleetInfoUnitKey((current) => current === unit.key ? null : unit.key)
+                      }}
+                    >
+                      ?
+                    </button>
+                  </div>
                 )
               })}
             </div>
+            {fleetInfoUnit && (
+              <section className="galaxy-fleet-info-popover" role="dialog" aria-label={t('galaxy.fleetInfoTitle', { ship: fleetInfoLabel })}>
+                <header className="galaxy-fleet-info-header">
+                  <div>
+                    <small>{t('galaxy.fleetInfoHeading')}</small>
+                    <strong>{fleetInfoLabel}</strong>
+                  </div>
+                  <button
+                    type="button"
+                    className="galaxy-fleet-info-close"
+                    aria-label={t('common.close')}
+                    title={t('common.close')}
+                    onClick={() => setFleetInfoUnitKey(null)}
+                  >
+                    <GameIcon name="close" />
+                  </button>
+                </header>
+                {fleetInfoUnit.ship ? (
+                  <div className="galaxy-fleet-info-content">
+                    <dl className="galaxy-fleet-info-grid">
+                      <div><dt>{t('system.hull')}</dt><dd>{humanizeToken(fleetInfoUnit.ship.spec.hull_id)}</dd></div>
+                      <div><dt>{t('system.warpDrive')}</dt><dd>{humanizeToken(fleetInfoUnit.ship.spec.warp_drive_id)}</dd></div>
+                      <div><dt>{t('system.ftlSpeed')}</dt><dd>{fleetInfoUnit.ship.spec.ftl_speed}</dd></div>
+                      <div><dt>{t('system.computer')}</dt><dd>{humanizeToken(fleetInfoUnit.ship.spec.computer_id)}</dd></div>
+                      <div><dt>{t('system.armor')}</dt><dd>{humanizeToken(fleetInfoUnit.ship.spec.armor_id)}</dd></div>
+                      <div><dt>{t('system.shield')}</dt><dd>{fleetInfoUnit.ship.spec.shield_id ? humanizeToken(fleetInfoUnit.ship.spec.shield_id) : t('common.none')}</dd></div>
+                      <div><dt>{t('system.fuelCell')}</dt><dd>{humanizeToken(fleetInfoUnit.ship.spec.fuel_cell_id)}</dd></div>
+                      <div><dt>{t('system.range')}</dt><dd>{fleetInfoUnit.ship.spec.fuel_range_parsecs} pc</dd></div>
+                      <div><dt>{t('system.productionCost')}</dt><dd>{fleetInfoUnit.ship.spec.production_cost_pp} PP</dd></div>
+                      <div><dt>{t('system.design')}</dt><dd>#{fleetInfoUnit.ship.source_design_id} · R{fleetInfoUnit.ship.source_design_revision}</dd></div>
+                    </dl>
+                    <section className="galaxy-fleet-info-weapons">
+                      <strong>{t('system.weapons')}</strong>
+                      {(fleetInfoUnit.ship.spec.weapons?.length ?? 0) > 0 ? (
+                        <div>
+                          {fleetInfoUnit.ship.spec.weapons?.map((weapon) => (
+                            <span key={'fleet-info-weapon-' + weapon.slot}>{weapon.count}× {humanizeToken(weapon.weapon_id)}</span>
+                          ))}
+                        </div>
+                      ) : <small>{t('system.noWeapons')}</small>}
+                    </section>
+                    <small className="galaxy-fleet-info-damage">{t('system.damageNotStrategic')}</small>
+                  </div>
+                ) : (
+                  <div className="galaxy-fleet-info-content">
+                    <dl className="galaxy-fleet-info-grid">
+                      <div><dt>{t('system.fleetType')}</dt><dd>{humanizeToken(fleetInfoUnit.fleet.special_kind ?? fleetInfoUnit.fleet.role)}</dd></div>
+                      {fleetInfoUnit.fleet.ftl_speed !== undefined && <div><dt>{t('system.ftlSpeed')}</dt><dd>{fleetInfoUnit.fleet.ftl_speed}</dd></div>}
+                      <div><dt>{t('system.location')}</dt><dd>{pickerSystem?.name ?? t('galaxy.unknownStar')}</dd></div>
+                    </dl>
+                    <small className="galaxy-fleet-info-damage">{t('system.specialVesselLoadoutUnavailable')}</small>
+                  </div>
+                )}
+              </section>
+            )}
           </div>
 
           <div className="galaxy-fleet-picker-footer galaxy-fleet-picker-footer-compact">
@@ -982,20 +1052,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
             )}
             <span className="galaxy-fleet-picker-selection-count">{pickerSelectedUnits.length}/{pickerUnits.length}</span>
             {pickerProfilesSupported ? (
-              <button
-                type="button"
-                className={'galaxy-fleet-picker-target-button' + (fleetTargetMode ? ' is-active' : '')}
-                aria-pressed={fleetTargetMode}
-                disabled={pickerSelectedUnits.length === 0 || pickerTotalTargets === 0}
-                onClick={() => {
-                  setFleetTargetFeedback(null)
-                  setFleetTargetMode((current) => !current)
-                }}
-              >
-                <GameIcon name="star-system" />
-                <span>{fleetTargetMode ? t('galaxy.fleetTargetCancel') : t('galaxy.fleetTargetChoose')}</span>
-                <small>{pickerReachableTargets}/{pickerTotalTargets}</small>
-              </button>
+              <span className="badge galaxy-fleet-picker-target-summary">{t('galaxy.fleetPickerTargetsCompact', { reachable: pickerReachableTargets, total: pickerTotalTargets })}</span>
             ) : (
               <small>{t('galaxy.fleetPickerSubsetProfile')}</small>
             )}
@@ -1019,6 +1076,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
           onClose={onCloseSystem}
           onOpenColony={onOpenColony}
           onPlanOrder={onPlanOrder}
+          onOpenFleetPicker={openFleetPicker}
           t={t}
         />
       )}
@@ -1026,12 +1084,13 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   )
 }
 
-function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t }: {
+function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, onOpenFleetPicker, t }: {
   snapshot: PlayerSnapshot
   system: StarSystem
   onClose: () => void
   onOpenColony: (colonyID: number) => void
   onPlanOrder: (order: DraftOrder) => void
+  onOpenFleetPicker: (systemID: number, fleets: StrategicFleet[], clientX: number, clientY: number) => void
   t: Translator
 }) {
   const bodies = system.bodies ?? (system.planets ?? []).map((planet) => ({
@@ -1075,7 +1134,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
   const decision = snapshot.decision
   if (!decision) return null
 
-  const fleets = decision.strategic.fleets?.filter((fleet) => fleet.at_system_id === system.id) ?? []
+  const fleets = decision.strategic.fleets?.filter((fleet) => fleet.empire_id === decision.empire.id && fleet.at_system_id === system.id) ?? []
   const contacts = Array.from(new Map(
     (decision.strategic.contacts ?? [])
       .filter((contact) => contact.system_id === system.id)
@@ -1247,7 +1306,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, t 
           </div>
           <div className="system-dialog-footer-actions">
             {fleets.length > 0 && (
-              <button type="button" className="button-secondary system-fleets-button" onClick={openFleetDialog}>
+              <button type="button" className="button-secondary system-fleets-button" onClick={(event) => onOpenFleetPicker(system.id, fleets, event.clientX, event.clientY)}>
                 <GameIcon name="fleets" />{t('system.fleetsShips')} <span className="badge">{fleetUnitCount}</span>
               </button>
             )}

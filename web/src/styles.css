@@ -4537,3 +4537,146 @@ button.galaxy-node-marker-player-fleet.is-open {
   .galaxy-node-target-legal .galaxy-star::before,
   .galaxy-node-target-blocked .galaxy-star::before { animation: none; }
 }
+/* Slice 15.6 Gate3 Block5D UX refinement: explicit ship info control in the shared picker. */
+.galaxy-fleet-picker-tile-wrap {
+  position: relative;
+  min-width: 0;
+}
+.galaxy-fleet-picker-tile-wrap .galaxy-fleet-picker-tile {
+  width: 100%;
+}
+.galaxy-fleet-picker-grid .galaxy-fleet-picker-ship-check {
+  left: 3px;
+  right: auto;
+}
+.galaxy-fleet-picker-ship-info {
+  position: absolute;
+  z-index: 4;
+  top: 3px;
+  right: 3px;
+  display: grid;
+  width: 17px;
+  height: 17px;
+  min-width: 17px;
+  min-height: 17px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid rgba(151, 190, 246, .62);
+  border-radius: 999px;
+  background: rgba(5, 14, 25, .9);
+  color: #dceaff;
+  font-size: .62rem;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 0 1px 5px rgba(0,0,0,.38);
+}
+.galaxy-fleet-picker-ship-info:hover,
+.galaxy-fleet-picker-ship-info:focus-visible,
+.galaxy-fleet-picker-ship-info.is-open {
+  border-color: rgba(101,217,154,.84);
+  background: rgba(24,71,52,.92);
+  color: #b8f0ce;
+}
+.galaxy-fleet-info-popover {
+  position: absolute;
+  z-index: 9;
+  top: 48px;
+  left: 8px;
+  right: 8px;
+  display: grid;
+  gap: 7px;
+  max-height: calc(100% - 58px);
+  padding: 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid rgba(116,168,255,.42);
+  border-radius: 9px;
+  background: rgba(4,12,22,.97);
+  box-shadow: 0 8px 22px rgba(0,0,0,.48);
+}
+.galaxy-fleet-info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.galaxy-fleet-info-header > div {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+.galaxy-fleet-info-header small {
+  color: var(--muted);
+  font-size: .55rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.galaxy-fleet-info-header strong {
+  overflow: hidden;
+  color: #e7f0ff;
+  font-size: .72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.galaxy-fleet-info-close {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  place-items: center;
+  border: 1px solid var(--border-soft);
+  border-radius: 7px;
+  background: rgba(14,29,49,.75);
+  color: var(--muted-strong);
+}
+.galaxy-fleet-info-close .game-icon { width: 12px; height: 12px; }
+.galaxy-fleet-info-content { display: grid; gap: 7px; }
+.galaxy-fleet-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 4px;
+  margin: 0;
+}
+.galaxy-fleet-info-grid > div {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+  padding: 4px 5px;
+  border-radius: 6px;
+  background: rgba(28,49,76,.42);
+}
+.galaxy-fleet-info-grid dt {
+  color: var(--muted);
+  font-size: .5rem;
+}
+.galaxy-fleet-info-grid dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #dbe8fb;
+  font-size: .58rem;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.galaxy-fleet-info-weapons {
+  display: grid;
+  gap: 4px;
+}
+.galaxy-fleet-info-weapons > strong { font-size: .58rem; color: var(--muted-strong); }
+.galaxy-fleet-info-weapons > div { display: flex; flex-wrap: wrap; gap: 4px; }
+.galaxy-fleet-info-weapons span {
+  padding: 3px 5px;
+  border: 1px solid rgba(116,168,255,.26);
+  border-radius: 999px;
+  background: rgba(27,54,89,.28);
+  color: #dbe8fb;
+  font-size: .53rem;
+}
+.galaxy-fleet-info-damage {
+  color: var(--muted);
+  font-size: .53rem;
+  line-height: 1.25;
+}
