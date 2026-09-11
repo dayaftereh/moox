@@ -135,6 +135,16 @@ function galaxyFleetMarkerPosition(index: number) {
   if (slot === 2) return { left: -7 - extra, top: 32 + extra }
   return { left: -7 - extra, top: -7 - extra }
 }
+const galaxyNodeClusterSizePx = 44
+const galaxyFleetMarkerSizePx = 18
+
+function galaxyFleetMarkerCenterOffset(index: number) {
+  const position = galaxyFleetMarkerPosition(index)
+  return {
+    x: position.left + galaxyFleetMarkerSizePx / 2 - galaxyNodeClusterSizePx / 2,
+    y: position.top + galaxyFleetMarkerSizePx / 2 - galaxyNodeClusterSizePx / 2,
+  }
+}
 function fleetRoleIcon(fleet: StrategicFleet): GameIconName {
   if (fleet.special_kind === 'colony_ship') return 'flag'
   if (fleet.special_kind === 'outpost_ship') return 'outpost'
@@ -398,11 +408,14 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   } | null>(null)
   const [fleetTargetFeedback, setFleetTargetFeedback] = useState<GalaxyFleetTargetFeedback | null>(null)
   const [transitFleetInfoKey, setTransitFleetInfoKey] = useState<string | null>(null)
+  const [transitFleetInfoUnitKey, setTransitFleetInfoUnitKey] = useState<string | null>(null)
+  const [transitFleetDialogPosition, setTransitFleetDialogPosition] = useState<{ x: number; y: number } | null>(null)
   const [fleetInfoUnitKey, setFleetInfoUnitKey] = useState<string | null>(null)
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [dragging, setDragging] = useState(false)
   const mapRef = useRef<HTMLDivElement | null>(null)
+  const [mapSize, setMapSize] = useState({ width: 1, height: 1 })
   const ignoreClickRef = useRef(false)
   const gestureRef = useRef<{
     pointers: Map<number, { x: number; y: number }>
@@ -448,9 +461,13 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
-    const enforceBounds = () => setPan((current) => clampPan(current, zoom))
-    enforceBounds()
-    const observer = new ResizeObserver(enforceBounds)
+    const syncMapViewport = () => {
+      setPan((current) => clampPan(current, zoom))
+      const next = { width: Math.max(1, map.clientWidth), height: Math.max(1, map.clientHeight) }
+      setMapSize((current) => current.width === next.width && current.height === next.height ? current : next)
+    }
+    syncMapViewport()
+    const observer = new ResizeObserver(syncMapViewport)
     observer.observe(map)
     return () => observer.disconnect()
   }, [zoom])
@@ -617,10 +634,36 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   const selectedTransitDestinationLabel = selectedTransitDestination && visitedSystemIDs.has(selectedTransitDestination.id)
     ? selectedTransitDestination.name
     : t('galaxy.unknownStar')
+  const selectedTransitFleets = selectedTransitRoute
+    ? (decision.strategic.fleets ?? [])
+      .filter((fleet) => selectedTransitRoute.fleetIDs?.includes(fleet.id))
+      .slice()
+      .sort((a, b) => a.id - b.id)
+    : []
+  const selectedTransitUnits: GalaxyFleetPickerUnit[] = selectedTransitFleets.flatMap((fleet): GalaxyFleetPickerUnit[] => {
+    if (fleet.special_kind) return [{ key: `fleet:${fleet.id}`, fleet, ship: undefined }]
+    return (fleet.ship_ids ?? []).flatMap((shipID) => {
+      const ship = shipsByID.get(shipID)
+      return ship ? [{ key: `ship:${ship.id}`, fleet, ship }] : []
+    })
+  })
+  const selectedTransitInfoUnit = selectedTransitUnits.find((unit) => unit.key === transitFleetInfoUnitKey)
+  const selectedTransitInfoLabel = selectedTransitInfoUnit?.ship
+    ? selectedTransitInfoUnit.ship.name
+    : selectedTransitInfoUnit
+      ? specialFleetShipLabel(t, selectedTransitInfoUnit.fleet.special_kind as SpecialShipKind)
+      : ''
   const routeGeometry = (route: GalaxyRoute) => {
-    const source = mapPointForSystem(route.sourceSystemID)
+    const sourceSystem = mapPointForSystem(route.sourceSystemID)
     const destination = mapPointForSystem(route.destinationSystemID)
-    if (!source || !destination) return undefined
+    if (!sourceSystem || !destination) return undefined
+    const stationaryFleetOffset = galaxyFleetMarkerCenterOffset(0)
+    const source = route.tone === 'transit'
+      ? sourceSystem
+      : {
+        x: sourceSystem.x + (stationaryFleetOffset.x / mapSize.width) * 100,
+        y: sourceSystem.y + (stationaryFleetOffset.y / mapSize.height) * 100,
+      }
     const progress = route.tone === 'transit' ? Math.max(0, Math.min(1, route.progress ?? 0)) : 0
     const current = {
       x: source.x + (destination.x - source.x) * progress,
@@ -682,6 +725,14 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
     }
   }
 
+  const fleetDialogPositionForPointer = (clientX: number, clientY: number, estimatedHeight = 340) => {
+    const width = Math.min(292, Math.max(220, window.innerWidth * 0.76))
+    const height = Math.min(430, Math.max(220, Math.min(estimatedHeight, window.innerHeight * 0.64)))
+    const x = clientX + 14 + width <= window.innerWidth ? clientX + 14 : clientX - width - 14
+    const y = Math.min(Math.max(8, clientY - 34), Math.max(8, window.innerHeight - height - 8))
+    return { x: Math.max(8, x), y }
+  }
+
   const openFleetPicker = (systemID: number, fleets: StrategicFleet[], clientX: number, clientY: number) => {
     const ordered = fleets.slice().sort((a, b) => a.id - b.id)
     const unitKeys = ordered.flatMap((fleet) => (
@@ -691,14 +742,13 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
     ))
     if (unitKeys.length === 0) return
     onCloseSystem()
+    setTransitFleetInfoKey(null)
+    setTransitFleetInfoUnitKey(null)
+    setTransitFleetDialogPosition(null)
     setFleetPicker({ systemID, selectedUnitKeys: unitKeys })
     setFleetTargetFeedback(null)
     setFleetInfoUnitKey(null)
-    const width = Math.min(292, Math.max(220, window.innerWidth * 0.76))
-    const height = Math.min(340, Math.max(220, window.innerHeight * 0.5))
-    const x = clientX + 14 + width <= window.innerWidth ? clientX + 14 : clientX - width - 14
-    const y = Math.min(Math.max(8, clientY - 34), Math.max(8, window.innerHeight - height - 8))
-    setFleetPickerPosition({ x: Math.max(8, x), y })
+    setFleetPickerPosition(fleetDialogPositionForPointer(clientX, clientY))
   }
 
   const togglePickerUnit = (unitKey: string) => {
@@ -932,7 +982,15 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                   onPointerDown={(event) => event.stopPropagation()}
                   onClick={(event) => {
                     event.stopPropagation()
-                    setTransitFleetInfoKey((current) => current === route.key ? null : route.key)
+                    const opening = transitFleetInfoKey !== route.key
+                    setFleetPicker(null)
+                    setFleetPickerPosition(null)
+                    setFleetTargetFeedback(null)
+                    setFleetInfoUnitKey(null)
+                    setTransitFleetInfoUnitKey(null)
+                    setTransitFleetDialogPosition(opening ? fleetDialogPositionForPointer(event.clientX, event.clientY, 430) : null)
+                    setTransitFleetInfoKey(opening ? route.key : null)
+                    if (opening) onCloseSystem()
                   }}
                 >
                   <GameIcon name="fleets" />
@@ -1047,21 +1105,163 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
               )
             })}
           </div>
-          {selectedTransitRoute && (
-            <aside className="galaxy-transit-fleet-popover" role="status">
-              <div>
-                <small>{t('galaxy.transitFleetTitle')}</small>
-                <strong>{selectedTransitDestinationLabel}</strong>
-                <span>{t('galaxy.transitFleetSummary', { count: selectedTransitRoute.unitCount ?? selectedTransitRoute.orderCount, distance: selectedTransitRoute.remainingDistanceParsecs ?? '?', eta: selectedTransitRoute.remainingTurns ?? 0 })}</span>
-                <small>{t('galaxy.transitFleetLocked')}</small>
-              </div>
-              <button type="button" aria-label={t('common.close')} title={t('common.close')} onClick={() => setTransitFleetInfoKey(null)}>
-                <GameIcon name="close" />
-              </button>
-            </aside>
-          )}
+
         </div>
       </Card>
+      {selectedTransitRoute && selectedTransitUnits.length > 0 && (
+        <aside
+          id="galaxy-transit-fleet-picker"
+          className="galaxy-fleet-picker galaxy-fleet-picker-compact galaxy-fleet-picker-transit"
+          role="dialog"
+          aria-label={t('galaxy.transitFleetTitle')}
+          style={transitFleetDialogPosition ? { left: transitFleetDialogPosition.x, top: transitFleetDialogPosition.y, right: 'auto', bottom: 'auto' } : undefined}
+        >
+          <div className="galaxy-fleet-picker-header">
+            <div className="galaxy-fleet-picker-transit-heading">
+              <span>
+                <small>{t('galaxy.transitFleetTitle')}</small>
+                <strong>{t('galaxy.transitFleetDestination', { destination: selectedTransitDestinationLabel })}</strong>
+              </span>
+            </div>
+            <button
+              type="button"
+              className="galaxy-fleet-picker-close"
+              aria-label={t('common.close')}
+              title={t('common.close')}
+              onClick={() => {
+                setTransitFleetInfoKey(null)
+                setTransitFleetInfoUnitKey(null)
+                setTransitFleetDialogPosition(null)
+              }}
+            >
+              <GameIcon name="close" />
+            </button>
+          </div>
+
+          <div className="galaxy-fleet-picker-body galaxy-fleet-picker-transit-body">
+            <div className="galaxy-fleet-transit-status" role="status">
+              <strong>{t('galaxy.transitFleetRemaining', { distance: selectedTransitRoute.remainingDistanceParsecs ?? '?', turns: selectedTransitRoute.remainingTurns ?? 0 })}</strong>
+              <small>{t('galaxy.transitFleetLocked')}</small>
+            </div>
+            <div className="galaxy-fleet-picker-selection-head galaxy-fleet-picker-transit-head">
+              <small>{t('galaxy.transitFleetShipsReadonly', { count: selectedTransitUnits.length })}</small>
+              <span className="badge">{t('galaxy.transitFleetEtaBadge', { eta: selectedTransitRoute.remainingTurns ?? 0 })}</span>
+            </div>
+            <div className="galaxy-fleet-picker-ships galaxy-fleet-picker-grid">
+              {selectedTransitUnits.map((unit) => {
+                const label = unit.ship
+                  ? unit.ship.name
+                  : specialFleetShipLabel(t, unit.fleet.special_kind as SpecialShipKind)
+                const title = unit.ship
+                  ? `${label} · ${humanizeToken(unit.ship.spec.hull_id)} · R${unit.ship.source_design_revision}`
+                  : `${label} · ${t('galaxy.fleet')} #${unit.fleet.id}`
+                return (
+                  <div className="galaxy-fleet-picker-tile-wrap" key={unit.key}>
+                    <div
+                      className="galaxy-fleet-picker-ship galaxy-fleet-picker-tile is-readonly"
+                      aria-label={label}
+                      title={title}
+                    >
+                      {unit.ship ? (
+                        <ProceduralShipGlyph
+                          className="galaxy-fleet-picker-ship-glyph"
+                          seed={`${unit.ship.empire_id}:${unit.ship.source_design_id}:${unit.ship.source_design_revision}:${unit.ship.spec.strategic_picture_id}`}
+                          genome={decodeShipVisualGenome(unit.ship.visual_genome)}
+                          hullId={unit.ship.spec.hull_id}
+                          weaponCount={unit.ship.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0}
+                        />
+                      ) : (
+                        <SpecialShipGlyph
+                          className="galaxy-fleet-picker-ship-glyph galaxy-fleet-picker-special-ship-glyph"
+                          kind={unit.fleet.special_kind as SpecialShipKind}
+                        />
+                      )}
+                      <span className="galaxy-fleet-picker-ship-copy"><strong>{label}</strong></span>
+                    </div>
+                    <button
+                      type="button"
+                      className={'galaxy-fleet-picker-ship-info' + (transitFleetInfoUnitKey === unit.key ? ' is-open' : '')}
+                      aria-label={t('galaxy.fleetInfoOpen', { ship: label })}
+                      aria-pressed={transitFleetInfoUnitKey === unit.key}
+                      title={t('galaxy.fleetInfoOpen', { ship: label })}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        setTransitFleetInfoUnitKey((current) => current === unit.key ? null : unit.key)
+                      }}
+                    >
+                      ?
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+            {selectedTransitInfoUnit && (
+              <section className="galaxy-fleet-info-popover" role="dialog" aria-label={t('galaxy.fleetInfoTitle', { ship: selectedTransitInfoLabel })}>
+                <header className="galaxy-fleet-info-header">
+                  <div>
+                    <small>{t('galaxy.fleetInfoHeading')}</small>
+                    <strong>{selectedTransitInfoLabel}</strong>
+                  </div>
+                  <button
+                    type="button"
+                    className="galaxy-fleet-info-close"
+                    aria-label={t('common.close')}
+                    title={t('common.close')}
+                    onClick={() => setTransitFleetInfoUnitKey(null)}
+                  >
+                    <GameIcon name="close" />
+                  </button>
+                </header>
+                {selectedTransitInfoUnit.ship ? (
+                  <div className="galaxy-fleet-info-content">
+                    <dl className="galaxy-fleet-info-grid">
+                      <div><dt>{t('system.hull')}</dt><dd>{humanizeToken(selectedTransitInfoUnit.ship.spec.hull_id)}</dd></div>
+                      <div><dt>{t('system.warpDrive')}</dt><dd>{humanizeToken(selectedTransitInfoUnit.ship.spec.warp_drive_id)}</dd></div>
+                      <div><dt>{t('system.ftlSpeed')}</dt><dd>{selectedTransitInfoUnit.ship.spec.ftl_speed}</dd></div>
+                      <div><dt>{t('system.computer')}</dt><dd>{humanizeToken(selectedTransitInfoUnit.ship.spec.computer_id)}</dd></div>
+                      <div><dt>{t('system.armor')}</dt><dd>{humanizeToken(selectedTransitInfoUnit.ship.spec.armor_id)}</dd></div>
+                      <div><dt>{t('system.shield')}</dt><dd>{selectedTransitInfoUnit.ship.spec.shield_id ? humanizeToken(selectedTransitInfoUnit.ship.spec.shield_id) : t('common.none')}</dd></div>
+                      <div><dt>{t('system.fuelCell')}</dt><dd>{humanizeToken(selectedTransitInfoUnit.ship.spec.fuel_cell_id)}</dd></div>
+                      <div><dt>{t('system.range')}</dt><dd>{selectedTransitInfoUnit.ship.spec.fuel_range_parsecs} pc</dd></div>
+                      <div><dt>{t('system.productionCost')}</dt><dd>{selectedTransitInfoUnit.ship.spec.production_cost_pp} PP</dd></div>
+                      <div><dt>{t('system.design')}</dt><dd>#{selectedTransitInfoUnit.ship.source_design_id} · R{selectedTransitInfoUnit.ship.source_design_revision}</dd></div>
+                    </dl>
+                    <section className="galaxy-fleet-info-weapons">
+                      <strong>{t('system.weapons')}</strong>
+                      {(selectedTransitInfoUnit.ship.spec.weapons?.length ?? 0) > 0 ? (
+                        <div>
+                          {selectedTransitInfoUnit.ship.spec.weapons?.map((weapon) => (
+                            <span key={'transit-fleet-info-weapon-' + weapon.slot}>{weapon.count}× {humanizeToken(weapon.weapon_id)}</span>
+                          ))}
+                        </div>
+                      ) : <small>{t('system.noWeapons')}</small>}
+                    </section>
+                    <small className="galaxy-fleet-info-damage">{t('system.damageNotStrategic')}</small>
+                  </div>
+                ) : (
+                  <div className="galaxy-fleet-info-content">
+                    <dl className="galaxy-fleet-info-grid">
+                      <div><dt>{t('system.fleetType')}</dt><dd>{humanizeToken(selectedTransitInfoUnit.fleet.special_kind ?? selectedTransitInfoUnit.fleet.role)}</dd></div>
+                      {selectedTransitInfoUnit.fleet.warp_drive_id && <div><dt>{t('system.warpDrive')}</dt><dd>{humanizeToken(selectedTransitInfoUnit.fleet.warp_drive_id)}</dd></div>}
+                      {selectedTransitInfoUnit.fleet.ftl_speed !== undefined && <div><dt>{t('system.ftlSpeed')}</dt><dd>{selectedTransitInfoUnit.fleet.ftl_speed}</dd></div>}
+                      {selectedTransitInfoUnit.fleet.fuel_cell_id && <div><dt>{t('system.fuelCell')}</dt><dd>{humanizeToken(selectedTransitInfoUnit.fleet.fuel_cell_id)}</dd></div>}
+                      {selectedTransitInfoUnit.fleet.fuel_range_parsecs !== undefined && <div><dt>{t('system.range')}</dt><dd>{selectedTransitInfoUnit.fleet.fuel_range_parsecs} pc</dd></div>}
+                      <div><dt>{t('system.location')}</dt><dd>{t('galaxy.transitFleetDestination', { destination: selectedTransitDestinationLabel })}</dd></div>
+                    </dl>
+                    <small className="galaxy-fleet-info-damage">{t('system.specialVesselLoadoutUnavailable')}</small>
+                  </div>
+                )}
+              </section>
+            )}
+          </div>
+
+          <div className="galaxy-fleet-picker-footer galaxy-fleet-picker-footer-compact galaxy-fleet-picker-transit-footer">
+            <span className="galaxy-fleet-picker-selection-count">{selectedTransitUnits.length}</span>
+            <span className="badge galaxy-fleet-picker-target-summary">{t('galaxy.transitFleetEtaBadge', { eta: selectedTransitRoute.remainingTurns ?? 0 })}</span>
+          </div>
+        </aside>
+      )}
       {fleetPicker && pickerSystem && pickerUnits.length > 0 && (
         <aside
           id="galaxy-fleet-picker"

@@ -4520,34 +4520,7 @@ button.galaxy-node-marker-player-fleet.is-open {
   font-size: .48rem;
   line-height: 1;
 }
-.galaxy-transit-fleet-popover {
-  position: absolute;
-  z-index: 8;
-  top: 10px;
-  right: 10px;
-  max-width: min(250px, calc(100% - 20px));
-  padding: 8px 9px;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  border: 1px solid rgba(101,217,154,.48);
-  border-radius: 10px;
-  background: rgba(6,15,26,.94);
-  box-shadow: 0 10px 30px rgba(0,0,0,.38);
-}
-.galaxy-transit-fleet-popover > div { display: grid; gap: 2px; min-width: 0; }
-.galaxy-transit-fleet-popover small,
-.galaxy-transit-fleet-popover span { color: var(--muted); font-size: .62rem; }
-.galaxy-transit-fleet-popover strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .74rem; }
-.galaxy-transit-fleet-popover button {
-  width: 24px;
-  height: 24px;
-  min-height: 24px;
-  padding: 4px;
-  margin-left: auto;
-  border: 0;
-  background: transparent;
-}
+
 .galaxy-node-target-legal,
 .galaxy-node-target-blocked { cursor: pointer; }
 .galaxy-node-target-legal .galaxy-star::before,
@@ -4793,4 +4766,81 @@ button.galaxy-node-marker-player-fleet.is-open {
   color: var(--muted);
   font-size: .53rem;
   line-height: 1.25;
+}
+/* Read-only transit Fleet dialog: same compact Fleet language, no selection or reroute controls. */
+.galaxy-fleet-picker-transit {
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  max-height: min(480px, calc(100vh - 24px));
+}
+.galaxy-fleet-picker-transit-heading {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 7px 9px;
+}
+.galaxy-fleet-picker-transit-heading > span {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+.galaxy-fleet-picker-transit-heading small {
+  color: var(--muted);
+  font-size: .6rem;
+}
+.galaxy-fleet-picker-transit-heading strong {
+  overflow: hidden;
+  color: var(--text);
+  font-size: .78rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.galaxy-fleet-picker-transit-body {
+  display: grid;
+  align-content: start;
+  gap: 5px;
+}
+.galaxy-fleet-transit-status {
+  display: grid;
+  gap: 2px;
+  padding: 6px 7px;
+  border: 1px solid color-mix(in srgb, #65d99a 32%, var(--border-soft));
+  border-radius: 8px;
+  background: color-mix(in srgb, #65d99a 7%, rgba(5, 14, 25, .72));
+}
+.galaxy-fleet-transit-status strong {
+  color: #9be8bd;
+  font-size: .7rem;
+}
+.galaxy-fleet-transit-status small {
+  color: var(--muted);
+  font-size: .56rem;
+  line-height: 1.25;
+}
+.galaxy-fleet-picker-transit-head {
+  gap: 6px;
+}
+.galaxy-fleet-picker-transit-head .badge {
+  flex: 0 0 auto;
+  min-height: 22px;
+  padding: 3px 6px;
+  font-size: .56rem;
+}
+.galaxy-fleet-picker-grid .galaxy-fleet-picker-tile.is-readonly {
+  cursor: default;
+  border-color: rgba(116, 168, 255, .22);
+  background: rgba(10, 24, 41, .58);
+  box-shadow: none;
+}
+.galaxy-fleet-picker-grid .galaxy-fleet-picker-tile.is-readonly:hover {
+  transform: none;
+  filter: none;
+  border-color: rgba(116, 168, 255, .3);
+}
+.galaxy-fleet-picker-transit-footer {
+  justify-content: space-between;
+}
+@media (max-width: 700px) {
+  .galaxy-fleet-picker.galaxy-fleet-picker-transit {
+    max-height: min(390px, 66vh);
+  }
 }
