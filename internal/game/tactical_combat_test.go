@@ -2,7 +2,6 @@ package game
 
 import (
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"moox/internal/core"
@@ -79,7 +78,7 @@ func TestTacticalMetadataSupportsTwoByTwoWithOpenFieldDeployment(t *testing.T) {
 	}
 }
 
-func TestTacticalMetadataRejectsAllUnarmedBattle(t *testing.T) {
+func TestTacticalMetadataAllowsAllUnarmedBattle(t *testing.T) {
 	state := &core.GameState{Ships: []core.Ship{
 		tacticalMetadataShip(101, 1, "nuclear_drive", false),
 		tacticalMetadataShip(201, 2, "nuclear_drive", false),
@@ -94,29 +93,42 @@ func TestTacticalMetadataRejectsAllUnarmedBattle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if tactical != nil || !strings.Contains(reason, "at least one supported Laser") {
+	if tactical == nil || reason != "" || len(tactical.Ships) != 2 {
 		t.Fatalf("all-unarmed battle tactical=%+v reason=%q", tactical, reason)
+	}
+	for _, ship := range tactical.Ships {
+		if len(ship.Weapons) != 0 {
+			t.Fatalf("unarmed tactical ship %d unexpectedly has weapons %+v", ship.ShipID, ship.Weapons)
+		}
 	}
 }
 
-func TestTacticalMetadataRejectsMoreThanTwoShipsPerSide(t *testing.T) {
+func TestTacticalMetadataAllowsThreeByTwoAndIgnoresCivilianAndColonyContext(t *testing.T) {
 	state := &core.GameState{Ships: []core.Ship{
 		tacticalMetadataShip(101, 1, "fusion_drive", true),
 		tacticalMetadataShip(102, 1, "fusion_drive", false),
 		tacticalMetadataShip(103, 1, "fusion_drive", false),
 		tacticalMetadataShip(201, 2, "nuclear_drive", false),
+		tacticalMetadataShip(202, 2, "nuclear_drive", false),
 	}}
 	encounter := Encounter{
-		SystemID:     7,
-		Attacker:     EncounterSide{EmpireID: 1, SeatID: 1, CombatFleetIDs: []core.ID{11}, ShipIDs: []core.ID{101, 102, 103}},
-		Defender:     EncounterSide{EmpireID: 2, SeatID: 2, CombatFleetIDs: []core.ID{22}, ShipIDs: []core.ID{201}},
-		Participants: []protocol.SeatID{1, 2},
+		SystemID:          7,
+		Attacker:          EncounterSide{EmpireID: 1, SeatID: 1, CombatFleetIDs: []core.ID{11}, CivilianFleetIDs: []core.ID{12}, ShipIDs: []core.ID{101, 102, 103}},
+		Defender:          EncounterSide{EmpireID: 2, SeatID: 2, CombatFleetIDs: []core.ID{22}, CivilianFleetIDs: []core.ID{23}, ShipIDs: []core.ID{201, 202}},
+		DefenderColonyIDs: []core.ID{31},
+		Participants:      []protocol.SeatID{1, 2},
 	}
 	tactical, reason, err := tacticalMetadataForEncounter(state, encounter, tacticalMetadataRules(t))
 	if err != nil {
 		t.Fatal(err)
 	}
-	if tactical != nil || !strings.Contains(reason, "one or two combat Ships per side") {
-		t.Fatalf("3v1 battle tactical=%+v reason=%q", tactical, reason)
+	if tactical == nil || reason != "" || len(tactical.Ships) != 5 {
+		t.Fatalf("3v2 battle tactical=%+v reason=%q", tactical, reason)
+	}
+	want := []core.ID{101, 102, 103, 201, 202}
+	for i, ship := range tactical.Ships {
+		if ship.ShipID != want[i] {
+			t.Fatalf("tactical ship[%d]=%d want %d", i, ship.ShipID, want[i])
+		}
 	}
 }

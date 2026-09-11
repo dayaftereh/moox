@@ -80,14 +80,8 @@ func tacticalMetadataForEncounter(state *core.GameState, encounter Encounter, ru
 	if rules == nil {
 		return nil, "", fmt.Errorf("tactical encounter rules are nil")
 	}
-	if len(encounter.Attacker.ShipIDs) < 1 || len(encounter.Attacker.ShipIDs) > 2 || len(encounter.Defender.ShipIDs) < 1 || len(encounter.Defender.ShipIDs) > 2 {
-		return nil, "Slice 15.5 tactical baseline supports one or two combat Ships per side", nil
-	}
-	if len(encounter.Attacker.CivilianFleetIDs) != 0 || len(encounter.Defender.CivilianFleetIDs) != 0 {
-		return nil, "Slice 15.5 tactical baseline does not support civilian Fleet context", nil
-	}
-	if len(encounter.DefenderColonyIDs) != 0 {
-		return nil, "Slice 15.5 tactical baseline does not support Colony or planet defense", nil
+	if len(encounter.Attacker.ShipIDs) < 1 || len(encounter.Defender.ShipIDs) < 1 {
+		return nil, "tactical combat requires at least one combat Ship per side", nil
 	}
 
 	tactical := &battle.TacticalSpec{
@@ -107,7 +101,6 @@ func tacticalMetadataForEncounter(state *core.GameState, encounter Encounter, ru
 		Ships:             make([]battle.TacticalShipSpec, 0, len(encounter.Attacker.ShipIDs)+len(encounter.Defender.ShipIDs)),
 	}
 
-	laserCount := 0
 	appendSide := func(side EncounterSide, x, facing int) (string, error) {
 		for i, shipID := range side.ShipIDs {
 			ship := shipByID(state, shipID)
@@ -123,9 +116,6 @@ func tacticalMetadataForEncounter(state *core.GameState, encounter Encounter, ru
 			drive, ok := tacticalDriveRule(rules, ship.Spec.WarpDriveID)
 			if !ok {
 				return "", fmt.Errorf("tactical rules have no drive %q", ship.Spec.WarpDriveID)
-			}
-			if len(ship.Spec.Weapons) == 1 {
-				laserCount++
 			}
 			y := tacticalDeploymentY(len(side.ShipIDs), i)
 			tactical.Ships = append(tactical.Ships, baselineTacticalShip(*ship, side.SeatID, x, y, facing, drive.MaxSpeed, rules))
@@ -143,9 +133,6 @@ func tacticalMetadataForEncounter(state *core.GameState, encounter Encounter, ru
 	}
 	if reason, err := appendSide(encounter.Defender, defenderX, 8); err != nil || reason != "" {
 		return nil, reason, err
-	}
-	if laserCount == 0 {
-		return nil, "Slice 15.5 Tactical Laser baseline requires at least one supported Laser across the battle", nil
 	}
 
 	sort.Slice(tactical.Ships, func(i, j int) bool { return tactical.Ships[i].ShipID < tactical.Ships[j].ShipID })

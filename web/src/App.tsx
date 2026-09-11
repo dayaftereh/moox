@@ -1187,6 +1187,8 @@ function App() {
           draftOrders={draftOrders}
           onPlanOrder={planOrder}
           onRemoveOrder={removePlannedOrder}
+          onDeclareWar={(empireID) => runDiplomacy('diplomacy.declare_war', empireID)}
+          diplomacyDisabled={diplomacyBusy || diplomacyClosed || mutationLocked}
           t={t}
         />
       ) : activeSection === 'colonies' ? (

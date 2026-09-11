@@ -383,8 +383,47 @@ func runRealEncounterSession(t *testing.T, seed uint64, gameID string) ObserverV
 	if fresh.Battles[0].Spec.Attacker.ShipIDs[0] == 999999 {
 		t.Fatal("Observer battle spec mutation leaked into authoritative child")
 	}
-	if err := s.CompleteBattle(fresh.Battles[0].Spec.ID, battle.Result{WinnerSeat: 1, Outcome: "attacker_victory"}); err != nil {
-		t.Fatal(err)
+	battleID := fresh.Battles[0].Spec.ID
+	for step := 0; step < 8; step++ {
+		current, err := s.ObserverView()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if current.Phase != PhaseEncounters || len(current.Battles) != 1 || current.Battles[0].Tactical == nil {
+			t.Fatalf("unexpected tactical encounter while preparing defender retreat: phase=%s battles=%+v", current.Phase, current.Battles)
+		}
+		battleView := current.Battles[0]
+		activeID := battleView.Tactical.State.ActiveShipID
+		activeSeat := protocol.SeatID(0)
+		for _, ship := range battleView.Tactical.Ships {
+			if ship.ShipID == activeID {
+				activeSeat = ship.SeatID
+				break
+			}
+		}
+		if activeSeat == 0 {
+			t.Fatalf("active tactical ship %d has no seat", activeID)
+		}
+		if activeSeat == battleView.Spec.Defender.SeatID {
+			retreat, err := battle.NewRetreatCommand(battleView.Tactical.State.NextCommandSequence, battle.RetreatPayload{ShipID: activeID})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := s.SubmitBattleCommand(battleID, activeSeat, retreat); err != nil {
+				t.Fatal(err)
+			}
+			break
+		}
+		end, err := battle.NewEndActivationCommand(battleView.Tactical.State.NextCommandSequence, battle.EndActivationPayload{ShipID: activeID})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := s.SubmitBattleCommand(battleID, activeSeat, end); err != nil {
+			t.Fatal(err)
+		}
+		if step == 7 {
+			t.Fatal("defender never received a tactical activation to retreat")
+		}
 	}
 	final, err := s.ObserverView()
 	if err != nil {

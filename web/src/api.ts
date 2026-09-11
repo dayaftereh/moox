@@ -313,6 +313,8 @@ export type StrategicContact = {
   remaining_turns?: number
   role?: string
   special_kind?: string
+  fleet?: StrategicFleet
+  ships?: Ship[]
 }
 export type StrategicView = {
   galaxy: Galaxy
@@ -786,6 +788,9 @@ export function tacticalFireBeamCommand(tactical: TacticalView, shipID: number, 
 
 export function tacticalEndActivationCommand(tactical: TacticalView, shipID: number): ProtocolCommand {
   return { schema_version: 1, sequence: tactical.state.next_command_sequence, kind: 'battle.end_activation', payload: { ship_id: shipID } }
+}
+export function tacticalRetreatCommand(tactical: TacticalView, shipID: number): ProtocolCommand {
+  return { schema_version: 1, sequence: tactical.state.next_command_sequence, kind: 'battle.retreat', payload: { ship_id: shipID } }
 }
 
 export async function submitPlanning(snapshot: PlayerSnapshot, seatID: number, orders: DraftOrder[]): Promise<Receipt> {

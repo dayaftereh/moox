@@ -373,7 +373,7 @@ function bodyLabel(t: Translator, kind: string): string {
   return t('system.planet')
 }
 
-export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem, onCloseSystem, onOpenColony, draftOrders, onPlanOrder, onRemoveOrder, t }: {
+export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem, onCloseSystem, onOpenColony, draftOrders, onPlanOrder, onRemoveOrder, onDeclareWar, diplomacyDisabled, t }: {
   snapshot: PlayerSnapshot
   selectedSystemID?: number
   onSelectSystem: (systemID: number) => void
@@ -382,6 +382,8 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   draftOrders: DraftOrder[]
   onPlanOrder: (order: DraftOrder) => void
   onRemoveOrder: (key: string) => void
+  onDeclareWar: (empireID: number) => Promise<void>
+  diplomacyDisabled: boolean
   t: Translator
 }) {
   const decision = snapshot.decision
@@ -410,6 +412,10 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   const [transitFleetInfoKey, setTransitFleetInfoKey] = useState<string | null>(null)
   const [transitFleetInfoUnitKey, setTransitFleetInfoUnitKey] = useState<string | null>(null)
   const [transitFleetDialogPosition, setTransitFleetDialogPosition] = useState<{ x: number; y: number } | null>(null)
+  const [foreignFleetDialog, setForeignFleetDialog] = useState<{ systemID: number; empireID: number } | null>(null)
+  const [foreignFleetDialogPosition, setForeignFleetDialogPosition] = useState<{ x: number; y: number } | null>(null)
+  const [foreignFleetInfoUnitKey, setForeignFleetInfoUnitKey] = useState<string | null>(null)
+  const [foreignFleetAttackBusy, setForeignFleetAttackBusy] = useState(false)
   const [fleetInfoUnitKey, setFleetInfoUnitKey] = useState<string | null>(null)
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
@@ -653,6 +659,37 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
     : selectedTransitInfoUnit
       ? specialFleetShipLabel(t, selectedTransitInfoUnit.fleet.special_kind as SpecialShipKind)
       : ''
+  const selectedForeignFleetContacts = foreignFleetDialog
+    ? (decision.strategic.contacts ?? []).filter((contact) => (
+      contact.kind === 'fleet'
+      && contact.system_id === foreignFleetDialog.systemID
+      && contact.empire_id === foreignFleetDialog.empireID
+      && contact.fleet
+    ))
+    : []
+  const selectedForeignUnits: GalaxyFleetPickerUnit[] = selectedForeignFleetContacts.flatMap((contact): GalaxyFleetPickerUnit[] => {
+    const fleet = contact.fleet
+    if (!fleet) return []
+    if (fleet.special_kind) return [{ key: `foreign-fleet:${fleet.id}`, fleet, ship: undefined }]
+    return (contact.ships ?? []).map((ship) => ({ key: `foreign-ship:${fleet.id}:${ship.id}`, fleet, ship }))
+  })
+  const selectedForeignInfoUnit = selectedForeignUnits.find((unit) => unit.key === foreignFleetInfoUnitKey)
+  const selectedForeignInfoLabel = selectedForeignInfoUnit?.ship
+    ? selectedForeignInfoUnit.ship.name
+    : selectedForeignInfoUnit
+      ? specialFleetShipLabel(t, selectedForeignInfoUnit.fleet.special_kind as SpecialShipKind)
+      : ''
+  const selectedForeignEmpire = foreignFleetDialog
+    ? (decision.public_empires ?? []).find((empire) => empire.id === foreignFleetDialog.empireID)
+    : undefined
+  const selectedForeignEmpireLabel = selectedForeignEmpire?.name ?? (foreignFleetDialog ? t('common.empireFallback', { id: foreignFleetDialog.empireID }) : '')
+  const selectedForeignRelation = foreignFleetDialog
+    ? (snapshot.view.diplomacy ?? []).find((relation) => relation.other_empire_id === foreignFleetDialog.empireID)
+    : undefined
+  const selectedForeignSystem = foreignFleetDialog ? systems.find((system) => system.id === foreignFleetDialog.systemID) : undefined
+  const selectedForeignSystemLabel = selectedForeignSystem && visitedSystemIDs.has(selectedForeignSystem.id)
+    ? selectedForeignSystem.name
+    : t('galaxy.unknownStar')
   const routeGeometry = (route: GalaxyRoute) => {
     const sourceSystem = mapPointForSystem(route.sourceSystemID)
     const destination = mapPointForSystem(route.destinationSystemID)
@@ -1086,6 +1123,44 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                           )
                         }
                         const empireName = identity?.name ?? t('common.empireFallback', { id: marker.empireID })
+                        const inspectableForeign = (decision.strategic.contacts ?? []).some((contact) => (
+                          contact.kind === 'fleet'
+                          && contact.system_id === system.id
+                          && contact.empire_id === marker.empireID
+                          && Boolean(contact.fleet)
+                        ))
+                        if (inspectableForeign) {
+                          const open = foreignFleetDialog?.systemID === system.id && foreignFleetDialog.empireID === marker.empireID
+                          return (
+                            <button
+                              key={`fleet-empire-${marker.empireID}`}
+                              type="button"
+                              className={markerClass + ' galaxy-node-marker-button' + (open ? ' is-open' : '')}
+                              style={galaxyFleetMarkerPosition(index)}
+                              aria-label={t('galaxy.foreignFleetOpen', { empire: empireName })}
+                              aria-expanded={open}
+                              aria-controls={open ? 'galaxy-foreign-fleet-picker' : undefined}
+                              title={t('galaxy.foreignFleetOpen', { empire: empireName })}
+                              onPointerDown={(event) => event.stopPropagation()}
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                setFleetPicker(null)
+                                setFleetPickerPosition(null)
+                                setFleetTargetFeedback(null)
+                                setFleetInfoUnitKey(null)
+                                setTransitFleetInfoKey(null)
+                                setTransitFleetInfoUnitKey(null)
+                                setTransitFleetDialogPosition(null)
+                                setForeignFleetInfoUnitKey(null)
+                                setForeignFleetDialog(open ? null : { systemID: system.id, empireID: marker.empireID })
+                                setForeignFleetDialogPosition(open ? null : fleetDialogPositionForPointer(event.clientX, event.clientY, 460))
+                                if (!open) onCloseSystem()
+                              }}
+                            >
+                              <GameIcon name="fleets" />
+                            </button>
+                          )
+                        }
                         return (
                           <span
                             key={`fleet-empire-${marker.empireID}`}
@@ -1259,6 +1334,156 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
           <div className="galaxy-fleet-picker-footer galaxy-fleet-picker-footer-compact galaxy-fleet-picker-transit-footer">
             <span className="galaxy-fleet-picker-selection-count">{selectedTransitUnits.length}</span>
             <span className="badge galaxy-fleet-picker-target-summary">{t('galaxy.transitFleetEtaBadge', { eta: selectedTransitRoute.remainingTurns ?? 0 })}</span>
+          </div>
+        </aside>
+      )}
+      {foreignFleetDialog && selectedForeignUnits.length > 0 && (
+        <aside
+          id="galaxy-foreign-fleet-picker"
+          className="galaxy-fleet-picker galaxy-fleet-picker-compact galaxy-fleet-picker-foreign"
+          role="dialog"
+          aria-label={t('galaxy.foreignFleetDialogTitle', { empire: selectedForeignEmpireLabel })}
+          style={foreignFleetDialogPosition ? { left: foreignFleetDialogPosition.x, top: foreignFleetDialogPosition.y, right: 'auto', bottom: 'auto' } : undefined}
+        >
+          <div className="galaxy-fleet-picker-header">
+            <div className="galaxy-fleet-picker-transit-heading">
+              <span>
+                <small>{t('galaxy.foreignFleetDialogTitle', { empire: selectedForeignEmpireLabel })}</small>
+                <strong>{selectedForeignSystemLabel}</strong>
+              </span>
+            </div>
+            <button
+              type="button"
+              className="galaxy-fleet-picker-close"
+              aria-label={t('common.close')}
+              title={t('common.close')}
+              onClick={() => {
+                setForeignFleetDialog(null)
+                setForeignFleetDialogPosition(null)
+                setForeignFleetInfoUnitKey(null)
+              }}
+            >
+              <GameIcon name="close" />
+            </button>
+          </div>
+
+          <div className="galaxy-fleet-picker-body galaxy-fleet-picker-transit-body">
+            <div className="galaxy-fleet-picker-selection-head galaxy-fleet-picker-transit-head">
+              <small>{t('galaxy.foreignFleetReadonly', { count: selectedForeignUnits.length })}</small>
+              <span className="badge">{selectedForeignEmpireLabel}</span>
+            </div>
+            <div className="galaxy-fleet-picker-ships galaxy-fleet-picker-grid">
+              {selectedForeignUnits.map((unit) => {
+                const label = unit.ship
+                  ? unit.ship.name
+                  : specialFleetShipLabel(t, unit.fleet.special_kind as SpecialShipKind)
+                const title = unit.ship
+                  ? `${label} · ${humanizeToken(unit.ship.spec.hull_id)} · R${unit.ship.source_design_revision}`
+                  : `${label} · ${t('galaxy.fleet')} #${unit.fleet.id}`
+                return (
+                  <div className="galaxy-fleet-picker-tile-wrap" key={unit.key}>
+                    <div className="galaxy-fleet-picker-ship galaxy-fleet-picker-tile is-readonly" aria-label={label} title={title}>
+                      {unit.ship ? (
+                        <ProceduralShipGlyph
+                          className="galaxy-fleet-picker-ship-glyph"
+                          seed={`${unit.ship.empire_id}:${unit.ship.source_design_id}:${unit.ship.source_design_revision}:${unit.ship.spec.strategic_picture_id}`}
+                          genome={decodeShipVisualGenome(unit.ship.visual_genome)}
+                          hullId={unit.ship.spec.hull_id}
+                          weaponCount={unit.ship.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0}
+                        />
+                      ) : (
+                        <SpecialShipGlyph
+                          className="galaxy-fleet-picker-ship-glyph galaxy-fleet-picker-special-ship-glyph"
+                          kind={unit.fleet.special_kind as SpecialShipKind}
+                        />
+                      )}
+                      <span className="galaxy-fleet-picker-ship-copy"><strong>{label}</strong></span>
+                    </div>
+                    <button
+                      type="button"
+                      className={'galaxy-fleet-picker-ship-info' + (foreignFleetInfoUnitKey === unit.key ? ' is-open' : '')}
+                      aria-label={t('galaxy.fleetInfoOpen', { ship: label })}
+                      aria-pressed={foreignFleetInfoUnitKey === unit.key}
+                      title={t('galaxy.fleetInfoOpen', { ship: label })}
+                      onPointerDown={(event) => event.stopPropagation()}
+                      onClick={(event) => {
+                        event.stopPropagation()
+                        setForeignFleetInfoUnitKey((current) => current === unit.key ? null : unit.key)
+                      }}
+                    >
+                      ?
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+            {selectedForeignInfoUnit && (
+              <section className="galaxy-fleet-info-popover" role="dialog" aria-label={t('galaxy.fleetInfoTitle', { ship: selectedForeignInfoLabel })}>
+                <header className="galaxy-fleet-info-header">
+                  <div><small>{t('galaxy.fleetInfoHeading')}</small><strong>{selectedForeignInfoLabel}</strong></div>
+                  <button type="button" className="galaxy-fleet-info-close" aria-label={t('common.close')} title={t('common.close')} onClick={() => setForeignFleetInfoUnitKey(null)}><GameIcon name="close" /></button>
+                </header>
+                {selectedForeignInfoUnit.ship ? (
+                  <div className="galaxy-fleet-info-content">
+                    <dl className="galaxy-fleet-info-grid">
+                      <div><dt>{t('system.hull')}</dt><dd>{humanizeToken(selectedForeignInfoUnit.ship.spec.hull_id)}</dd></div>
+                      <div><dt>{t('system.warpDrive')}</dt><dd>{humanizeToken(selectedForeignInfoUnit.ship.spec.warp_drive_id)}</dd></div>
+                      <div><dt>{t('system.ftlSpeed')}</dt><dd>{selectedForeignInfoUnit.ship.spec.ftl_speed}</dd></div>
+                      <div><dt>{t('system.computer')}</dt><dd>{humanizeToken(selectedForeignInfoUnit.ship.spec.computer_id)}</dd></div>
+                      <div><dt>{t('system.armor')}</dt><dd>{humanizeToken(selectedForeignInfoUnit.ship.spec.armor_id)}</dd></div>
+                      <div><dt>{t('system.shield')}</dt><dd>{selectedForeignInfoUnit.ship.spec.shield_id ? humanizeToken(selectedForeignInfoUnit.ship.spec.shield_id) : t('common.none')}</dd></div>
+                      <div><dt>{t('system.fuelCell')}</dt><dd>{humanizeToken(selectedForeignInfoUnit.ship.spec.fuel_cell_id)}</dd></div>
+                      <div><dt>{t('system.range')}</dt><dd>{selectedForeignInfoUnit.ship.spec.fuel_range_parsecs} pc</dd></div>
+                      <div><dt>{t('system.productionCost')}</dt><dd>{selectedForeignInfoUnit.ship.spec.production_cost_pp} PP</dd></div>
+                      <div><dt>{t('system.design')}</dt><dd>#{selectedForeignInfoUnit.ship.source_design_id} · R{selectedForeignInfoUnit.ship.source_design_revision}</dd></div>
+                    </dl>
+                    <section className="galaxy-fleet-info-weapons">
+                      <strong>{t('system.weapons')}</strong>
+                      {(selectedForeignInfoUnit.ship.spec.weapons?.length ?? 0) > 0 ? (
+                        <div>{selectedForeignInfoUnit.ship.spec.weapons?.map((weapon) => <span key={'foreign-fleet-info-weapon-' + weapon.slot}>{weapon.count}× {humanizeToken(weapon.weapon_id)}</span>)}</div>
+                      ) : <small>{t('system.noWeapons')}</small>}
+                    </section>
+                    <small className="galaxy-fleet-info-damage">{t('system.damageNotStrategic')}</small>
+                  </div>
+                ) : (
+                  <div className="galaxy-fleet-info-content">
+                    <dl className="galaxy-fleet-info-grid">
+                      <div><dt>{t('system.fleetType')}</dt><dd>{humanizeToken(selectedForeignInfoUnit.fleet.special_kind ?? selectedForeignInfoUnit.fleet.role)}</dd></div>
+                      {selectedForeignInfoUnit.fleet.warp_drive_id && <div><dt>{t('system.warpDrive')}</dt><dd>{humanizeToken(selectedForeignInfoUnit.fleet.warp_drive_id)}</dd></div>}
+                      {selectedForeignInfoUnit.fleet.ftl_speed !== undefined && <div><dt>{t('system.ftlSpeed')}</dt><dd>{selectedForeignInfoUnit.fleet.ftl_speed}</dd></div>}
+                      {selectedForeignInfoUnit.fleet.fuel_cell_id && <div><dt>{t('system.fuelCell')}</dt><dd>{humanizeToken(selectedForeignInfoUnit.fleet.fuel_cell_id)}</dd></div>}
+                      {selectedForeignInfoUnit.fleet.fuel_range_parsecs !== undefined && <div><dt>{t('system.range')}</dt><dd>{selectedForeignInfoUnit.fleet.fuel_range_parsecs} pc</dd></div>}
+                      <div><dt>{t('system.location')}</dt><dd>{selectedForeignSystemLabel}</dd></div>
+                    </dl>
+                    <small className="galaxy-fleet-info-damage">{t('system.specialVesselLoadoutUnavailable')}</small>
+                  </div>
+                )}
+              </section>
+            )}
+            <div className="galaxy-foreign-fleet-engagement">
+              {selectedForeignRelation?.stance === 'war' ? (
+                <>
+                  <strong>{t('galaxy.foreignFleetAtWar')}</strong>
+                  <small>{t('galaxy.foreignFleetEncounterNextTurn')}</small>
+                </>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="button-danger"
+                    disabled={diplomacyDisabled || foreignFleetAttackBusy || !selectedForeignRelation}
+                    onClick={() => {
+                      if (!foreignFleetDialog || diplomacyDisabled || foreignFleetAttackBusy || !selectedForeignRelation) return
+                      setForeignFleetAttackBusy(true)
+                      void onDeclareWar(foreignFleetDialog.empireID).finally(() => setForeignFleetAttackBusy(false))
+                    }}
+                  >
+                    <GameIcon name="flag" />{foreignFleetAttackBusy ? t('common.loading') : t('galaxy.attackForeignFleet')}
+                  </button>
+                  <small>{t('galaxy.attackForeignFleetHint')}</small>
+                </>
+              )}
+            </div>
           </div>
         </aside>
       )}

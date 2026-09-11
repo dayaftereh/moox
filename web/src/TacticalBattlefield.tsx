@@ -1,8 +1,9 @@
-﻿import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
 import {
   tacticalEndActivationCommand,
   tacticalFireBeamCommand,
   tacticalMoveCommand,
+  tacticalRetreatCommand,
   type BattleView,
   type ProtocolCommand,
   type TacticalFireAction,
@@ -166,6 +167,10 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const endActivation = () => {
     if (controlsDisabled || !tactical.can_end_activation || !activeShip) return
     void runCommand(tacticalEndActivationCommand(tactical, activeShip.ship_id))
+  }
+  const retreat = () => {
+    if (controlsDisabled || !activeShip) return
+    void runCommand(tacticalRetreatCommand(tactical, activeShip.ship_id))
   }
 
   const pointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
@@ -332,6 +337,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
 
           <div className="tactical-primary-actions">
             <button type="button" className="button-primary" disabled={!tactical.can_end_activation || controlsDisabled} onClick={endActivation}>{busy ? t('battlefield.commandBusy') : t('battlefield.endActivation')}</button>
+            <button type="button" className="button-danger" disabled={controlsDisabled} onClick={retreat}>{t('battlefield.retreat')}</button>
             <button type="button" className="button-secondary" onClick={onBack}>{t('battle.backToEncounter')}</button>
           </div>
         </aside>

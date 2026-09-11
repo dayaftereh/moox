@@ -30,6 +30,8 @@ type StrategicContact struct {
 	RemainingTurns      int                            `json:"remaining_turns,omitempty"`
 	Role                core.StrategicFleetRole        `json:"role,omitempty"`
 	SpecialKind         core.StrategicFleetSpecialKind `json:"special_kind,omitempty"`
+	Fleet               *core.StrategicFleet           `json:"fleet,omitempty"`
+	Ships               []core.Ship                    `json:"ships,omitempty"`
 }
 
 type StrategicView struct {
@@ -299,7 +301,29 @@ func buildStrategicView(state *core.GameState, empireID core.ID, rules *game.Eco
 			out.Fleets = append(out.Fleets, fleet)
 		} else if fleet.AtSystemID != 0 && state.EmpiresHaveContact(empireID, fleet.EmpireID) {
 			if _, ok := visited[fleet.AtSystemID]; ok {
-				out.Contacts = append(out.Contacts, StrategicContact{Kind: StrategicContactFleet, EmpireID: fleet.EmpireID, FleetID: fleet.ID, SystemID: fleet.AtSystemID, Role: fleet.Role, SpecialKind: fleet.SpecialKind})
+				fleetView := fleet
+				fleetView.ShipIDs = append([]core.ID(nil), fleet.ShipIDs...)
+				if rules != nil {
+					for _, foreignEmpire := range state.Empires {
+						if foreignEmpire.ID == fleet.EmpireID {
+							fleetView = rules.ProjectSpecialFleetMovementMetadata(fleetView, foreignEmpire)
+							break
+						}
+					}
+				}
+				contact := StrategicContact{Kind: StrategicContactFleet, EmpireID: fleet.EmpireID, FleetID: fleet.ID, SystemID: fleet.AtSystemID, Role: fleet.Role, SpecialKind: fleet.SpecialKind, Fleet: &fleetView}
+				for _, shipID := range fleet.ShipIDs {
+					for _, ship := range state.Ships {
+						if ship.ID != shipID || ship.EmpireID != fleet.EmpireID {
+							continue
+						}
+						shipView := ship
+						shipView.Spec.Weapons = append([]core.ShipWeaponMount(nil), ship.Spec.Weapons...)
+						contact.Ships = append(contact.Ships, shipView)
+						break
+					}
+				}
+				out.Contacts = append(out.Contacts, contact)
 			}
 		}
 	}

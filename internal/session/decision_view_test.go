@@ -331,3 +331,89 @@ func TestDecisionViewBackfillsLegacyPlayerColorSlotsByEmpireOrder(t *testing.T) 
 		t.Fatalf("legacy color fallback=%+v own=%+v", view.PublicEmpires, view.Empire)
 	}
 }
+func TestDecisionViewProjectsKnownForeignFleetCompositionOnlyAtVisitedSystem(t *testing.T) {
+	rules, err := game.LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	generated, err := rules.NewReferenceTriangleGame(game.ReferenceTriangleSeed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := generated.State
+	humanID := generated.Players[0].EmpireID
+	darlokID := generated.Players[1].EmpireID
+	humanHome := state.Empires[0].VisitedSystemIDs[0]
+	state.Empires[0].MarkEmpireKnown(darlokID)
+	state.Empires[1].MarkEmpireKnown(humanID)
+	for i := range state.StrategicFleets {
+		if state.StrategicFleets[i].EmpireID == darlokID {
+			state.StrategicFleets[i].AtSystemID = humanHome
+			state.StrategicFleets[i].SourceSystemID = 0
+			state.StrategicFleets[i].DestinationSystemID = 0
+			state.StrategicFleets[i].RemainingTurns = 0
+			state.StrategicFleets[i].TransitTurnsTotal = 0
+		}
+	}
+	seats := make([]Seat, len(generated.Players))
+	for i, player := range generated.Players {
+		seats[i] = Seat{ID: player.SeatID, EmpireID: player.EmpireID, Name: player.Name, Controller: ControllerBuiltinAI}
+	}
+	s, err := NewGameSession("foreign-fleet-view", state, seats)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resolver, err := game.NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	view, err := s.DecisionView(1, resolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	foreignFleetContacts := make([]StrategicContact, 0)
+	for _, contact := range view.Strategic.Contacts {
+		if contact.Kind == StrategicContactFleet && contact.EmpireID == darlokID && contact.SystemID == humanHome {
+			foreignFleetContacts = append(foreignFleetContacts, contact)
+		}
+	}
+	if len(foreignFleetContacts) != 2 {
+		t.Fatalf("foreign fleet contacts=%+v want Darlok combat + colony Fleet", foreignFleetContacts)
+	}
+	combatShips := 0
+	specialSeen := false
+	for _, contact := range foreignFleetContacts {
+		if contact.Fleet == nil || contact.Fleet.ID != contact.FleetID || contact.Fleet.EmpireID != darlokID {
+			t.Fatalf("foreign contact missing Fleet projection: %+v", contact)
+		}
+		if contact.Fleet.SpecialKind != core.StrategicFleetSpecialNone {
+			specialSeen = true
+			if len(contact.Ships) != 0 {
+				t.Fatalf("special foreign Fleet unexpectedly projected concrete Ships: %+v", contact)
+			}
+			continue
+		}
+		combatShips += len(contact.Ships)
+		if len(contact.Ships) != len(contact.Fleet.ShipIDs) {
+			t.Fatalf("foreign combat Fleet composition mismatch: %+v", contact)
+		}
+		for _, ship := range contact.Ships {
+			if ship.EmpireID != darlokID {
+				t.Fatalf("foreign Fleet projected wrong ship owner: %+v", ship)
+			}
+		}
+	}
+	if !specialSeen || combatShips != rules.NewGameGalaxy.Start.ScoutCount {
+		t.Fatalf("foreign Fleet projection special=%v combatShips=%d want special + %d Scouts", specialSeen, combatShips, rules.NewGameGalaxy.Start.ScoutCount)
+	}
+	for _, fleet := range view.Strategic.Fleets {
+		if fleet.EmpireID != humanID {
+			t.Fatalf("foreign Fleet leaked into own-fleet authority list: %+v", fleet)
+		}
+	}
+	for _, ship := range view.Strategic.Ships {
+		if ship.EmpireID != humanID {
+			t.Fatalf("foreign Ship leaked into own-ship authority list: %+v", ship)
+		}
+	}
+}

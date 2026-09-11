@@ -3,6 +3,7 @@ package battle
 import (
 	"encoding/json"
 	"reflect"
+	"sort"
 	"strings"
 	"testing"
 
@@ -468,11 +469,23 @@ func TestTacticalTwoByTwoActivationAndRoundReset(t *testing.T) {
 	}
 }
 
-func TestTacticalTwoByTwoRejectsThirdShipPerSide(t *testing.T) {
+func TestTacticalSessionAllowsThreeByTwoCombatShips(t *testing.T) {
 	spec := baselineTacticalBattleSpec()
-	spec.Attacker.ShipIDs = []core.ID{100, 101, 102}
-	if _, err := NewSession(spec); err == nil || !strings.Contains(err.Error(), "one or two combat Ships per side") {
-		t.Fatalf("unexpected 3-ship validation error: %v", err)
+	attackerTwo := spec.Tactical.Ships[0]
+	attackerTwo.ShipID = 102
+	attackerTwo.Y += 4
+	attackerThree := spec.Tactical.Ships[0]
+	attackerThree.ShipID = 103
+	attackerThree.Y += 8
+	defenderTwo := spec.Tactical.Ships[1]
+	defenderTwo.ShipID = 201
+	defenderTwo.Y += 4
+	spec.Attacker.ShipIDs = []core.ID{100, 102, 103}
+	spec.Defender.ShipIDs = []core.ID{200, 201}
+	spec.Tactical.Ships = append(spec.Tactical.Ships, attackerTwo, attackerThree, defenderTwo)
+	sort.Slice(spec.Tactical.Ships, func(i, j int) bool { return spec.Tactical.Ships[i].ShipID < spec.Tactical.Ships[j].ShipID })
+	if _, err := NewSession(spec); err != nil {
+		t.Fatalf("3v2 combat ships rejected: %v", err)
 	}
 }
 
@@ -594,5 +607,28 @@ func TestTacticalLaserWithNoArmorUsesAggregateStructureBaseline(t *testing.T) {
 	final := s.View().Tactical.State.Ships[1]
 	if final.ArmorCurrent != 0 || final.StructureDamage != 4 || !final.Destroyed {
 		t.Fatalf("final aggregate-Structure defender=%+v", final)
+	}
+}
+func TestTacticalRetreatCompletesBattleForOpposingSeat(t *testing.T) {
+	s := newStartedTacticalSession(t)
+	view := s.View()
+	active := view.Tactical.State.ActiveShipID
+	cmd, err := NewRetreatCommand(view.Tactical.State.NextCommandSequence, RetreatPayload{ShipID: active})
+	if err != nil {
+		t.Fatal(err)
+	}
+	prepared, err := s.PrepareCommand(1, cmd)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result := prepared.Result(); result == nil || result.WinnerSeat != 2 || result.Outcome != TacticalOutcomeRetreat || len(result.DestroyedShipIDs) != 0 {
+		t.Fatalf("retreat result=%+v", result)
+	}
+	if err := s.CommitPreparedCommand(prepared); err != nil {
+		t.Fatal(err)
+	}
+	completed := s.View()
+	if completed.Phase != PhaseCompleted || completed.Result == nil || completed.Result.WinnerSeat != 2 || completed.Result.Outcome != TacticalOutcomeRetreat {
+		t.Fatalf("completed retreat view=%+v", completed)
 	}
 }

@@ -15,7 +15,9 @@ const (
 	CommandMoveShip        = "battle.move_ship"
 	CommandFireBeam        = "battle.fire_beam"
 	CommandEndActivation   = "battle.end_activation"
+	CommandRetreat         = "battle.retreat"
 	TacticalOutcomeVictory = "tactical_victory"
+	TacticalOutcomeRetreat = "tactical_retreat"
 
 	BaselineTacticalRNGState uint32 = 0x001500BD
 
@@ -185,6 +187,9 @@ type FireBeamPayload struct {
 type EndActivationPayload struct {
 	ShipID core.ID `json:"ship_id"`
 }
+type RetreatPayload struct {
+	ShipID core.ID `json:"ship_id"`
+}
 
 type tacticalRuntime struct {
 	state             TacticalState
@@ -219,6 +224,9 @@ func NewFireBeamCommand(sequence uint32, payload FireBeamPayload) (protocol.Comm
 func NewEndActivationCommand(sequence uint32, payload EndActivationPayload) (protocol.Command, error) {
 	return protocol.NewCommand(sequence, CommandEndActivation, payload)
 }
+func NewRetreatCommand(sequence uint32, payload RetreatPayload) (protocol.Command, error) {
+	return protocol.NewCommand(sequence, CommandRetreat, payload)
+}
 
 func validateTacticalSpec(spec Spec) error {
 	if spec.Tactical == nil {
@@ -240,15 +248,13 @@ func validateTacticalSpec(spec Spec) error {
 	if err := validateBaselineRules(t.Rules); err != nil {
 		return err
 	}
-	if len(spec.Attacker.ShipIDs) < 1 || len(spec.Attacker.ShipIDs) > 2 || len(spec.Defender.ShipIDs) < 1 || len(spec.Defender.ShipIDs) > 2 {
-		return fmt.Errorf("Slice 15.5 tactical baseline supports one or two combat Ships per side")
+	if len(spec.Attacker.ShipIDs) < 1 || len(spec.Defender.ShipIDs) < 1 {
+		return fmt.Errorf("tactical battle requires at least one combat Ship per side")
 	}
 	if len(t.Ships) != len(spec.Attacker.ShipIDs)+len(spec.Defender.ShipIDs) {
 		return fmt.Errorf("tactical ship count does not match strategic sides")
 	}
-	if len(spec.Attacker.CivilianFleetIDs) != 0 || len(spec.Defender.CivilianFleetIDs) != 0 || len(spec.DefenderColonyIDs) != 0 {
-		return fmt.Errorf("Slice 15.5 tactical baseline does not support civilian or colony context")
-	}
+
 	byID := make(map[core.ID]TacticalShipSpec, len(t.Ships))
 	occupied := make(map[[2]int]core.ID, len(t.Ships))
 	var previous core.ID
@@ -493,6 +499,11 @@ func (s *Session) PrepareCommand(seatID protocol.SeatID, command protocol.Comman
 		if err = decodeBattlePayload(command, &payload); err == nil {
 			err = prepareEndActivation(s.spec, &prepared.runtime, seatID, command.Sequence, payload)
 		}
+	case CommandRetreat:
+		var payload RetreatPayload
+		if err = decodeBattlePayload(command, &payload); err == nil {
+			result, err = prepareRetreat(s.spec, &prepared.runtime, seatID, command.Sequence, payload)
+		}
 	default:
 		err = fmt.Errorf("unsupported tactical command %q", command.Kind)
 	}
@@ -526,6 +537,36 @@ func decodeBattlePayload(command protocol.Command, dst any) error {
 	return nil
 }
 
+func prepareRetreat(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, commandSequence uint32, payload RetreatPayload) (*Result, error) {
+	activeSpec := tacticalShipSpec(*spec.Tactical, r.state.ActiveShipID)
+	activeState := r.shipState(r.state.ActiveShipID)
+	if activeSpec == nil || activeState == nil {
+		return nil, fmt.Errorf("active tactical ship %d is missing", r.state.ActiveShipID)
+	}
+	if seatID == 0 || activeSpec.SeatID != seatID {
+		return nil, fmt.Errorf("seat %d does not control active ship %d", seatID, r.state.ActiveShipID)
+	}
+	if payload.ShipID != r.state.ActiveShipID {
+		return nil, fmt.Errorf("retreat ship %d is not active ship %d", payload.ShipID, r.state.ActiveShipID)
+	}
+	if activeState.Destroyed || activeState.ActivationComplete {
+		return nil, fmt.Errorf("active ship %d cannot retreat", payload.ShipID)
+	}
+	winner := protocol.SeatID(0)
+	for _, participant := range spec.Participants {
+		if participant != seatID {
+			winner = participant
+			break
+		}
+	}
+	if winner == 0 {
+		return nil, fmt.Errorf("battle has no opposing participant for retreat")
+	}
+	if err := r.appendEvent("side_retreated", seatID, commandSequence, map[string]any{"seat_id": seatID, "active_ship_id": payload.ShipID, "winner_seat": winner}); err != nil {
+		return nil, err
+	}
+	return &Result{WinnerSeat: winner, Outcome: TacticalOutcomeRetreat}, nil
+}
 func prepareMoveShip(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, commandSequence uint32, payload MoveShipPayload) error {
 	activeSpec := tacticalShipSpec(*spec.Tactical, r.state.ActiveShipID)
 	activeState := r.shipState(r.state.ActiveShipID)
