@@ -170,6 +170,17 @@ Implementation status (2026-09-11): **5C COMPLETE**
 - Visible browser QA: fleet marker opens picker without opening SystemDialog; closing picker and clicking `System 01` still opens the normal system dialog; marker is outside any star button, desktop hit area is 24x24 px (30x30 px mobile CSS), picker measured about 380x264 px in a 791x605 viewport, and drag QA moved it from roughly `(78,60)` to `(178,140)` while remaining clamped.
 - Validation: web `npm run build` green (main JS 266.43 kB / 69.07 kB gzip, below 350 KiB guardrail); full `go test ./...` green; `git diff --check` green.
 - Canonical 7171 was refreshed for integrated 5B+5C QA and now runs as service `job-002278`. The known persistence seam reproduced on restart; `game-1` was recreated through the visible New Game UI with unchanged seed `0x8009`.
+5C UX refinement (2026-09-11, `3503a6b`) supersedes the first picker layout:
+
+- Combat/civilian fleet tabs are removed from the Galaxy picker. Every own ship/unit currently at the system is presented in one shared selectable pool.
+- The pool is a compact four-column image grid. Canonical `game-1` visibly shows `Scout 1`, `Scout 2`, and `Kolonieschiff` side-by-side in the first row; larger sets scroll vertically inside the picker instead of growing the dialog. Ephemeral DOM layout QA with 32 tiles preserved four columns and produced body overflow/scroll.
+- Concrete military ships keep their persisted `visual_genome` / `ProceduralShipGlyph`. Special strategic ships had no persisted per-instance visual genome in the current model, so `SpecialShipGlyph.tsx` now provides stable committed vector silhouettes for Colony Ship, Outpost Ship, and Troop Transport instead of the former flag/outpost/transport icon. A future per-instance special visual genome can replace this without changing the picker contract.
+- Selection can span internal source fleets. Reachable/total counts are computed only by matching/intersecting the already authoritative per-source `fleet_move_targets`; no range, ETA, fuel, or legality formula moved into React. Unsupported partial multi-ship subsets remain explicitly unsupported rather than guessed.
+- Own colony/outpost badges above the star are removed from this surface. A visited system name turns green when it contains an own colony; normal visited names remain white.
+- Own strategic fleets now get individual small fleet markers around the star in clockwise slots: top-right, bottom-right, bottom-left, top-left, then a wider ring if needed. Canonical home therefore shows two separate 18x18 fleet markers at top-right/right-bottom; either opens the same combined system pool.
+- The picker is materially smaller: desktop max width 292 px; mobile max width 276 px and 76vw, leaving map space visible beside it. Canonical browser QA measured 292x201 px with a 4x66.5 px grid in a 791x605 viewport.
+- Canonical browser QA also proved: no own colony marker remains, `System 01` computes to the success/green color, Scout 1 can be deselected while Scout 2 + Colony Ship stay selected (`2/3`, `Ziele 0/19`), Colony Ship renders a dedicated SVG rather than a `GameIcon`, and normal star inspection still opens only the SystemDialog after the picker closes.
+- Validation after refinement: web `npm run build` green (main JS 268.83 kB / 69.90 kB gzip), full `go test ./...` green, staged `git diff --check` green.
 ### 5D - Drag/drop targeting + route feedback
 
 - Drop hit-testing against star targets.
