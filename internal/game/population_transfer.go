@@ -460,29 +460,58 @@ func populationTransferETA(source, destination core.StarSystem, ftlSpeed int) in
 	return eta
 }
 
-func (r *EconomyRules) populationTransferFTLSpeed(empire core.Empire) int {
+type strategicDriveTechnology struct {
+	technologyID int
+	driveID      string
+	baseSpeed    int
+}
+
+var strategicDriveTechnologies = []strategicDriveTechnology{
+	{120, "nuclear_drive", 2},
+	{72, "fusion_drive", 3},
+	{96, "ion_drive", 4},
+	{11, "anti_matter_drive", 5},
+	{88, "hyper_drive", 6},
+	{95, "interphased_drive", 7},
+}
+
+func (r *EconomyRules) populationTransferDriveProfile(empire core.Empire) (string, int) {
 	known := make(map[int]struct{}, len(empire.KnownTechnologyIDs))
 	for _, technologyID := range empire.KnownTechnologyIDs {
 		known[technologyID] = struct{}{}
 	}
-	speed := 0
-	for _, drive := range []struct {
-		technologyID int
-		speed        int
-	}{
-		{120, 2}, // Nuclear Drive
-		{72, 3},  // Fusion Drive
-		{96, 4},  // Ion Drive
-		{11, 5},  // Anti-Matter Drive
-		{88, 6},  // Hyper Drive
-		{95, 7},  // Interphased Drive
-	} {
-		if _, ok := known[drive.technologyID]; ok && drive.speed > speed {
-			speed = drive.speed
+	bestDriveID := ""
+	baseSpeed := 0
+	for _, drive := range strategicDriveTechnologies {
+		if _, ok := known[drive.technologyID]; ok && drive.baseSpeed > baseSpeed {
+			bestDriveID = drive.driveID
+			baseSpeed = drive.baseSpeed
 		}
 	}
 	if modifiers, ok := r.RaceModifiers[empire.RaceID]; ok && modifiers.TransDimensional {
-		speed += 2
+		baseSpeed += 2
 	}
+	return bestDriveID, baseSpeed
+}
+
+func (r *EconomyRules) populationTransferDriveIDForFTLSpeed(empire core.Empire, ftlSpeed int) string {
+	known := make(map[int]struct{}, len(empire.KnownTechnologyIDs))
+	for _, technologyID := range empire.KnownTechnologyIDs {
+		known[technologyID] = struct{}{}
+	}
+	bonus := 0
+	if modifiers, ok := r.RaceModifiers[empire.RaceID]; ok && modifiers.TransDimensional {
+		bonus = 2
+	}
+	for _, drive := range strategicDriveTechnologies {
+		if _, ok := known[drive.technologyID]; ok && drive.baseSpeed+bonus == ftlSpeed {
+			return drive.driveID
+		}
+	}
+	return ""
+}
+
+func (r *EconomyRules) populationTransferFTLSpeed(empire core.Empire) int {
+	_, speed := r.populationTransferDriveProfile(empire)
 	return speed
 }

@@ -177,7 +177,7 @@ func (s *GameSession) DecisionView(seatID protocol.SeatID, resolver *game.Econom
 		})
 	}
 	sort.Slice(view.Diplomacy, func(i, j int) bool { return view.Diplomacy[i].OtherEmpireID < view.Diplomacy[j].OtherEmpireID })
-	view.Strategic = buildStrategicView(state, seat.EmpireID)
+	view.Strategic = buildStrategicView(state, seat.EmpireID, resolver.Rules)
 
 	for _, system := range view.Strategic.Galaxy.Systems {
 		for _, planet := range system.Planets {
@@ -242,7 +242,7 @@ func (s *GameSession) DecisionView(seatID protocol.SeatID, resolver *game.Econom
 	return view, nil
 }
 
-func buildStrategicView(state *core.GameState, empireID core.ID) StrategicView {
+func buildStrategicView(state *core.GameState, empireID core.ID, rules *game.EconomyRules) StrategicView {
 	visitedSystemIDs := playerVisitedSystemIDs(state, empireID)
 	visited := make(map[core.ID]struct{}, len(visitedSystemIDs))
 	for _, systemID := range visitedSystemIDs {
@@ -282,8 +282,18 @@ func buildStrategicView(state *core.GameState, empireID core.ID) StrategicView {
 			out.Ships = append(out.Ships, ship)
 		}
 	}
+	var perspectiveEmpire core.Empire
+	for _, empire := range state.Empires {
+		if empire.ID == empireID {
+			perspectiveEmpire = empire
+			break
+		}
+	}
 	for _, fleet := range state.StrategicFleets {
 		if fleet.EmpireID == empireID {
+			if rules != nil && perspectiveEmpire.ID != 0 {
+				fleet = rules.ProjectSpecialFleetMovementMetadata(fleet, perspectiveEmpire)
+			}
 			fleet.ShipIDs = append([]core.ID(nil), fleet.ShipIDs...)
 			out.Fleets = append(out.Fleets, fleet)
 		} else if fleet.AtSystemID != 0 && state.EmpiresHaveContact(empireID, fleet.EmpireID) {

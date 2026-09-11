@@ -30,7 +30,11 @@ type StrategicFleet struct {
 	DestinationSystemID ID                        `json:"destination_system_id,omitempty"`
 	RemainingTurns      int                       `json:"remaining_turns,omitempty"`
 	FTLSpeed            int                       `json:"ftl_speed,omitempty"`
-	ShipIDs             []ID                      `json:"ship_ids,omitempty"`
+	// Projection-only movement equipment for fixed special fleets. Authoritative GameState keeps these empty; player views fill an effective copy.
+	WarpDriveID      string `json:"warp_drive_id,omitempty"`
+	FuelCellID       string `json:"fuel_cell_id,omitempty"`
+	FuelRangeParsecs int    `json:"fuel_range_parsecs,omitempty"`
+	ShipIDs          []ID   `json:"ship_ids,omitempty"`
 }
 
 type DiplomaticStance string
@@ -126,6 +130,9 @@ func validateStrategicState(
 			}
 			assignedShips[shipID] = fleet.ID
 			lastShipID = shipID
+		}
+		if fleet.WarpDriveID != "" || fleet.FuelCellID != "" || fleet.FuelRangeParsecs != 0 {
+			return fmt.Errorf("strategic_fleet[%d] projection-only movement metadata must remain empty in authoritative state", i)
 		}
 		switch fleet.SpecialKind {
 		case StrategicFleetSpecialNone:

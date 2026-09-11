@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"moox/internal/battle"
+	"moox/internal/core"
 	"moox/internal/game"
 	"moox/internal/protocol"
 )
@@ -78,6 +79,11 @@ func TestPlayerDecisionViewIsPlayerSafeDeepCopyAndDeterministic(t *testing.T) {
 	for _, fleet := range view.Strategic.Fleets {
 		if fleet.EmpireID != view.Empire.ID {
 			t.Fatalf("decision view leaked foreign fleet composition %+v", fleet)
+			if fleet.SpecialKind == core.StrategicFleetSpecialColonyShip {
+				if fleet.WarpDriveID != "nuclear_drive" || fleet.FTLSpeed != 2 || fleet.FuelCellID != "standard_fuel_cells" || fleet.FuelRangeParsecs != 4 {
+					t.Fatalf("starting Colony Ship movement metadata=%+v", fleet)
+				}
+			}
 		}
 	}
 	if len(view.Strategic.Contacts) != 0 {

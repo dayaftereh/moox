@@ -73,27 +73,55 @@ func strategicTravelETA(source, destination core.StarSystem, ftlSpeed int) int {
 	return (parsecs + ftlSpeed - 1) / ftlSpeed
 }
 
-func colonyShipFuelRangeParsecs(empire core.Empire) int {
+type strategicFuelTechnology struct {
+	technologyID int
+	fuelCellID   string
+	rangeParsecs int
+}
+
+var strategicFuelTechnologies = []strategicFuelTechnology{
+	{standardFuelCellsTechnologyID, "standard_fuel_cells", 4},
+	{deuteriumFuelCellsTechnologyID, "deuterium_fuel_cells", 6},
+	{iridiumFuelCellsTechnologyID, "iridium_fuel_cells", 9},
+	{urridiumFuelCellsTechnologyID, "urridium_fuel_cells", 12},
+	{thoriumFuelCellsTechnologyID, "thorium_fuel_cells", 255},
+}
+
+func strategicFuelCellProfile(empire core.Empire) (string, int) {
 	known := make(map[int]struct{}, len(empire.KnownTechnologyIDs))
 	for _, technologyID := range empire.KnownTechnologyIDs {
 		known[technologyID] = struct{}{}
 	}
+	fuelCellID := ""
 	rangeParsecs := 0
-	for _, fuel := range []struct {
-		technologyID int
-		rangeParsecs int
-	}{
-		{standardFuelCellsTechnologyID, 4},
-		{deuteriumFuelCellsTechnologyID, 6},
-		{iridiumFuelCellsTechnologyID, 9},
-		{urridiumFuelCellsTechnologyID, 12},
-		{thoriumFuelCellsTechnologyID, 255},
-	} {
+	for _, fuel := range strategicFuelTechnologies {
 		if _, ok := known[fuel.technologyID]; ok && fuel.rangeParsecs > rangeParsecs {
+			fuelCellID = fuel.fuelCellID
 			rangeParsecs = fuel.rangeParsecs
 		}
 	}
+	return fuelCellID, rangeParsecs
+}
+
+func colonyShipFuelRangeParsecs(empire core.Empire) int {
+	_, rangeParsecs := strategicFuelCellProfile(empire)
 	return rangeParsecs
+}
+
+// ProjectSpecialFleetMovementMetadata adds the movement equipment currently effective
+// for fixed Colony/Outpost/Transport fleets to a player-view copy. The fleet FTL speed
+// remains the per-instance strategic speed; fuel cell/range intentionally follow current
+// empire technology because that is the authoritative movement rule.
+func (r *EconomyRules) ProjectSpecialFleetMovementMetadata(fleet core.StrategicFleet, empire core.Empire) core.StrategicFleet {
+	if _, fixed := fixedSpecialShipName(fleet.SpecialKind); !fixed {
+		return fleet
+	}
+	fleet.WarpDriveID = r.populationTransferDriveIDForFTLSpeed(empire, fleet.FTLSpeed)
+	if fleet.WarpDriveID == "" {
+		fleet.WarpDriveID, _ = r.populationTransferDriveProfile(empire)
+	}
+	fleet.FuelCellID, fleet.FuelRangeParsecs = strategicFuelCellProfile(empire)
+	return fleet
 }
 
 func systemByID(state *core.GameState, id core.ID) *core.StarSystem {

@@ -1023,7 +1023,10 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                   <div className="galaxy-fleet-info-content">
                     <dl className="galaxy-fleet-info-grid">
                       <div><dt>{t('system.fleetType')}</dt><dd>{humanizeToken(fleetInfoUnit.fleet.special_kind ?? fleetInfoUnit.fleet.role)}</dd></div>
+                      {fleetInfoUnit.fleet.warp_drive_id && <div><dt>{t('system.warpDrive')}</dt><dd>{humanizeToken(fleetInfoUnit.fleet.warp_drive_id)}</dd></div>}
                       {fleetInfoUnit.fleet.ftl_speed !== undefined && <div><dt>{t('system.ftlSpeed')}</dt><dd>{fleetInfoUnit.fleet.ftl_speed}</dd></div>}
+                      {fleetInfoUnit.fleet.fuel_cell_id && <div><dt>{t('system.fuelCell')}</dt><dd>{humanizeToken(fleetInfoUnit.fleet.fuel_cell_id)}</dd></div>}
+                      {fleetInfoUnit.fleet.fuel_range_parsecs !== undefined && <div><dt>{t('system.range')}</dt><dd>{fleetInfoUnit.fleet.fuel_range_parsecs} pc</dd></div>}
                       <div><dt>{t('system.location')}</dt><dd>{pickerSystem?.name ?? t('galaxy.unknownStar')}</dd></div>
                     </dl>
                     <small className="galaxy-fleet-info-damage">{t('system.specialVesselLoadoutUnavailable')}</small>

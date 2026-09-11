@@ -279,6 +279,9 @@ export type StrategicFleet = {
   destination_system_id?: number
   remaining_turns?: number
   ftl_speed?: number
+  warp_drive_id?: string
+  fuel_cell_id?: string
+  fuel_range_parsecs?: number
   ship_ids?: number[]
 }
 export type PopulationTransfer = {
