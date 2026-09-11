@@ -159,6 +159,17 @@ Implementation status (2026-09-11): **5B COMPLETE**
 - Exact persisted ship SVGs in the picker.
 - Click/tap `Ziel wÃƒÂ¤hlen` fallback.
 
+Implementation status (2026-09-11): **5C COMPLETE**
+
+- `3338ead` splits each Galaxy system into sibling controls: the star button remains responsible for system inspection while the own-fleet marker is now an independent accessible button; browser DOM QA confirms zero nested buttons.
+- Clicking the fleet marker opens a compact floating `Flottenauswahl` instead of a map-covering modal. The panel is draggable by its header, viewport-clamped and keeps the Galaxy visible behind it.
+- Fleets at the same system are grouped independently. Canonical seed `0x8009` visibly exposes combat fleet `#59` and civilian colony fleet `#63` from the Human home system.
+- Concrete ships render their exact persisted `ProceduralShipGlyph`; visible QA shows `Scout 1` and `Scout 2` separately selectable with independent `aria-pressed` state. Whole-fleet and single-ship selection profiles consume only server-projected `fleet_move_targets`.
+- Fixed support fleets do not invent fake ship instances: `#63` renders `Colony Ship` as one fixed support unit.
+- The footer shows only authoritative target counts. Canonical `0x8009` correctly reports `0 von 19 Zielen erreichbar`; React performs no distance/range/ETA legality calculation.
+- Visible browser QA: fleet marker opens picker without opening SystemDialog; closing picker and clicking `System 01` still opens the normal system dialog; marker is outside any star button, desktop hit area is 24x24 px (30x30 px mobile CSS), picker measured about 380x264 px in a 791x605 viewport, and drag QA moved it from roughly `(78,60)` to `(178,140)` while remaining clamped.
+- Validation: web `npm run build` green (main JS 266.43 kB / 69.07 kB gzip, below 350 KiB guardrail); full `go test ./...` green; `git diff --check` green.
+- Canonical 7171 was refreshed for integrated 5B+5C QA and now runs as service `job-002278`. The known persistence seam reproduced on restart; `game-1` was recreated through the visible New Game UI with unchanged seed `0x8009`.
 ### 5D - Drag/drop targeting + route feedback
 
 - Drop hit-testing against star targets.
