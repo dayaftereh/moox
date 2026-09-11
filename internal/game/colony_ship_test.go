@@ -3,6 +3,7 @@ package game
 import (
 	"encoding/json"
 	"path/filepath"
+	"reflect"
 	"testing"
 
 	"moox/internal/core"
@@ -262,8 +263,20 @@ func TestMoveColonyShipChecksSupplyRangeAndAdvancesDeterministicETA(t *testing.T
 		t.Fatal(err)
 	}
 	fleet := &state.StrategicFleets[0]
-	if fleet.AtSystemID != 0 || fleet.DestinationSystemID != destination.ID || fleet.RemainingTurns != 2 {
+	if fleet.AtSystemID != 0 || fleet.SourceSystemID != source.ID || fleet.DestinationSystemID != destination.ID || fleet.RemainingTurns != 2 || fleet.TransitTurnsTotal != 2 {
 		t.Fatalf("started transit=%+v", *fleet)
+	}
+	projected := ProjectStrategicFleetTransitMetadata(*fleet, state)
+	if projected.RouteDistanceParsecs != 3 || projected.RemainingDistanceParsecs != 3 {
+		t.Fatalf("started transit projection=%+v", projected)
+	}
+	cancel, _ := NewMoveFleetCommand(4, MoveFleetPayload{FleetID: fleetID, DestinationSystemID: source.ID})
+	before := *fleet
+	if _, err := resolver.moveFleet(state, empire.ID, 1, cancel); err == nil {
+		t.Fatal("started fleet movement was unexpectedly cancellable")
+	}
+	if !reflect.DeepEqual(*fleet, before) {
+		t.Fatalf("rejected in-transit reroute mutated fleet: before=%+v after=%+v", before, *fleet)
 	}
 	var started FleetMovementStartedEvent
 	if err := json.Unmarshal(event.Data, &started); err != nil {
@@ -277,14 +290,18 @@ func TestMoveColonyShipChecksSupplyRangeAndAdvancesDeterministicETA(t *testing.T
 	if err != nil {
 		t.Fatal(err)
 	}
-	if fleet.RemainingTurns != 1 || findDomainEvent(events, "empire.fleet_movement_progressed") == nil {
+	if fleet.SourceSystemID != source.ID || fleet.RemainingTurns != 1 || fleet.TransitTurnsTotal != 2 || findDomainEvent(events, "empire.fleet_movement_progressed") == nil {
 		t.Fatalf("first transit advance fleet=%+v events=%+v", *fleet, events)
+	}
+	projected = ProjectStrategicFleetTransitMetadata(*fleet, state)
+	if projected.RouteDistanceParsecs != 3 || projected.RemainingDistanceParsecs != 2 {
+		t.Fatalf("progressed transit projection=%+v", projected)
 	}
 	events, err = resolver.advanceStrategicFleetTransit(state)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if fleet.AtSystemID != destination.ID || fleet.DestinationSystemID != 0 || fleet.RemainingTurns != 0 || findDomainEvent(events, "empire.fleet_arrived") == nil {
+	if fleet.AtSystemID != destination.ID || fleet.SourceSystemID != 0 || fleet.DestinationSystemID != 0 || fleet.RemainingTurns != 0 || fleet.TransitTurnsTotal != 0 || findDomainEvent(events, "empire.fleet_arrived") == nil {
 		t.Fatalf("arrival fleet=%+v events=%+v", *fleet, events)
 	}
 	if err := state.Validate(); err != nil {

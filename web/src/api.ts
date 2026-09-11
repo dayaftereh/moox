@@ -276,12 +276,16 @@ export type StrategicFleet = {
   role: string
   special_kind?: string
   at_system_id?: number
+  source_system_id?: number
   destination_system_id?: number
   remaining_turns?: number
+  transit_turns_total?: number
   ftl_speed?: number
   warp_drive_id?: string
   fuel_cell_id?: string
   fuel_range_parsecs?: number
+  route_distance_parsecs?: number
+  remaining_distance_parsecs?: number
   ship_ids?: number[]
 }
 export type PopulationTransfer = {

@@ -123,11 +123,20 @@ func TestCombatFleetSubsetMoveSplitsBeforeMovementAndUsesDerivedProfile(t *testi
 	if !reflect.DeepEqual(sourceFleet.ShipIDs, []core.ID{shipIDs[0]}) || sourceFleet.AtSystemID != source.ID {
 		t.Fatalf("source fleet after subset move=%+v", *sourceFleet)
 	}
-	if !reflect.DeepEqual(movingFleet.ShipIDs, []core.ID{shipIDs[1]}) || movingFleet.AtSystemID != 0 || movingFleet.DestinationSystemID != destination.ID || movingFleet.RemainingTurns != 2 || movingFleet.FTLSpeed != 0 {
+	if !reflect.DeepEqual(movingFleet.ShipIDs, []core.ID{shipIDs[1]}) || movingFleet.AtSystemID != 0 || movingFleet.SourceSystemID != source.ID || movingFleet.DestinationSystemID != destination.ID || movingFleet.RemainingTurns != 2 || movingFleet.TransitTurnsTotal != 2 || movingFleet.FTLSpeed != 0 {
 		t.Fatalf("moving split fleet=%+v", *movingFleet)
 	}
+	beforeTransitReroute := *movingFleet
+	reroute, _ := NewMoveFleetCommand(8, MoveFleetPayload{FleetID: movingFleet.ID, DestinationSystemID: source.ID})
+	if _, err := resolver.moveFleetEvents(state, empire.ID, 1, reroute); err == nil {
+		t.Fatal("started combat fleet movement was unexpectedly cancellable")
+	}
+	_, afterTransitReroute := strategicFleetByID(state, movingFleet.ID)
+	if afterTransitReroute == nil || !reflect.DeepEqual(*afterTransitReroute, beforeTransitReroute) {
+		t.Fatalf("rejected combat reroute mutated transit: before=%+v after=%+v", beforeTransitReroute, afterTransitReroute)
+	}
 	if err := state.Validate(); err != nil {
-		t.Fatalf("schema21 subset transit invalid: %v", err)
+		t.Fatalf("schema23 subset transit invalid: %v", err)
 	}
 }
 

@@ -1184,7 +1184,9 @@ function App() {
           onSelectSystem={(systemID) => navigate({ kind: 'game', gameID: route.gameID, section: 'galaxy', entityID: systemID })}
           onCloseSystem={() => navigate({ kind: 'game', gameID: route.gameID, section: 'galaxy' })}
           onOpenColony={(colonyID) => navigate({ kind: 'game', gameID: route.gameID, section: 'colonies', entityID: colonyID })}
+          draftOrders={draftOrders}
           onPlanOrder={planOrder}
+          onRemoveOrder={removePlannedOrder}
           t={t}
         />
       ) : activeSection === 'colonies' ? (

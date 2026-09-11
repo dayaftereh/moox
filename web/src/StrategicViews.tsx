@@ -46,9 +46,22 @@ type GalaxyFleetPickerUnit = {
 
 type GalaxyFleetTargetFeedback = {
   systemID: number
-  outcome: 'planned' | 'blocked' | 'unavailable'
+  outcome: 'planned' | 'blocked' | 'unavailable' | 'cancelled'
   target?: FleetMoveTarget
   orderCount?: number
+}
+
+type GalaxyRoute = {
+  key: string
+  sourceSystemID: number
+  destinationSystemID: number
+  tone: 'planned' | 'blocked' | 'transit'
+  orderCount: number
+  progress?: number
+  remainingTurns?: number
+  remainingDistanceParsecs?: number
+  fleetIDs?: number[]
+  unitCount?: number
 }
 
 const populationJobIcons: Record<PopulationJob, GameIconName> = {
@@ -350,13 +363,15 @@ function bodyLabel(t: Translator, kind: string): string {
   return t('system.planet')
 }
 
-export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem, onCloseSystem, onOpenColony, onPlanOrder, t }: {
+export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem, onCloseSystem, onOpenColony, draftOrders, onPlanOrder, onRemoveOrder, t }: {
   snapshot: PlayerSnapshot
   selectedSystemID?: number
   onSelectSystem: (systemID: number) => void
   onCloseSystem: () => void
   onOpenColony: (colonyID: number) => void
+  draftOrders: DraftOrder[]
   onPlanOrder: (order: DraftOrder) => void
+  onRemoveOrder: (key: string) => void
   t: Translator
 }) {
   const decision = snapshot.decision
@@ -382,6 +397,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
     moved: boolean
   } | null>(null)
   const [fleetTargetFeedback, setFleetTargetFeedback] = useState<GalaxyFleetTargetFeedback | null>(null)
+  const [transitFleetInfoKey, setTransitFleetInfoKey] = useState<string | null>(null)
   const [fleetInfoUnitKey, setFleetInfoUnitKey] = useState<string | null>(null)
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
@@ -405,6 +421,14 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   }, [systems])
   const spanX = Math.max(1, bounds.maxX - bounds.minX)
   const spanY = Math.max(1, bounds.maxY - bounds.minY)
+  const mapPointForSystem = (systemID: number) => {
+    const system = systems.find((candidate) => candidate.id === systemID)
+    if (!system) return undefined
+    return {
+      x: 8 + ((system.x - bounds.minX) / spanX) * 84,
+      y: 8 + ((system.y - bounds.minY) / spanY) * 84,
+    }
+  }
   const minZoom = 0.7
   const maxZoom = 4
   const clampZoom = (value: number) => Math.max(minZoom, Math.min(maxZoom, value))
@@ -531,8 +555,92 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
     ? fleetTargetFeedbackSystem.name
     : t('galaxy.unknownStar')
 
+  const plannedRouteMap = new Map<string, GalaxyRoute>()
+  for (const order of draftOrders) {
+    if (order.kind !== 'empire.move_fleet') continue
+    const fleetID = Number(order.payload.fleet_id)
+    const destinationSystemID = Number(order.payload.destination_system_id)
+    if (!Number.isInteger(fleetID) || fleetID <= 0 || !Number.isInteger(destinationSystemID) || destinationSystemID <= 0) continue
+    const fleet = (decision.strategic.fleets ?? []).find((candidate) => candidate.id === fleetID && candidate.empire_id === decision.empire.id)
+    const sourceSystemID = fleet?.at_system_id
+    if (!sourceSystemID) continue
+    const key = `${sourceSystemID}:${destinationSystemID}`
+    const existing = plannedRouteMap.get(key)
+    if (existing) existing.orderCount += 1
+    else plannedRouteMap.set(key, { key: `planned:${key}`, sourceSystemID, destinationSystemID, tone: 'planned', orderCount: 1 })
+  }
+  const plannedRoutes = Array.from(plannedRouteMap.values())
+
+  const blockedRoute: GalaxyRoute | undefined = fleetPicker && fleetTargetFeedback?.outcome === 'blocked' && fleetTargetFeedback.target
+    ? {
+      key: `blocked:${fleetTargetFeedback.target.source_system_id}:${fleetTargetFeedback.target.destination_system_id}`,
+      sourceSystemID: fleetTargetFeedback.target.source_system_id,
+      destinationSystemID: fleetTargetFeedback.target.destination_system_id,
+      tone: 'blocked',
+      orderCount: pickerProfiles.length,
+    }
+    : undefined
+
+  const transitRouteMap = new Map<string, GalaxyRoute>()
+  for (const fleet of decision.strategic.fleets ?? []) {
+    if (fleet.empire_id !== decision.empire.id || fleet.at_system_id || !fleet.source_system_id || !fleet.destination_system_id || !fleet.remaining_turns) continue
+    const total = fleet.transit_turns_total ?? 0
+    const progress = total > 0 ? Math.max(0, Math.min(1, (total - fleet.remaining_turns) / total)) : 0.5
+    const key = `${fleet.source_system_id}:${fleet.destination_system_id}:${fleet.remaining_turns}:${total}`
+    const unitCount = fleet.special_kind ? 1 : Math.max(1, fleet.ship_ids?.length ?? 0)
+    const existing = transitRouteMap.get(key)
+    if (existing) {
+      existing.orderCount += 1
+      existing.unitCount = (existing.unitCount ?? 0) + unitCount
+      existing.fleetIDs = [...(existing.fleetIDs ?? []), fleet.id]
+      existing.remainingDistanceParsecs = Math.max(existing.remainingDistanceParsecs ?? 0, fleet.remaining_distance_parsecs ?? 0)
+    } else {
+      transitRouteMap.set(key, {
+        key: `transit:${key}`,
+        sourceSystemID: fleet.source_system_id,
+        destinationSystemID: fleet.destination_system_id,
+        tone: 'transit',
+        orderCount: 1,
+        progress,
+        remainingTurns: fleet.remaining_turns,
+        remainingDistanceParsecs: fleet.remaining_distance_parsecs,
+        fleetIDs: [fleet.id],
+        unitCount,
+      })
+    }
+  }
+  const transitRoutes = Array.from(transitRouteMap.values())
+  const selectedTransitRoute = transitRoutes.find((route) => route.key === transitFleetInfoKey)
+  const selectedTransitDestination = selectedTransitRoute
+    ? systems.find((system) => system.id === selectedTransitRoute.destinationSystemID)
+    : undefined
+  const selectedTransitDestinationLabel = selectedTransitDestination && visitedSystemIDs.has(selectedTransitDestination.id)
+    ? selectedTransitDestination.name
+    : t('galaxy.unknownStar')
+  const routeGeometry = (route: GalaxyRoute) => {
+    const source = mapPointForSystem(route.sourceSystemID)
+    const destination = mapPointForSystem(route.destinationSystemID)
+    if (!source || !destination) return undefined
+    const progress = route.tone === 'transit' ? Math.max(0, Math.min(1, route.progress ?? 0)) : 0
+    const current = {
+      x: source.x + (destination.x - source.x) * progress,
+      y: source.y + (destination.y - source.y) * progress,
+    }
+    return { source, current, destination }
+  }
+
   const planFleetDestination = (destinationSystemID: number): boolean => {
     if (!fleetPicker || !pickerProfilesSupported || pickerSelectedUnits.length === 0) return false
+    if (destinationSystemID === fleetPicker.systemID) {
+      let removed = 0
+      for (const profile of pickerProfiles) {
+        const key = `fleet:${profile.fleetID}`
+        if (draftOrders.some((order) => order.key === key && order.kind === 'empire.move_fleet')) removed += 1
+        onRemoveOrder(key)
+      }
+      setFleetTargetFeedback({ systemID: destinationSystemID, outcome: 'cancelled', orderCount: removed })
+      return true
+    }
     const targets = pickerTargetsByDestination.get(destinationSystemID)
     if (!targets || targets.length !== pickerProfiles.length) {
       setFleetTargetFeedback({ systemID: destinationSystemID, outcome: 'unavailable' })
@@ -756,6 +864,82 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
           onPointerCancel={finishPointer}
         >
           <div className="galaxy-map-layer" style={{ transform: 'translate3d(' + pan.x + 'px, ' + pan.y + 'px, 0) scale(' + zoom + ')' }}>
+            <svg className="galaxy-route-layer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              {plannedRoutes.map((route) => {
+                const geometry = routeGeometry(route)
+                if (!geometry) return null
+                return (
+                  <line
+                    key={route.key}
+                    className="galaxy-route-line is-planned"
+                    data-route-tone="planned"
+                    data-route-source-system-id={route.sourceSystemID}
+                    data-route-destination-system-id={route.destinationSystemID}
+                    x1={geometry.source.x}
+                    y1={geometry.source.y}
+                    x2={geometry.destination.x}
+                    y2={geometry.destination.y}
+                  />
+                )
+              })}
+              {blockedRoute && (() => {
+                const geometry = routeGeometry(blockedRoute)
+                if (!geometry) return null
+                return (
+                  <line
+                    key={blockedRoute.key}
+                    className="galaxy-route-line is-blocked"
+                    data-route-tone="blocked"
+                    data-route-source-system-id={blockedRoute.sourceSystemID}
+                    data-route-destination-system-id={blockedRoute.destinationSystemID}
+                    x1={geometry.source.x}
+                    y1={geometry.source.y}
+                    x2={geometry.destination.x}
+                    y2={geometry.destination.y}
+                  />
+                )
+              })()}
+              {transitRoutes.map((route) => {
+                const geometry = routeGeometry(route)
+                if (!geometry) return null
+                return (
+                  <line
+                    key={route.key}
+                    className="galaxy-route-line is-transit"
+                    data-route-tone="transit"
+                    data-route-source-system-id={route.sourceSystemID}
+                    data-route-destination-system-id={route.destinationSystemID}
+                    x1={geometry.current.x}
+                    y1={geometry.current.y}
+                    x2={geometry.destination.x}
+                    y2={geometry.destination.y}
+                  />
+                )
+              })}
+            </svg>
+            {transitRoutes.map((route) => {
+              const geometry = routeGeometry(route)
+              if (!geometry) return null
+              return (
+                <button
+                  key={'marker-' + route.key}
+                  type="button"
+                  className={`galaxy-transit-fleet-marker ${playerColorSlotClass(decision.empire.player_color_slot)}${transitFleetInfoKey === route.key ? ' is-open' : ''}`}
+                  data-galaxy-transit-route={route.key}
+                  style={{ left: geometry.current.x + '%', top: geometry.current.y + '%' }}
+                  aria-label={t('galaxy.transitFleetOpen', { count: route.unitCount ?? route.orderCount, eta: route.remainingTurns ?? 0 })}
+                  title={t('galaxy.transitFleetOpen', { count: route.unitCount ?? route.orderCount, eta: route.remainingTurns ?? 0 })}
+                  onPointerDown={(event) => event.stopPropagation()}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    setTransitFleetInfoKey((current) => current === route.key ? null : route.key)
+                  }}
+                >
+                  <GameIcon name="fleets" />
+                  <span aria-hidden="true">{route.remainingTurns}</span>
+                </button>
+              )
+            })}
             {systems.map((system) => {
               const isVisited = visitedSystemIDs.has(system.id)
               const ownsColony = (system.planets ?? []).some((planet) => decision.colonies.some((colony) => colony.planet_id === planet.id))
@@ -772,15 +956,18 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                 ...foreignFleetEmpireIDs.map((empireID) => ({ empireID, own: false })),
               ]
               const fleetTargetBundle = fleetTargetVisualActive ? pickerTargetsByDestination.get(system.id) : undefined
+              const fleetTargetOrigin = fleetTargetVisualActive && fleetPicker?.systemID === system.id
               const fleetTargetCandidate = Boolean(fleetTargetBundle?.length)
               const fleetTargetLegal = fleetTargetCandidate && fleetTargetBundle?.every((target) => target.legal) === true
               const fleetTargetReference = fleetTargetBundle?.find((target) => !target.legal) ?? fleetTargetBundle?.[0]
               const normalSystemTitle = isVisited
                 ? system.name + ' (' + system.x + ', ' + system.y + ')'
                 : t('galaxy.unvisitedTitle')
-              const fleetTargetTitle = fleetTargetCandidate && fleetTargetReference
-                ? `${isVisited ? system.name : t('galaxy.unknownStar')} · ${fleetTargetReference.distance_parsecs} pc · ${t('galaxy.fleetTargetRange', { range: fleetTargetReference.fuel_range_parsecs })} · ${t('galaxy.fleetTargetEta', { eta: fleetTargetReference.eta })}`
-                : normalSystemTitle
+              const fleetTargetTitle = fleetTargetOrigin
+                ? t('galaxy.fleetTargetStay')
+                : fleetTargetCandidate && fleetTargetReference
+                  ? `${isVisited ? system.name : t('galaxy.unknownStar')} · ${fleetTargetReference.distance_parsecs} pc · ${t('galaxy.fleetTargetRange', { range: fleetTargetReference.fuel_range_parsecs })} · ${t('galaxy.fleetTargetEta', { eta: fleetTargetReference.eta })}`
+                  : normalSystemTitle
               return (
                 <div
                   key={system.id}
@@ -794,7 +981,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                 >
                   <button
                     type="button"
-                    className={'galaxy-node' + (selectedSystemID === system.id ? ' galaxy-node-selected' : '') + (ownsColony ? ' galaxy-node-colony' : ownOutpost ? ' galaxy-node-outpost' : '') + (ownFleetUnits > 0 ? ' galaxy-node-fleet' : '') + (fleetTargetCandidate ? (fleetTargetLegal ? ' galaxy-node-target-legal' : ' galaxy-node-target-blocked') : '')}
+                    className={'galaxy-node' + (selectedSystemID === system.id ? ' galaxy-node-selected' : '') + (ownsColony ? ' galaxy-node-colony' : ownOutpost ? ' galaxy-node-outpost' : '') + (ownFleetUnits > 0 ? ' galaxy-node-fleet' : '') + (fleetTargetOrigin ? ' galaxy-node-target-origin' : fleetTargetCandidate ? (fleetTargetLegal ? ' galaxy-node-target-legal' : ' galaxy-node-target-blocked') : '')}
                     aria-label={isVisited ? system.name : t('galaxy.unknownStar')}
                     onClick={() => {
                       if (ignoreClickRef.current) return
@@ -860,6 +1047,19 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
               )
             })}
           </div>
+          {selectedTransitRoute && (
+            <aside className="galaxy-transit-fleet-popover" role="status">
+              <div>
+                <small>{t('galaxy.transitFleetTitle')}</small>
+                <strong>{selectedTransitDestinationLabel}</strong>
+                <span>{t('galaxy.transitFleetSummary', { count: selectedTransitRoute.unitCount ?? selectedTransitRoute.orderCount, distance: selectedTransitRoute.remainingDistanceParsecs ?? '?', eta: selectedTransitRoute.remainingTurns ?? 0 })}</span>
+                <small>{t('galaxy.transitFleetLocked')}</small>
+              </div>
+              <button type="button" aria-label={t('common.close')} title={t('common.close')} onClick={() => setTransitFleetInfoKey(null)}>
+                <GameIcon name="close" />
+              </button>
+            </aside>
+          )}
         </div>
       </Card>
       {fleetPicker && pickerSystem && pickerUnits.length > 0 && (
@@ -1044,7 +1244,9 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                     ? t('galaxy.fleetTargetPlanned', { count: fleetTargetFeedback.orderCount ?? 1 })
                     : fleetTargetFeedback.outcome === 'blocked'
                       ? fleetTargetReasonLabel(t, fleetTargetFeedback.target?.reason)
-                      : t('galaxy.fleetTargetUnavailable')}
+                      : fleetTargetFeedback.outcome === 'cancelled'
+                        ? t('galaxy.fleetTargetCancelled')
+                        : t('galaxy.fleetTargetUnavailable')}
                 </strong>
                 {fleetTargetFeedback.target && (
                   <small>

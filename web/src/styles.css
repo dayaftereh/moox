@@ -4438,6 +4438,116 @@ button.galaxy-node-marker-player-fleet.is-open {
 }
 /* Slice 15.6 Gate3 Block5D: authoritative Galaxy fleet targeting. */
 .galaxy-map-targeting { cursor: crosshair; }
+.galaxy-route-layer {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.galaxy-route-line {
+  fill: none;
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-dasharray: 7 5;
+  vector-effect: non-scaling-stroke;
+  opacity: .96;
+}
+.galaxy-route-line.is-planned,
+.galaxy-route-line.is-transit {
+  stroke: #65d99a;
+  filter: drop-shadow(0 0 2px rgba(101,217,154,.72));
+}
+.galaxy-route-line.is-blocked {
+  stroke: #ff7887;
+  filter: drop-shadow(0 0 2px rgba(255,120,135,.64));
+}
+.galaxy-node-cluster { z-index: 2; }
+.galaxy-node-target-origin { cursor: pointer; color: #74a8ff; }
+.galaxy-node-target-origin .galaxy-star::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 34px;
+  height: 34px;
+  transform: translate(-50%, -50%);
+  border: 1px dashed currentColor;
+  border-radius: 999px;
+  pointer-events: none;
+  box-shadow: 0 0 9px rgba(116,168,255,.38), inset 0 0 8px rgba(116,168,255,.09);
+}
+.galaxy-transit-fleet-marker {
+  position: absolute;
+  z-index: 4;
+  width: 26px;
+  height: 26px;
+  min-height: 26px;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--fleet-player-color, #74a8ff);
+  border-radius: 999px;
+  background: rgba(7,18,30,.94);
+  color: var(--fleet-player-color, #74a8ff);
+  box-shadow: 0 0 0 2px rgba(7,18,30,.8), 0 0 10px color-mix(in srgb, var(--fleet-player-color, #74a8ff) 45%, transparent);
+  cursor: pointer;
+  pointer-events: auto;
+}
+.galaxy-transit-fleet-marker:hover,
+.galaxy-transit-fleet-marker:focus-visible,
+.galaxy-transit-fleet-marker.is-open {
+  filter: brightness(1.16);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--fleet-player-color, #74a8ff) 28%, transparent), 0 0 14px color-mix(in srgb, var(--fleet-player-color, #74a8ff) 62%, transparent);
+}
+.galaxy-transit-fleet-marker .game-icon { width: 12px; height: 12px; }
+.galaxy-transit-fleet-marker > span {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(214,231,255,.5);
+  border-radius: 999px;
+  background: #07121e;
+  color: #edf6ff;
+  font-size: .48rem;
+  line-height: 1;
+}
+.galaxy-transit-fleet-popover {
+  position: absolute;
+  z-index: 8;
+  top: 10px;
+  right: 10px;
+  max-width: min(250px, calc(100% - 20px));
+  padding: 8px 9px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid rgba(101,217,154,.48);
+  border-radius: 10px;
+  background: rgba(6,15,26,.94);
+  box-shadow: 0 10px 30px rgba(0,0,0,.38);
+}
+.galaxy-transit-fleet-popover > div { display: grid; gap: 2px; min-width: 0; }
+.galaxy-transit-fleet-popover small,
+.galaxy-transit-fleet-popover span { color: var(--muted); font-size: .62rem; }
+.galaxy-transit-fleet-popover strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: .74rem; }
+.galaxy-transit-fleet-popover button {
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 4px;
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+}
 .galaxy-node-target-legal,
 .galaxy-node-target-blocked { cursor: pointer; }
 .galaxy-node-target-legal .galaxy-star::before,
@@ -4497,6 +4607,10 @@ button.galaxy-node-marker-player-fleet.is-open {
 .galaxy-fleet-target-feedback.is-blocked {
   border-color: rgba(255,120,135,.5);
   background: rgba(100,31,43,.2);
+}
+.galaxy-fleet-target-feedback.is-cancelled {
+  border-color: rgba(116,168,255,.48);
+  background: rgba(44,75,116,.2);
 }
 .galaxy-fleet-picker-target-button {
   min-height: 27px;

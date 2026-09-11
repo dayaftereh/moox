@@ -294,6 +294,7 @@ func buildStrategicView(state *core.GameState, empireID core.ID, rules *game.Eco
 			if rules != nil && perspectiveEmpire.ID != 0 {
 				fleet = rules.ProjectSpecialFleetMovementMetadata(fleet, perspectiveEmpire)
 			}
+			fleet = game.ProjectStrategicFleetTransitMetadata(fleet, state)
 			fleet.ShipIDs = append([]core.ID(nil), fleet.ShipIDs...)
 			out.Fleets = append(out.Fleets, fleet)
 		} else if fleet.AtSystemID != 0 && state.EmpiresHaveContact(empireID, fleet.EmpireID) {

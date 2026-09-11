@@ -202,8 +202,10 @@ func (r *EconomyResolver) moveCombatFleet(state *core.GameState, empireID core.I
 		events = append(events, splitEvent)
 	}
 	targetFleet.AtSystemID = 0
+	targetFleet.SourceSystemID = source.ID
 	targetFleet.DestinationSystemID = destination.ID
 	targetFleet.RemainingTurns = eta
+	targetFleet.TransitTurnsTotal = eta
 	targetFleet.FTLSpeed = 0
 	events = append(events, startedEvent)
 	return events, nil

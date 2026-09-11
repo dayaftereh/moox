@@ -37,7 +37,17 @@ func TestCombatFleetTransitRoundTripsSchema23(t *testing.T) {
 		t.Fatalf("schema=%d constant=%d want=22", state.SchemaVersion, core.StateSchemaVersion)
 	}
 	if err := state.Validate(); err != nil {
-		t.Fatalf("schema21 combat transit invalid before save: %v", err)
+		t.Fatalf("schema23 combat transit invalid before save: %v", err)
+	}
+	var moving *core.StrategicFleet
+	for i := range state.StrategicFleets {
+		if state.StrategicFleets[i].DestinationSystemID == destination.ID {
+			moving = &state.StrategicFleets[i]
+			break
+		}
+	}
+	if moving == nil || moving.SourceSystemID != source.ID || moving.TransitTurnsTotal != moving.RemainingTurns || moving.TransitTurnsTotal <= 0 {
+		t.Fatalf("combat transit route metadata=%+v source=%d", moving, source.ID)
 	}
 
 	encoded, err := core.MarshalState(state)

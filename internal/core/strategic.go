@@ -27,14 +27,18 @@ type StrategicFleet struct {
 	Role                StrategicFleetRole        `json:"role"`
 	SpecialKind         StrategicFleetSpecialKind `json:"special_kind,omitempty"`
 	AtSystemID          ID                        `json:"at_system_id,omitempty"`
+	SourceSystemID      ID                        `json:"source_system_id,omitempty"`
 	DestinationSystemID ID                        `json:"destination_system_id,omitempty"`
 	RemainingTurns      int                       `json:"remaining_turns,omitempty"`
+	TransitTurnsTotal   int                       `json:"transit_turns_total,omitempty"`
 	FTLSpeed            int                       `json:"ftl_speed,omitempty"`
-	// Projection-only movement equipment for fixed special fleets. Authoritative GameState keeps these empty; player views fill an effective copy.
-	WarpDriveID      string `json:"warp_drive_id,omitempty"`
-	FuelCellID       string `json:"fuel_cell_id,omitempty"`
-	FuelRangeParsecs int    `json:"fuel_range_parsecs,omitempty"`
-	ShipIDs          []ID   `json:"ship_ids,omitempty"`
+	// Projection-only movement metadata. Authoritative GameState keeps these empty; player views fill an effective copy.
+	WarpDriveID              string `json:"warp_drive_id,omitempty"`
+	FuelCellID               string `json:"fuel_cell_id,omitempty"`
+	FuelRangeParsecs         int    `json:"fuel_range_parsecs,omitempty"`
+	RouteDistanceParsecs     int    `json:"route_distance_parsecs,omitempty"`
+	RemainingDistanceParsecs int    `json:"remaining_distance_parsecs,omitempty"`
+	ShipIDs                  []ID   `json:"ship_ids,omitempty"`
 }
 
 type DiplomaticStance string
@@ -131,7 +135,7 @@ func validateStrategicState(
 			assignedShips[shipID] = fleet.ID
 			lastShipID = shipID
 		}
-		if fleet.WarpDriveID != "" || fleet.FuelCellID != "" || fleet.FuelRangeParsecs != 0 {
+		if fleet.WarpDriveID != "" || fleet.FuelCellID != "" || fleet.FuelRangeParsecs != 0 || fleet.RouteDistanceParsecs != 0 || fleet.RemainingDistanceParsecs != 0 {
 			return fmt.Errorf("strategic_fleet[%d] projection-only movement metadata must remain empty in authoritative state", i)
 		}
 		switch fleet.SpecialKind {
@@ -143,7 +147,7 @@ func validateStrategicState(
 				if fleet.FTLSpeed != 0 {
 					return fmt.Errorf("strategic_fleet[%d] ordinary combat fleet ftl_speed must remain zero; movement speed is derived", i)
 				}
-			} else if fleet.DestinationSystemID != 0 || fleet.RemainingTurns != 0 || fleet.FTLSpeed != 0 {
+			} else if fleet.SourceSystemID != 0 || fleet.DestinationSystemID != 0 || fleet.RemainingTurns != 0 || fleet.TransitTurnsTotal != 0 || fleet.FTLSpeed != 0 {
 				return fmt.Errorf("strategic_fleet[%d] ordinary non-combat fleet cannot carry semantic transit state", i)
 			}
 		case StrategicFleetSpecialColonyShip, StrategicFleetSpecialOutpostShip, StrategicFleetSpecialTroopTransport:
@@ -156,19 +160,33 @@ func validateStrategicState(
 		default:
 			return fmt.Errorf("strategic_fleet[%d] special_kind %q is invalid", i, fleet.SpecialKind)
 		}
-		if fleet.RemainingTurns < 0 || fleet.FTLSpeed < 0 {
+		if fleet.RemainingTurns < 0 || fleet.TransitTurnsTotal < 0 || fleet.FTLSpeed < 0 {
 			return fmt.Errorf("strategic_fleet[%d] transit values must be non-negative", i)
 		}
 		if fleet.AtSystemID != 0 {
 			if _, ok := systemIDs[fleet.AtSystemID]; !ok {
 				return fmt.Errorf("strategic_fleet[%d] references unknown star system %d", i, fleet.AtSystemID)
 			}
-			if fleet.DestinationSystemID != 0 || fleet.RemainingTurns != 0 {
+			if fleet.SourceSystemID != 0 || fleet.DestinationSystemID != 0 || fleet.RemainingTurns != 0 || fleet.TransitTurnsTotal != 0 {
 				return fmt.Errorf("strategic_fleet[%d] stationary fleet cannot also be in transit", i)
 			}
 		} else if fleet.DestinationSystemID != 0 {
 			if _, ok := systemIDs[fleet.DestinationSystemID]; !ok {
 				return fmt.Errorf("strategic_fleet[%d] references unknown destination star system %d", i, fleet.DestinationSystemID)
+			}
+			if fleet.SourceSystemID != 0 {
+				if _, ok := systemIDs[fleet.SourceSystemID]; !ok {
+					return fmt.Errorf("strategic_fleet[%d] references unknown source star system %d", i, fleet.SourceSystemID)
+				}
+				if fleet.SourceSystemID == fleet.DestinationSystemID {
+					return fmt.Errorf("strategic_fleet[%d] transit source and destination must differ", i)
+				}
+			}
+			if (fleet.SourceSystemID == 0) != (fleet.TransitTurnsTotal == 0) {
+				return fmt.Errorf("strategic_fleet[%d] transit route metadata must include both source_system_id and transit_turns_total", i)
+			}
+			if fleet.TransitTurnsTotal != 0 && fleet.TransitTurnsTotal < fleet.RemainingTurns {
+				return fmt.Errorf("strategic_fleet[%d] transit_turns_total %d cannot be less than remaining_turns %d", i, fleet.TransitTurnsTotal, fleet.RemainingTurns)
 			}
 			fixedSpecial := fleet.SpecialKind == StrategicFleetSpecialColonyShip || fleet.SpecialKind == StrategicFleetSpecialOutpostShip || fleet.SpecialKind == StrategicFleetSpecialTroopTransport
 			combatTransit := fleet.SpecialKind == StrategicFleetSpecialNone && fleet.Role == StrategicFleetRoleCombat
@@ -178,6 +196,8 @@ func validateStrategicState(
 			if fleet.RemainingTurns <= 0 {
 				return fmt.Errorf("strategic_fleet[%d] in transit requires positive remaining_turns", i)
 			}
+		} else if fleet.SourceSystemID != 0 || fleet.TransitTurnsTotal != 0 {
+			return fmt.Errorf("strategic_fleet[%d] fleet without destination cannot retain transit route metadata", i)
 		} else if fleet.SpecialKind == StrategicFleetSpecialColonyShip || fleet.SpecialKind == StrategicFleetSpecialOutpostShip || fleet.SpecialKind == StrategicFleetSpecialTroopTransport {
 			return fmt.Errorf("strategic_fleet[%d] fixed special ship %q requires a current or destination system", i, fleet.SpecialKind)
 		} else if fleet.Role == StrategicFleetRoleCombat && fleet.SpecialKind == StrategicFleetSpecialNone {

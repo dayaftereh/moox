@@ -124,6 +124,32 @@ func (r *EconomyRules) ProjectSpecialFleetMovementMetadata(fleet core.StrategicF
 	return fleet
 }
 
+// ProjectStrategicFleetTransitMetadata enriches a player-view fleet copy with
+// server-authoritative route and remaining-distance information. It never mutates GameState.
+func ProjectStrategicFleetTransitMetadata(fleet core.StrategicFleet, state *core.GameState) core.StrategicFleet {
+	if fleet.AtSystemID != 0 || fleet.SourceSystemID == 0 || fleet.DestinationSystemID == 0 || fleet.RemainingTurns <= 0 || fleet.TransitTurnsTotal <= 0 {
+		return fleet
+	}
+	source := systemByID(state, fleet.SourceSystemID)
+	destination := systemByID(state, fleet.DestinationSystemID)
+	if source == nil || destination == nil {
+		return fleet
+	}
+	totalDistance := strategicDistanceParsecs(*source, *destination)
+	if totalDistance <= 0 {
+		return fleet
+	}
+	remaining := (totalDistance*fleet.RemainingTurns + fleet.TransitTurnsTotal - 1) / fleet.TransitTurnsTotal
+	if remaining < 1 {
+		remaining = 1
+	}
+	if remaining > totalDistance {
+		remaining = totalDistance
+	}
+	fleet.RouteDistanceParsecs = totalDistance
+	fleet.RemainingDistanceParsecs = remaining
+	return fleet
+}
 func systemByID(state *core.GameState, id core.ID) *core.StarSystem {
 	if state == nil || id == 0 {
 		return nil
@@ -257,8 +283,10 @@ func (r *EconomyResolver) moveFleetEvents(state *core.GameState, empireID core.I
 		return nil, err
 	}
 	fleet.AtSystemID = 0
+	fleet.SourceSystemID = source.ID
 	fleet.DestinationSystemID = destination.ID
 	fleet.RemainingTurns = eta
+	fleet.TransitTurnsTotal = eta
 	return []DomainEvent{event}, nil
 }
 
@@ -317,8 +345,10 @@ func (r *EconomyResolver) advanceStrategicFleetTransit(state *core.GameState) ([
 			empire.MarkSystemVisited(destination.ID)
 		}
 		establishFirstContactsAtSystem(state, fleet.EmpireID, destination.ID)
+		fleet.SourceSystemID = 0
 		fleet.DestinationSystemID = 0
 		fleet.RemainingTurns = 0
+		fleet.TransitTurnsTotal = 0
 		events = append(events, event)
 	}
 	return events, nil
