@@ -290,3 +290,29 @@ After Block5E arrival/contact/Tactical acceptance, continue directly with **Bloc
 Binding direction: foreign transit Fleets are projected only when server-authoritative scanner coverage permits them; detectable hostile/incoming movement uses the existing transit-marker language with a foreign player-colored Fleet marker and red dashed route toward a permitted target; ETA/remaining pc and ship-detail depth are scanner-authorized server projection, never client-side hidden state. The same compact Fleet dialog is reused read-only with intelligence redaction. Exact scanner stacking, asset coverage, size-class contribution, last-known-contact behavior and deep-space grouping remain research/freeze items.
 
 Detailed plan: `docs/research/SLICE_15_6_GATE3_BLOCK5F_FOREIGN_FLEET_SCANNERS_PLAN_2026-09-12.md`.
+### Co-located foreign Fleet inspection and Tactical expansion (2026-09-11)
+
+Accepted implementation: `3b2d734`.
+
+- `game-triangle-2pc` deliberately keeps the normal generated starting Scout loadout. The reference Scouts remain **unarmed**; no Laser is injected merely to satisfy Tactical QA.
+- After first contact, a foreign Fleet that is stationary in a **visited shared system** now projects a read-only Fleet composition through `StrategicContact`. The authority projection includes the Fleet plus its concrete combat Ships only for this co-located/visited/contact case. Foreign Fleets and Ships remain outside the observer's own `strategic.fleets` / `strategic.ships` authority lists.
+- The Galaxy foreign Fleet marker is clickable when that composition is available. It opens the same compact read-only Fleet language: visible combat Ships and supported special strategic vessels, plus per-unit `?` details. No selection, movement, target, retarget or cancellation controls exist.
+- This is **not** the Block5F scanner implementation. Remote/deep-space foreign Fleet visibility and redacted scanner intelligence remain queued for Block5F. The current projection applies only to known foreign Fleets co-located at an already visited system.
+- The foreign Fleet dialog now exposes **Angreifen** directly when the empires are not already at war. This uses the existing authoritative immediate `diplomacy.declare_war` command; the player no longer has to navigate to Diplomacy first. The dialog explicitly explains that the actual encounter is constructed during the next strategic resolution after `Fertig`. Once war is active, it shows the at-war/next-resolution state instead of another attack button.
+- Encounter construction itself still respects `MayAttackEmpire`; neutral co-location alone does not spawn a blocking BattleSession. `Angreifen` is therefore the explicit player intent that changes diplomacy, while `Fertig` remains the deterministic encounter timing boundary.
+- Tactical no longer has the temporary Slice15.5 **1-2 combat Ships per side** ceiling. The spec/session accepts any positive number of concrete combat Ships represented by the encounter. Explicit regression covers **3v2**.
+- `EncounterSide.CivilianFleetIDs` remain strategic context and are intentionally **not** materialized as Tactical ships. Colony Ship / Outpost Ship / Troop Transport therefore do not appear on the Tactical battlefield merely because they accompany combat Scouts.
+- `DefenderColonyIDs` no longer makes ship-vs-ship Tactical unsupported. Planetary/colony defense itself is still not materialized as a Tactical unit; this change only prevents colony presence from blocking the Fleet battle.
+- Completely unarmed combat Ships are valid Tactical participants. They can maneuver/scan and remain valid targets for future missile/weapon behavior; no artificial Laser requirement remains.
+- Tactical now has a **Rückzug / Retreat** command. It is issued by the controlling seat for its active ship and immediately concedes the Battle to the opposing seat without marking surviving ships destroyed. The existing strategic encounter outcome then applies its normal losing-side retreat handling to both combat and civilian Fleets.
+- The old strategic encounter regression now completes through the real Tactical retreat path instead of injecting a generic battle result, preserving deterministic battle -> retreat -> post-resolution event ordering.
+
+Visible clean-Triangle acceptance from Round 1:
+
+1. Round1 `Fertig` allowed both built-in AIs to reach Human Home and established contact without a Battle because relations were neutral.
+2. Round2 Galaxy showed one Human Fleet marker plus clickable `Flotte von Darlok ansehen` and `Flotte von Psilon ansehen` markers at Human Home.
+3. Darlok read-only dialog showed **Scout 1, Scout 2, Kolonieschiff**; Scout `?` exposed its full current ship spec and correctly reported no installed weapons.
+4. `Angreifen` immediately changed the Human-Darlok relation to war in-place; the dialog changed to `Im Krieg · Angriff möglich` and retained the notice that the encounter will be created after `Fertig`.
+5. Round2 `Fertig` produced a supported Encounter at Human Home: Human **2 combat Scouts** vs Darlok **2 combat Scouts**. Strategic BattleSpec retained Human/Darlok civilian Colony Ship Fleet IDs, while Tactical contained exactly **4 Ships** and zero civilians. All four Scouts had zero weapons.
+6. Tactical UI opened successfully, rendered all four Scouts, and exposed `Rückzug` alongside normal movement/fire/scan controls.
+7. The explicit 3v2 server regressions are green, covering the user's previously blocked larger Fleet case.
