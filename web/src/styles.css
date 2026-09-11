@@ -4002,3 +4002,234 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 .galaxy-unvisited-dialog strong { display: block; }
 .galaxy-unvisited-dialog strong { margin-top: 3px; }
 .galaxy-unvisited-dialog p { margin: 6px 0 0; font-size: .84rem; color: var(--text-muted); }
+/* Slice 15.6 Gate3 Block5C: direct Galaxy fleet picker. */
+.galaxy-node-cluster {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+}
+.galaxy-node-cluster > .galaxy-node {
+  inset: 0;
+  transform: none;
+}
+.galaxy-node-cluster > .galaxy-node-markers { pointer-events: none; }
+button.galaxy-node-marker-button {
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 0;
+  pointer-events: auto;
+  cursor: pointer;
+  border-width: 1px;
+  appearance: none;
+  transition: transform .14s ease, filter .14s ease, box-shadow .14s ease;
+}
+button.galaxy-node-marker-button .game-icon { width: 12px; height: 12px; }
+button.galaxy-node-marker-button:hover,
+button.galaxy-node-marker-button:focus-visible {
+  z-index: 3;
+  transform: scale(1.08);
+  filter: brightness(1.16);
+  outline: 1px solid rgba(139,184,255,.78);
+  outline-offset: 2px;
+}
+
+.galaxy-fleet-picker {
+  position: fixed;
+  z-index: 70;
+  right: clamp(12px, 3vw, 36px);
+  bottom: clamp(72px, 10vh, 110px);
+  width: min(380px, calc(100vw - 24px));
+  max-height: min(560px, calc(100vh - 32px));
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  border: 1px solid rgba(104, 151, 214, .48);
+  border-radius: 14px;
+  background: linear-gradient(160deg, rgba(10, 22, 38, .98), rgba(5, 12, 22, .97));
+  box-shadow: 0 22px 54px rgba(0, 0, 0, .48), 0 0 0 1px rgba(103, 159, 230, .08) inset;
+  backdrop-filter: blur(16px);
+}
+.galaxy-fleet-picker-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  border-bottom: 1px solid var(--border-soft);
+  background: rgba(19, 42, 73, .42);
+}
+.galaxy-fleet-picker-drag-handle {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.galaxy-fleet-picker-drag-handle:active { cursor: grabbing; }
+.galaxy-fleet-picker-drag-handle > span:last-child { min-width: 0; }
+.galaxy-fleet-picker-drag-handle small,
+.galaxy-fleet-picker-drag-handle strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.galaxy-fleet-picker-drag-handle small { color: var(--muted); font-size: .69rem; }
+.galaxy-fleet-picker-drag-handle strong { margin-top: 2px; font-size: .94rem; }
+.galaxy-fleet-picker-title-icon,
+.galaxy-fleet-picker-fleet-icon,
+.galaxy-fleet-picker-special-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid rgba(116, 168, 255, .45);
+  border-radius: 9px;
+  color: #a9c9ff;
+  background: rgba(29, 61, 101, .42);
+}
+.galaxy-fleet-picker-title-icon { width: 32px; height: 32px; }
+.galaxy-fleet-picker-title-icon .game-icon { width: 17px; height: 17px; }
+.galaxy-fleet-picker-close {
+  width: 42px;
+  min-width: 42px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid var(--border-soft);
+  border-radius: 0;
+  background: transparent;
+  color: var(--muted-strong);
+}
+.galaxy-fleet-picker-close:hover,
+.galaxy-fleet-picker-close:focus-visible { background: rgba(255,255,255,.06); color: #f2f6ff; }
+.galaxy-fleet-picker-close .game-icon { width: 16px; height: 16px; }
+
+.galaxy-fleet-picker-fleets {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--border-soft);
+  scrollbar-width: thin;
+}
+.galaxy-fleet-picker-fleet {
+  min-width: 142px;
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  padding: 7px 9px;
+  text-align: left;
+  border: 1px solid var(--border-soft);
+  border-radius: 9px;
+  background: rgba(8, 20, 34, .72);
+  color: var(--text);
+}
+.galaxy-fleet-picker-fleet.is-active {
+  border-color: rgba(116, 168, 255, .78);
+  background: rgba(43, 87, 145, .26);
+  box-shadow: 0 0 0 1px rgba(116,168,255,.12) inset;
+}
+.galaxy-fleet-picker-fleet-icon { width: 30px; height: 30px; }
+.galaxy-fleet-picker-fleet-icon .game-icon { width: 16px; height: 16px; }
+.galaxy-fleet-picker-fleet > span:last-child { min-width: 0; }
+.galaxy-fleet-picker-fleet strong,
+.galaxy-fleet-picker-fleet small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.galaxy-fleet-picker-fleet strong { font-size: .78rem; }
+.galaxy-fleet-picker-fleet small { margin-top: 2px; color: var(--muted); font-size: .63rem; }
+
+.galaxy-fleet-picker-body {
+  min-height: 0;
+  padding: 9px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.galaxy-fleet-picker-selection-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+.galaxy-fleet-picker-selection-head small { color: var(--muted-strong); }
+.galaxy-fleet-picker-selection-head .ghost-button { min-height: 28px; padding: 4px 8px; font-size: .66rem; }
+.galaxy-fleet-picker-ships { display: grid; gap: 6px; }
+.galaxy-fleet-picker-ship {
+  min-height: 62px;
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr) 22px;
+  align-items: center;
+  gap: 9px;
+  padding: 6px 8px;
+  text-align: left;
+  border: 1px solid var(--border-soft);
+  border-radius: 9px;
+  background: rgba(5, 14, 25, .74);
+  color: var(--text);
+}
+.galaxy-fleet-picker-ship:hover,
+.galaxy-fleet-picker-ship:focus-visible { border-color: rgba(116,168,255,.52); background: rgba(27,55,92,.32); }
+.galaxy-fleet-picker-ship.is-selected {
+  border-color: rgba(116, 168, 255, .82);
+  background: rgba(42, 84, 140, .3);
+}
+.galaxy-fleet-picker-ship-glyph {
+  width: 78px;
+  height: 48px;
+  color: var(--ship-vector);
+}
+.galaxy-fleet-picker-ship-copy { min-width: 0; }
+.galaxy-fleet-picker-ship-copy strong,
+.galaxy-fleet-picker-ship-copy small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.galaxy-fleet-picker-ship-copy strong { font-size: .78rem; }
+.galaxy-fleet-picker-ship-copy small { margin-top: 3px; color: var(--muted); font-size: .63rem; }
+.galaxy-fleet-picker-ship-check {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border: 1px solid rgba(116, 168, 255, .42);
+  border-radius: 999px;
+  color: #b9d3ff;
+}
+.galaxy-fleet-picker-ship-check .game-icon { width: 11px; height: 11px; }
+.galaxy-fleet-picker-special {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+  min-height: 70px;
+  padding: 10px;
+  border: 1px solid rgba(116,168,255,.34);
+  border-radius: 10px;
+  background: rgba(25,54,91,.22);
+}
+.galaxy-fleet-picker-special-icon { width: 46px; height: 46px; }
+.galaxy-fleet-picker-special-icon .game-icon { width: 24px; height: 24px; }
+.galaxy-fleet-picker-special strong,
+.galaxy-fleet-picker-special small { display: block; }
+.galaxy-fleet-picker-special small { margin-top: 3px; color: var(--muted); font-size: .68rem; }
+.galaxy-fleet-picker-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-top: 1px solid var(--border-soft);
+  background: rgba(4, 11, 20, .86);
+}
+.galaxy-fleet-picker-footer p { margin: 0; color: var(--muted); font-size: .66rem; line-height: 1.3; }
+.galaxy-fleet-picker-footer > small { color: var(--warning); font-size: .62rem; text-align: right; }
+.galaxy-fleet-picker-footer .badge { flex: 0 0 auto; white-space: nowrap; }
+
+@media (max-width: 700px) {
+  .galaxy-node-cluster { width: 42px; height: 42px; }
+  button.galaxy-node-marker-button { width: 30px; height: 30px; min-height: 30px; }
+  button.galaxy-node-marker-button .game-icon { width: 14px; height: 14px; }
+  .galaxy-fleet-picker {
+    width: min(360px, calc(100vw - 16px));
+    max-height: calc(100vh - 16px);
+    border-radius: 12px;
+  }
+  .galaxy-fleet-picker-ship { grid-template-columns: 72px minmax(0, 1fr) 22px; }
+  .galaxy-fleet-picker-ship-glyph { width: 70px; height: 44px; }
+}
