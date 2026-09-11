@@ -23,6 +23,8 @@ import (
 )
 
 const demoGameID = "demo"
+const standardReferenceGameID = "game-1"
+const triangleReferenceGameID = "game-triangle-2pc"
 const defaultHTTPAddress = "127.0.0.1:7171"
 
 func main() {
@@ -33,13 +35,14 @@ func main() {
 		enableObserver        = flag.Bool("enable-observer", false, "enable privileged observer snapshot endpoint")
 		enablePersistence     = flag.Bool("enable-persistence", false, "enable privileged live save/import/restore endpoints")
 		demoFixture           = flag.Bool("demo-fixture", false, "development only: pre-register the legacy core.NewSmallFixture demo game")
+		referenceGames        = flag.Bool("reference-games", false, "development only: pre-register game-1 plus the durable 3-player 2pc triangle reference game")
 		allowInsecureNonLocal = flag.Bool("insecure-allow-nonloopback", false, "UNSAFE: allow unauthenticated direct non-loopback binding")
 	)
 	flag.Parse()
 	if !*allowInsecureNonLocal && !isLoopbackAddress(*addr) {
 		log.Fatalf("refusing non-loopback listen address %q without -insecure-allow-nonloopback; use a trusted VPN/reverse proxy/auth/TLS boundary for remote exposure", *addr)
 	}
-	host, err := newServerHost(*rulesDir, *demoFixture)
+	host, err := newServerHost(*rulesDir, *demoFixture, *referenceGames)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -73,7 +76,7 @@ func main() {
 	}
 }
 
-func newServerHost(rulesDir string, demoFixture bool) (*app.Host, error) {
+func newServerHost(rulesDir string, demoFixture bool, referenceGames bool) (*app.Host, error) {
 	rules, err := game.LoadEconomyRules(rulesDir)
 	if err != nil {
 		return nil, fmt.Errorf("load rules: %w", err)
@@ -81,6 +84,11 @@ func newServerHost(rulesDir string, demoFixture bool) (*app.Host, error) {
 	host, err := app.NewHostWithNewGame(rules)
 	if err != nil {
 		return nil, fmt.Errorf("configure new game host: %w", err)
+	}
+	if referenceGames {
+		if err := registerReferenceGames(host, rules); err != nil {
+			return nil, err
+		}
 	}
 	if !demoFixture {
 		return host, nil
@@ -100,6 +108,56 @@ func newServerHost(rulesDir string, demoFixture bool) (*app.Host, error) {
 	return host, nil
 }
 
+func registerReferenceGames(host *app.Host, rules *game.EconomyRules) error {
+	if host == nil || rules == nil {
+		return fmt.Errorf("reference games require host and rules")
+	}
+	if _, err := host.CreateGame(app.CreateGameRequest{
+		GameID: standardReferenceGameID,
+		Seed:   0x8009,
+		Settings: game.NewGameSettings{
+			GalaxySize:      game.GalaxySizeSmall,
+			GalaxyAge:       game.GalaxyAgeNormal,
+			TechnologyLevel: game.NewGameTechnologyAverage,
+			StrategicCombat: false,
+			Players: []game.NewGamePlayerSpec{
+				{SeatID: 1, EmpireName: "Human", RaceID: "human"},
+				{SeatID: 2, EmpireName: "Darlok", RaceID: "darlok"},
+			},
+		},
+		Controllers: []app.PlayerControllerSpec{
+			{SeatID: 1, Controller: session.ControllerLocalHuman},
+			{SeatID: 2, Controller: session.ControllerBuiltinAI},
+		},
+	}); err != nil {
+		return fmt.Errorf("register standard reference game: %w", err)
+	}
+
+	generated, err := rules.NewReferenceTriangleGame(game.ReferenceTriangleSeed)
+	if err != nil {
+		return fmt.Errorf("build triangle reference game: %w", err)
+	}
+	resolver, err := game.NewEconomyResolver(rules)
+	if err != nil {
+		return fmt.Errorf("create triangle reference resolver: %w", err)
+	}
+	seats := make([]session.Seat, len(generated.Players))
+	for i, player := range generated.Players {
+		controller := session.ControllerBuiltinAI
+		if player.SeatID == 1 {
+			controller = session.ControllerLocalHuman
+		}
+		seats[i] = session.Seat{ID: player.SeatID, EmpireID: player.EmpireID, Name: player.Name, Controller: controller}
+	}
+	gameSession, err := session.NewGameSession(triangleReferenceGameID, generated.State, seats)
+	if err != nil {
+		return fmt.Errorf("create triangle reference session: %w", err)
+	}
+	if err := host.Register(app.Registration{Session: gameSession, Resolver: resolver, ImmediateResolver: resolver}); err != nil {
+		return fmt.Errorf("register triangle reference session: %w", err)
+	}
+	return nil
+}
 func optionalWebFS(dir string) fs.FS {
 	if strings.TrimSpace(dir) == "" {
 		return nil
