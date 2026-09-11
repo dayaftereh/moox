@@ -4233,3 +4233,178 @@ button.galaxy-node-marker-button:focus-visible {
   .galaxy-fleet-picker-ship { grid-template-columns: 72px minmax(0, 1fr) 22px; }
   .galaxy-fleet-picker-ship-glyph { width: 70px; height: 44px; }
 }
+/* Slice 15.6 Gate3 Block5C compact fleet-grid refinement. */
+.galaxy-node-label-owned-colony {
+  color: var(--success);
+  text-shadow: 0 1px 3px #000, 0 0 7px rgba(99, 214, 154, .34);
+}
+.galaxy-node-fleet-ring {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+.galaxy-node-fleet-ring > .galaxy-node-marker-button {
+  position: absolute;
+  pointer-events: auto;
+}
+button.galaxy-node-marker-button {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  padding: 0;
+  border-radius: 999px;
+}
+button.galaxy-node-marker-button::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 999px;
+}
+button.galaxy-node-marker-button .game-icon { width: 9px; height: 9px; }
+button.galaxy-node-marker-button.is-open {
+  border-color: #b7d1ff;
+  box-shadow: 0 0 0 2px rgba(116, 168, 255, .14), 0 0 8px rgba(116, 168, 255, .24);
+}
+.galaxy-node-contact-markers {
+  top: -4px;
+  right: 34px;
+  left: auto;
+  flex-direction: row-reverse;
+}
+
+.galaxy-fleet-picker.galaxy-fleet-picker-compact {
+  width: min(292px, 76vw);
+  max-height: min(350px, 58vh);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  border-radius: 11px;
+}
+.galaxy-fleet-picker-compact .galaxy-fleet-picker-header {
+  min-height: 42px;
+}
+.galaxy-fleet-picker-compact .galaxy-fleet-picker-drag-handle {
+  padding: 7px 9px;
+}
+.galaxy-fleet-picker-compact .galaxy-fleet-picker-drag-handle strong {
+  font-size: .78rem;
+}
+.galaxy-fleet-picker-compact .galaxy-fleet-picker-drag-handle small {
+  font-size: .6rem;
+}
+.galaxy-fleet-picker-compact .galaxy-fleet-picker-close {
+  width: 36px;
+  min-width: 36px;
+}
+.galaxy-fleet-picker-compact .galaxy-fleet-picker-body {
+  padding: 6px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.galaxy-fleet-picker-compact .galaxy-fleet-picker-selection-head {
+  min-height: 25px;
+  margin-bottom: 5px;
+}
+.galaxy-fleet-picker-compact .galaxy-fleet-picker-selection-head small {
+  font-size: .58rem;
+}
+.galaxy-fleet-picker-compact .galaxy-fleet-picker-selection-head .ghost-button {
+  min-height: 24px;
+  padding: 2px 6px;
+  font-size: .58rem;
+}
+.galaxy-fleet-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+.galaxy-fleet-picker-grid .galaxy-fleet-picker-tile {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  aspect-ratio: .9;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 1px;
+  padding: 3px;
+  border-radius: 7px;
+  overflow: hidden;
+}
+.galaxy-fleet-picker-grid .galaxy-fleet-picker-ship-glyph {
+  align-self: stretch;
+  justify-self: stretch;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  padding: 1px;
+}
+.galaxy-fleet-picker-special-ship-glyph {
+  color: #a9d8bb;
+}
+.galaxy-fleet-picker-grid .galaxy-fleet-picker-ship-copy {
+  min-width: 0;
+  width: 100%;
+  padding: 0 1px 1px;
+  text-align: center;
+}
+.galaxy-fleet-picker-grid .galaxy-fleet-picker-ship-copy strong {
+  display: block;
+  overflow: hidden;
+  color: var(--muted-strong);
+  font-size: .52rem;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.galaxy-fleet-picker-grid .galaxy-fleet-picker-ship-check {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 14px;
+  height: 14px;
+  border-color: rgba(116, 168, 255, .52);
+  background: rgba(5, 14, 25, .82);
+}
+.galaxy-fleet-picker-grid .galaxy-fleet-picker-ship-check .game-icon {
+  width: 8px;
+  height: 8px;
+}
+.galaxy-fleet-picker-footer-compact {
+  min-height: 38px;
+  padding: 5px 7px;
+}
+.galaxy-fleet-picker-selection-count {
+  flex: 0 0 auto;
+  color: var(--muted-strong);
+  font-size: .62rem;
+  font-weight: 800;
+}
+.galaxy-fleet-picker-target-summary {
+  min-height: 22px;
+  padding: 3px 6px;
+  font-size: .58rem;
+}
+.galaxy-fleet-picker-footer-compact > small {
+  max-width: 78%;
+  font-size: .54rem;
+  line-height: 1.2;
+}
+
+@media (max-width: 700px) {
+  button.galaxy-node-marker-button {
+    width: 19px;
+    height: 19px;
+    min-width: 19px;
+    min-height: 19px;
+  }
+  button.galaxy-node-marker-button .game-icon { width: 9px; height: 9px; }
+  .galaxy-fleet-picker.galaxy-fleet-picker-compact {
+    width: min(276px, 76vw);
+    max-height: min(330px, 56vh);
+    border-radius: 10px;
+  }
+  .galaxy-fleet-picker-grid { gap: 3px; }
+  .galaxy-fleet-picker-grid .galaxy-fleet-picker-tile { border-radius: 6px; }
+  .galaxy-fleet-picker-grid .galaxy-fleet-picker-ship-copy strong { font-size: .49rem; }
+}

@@ -20,12 +20,14 @@ import {
   type ResearchChoice,
   type ResearchTechnologyEffect,
   type ResearchTechnologyInfo,
+  type Ship,
   type ShipDesign,
   type StrategicContact,
   type StrategicFleet,
   type StarSystem,
 } from './api'
 import { ProceduralShipGlyph } from './components/ProceduralShipGlyph'
+import { SpecialShipGlyph, type SpecialShipKind } from './components/SpecialShipGlyph'
 import { GameIcon, type GameIconName } from './components/GameIcon'
 import { OrbitalBodyArt } from './components/OrbitalBodyArt'
 import { BuildingArt } from './components/BuildingArt'
@@ -34,6 +36,11 @@ import { Card, EmptyState, PageHeader } from './components/ui'
 import { type TranslationKey, type TranslationVars } from './i18n'
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
+type GalaxyFleetPickerUnit = {
+  key: string
+  fleet: StrategicFleet
+  ship?: Ship
+}
 
 const populationJobIcons: Record<PopulationJob, GameIconName> = {
   farmer: 'farmer',
@@ -78,6 +85,21 @@ function orbitalBodyIcon(kind: OrbitalBodyKind): GameIconName {
   return 'planet'
 }
 
+function specialFleetShipLabel(t: Translator, kind: SpecialShipKind): string {
+  if (kind === 'colony_ship') return t('system.colonyShip')
+  if (kind === 'outpost_ship') return t('system.outpostShip')
+  return t('system.troopTransport')
+}
+
+function galaxyFleetMarkerPosition(index: number) {
+  const slot = index % 4
+  const ring = Math.floor(index / 4)
+  const extra = ring * 10
+  if (slot === 0) return { left: 31 + extra, top: -7 - extra }
+  if (slot === 1) return { left: 31 + extra, top: 32 + extra }
+  if (slot === 2) return { left: -7 - extra, top: 32 + extra }
+  return { left: -7 - extra, top: -7 - extra }
+}
 function fleetRoleIcon(fleet: StrategicFleet): GameIconName {
   if (fleet.special_kind === 'colony_ship') return 'flag'
   if (fleet.special_kind === 'outpost_ship') return 'outpost'
@@ -325,8 +347,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   }, [decision?.strategic.visited_system_ids, systems])
   const [fleetPicker, setFleetPicker] = useState<{
     systemID: number
-    fleetID: number
-    selectedShipIDs: number[]
+    selectedUnitKeys: string[]
   } | null>(null)
   const [fleetPickerPosition, setFleetPickerPosition] = useState<{ x: number; y: number } | null>(null)
   const fleetPickerRef = useRef<HTMLElement | null>(null)
@@ -382,8 +403,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   useEffect(() => {
     if (!fleetPicker || !decision) return
     const stillAvailable = (decision.strategic.fleets ?? []).some((fleet) => (
-      fleet.id === fleetPicker.fleetID
-      && fleet.empire_id === decision.empire.id
+      fleet.empire_id === decision.empire.id
       && fleet.at_system_id === fleetPicker.systemID
     ))
     if (!stillAvailable) {
@@ -411,42 +431,55 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
       .slice()
       .sort((a, b) => a.id - b.id)
     : []
-  const pickerFleet = fleetPicker ? pickerFleets.find((fleet) => fleet.id === fleetPicker.fleetID) : undefined
   const shipsByID = new Map((decision.strategic.ships ?? []).map((ship) => [ship.id, ship]))
-  const pickerShips = pickerFleet?.ship_ids
-    ?.map((shipID) => shipsByID.get(shipID))
-    .filter((ship): ship is NonNullable<typeof ship> => Boolean(ship)) ?? []
-  const pickerSelectedShipIDs = new Set(fleetPicker?.selectedShipIDs ?? [])
-  const pickerAllShipIDs = pickerFleet?.ship_ids ?? []
-  const pickerAllShipsSelected = Boolean(pickerFleet) && (
-    Boolean(pickerFleet?.special_kind)
-    || (pickerAllShipIDs.length > 0
-      && pickerAllShipIDs.length === pickerSelectedShipIDs.size
-      && pickerAllShipIDs.every((shipID) => pickerSelectedShipIDs.has(shipID)))
-  )
-  const pickerProfileShipIDs = !pickerFleet
-    ? null
-    : pickerFleet.special_kind
-      ? []
-      : pickerAllShipsSelected
-        ? []
-        : fleetPicker?.selectedShipIDs.length === 1
-          ? fleetPicker.selectedShipIDs
-          : null
-  const pickerTargets = pickerFleet && pickerProfileShipIDs !== null
-    ? (decision.decisions.fleet_move_targets ?? []).filter((target) => {
-      if (target.fleet_id !== pickerFleet.id) return false
-      const targetShipIDs = target.ship_ids ?? []
-      return targetShipIDs.length === pickerProfileShipIDs.length
-        && targetShipIDs.every((shipID, index) => shipID === pickerProfileShipIDs[index])
+  const pickerUnits: GalaxyFleetPickerUnit[] = pickerFleets.flatMap((fleet): GalaxyFleetPickerUnit[] => {
+    if (fleet.special_kind) return [{ key: `fleet:${fleet.id}`, fleet, ship: undefined }]
+    return (fleet.ship_ids ?? []).flatMap((shipID) => {
+      const ship = shipsByID.get(shipID)
+      return ship ? [{ key: `ship:${ship.id}`, fleet, ship }] : []
     })
+  })
+  const pickerSelectedUnitKeys = new Set(fleetPicker?.selectedUnitKeys ?? [])
+  const pickerSelectedUnits = pickerUnits.filter((unit) => pickerSelectedUnitKeys.has(unit.key))
+  const pickerAllUnitsSelected = pickerUnits.length > 0 && pickerSelectedUnits.length === pickerUnits.length
+  const pickerProfiles = pickerFleets.flatMap((fleet) => {
+    const selected = pickerSelectedUnits.filter((unit) => unit.fleet.id === fleet.id)
+    if (selected.length === 0) return []
+    if (fleet.special_kind) return [{ fleetID: fleet.id, shipIDs: [] as number[] | null }]
+    const allShipIDs = [...(fleet.ship_ids ?? [])].sort((a, b) => a - b)
+    const selectedShipIDs = selected.flatMap((unit) => unit.ship ? [unit.ship.id] : []).sort((a, b) => a - b)
+    if (selectedShipIDs.length === allShipIDs.length && selectedShipIDs.every((shipID, index) => shipID === allShipIDs[index])) {
+      return [{ fleetID: fleet.id, shipIDs: [] as number[] | null }]
+    }
+    if (selectedShipIDs.length === 1) return [{ fleetID: fleet.id, shipIDs: selectedShipIDs as number[] | null }]
+    return [{ fleetID: fleet.id, shipIDs: null as number[] | null }]
+  })
+  const pickerProfilesSupported = pickerProfiles.length > 0 && pickerProfiles.every((profile) => profile.shipIDs !== null)
+  const targetsForPickerProfile = (profile: { fleetID: number; shipIDs: number[] | null }) => {
+    const profileShipIDs = profile.shipIDs
+    if (profileShipIDs === null) return []
+    return (decision.decisions.fleet_move_targets ?? []).filter((target) => {
+      if (target.fleet_id !== profile.fleetID) return false
+      const targetShipIDs = target.ship_ids ?? []
+      return targetShipIDs.length === profileShipIDs.length
+        && targetShipIDs.every((shipID, index) => shipID === profileShipIDs[index])
+    })
+  }
+  const pickerTargetGroups = pickerProfilesSupported ? pickerProfiles.map(targetsForPickerProfile) : []
+  const pickerCommonDestinationIDs = pickerTargetGroups.length > 0
+    ? pickerTargetGroups[0]
+      .map((target) => target.destination_system_id)
+      .filter((destinationID) => pickerTargetGroups.every((group) => group.some((target) => target.destination_system_id === destinationID)))
     : []
-  const pickerReachableTargets = pickerTargets.filter((target) => target.legal).length
+  const pickerReachableTargets = pickerCommonDestinationIDs.filter((destinationID) => (
+    pickerTargetGroups.every((group) => group.find((target) => target.destination_system_id === destinationID)?.legal === true)
+  )).length
+  const pickerTotalTargets = pickerCommonDestinationIDs.length
 
   const clampFleetPickerPosition = (x: number, y: number) => {
     const rect = fleetPickerRef.current?.getBoundingClientRect()
-    const width = rect?.width ?? Math.min(380, Math.max(280, window.innerWidth - 24))
-    const height = rect?.height ?? Math.min(520, Math.max(280, window.innerHeight - 100))
+    const width = rect?.width ?? Math.min(292, Math.max(220, window.innerWidth * 0.76))
+    const height = rect?.height ?? Math.min(360, Math.max(220, window.innerHeight * 0.52))
     const margin = 8
     return {
       x: Math.max(margin, Math.min(Math.max(margin, window.innerWidth - width - margin), x)),
@@ -456,32 +489,28 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
 
   const openFleetPicker = (systemID: number, fleets: StrategicFleet[], clientX: number, clientY: number) => {
     const ordered = fleets.slice().sort((a, b) => a.id - b.id)
-    const first = ordered[0]
-    if (!first) return
+    const unitKeys = ordered.flatMap((fleet) => (
+      fleet.special_kind
+        ? [`fleet:${fleet.id}`]
+        : (fleet.ship_ids ?? []).map((shipID) => `ship:${shipID}`)
+    ))
+    if (unitKeys.length === 0) return
     onCloseSystem()
-    setFleetPicker({ systemID, fleetID: first.id, selectedShipIDs: [...(first.ship_ids ?? [])].sort((a, b) => a - b) })
-    const width = Math.min(380, Math.max(280, window.innerWidth - 24))
-    const height = Math.min(440, Math.max(280, window.innerHeight - 100))
-    const x = clientX + 18 + width <= window.innerWidth ? clientX + 18 : clientX - width - 18
-    const y = Math.min(Math.max(10, clientY - 48), Math.max(10, window.innerHeight - height - 10))
-    setFleetPickerPosition({ x: Math.max(10, x), y })
+    setFleetPicker({ systemID, selectedUnitKeys: unitKeys })
+    const width = Math.min(292, Math.max(220, window.innerWidth * 0.76))
+    const height = Math.min(340, Math.max(220, window.innerHeight * 0.5))
+    const x = clientX + 14 + width <= window.innerWidth ? clientX + 14 : clientX - width - 14
+    const y = Math.min(Math.max(8, clientY - 34), Math.max(8, window.innerHeight - height - 8))
+    setFleetPickerPosition({ x: Math.max(8, x), y })
   }
 
-  const selectPickerFleet = (fleet: StrategicFleet) => {
-    setFleetPicker((current) => current ? {
-      systemID: current.systemID,
-      fleetID: fleet.id,
-      selectedShipIDs: [...(fleet.ship_ids ?? [])].sort((a, b) => a - b),
-    } : current)
-  }
-
-  const togglePickerShip = (shipID: number) => {
+  const togglePickerUnit = (unitKey: string) => {
     setFleetPicker((current) => {
       if (!current) return current
-      const selected = new Set(current.selectedShipIDs)
-      if (selected.has(shipID)) selected.delete(shipID)
-      else selected.add(shipID)
-      return { ...current, selectedShipIDs: Array.from(selected).sort((a, b) => a - b) }
+      const selected = new Set(current.selectedUnitKeys)
+      if (selected.has(unitKey)) selected.delete(unitKey)
+      else selected.add(unitKey)
+      return { ...current, selectedUnitKeys: Array.from(selected) }
     })
   }
 
@@ -512,6 +541,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
     fleetPickerDragRef.current = null
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
   }
+
   const pointerPair = () => Array.from(gestureRef.current.pointers.values()).slice(0, 2)
   const pairCenter = (points: Array<{ x: number; y: number }>) => ({
     x: (points[0].x + points[1].x) / 2,
@@ -651,50 +681,59 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                     title={isVisited ? system.name + ' (' + system.x + ', ' + system.y + ')' : t('galaxy.unvisitedTitle')}
                   >
                     <span className="galaxy-star" aria-hidden="true"><StarArt spectralClass={system.spectral_class} seed={system.id} /></span>
-                    {isVisited && <span className="galaxy-node-label" aria-hidden="true">{system.name}</span>}
-                  </button>
-                  <span className="galaxy-node-markers">
-                    {ownsColony && <span className="galaxy-node-marker galaxy-node-marker-colony" aria-hidden="true"><GameIcon name="colonies" /></span>}
-                    {ownOutpost && !ownsColony && <span className="galaxy-node-marker galaxy-node-marker-outpost" aria-hidden="true"><GameIcon name="outpost" /></span>}
-                    {ownFleetUnits > 0 && (
-                      <button
-                        type="button"
-                        className="galaxy-node-marker galaxy-node-marker-own-fleet galaxy-node-marker-button"
-                        aria-label={t('galaxy.fleetPickerOpen', { count: ownFleetUnits })}
-                        aria-expanded={fleetPicker?.systemID === system.id}
-                        aria-controls={fleetPicker?.systemID === system.id ? 'galaxy-fleet-picker' : undefined}
-                        title={t('galaxy.fleetPickerOpen', { count: ownFleetUnits })}
-                        onPointerDown={(event) => event.stopPropagation()}
-                        onClick={(event) => {
-                          event.stopPropagation()
-                          if (ignoreClickRef.current) return
-                          openFleetPicker(system.id, ownFleets, event.clientX, event.clientY)
-                        }}
-                      >
-                        <GameIcon name="fleets" />
-                        {ownFleetUnits > 1 && <small aria-hidden="true">{ownFleetUnits}</small>}
-                      </button>
+                    {isVisited && (
+                      <span className={'galaxy-node-label' + (ownsColony ? ' galaxy-node-label-owned-colony' : '')} aria-hidden="true">
+                        {system.name}
+                      </span>
                     )}
-                    {foreignContacts.map((contact, index) => {
-                      const tone = strategicRelationTone(decision.empire.id, contact.empire_id, decision.diplomacy)
-                      return (
-                        <span className={'galaxy-node-marker galaxy-node-marker-contact relation-' + tone} key={'marker-' + system.id + '-' + contact.empire_id + '-' + index} aria-hidden="true">
-                          <GameIcon name={strategicContactIcon(contact.kind)} />
-                        </span>
-                      )
-                    })}
-                  </span>
+                  </button>
+                  {ownFleets.length > 0 && (
+                    <span className="galaxy-node-fleet-ring">
+                      {ownFleets.map((fleet, index) => (
+                        <button
+                          type="button"
+                          key={fleet.id}
+                          className={'galaxy-node-marker galaxy-node-marker-own-fleet galaxy-node-marker-button' + (fleetPicker?.systemID === system.id ? ' is-open' : '')}
+                          style={galaxyFleetMarkerPosition(index)}
+                          aria-label={t('galaxy.fleetPickerOpen', { count: ownFleetUnits })}
+                          aria-expanded={fleetPicker?.systemID === system.id}
+                          aria-controls={fleetPicker?.systemID === system.id ? 'galaxy-fleet-picker' : undefined}
+                          title={`${t('galaxy.fleet')} #${fleet.id}`}
+                          onPointerDown={(event) => event.stopPropagation()}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            if (ignoreClickRef.current) return
+                            openFleetPicker(system.id, ownFleets, event.clientX, event.clientY)
+                          }}
+                        >
+                          <GameIcon name="fleets" />
+                        </button>
+                      ))}
+                    </span>
+                  )}
+                  {foreignContacts.length > 0 && (
+                    <span className="galaxy-node-markers galaxy-node-contact-markers">
+                      {foreignContacts.map((contact, index) => {
+                        const tone = strategicRelationTone(decision.empire.id, contact.empire_id, decision.diplomacy)
+                        return (
+                          <span className={'galaxy-node-marker galaxy-node-marker-contact relation-' + tone} key={'marker-' + system.id + '-' + contact.empire_id + '-' + index} aria-hidden="true">
+                            <GameIcon name={strategicContactIcon(contact.kind)} />
+                          </span>
+                        )
+                      })}
+                    </span>
+                  )}
                 </div>
               )
             })}
           </div>
         </div>
       </Card>
-      {fleetPicker && pickerFleet && pickerSystem && (
+      {fleetPicker && pickerSystem && pickerUnits.length > 0 && (
         <aside
           id="galaxy-fleet-picker"
           ref={fleetPickerRef}
-          className="galaxy-fleet-picker"
+          className="galaxy-fleet-picker galaxy-fleet-picker-compact"
           role="dialog"
           aria-label={t('galaxy.fleetPickerTitle')}
           style={fleetPickerPosition ? { left: fleetPickerPosition.x, top: fleetPickerPosition.y, right: 'auto', bottom: 'auto' } : undefined}
@@ -708,10 +747,9 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
               onPointerUp={finishFleetPickerDrag}
               onPointerCancel={finishFleetPickerDrag}
             >
-              <span className="galaxy-fleet-picker-title-icon" aria-hidden="true"><GameIcon name="fleets" /></span>
               <span>
-                <small>{t('galaxy.fleetPickerAt', { system: pickerSystem.name || t('galaxy.unknownStar') })}</small>
-                <strong>{t('galaxy.fleetPickerTitle')}</strong>
+                <small>{pickerSystem.name || t('galaxy.unknownStar')}</small>
+                <strong>{t('galaxy.fleetPickerTitle')} · {pickerUnits.length}</strong>
               </span>
             </div>
             <button
@@ -729,89 +767,66 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
             </button>
           </div>
 
-          <div className="galaxy-fleet-picker-fleets" role="group" aria-label={t('galaxy.fleetPickerFleetGroup')}>
-            {pickerFleets.map((fleet) => {
-              const unitCount = fleet.special_kind ? 1 : fleet.ship_ids?.length ?? 0
-              return (
-                <button
-                  type="button"
-                  key={fleet.id}
-                  className={'galaxy-fleet-picker-fleet' + (fleet.id === pickerFleet.id ? ' is-active' : '')}
-                  aria-pressed={fleet.id === pickerFleet.id}
-                  onClick={() => selectPickerFleet(fleet)}
-                >
-                  <span className="galaxy-fleet-picker-fleet-icon" aria-hidden="true"><GameIcon name={fleetRoleIcon(fleet)} /></span>
-                  <span>
-                    <strong>{t('galaxy.fleet')} #{fleet.id}</strong>
-                    <small>{humanizeToken(fleet.role)} · {t('fleets.ships', { count: unitCount })}</small>
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-
           <div className="galaxy-fleet-picker-body">
-            {pickerFleet.special_kind ? (
-              <div className="galaxy-fleet-picker-special">
-                <span className="galaxy-fleet-picker-special-icon" aria-hidden="true"><GameIcon name={fleetRoleIcon(pickerFleet)} /></span>
-                <span>
-                  <strong>{humanizeToken(pickerFleet.special_kind)}</strong>
-                  <small>{t('galaxy.fleetPickerFixedSupport')}</small>
-                </span>
-              </div>
-            ) : (
-              <>
-                <div className="galaxy-fleet-picker-selection-head">
-                  <small>{t('galaxy.fleetPickerSelected', { selected: pickerSelectedShipIDs.size, total: pickerAllShipIDs.length })}</small>
+            <div className="galaxy-fleet-picker-selection-head">
+              <small>{t('galaxy.fleetPickerSelected', { selected: pickerSelectedUnits.length, total: pickerUnits.length })}</small>
+              <button
+                type="button"
+                className="ghost-button"
+                disabled={pickerAllUnitsSelected}
+                onClick={() => setFleetPicker((current) => current ? {
+                  ...current,
+                  selectedUnitKeys: pickerUnits.map((unit) => unit.key),
+                } : current)}
+              >
+                {t('galaxy.fleetPickerSelectAll')}
+              </button>
+            </div>
+            <div className="galaxy-fleet-picker-ships galaxy-fleet-picker-grid">
+              {pickerUnits.map((unit) => {
+                const isSelected = pickerSelectedUnitKeys.has(unit.key)
+                const label = unit.ship
+                  ? unit.ship.name
+                  : specialFleetShipLabel(t, unit.fleet.special_kind as SpecialShipKind)
+                const title = unit.ship
+                  ? `${label} · ${humanizeToken(unit.ship.spec.hull_id)} · R${unit.ship.source_design_revision}`
+                  : `${label} · ${t('galaxy.fleet')} #${unit.fleet.id}`
+                return (
                   <button
                     type="button"
-                    className="ghost-button"
-                    disabled={pickerAllShipsSelected}
-                    onClick={() => setFleetPicker((current) => current ? {
-                      ...current,
-                      selectedShipIDs: [...pickerAllShipIDs].sort((a, b) => a - b),
-                    } : current)}
+                    key={unit.key}
+                    className={'galaxy-fleet-picker-ship galaxy-fleet-picker-tile' + (isSelected ? ' is-selected' : '')}
+                    aria-pressed={isSelected}
+                    aria-label={label}
+                    title={title}
+                    onClick={() => togglePickerUnit(unit.key)}
                   >
-                    {t('galaxy.fleetPickerSelectAll')}
+                    {unit.ship ? (
+                      <ProceduralShipGlyph
+                        className="galaxy-fleet-picker-ship-glyph"
+                        seed={`${unit.ship.empire_id}:${unit.ship.source_design_id}:${unit.ship.source_design_revision}:${unit.ship.spec.strategic_picture_id}`}
+                        genome={decodeShipVisualGenome(unit.ship.visual_genome)}
+                        hullId={unit.ship.spec.hull_id}
+                        weaponCount={unit.ship.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0}
+                      />
+                    ) : (
+                      <SpecialShipGlyph
+                        className="galaxy-fleet-picker-ship-glyph galaxy-fleet-picker-special-ship-glyph"
+                        kind={unit.fleet.special_kind as SpecialShipKind}
+                      />
+                    )}
+                    <span className="galaxy-fleet-picker-ship-copy"><strong>{label}</strong></span>
+                    <span className="galaxy-fleet-picker-ship-check" aria-hidden="true">{isSelected && <GameIcon name="check" />}</span>
                   </button>
-                </div>
-                <div className="galaxy-fleet-picker-ships">
-                  {pickerShips.map((ship) => {
-                    const isSelected = pickerSelectedShipIDs.has(ship.id)
-                    const weaponCount = ship.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0
-                    return (
-                      <button
-                        type="button"
-                        key={ship.id}
-                        className={'galaxy-fleet-picker-ship' + (isSelected ? ' is-selected' : '')}
-                        aria-pressed={isSelected}
-                        onClick={() => togglePickerShip(ship.id)}
-                      >
-                        <ProceduralShipGlyph
-                          className="galaxy-fleet-picker-ship-glyph"
-                          seed={`${ship.empire_id}:${ship.source_design_id}:${ship.source_design_revision}:${ship.spec.strategic_picture_id}`}
-                          genome={decodeShipVisualGenome(ship.visual_genome)}
-                          hullId={ship.spec.hull_id}
-                          weaponCount={weaponCount}
-                          label={ship.name}
-                        />
-                        <span className="galaxy-fleet-picker-ship-copy">
-                          <strong>{ship.name}</strong>
-                          <small>{humanizeToken(ship.spec.hull_id)} · R{ship.source_design_revision} · {t('galaxy.fleetPickerWeapons', { count: weaponCount })}</small>
-                        </span>
-                        <span className="galaxy-fleet-picker-ship-check" aria-hidden="true">{isSelected && <GameIcon name="check" />}</span>
-                      </button>
-                    )
-                  })}
-                </div>
-              </>
-            )}
+                )
+              })}
+            </div>
           </div>
 
-          <div className="galaxy-fleet-picker-footer">
-            <p>{t('galaxy.fleetPickerHint')}</p>
-            {pickerProfileShipIDs !== null ? (
-              <span className="badge">{t('galaxy.fleetPickerTargets', { reachable: pickerReachableTargets, total: pickerTargets.length })}</span>
+          <div className="galaxy-fleet-picker-footer galaxy-fleet-picker-footer-compact">
+            <span className="galaxy-fleet-picker-selection-count">{pickerSelectedUnits.length}/{pickerUnits.length}</span>
+            {pickerProfilesSupported ? (
+              <span className="badge galaxy-fleet-picker-target-summary">{t('galaxy.fleetPickerTargetsCompact', { reachable: pickerReachableTargets, total: pickerTotalTargets })}</span>
             ) : (
               <small>{t('galaxy.fleetPickerSubsetProfile')}</small>
             )}
