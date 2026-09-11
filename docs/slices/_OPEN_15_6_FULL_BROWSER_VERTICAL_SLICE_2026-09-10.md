@@ -82,3 +82,4 @@ Block 5C COMPLETE (`3338ead`): independent Galaxy fleet marker + compact draggab
 - visible-browser movement -> encounter -> Tactical regression, including Laser fire and strategic return.
 
 The normal Small-Galaxy generator and canonical `0x8009` seed are explicitly not to be altered merely to make this focused QA case reachable.
+Special-ship visual persistence remains OPEN: Colony/Outpost/Troop strategic units need authoritative persisted per-instance visual genomes with deterministic creation/backfill and save/load/reconnect stability; the current `SpecialShipGlyph` SVGs are interim presentation only.

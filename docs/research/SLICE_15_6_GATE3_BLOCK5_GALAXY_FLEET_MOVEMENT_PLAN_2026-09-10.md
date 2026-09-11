@@ -181,6 +181,14 @@ Implementation status (2026-09-11): **5C COMPLETE**
 - The picker is materially smaller: desktop max width 292 px; mobile max width 276 px and 76vw, leaving map space visible beside it. Canonical browser QA measured 292x201 px with a 4x66.5 px grid in a 791x605 viewport.
 - Canonical browser QA also proved: no own colony marker remains, `System 01` computes to the success/green color, Scout 1 can be deselected while Scout 2 + Colony Ship stay selected (`2/3`, `Ziele 0/19`), Colony Ship renders a dedicated SVG rather than a `GameIcon`, and normal star inspection still opens only the SystemDialog after the picker closes.
 - Validation after refinement: web `npm run build` green (main JS 268.83 kB / 69.90 kB gzip), full `go test ./...` green, staged `git diff --check` green.
+OPEN FOLLOW-UP - persisted visual genomes for strategic special ships
+
+- Colony Ship, Outpost Ship, and Troop Transport currently exist as fixed `StrategicFleet.SpecialKind` units without a concrete `Ship` instance and therefore without a persisted per-instance `visual_genome`.
+- The current `SpecialShipGlyph.tsx` silhouettes are an intentional interim presentation layer only. They must not become the final persistence model.
+- Required future contract: every constructed/starting strategic special ship receives a stable persisted visual-genome instance at creation time; save/load/reconnect must reproduce exactly the same geometry; projections expose that persisted genome; Galaxy/System/Construction views render the same instance everywhere.
+- Migration/backfill must be deterministic for existing saves that predate the field. No client-side random regeneration on render.
+- Acceptance requires focused tests for creation, snapshot projection, save/load round-trip, reconnect stability, and visual identity consistency across construction queue -> completed strategic unit -> Galaxy/System picker.
+- Keep this follow-up open until the authoritative core/persistence representation is implemented; the committed static special silhouettes are not sufficient to close it.
 ### 5D - Drag/drop targeting + route feedback
 
 - Drop hit-testing against star targets.
