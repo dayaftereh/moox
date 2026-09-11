@@ -128,25 +128,25 @@ func planTurn(view session.PlayerDecisionView) (protocol.CommandBatch, error) {
 	if view.Empire.Research == nil && !hasExpansionRange {
 		if choice, ok := chooseResearch(view); ok {
 			techID := 0
-			if len(choice.TechnologyIDs) != 0 {
-				techID = choice.TechnologyIDs[0]
-			}
-			for _, priority := range expansionTechPriority {
-				for _, candidate := range choice.TechnologyIDs {
-					if candidate == priority {
-						techID = candidate
+			if choice.SelectionMode == core.ResearchSelectionChooseOne {
+				if len(choice.TechnologyIDs) != 0 {
+					techID = choice.TechnologyIDs[0]
+				}
+				for _, priority := range expansionTechPriority {
+					for _, candidate := range choice.TechnologyIDs {
+						if candidate == priority {
+							techID = candidate
+						}
+					}
+					if techID == priority {
+						break
 					}
 				}
-				if techID == priority {
-					break
-				}
 			}
-			if techID != 0 {
-				if err := appendCommand(func(seq uint32) (protocol.Command, error) {
-					return game.NewSelectResearchCommand(seq, game.SelectResearchPayload{TechFieldID: choice.TechFieldID, TechnologyID: techID})
-				}); err != nil {
-					return protocol.CommandBatch{}, err
-				}
+			if err := appendCommand(func(seq uint32) (protocol.Command, error) {
+				return game.NewSelectResearchCommand(seq, game.SelectResearchPayload{TechFieldID: choice.TechFieldID, TechnologyID: techID})
+			}); err != nil {
+				return protocol.CommandBatch{}, err
 			}
 		}
 	}

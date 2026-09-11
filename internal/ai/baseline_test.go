@@ -7,6 +7,8 @@ import (
 	"testing"
 
 	"moox/internal/battle"
+
+	"moox/internal/core"
 	"moox/internal/game"
 	"moox/internal/protocol"
 	"moox/internal/session"
@@ -138,5 +140,39 @@ func TestBaselinePlannerChoosesFirstAuthoritativeBattleAction(t *testing.T) {
 	want, _ := json.Marshal(first)
 	if !bytes.Equal(got, want) {
 		t.Fatalf("planner battle command=%s want=%s", got, want)
+	}
+}
+func TestBaselinePlannerOmitsTechnologyIDForAllApplicationsResearch(t *testing.T) {
+	view := session.PlayerDecisionView{
+		GameID:   "ai-all-research",
+		Revision: 1,
+		Turn:     1,
+		Phase:    session.PhasePlanning,
+		Seat: session.SeatView{Seat: session.Seat{
+			ID: 3, EmpireID: 3, Name: "Psilon", Controller: session.ControllerBuiltinAI,
+		}},
+		Empire: core.Empire{ID: 3, Name: "Psilon", RaceID: "psilon"},
+		Decisions: session.DecisionCatalog{Research: []game.ResearchChoice{{
+			TechFieldID: 9, BaseCostRP: 250, SelectionMode: core.ResearchSelectionAll,
+			TechnologyIDs: []int{51, 106},
+		}}},
+	}
+	action, err := Plan(view)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if action.Kind != ActionSubmitTurn || action.Batch == nil || len(action.Batch.Commands) == 0 {
+		t.Fatalf("all-applications research action=%+v", action)
+	}
+	command := action.Batch.Commands[0]
+	if command.Kind != game.CommandSelectResearch {
+		t.Fatalf("first command=%q want %q", command.Kind, game.CommandSelectResearch)
+	}
+	var payload game.SelectResearchPayload
+	if err := json.Unmarshal(command.Payload, &payload); err != nil {
+		t.Fatal(err)
+	}
+	if payload.TechFieldID != 9 || payload.TechnologyID != 0 {
+		t.Fatalf("all-applications payload=%+v, technology_id must be omitted", payload)
 	}
 }
