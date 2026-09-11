@@ -283,3 +283,10 @@ Accepted interaction contract:
 - Transit ship tiles are not buttons and have no selected/check state. `Alle auswählen`, target selection, source-click cancellation, drag-to-target, retarget and any other move control are absent rather than merely disabled.
 - The transit dialog prominently shows the authoritative destination label, server-projected remaining parsecs and remaining turns/ETA, plus the immutable-flight notice. Hidden/unvisited destinations remain `Unbekannter Stern`.
 - Runtime-only visible QA used a temporary imported `qa-transit-dialog` snapshot derived from the triangle solely to hold a multi-turn Human transit frame; it is not a canonical/reference fixture. The dialog showed Scout 1, Scout 2 and Kolonieschiff, `Noch 2 pc · Restzeit 1 Runde(n)`, three information buttons, zero selectable ship buttons and zero target/cancel controls. Opening Scout 1 exposed the existing full ship-information panel during transit.
+### Block5F queued — foreign Fleet detection / scanner intelligence
+
+After Block5E arrival/contact/Tactical acceptance, continue directly with **Block5F: Foreign Fleet Detection / Scanner Intelligence**. This is not deferred to a distant slice because the own-transit marker/route/read-only Fleet dialog architecture should be extended while it is current.
+
+Binding direction: foreign transit Fleets are projected only when server-authoritative scanner coverage permits them; detectable hostile/incoming movement uses the existing transit-marker language with a foreign player-colored Fleet marker and red dashed route toward a permitted target; ETA/remaining pc and ship-detail depth are scanner-authorized server projection, never client-side hidden state. The same compact Fleet dialog is reused read-only with intelligence redaction. Exact scanner stacking, asset coverage, size-class contribution, last-known-contact behavior and deep-space grouping remain research/freeze items.
+
+Detailed plan: `docs/research/SLICE_15_6_GATE3_BLOCK5F_FOREIGN_FLEET_SCANNERS_PLAN_2026-09-12.md`.
