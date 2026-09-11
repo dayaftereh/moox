@@ -131,6 +131,33 @@ func (r *EconomyRules) NewGame(seed uint64, settings NewGameSettings) (NewGameRe
 		home.ClimateID = r.NewGameGalaxy.Homeworld.ClimateID
 	}
 
+	if err := r.materializeNewGameSystems(state, systems); err != nil {
+		return NewGameResult{}, err
+	}
+
+	if err := r.initializeNewGameStartingAssets(state, homeIndexes[:]); err != nil {
+		return NewGameResult{}, err
+	}
+	// Allocate non-planet body IDs only after every legacy New Game object has
+	// received its ID. This preserves the established deterministic IDs for
+	// empires, planets, colonies, designs, ships and fleets.
+	if err := materializeNewGameBodies(state, systems); err != nil {
+		return NewGameResult{}, err
+	}
+
+	if err := r.finalizeNewGameEconomy(state); err != nil {
+		return NewGameResult{}, err
+	}
+
+	state.AddEvent("game_started", "deterministic new game created")
+	if err := state.Validate(); err != nil {
+		return NewGameResult{}, fmt.Errorf("validate generated new game: %w", err)
+	}
+	state.CommitRNG(rng)
+	return NewGameResult{State: state, Players: players}, nil
+}
+
+func (r *EconomyRules) materializeNewGameSystems(state *core.GameState, systems []newGameSystemPlan) error {
 	state.Galaxy.Systems = make([]core.StarSystem, len(systems))
 	for si := range systems {
 		plan := &systems[si]
@@ -138,7 +165,7 @@ func (r *EconomyRules) NewGame(seed uint64, settings NewGameSettings) (NewGameRe
 		system := core.StarSystem{ID: plan.ID, Name: plan.Name, X: plan.X, Y: plan.Y, SpectralClass: plan.Spectral}
 		for pi, planetPlan := range plan.Planets {
 			if err := r.validateNewGamePlanetPlan(planetPlan); err != nil {
-				return NewGameResult{}, fmt.Errorf("system %d planet %d: %w", plan.ID, pi, err)
+				return fmt.Errorf("system %d planet %d: %w", plan.ID, pi, err)
 			}
 			system.Planets = append(system.Planets, core.Planet{
 				ID:        state.NewID(),
@@ -152,11 +179,20 @@ func (r *EconomyRules) NewGame(seed uint64, settings NewGameSettings) (NewGameRe
 		}
 		state.Galaxy.Systems[si] = system
 	}
+	return nil
+}
 
+func (r *EconomyRules) initializeNewGameStartingAssets(state *core.GameState, homeIndexes []int) error {
+	if len(homeIndexes) != len(state.Empires) {
+		return fmt.Errorf("home system count %d does not match empire count %d", len(homeIndexes), len(state.Empires))
+	}
 	for playerIndex, homeIndex := range homeIndexes {
+		if homeIndex < 0 || homeIndex >= len(state.Galaxy.Systems) {
+			return fmt.Errorf("empire %d home system index %d is out of range", state.Empires[playerIndex].ID, homeIndex)
+		}
 		system := &state.Galaxy.Systems[homeIndex]
 		if len(system.Planets) < r.NewGameGalaxy.Homeworld.MinimumPlanets {
-			return NewGameResult{}, fmt.Errorf("home system %d has %d planets, expected at least %d", system.ID, len(system.Planets), r.NewGameGalaxy.Homeworld.MinimumPlanets)
+			return fmt.Errorf("home system %d has %d planets, expected at least %d", system.ID, len(system.Planets), r.NewGameGalaxy.Homeworld.MinimumPlanets)
 		}
 		homeworld := &system.Planets[0]
 		empire := &state.Empires[playerIndex]
@@ -176,7 +212,7 @@ func (r *EconomyRules) NewGame(seed uint64, settings NewGameSettings) (NewGameRe
 	for i := range state.Empires {
 		spec, err := r.newGameScoutSpec(&state.Empires[i])
 		if err != nil {
-			return NewGameResult{}, fmt.Errorf("create scout design for empire %d: %w", state.Empires[i].ID, err)
+			return fmt.Errorf("create scout design for empire %d: %w", state.Empires[i].ID, err)
 		}
 		scoutSpecs[i] = spec
 		state.ShipDesigns = append(state.ShipDesigns, core.ShipDesign{
@@ -209,41 +245,30 @@ func (r *EconomyRules) NewGame(seed uint64, settings NewGameSettings) (NewGameRe
 			SpecialKind: core.StrategicFleetSpecialColonyShip, AtSystemID: homeSystem.ID, FTLSpeed: 2,
 		})
 	}
-	// Allocate non-planet body IDs only after every legacy New Game object has
-	// received its ID. This preserves the established deterministic IDs for
-	// empires, planets, colonies, designs, ships and fleets.
-	if err := materializeNewGameBodies(state, systems); err != nil {
-		return NewGameResult{}, err
-	}
-
+	return nil
+}
+func (r *EconomyRules) finalizeNewGameEconomy(state *core.GameState) error {
 	resolver, err := NewEconomyResolver(r)
 	if err != nil {
-		return NewGameResult{}, err
+		return err
 	}
 	for i := range state.Colonies {
 		if err := resolver.recalculateColony(state, &state.Colonies[i]); err != nil {
-			return NewGameResult{}, fmt.Errorf("initialize colony economy: %w", err)
+			return fmt.Errorf("initialize colony economy: %w", err)
 		}
 	}
 	if _, err := resolver.materializeFoodLogistics(state, false); err != nil {
-		return NewGameResult{}, fmt.Errorf("initialize food logistics: %w", err)
+		return fmt.Errorf("initialize food logistics: %w", err)
 	}
 	for i := range state.Empires {
 		points, err := r.deriveEmpireCommandPoints(state, &state.Empires[i])
 		if err != nil {
-			return NewGameResult{}, fmt.Errorf("initialize command points: %w", err)
+			return fmt.Errorf("initialize command points: %w", err)
 		}
 		state.Empires[i].CommandPoints = points
 	}
-
-	state.AddEvent("game_started", "deterministic new game created")
-	if err := state.Validate(); err != nil {
-		return NewGameResult{}, fmt.Errorf("validate generated new game: %w", err)
-	}
-	state.CommitRNG(rng)
-	return NewGameResult{State: state, Players: players}, nil
+	return nil
 }
-
 func (r *EconomyRules) validateNewGameSettings(settings NewGameSettings) error {
 	if settings.GalaxySize != GalaxySizeSmall {
 		return fmt.Errorf("unsupported galaxy_size %q; Slice 09 supports only %q", settings.GalaxySize, GalaxySizeSmall)
