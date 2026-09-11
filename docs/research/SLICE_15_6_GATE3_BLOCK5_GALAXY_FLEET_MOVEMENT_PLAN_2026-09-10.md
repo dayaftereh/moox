@@ -243,3 +243,10 @@ Block 5 is complete when unvisited systems no longer leak their true name/specia
 - Do not duplicate strategic distance, fuel, ETA or legality rules in React.
 - Do not require drag as the only movement input.
 - Do not broaden into full arbitrary multi-fleet command orchestration beyond what is needed for the accepted vertical slice.
+5D special-fleet movement-info refinement (2026-09-11): **ACCEPTED IMPLEMENTATION** (`43e8035`, `f6fc6a5`)
+
+- The obsolete large System Fleet dialog source was physically removed in `43e8035`; `SystemDialog -> Flotten / Schiffe` has only the shared compact Galaxy picker path now.
+- The shared picker `?` detail for Colony Ship, Outpost Ship and Troop Transport now shows the effective strategic movement equipment: drive, FTL speed, fuel cell, fuel range and current position.
+- Movement semantics are intentionally unchanged. A fixed special fleet keeps its per-instance `ftl_speed`; the drive label is resolved server-side from that speed plus the empire/race drive rules. Fuel Cell and parsec range follow the empire's **current** fuel technology, exactly like authoritative fixed-special movement validation and target projection already do. This means a later Deuterium/Iridium/etc. fuel upgrade benefits already-existing Colony/Outpost/Transport fleets.
+- `warp_drive_id`, `fuel_cell_id` and `fuel_range_parsecs` on `StrategicFleet` are projection-only optional metadata. Core validation rejects them in authoritative `GameState`; `buildStrategicView` enriches only the player's copy. This preserves schema-23 save/hash/gameplay semantics while exposing truthful UI data.
+- Focused tests cover Colony/Outpost/Troop at Nuclear Drive + Standard Fuel Cells (FTL2, 4pc) and a later Deuterium upgrade (same Nuclear/FTL2 instance, effective Deuterium 6pc). Full `go test ./...`, web build and diff checks are green.
