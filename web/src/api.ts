@@ -155,6 +155,7 @@ export type Empire = {
   id: number
   name: string
   race_id: string
+  player_color_slot?: number
   capital_colony_id?: number
   freighters: number
   command_points: EmpireCommandPoints
@@ -528,7 +529,7 @@ export type DecisionCatalog = {
   ship_designer?: MilitaryDesignerCatalog
   battles?: BattleDecision[]
 }
-export type PublicEmpireIdentity = { id: number; name: string; race_id: string }
+export type PublicEmpireIdentity = { id: number; name: string; race_id: string; player_color_slot: number }
 export type ResolutionSummaryKind =
   | 'research_breakthrough'
   | 'technology_granted'
@@ -618,7 +619,7 @@ export type PlayerView = {
   result?: SessionResult
   seat: { seat: { id: number; empire_id: number; name: string; controller: string }; submitted: boolean }
   seats: Array<{ seat: { id: number; empire_id: number; name: string; controller: string }; submitted: boolean }>
-  empire: { id: number; name: string; race_id: string }
+  empire: { id: number; name: string; race_id: string; player_color_slot?: number }
   colonies: Colony[]
   diplomacy?: DiplomacyView[]
   invasion?: InvasionOpportunity

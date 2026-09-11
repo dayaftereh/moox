@@ -36,7 +36,7 @@ func TestNewGameGoldenSeedStateFingerprint(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := fmt.Sprintf("%x", sha256.Sum256(data))
-	const want = "635478386884e40ced756ace599d0051cd438b86cc3b634eb2232e298005ef72"
+	const want = "01fdb79e4c4a599c17ce7ffe3f8498bbfdf8204f82ff776e4d350c961c70f734"
 	if got != want {
 		t.Fatalf("golden seed state sha256=%s want=%s", got, want)
 	}
@@ -54,6 +54,9 @@ func TestNewGameDeterministicAndRoundTrips(t *testing.T) {
 	}
 	if !reflect.DeepEqual(first, second) {
 		t.Fatal("same seed/settings did not produce an identical NewGameResult")
+	}
+	if got := []int{first.State.Empires[0].PlayerColorSlot, first.State.Empires[1].PlayerColorSlot}; !reflect.DeepEqual(got, []int{1, 2}) {
+		t.Fatalf("player color slots=%v want [1 2]", got)
 	}
 
 	data, err := json.Marshal(first.State)

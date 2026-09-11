@@ -45,9 +45,10 @@ type StrategicView struct {
 }
 
 type PublicEmpireIdentity struct {
-	ID     core.ID `json:"id"`
-	Name   string  `json:"name"`
-	RaceID string  `json:"race_id"`
+	ID              core.ID `json:"id"`
+	Name            string  `json:"name"`
+	RaceID          string  `json:"race_id"`
+	PlayerColorSlot int     `json:"player_color_slot"`
 }
 
 type ColonyConstructionDecision struct {
@@ -104,6 +105,21 @@ type PlayerDecisionView struct {
 	Decisions     DecisionCatalog        `json:"decisions"`
 }
 
+func playerColorSlotForEmpire(state *core.GameState, empireID core.ID) int {
+	if state == nil || empireID == 0 {
+		return 1
+	}
+	for i, empire := range state.Empires {
+		if empire.ID != empireID {
+			continue
+		}
+		if empire.PlayerColorSlot >= 1 && empire.PlayerColorSlot <= 8 {
+			return empire.PlayerColorSlot
+		}
+		return (i % 8) + 1
+	}
+	return 1
+}
 func (s *GameSession) DecisionView(seatID protocol.SeatID, resolver *game.EconomyResolver) (PlayerDecisionView, error) {
 	if resolver == nil || resolver.Rules == nil {
 		return PlayerDecisionView{}, fmt.Errorf("economy resolver has no rules")
@@ -129,6 +145,7 @@ func (s *GameSession) DecisionView(seatID protocol.SeatID, resolver *game.Econom
 	for _, empire := range state.Empires {
 		if empire.ID == seat.EmpireID {
 			view.Empire = empire
+			view.Empire.PlayerColorSlot = playerColorSlotForEmpire(state, empire.ID)
 			break
 		}
 	}
@@ -139,7 +156,7 @@ func (s *GameSession) DecisionView(seatID protocol.SeatID, resolver *game.Econom
 		if empire.ID != seat.EmpireID && !state.EmpiresHaveContact(seat.EmpireID, empire.ID) {
 			continue
 		}
-		view.PublicEmpires = append(view.PublicEmpires, PublicEmpireIdentity{ID: empire.ID, Name: empire.Name, RaceID: empire.RaceID})
+		view.PublicEmpires = append(view.PublicEmpires, PublicEmpireIdentity{ID: empire.ID, Name: empire.Name, RaceID: empire.RaceID, PlayerColorSlot: playerColorSlotForEmpire(state, empire.ID)})
 	}
 	sort.Slice(view.PublicEmpires, func(i, j int) bool { return view.PublicEmpires[i].ID < view.PublicEmpires[j].ID })
 	for _, colony := range state.Colonies {

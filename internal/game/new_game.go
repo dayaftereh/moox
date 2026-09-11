@@ -90,11 +90,12 @@ func (r *EconomyRules) NewGame(seed uint64, settings NewGameSettings) (NewGameRe
 	players := make([]NewGamePlayerResult, len(settings.Players))
 	for i, player := range settings.Players {
 		empire := core.Empire{
-			ID:         state.NewID(),
-			Name:       strings.TrimSpace(player.EmpireName),
-			RaceID:     player.RaceID,
-			Freighters: r.NewGameGalaxy.Start.Freighters,
-			Treasury:   core.EmpireTreasuryState{BalanceBC: r.NewGameGalaxy.Start.TreasuryBC},
+			ID:              state.NewID(),
+			Name:            strings.TrimSpace(player.EmpireName),
+			RaceID:          player.RaceID,
+			PlayerColorSlot: i + 1,
+			Freighters:      r.NewGameGalaxy.Start.Freighters,
+			Treasury:        core.EmpireTreasuryState{BalanceBC: r.NewGameGalaxy.Start.TreasuryBC},
 		}
 		state.Empires = append(state.Empires, empire)
 		players[i] = NewGamePlayerResult{SeatID: player.SeatID, EmpireID: empire.ID, RaceID: empire.RaceID, Name: empire.Name}

@@ -1284,6 +1284,7 @@ func (s *GameSession) PlayerView(seatID protocol.SeatID) (PlayerView, error) {
 	for _, empire := range s.state.Empires {
 		if empire.ID == seat.seat.EmpireID {
 			view.Empire = empire
+			view.Empire.PlayerColorSlot = playerColorSlotForEmpire(s.state, empire.ID)
 			break
 		}
 	}

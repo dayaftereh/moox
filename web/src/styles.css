@@ -4408,3 +4408,31 @@ button.galaxy-node-marker-button.is-open {
   .galaxy-fleet-picker-grid .galaxy-fleet-picker-tile { border-radius: 6px; }
   .galaxy-fleet-picker-grid .galaxy-fleet-picker-ship-copy strong { font-size: .49rem; }
 }
+/* One Galaxy fleet marker per empire/system, colored by authoritative player slot. */
+.galaxy-node-fleet-ring > .galaxy-node-marker-player-fleet {
+  position: absolute;
+}
+.galaxy-node-marker-player-fleet {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+  min-height: 18px;
+  border-color: var(--fleet-player-color);
+  color: var(--fleet-player-color);
+  background: color-mix(in srgb, var(--fleet-player-color) 12%, #07111f);
+  box-shadow: 0 2px 7px rgba(0,0,0,.4), 0 0 7px color-mix(in srgb, var(--fleet-player-color) 28%, transparent);
+}
+.galaxy-node-marker-player-fleet .game-icon { width: 9px; height: 9px; }
+.player-color-slot-1 { --fleet-player-color: #74a8ff; }
+.player-color-slot-2 { --fleet-player-color: #ff7180; }
+.player-color-slot-3 { --fleet-player-color: #67d899; }
+.player-color-slot-4 { --fleet-player-color: #f1d363; }
+.player-color-slot-5 { --fleet-player-color: #c68cff; }
+.player-color-slot-6 { --fleet-player-color: #ff9e5a; }
+.player-color-slot-7 { --fleet-player-color: #5fd4dc; }
+.player-color-slot-8 { --fleet-player-color: #d7dde8; }
+button.galaxy-node-marker-player-fleet.is-open {
+  border-color: var(--fleet-player-color);
+  color: var(--fleet-player-color);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--fleet-player-color) 22%, transparent), 0 0 10px color-mix(in srgb, var(--fleet-player-color) 38%, transparent);
+}

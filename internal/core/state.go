@@ -67,6 +67,7 @@ type Empire struct {
 	ID                        ID                           `json:"id"`
 	Name                      string                       `json:"name"`
 	RaceID                    string                       `json:"race_id"`
+	PlayerColorSlot           int                          `json:"player_color_slot,omitempty"`
 	Capital                   ID                           `json:"capital_colony_id,omitempty"`
 	Freighters                int                          `json:"freighters"`
 	CommandPoints             EmpireCommandPoints          `json:"command_points"`
@@ -392,6 +393,7 @@ func (s *GameState) Validate() error {
 			}
 		}
 	}
+	seenPlayerColorSlots := map[int]struct{}{}
 	for i := range s.Empires {
 		empire := &s.Empires[i]
 		if empire.Name == "" || empire.RaceID == "" {
@@ -399,6 +401,15 @@ func (s *GameState) Validate() error {
 		}
 		if err := checkID(empire.ID, fmt.Sprintf("empire[%d]", i)); err != nil {
 			return err
+		}
+		if empire.PlayerColorSlot < 0 || empire.PlayerColorSlot > 8 {
+			return fmt.Errorf("empire[%d] player color slot must be 0..8, got %d", i, empire.PlayerColorSlot)
+		}
+		if empire.PlayerColorSlot != 0 {
+			if _, exists := seenPlayerColorSlots[empire.PlayerColorSlot]; exists {
+				return fmt.Errorf("empire[%d] duplicates player color slot %d", i, empire.PlayerColorSlot)
+			}
+			seenPlayerColorSlots[empire.PlayerColorSlot] = struct{}{}
 		}
 		lastKnownEmpireID := ID(0)
 		for ki, knownEmpireID := range empire.KnownEmpireIDs {

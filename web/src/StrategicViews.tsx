@@ -91,6 +91,12 @@ function specialFleetShipLabel(t: Translator, kind: SpecialShipKind): string {
   return t('system.troopTransport')
 }
 
+function playerColorSlotClass(slot: number | undefined): string {
+  const normalized = slot && slot >= 1 && slot <= 8 ? slot : 1
+  return `player-color-slot-${normalized}`
+}
+
+
 function galaxyFleetMarkerPosition(index: number) {
   const slot = index % 4
   const ring = Math.floor(index / 4)
@@ -655,11 +661,15 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
               const ownOutpost = (system.bodies ?? []).some((body) => Boolean(body.outpost_id) && decision.strategic.outposts?.some((outpost) => outpost.id === body.outpost_id && outpost.empire_id === decision.empire.id))
               const ownFleets = (decision.strategic.fleets ?? []).filter((fleet) => fleet.empire_id === decision.empire.id && fleet.at_system_id === system.id)
               const ownFleetUnits = ownFleets.reduce((sum, fleet) => sum + (fleet.special_kind ? 1 : Math.max(1, fleet.ship_ids?.length ?? 0)), 0)
-              const foreignContacts = Array.from(new Map(
+              const foreignFleetEmpireIDs = Array.from(new Set(
                 (decision.strategic.contacts ?? [])
-                  .filter((contact) => contact.system_id === system.id && contact.empire_id !== decision.empire.id)
-                  .map((contact) => [contact.empire_id + ':' + contact.kind, contact]),
-              ).values()).slice(0, 3)
+                  .filter((contact) => contact.system_id === system.id && contact.empire_id !== decision.empire.id && contact.kind === 'fleet')
+                  .map((contact) => contact.empire_id),
+              )).sort((a, b) => a - b)
+              const fleetEmpireMarkers = [
+                ...(ownFleets.length > 0 ? [{ empireID: decision.empire.id, own: true }] : []),
+                ...foreignFleetEmpireIDs.map((empireID) => ({ empireID, own: false })),
+              ]
               return (
                 <div
                   key={system.id}
@@ -687,37 +697,47 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                       </span>
                     )}
                   </button>
-                  {ownFleets.length > 0 && (
+                  {fleetEmpireMarkers.length > 0 && (
                     <span className="galaxy-node-fleet-ring">
-                      {ownFleets.map((fleet, index) => (
-                        <button
-                          type="button"
-                          key={fleet.id}
-                          className={'galaxy-node-marker galaxy-node-marker-own-fleet galaxy-node-marker-button' + (fleetPicker?.systemID === system.id ? ' is-open' : '')}
-                          style={galaxyFleetMarkerPosition(index)}
-                          aria-label={t('galaxy.fleetPickerOpen', { count: ownFleetUnits })}
-                          aria-expanded={fleetPicker?.systemID === system.id}
-                          aria-controls={fleetPicker?.systemID === system.id ? 'galaxy-fleet-picker' : undefined}
-                          title={`${t('galaxy.fleet')} #${fleet.id}`}
-                          onPointerDown={(event) => event.stopPropagation()}
-                          onClick={(event) => {
-                            event.stopPropagation()
-                            if (ignoreClickRef.current) return
-                            openFleetPicker(system.id, ownFleets, event.clientX, event.clientY)
-                          }}
-                        >
-                          <GameIcon name="fleets" />
-                        </button>
-                      ))}
-                    </span>
-                  )}
-                  {foreignContacts.length > 0 && (
-                    <span className="galaxy-node-markers galaxy-node-contact-markers">
-                      {foreignContacts.map((contact, index) => {
-                        const tone = strategicRelationTone(decision.empire.id, contact.empire_id, decision.diplomacy)
+                      {fleetEmpireMarkers.map((marker, index) => {
+                        const identity = marker.own
+                          ? decision.empire
+                          : decision.public_empires?.find((empire) => empire.id === marker.empireID)
+                        const colorSlot = marker.own ? decision.empire.player_color_slot : identity?.player_color_slot
+                        const markerClass = `galaxy-node-marker galaxy-node-marker-player-fleet ${playerColorSlotClass(colorSlot)}`
+                        if (marker.own) {
+                          return (
+                            <button
+                              type="button"
+                              key={`fleet-empire-${marker.empireID}`}
+                              className={markerClass + ' galaxy-node-marker-button' + (fleetPicker?.systemID === system.id ? ' is-open' : '')}
+                              style={galaxyFleetMarkerPosition(index)}
+                              aria-label={t('galaxy.fleetPickerOpen', { count: ownFleetUnits })}
+                              aria-expanded={fleetPicker?.systemID === system.id}
+                              aria-controls={fleetPicker?.systemID === system.id ? 'galaxy-fleet-picker' : undefined}
+                              title={t('galaxy.ownFleetMarker')}
+                              onPointerDown={(event) => event.stopPropagation()}
+                              onClick={(event) => {
+                                event.stopPropagation()
+                                if (ignoreClickRef.current) return
+                                openFleetPicker(system.id, ownFleets, event.clientX, event.clientY)
+                              }}
+                            >
+                              <GameIcon name="fleets" />
+                            </button>
+                          )
+                        }
+                        const empireName = identity?.name ?? t('common.empireFallback', { id: marker.empireID })
                         return (
-                          <span className={'galaxy-node-marker galaxy-node-marker-contact relation-' + tone} key={'marker-' + system.id + '-' + contact.empire_id + '-' + index} aria-hidden="true">
-                            <GameIcon name={strategicContactIcon(contact.kind)} />
+                          <span
+                            key={`fleet-empire-${marker.empireID}`}
+                            className={markerClass}
+                            style={galaxyFleetMarkerPosition(index)}
+                            role="img"
+                            aria-label={t('galaxy.foreignFleetMarker', { empire: empireName })}
+                            title={t('galaxy.foreignFleetMarker', { empire: empireName })}
+                          >
+                            <GameIcon name="fleets" />
                           </span>
                         )
                       })}

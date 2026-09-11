@@ -59,6 +59,9 @@ func TestPlayerDecisionViewIsPlayerSafeDeepCopyAndDeterministic(t *testing.T) {
 	if len(view.PublicEmpires) != 1 || view.PublicEmpires[0].ID != generated.Players[0].EmpireID {
 		t.Fatalf("pre-contact public empire identities=%+v want only Human", view.PublicEmpires)
 	}
+	if view.Empire.PlayerColorSlot != 1 || view.PublicEmpires[0].PlayerColorSlot != 1 {
+		t.Fatalf("Human player color projection empire=%d public=%d want 1", view.Empire.PlayerColorSlot, view.PublicEmpires[0].PlayerColorSlot)
+	}
 	if len(view.Diplomacy) != 0 || len(view.Decisions.Diplomacy) != 0 {
 		t.Fatalf("pre-contact diplomacy leaked other empire: view=%+v decisions=%+v", view.Diplomacy, view.Decisions.Diplomacy)
 	}
@@ -223,6 +226,9 @@ func TestDecisionViewRevealsEmpireOnlyAfterFirstContact(t *testing.T) {
 	if len(view.PublicEmpires) != 2 || view.PublicEmpires[1].Name != "Darlok" {
 		t.Fatalf("post-contact public empires=%+v", view.PublicEmpires)
 	}
+	if view.PublicEmpires[0].PlayerColorSlot != 1 || view.PublicEmpires[1].PlayerColorSlot != 2 {
+		t.Fatalf("post-contact player color slots=%+v want Human=1 Darlok=2", view.PublicEmpires)
+	}
 	if len(view.Diplomacy) != 1 || view.Diplomacy[0].OtherEmpireID != generated.Players[1].EmpireID {
 		t.Fatalf("post-contact diplomacy=%+v", view.Diplomacy)
 	}
@@ -283,5 +289,39 @@ func TestDecisionViewProjectsFleetTargetsWithoutRevealingUnvisitedSystem(t *test
 	}
 	if !checked {
 		t.Fatal("no anonymous unvisited fleet target was projected")
+	}
+}
+func TestDecisionViewBackfillsLegacyPlayerColorSlotsByEmpireOrder(t *testing.T) {
+	rules, err := game.LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	generated, err := rules.NewGame(0x8009, game.NewGameSettings{
+		GalaxySize: game.GalaxySizeSmall, GalaxyAge: game.GalaxyAgeNormal, TechnologyLevel: game.NewGameTechnologyAverage,
+		Players: []game.NewGamePlayerSpec{{SeatID: 1, EmpireName: "Human", RaceID: "human"}, {SeatID: 2, EmpireName: "Darlok", RaceID: "darlok"}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	generated.State.Empires[0].PlayerColorSlot = 0
+	generated.State.Empires[1].PlayerColorSlot = 0
+	generated.State.MarkEmpiresKnown(generated.Players[0].EmpireID, generated.Players[1].EmpireID)
+	s, err := NewGameSession("legacy-color-fallback", generated.State, []Seat{
+		{ID: 1, EmpireID: generated.Players[0].EmpireID, Name: "Human", Controller: ControllerBuiltinAI},
+		{ID: 2, EmpireID: generated.Players[1].EmpireID, Name: "Darlok", Controller: ControllerBuiltinAI},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	resolver, err := game.NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	view, err := s.DecisionView(1, resolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if view.Empire.PlayerColorSlot != 1 || len(view.PublicEmpires) != 2 || view.PublicEmpires[0].PlayerColorSlot != 1 || view.PublicEmpires[1].PlayerColorSlot != 2 {
+		t.Fatalf("legacy color fallback=%+v own=%+v", view.PublicEmpires, view.Empire)
 	}
 }
