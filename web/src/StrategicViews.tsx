@@ -1103,18 +1103,10 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, on
   }))
   const orderedBodies = [...bodies].sort((a, b) => a.orbit - b.orbit || a.id - b.id)
   const [selectedBodyID, setSelectedBodyID] = useState<number | null>(orderedBodies[0]?.id ?? null)
-  const [fleetDialogOpen, setFleetDialogOpen] = useState(false)
-  const [selectedFleetID, setSelectedFleetID] = useState<number | null>(null)
-  const [selectedShipID, setSelectedShipID] = useState<number | null>(null)
 
   useEffect(() => {
     const handleKey = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape') return
-      if (fleetDialogOpen) {
-        setFleetDialogOpen(false)
-        return
-      }
-      onClose()
+      if (event.key === 'Escape') onClose()
     }
     window.addEventListener('keydown', handleKey)
     document.body.classList.add('modal-open')
@@ -1122,13 +1114,10 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, on
       window.removeEventListener('keydown', handleKey)
       document.body.classList.remove('modal-open')
     }
-  }, [fleetDialogOpen, onClose])
+  }, [onClose])
 
   useEffect(() => {
     setSelectedBodyID(orderedBodies[0]?.id ?? null)
-    setFleetDialogOpen(false)
-    setSelectedFleetID(null)
-    setSelectedShipID(null)
   }, [system.id])
 
   const decision = snapshot.decision
@@ -1140,33 +1129,8 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, on
       .filter((contact) => contact.system_id === system.id)
       .map((contact) => [contact.empire_id + ':' + contact.kind, contact]),
   ).values())
-  const shipsByID = new Map((decision.strategic.ships ?? []).map((ship) => [ship.id, ship]))
-  const selectedFleet = fleets.find((fleet) => fleet.id === selectedFleetID) ?? fleets[0]
-  const selectedFleetShips = selectedFleet?.ship_ids
-    ?.map((shipID) => shipsByID.get(shipID))
-    .filter((ship): ship is NonNullable<typeof ship> => Boolean(ship)) ?? []
-  const selectedShip = selectedFleetShips.find((ship) => ship.id === selectedShipID) ?? selectedFleetShips[0]
   const fleetUnitCount = fleets.reduce((sum, fleet) => sum + (fleet.special_kind ? 1 : Math.max(1, fleet.ship_ids?.length ?? 0)), 0)
 
-  const fleetName = (fleet: (typeof fleets)[number]) => {
-    switch (fleet.special_kind) {
-      case 'colony_ship': return t('system.colonyShip')
-      case 'outpost_ship': return t('system.outpostShip')
-      case 'troop_transport': return t('system.troopTransport')
-      default: return t('galaxy.fleet', { id: fleet.id })
-    }
-  }
-  const selectFleet = (fleetID: number, shipID?: number) => {
-    const fleet = fleets.find((item) => item.id === fleetID)
-    setSelectedFleetID(fleetID)
-    setSelectedShipID(shipID ?? fleet?.ship_ids?.[0] ?? null)
-  }
-  const openFleetDialog = () => {
-    const fleet = selectedFleet ?? fleets[0]
-    setSelectedFleetID(fleet?.id ?? null)
-    setSelectedShipID(fleet?.ship_ids?.[0] ?? null)
-    setFleetDialogOpen(true)
-  }
 
   const selectedBody = orderedBodies.find((body) => body.id === selectedBodyID) ?? orderedBodies[0]
   const selectedPlanet = selectedBody?.planet_id ? (system.planets ?? []).find((planet) => planet.id === selectedBody.planet_id) : undefined
@@ -1340,134 +1304,6 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, on
           </div>
         </footer>
 
-        {fleetDialogOpen && selectedFleet && (
-          <div className="system-fleet-dialog-backdrop" role="presentation" onPointerDown={(event) => {
-            if (event.target === event.currentTarget) setFleetDialogOpen(false)
-          }}>
-            <section className="system-fleet-dialog" role="dialog" aria-modal="true" aria-labelledby={'system-fleet-dialog-title-' + system.id}>
-              <header className="system-fleet-dialog-header">
-                <div>
-                  <p className="eyebrow">{system.name}</p>
-                  <h3 id={'system-fleet-dialog-title-' + system.id}><GameIcon name="fleets" />{t('system.fleetsShips')}</h3>
-                </div>
-                <button type="button" className="button-ghost" aria-label={t('common.close')} onClick={() => setFleetDialogOpen(false)}><GameIcon name="close" /></button>
-              </header>
-
-              <div className="system-fleet-dialog-layout">
-                <aside className="system-fleet-roster" aria-label={t('system.fleetsShips')}>
-                  {fleets.map((fleet) => {
-                    const fleetShips = fleet.ship_ids?.map((shipID) => shipsByID.get(shipID)).filter((ship): ship is NonNullable<typeof ship> => Boolean(ship)) ?? []
-                    const selected = selectedFleet.id === fleet.id
-                    return (
-                      <div className={'system-fleet-roster-group' + (selected ? ' selected' : '')} key={'fleet-roster-' + fleet.id}>
-                        <button type="button" className="system-fleet-roster-head" aria-pressed={selected && !selectedShip} onClick={() => selectFleet(fleet.id, 0)}>
-                          <ProceduralShipGlyph
-                            className="system-fleet-roster-vector"
-                            seed={fleetShips[0]
-                              ? `${fleetShips[0].empire_id}:${fleetShips[0].source_design_id}:${fleetShips[0].source_design_revision}:${fleetShips[0].spec.strategic_picture_id}`
-                              : `fleet:${fleet.empire_id}:${fleet.id}`}
-                            genome={decodeShipVisualGenome(fleetShips[0]?.visual_genome)}
-                            hullId={fleetShips[0]?.spec.hull_id}
-                            weaponCount={fleetShips[0]?.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0}
-                          />
-                          <span className="system-fleet-roster-copy">
-                            <span className="system-fleet-role-icon"><GameIcon name={fleetRoleIcon(fleet)} /></span>
-                            <span>
-                              <strong>{fleetName(fleet)}</strong>
-                              <small>{fleet.special_kind ? t('system.specialVessel') : t('fleets.ships', { count: fleet.ship_ids?.length ?? 0 })}</small>
-                            </span>
-                          </span>
-                        </button>
-                        {fleetShips.length > 0 && (
-                          <div className="system-fleet-roster-ships">
-                            {fleetShips.map((ship) => (
-                              <button
-                                type="button"
-                                className={'system-fleet-roster-ship' + (selected && selectedShip?.id === ship.id ? ' selected' : '')}
-                                key={'fleet-ship-' + ship.id}
-                                aria-pressed={selected && selectedShip?.id === ship.id}
-                                onClick={() => selectFleet(fleet.id, ship.id)}
-                              >
-                                <ProceduralShipGlyph
-                                  className="system-fleet-roster-vector ship"
-                                  seed={`${ship.empire_id}:${ship.source_design_id}:${ship.source_design_revision}:${ship.spec.strategic_picture_id}`}
-                                  genome={decodeShipVisualGenome(ship.visual_genome)}
-                                  hullId={ship.spec.hull_id}
-                                  weaponCount={ship.spec.weapons?.reduce((sum, mount) => sum + mount.count, 0) ?? 0}
-                                />
-                                <span><strong>{ship.name}</strong><small>{humanizeToken(ship.spec.hull_id)}</small></span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-                </aside>
-
-                <div className="system-fleet-tech-panel" aria-live="polite">
-                  {selectedShip ? (
-                    <>
-                      <header className="system-fleet-tech-title">
-                        <div>
-                          <p className="eyebrow">{fleetName(selectedFleet)}</p>
-                          <h3>{selectedShip.name}</h3>
-                        </div>
-                        <span className="badge">{humanizeToken(selectedShip.spec.hull_id)}</span>
-                      </header>
-                      <dl className="system-ship-tech-grid">
-                        <div><dt>{t('system.hull')}</dt><dd>{humanizeToken(selectedShip.spec.hull_id)}</dd></div>
-                        <div><dt>{t('system.warpDrive')}</dt><dd>{humanizeToken(selectedShip.spec.warp_drive_id)}</dd></div>
-                        <div><dt>{t('system.ftlSpeed')}</dt><dd>{selectedShip.spec.ftl_speed}</dd></div>
-                        <div><dt>{t('system.computer')}</dt><dd>{humanizeToken(selectedShip.spec.computer_id)}</dd></div>
-                        <div><dt>{t('system.armor')}</dt><dd>{humanizeToken(selectedShip.spec.armor_id)}</dd></div>
-                        <div><dt>{t('system.shield')}</dt><dd>{selectedShip.spec.shield_id ? humanizeToken(selectedShip.spec.shield_id) : t('common.none')}</dd></div>
-                        <div><dt>{t('system.fuelCell')}</dt><dd>{humanizeToken(selectedShip.spec.fuel_cell_id)}</dd></div>
-                        <div><dt>{t('system.range')}</dt><dd>{selectedShip.spec.fuel_range_parsecs}</dd></div>
-                        <div><dt>{t('system.productionCost')}</dt><dd>{selectedShip.spec.production_cost_pp} PP</dd></div>
-                        <div><dt>{t('system.design')}</dt><dd>#{selectedShip.source_design_id} Â· r{selectedShip.source_design_revision}</dd></div>
-                      </dl>
-                      <section className="system-ship-weapons">
-                        <h4>{t('system.weapons')}</h4>
-                        {(selectedShip.spec.weapons?.length ?? 0) > 0 ? (
-                          <div className="system-ship-weapon-list">
-                            {selectedShip.spec.weapons?.map((weapon) => (
-                              <div className="system-ship-weapon" key={'weapon-' + weapon.slot}>
-                                <span>{weapon.count}Ã—</span>
-                                <strong>{humanizeToken(weapon.weapon_id)}</strong>
-                                <small>{t('system.weaponSlot', { slot: weapon.slot + 1 })}</small>
-                              </div>
-                            ))}
-                          </div>
-                        ) : <p className="muted">{t('system.noWeapons')}</p>}
-                      </section>
-                      <section className="system-ship-damage-status">
-                        <h4>{t('system.damage')}</h4>
-                        <p>{t('system.damageNotStrategic')}</p>
-                      </section>
-                    </>
-                  ) : (
-                    <>
-                      <header className="system-fleet-tech-title">
-                        <div>
-                          <p className="eyebrow">{t('system.specialVessel')}</p>
-                          <h3>{fleetName(selectedFleet)}</h3>
-                        </div>
-                        <span className="badge">{humanizeToken(selectedFleet.role)}</span>
-                      </header>
-                      <dl className="system-ship-tech-grid">
-                        <div><dt>{t('system.fleetType')}</dt><dd>{selectedFleet.special_kind ? humanizeToken(selectedFleet.special_kind) : humanizeToken(selectedFleet.role)}</dd></div>
-                        <div><dt>{t('system.location')}</dt><dd>{system.name}</dd></div>
-                        {selectedFleet.ftl_speed !== undefined && <div><dt>{t('system.ftlSpeed')}</dt><dd>{selectedFleet.ftl_speed}</dd></div>}
-                      </dl>
-                      <p className="muted system-special-vessel-note">{t('system.specialVesselLoadoutUnavailable')}</p>
-                    </>
-                  )}
-                </div>
-              </div>
-            </section>
-          </div>
-        )}
       </section>
     </div>
   )
