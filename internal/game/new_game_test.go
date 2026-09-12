@@ -36,7 +36,7 @@ func TestNewGameGoldenSeedStateFingerprint(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := fmt.Sprintf("%x", sha256.Sum256(data))
-	const want = "01fdb79e4c4a599c17ce7ffe3f8498bbfdf8204f82ff776e4d350c961c70f734"
+	const want = "a1f42cba5c70a00e1b57cd3d2a3081079885d51465b2ca7eb01ab8c7d5925c24"
 	if got != want {
 		t.Fatalf("golden seed state sha256=%s want=%s", got, want)
 	}
@@ -201,6 +201,29 @@ func TestNewGameCanonicalBaselineInvariants(t *testing.T) {
 		if design.EmpireID != empire.ID || design.Name != "Scout" || design.Spec.HullID != "frigate" || design.Spec.WarpDriveID != "nuclear_drive" || design.Spec.ComputerID != "electronic_computer" || design.Spec.ArmorID != "titanium_armor" || design.Spec.FuelCellID != "standard_fuel_cells" || design.Spec.ShieldID != "" || len(design.Spec.Weapons) != 0 {
 			t.Fatalf("empire %d scout design=%+v", empire.ID, design)
 		}
+		if design.VisualRevision != 1 || design.VisualGenome == nil || design.VisualGenome.HullID != "scout" {
+			t.Fatalf("empire %d scout visual revision/genome=%d/%+v", empire.ID, design.VisualRevision, design.VisualGenome)
+		}
+		if err := core.ValidateShipVisualGenome(*design.VisualGenome); err != nil {
+			t.Fatalf("empire %d scout visual genome invalid: %v", empire.ID, err)
+		}
+		visualShips := 0
+		for j := range state.Ships {
+			ship := &state.Ships[j]
+			if ship.EmpireID != empire.ID || ship.SourceDesignID != design.ID {
+				continue
+			}
+			visualShips++
+			if ship.SourceVisualRevision != design.VisualRevision || ship.VisualGenome == nil || !reflect.DeepEqual(*ship.VisualGenome, *design.VisualGenome) {
+				t.Fatalf("empire %d starting scout %d visual=%+v design=%+v", empire.ID, ship.ID, ship.VisualGenome, design.VisualGenome)
+			}
+			if ship.VisualGenome == design.VisualGenome {
+				t.Fatalf("empire %d starting scout %d aliases design visual genome", empire.ID, ship.ID)
+			}
+		}
+		if visualShips != 2 {
+			t.Fatalf("empire %d visual starting scouts=%d want 2", empire.ID, visualShips)
+		}
 		combat := 0
 		colonyShips := 0
 		for _, fleet := range state.StrategicFleets {
@@ -220,6 +243,9 @@ func TestNewGameCanonicalBaselineInvariants(t *testing.T) {
 		if combat != 1 || colonyShips != 1 {
 			t.Fatalf("empire %d combat/colony fleets=%d/%d", empire.ID, combat, colonyShips)
 		}
+	}
+	if state.ShipDesigns[0].VisualGenome.Seed == state.ShipDesigns[1].VisualGenome.Seed {
+		t.Fatal("starting scout visual seeds should differ by empire/design")
 	}
 	ids := append([]core.ID(nil), state.ShipDesigns[0].ID, state.ShipDesigns[1].ID)
 	if !sort.SliceIsSorted(ids, func(i, j int) bool { return ids[i] < ids[j] }) {

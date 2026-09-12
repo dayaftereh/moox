@@ -41,12 +41,12 @@ func baselineTacticalBattleSpec() Spec {
 					ShipID: 100, EmpireID: 1, SeatID: 1, X: 10, Y: 10,
 					HullID: "frigate", WarpDriveID: "fusion_drive", ComputerID: "electronic_computer", ArmorID: "titanium_armor",
 					Weapons:            []TacticalWeaponSpec{{Slot: 0, WeaponID: "laser_cannon", Count: 1, MinDamage: 1, MaxDamage: 4}},
-					CurrentCombatSpeed: 12, BeamOffense: 25, BeamDefense: 0, ArmorMax: 4, StructureMax: 4,
+					CurrentCombatSpeed: 22, BeamOffense: 25, BeamDefense: 0, ArmorMax: 4, StructureMax: 4,
 				},
 				{
 					ShipID: 200, EmpireID: 2, SeatID: 2, X: 11, Y: 10,
 					HullID: "frigate", WarpDriveID: "nuclear_drive", ComputerID: "electronic_computer", ArmorID: "titanium_armor",
-					CurrentCombatSpeed: 10, BeamOffense: 25, BeamDefense: 0, ArmorMax: 4, StructureMax: 4,
+					CurrentCombatSpeed: 20, BeamOffense: 25, BeamDefense: 0, ArmorMax: 4, StructureMax: 4,
 				},
 			},
 		},
@@ -417,7 +417,7 @@ func TestTacticalMoveCommandProjectsAndCommitsAuthoritatively(t *testing.T) {
 			break
 		}
 	}
-	if straight == nil || straight.MoveCost != 3 || straight.ResultingFacing != 0 || straight.MovementRemainingAfter != 9 {
+	if straight == nil || straight.MoveCost != 3 || straight.ResultingFacing != 0 || straight.MovementRemainingAfter != 19 {
 		t.Fatalf("straight legal move=%+v", straight)
 	}
 	for _, move := range initial.Tactical.LegalMoves {
@@ -430,7 +430,7 @@ func TestTacticalMoveCommandProjectsAndCommitsAuthoritatively(t *testing.T) {
 	submitPrepared(t, s, 1, move)
 	after := s.View()
 	ship := after.Tactical.State.Ships[0]
-	if ship.X != 13 || ship.Y != 10 || ship.Facing != 0 || ship.MovementCurrent != 9 || ship.MovementMax != 12 {
+	if ship.X != 13 || ship.Y != 10 || ship.Facing != 0 || ship.MovementCurrent != 19 || ship.MovementMax != 22 {
 		t.Fatalf("moved ship=%+v", ship)
 	}
 	if after.Tactical.State.RNGState != beforeRNG {
@@ -601,10 +601,10 @@ func TestTacticalPlayerViewProjectsScanDataAndSeatOwnedActions(t *testing.T) {
 			defenderScan = ship
 		}
 	}
-	if attackerScan == nil || len(attackerScan.Weapons) != 1 || !attackerScan.Weapons[0].Ready || attackerScan.ArmorCurrent != 4 || attackerScan.StructureCurrent != 4 || attackerScan.MovementCurrent != 12 {
+	if attackerScan == nil || len(attackerScan.Weapons) != 1 || !attackerScan.Weapons[0].Ready || attackerScan.ArmorCurrent != 4 || attackerScan.StructureCurrent != 4 || attackerScan.MovementCurrent != 22 {
 		t.Fatalf("friendly scan projection=%+v", attackerScan)
 	}
-	if defenderScan == nil || len(defenderScan.Weapons) != 0 || defenderScan.ArmorCurrent != 4 || defenderScan.ArmorMax != 4 || defenderScan.StructureCurrent != 4 || defenderScan.StructureMax != 4 || defenderScan.MovementCurrent != 10 {
+	if defenderScan == nil || len(defenderScan.Weapons) != 0 || defenderScan.ArmorCurrent != 4 || defenderScan.ArmorMax != 4 || defenderScan.StructureCurrent != 4 || defenderScan.StructureMax != 4 || defenderScan.MovementCurrent != 20 {
 		t.Fatalf("enemy scan projection=%+v", defenderScan)
 	}
 	if _, err := s.PlayerView(99); err == nil {

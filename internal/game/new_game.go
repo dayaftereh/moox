@@ -215,8 +215,14 @@ func (r *EconomyRules) initializeNewGameStartingAssets(state *core.GameState, ho
 			return fmt.Errorf("create scout design for empire %d: %w", state.Empires[i].ID, err)
 		}
 		scoutSpecs[i] = spec
+		designID := state.NewID()
+		visual := generateStartingScoutVisualGenome(fmt.Sprintf("new-game:%016x:empire:%d:design:%d:scout:v4", state.Seed, state.Empires[i].ID, designID))
+		if err := core.ValidateShipVisualGenome(visual); err != nil {
+			return fmt.Errorf("create scout visual genome for empire %d: %w", state.Empires[i].ID, err)
+		}
 		state.ShipDesigns = append(state.ShipDesigns, core.ShipDesign{
-			ID: state.NewID(), EmpireID: state.Empires[i].ID, Revision: 1, Name: "Scout", Spec: spec,
+			ID: designID, EmpireID: state.Empires[i].ID, Revision: 1, VisualRevision: 1, Name: "Scout", Spec: spec,
+			VisualGenome: func() *core.ShipVisualGenome { clone := core.CloneShipVisualGenome(visual); return &clone }(),
 		})
 	}
 
@@ -226,9 +232,14 @@ func (r *EconomyRules) initializeNewGameStartingAssets(state *core.GameState, ho
 		homeSystem := &state.Galaxy.Systems[homeIndexes[i]]
 		shipIDs := make([]core.ID, 0, r.NewGameGalaxy.Start.ScoutCount)
 		for n := 0; n < r.NewGameGalaxy.Start.ScoutCount; n++ {
+			var visual *core.ShipVisualGenome
+			if design.VisualGenome != nil {
+				clone := core.CloneShipVisualGenome(*design.VisualGenome)
+				visual = &clone
+			}
 			ship := core.Ship{
-				ID: state.NewID(), EmpireID: empire.ID, SourceDesignID: design.ID, SourceDesignRevision: design.Revision,
-				Name: fmt.Sprintf("Scout %d", n+1), Spec: scoutSpecs[i],
+				ID: state.NewID(), EmpireID: empire.ID, SourceDesignID: design.ID, SourceDesignRevision: design.Revision, SourceVisualRevision: design.VisualRevision,
+				Name: fmt.Sprintf("Scout %d", n+1), Spec: scoutSpecs[i], VisualGenome: visual,
 			}
 			state.Ships = append(state.Ships, ship)
 			shipIDs = append(shipIDs, ship.ID)

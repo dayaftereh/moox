@@ -30,26 +30,26 @@ Isolated Triangle 2v2 Tactical on port 7177:
 - Tactical ship groups: **4**
 - total descendants inside the Tactical SVG viewport: **163**
 - current Nuclear Scout legal moves at 10 movement points: **63** initially
-- after clicking server-legal cell (11,9), ship #23 moved authoritatively from (10,9) to (11,9), movement 10 -> 9, and the next server projection contained **47** legal moves while the HMI still rendered one grid path.
+- during the initial temporary-MinSpeed QA, clicking server-legal cell (11,9) moved ship #23 authoritatively from (10,9) to (11,9) while the HMI still rendered one grid path. This evidence validates click-to-authority mapping only; the final movement budget is restored below to the original pristine 20/22 contract.
 
 The managed QA browser is ~791x605 and cannot emulate the user's exact physical phone GPU through the available browser controller, so this block does not claim a measured handset FPS number. The high-cost DOM structure responsible for the obvious pan/zoom pressure has nevertheless been removed.
 
-## 2. Baseline Tactical movement corrected from drive maximum to drive minimum
-Ruleset values are currently:
+## 2. Correction: pristine Tactical ships use the original drive maximum
+The follow-up review after user feedback rechecked the already-decoded original MOO2 1.31 drive tables in `TACTICAL_SHIP_COMBAT_BASELINE_2026-09-01.md`. The evidence is explicit per hull, Frigate through Doom Star:
 
-- Nuclear Drive: min speed **10**, max speed **20**
-- Fusion Drive: min speed **12**, max speed **22**
+- Nuclear Drive minimum combat speed: `10,8,6,5,4,3`
+- Nuclear Drive pristine/max speed: `20,18,16,15,14,13`
+- Fusion Drive minimum combat speed: `12,10,8,7,6,5`
+- Fusion Drive pristine/max speed: `22,20,18,17,16,15`
 
-The Slice 15.5 baseline had been materializing every ship at `drive.MaxSpeed`, even though MOOX does not yet model the extra engine/maneuver allocation that should justify reaching that ceiling. That made an ordinary Nuclear Scout start every activation at 20 movement points.
+The decoded original routine `Current_Design_Base_Combat_Speed_` reduces the pristine maximum toward the minimum as engine damage accumulates. The minimum is therefore a damage floor, not the starting movement budget of an undamaged ship.
 
-The baseline now starts at `drive.MinSpeed`:
+The temporary 10/12 baseline introduced in the first version of this polish block was a misinterpretation and is reverted. The authoritative pristine Frigate baseline remains:
 
-- Nuclear baseline movement: **10**
-- Fusion baseline movement: **12**
+- Nuclear Drive: **20 movement points**
+- Fusion Drive: **22 movement points**
 
-`MaxSpeed` remains available in the rules as a future design/engine ceiling. The hard-coded Battle validator and all Tactical movement/scan regression expectations were updated to the same 10/12 authority contract. An isolated browser replay confirmed the Human Nuclear Scout displays **10/10**, not 20/20.
-
-During QA this exposed a stale Slice-15.5 validator that still required exactly Fusion=22/Nuclear=20 and caused encounter drive to stop in `strategic_resolution`. Updating that validator to the new authoritative baseline restored the normal browser flow: Round1 -> Darlok contact -> declare war -> Fertig -> Battle #1.
+The Battle validator and movement/scan regression expectations are restored to the same original-data contract. The reachable-grid performance optimization remains unchanged: even with the larger authoritative movement projection, the HMI renders one deduplicated green SVG grid path rather than hundreds of rounded cell nodes.
 
 ## 3. Ships are native Tactical SVGs, larger and centered
 The Tactical board previously wrapped `ProceduralShipGlyph` in SVG `foreignObject`. Combined with the generic glyph footprint CSS transform, that made the silhouette very small and visually offset under pan/zoom.

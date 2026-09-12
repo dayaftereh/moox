@@ -54,10 +54,10 @@ func TestTacticalMetadataSupportsTwoByTwoWithOpenFieldDeployment(t *testing.T) {
 		t.Fatalf("tactical ships=%d want 4", len(tactical.Ships))
 	}
 	want := map[core.ID]struct{ x, y, facing, speed int }{
-		101: {10, 9, 0, 12},
-		102: {10, 11, 0, 12},
-		201: {14, 9, 8, 10},
-		202: {14, 11, 8, 10},
+		101: {10, 9, 0, 22},
+		102: {10, 11, 0, 22},
+		201: {14, 9, 8, 20},
+		202: {14, 11, 8, 20},
 	}
 	occupied := map[[2]int]core.ID{}
 	for _, ship := range tactical.Ships {

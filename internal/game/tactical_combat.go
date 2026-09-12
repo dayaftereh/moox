@@ -118,9 +118,9 @@ func tacticalMetadataForEncounter(state *core.GameState, encounter Encounter, ru
 				return "", fmt.Errorf("tactical rules have no drive %q", ship.Spec.WarpDriveID)
 			}
 			y := tacticalDeploymentY(len(side.ShipIDs), i)
-			// Baseline ships do not yet model extra maneuvering/engine allocation. Start at
-			// the drive minimum; MaxSpeed remains the future design ceiling.
-			tactical.Ships = append(tactical.Ships, baselineTacticalShip(*ship, side.SeatID, x, y, facing, drive.MinSpeed, rules))
+			// Original MOO2 uses pristine/max combat speed for an undamaged ship; engine
+			// damage reduces Current_Design_Base_Combat_Speed_ toward MinSpeed.
+			tactical.Ships = append(tactical.Ships, baselineTacticalShip(*ship, side.SeatID, x, y, facing, drive.MaxSpeed, rules))
 		}
 		return "", nil
 	}

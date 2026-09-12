@@ -36,6 +36,7 @@ func TestMilitaryDesignVisualImmediatePersistsAcrossHostExportImport(t *testing.
 	}
 	design := snapshot.Decision.Strategic.ShipDesigns[0]
 	gameplayRevision := design.Revision
+	startingVisualRevision := design.VisualRevision
 	genome := appVisualGenome()
 	command, err := game.NewSetMilitaryDesignVisualCommand(1, game.SetMilitaryDesignVisualPayload{DesignID: design.ID, VisualGenome: genome})
 	if err != nil {
@@ -50,7 +51,7 @@ func TestMilitaryDesignVisualImmediatePersistsAcrossHostExportImport(t *testing.
 		t.Fatal(err)
 	}
 	stored := after.Decision.Strategic.ShipDesigns[0]
-	if stored.Revision != gameplayRevision || stored.VisualRevision != 1 || stored.VisualGenome == nil || !reflect.DeepEqual(*stored.VisualGenome, genome) {
+	if stored.Revision != gameplayRevision || stored.VisualRevision != startingVisualRevision+1 || stored.VisualGenome == nil || !reflect.DeepEqual(*stored.VisualGenome, genome) {
 		t.Fatalf("host visual design=%+v", stored)
 	}
 
@@ -67,7 +68,7 @@ func TestMilitaryDesignVisualImmediatePersistsAcrossHostExportImport(t *testing.
 		t.Fatal(err)
 	}
 	restoredDesign := restored.Decision.Strategic.ShipDesigns[0]
-	if restoredDesign.Revision != gameplayRevision || restoredDesign.VisualRevision != 1 || restoredDesign.VisualGenome == nil || !reflect.DeepEqual(*restoredDesign.VisualGenome, genome) {
+	if restoredDesign.Revision != gameplayRevision || restoredDesign.VisualRevision != startingVisualRevision+1 || restoredDesign.VisualGenome == nil || !reflect.DeepEqual(*restoredDesign.VisualGenome, genome) {
 		t.Fatalf("restored host visual design=%+v", restoredDesign)
 	}
 }
