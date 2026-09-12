@@ -87,6 +87,21 @@ export function BattleRouteView({ snapshot, battleID, resolution, onContinue, on
   const strategicTurn = battle?.spec.strategic_turn ?? resolution?.turn ?? snapshot.view.turn
   const starSeed = battle?.spec.seed ?? battleID
 
+  if (battle && !completed && tacticalSupported && tacticalShellOpen && battle.tactical) {
+    return (
+      <TacticalBattlefield
+        battle={battle}
+        ownSeatID={snapshot.view.seat.seat.id}
+        shipName={shipName}
+        empireName={empireName}
+        commandsDisabled={commandsDisabled}
+        onCommand={onBattleCommand}
+        onBack={() => setTacticalShellOpen(false)}
+        t={t}
+      />
+    )
+  }
+
   return (
     <main className="battle-route-view">
       <header className="battle-route-header">

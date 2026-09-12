@@ -57,3 +57,60 @@ The next pass is deliberately UI/HMI-first and should be evaluated in the real T
 - Block5F scanner/deep-space Fleet intelligence remains queued until this Tactical UI review has a stable direction.
 ## Immediate next step
 Review the live Tactical screen with the user and convert the requested visual/interaction changes into small implementation blocks, each with browser-visible acceptance against the real Triangle encounter.
+
+## Block 1 - immersive Tactical shell and command HUD
+Status: **IMPLEMENTED / browser-QA green on parallel 7172 reference server; user review pending**
+
+The original MOO2 Tactical screen supplied by the user is used as interaction/layout reference, not as a pixel-for-pixel asset copy. The first refinement block establishes the same overall information hierarchy while preserving MOOX server authority:
+
+- Battle/Tactical uses an immersive full-viewport shell instead of rendering inside the normal strategic application chrome.
+- The existing game-menu trigger remains as a floating control at the upper-left so language, save/load and Main Menu remain available.
+- Strategic resource chips, strategic turn/phase context, side navigation and the strategic bottom `Fertig` bar are hidden while the Battle route is active.
+- Entering Tactical replaces the encounter-card body with the battlefield itself; Tactical is no longer nested inside the `battle-entry-card`.
+- Battlefield owns the available viewport and keeps pan, wheel zoom, touch pan/pinch and explicit zoom/recenter controls.
+- Movement presentation uses a 1x1 minor square grid (one smallest movement cell) with stronger 4x4 major grid lines. The camera stays effectively unbounded; there is no normal arena-edge presentation.
+- Every server-projected legal movement destination is rendered as a green clickable 1x1 cell. React does not calculate reachability.
+- Bottom Tactical HUD contains the own-Ship roster, active-Ship summary, Move/Fire/Scan controls, weapon-slot selection while in Fire mode, `Nächstes Schiff`, `Rückzug`, and encounter-overview return.
+- Own-Ship roster entries show active/ready/complete state and can focus the camera. The server remains authoritative over which Ship is actually active.
+- Scan mode opens a Fleet-`?`-style read-only detail popover after selecting a Ship, including identity, movement/facing, beam values, armor/structure and weapon/readiness information already present in the participant-safe Tactical projection.
+- Desktop and compact/mobile HUD breakpoints are presentation-only; no hover-only Tactical action is required.
+
+### Browser evidence
+A clean parallel server was started on `127.0.0.1:7172` so the user's live 7171 Triangle 3v2 battle would not be reset. Browser QA replayed the Triangle path through contact, `Angreifen`, strategic `Fertig`, encounter creation and `Taktischen Kampf betreten`.
+
+Inside the new Tactical screen the browser verified:
+
+- `shell-immersive` is active;
+- strategic resource bar, strategic context, side navigation and strategic bottom command bar are all hidden;
+- Tactical battlefield and bottom HUD fill the viewport;
+- both 1x1 minor and 4x4 major grid definitions are present;
+- 515 server-projected legal movement cells were rendered for the active Scout in the QA encounter;
+- the HUD exposed own Scouts, Move/Fire/Scan, `Nächstes Schiff`, `Rückzug` and encounter return;
+- Scan mode on a Darlok Scout opened the detail popover with participant-safe Frigate / Nuclear Drive / position / facing / movement / beam / armor / structure / weapon information.
+
+### Authority gap deliberately not faked
+The user's preferred activation workflow is stronger than the current server contract: move/fire choices should be previewed/staged for the active Ship and committed together when `Nächstes Schiff`/finish-activation is chosen. Current MOOX Tactical commands (`battle.move_ship`, `battle.fire_beam`, `battle.end_activation`, `battle.retreat`) are submitted immediately one-by-one to the authoritative Battle endpoint; there is no Tactical preview/batch endpoint today.
+
+Therefore Block 1 keeps honest current semantics: movement and fire still mutate authoritatively immediately, while `Nächstes Schiff` maps to the existing `battle.end_activation`. A later authority block must normalize and implement Tactical activation preview/batching before the UI may claim deferred commit semantics.
+
+Likewise, the requested convenience rule “no weapon selected = fire all eligible weapons at the target” is not implemented cosmetically. Current authority fires one explicit weapon slot per command. Fire-all needs an authoritative command/transaction rule (including ordering, readiness, target validity, sequence/RNG behavior and failure semantics) before React exposes it.
+
+## Next implementation blocks
+1. **Tactical activation transaction authority:** research/freeze preview + staged move/fire + commit/end-activation semantics, save/reconnect/conflict behavior and opponent information timing.
+2. **Weapon targeting contract:** explicit per-weapon selection plus authoritative `fire all eligible` behavior when no subset is selected.
+3. **HUD/field polish after user visual review:** initiative/next-Ship presentation, active-Ship emphasis, target/range feedback, damage feedback, mobile spacing and final control wording.
+
+
+### Final live 3v2 verification on the user's preserved 7171 state
+After the Block1 commit candidate was built, the already-running 7171 reference server was **not restarted**. A cache-busted browser load picked up the new web assets while preserving the user's real Round-6 Triangle encounter with three Human Scouts versus two Darlok Scouts.
+
+Entering Tactical performed no Battle command and confirmed the final UI against that preserved state:
+
+- exactly five Tactical ship markers were rendered: Human `Scout 1`, `Scout 2`, newly built `Scout`, plus Darlok ship IDs 26 and 27;
+- the bottom own-Ship roster showed all three Human Scouts simultaneously;
+- the Tactical screen occupied the full browser viewport from top 0 to bottom 605 in the QA window with no document overflow;
+- resource chips, strategic side navigation and strategic bottom command bar remained hidden;
+- Scan on Darlok ship 26 opened the same participant-safe detail popover successfully;
+- no move/fire/end-activation/retreat command was sent during this final 3v2 verification, so the user's live Battle state remained unchanged.
+
+This is the preferred Block1 browser evidence because it uses the exact larger-Fleet state that originally blocked access to Tactical.

@@ -4872,3 +4872,354 @@ button.galaxy-node-marker-player-fleet.is-open {
   padding: 5px 8px;
   font-size: .65rem;
 }
+
+
+/* Slice 15.6 Gate3 Tactical UI refinement: immersive battle screen + bottom HUD. */
+.game-shell.shell-immersive {
+  min-height: 100dvh;
+  height: 100dvh;
+  overflow: hidden;
+  background: #020811;
+}
+.shell-immersive .topbar {
+  position: fixed !important;
+  z-index: 260;
+  top: max(10px, env(safe-area-inset-top));
+  left: max(10px, env(safe-area-inset-left));
+  width: auto;
+  height: auto;
+  min-height: 0;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  backdrop-filter: none;
+}
+.shell-immersive .topbar-resources,
+.shell-immersive .topbar-context,
+.shell-immersive .side-nav,
+.shell-immersive .bottom-command-bar { display: none !important; }
+.shell-immersive .main-menu-trigger {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  border-radius: 12px;
+  background: rgba(5, 16, 27, .9);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .38);
+  backdrop-filter: blur(14px);
+}
+.shell-immersive .main-menu-popover { z-index: 280; }
+.shell-immersive .shell-layout {
+  display: block;
+  min-height: 100dvh;
+  height: 100dvh;
+}
+.shell-immersive .game-content {
+  width: 100% !important;
+  max-width: none !important;
+  height: 100dvh;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.shell-immersive .battle-route-view {
+  box-sizing: border-box;
+  max-height: 100dvh;
+  overflow: auto;
+  padding-top: 76px;
+}
+
+.tactical-battlefield.tactical-screen {
+  position: relative;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 24% 20%, rgba(33, 76, 108, .14), transparent 28%),
+    radial-gradient(circle at 78% 42%, rgba(37, 68, 100, .12), transparent 34%),
+    #020811;
+}
+.tactical-screen .tactical-viewport-shell {
+  grid-row: 1;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: #020811;
+}
+.tactical-screen .tactical-viewport {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+  outline: none;
+}
+.tactical-screen .tactical-space { fill: rgba(1, 7, 14, .98); }
+.tactical-screen .tactical-grid-line-minor {
+  fill: none;
+  stroke: rgba(91, 139, 166, .18);
+  stroke-width: .035;
+  vector-effect: non-scaling-stroke;
+}
+.tactical-screen .tactical-grid-line-major {
+  fill: none;
+  stroke: rgba(115, 178, 209, .3);
+  stroke-width: .07;
+  vector-effect: non-scaling-stroke;
+}
+.tactical-move-cell { cursor: pointer; outline: none; }
+.tactical-move-cell rect {
+  fill: rgba(72, 211, 131, .18);
+  stroke: rgba(102, 242, 156, .72);
+  stroke-width: .065;
+  vector-effect: non-scaling-stroke;
+}
+.tactical-move-cell:hover rect,
+.tactical-move-cell:focus rect {
+  fill: rgba(91, 236, 151, .38);
+  stroke: rgba(203, 255, 220, .96);
+}
+.tactical-screen-status {
+  position: absolute;
+  z-index: 28;
+  top: max(12px, env(safe-area-inset-top));
+  left: max(68px, calc(env(safe-area-inset-left) + 66px));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: min(62vw, 620px);
+  padding: 7px 11px;
+  border: 1px solid rgba(88, 139, 171, .34);
+  border-radius: 999px;
+  background: rgba(5, 16, 27, .76);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .24);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+.tactical-screen-status strong { font-size: .72rem; white-space: nowrap; }
+.tactical-screen-status > span:last-child { overflow: hidden; color: #9fb4c4; font-size: .62rem; text-overflow: ellipsis; white-space: nowrap; }
+.tactical-status-dot { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 50%; box-shadow: 0 0 10px currentColor; }
+.tactical-status-dot.is-own { color: #6fe49f; background: currentColor; }
+.tactical-status-dot.is-waiting { color: #e4b96f; background: currentColor; }
+.tactical-camera-floating {
+  position: absolute;
+  z-index: 28;
+  top: max(12px, env(safe-area-inset-top));
+  right: max(12px, env(safe-area-inset-right));
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tactical-control-square,
+.tactical-control-text {
+  min-height: 38px;
+  border: 1px solid rgba(88, 139, 171, .42);
+  border-radius: 9px;
+  background: rgba(5, 16, 27, .86);
+  color: #dcebf3;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, .24);
+  backdrop-filter: blur(10px);
+}
+.tactical-control-square { width: 38px; padding: 0; font-size: 1rem; font-weight: 900; }
+.tactical-control-text { padding: 0 10px; font-size: .64rem; font-weight: 800; }
+.tactical-command-error {
+  position: absolute;
+  z-index: 42;
+  top: 64px;
+  left: 50%;
+  width: min(680px, calc(100% - 32px));
+  transform: translateX(-50%);
+}
+.tactical-screen .tactical-viewport-hint {
+  left: auto;
+  right: 12px;
+  bottom: 10px;
+  max-width: min(560px, calc(100% - 24px));
+  background: rgba(3, 11, 18, .68);
+}
+
+.tactical-hud {
+  z-index: 32;
+  display: grid;
+  grid-template-columns: minmax(250px, 1.35fr) minmax(210px, .9fr) minmax(280px, 1.25fr) minmax(150px, .58fr);
+  gap: 8px;
+  align-items: stretch;
+  padding: 9px max(10px, env(safe-area-inset-right)) max(9px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  border-top: 1px solid rgba(102, 145, 173, .48);
+  background: linear-gradient(180deg, rgba(10, 23, 35, .98), rgba(4, 12, 21, .995));
+  box-shadow: 0 -12px 36px rgba(0, 0, 0, .42);
+}
+.tactical-hud > section {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid rgba(83, 126, 153, .3);
+  border-radius: 10px;
+  background: rgba(12, 29, 43, .7);
+}
+.tactical-hud-label {
+  display: block;
+  margin-bottom: 6px;
+  color: #7894a7;
+  font-size: .55rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.tactical-ship-strip {
+  display: flex;
+  min-width: 0;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.tactical-roster-ship {
+  display: grid;
+  grid-template-columns: 36px minmax(82px, 1fr);
+  flex: 0 0 auto;
+  min-width: 128px;
+  min-height: 54px;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 7px;
+  border: 1px solid rgba(92, 137, 165, .34);
+  border-radius: 8px;
+  background: rgba(4, 15, 25, .78);
+  color: #dcebf3;
+  text-align: left;
+}
+.tactical-roster-ship:hover,
+.tactical-roster-ship:focus-visible { border-color: rgba(126, 198, 227, .72); background: rgba(14, 39, 55, .9); }
+.tactical-roster-ship.is-active { border-color: rgba(239, 198, 105, .92); box-shadow: inset 0 0 0 1px rgba(239, 198, 105, .24), 0 0 16px rgba(239, 198, 105, .12); }
+.tactical-roster-ship.is-complete { opacity: .55; }
+.tactical-roster-ship.is-destroyed { opacity: .28; filter: grayscale(1); }
+.tactical-roster-glyph,
+.tactical-current-glyph { display: grid; place-items: center; }
+.tactical-roster-glyph .procedural-ship-glyph { width: 34px; height: 30px; }
+.tactical-roster-copy { display: grid; gap: 2px; min-width: 0; }
+.tactical-roster-copy strong { overflow: hidden; font-size: .65rem; text-overflow: ellipsis; white-space: nowrap; }
+.tactical-roster-copy small { color: #89a2b3; font-size: .54rem; white-space: nowrap; }
+.tactical-current-ship { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 8px; align-items: center; }
+.tactical-current-glyph .procedural-ship-glyph { width: 52px; height: 42px; }
+.tactical-current-ship > div { display: grid; gap: 4px; min-width: 0; }
+.tactical-current-ship strong { overflow: hidden; font-size: .78rem; text-overflow: ellipsis; white-space: nowrap; }
+.tactical-current-ship small { color: #91a8b9; font-size: .58rem; line-height: 1.35; }
+
+.tactical-hud-actions { display: grid; align-content: start; gap: 6px; }
+.tactical-action-buttons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.tactical-action-buttons button,
+.tactical-weapon-strip button {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 34px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px 7px;
+  border: 1px solid rgba(91, 137, 165, .38);
+  border-radius: 7px;
+  background: rgba(5, 18, 30, .9);
+  color: #d7e7f0;
+  font-size: .62rem;
+  font-weight: 800;
+}
+.tactical-action-buttons button svg { width: 14px; height: 14px; }
+.tactical-action-buttons button.is-active,
+.tactical-weapon-strip button.is-active { border-color: rgba(99, 220, 157, .82); background: rgba(30, 91, 61, .56); color: #eafff0; box-shadow: inset 0 0 0 1px rgba(99, 220, 157, .18); }
+.tactical-action-buttons button:disabled,
+.tactical-weapon-strip button:disabled { opacity: .38; }
+.tactical-weapon-strip { display: flex; min-width: 0; gap: 5px; overflow-x: auto; }
+.tactical-weapon-strip button { flex: 0 0 auto; display: grid; justify-items: start; min-width: 118px; }
+.tactical-weapon-strip button strong { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tactical-weapon-strip button small { color: #8da5b6; font-size: .52rem; font-weight: 700; }
+
+.tactical-hud-commit { display: grid; grid-template-rows: 1fr auto auto; gap: 6px; }
+.tactical-hud-commit button {
+  min-height: 34px;
+  border-radius: 8px;
+  font-size: .63rem;
+  font-weight: 900;
+}
+.tactical-next-ship {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid rgba(95, 222, 151, .72);
+  background: linear-gradient(180deg, rgba(40, 120, 78, .88), rgba(23, 79, 52, .92));
+  color: #ecfff3;
+}
+.tactical-retreat { border: 1px solid rgba(226, 111, 111, .66); background: rgba(105, 35, 39, .7); color: #ffe0de; }
+.tactical-overview { border: 1px solid rgba(94, 134, 157, .34); background: rgba(5, 17, 28, .7); color: #9fb4c4; }
+.tactical-hud-commit button:disabled { opacity: .38; }
+
+.tactical-scan-layer {
+  position: absolute;
+  z-index: 46;
+  inset: 0;
+  pointer-events: none;
+}
+.tactical-scan-popover {
+  position: absolute !important;
+  right: max(16px, env(safe-area-inset-right));
+  bottom: 154px;
+  width: min(420px, calc(100% - 32px));
+  max-height: min(65vh, 560px);
+  overflow: auto;
+  pointer-events: auto;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .58);
+}
+.tactical-scan-details { padding: 10px 12px 12px; }
+.tactical-scan-details h4 { margin: 0 0 3px; font-size: 1rem; }
+
+@media (max-width: 980px) {
+  .tactical-hud {
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) minmax(210px, .85fr);
+  }
+  .tactical-hud-current { display: none; }
+  .tactical-scan-popover { bottom: 152px; }
+}
+
+@media (max-width: 720px) {
+  .tactical-screen-status {
+    left: max(62px, calc(env(safe-area-inset-left) + 60px));
+    right: 110px;
+    max-width: none;
+  }
+  .tactical-screen-status > span:last-child { display: none; }
+  .tactical-camera-floating { top: max(62px, calc(env(safe-area-inset-top) + 60px)); }
+  .tactical-control-text { display: none; }
+  .tactical-hud {
+    grid-template-columns: minmax(0, 1fr) minmax(132px, .38fr);
+    grid-template-areas:
+      "actions commit"
+      "roster roster";
+    max-height: 42dvh;
+    overflow: auto;
+    padding-inline: 7px;
+  }
+  .tactical-hud-roster { grid-area: roster; }
+  .tactical-hud-actions { grid-area: actions; }
+  .tactical-hud-commit { grid-area: commit; }
+  .tactical-hud-current { display: none; }
+  .tactical-roster-ship { min-width: 114px; grid-template-columns: 31px minmax(70px, 1fr); }
+  .tactical-roster-glyph .procedural-ship-glyph { width: 29px; height: 26px; }
+  .tactical-action-buttons button { min-height: 40px; padding-inline: 5px; }
+  .tactical-action-buttons button svg { display: none; }
+  .tactical-weapon-strip button { min-width: 102px; }
+  .tactical-scan-popover { right: 8px; bottom: 192px; width: calc(100% - 16px); max-height: 50vh; }
+  .tactical-screen .tactical-viewport-hint { display: none; }
+}
+
+.tactical-battlefield.tactical-screen { margin: 0; }

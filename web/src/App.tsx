@@ -1027,6 +1027,7 @@ function App() {
       endTurnDisabled={!snapshot || mutationLocked || snapshot.view.phase !== 'planning' || planningBusy || previewBusy}
       endTurnLabel={planningBusy ? t('planning.resolving') : t('planning.endTurn')}
       navigationLocked={Boolean(blockingBattleID)}
+      immersive={activeSection === 'battle'}
     >
       {persistenceControls}
 

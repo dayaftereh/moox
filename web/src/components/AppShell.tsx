@@ -45,6 +45,7 @@ type AppShellProps = {
   endTurnDisabled?: boolean
   endTurnLabel?: string
   navigationLocked?: boolean
+  immersive?: boolean
   children: ReactNode
 }
 
@@ -98,7 +99,7 @@ function NavItems({ items, activeSection, onNavigate, disabled = false }: {
   </>
 }
 
-export function AppShell({ activeSection, gameID, turn, phaseLabel, status, statusTone, lifecycle, resources = [], onNavigate, onResourceActivate, onHome, onSaveGame, onLoadGame, persistenceBusy = false, onEndTurn, endTurnDisabled = false, endTurnLabel, navigationLocked = false, children }: AppShellProps) {
+export function AppShell({ activeSection, gameID, turn, phaseLabel, status, statusTone, lifecycle, resources = [], onNavigate, onResourceActivate, onHome, onSaveGame, onLoadGame, persistenceBusy = false, onEndTurn, endTurnDisabled = false, endTurnLabel, navigationLocked = false, immersive = false, children }: AppShellProps) {
   const { t } = useI18n()
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeResourceID, setActiveResourceID] = useState<string | null>(null)
@@ -144,7 +145,7 @@ export function AppShell({ activeSection, gameID, turn, phaseLabel, status, stat
   }
 
   return (
-    <div className={'game-shell section-' + activeSection} data-lifecycle={lifecycle}>
+    <div className={'game-shell section-' + activeSection + (immersive ? ' shell-immersive' : '')} data-lifecycle={lifecycle}>
       <header className="topbar">
         <div className="main-menu-anchor" ref={menuRef}>
           <button
