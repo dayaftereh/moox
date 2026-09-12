@@ -205,3 +205,37 @@ Observed in browser:
 - clicking the selected Ship cell again returned all overlay counts to zero.
 
 Legacy starting Scouts in this existing save still have no persisted `visual_genome` because they were created before the persistent visual contract was assigned to them. Tactical now reproduces their Fleet/System design-seeded SVG exactly instead of using a Tactical-only seed. A future new-game/legacy-backfill task may assign persisted per-instance genomes to those historical starting Ships if desired; this is separate from Tactical rendering authority.
+
+
+## Block 4 - automatic activation feedback and combat motion
+Status: **IMPLEMENTED / browser-QA green; user visual review pending**
+
+Block3 still required a second local click to expose movement overlays even though the Battle server had already selected the active Ship. User review correctly identified this as a broken-feeling activation model. Block4 removes that duplicate UI selection state: server `active_ship_id` is now the only activation authority.
+
+### Activation and movement affordance
+- During an own activation and outside Scan mode, the authoritative active Ship cell is immediately blue; no extra click/toggle is required.
+- All current server-projected `legal_moves` are immediately shown green.
+- Every other non-destroyed occupied Ship cell is immediately shown red. React still derives no reachability or blocking rules.
+- Green/blue/red contrast and strokes are strengthened for readability.
+- When `active_ship_id` changes, the camera automatically recenters on the new active Ship and keeps at least the Tactical focus zoom. The movement overlay follows the new active Ship immediately.
+- Clicking own Ship SVGs remains useful for focus/Scan but no longer changes or hides the movement overlay.
+
+### Ship-first presentation
+- Battlefield text labels such as Scout 1/2/3 are removed; the playfield now presents the authoritative SVG silhouette centered inside its 1x1 movement cell.
+- The persisted/shared SVG identity from Block3 remains unchanged; active Ship SVG receives a blue visibility glow without changing geometry.
+- The bottom own-Ship strip is now icon-only. Ship names remain only in title/ARIA metadata for accessibility/inspection, not as visible Tactical chrome. Active, complete and destroyed states are indicated through border/background/state-dot treatment.
+- Top status no longer repeats the Ship name; it reports activation state plus remaining movement.
+
+### Authoritative combat motion
+- Tactical now observes newly appended Battle events instead of synthesizing effects from click intent. Historical events are not replayed on first mount.
+- New `beam_fired` events animate a visible beam from the authoritative firing Ship coordinate to the authoritative target coordinate. A hit uses a red glow/light core plus impact flash; misses use a dashed/weaker presentation. The effect carries event sequence/hit/damage metadata for QA and clears after ~620 ms.
+- New `ship_moved` events animate a short movement trail from authoritative `from_x/from_y` to `to_x/to_y`, plus an arrival pulse, and clear after ~720 ms.
+- Both animations are presentation-only consequences of authoritative events; they do not alter command/range/damage/movement rules.
+
+### Browser evidence on isolated 7174
+Final QA used the preserved 3v2 clone only; canonical 7171 remained untouched.
+- On Tactical entry, with Ship 35 active, the UI immediately showed 1 blue active cell, 514 green legal destinations and 4 red occupied cells **without any extra ship click**.
+- Field Ship labels were 0; the three own-Ship roster buttons had no visible text while preserving title/ARIA names. The active persisted Scout stayed Frigate footprint .48 with its existing organic SVG.
+- Clicking an authoritative legal enemy target produced a real `beam_fired` event and, 220 ms later, a visible `tactical-beam-animation is-hit` with two beam lines, impact circle, `data-hit=true` and `data-damage=3`; it cleared automatically.
+- Clicking an authoritative legal green destination moved the Ship from (10,13) to (11,13), produced a `ship_moved`-driven movement trail/arrival pulse, and recomputed the remaining legal move catalog from 514 to 442 cells.
+- Clicking `Nächstes Schiff` completed the last Round-2 activation; the server advanced to Round 3 and changed `active_ship_id` to Ship 23 at (14,12). Without another click, the UI immediately recentered on (14,12), moved the blue active cell there, restored 514 green + 4 red cells, and moved the blue active roster treatment to the new Ship.
