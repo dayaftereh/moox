@@ -176,6 +176,34 @@ function makeGeometry(genome: ShipVisualGenome, weaponCount: number, canvas: { w
   }
 }
 
+function tightShipViewBox(genome: ShipVisualGenome, geometry: ShipGeometry, canvas: { width: number; height: number }): string {
+  const centerX = canvas.width / 2
+  const centerY = canvas.height / 2
+  const rearX = centerX - genome.length / 2
+  const noseX = centerX + genome.length / 2
+  let minX = Math.min(rearX, geometry.engineTrailX)
+  let maxX = noseX
+  let halfHeight = Math.max(3, ...genome.stationWidths)
+
+  for (const primitive of genome.primitives) {
+    const rootX = rearX + primitive.t * genome.length
+    const sweep = Math.abs(primitive.sweep * primitive.length * .18)
+    minX = Math.min(minX, rootX - primitive.length * .58 - sweep)
+    maxX = Math.max(maxX, rootX + primitive.length * .68 + sweep)
+    halfHeight = Math.max(halfHeight, genome.beam * .34 + primitive.width * 1.08)
+  }
+  for (const engineY of geometry.engineYs) halfHeight = Math.max(halfHeight, Math.abs(engineY - centerY) + 2.5)
+  for (const [, hardpointY] of geometry.hardpoints) halfHeight = Math.max(halfHeight, Math.abs(hardpointY - centerY) + 2)
+
+  const padX = Math.max(3, genome.length * .035)
+  const padY = Math.max(3, genome.beam * .12)
+  minX = Math.max(0, minX - padX)
+  maxX = Math.min(canvas.width, maxX + padX)
+  const minY = Math.max(0, centerY - halfHeight - padY)
+  const maxY = Math.min(canvas.height, centerY + halfHeight + padY)
+  return `${minX.toFixed(2)} ${minY.toFixed(2)} ${(maxX - minX).toFixed(2)} ${(maxY - minY).toFixed(2)}`
+}
+
 export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className = '', label, genome, footprint = 1, x, y, width, height, tightViewBox = false }: ProceduralShipGlyphProps) {
   const resolvedGenome = genome ?? createShipGenome(seed, hullId ?? 'generic')
   const canvas = {
@@ -183,10 +211,8 @@ export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className =
     height: Math.ceil(Math.max(120, resolvedGenome.beam * 4.1)),
   }
   const geometry = makeGeometry(resolvedGenome, weaponCount, canvas)
-  const tightWidth = Math.min(canvas.width, Math.max(72, resolvedGenome.length * 1.45))
-  const tightHeight = Math.min(canvas.height, Math.max(56, resolvedGenome.beam * 3))
   const viewBox = tightViewBox
-    ? `${((canvas.width - tightWidth) / 2).toFixed(2)} ${((canvas.height - tightHeight) / 2).toFixed(2)} ${tightWidth.toFixed(2)} ${tightHeight.toFixed(2)}`
+    ? tightShipViewBox(resolvedGenome, geometry, canvas)
     : `0 0 ${canvas.width} ${canvas.height}`
   const classes = `procedural-ship-glyph${className ? ` ${className}` : ''}`
   const maskID = `ship-mask-${hashSeed(`${resolvedGenome.seed}|${geometry.profileKey}|v4`).toString(16)}`

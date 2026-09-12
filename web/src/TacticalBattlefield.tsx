@@ -40,6 +40,8 @@ type TacticalMoveAnimation = { sequence: number; fromX: number; fromY: number; t
 
 const MIN_ZOOM = 0.45
 const MAX_ZOOM = 7
+const FOCUS_ZOOM = 2.2
+const DAMAGE_FEEDBACK_MS = 4200
 
 function humanize(value: string | undefined) {
   if (!value) return 'â€”'
@@ -122,6 +124,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
 
   const ships = tactical.ships ?? []
   const ownShips = ships.filter((ship) => ship.seat_id === ownSeatID)
+  const remainingOwnShips = ownShips.filter((ship) => !ship.destroyed && !ship.activation_complete)
   const legalMoves = tactical.legal_moves ?? []
   const legalFireActions = tactical.legal_fire_actions ?? []
   const activeShip = ships.find((ship) => ship.ship_id === tactical.state.active_ship_id)
@@ -131,6 +134,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const [beamAnimation, setBeamAnimation] = useState<TacticalBeamAnimation | null>(null)
   const [moveAnimation, setMoveAnimation] = useState<TacticalMoveAnimation | null>(null)
   const [scannedShipID, setScannedShipID] = useState<number | null>(null)
+  const [selectedShipID, setSelectedShipID] = useState<number | null>(() => ownActivation ? activeShip?.ship_id ?? null : null)
   const [busy, setBusy] = useState(false)
   const [commandError, setCommandError] = useState('')
 
@@ -177,12 +181,21 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     if (scannedShipID != null && !ships.some((ship) => ship.ship_id === scannedShipID)) setScannedShipID(null)
   }, [ships, scannedShipID])
 
+  useEffect(() => {
+    if (selectedShipID != null && !ships.some((ship) => ship.ship_id === selectedShipID && ship.seat_id === ownSeatID && !ship.destroyed)) setSelectedShipID(null)
+  }, [ships, selectedShipID, ownSeatID])
+
+  useEffect(() => {
+    if (ownActivation && activeShip) setSelectedShipID(activeShip.ship_id)
+  }, [activeShip?.ship_id, ownActivation])
+
   const selectedFireAction = legalFireActions.find((action) => action.weapon_slot === selectedWeaponSlot) ?? legalFireActions[0]
   const legalTargetByID = useMemo(() => new Map((selectedFireAction?.targets ?? []).map((target) => [target.target_ship_id, target])), [selectedFireAction])
   const legalMoveByCell = useMemo(() => new Map(legalMoves.map((move) => [`${move.x}:${move.y}`, move])), [legalMoves])
   const reachableGridD = useMemo(() => reachableGridPath(legalMoves), [legalMoves])
   const scannedShip = ships.find((ship) => ship.ship_id === scannedShipID)
-  const movementSelectionActive = mode !== 'scan' && ownActivation && !!activeShip
+  const selectedShip = ships.find((ship) => ship.ship_id === selectedShipID && ship.seat_id === ownSeatID)
+  const movementSelectionActive = mode !== 'scan' && ownActivation && !!activeShip && selectedShipID === activeShip.ship_id
   const viewWidth = bounds.width / camera.zoom
   const viewHeight = bounds.height / camera.zoom
   const viewX = camera.cx - viewWidth / 2
@@ -190,11 +203,11 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const controlsDisabled = commandsDisabled || busy || !ownActivation
 
   const zoomBy = (factor: number) => setCamera((current) => ({ ...current, zoom: clamp(current.zoom * factor, MIN_ZOOM, MAX_ZOOM) }))
-  const focusShip = (ship: TacticalShipView) => setCamera((current) => ({ cx: ship.x, cy: ship.y, zoom: Math.max(current.zoom, 1.45) }))
+  const focusShip = (ship: TacticalShipView) => setCamera((current) => ({ cx: ship.x, cy: ship.y, zoom: Math.max(current.zoom, FOCUS_ZOOM) }))
 
   useEffect(() => {
     if (!activeShip || !ownActivation) return
-    setCamera((current) => ({ cx: activeShip.x, cy: activeShip.y, zoom: Math.max(current.zoom, 1.45) }))
+    setCamera((current) => ({ cx: activeShip.x, cy: activeShip.y, zoom: Math.max(current.zoom, FOCUS_ZOOM) }))
   }, [activeShip?.ship_id, ownActivation])
 
   useEffect(() => {
@@ -233,7 +246,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
 
   useEffect(() => {
     if (!beamAnimation) return
-    const timer = window.setTimeout(() => setBeamAnimation((current) => current?.sequence === beamAnimation.sequence ? null : current), 1600)
+    const timer = window.setTimeout(() => setBeamAnimation((current) => current?.sequence === beamAnimation.sequence ? null : current), DAMAGE_FEEDBACK_MS)
     return () => window.clearTimeout(timer)
   }, [beamAnimation])
 
@@ -280,6 +293,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
       return
     }
     if (ship.seat_id === ownSeatID) {
+      setSelectedShipID(ship.ship_id)
       focusShip(ship)
       return
     }
@@ -360,7 +374,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
       <div className="tactical-screen-status" aria-live="polite">
         <span className={`tactical-status-dot ${ownActivation ? 'is-own' : 'is-waiting'}`} />
         <strong>{activeShip ? (ownActivation ? t('battlefield.yourActivation') : t('battlefield.waitingActivation', { empire: empireName(activeShip.empire_id) })) : t('battlefield.noActiveShip')}</strong>
-        {activeShip && <span>{activeShip.movement_current}/{activeShip.movement_max}</span>}
+        {(selectedShip ?? activeShip) && <span>{selectedShip ? `${shipName(selectedShip.ship_id)} · ` : ''}{(selectedShip ?? activeShip)?.movement_current}/{(selectedShip ?? activeShip)?.movement_max}</span>}
       </div>
 
 
@@ -381,6 +395,14 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         >
           <rect x={viewX} y={viewY} width={viewWidth} height={viewHeight} className="tactical-space" />
 
+          {selectedShip && (
+            <rect x={selectedShip.x - .5} y={selectedShip.y - .5} width={1} height={1} className="tactical-selected-cell" pointerEvents="none" />
+          )}
+
+          {selectedShip && ships.filter((ship) => !ship.destroyed && ship.ship_id !== selectedShip.ship_id).map((ship) => (
+            <rect key={`occupied:${ship.ship_id}`} x={ship.x - .5} y={ship.y - .5} width={1} height={1} className="tactical-occupied-cell" pointerEvents="none" />
+          ))}
+
           {movementSelectionActive && reachableGridD && (
             <path d={reachableGridD} className="tactical-reachable-grid" pointerEvents="none" />
           )}
@@ -391,36 +413,37 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             const isLegalTarget = mode !== 'scan' && legalTargetByID.has(ship.ship_id)
             const isScanned = mode === 'scan' && scannedShipID === ship.ship_id
             const genome = decodeShipVisualGenome(ship.visual_genome)
-            const footprint = shipHullFootprint(ship.hull_id)
+            const visualHullID = genome?.hullId ?? ship.hull_id
+            const footprint = shipHullFootprint(visualHullID)
+            const visualSize = Math.min(1, Math.max(.26, footprint))
             const angle = ship.facing * 22.5
             return (
               <g
                 key={ship.ship_id}
-                className={`tactical-ship ${isOwn ? 'own' : 'enemy'} ${isActive ? 'active' : ''} ${isLegalTarget ? 'legal-target' : ''} ${isScanned ? 'scanned' : ''} ${ship.destroyed ? 'destroyed' : ''}`}
-                transform={`translate(${ship.x} ${ship.y}) rotate(${angle})`}
+                className={`tactical-ship ${isOwn ? 'own' : 'enemy'} ${isActive ? 'active' : ''} ${selectedShipID === ship.ship_id ? 'selected' : ''} ${isLegalTarget ? 'legal-target' : ''} ${isScanned ? 'scanned' : ''} ${ship.destroyed ? 'destroyed' : ''}`}
+                transform={`translate(${ship.x} ${ship.y})`}
                 onClick={(event) => { event.stopPropagation(); selectShip(ship) }}
                 role="button"
                 tabIndex={0}
                 aria-label={t('battlefield.shipMarker', { name: shipName(ship.ship_id), x: ship.x, y: ship.y })}
                 onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') selectShip(ship) }}
               >
-                <rect x={-0.6} y={-0.6} width={1.2} height={1.2} rx={0.12} className="tactical-ship-hit-cell" />
-                {isActive && <circle r={0.78} className="tactical-active-ring" />}
-                {isLegalTarget && <circle r={0.8} className="tactical-target-ring" />}
-                {isScanned && <circle r={0.74} className="tactical-scan-ring" />}
-                <ProceduralShipGlyph
-                  className="tactical-ship-vector"
-                  x={-0.8}
-                  y={-0.8}
-                  width={1.6}
-                  height={1.6}
-                  seed={genome?.seed ?? `${ship.empire_id}:${ship.source_design_id ?? ship.ship_id}:${ship.source_design_revision ?? 0}:${ship.strategic_picture_id ?? 0}`}
-                  hullId={ship.hull_id}
-                  genome={genome}
-                  weaponCount={(ship.weapons ?? []).reduce((sum, weapon) => sum + weapon.count, 0)}
-                  footprint={footprint}
-                  tightViewBox
-                />
+                <rect x={-0.5} y={-0.5} width={1} height={1} className="tactical-ship-hit-cell" />
+                <g className="tactical-ship-facing" transform={`rotate(${angle})`} pointerEvents="none">
+                  <ProceduralShipGlyph
+                    className="tactical-ship-vector"
+                    x={-visualSize / 2}
+                    y={-visualSize / 2}
+                    width={visualSize}
+                    height={visualSize}
+                    seed={genome?.seed ?? `${ship.empire_id}:${ship.source_design_id ?? ship.ship_id}:${ship.source_design_revision ?? 0}:${ship.strategic_picture_id ?? 0}`}
+                    hullId={visualHullID}
+                    genome={genome}
+                    weaponCount={(ship.weapons ?? []).reduce((sum, weapon) => sum + weapon.count, 0)}
+                    footprint={footprint}
+                    tightViewBox
+                  />
+                </g>
               </g>
             )
           })}
@@ -467,22 +490,24 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
       )}
 
       <footer className="tactical-hud">
-        <section className="tactical-hud-roster" aria-label={t('battlefield.ownShips')}>
-          <span className="tactical-hud-label">{t('battlefield.ownShips')}</span>
+        <section className="tactical-hud-roster" aria-label={t('battlefield.remainingShips')}>
+          <span className="tactical-hud-label">{t('battlefield.remainingShips')}</span>
           <div className="tactical-ship-strip">
-            {ownShips.map((ship) => {
+            {remainingOwnShips.map((ship) => {
               const active = ship.ship_id === tactical.state.active_ship_id
+              const genome = decodeShipVisualGenome(ship.visual_genome)
+              const visualHullID = genome?.hullId ?? ship.hull_id
               return (
                 <button
                   type="button"
                   key={ship.ship_id}
-                  className={`tactical-roster-ship ${active ? 'is-active' : ''} ${ship.activation_complete ? 'is-complete' : ''} ${ship.destroyed ? 'is-destroyed' : ''}`}
+                  className={`tactical-roster-ship ${active ? 'is-active' : ''} ${selectedShipID === ship.ship_id ? 'is-selected' : ''}`}
                   aria-current={active ? 'true' : undefined}
                   aria-label={`${shipName(ship.ship_id)} · ${ship.movement_current}/${ship.movement_max}`}
                   title={`${shipName(ship.ship_id)} · ${ship.movement_current}/${ship.movement_max}`}
-                  onClick={() => { focusShip(ship); if (mode === 'scan') setScannedShipID(ship.ship_id) }}
+                  onClick={() => selectShip(ship)}
                 >
-                  <span className="tactical-roster-glyph" aria-hidden="true"><ProceduralShipGlyph seed={decodeShipVisualGenome(ship.visual_genome)?.seed ?? `${ship.empire_id}:${ship.source_design_id ?? ship.ship_id}:${ship.source_design_revision ?? 0}:${ship.strategic_picture_id ?? 0}`} hullId={ship.hull_id} genome={decodeShipVisualGenome(ship.visual_genome)} weaponCount={(ship.weapons ?? []).reduce((sum, weapon) => sum + weapon.count, 0)} footprint={shipHullFootprint(ship.hull_id)} /></span>
+                  <span className="tactical-roster-glyph" aria-hidden="true"><ProceduralShipGlyph seed={genome?.seed ?? `${ship.empire_id}:${ship.source_design_id ?? ship.ship_id}:${ship.source_design_revision ?? 0}:${ship.strategic_picture_id ?? 0}`} hullId={visualHullID} genome={genome} weaponCount={(ship.weapons ?? []).reduce((sum, weapon) => sum + weapon.count, 0)} footprint={shipHullFootprint(visualHullID)} /></span>
                   <span className="tactical-roster-state" aria-hidden="true" />
                 </button>
               )
@@ -513,7 +538,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         </section>
 
         <section className="tactical-hud-commit">
-          <button type="button" className="tactical-next-ship" disabled={!tactical.can_end_activation || controlsDisabled} onClick={endActivation}><GameIcon name="check" />{busy ? t('battlefield.commandBusy') : t('battlefield.nextShip')}</button>
+          <button type="button" className="tactical-next-ship" disabled={!tactical.can_end_activation || controlsDisabled} onClick={endActivation}><GameIcon name="check" />{busy ? t('battlefield.commandBusy') : t('battlefield.finishActivation')}</button>
           <button type="button" className="tactical-retreat" disabled={controlsDisabled} onClick={retreat}>{t('battlefield.retreat')}</button>
           <button type="button" className="tactical-overview" onClick={onBack}>{t('battle.backToEncounter')}</button>
         </section>

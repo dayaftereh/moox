@@ -3734,14 +3734,11 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   pointer-events: none;
   filter: drop-shadow(0 0 2px rgba(182, 232, 255, .36));
 }
-.tactical-ship.active .tactical-ship-vector { filter: drop-shadow(0 0 4px rgba(112, 186, 255, .92)); }
+.tactical-ship.active .tactical-ship-vector { filter: drop-shadow(0 0 2px rgba(112, 186, 255, .56)); }
+.tactical-ship.selected .tactical-ship-vector { filter: drop-shadow(0 0 4px rgba(112, 186, 255, .95)); }
 .tactical-ship.own { --ship-vector: #74cfdf; --ship-vector-highlight: #d1f8ff; --ship-vector-engine: #f0d682; }
 .tactical-ship.enemy { --ship-vector: #d47976; --ship-vector-highlight: #ffd4cf; --ship-vector-engine: #f0a982; }
 .tactical-ship.destroyed { opacity: .32; filter: grayscale(1); }
-.tactical-active-ring, .tactical-target-ring, .tactical-scan-ring { fill: none; stroke-width: .11; vector-effect: non-scaling-stroke; }
-.tactical-active-ring { stroke: #f0c56d; stroke-dasharray: .35 .22; }
-.tactical-target-ring { stroke: #ff6f61; }
-.tactical-scan-ring { stroke: #76e39a; stroke-dasharray: .2 .15; }
 .tactical-ship-label { fill: #eef8ff; font-size: .66px; font-weight: 800; paint-order: stroke; stroke: rgba(0, 0, 0, .92); stroke-width: .16px; stroke-linejoin: round; pointer-events: none; }
 .tactical-viewport-hint { position: absolute; left: 10px; bottom: 9px; max-width: calc(100% - 20px); padding: 5px 8px; border-radius: 6px; background: rgba(3, 11, 18, .78); color: #91a8b9; font-size: .66rem; pointer-events: none; }
 .tactical-command-panel { display: grid; align-content: start; gap: 10px; min-width: 0; }
@@ -4987,13 +4984,27 @@ button.galaxy-node-marker-player-fleet.is-open {
   shape-rendering: crispEdges;
   vector-effect: non-scaling-stroke;
 }
-.tactical-reachable-grid {
-  fill: none;
-  stroke: rgba(88, 236, 142, .82);
-  stroke-width: .78;
+.tactical-selected-cell {
+  fill: rgba(54, 142, 255, .44);
+  stroke: rgba(131, 200, 255, .98);
+  stroke-width: 1.2;
   shape-rendering: crispEdges;
   vector-effect: non-scaling-stroke;
-  opacity: .92;
+}
+.tactical-occupied-cell {
+  fill: none;
+  stroke: rgba(255, 80, 77, .98);
+  stroke-width: 1.25;
+  shape-rendering: crispEdges;
+  vector-effect: non-scaling-stroke;
+}
+.tactical-reachable-grid {
+  fill: none;
+  stroke: rgba(91, 247, 146, .96);
+  stroke-width: .9;
+  shape-rendering: crispEdges;
+  vector-effect: non-scaling-stroke;
+  opacity: .98;
 }
 .tactical-screen .tactical-viewport:has(.tactical-reachable-grid) { cursor: crosshair; }
 .tactical-move-trail,
@@ -5035,7 +5046,7 @@ button.galaxy-node-marker-player-fleet.is-open {
   animation: tactical-beam-impact 1.35s ease-out both;
 }
 .tactical-damage-number {
-  font-size: .56px;
+  font-size: .62px;
   font-weight: 950;
   text-anchor: middle;
   paint-order: stroke;
@@ -5045,7 +5056,7 @@ button.galaxy-node-marker-player-fleet.is-open {
   pointer-events: none;
   transform-box: fill-box;
   transform-origin: center;
-  animation: tactical-damage-float 1.6s cubic-bezier(.16,.78,.24,1) both;
+  animation: tactical-damage-float 4s cubic-bezier(.16,.78,.24,1) both;
 }
 .tactical-damage-number.is-shield { fill: #68d8ff; }
 .tactical-damage-number.is-armor { fill: #ffc45e; }
@@ -5056,10 +5067,10 @@ button.galaxy-node-marker-player-fleet.is-open {
 }
 .tactical-beam-animation.is-miss .tactical-beam-impact { opacity: .24; }
 @keyframes tactical-damage-float {
-  0% { opacity: 0; transform: translateY(0) scale(.72); }
-  16% { opacity: 1; transform: translateY(-2px) scale(1.08); }
-  72% { opacity: 1; transform: translateY(-13px) scale(1); }
-  100% { opacity: 0; transform: translateY(-22px) scale(.96); }
+  0% { opacity: 0; transform: translateY(0) scale(.78); }
+  8% { opacity: 1; transform: translateY(-1px) scale(1.1); }
+  82% { opacity: 1; transform: translateY(-8px) scale(1); }
+  100% { opacity: 0; transform: translateY(-12px) scale(.98); }
 }
 @keyframes tactical-beam-flash {
   0% { opacity: 0; stroke-dashoffset: 12; }
@@ -5190,7 +5201,8 @@ button.galaxy-node-marker-player-fleet.is-open {
 }
 .tactical-roster-ship:hover,
 .tactical-roster-ship:focus-visible { border-color: rgba(126, 198, 227, .82); background: rgba(14, 39, 55, .94); }
-.tactical-roster-ship.is-active { border-color: rgba(121, 190, 255, 1); background: rgba(34, 91, 145, .4); box-shadow: inset 0 0 0 1px rgba(121, 190, 255, .38), 0 0 18px rgba(77, 159, 255, .28); }
+.tactical-roster-ship.is-active { border-color: rgba(121, 190, 255, .82); background: rgba(34, 91, 145, .24); }
+.tactical-roster-ship.is-selected { border-color: rgba(121, 190, 255, 1); background: rgba(34, 91, 145, .48); box-shadow: inset 0 0 0 1px rgba(121, 190, 255, .48), 0 0 18px rgba(77, 159, 255, .3); }
 .tactical-roster-ship.is-complete { opacity: .46; }
 .tactical-roster-ship.is-destroyed { opacity: .24; filter: grayscale(1); }
 .tactical-roster-glyph,
