@@ -643,10 +643,21 @@ export type PlayerSnapshot = {
   view: PlayerView
   decision?: PlayerDecisionView
   battles: BattleView[]
+  planning_draft?: PlanningDraft
 }
 
 export type PlanningCommandPayload = Record<string, unknown>
 export type DraftOrder = { key: string; kind: string; payload: PlanningCommandPayload }
+export type PlanningDraft = {
+  schema_version: 1
+  game_id: string
+  seat_id: number
+  turn: number
+  base_revision: number
+  draft_revision: number
+  orders: DraftOrder[]
+}
+export type PlanningDraftSnapshot = { schema_version: number; change_sequence: number; draft: PlanningDraft }
 export type CommandBatch = {
   schema_version: 1
   game_id: string
@@ -765,6 +776,25 @@ export function buildCommandBatch(snapshot: PlayerSnapshot, seatID: number, orde
     base_revision: snapshot.view.revision,
     commands: orders.map((order, index) => ({ schema_version: 1, sequence: index + 1, kind: order.kind, payload: order.payload })),
   }
+}
+
+export function buildPlanningDraft(snapshot: PlayerSnapshot, seatID: number, orders: DraftOrder[], draftRevision: number): PlanningDraft {
+  return {
+    schema_version: 1,
+    game_id: snapshot.view.game_id,
+    seat_id: seatID,
+    turn: snapshot.view.turn,
+    base_revision: snapshot.view.revision,
+    draft_revision: draftRevision,
+    orders: orders.map((order) => ({ key: order.key, kind: order.kind, payload: order.payload })),
+  }
+}
+
+export async function savePlanningDraft(snapshot: PlayerSnapshot, seatID: number, orders: DraftOrder[], draftRevision: number): Promise<PlanningDraftSnapshot> {
+  const draft = buildPlanningDraft(snapshot, seatID, orders, draftRevision)
+  return requestJSON<PlanningDraftSnapshot>(`/api/v1/games/${encodeURIComponent(snapshot.view.game_id)}/seats/${seatID}/planning-draft`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(draft), keepalive: true,
+  })
 }
 
 export async function previewPlanning(snapshot: PlayerSnapshot, seatID: number, orders: DraftOrder[], signal?: AbortSignal): Promise<PlanningPreviewSnapshot> {

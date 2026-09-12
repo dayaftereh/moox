@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sort"
@@ -37,6 +38,29 @@ type PlayerSnapshot struct {
 	View           session.PlayerView          `json:"view"`
 	Decision       *session.PlayerDecisionView `json:"decision,omitempty"`
 	Battles        []battle.View               `json:"battles"`
+	PlanningDraft  *PlanningDraft              `json:"planning_draft,omitempty"`
+}
+
+type PlanningDraftOrder struct {
+	Key     string          `json:"key"`
+	Kind    string          `json:"kind"`
+	Payload json.RawMessage `json:"payload,omitempty"`
+}
+
+type PlanningDraft struct {
+	SchemaVersion int                  `json:"schema_version"`
+	GameID        string               `json:"game_id"`
+	SeatID        protocol.SeatID      `json:"seat_id"`
+	Turn          uint64               `json:"turn"`
+	BaseRevision  uint64               `json:"base_revision"`
+	DraftRevision uint64               `json:"draft_revision"`
+	Orders        []PlanningDraftOrder `json:"orders"`
+}
+
+type PlanningDraftSnapshot struct {
+	SchemaVersion  int           `json:"schema_version"`
+	ChangeSequence uint64        `json:"change_sequence"`
+	Draft          PlanningDraft `json:"draft"`
 }
 
 type PlanningPreviewSnapshot struct {
@@ -93,6 +117,7 @@ type hostedGame struct {
 	changeSequence    uint64
 	nextSubscriberID  uint64
 	subscribers       map[uint64]chan Notification
+	planningDrafts    map[protocol.SeatID]PlanningDraft
 }
 
 func NewHost() *Host {
@@ -139,6 +164,7 @@ func (h *Host) Register(reg Registration) error {
 		changeSequence:    1,
 		nextSubscriberID:  1,
 		subscribers:       make(map[uint64]chan Notification),
+		planningDrafts:    make(map[protocol.SeatID]PlanningDraft),
 	}
 	return nil
 }
@@ -199,7 +225,16 @@ func (h *Host) PlayerSnapshot(gameID string, seatID protocol.SeatID) (PlayerSnap
 	if err != nil {
 		return PlayerSnapshot{}, fmt.Errorf("project player battles: %w", err)
 	}
-	return PlayerSnapshot{SchemaVersion: SchemaVersion, ChangeSequence: hosted.changeSequence, View: view, Decision: decision, Battles: battles}, nil
+	var planningDraft *PlanningDraft
+	if draft, ok := hosted.planningDrafts[seatID]; ok {
+		if draft.GameID == view.GameID && draft.Turn == view.Turn && draft.BaseRevision == view.Revision && view.Phase == session.PhasePlanning && !view.Seat.Submitted {
+			cloned := clonePlanningDraft(draft)
+			planningDraft = &cloned
+		} else {
+			delete(hosted.planningDrafts, seatID)
+		}
+	}
+	return PlayerSnapshot{SchemaVersion: SchemaVersion, ChangeSequence: hosted.changeSequence, View: view, Decision: decision, Battles: battles, PlanningDraft: planningDraft}, nil
 }
 
 func (h *Host) PlanningPreview(gameID string, seatID protocol.SeatID, batch protocol.CommandBatch) (PlanningPreviewSnapshot, error) {
@@ -228,6 +263,48 @@ func (h *Host) PlanningPreview(gameID string, seatID protocol.SeatID, batch prot
 	return PlanningPreviewSnapshot{SchemaVersion: SchemaVersion, ChangeSequence: hosted.changeSequence, Preview: preview}, nil
 }
 
+func (h *Host) SavePlanningDraft(gameID string, seatID protocol.SeatID, draft PlanningDraft) (PlanningDraftSnapshot, error) {
+	hosted, err := h.lookup(gameID)
+	if err != nil {
+		return PlanningDraftSnapshot{}, err
+	}
+	hosted.mu.Lock()
+	defer hosted.mu.Unlock()
+	if !containsSeat(hosted.seats, seatID) {
+		return PlanningDraftSnapshot{}, fmt.Errorf("%w: seat %d", ErrNotFound, seatID)
+	}
+	if draft.GameID != gameID || draft.SeatID != seatID {
+		return PlanningDraftSnapshot{}, fmt.Errorf("planning draft identity does not match route game/seat")
+	}
+	batch, err := draft.commandBatch()
+	if err != nil {
+		return PlanningDraftSnapshot{}, fmt.Errorf("%w: %v", ErrSessionRejected, err)
+	}
+	status := hosted.session.Status()
+	if draft.Turn != status.Turn || draft.BaseRevision != status.Revision || status.Phase != session.PhasePlanning {
+		return PlanningDraftSnapshot{}, fmt.Errorf("%w: planning draft targets turn/revision %d/%d while session is %d/%d phase %s", ErrSessionRejected, draft.Turn, draft.BaseRevision, status.Turn, status.Revision, status.Phase)
+	}
+	if existing, ok := hosted.planningDrafts[seatID]; ok {
+		if existing.Turn != status.Turn || existing.BaseRevision != status.Revision || existing.GameID != gameID {
+			delete(hosted.planningDrafts, seatID)
+		} else if draft.DraftRevision <= existing.DraftRevision {
+			return PlanningDraftSnapshot{SchemaVersion: SchemaVersion, ChangeSequence: hosted.changeSequence, Draft: clonePlanningDraft(existing)}, nil
+		}
+	}
+	if hosted.immediateResolver == nil {
+		return PlanningDraftSnapshot{}, fmt.Errorf("planning draft validation is unavailable without an economy resolver")
+	}
+	if _, err := hosted.session.PlanningPreview(batch, hosted.immediateResolver); err != nil {
+		if errors.Is(err, session.ErrPlanningPreviewRejected) {
+			return PlanningDraftSnapshot{}, fmt.Errorf("%w: %v", ErrSessionRejected, err)
+		}
+		return PlanningDraftSnapshot{}, err
+	}
+	stored := clonePlanningDraft(draft)
+	hosted.planningDrafts[seatID] = stored
+	return PlanningDraftSnapshot{SchemaVersion: SchemaVersion, ChangeSequence: hosted.changeSequence, Draft: clonePlanningDraft(stored)}, nil
+}
+
 func (h *Host) ObserverSnapshot(gameID string) (ObserverSnapshot, error) {
 	hosted, err := h.lookup(gameID)
 	if err != nil {
@@ -251,7 +328,11 @@ func (h *Host) SubmitTurn(gameID string, batch protocol.CommandBatch) (Receipt, 
 		return Receipt{}, fmt.Errorf("%w: command batch targets game %q, expected %q", ErrSessionRejected, batch.GameID, gameID)
 	}
 	return hosted.mutate("session", 0, "submission", func() error {
-		return hosted.session.SubmitTurn(batch)
+		if err := hosted.session.SubmitTurn(batch); err != nil {
+			return err
+		}
+		delete(hosted.planningDrafts, batch.SeatID)
+		return nil
 	})
 }
 
@@ -668,6 +749,49 @@ func (g *hostedGame) publish(notification Notification) {
 			}
 		}
 	}
+}
+
+func (draft PlanningDraft) commandBatch() (protocol.CommandBatch, error) {
+	if draft.SchemaVersion != SchemaVersion {
+		return protocol.CommandBatch{}, fmt.Errorf("unsupported planning draft schema version %d", draft.SchemaVersion)
+	}
+	if draft.GameID == "" || draft.SeatID == 0 || draft.Turn == 0 || draft.BaseRevision == 0 || draft.DraftRevision == 0 {
+		return protocol.CommandBatch{}, fmt.Errorf("planning draft requires game_id, seat_id, turn, base_revision and positive draft_revision")
+	}
+	commands := make([]protocol.Command, len(draft.Orders))
+	keys := make(map[string]struct{}, len(draft.Orders))
+	for i := range draft.Orders {
+		order := draft.Orders[i]
+		if order.Key == "" {
+			return protocol.CommandBatch{}, fmt.Errorf("orders[%d].key must not be empty", i)
+		}
+		if _, exists := keys[order.Key]; exists {
+			return protocol.CommandBatch{}, fmt.Errorf("orders[%d].key %q is duplicated", i, order.Key)
+		}
+		keys[order.Key] = struct{}{}
+		if order.Kind == "" {
+			return protocol.CommandBatch{}, fmt.Errorf("orders[%d].kind must not be empty", i)
+		}
+		if len(order.Payload) > 0 && !json.Valid(order.Payload) {
+			return protocol.CommandBatch{}, fmt.Errorf("orders[%d].payload is invalid JSON", i)
+		}
+		commands[i] = protocol.Command{SchemaVersion: protocol.CommandSchemaVersion, Sequence: uint32(i + 1), Kind: order.Kind, Payload: append(json.RawMessage(nil), order.Payload...)}
+	}
+	batch := protocol.CommandBatch{SchemaVersion: protocol.CommandSchemaVersion, GameID: draft.GameID, SeatID: draft.SeatID, Turn: draft.Turn, BaseRevision: draft.BaseRevision, Commands: commands}
+	if err := batch.Validate(); err != nil {
+		return protocol.CommandBatch{}, err
+	}
+	return batch, nil
+}
+
+func clonePlanningDraft(draft PlanningDraft) PlanningDraft {
+	clone := draft
+	clone.Orders = make([]PlanningDraftOrder, len(draft.Orders))
+	for i := range draft.Orders {
+		clone.Orders[i] = draft.Orders[i]
+		clone.Orders[i].Payload = append(json.RawMessage(nil), draft.Orders[i].Payload...)
+	}
+	return clone
 }
 
 func containsSeat(seats []protocol.SeatID, seatID protocol.SeatID) bool {

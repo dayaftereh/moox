@@ -10,6 +10,7 @@ import {
   removeDraftOrder,
   replaceDraftOrder,
   restoreLiveSnapshot,
+  savePlanningDraft,
   streamURL,
   submitBattleCommand,
   submitColonyBase,
@@ -174,6 +175,7 @@ function App() {
   const socketConnectedRef = useRef(false)
   const snapshotRef = useRef<PlayerSnapshot | null>(null)
   const draftOrdersRef = useRef<DraftOrder[]>([])
+  const planningDraftRevisionRef = useRef(0)
   const activeGameRef = useRef(gameID)
   const activeSeatRef = useRef(seatID)
   activeGameRef.current = gameID
@@ -195,6 +197,9 @@ function App() {
   useEffect(() => {
     if (route.kind === 'game' && route.gameID !== gameID) {
       setSnapshot(null)
+      draftOrdersRef.current = []
+      planningDraftRevisionRef.current = 0
+      setDraftOrders([])
       setLifecycle('initial-loading')
       setError('')
       setGameID(route.gameID)
@@ -207,8 +212,37 @@ function App() {
     try {
       const next = await getPlayerSnapshot(selectedGameID, selectedSeatID, signal)
       if (selectedGameID !== activeGameRef.current || selectedSeatID !== activeSeatRef.current) return
+      const previous = snapshotRef.current
+      const samePlanningAuthority = Boolean(previous
+        && previous.view.game_id === next.view.game_id
+        && previous.view.turn === next.view.turn
+        && previous.view.revision === next.view.revision)
+      const serverDraft = next.planning_draft
+      let hydratedDraft: DraftOrder[] = []
+      if (next.view.phase === 'planning' && !next.view.seat.submitted) {
+        const serverDraftMatches = Boolean(serverDraft
+          && serverDraft.game_id === next.view.game_id
+          && serverDraft.seat_id === selectedSeatID
+          && serverDraft.turn === next.view.turn
+          && serverDraft.base_revision === next.view.revision)
+        if (serverDraftMatches && serverDraft) {
+          if (!samePlanningAuthority || serverDraft.draft_revision >= planningDraftRevisionRef.current) {
+            planningDraftRevisionRef.current = serverDraft.draft_revision
+            hydratedDraft = serverDraft.orders.map((order) => ({ key: order.key, kind: order.kind, payload: order.payload }))
+          } else {
+            hydratedDraft = [...draftOrdersRef.current]
+          }
+        } else if (samePlanningAuthority && planningDraftRevisionRef.current > 0) {
+          hydratedDraft = [...draftOrdersRef.current]
+        } else {
+          planningDraftRevisionRef.current = 0
+        }
+      } else {
+        planningDraftRevisionRef.current = 0
+      }
+      draftOrdersRef.current = hydratedDraft
       setSnapshot(next)
-      setDraftOrders([])
+      setDraftOrders(hydratedDraft)
       setPlanningPreview(null)
       setPlanningPreviewError('')
       const firstColony = next.view.colonies[0]
@@ -595,12 +629,39 @@ function App() {
     }
   }
 
+  function persistPlanningDraft(nextOrders: DraftOrder[]) {
+    const current = snapshotRef.current
+    const currentSeat = activeSeatRef.current
+    if (!current || current.view.phase !== 'planning' || current.view.seat.submitted) return
+    const draftRevision = planningDraftRevisionRef.current + 1
+    planningDraftRevisionRef.current = draftRevision
+    void savePlanningDraft(current, currentSeat, nextOrders, draftRevision)
+      .then((saved) => {
+        if (saved.draft.draft_revision > planningDraftRevisionRef.current) planningDraftRevisionRef.current = saved.draft.draft_revision
+      })
+      .catch((cause) => {
+        const latest = snapshotRef.current
+        const obsolete = !latest
+          || latest.view.game_id !== current.view.game_id
+          || latest.view.turn !== current.view.turn
+          || latest.view.revision !== current.view.revision
+          || latest.view.phase !== 'planning'
+        if (!obsolete) setPlanningPreviewError(errorText(cause))
+      })
+  }
+
+  function replacePlanningDraft(nextOrders: DraftOrder[]) {
+    draftOrdersRef.current = nextOrders
+    setDraftOrders(nextOrders)
+    persistPlanningDraft(nextOrders)
+  }
+
   function planOrder(order: DraftOrder) {
-    setDraftOrders((current) => replaceDraftOrder(current, order))
+    replacePlanningDraft(replaceDraftOrder(draftOrdersRef.current, order))
   }
 
   function removePlannedOrder(key: string) {
-    setDraftOrders((current) => removeDraftOrder(current, key))
+    replacePlanningDraft(removeDraftOrder(draftOrdersRef.current, key))
   }
 
   function planPopulation(colonyID: number, farmers: number, workers: number, scientists: number) {
@@ -728,6 +789,8 @@ function App() {
     setError('')
     try {
       const receipt = await submitPlanning(snapshot, seatID, draftOrders)
+      draftOrdersRef.current = []
+      planningDraftRevisionRef.current = 0
       setDraftOrders([])
       setPlanningPreview(null)
       setStatus({ key: 'status.commandAccepted', vars: { change: receipt.change_sequence, revision: receipt.game_revision } })

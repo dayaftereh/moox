@@ -66,6 +66,7 @@ func NewHandler(cfg Config) (http.Handler, error) {
 	mux.HandleFunc("POST /api/v1/games", server.handleCreateGame)
 	mux.HandleFunc("GET /api/v1/games/{gameID}/seats/{seatID}/snapshot", server.handlePlayerSnapshot)
 	mux.HandleFunc("POST /api/v1/games/{gameID}/seats/{seatID}/planning-preview", server.handlePlanningPreview)
+	mux.HandleFunc("PUT /api/v1/games/{gameID}/seats/{seatID}/planning-draft", server.handlePlanningDraft)
 	mux.HandleFunc("GET /api/v1/games/{gameID}/observer/snapshot", server.handleObserverSnapshot)
 	mux.HandleFunc("GET /api/v1/games/{gameID}/live-snapshot", server.handleLiveSnapshotExport)
 	mux.HandleFunc("POST /api/v1/games/import", server.handleLiveSnapshotImport)
@@ -127,6 +128,33 @@ func (s *apiServer) handlePlanningPreview(w http.ResponseWriter, r *http.Request
 		return
 	}
 	writeJSON(w, http.StatusOK, preview)
+}
+
+func (s *apiServer) handlePlanningDraft(w http.ResponseWriter, r *http.Request) {
+	if !validateMutationRequest(w, r) {
+		return
+	}
+	seatID, err := parseSeatID(r.PathValue("seatID"))
+	if err != nil {
+		writeAPIError(w, http.StatusBadRequest, "bad_request", err.Error())
+		return
+	}
+	var draft app.PlanningDraft
+	if err := decodeJSON(w, r, &draft); err != nil {
+		writeAPIError(w, http.StatusBadRequest, "bad_request", err.Error())
+		return
+	}
+	gameID := r.PathValue("gameID")
+	if draft.GameID != gameID || draft.SeatID != seatID {
+		writeAPIError(w, http.StatusBadRequest, "bad_request", "body game_id/seat_id does not match planning-draft route")
+		return
+	}
+	snapshot, err := s.host.SavePlanningDraft(gameID, seatID, draft)
+	if err != nil {
+		writeHostError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, snapshot)
 }
 
 func (s *apiServer) handleObserverSnapshot(w http.ResponseWriter, r *http.Request) {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/fs"
 	"net/http"
@@ -52,6 +53,62 @@ func newServerFixture(t *testing.T, observerEnabled bool, staticFS fs.FS) (*http
 		t.Fatal(err)
 	}
 	return httptest.NewServer(handler), state
+}
+
+func TestHTTPPlanningDraftSurvivesReloadOrderingAndSubmission(t *testing.T) {
+	server, state := newServerFixture(t, true, nil)
+	defer server.Close()
+
+	var initial app.PlayerSnapshot
+	getJSON(t, server.URL+"/api/v1/games/demo/seats/1/snapshot", &initial)
+	if initial.PlanningDraft != nil {
+		t.Fatalf("initial planning draft=%+v want nil", initial.PlanningDraft)
+	}
+	command, err := game.NewAssignPopulationCommand(1, game.AssignPopulationPayload{
+		ColonyID: state.Colonies[0].ID, Farmers: 1, Workers: 2, Scientists: 1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	draft := app.PlanningDraft{
+		SchemaVersion: app.SchemaVersion, GameID: "demo", SeatID: 1, Turn: initial.View.Turn, BaseRevision: initial.View.Revision, DraftRevision: 1,
+		Orders: []app.PlanningDraftOrder{{Key: fmt.Sprintf("population:%d", state.Colonies[0].ID), Kind: command.Kind, Payload: append(json.RawMessage(nil), command.Payload...)}},
+	}
+	var saved app.PlanningDraftSnapshot
+	putJSON(t, server.URL+"/api/v1/games/demo/seats/1/planning-draft", draft, http.StatusOK, &saved)
+	if saved.Draft.DraftRevision != 1 || len(saved.Draft.Orders) != 1 {
+		t.Fatalf("saved draft=%+v", saved.Draft)
+	}
+	var reloaded app.PlayerSnapshot
+	getJSON(t, server.URL+"/api/v1/games/demo/seats/1/snapshot", &reloaded)
+	if reloaded.PlanningDraft == nil || reloaded.PlanningDraft.DraftRevision != 1 || len(reloaded.PlanningDraft.Orders) != 1 {
+		t.Fatalf("reloaded planning draft=%+v", reloaded.PlanningDraft)
+	}
+
+	cleared := draft
+	cleared.DraftRevision = 2
+	cleared.Orders = nil
+	putJSON(t, server.URL+"/api/v1/games/demo/seats/1/planning-draft", cleared, http.StatusOK, &saved)
+	if saved.Draft.DraftRevision != 2 || len(saved.Draft.Orders) != 0 {
+		t.Fatalf("cleared draft=%+v", saved.Draft)
+	}
+	var stale app.PlanningDraftSnapshot
+	putJSON(t, server.URL+"/api/v1/games/demo/seats/1/planning-draft", draft, http.StatusOK, &stale)
+	if stale.Draft.DraftRevision != 2 || len(stale.Draft.Orders) != 0 {
+		t.Fatalf("stale draft overwrote newer tombstone: %+v", stale.Draft)
+	}
+
+	draft.DraftRevision = 3
+	putJSON(t, server.URL+"/api/v1/games/demo/seats/1/planning-draft", draft, http.StatusOK, &saved)
+	batch := protocol.CommandBatch{
+		SchemaVersion: protocol.CommandSchemaVersion, GameID: "demo", SeatID: 1, Turn: initial.View.Turn, BaseRevision: initial.View.Revision, Commands: []protocol.Command{command},
+	}
+	postJSON(t, server.URL+"/api/v1/games/demo/turn-submissions", batch, "", http.StatusOK, &app.Receipt{})
+	var afterSubmit app.PlayerSnapshot
+	getJSON(t, server.URL+"/api/v1/games/demo/seats/1/snapshot", &afterSubmit)
+	if afterSubmit.PlanningDraft != nil {
+		t.Fatalf("planning draft survived successful turn submission: %+v", afterSubmit.PlanningDraft)
+	}
 }
 
 func TestHTTPPlayerSnapshotAndConcretePopulationCommandFlow(t *testing.T) {
@@ -288,6 +345,33 @@ func getJSON(t *testing.T, url string, dst any) {
 	}
 	if err := json.NewDecoder(response.Body).Decode(dst); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func putJSON(t *testing.T, url string, value any, wantStatus int, dst any) {
+	t.Helper()
+	body, err := json.Marshal(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request, err := http.NewRequest(http.MethodPut, url, bytes.NewReader(body))
+	if err != nil {
+		t.Fatal(err)
+	}
+	request.Header.Set("Content-Type", "application/json")
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+	if response.StatusCode != wantStatus {
+		responseBody, _ := io.ReadAll(response.Body)
+		t.Fatalf("PUT %s status=%d want=%d body=%s", url, response.StatusCode, wantStatus, responseBody)
+	}
+	if dst != nil {
+		if err := json.NewDecoder(response.Body).Decode(dst); err != nil {
+			t.Fatal(err)
+		}
 	}
 }
 
