@@ -114,3 +114,53 @@ Entering Tactical performed no Battle command and confirmed the final UI against
 - no move/fire/end-activation/retreat command was sent during this final 3v2 verification, so the user's live Battle state remained unchanged.
 
 This is the preferred Block1 browser evidence because it uses the exact larger-Fleet state that originally blocked access to Tactical.
+
+
+## Block 2 - implicit move/fire interaction and Galaxy-style camera
+Status: **IMPLEMENTED / browser-QA green; user visual review pending**
+
+User feedback after Block1 was to remove explicit Move/Fire mode selection, reduce the HUD footprint, make the tactical grid materially visible, and make camera interaction match the Galaxy-map mental model.
+
+### Interaction contract now implemented
+- Normal Tactical interaction is a single `combat` state rather than separate Move and Fire modes.
+- Server-projected legal movement cells are always shown during the player's active Ship activation. Clicking a legal green cell immediately issues the existing authoritative `battle.move_ship` command.
+- Server-projected legal enemy targets are simultaneously target-highlighted. Clicking a legal enemy Ship immediately fires the currently selected/available authoritative weapon slot through `battle.fire_beam`; no separate `Feuern` mode/button is required.
+- Clicking an own Ship in normal combat interaction focuses the camera only; it does not attempt friendly fire or change server activation authority.
+- `Scannen` remains the one explicit temporary interaction mode. While Scan is active, move cells and fire-target affordances are suppressed and Ship clicks open the read-only participant-safe details. Pressing Scan again returns immediately to normal combat interaction.
+- Explicit Move and Fire action buttons were removed from the bottom HUD. The weapon-slot selector remains available only when authoritative legal fire actions exist.
+- Existing authority remains honest: Tactical commands still submit immediately. Deferred activation batching/preview and no-selection=fire-all are still later server-authority work and are not simulated in React.
+
+### Camera / gesture contract
+- Removed visible `+`, `-` and Recenter controls.
+- Mouse wheel zoom remains direct.
+- Left-button drag pans.
+- Right-button drag also pans; the browser context menu is suppressed on the battlefield.
+- One-finger touch pans.
+- Two-finger touch pinch pans/zooms around the gesture center.
+- Click-vs-drag protection prevents a drag beginning on a legal move cell or Ship from becoming an accidental move/fire click when released. Pointer capture is used opportunistically but is not required for correctness.
+
+### Grid and HUD visibility
+- Minor 1x1 movement grid lines are now approximately 0.45 CSS px with stronger contrast.
+- Major 4x4 grid lines are approximately 1 CSS px and significantly brighter.
+- Green legal-cell outlines were increased to approximately 0.45 CSS px.
+- At the 791x605 QA viewport the bottom HUD reduced from about 151 px in Block1 to about **94 px**, giving the battlefield roughly 57 additional vertical pixels.
+- The separate active-Ship summary panel was removed; active/ready/complete state remains visible in the own-Ship roster.
+- The compact tools area now contains only Scan plus weapon-slot chips when weapons are actually legal; `Nächstes Schiff`, `Rückzug` and encounter overview remain in the compact commit group.
+
+### Browser QA evidence
+The user's preserved Round-6 7171 Triangle 3v2 state was exported read-only (107,451-byte live snapshot) and restored onto isolated QA server `127.0.0.1:7173` with persistence enabled. The canonical 7171 Battle was not mutated.
+
+The cloned real 3v2 state had Human `Scout 1`, `Scout 2`, newly built armed `Scout`, and Darlok ships 26/27. Browser QA proved:
+
+1. **Implicit fire:** active Human Scout exposed `Laser Cannon` and two legal targets with no Fire mode. Clicking Darlok Ship #26 directly produced authoritative `beam_fired` command sequence 12, hit for 3 damage, and applied Armor 4 -> 1; the weapon became spent.
+2. **Implicit movement:** with no Move mode/button, clicking legal green cell `(11,13)` directly produced authoritative `ship_moved` command sequence 13, from `(10,13)` to `(11,13)`, movement 20 -> 19.
+3. **Scan toggle:** normal mode showed 514 move cells and two fire targets before the shot; Scan hid both and opened the Darlok detail popover; toggling Scan off restored normal combat affordances.
+4. **Drag safety:** a synthetic drag followed immediately by a click did not add a second `ship_moved` event; the latest Battle event remained sequence 16 from the intentional move.
+5. **Wheel zoom:** wheel input changed Tactical viewBox from 44x40 to approximately 36.75x33.41.
+6. **Left drag:** left-button pointer drag changed the viewBox center.
+7. **Right drag:** right-button pointer drag also changed the viewBox center, and a context-menu event was `defaultPrevented=true`.
+8. **Touch pinch:** a two-pointer touch gesture changed viewBox from 44x40 to approximately 29.33x26.67.
+9. **One-finger pan:** a single touch drag changed viewBox center while keeping the same zoom dimensions.
+10. **Final grid CSS:** browser computed minor grid width 0.45 px, major grid width 1 px, green legal-cell outline 0.45 px; explicit camera-control count was zero.
+
+The exact live 7171 user battle remains the acceptance surface for the user's visual review; all destructive move/fire QA was confined to the 7173 clone.
