@@ -290,7 +290,7 @@ After Block5E arrival/contact/Tactical acceptance, continue directly with **Bloc
 Binding direction: foreign transit Fleets are projected only when server-authoritative scanner coverage permits them; detectable hostile/incoming movement uses the existing transit-marker language with a foreign player-colored Fleet marker and red dashed route toward a permitted target; ETA/remaining pc and ship-detail depth are scanner-authorized server projection, never client-side hidden state. The same compact Fleet dialog is reused read-only with intelligence redaction. Exact scanner stacking, asset coverage, size-class contribution, last-known-contact behavior and deep-space grouping remain research/freeze items.
 
 Detailed plan: `docs/research/SLICE_15_6_GATE3_BLOCK5F_FOREIGN_FLEET_SCANNERS_PLAN_2026-09-12.md`.
-### Co-located foreign Fleet inspection and Tactical expansion (2026-09-11)
+### Block5E COMPLETE - Co-located foreign Fleet inspection and Tactical expansion (2026-09-11 / accepted 2026-09-12)
 
 Accepted implementation: `3b2d734`.
 
@@ -316,3 +316,4 @@ Visible clean-Triangle acceptance from Round 1:
 5. Round2 `Fertig` produced a supported Encounter at Human Home: Human **2 combat Scouts** vs Darlok **2 combat Scouts**. Strategic BattleSpec retained Human/Darlok civilian Colony Ship Fleet IDs, while Tactical contained exactly **4 Ships** and zero civilians. All four Scouts had zero weapons.
 6. Tactical UI opened successfully, rendered all four Scouts, and exposed `Rückzug` alongside normal movement/fire/scan controls.
 7. The explicit 3v2 server regressions are green, covering the user's previously blocked larger Fleet case.
+8. **User browser acceptance (2026-09-12):** the Triangle scenario was played through the real strategic encounter flow and reached the Battle/Tactical UI successfully after the larger-Fleet/3v2 blocker fix. Block5E is therefore closed as the reproducible Tactical-entry enabler. Tactical presentation/interaction changes continue under 5A; Block5F scanner work stays queued until after that Tactical UI review.
