@@ -10,6 +10,11 @@ type ProceduralShipGlyphProps = {
   label?: string
   genome?: ShipVisualGenome
   footprint?: number
+  x?: number
+  y?: number
+  width?: number
+  height?: number
+  tightViewBox?: boolean
 }
 
 type Cutout = {
@@ -171,26 +176,37 @@ function makeGeometry(genome: ShipVisualGenome, weaponCount: number, canvas: { w
   }
 }
 
-export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className = '', label, genome, footprint = 1 }: ProceduralShipGlyphProps) {
+export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className = '', label, genome, footprint = 1, x, y, width, height, tightViewBox = false }: ProceduralShipGlyphProps) {
   const resolvedGenome = genome ?? createShipGenome(seed, hullId ?? 'generic')
   const canvas = {
     width: Math.ceil(Math.max(180, resolvedGenome.length * 1.65)),
     height: Math.ceil(Math.max(120, resolvedGenome.beam * 4.1)),
   }
   const geometry = makeGeometry(resolvedGenome, weaponCount, canvas)
+  const tightWidth = Math.min(canvas.width, Math.max(72, resolvedGenome.length * 1.45))
+  const tightHeight = Math.min(canvas.height, Math.max(56, resolvedGenome.beam * 3))
+  const viewBox = tightViewBox
+    ? `${((canvas.width - tightWidth) / 2).toFixed(2)} ${((canvas.height - tightHeight) / 2).toFixed(2)} ${tightWidth.toFixed(2)} ${tightHeight.toFixed(2)}`
+    : `0 0 ${canvas.width} ${canvas.height}`
   const classes = `procedural-ship-glyph${className ? ` ${className}` : ''}`
   const maskID = `ship-mask-${hashSeed(`${resolvedGenome.seed}|${geometry.profileKey}|v4`).toString(16)}`
 
   return (
     <svg
       className={classes}
-      viewBox={`0 0 ${canvas.width} ${canvas.height}`}
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      preserveAspectRatio="xMidYMid meet"
+      viewBox={viewBox}
       role={label ? 'img' : undefined}
       aria-label={label}
       aria-hidden={label ? undefined : true}
       focusable="false"
-      style={{ transform: `scale(${footprint})`, transformOrigin: '50% 50%' }}
+      style={tightViewBox ? undefined : { transform: `scale(${footprint})`, transformOrigin: '50% 50%' }}
       data-footprint={footprint.toFixed(2)}
+      data-tight-view-box={tightViewBox ? 'true' : undefined}
       data-hull-id={geometry.profileKey}
       data-symmetry="x-axis"
       data-notch-count={geometry.notchCount}

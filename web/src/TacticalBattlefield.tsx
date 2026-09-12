@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
+﻿import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
 import {
   decodeShipVisualGenome,
   tacticalEndActivationCommand,
@@ -7,6 +7,7 @@ import {
   tacticalRetreatCommand,
   type BattleView,
   type ProtocolCommand,
+  type TacticalEvent,
   type TacticalShipView,
 } from './api'
 import { GameIcon } from './components/GameIcon'
@@ -32,7 +33,9 @@ type TacticalMode = 'combat' | 'scan'
 type CameraState = { cx: number; cy: number; zoom: number }
 type PointerPoint = { x: number; y: number }
 type GestureSnapshot = { x: number; y: number; distance: number }
-type TacticalBeamAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number }
+type TacticalDamageLayerKind = 'shield' | 'armor' | 'structure'
+type TacticalDamageLayer = { kind: TacticalDamageLayerKind; amount: number }
+type TacticalBeamAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number; layers: TacticalDamageLayer[] }
 type TacticalMoveAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number }
 
 const MIN_ZOOM = 0.45
@@ -66,6 +69,51 @@ function meterPercent(current: number, max: number) {
 function eventNumber(data: Record<string, unknown> | undefined, key: string): number | undefined {
   const value = data?.[key]
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined
+}
+
+function damageLayersForBeam(events: TacticalEvent[], beam: TacticalEvent): TacticalDamageLayer[] {
+  if (beam.data?.hit !== true) return []
+  const targetShipID = eventNumber(beam.data, 'target_ship_id')
+  const damageEvent = events.find((event) => event.kind === 'battle_damage_applied'
+    && event.command_sequence === beam.command_sequence
+    && (targetShipID == null || eventNumber(event.data, 'target_ship_id') === targetShipID))
+  if (!damageEvent) return []
+  const layers: TacticalDamageLayer[] = []
+  const shieldBefore = eventNumber(damageEvent.data, 'shield_before')
+  const shieldAfter = eventNumber(damageEvent.data, 'shield_after')
+  if (shieldBefore != null && shieldAfter != null && shieldBefore > shieldAfter) layers.push({ kind: 'shield', amount: shieldBefore - shieldAfter })
+  const armorBefore = eventNumber(damageEvent.data, 'armor_before')
+  const armorAfter = eventNumber(damageEvent.data, 'armor_after')
+  if (armorBefore != null && armorAfter != null && armorBefore > armorAfter) layers.push({ kind: 'armor', amount: armorBefore - armorAfter })
+  const structureBefore = eventNumber(damageEvent.data, 'structure_damage_before')
+  const structureAfter = eventNumber(damageEvent.data, 'structure_damage_after')
+  if (structureBefore != null && structureAfter != null && structureAfter > structureBefore) layers.push({ kind: 'structure', amount: structureAfter - structureBefore })
+  return layers
+}
+
+function reachableGridPath(moves: Array<{ x: number; y: number }>): string {
+  const edges = new Set<string>()
+  const add = (x1: number, y1: number, x2: number, y2: number) => {
+    const a = x1.toFixed(2) + ',' + y1.toFixed(2)
+    const b = x2.toFixed(2) + ',' + y2.toFixed(2)
+    edges.add(a < b ? a + '|' + b : b + '|' + a)
+  }
+  for (const move of moves) {
+    const left = move.x - .5
+    const right = move.x + .5
+    const top = move.y - .5
+    const bottom = move.y + .5
+    add(left, top, right, top)
+    add(right, top, right, bottom)
+    add(left, bottom, right, bottom)
+    add(left, top, left, bottom)
+  }
+  return [...edges].map((edge) => {
+    const parts = edge.split('|')
+    const a = parts[0].split(',')
+    const b = parts[1].split(',')
+    return 'M ' + a[0] + ' ' + a[1] + ' L ' + b[0] + ' ' + b[1]
+  }).join(' ')
 }
 
 export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, commandsDisabled, onCommand, onBack, t }: TacticalBattlefieldProps) {
@@ -131,6 +179,8 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
 
   const selectedFireAction = legalFireActions.find((action) => action.weapon_slot === selectedWeaponSlot) ?? legalFireActions[0]
   const legalTargetByID = useMemo(() => new Map((selectedFireAction?.targets ?? []).map((target) => [target.target_ship_id, target])), [selectedFireAction])
+  const legalMoveByCell = useMemo(() => new Map(legalMoves.map((move) => [`${move.x}:${move.y}`, move])), [legalMoves])
+  const reachableGridD = useMemo(() => reachableGridPath(legalMoves), [legalMoves])
   const scannedShip = ships.find((ship) => ship.ship_id === scannedShipID)
   const movementSelectionActive = mode !== 'scan' && ownActivation && !!activeShip
   const viewWidth = bounds.width / camera.zoom
@@ -166,6 +216,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
           setBeamAnimation({
             sequence: event.sequence, fromX: source.x, fromY: source.y, toX: target.x, toY: target.y,
             hit: event.data?.hit === true, damage: eventNumber(event.data, 'damage') ?? 0,
+            layers: damageLayersForBeam(events, event),
           })
         }
       } else if (event.kind === 'ship_moved') {
@@ -182,7 +233,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
 
   useEffect(() => {
     if (!beamAnimation) return
-    const timer = window.setTimeout(() => setBeamAnimation((current) => current?.sequence === beamAnimation.sequence ? null : current), 620)
+    const timer = window.setTimeout(() => setBeamAnimation((current) => current?.sequence === beamAnimation.sequence ? null : current), 1600)
     return () => window.clearTimeout(timer)
   }, [beamAnimation])
 
@@ -208,6 +259,17 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const moveTo = (x: number, y: number) => {
     if (ignoreClickRef.current || mode === 'scan' || controlsDisabled || !activeShip) return
     void runCommand(tacticalMoveCommand(tactical, activeShip.ship_id, x, y))
+  }
+
+  const battlefieldClick = (event: ReactMouseEvent<SVGSVGElement>) => {
+    if (!movementSelectionActive || ignoreClickRef.current || controlsDisabled || !activeShip) return
+    if ((event.target as Element).closest?.('.tactical-ship')) return
+    const rect = event.currentTarget.getBoundingClientRect()
+    if (rect.width <= 0 || rect.height <= 0) return
+    const x = Math.round(viewX + ((event.clientX - rect.left) / rect.width) * viewWidth)
+    const y = Math.round(viewY + ((event.clientY - rect.top) / rect.height) * viewHeight)
+    const move = legalMoveByCell.get(`${x}:${y}`)
+    if (move) moveTo(move.x, move.y)
   }
 
   const selectShip = (ship: TacticalShipView) => {
@@ -310,6 +372,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
           viewBox={`${viewX} ${viewY} ${viewWidth} ${viewHeight}`}
           onPointerDown={pointerDown}
           onPointerMove={pointerMove}
+          onClick={battlefieldClick}
           onPointerUp={pointerEnd}
           onPointerCancel={pointerEnd}
           onWheel={wheel}
@@ -318,19 +381,9 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         >
           <rect x={viewX} y={viewY} width={viewWidth} height={viewHeight} className="tactical-space" />
 
-          {movementSelectionActive && activeShip && (
-            <rect x={activeShip.x - 0.48} y={activeShip.y - 0.48} width={0.96} height={0.96} rx={0.08} className="tactical-selected-cell" />
+          {movementSelectionActive && reachableGridD && (
+            <path d={reachableGridD} className="tactical-reachable-grid" pointerEvents="none" />
           )}
-
-          {movementSelectionActive && ships.filter((ship) => !ship.destroyed && ship.ship_id !== activeShip?.ship_id).map((ship) => (
-            <rect key={`occupied:${ship.ship_id}`} x={ship.x - 0.48} y={ship.y - 0.48} width={0.96} height={0.96} rx={0.08} className="tactical-occupied-cell" />
-          ))}
-
-          {movementSelectionActive && legalMoves.map((move) => (
-            <g key={`${move.x}:${move.y}`} className="tactical-move-cell" onClick={() => moveTo(move.x, move.y)} role="button" tabIndex={0} aria-label={t('battlefield.moveTarget', { x: move.x, y: move.y, cost: move.move_cost })} onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') moveTo(move.x, move.y) }}>
-              <rect x={move.x - 0.48} y={move.y - 0.48} width={0.96} height={0.96} rx={0.08} />
-            </g>
-          ))}
 
           {ships.map((ship) => {
             const isActive = ship.ship_id === tactical.state.active_ship_id
@@ -345,26 +398,29 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                 key={ship.ship_id}
                 className={`tactical-ship ${isOwn ? 'own' : 'enemy'} ${isActive ? 'active' : ''} ${isLegalTarget ? 'legal-target' : ''} ${isScanned ? 'scanned' : ''} ${ship.destroyed ? 'destroyed' : ''}`}
                 transform={`translate(${ship.x} ${ship.y}) rotate(${angle})`}
-                onClick={() => selectShip(ship)}
+                onClick={(event) => { event.stopPropagation(); selectShip(ship) }}
                 role="button"
                 tabIndex={0}
                 aria-label={t('battlefield.shipMarker', { name: shipName(ship.ship_id), x: ship.x, y: ship.y })}
                 onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') selectShip(ship) }}
               >
-                <rect x={-0.48} y={-0.48} width={0.96} height={0.96} rx={0.08} className="tactical-ship-hit-cell" />
-                {isLegalTarget && <circle r={0.62} className="tactical-target-ring" />}
-                {isScanned && <circle r={0.58} className="tactical-scan-ring" />}
-                <foreignObject x={-0.5} y={-0.5} width={1} height={1} className="tactical-ship-art" pointerEvents="none">
-                  <div className="tactical-procedural-ship">
-                    <ProceduralShipGlyph
-                      seed={genome?.seed ?? `${ship.empire_id}:${ship.source_design_id ?? ship.ship_id}:${ship.source_design_revision ?? 0}:${ship.strategic_picture_id ?? 0}`}
-                      hullId={ship.hull_id}
-                      genome={genome}
-                      weaponCount={(ship.weapons ?? []).reduce((sum, weapon) => sum + weapon.count, 0)}
-                      footprint={footprint}
-                    />
-                  </div>
-                </foreignObject>
+                <rect x={-0.6} y={-0.6} width={1.2} height={1.2} rx={0.12} className="tactical-ship-hit-cell" />
+                {isActive && <circle r={0.78} className="tactical-active-ring" />}
+                {isLegalTarget && <circle r={0.8} className="tactical-target-ring" />}
+                {isScanned && <circle r={0.74} className="tactical-scan-ring" />}
+                <ProceduralShipGlyph
+                  className="tactical-ship-vector"
+                  x={-0.8}
+                  y={-0.8}
+                  width={1.6}
+                  height={1.6}
+                  seed={genome?.seed ?? `${ship.empire_id}:${ship.source_design_id ?? ship.ship_id}:${ship.source_design_revision ?? 0}:${ship.strategic_picture_id ?? 0}`}
+                  hullId={ship.hull_id}
+                  genome={genome}
+                  weaponCount={(ship.weapons ?? []).reduce((sum, weapon) => sum + weapon.count, 0)}
+                  footprint={footprint}
+                  tightViewBox
+                />
               </g>
             )
           })}
@@ -380,7 +436,18 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             <g className={`tactical-beam-animation ${beamAnimation.hit ? 'is-hit' : 'is-miss'}`} data-sequence={beamAnimation.sequence} data-hit={beamAnimation.hit ? 'true' : 'false'} data-damage={beamAnimation.damage} pointerEvents="none">
               <line x1={beamAnimation.fromX} y1={beamAnimation.fromY} x2={beamAnimation.toX} y2={beamAnimation.toY} className="tactical-beam-glow" />
               <line x1={beamAnimation.fromX} y1={beamAnimation.fromY} x2={beamAnimation.toX} y2={beamAnimation.toY} className="tactical-beam-core" />
-              <circle cx={beamAnimation.toX} cy={beamAnimation.toY} r={0.32} className="tactical-beam-impact" />
+              <circle cx={beamAnimation.toX} cy={beamAnimation.toY} r={0.36} className="tactical-beam-impact" />
+              {(beamAnimation.layers.length > 0 ? beamAnimation.layers : (beamAnimation.hit && beamAnimation.damage > 0 ? [{ kind: 'structure' as const, amount: beamAnimation.damage }] : [])).map((layer, index) => (
+                <text
+                  key={`${beamAnimation.sequence}:${layer.kind}:${index}`}
+                  x={beamAnimation.toX}
+                  y={beamAnimation.toY - .18 - index * .28}
+                  className={`tactical-damage-number is-${layer.kind}`}
+                  data-layer={layer.kind}
+                >
+                  -{layer.amount}
+                </text>
+              ))}
             </g>
           )}
         </svg>

@@ -326,12 +326,12 @@ func validateBaselineCombatant(s TacticalShipSpec) error {
 	}
 	switch s.WarpDriveID {
 	case "fusion_drive":
-		if s.CurrentCombatSpeed != 22 {
-			return fmt.Errorf("fusion tactical ship %d requires combat speed 22", s.ShipID)
+		if s.CurrentCombatSpeed != 12 {
+			return fmt.Errorf("fusion tactical ship %d requires baseline combat speed 12", s.ShipID)
 		}
 	case "nuclear_drive":
-		if s.CurrentCombatSpeed != 20 {
-			return fmt.Errorf("nuclear tactical ship %d requires combat speed 20", s.ShipID)
+		if s.CurrentCombatSpeed != 10 {
+			return fmt.Errorf("nuclear tactical ship %d requires baseline combat speed 10", s.ShipID)
 		}
 	default:
 		return fmt.Errorf("tactical ship %d drive %q is outside the Slice 15.5 baseline", s.ShipID, s.WarpDriveID)
