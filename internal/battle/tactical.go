@@ -48,23 +48,28 @@ type TacticalWeaponSpec struct {
 }
 
 type TacticalShipSpec struct {
-	ShipID             core.ID              `json:"ship_id"`
-	EmpireID           core.ID              `json:"empire_id"`
-	SeatID             protocol.SeatID      `json:"seat_id"`
-	X                  int                  `json:"x"`
-	Y                  int                  `json:"y"`
-	Facing             int                  `json:"facing"`
-	TurningMode        string               `json:"turning_mode,omitempty"`
-	HullID             string               `json:"hull_id"`
-	WarpDriveID        string               `json:"warp_drive_id"`
-	ComputerID         string               `json:"computer_id"`
-	ArmorID            string               `json:"armor_id"`
-	Weapons            []TacticalWeaponSpec `json:"weapons,omitempty"`
-	CurrentCombatSpeed int                  `json:"current_combat_speed"`
-	BeamOffense        int                  `json:"beam_offense"`
-	BeamDefense        int                  `json:"beam_defense"`
-	ArmorMax           int                  `json:"armor_max"`
-	StructureMax       int                  `json:"structure_max"`
+	ShipID               core.ID                `json:"ship_id"`
+	EmpireID             core.ID                `json:"empire_id"`
+	SeatID               protocol.SeatID        `json:"seat_id"`
+	X                    int                    `json:"x"`
+	Y                    int                    `json:"y"`
+	Facing               int                    `json:"facing"`
+	TurningMode          string                 `json:"turning_mode,omitempty"`
+	HullID               string                 `json:"hull_id"`
+	WarpDriveID          string                 `json:"warp_drive_id"`
+	ComputerID           string                 `json:"computer_id"`
+	ArmorID              string                 `json:"armor_id"`
+	SourceDesignID       core.ID                `json:"source_design_id,omitempty"`
+	SourceDesignRevision uint32                 `json:"source_design_revision,omitempty"`
+	StrategicPictureID   int                    `json:"strategic_picture_id,omitempty"`
+	SourceVisualRevision uint32                 `json:"source_visual_revision,omitempty"`
+	VisualGenome         *core.ShipVisualGenome `json:"visual_genome,omitempty"`
+	Weapons              []TacticalWeaponSpec   `json:"weapons,omitempty"`
+	CurrentCombatSpeed   int                    `json:"current_combat_speed"`
+	BeamOffense          int                    `json:"beam_offense"`
+	BeamDefense          int                    `json:"beam_defense"`
+	ArmorMax             int                    `json:"armor_max"`
+	StructureMax         int                    `json:"structure_max"`
 }
 
 type TacticalSpec struct {
@@ -128,27 +133,32 @@ type TacticalWeaponView struct {
 }
 
 type TacticalShipView struct {
-	ShipID             core.ID              `json:"ship_id"`
-	EmpireID           core.ID              `json:"empire_id"`
-	SeatID             protocol.SeatID      `json:"seat_id"`
-	HullID             string               `json:"hull_id"`
-	WarpDriveID        string               `json:"warp_drive_id"`
-	ComputerID         string               `json:"computer_id"`
-	ArmorID            string               `json:"armor_id"`
-	X                  int                  `json:"x"`
-	Y                  int                  `json:"y"`
-	Facing             int                  `json:"facing"`
-	MovementCurrent    int                  `json:"movement_current"`
-	MovementMax        int                  `json:"movement_max"`
-	ActivationComplete bool                 `json:"activation_complete"`
-	ArmorCurrent       int                  `json:"armor_current"`
-	ArmorMax           int                  `json:"armor_max"`
-	StructureCurrent   int                  `json:"structure_current"`
-	StructureMax       int                  `json:"structure_max"`
-	BeamOffense        int                  `json:"beam_offense"`
-	BeamDefense        int                  `json:"beam_defense"`
-	Weapons            []TacticalWeaponView `json:"weapons,omitempty"`
-	Destroyed          bool                 `json:"destroyed"`
+	ShipID               core.ID                `json:"ship_id"`
+	EmpireID             core.ID                `json:"empire_id"`
+	SeatID               protocol.SeatID        `json:"seat_id"`
+	HullID               string                 `json:"hull_id"`
+	WarpDriveID          string                 `json:"warp_drive_id"`
+	ComputerID           string                 `json:"computer_id"`
+	ArmorID              string                 `json:"armor_id"`
+	SourceDesignID       core.ID                `json:"source_design_id,omitempty"`
+	SourceDesignRevision uint32                 `json:"source_design_revision,omitempty"`
+	StrategicPictureID   int                    `json:"strategic_picture_id,omitempty"`
+	SourceVisualRevision uint32                 `json:"source_visual_revision,omitempty"`
+	VisualGenome         *core.ShipVisualGenome `json:"visual_genome,omitempty"`
+	X                    int                    `json:"x"`
+	Y                    int                    `json:"y"`
+	Facing               int                    `json:"facing"`
+	MovementCurrent      int                    `json:"movement_current"`
+	MovementMax          int                    `json:"movement_max"`
+	ActivationComplete   bool                   `json:"activation_complete"`
+	ArmorCurrent         int                    `json:"armor_current"`
+	ArmorMax             int                    `json:"armor_max"`
+	StructureCurrent     int                    `json:"structure_current"`
+	StructureMax         int                    `json:"structure_max"`
+	BeamOffense          int                    `json:"beam_offense"`
+	BeamDefense          int                    `json:"beam_defense"`
+	Weapons              []TacticalWeaponView   `json:"weapons,omitempty"`
+	Destroyed            bool                   `json:"destroyed"`
 }
 
 type TacticalFireTarget struct {
@@ -273,6 +283,17 @@ func validateTacticalSpec(spec Spec) error {
 			return fmt.Errorf("tactical ships %d and %d share coordinate (%d,%d)", prior, ship.ShipID, ship.X, ship.Y)
 		}
 		occupied[[2]int{ship.X, ship.Y}] = ship.ShipID
+		if ship.VisualGenome == nil && ship.SourceVisualRevision != 0 {
+			return fmt.Errorf("tactical ship %d has source_visual_revision %d without visual_genome", ship.ShipID, ship.SourceVisualRevision)
+		}
+		if ship.VisualGenome != nil {
+			if ship.SourceVisualRevision == 0 {
+				return fmt.Errorf("tactical ship %d visual_genome requires positive source_visual_revision", ship.ShipID)
+			}
+			if err := core.ValidateShipVisualGenome(*ship.VisualGenome); err != nil {
+				return fmt.Errorf("tactical ship %d visual_genome: %w", ship.ShipID, err)
+			}
+		}
 		if err := validateBaselineCombatant(ship); err != nil {
 			return err
 		}
@@ -700,11 +721,17 @@ func tacticalShipViews(spec TacticalSpec, r *tacticalRuntime) []TacticalShipView
 		view := TacticalShipView{
 			ShipID: shipSpec.ShipID, EmpireID: shipSpec.EmpireID, SeatID: shipSpec.SeatID,
 			HullID: shipSpec.HullID, WarpDriveID: shipSpec.WarpDriveID, ComputerID: shipSpec.ComputerID, ArmorID: shipSpec.ArmorID,
-			X: state.X, Y: state.Y, Facing: state.Facing, MovementCurrent: state.MovementCurrent, MovementMax: state.MovementMax,
+			SourceDesignID: shipSpec.SourceDesignID, SourceDesignRevision: shipSpec.SourceDesignRevision, StrategicPictureID: shipSpec.StrategicPictureID,
+			SourceVisualRevision: shipSpec.SourceVisualRevision,
+			X:                    state.X, Y: state.Y, Facing: state.Facing, MovementCurrent: state.MovementCurrent, MovementMax: state.MovementMax,
 			ActivationComplete: state.ActivationComplete, ArmorCurrent: state.ArmorCurrent, ArmorMax: shipSpec.ArmorMax,
 			StructureCurrent: shipSpec.StructureMax - state.StructureDamage, StructureMax: shipSpec.StructureMax,
 			BeamOffense: shipSpec.BeamOffense, BeamDefense: shipSpec.BeamDefense, Destroyed: state.Destroyed,
 			Weapons: make([]TacticalWeaponView, 0, len(shipSpec.Weapons)),
+		}
+		if shipSpec.VisualGenome != nil {
+			genome := core.CloneShipVisualGenome(*shipSpec.VisualGenome)
+			view.VisualGenome = &genome
 		}
 		if view.StructureCurrent < 0 {
 			view.StructureCurrent = 0
@@ -1057,6 +1084,10 @@ func cloneTacticalSpec(spec TacticalSpec) TacticalSpec {
 	for i := range spec.Ships {
 		out.Ships[i] = spec.Ships[i]
 		out.Ships[i].Weapons = append([]TacticalWeaponSpec(nil), spec.Ships[i].Weapons...)
+		if spec.Ships[i].VisualGenome != nil {
+			genome := core.CloneShipVisualGenome(*spec.Ships[i].VisualGenome)
+			out.Ships[i].VisualGenome = &genome
+		}
 	}
 	return out
 }

@@ -167,22 +167,30 @@ func baselineCombatantUnsupportedReason(ship core.Ship, rules *ruleset.TacticalC
 
 func baselineTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing, speed int, rules *ruleset.TacticalCombatFile) battle.TacticalShipSpec {
 	out := battle.TacticalShipSpec{
-		ShipID:             ship.ID,
-		EmpireID:           ship.EmpireID,
-		SeatID:             seatID,
-		X:                  x,
-		Y:                  y,
-		Facing:             facing,
-		TurningMode:        battle.TacticalTurningNormal,
-		HullID:             ship.Spec.HullID,
-		WarpDriveID:        ship.Spec.WarpDriveID,
-		ComputerID:         ship.Spec.ComputerID,
-		ArmorID:            ship.Spec.ArmorID,
-		CurrentCombatSpeed: speed,
-		BeamOffense:        rules.Computer.BeamOffense,
-		BeamDefense:        0,
-		ArmorMax:           rules.Frigate.ArmorHits,
-		StructureMax:       rules.Frigate.Structure,
+		ShipID:               ship.ID,
+		EmpireID:             ship.EmpireID,
+		SeatID:               seatID,
+		X:                    x,
+		Y:                    y,
+		Facing:               facing,
+		TurningMode:          battle.TacticalTurningNormal,
+		HullID:               ship.Spec.HullID,
+		WarpDriveID:          ship.Spec.WarpDriveID,
+		ComputerID:           ship.Spec.ComputerID,
+		ArmorID:              ship.Spec.ArmorID,
+		SourceDesignID:       ship.SourceDesignID,
+		SourceDesignRevision: ship.SourceDesignRevision,
+		StrategicPictureID:   ship.Spec.StrategicPictureID,
+		SourceVisualRevision: ship.SourceVisualRevision,
+		CurrentCombatSpeed:   speed,
+		BeamOffense:          rules.Computer.BeamOffense,
+		BeamDefense:          0,
+		ArmorMax:             rules.Frigate.ArmorHits,
+		StructureMax:         rules.Frigate.Structure,
+	}
+	if ship.VisualGenome != nil {
+		genome := core.CloneShipVisualGenome(*ship.VisualGenome)
+		out.VisualGenome = &genome
 	}
 	if len(ship.Spec.Weapons) == 1 {
 		out.Weapons = []battle.TacticalWeaponSpec{{Slot: 0, WeaponID: rules.Weapon.ID, Count: 1, MinDamage: rules.Weapon.MinDamage, MaxDamage: rules.Weapon.MaxDamage}}

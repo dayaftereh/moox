@@ -53,6 +53,65 @@ func baselineTacticalBattleSpec() Spec {
 	}
 }
 
+func tacticalVisualGenomeForTest() core.ShipVisualGenome {
+	return core.ShipVisualGenome{
+		Version: core.ShipVisualGenomeVersion,
+		HullID:  "frigate", StyleID: "sleek", MorphologyID: "manta", Seed: "tactical:persisted:v4",
+		Length: 54, Beam: 8.5, StationCount: 5,
+		StationWidths: []float64{3, 7, 9, 6, 0},
+		NotchDepths:   []float64{0, 0, 2, 0, 0},
+		EngineCount:   1, DetailCount: 2,
+		Cutouts:    []core.ShipVisualCutout{{T: .55, Offset: 2, RX: 2.5, RY: 1.25, Angle: 8}},
+		Primitives: []core.ShipVisualPrimitive{{Kind: "wedge", T: .42, Length: 12, Width: 5, Sweep: -.4}},
+	}
+}
+
+func TestTacticalViewProjectsPersistentVisualGenome(t *testing.T) {
+	spec := baselineTacticalBattleSpec()
+	genome := tacticalVisualGenomeForTest()
+	spec.Tactical.Ships[0].SourceDesignID = 501
+	spec.Tactical.Ships[0].SourceDesignRevision = 3
+	spec.Tactical.Ships[0].StrategicPictureID = 17
+	spec.Tactical.Ships[0].SourceVisualRevision = 4
+	spec.Tactical.Ships[0].VisualGenome = &genome
+	s, err := NewSession(spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Start(); err != nil {
+		t.Fatal(err)
+	}
+	view := s.View()
+	if view.Tactical == nil {
+		t.Fatal("tactical view missing")
+	}
+	var got *TacticalShipView
+	for i := range view.Tactical.Ships {
+		if view.Tactical.Ships[i].ShipID == spec.Tactical.Ships[0].ShipID {
+			got = &view.Tactical.Ships[i]
+			break
+		}
+	}
+	if got == nil || got.VisualGenome == nil {
+		t.Fatalf("persisted visual genome missing from Tactical view: %+v", got)
+	}
+	if got.SourceDesignID != 501 || got.SourceDesignRevision != 3 || got.StrategicPictureID != 17 {
+		t.Fatalf("unexpected Tactical design identity: %d/%d/%d", got.SourceDesignID, got.SourceDesignRevision, got.StrategicPictureID)
+	}
+	if got.SourceVisualRevision != 4 || got.VisualGenome.Seed != genome.Seed || got.VisualGenome.HullID != genome.HullID {
+		t.Fatalf("unexpected Tactical visual projection: revision=%d genome=%+v", got.SourceVisualRevision, got.VisualGenome)
+	}
+	got.VisualGenome.Seed = "mutated-client-view"
+	viewAgain := s.View()
+	for i := range viewAgain.Tactical.Ships {
+		if viewAgain.Tactical.Ships[i].ShipID == spec.Tactical.Ships[0].ShipID {
+			if viewAgain.Tactical.Ships[i].VisualGenome == nil || viewAgain.Tactical.Ships[i].VisualGenome.Seed != genome.Seed {
+				t.Fatal("mutating projected Tactical visual genome leaked back into authoritative session")
+			}
+		}
+	}
+}
+
 func newStartedTacticalSession(t *testing.T) *Session {
 	t.Helper()
 	s, err := NewSession(baselineTacticalBattleSpec())

@@ -475,6 +475,8 @@ export type TacticalSpec = {
 export type TacticalWeaponView = { slot: number; weapon_id: string; count: number; min_damage: number; max_damage: number; ready: boolean }
 export type TacticalShipView = {
   ship_id: number; empire_id: number; seat_id: number; hull_id: string; warp_drive_id: string; computer_id: string; armor_id: string
+  source_design_id?: number; source_design_revision?: number; strategic_picture_id?: number
+  source_visual_revision?: number; visual_genome?: ShipVisualGenomeWire
   x: number; y: number; facing: number; movement_current: number; movement_max: number; activation_complete: boolean
   armor_current: number; armor_max: number; structure_current: number; structure_max: number
   beam_offense: number; beam_defense: number; weapons?: TacticalWeaponView[]; destroyed: boolean

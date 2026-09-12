@@ -164,3 +164,44 @@ The cloned real 3v2 state had Human `Scout 1`, `Scout 2`, newly built armed `Sco
 10. **Final grid CSS:** browser computed minor grid width 0.45 px, major grid width 1 px, green legal-cell outline 0.45 px; explicit camera-control count was zero.
 
 The exact live 7171 user battle remains the acceptance surface for the user's visual review; all destructive move/fire QA was confined to the 7173 clone.
+
+
+## Block 3 - persisted ship visuals and selective movement cells
+Status: **IMPLEMENTED / browser-QA green; user visual review pending**
+
+This block replaces the remaining Tactical-only ship-art identity and permanent-grid presentation with the same ship identity contract already used by Fleet/System/Ship Designer.
+
+### Authoritative ship visual identity
+- `TacticalShipSpec` and `TacticalShipView` now carry strategic source-design identity (`source_design_id`, design revision, strategic picture id) plus optional persisted `source_visual_revision` / `visual_genome`.
+- Tactical materialization deep-clones a combat Ship's persisted visual genome from `core.Ship`; Battle validation rejects mismatched visual revision/genome pairs and validates the genome schema.
+- Battle-session cloning and participant view projection deep-clone the visual genome again so UI/view mutation cannot alias authoritative state.
+- React renders `ProceduralShipGlyph` with the decoded persisted genome when present. It no longer invents a Tactical-specific visual seed.
+- Legacy ships with no persisted genome use the **same stable design fallback seed as Fleet/System**: empire + source design id + source design revision + strategic picture id. Thus old starting Scouts remain visually consistent with strategic Fleet presentation even though their old save records predate persisted visual genomes.
+- The field ship art lives inside exactly one 1x1 Tactical cell (foreignObject -0.5..+0.5 on each axis with overflow hidden). The existing shared `shipHullFootprint` drives scale: Doom Star 1.0, Titan .9, Battleship .78, Cruiser .68, Destroyer .58, Frigate .48, Scout token .4. Current Slice15.5 combat authority still limits real battles to the accepted Frigate/Scout baseline, so browser proof here is Frigate footprint .48; broader hull combat will inherit the same scaling without Tactical-specific constants.
+- The whole occupied 0.96x0.96 cell is an invisible click target, so a small Scout does not require pixel-perfect clicking on the SVG silhouette.
+
+### Selective cell presentation
+- The permanent minor/major Tactical grid is removed from the rendered battlefield. Empty space has no visible grid lines.
+- Before selecting the active own Ship, no movement/selection/occupancy cells are shown.
+- Clicking the active own Ship/its cell toggles movement selection. Its current cell becomes blue.
+- Only server-projected `legal_moves` become green; React still does not calculate reachability.
+- Every other non-destroyed Tactical Ship coordinate is shown as a red occupied/blocking cell while movement selection is open.
+- Occupied coordinates are never simultaneously green because the server's existing `tacticalMoveOption` rejects occupied destinations.
+- Occupancy blocks only the destination coordinate; diagonal/free movement around another Ship remains available whenever the server projects that destination as legal.
+- Clicking the selected active Ship again closes the movement overlay and returns blue/green/red cell counts to zero.
+
+### Regression and browser evidence
+New Go regressions prove that strategic persisted visual identity is cloned into Tactical metadata and then safely projected through the Battle session without pointer/slice aliasing. Source design identity is also projected for exact Fleet/System legacy fallback. Existing movement authority tests already cover occupied-destination rejection and diagonal movement.
+
+Final browser QA used isolated `127.0.0.1:7174`, restored from the user's preserved Round-6 3v2 snapshot. Because that Battle was originally created before Block3, the QA copy was enriched only with visual/source-design fields already present on the same snapshot's authoritative strategic Ship records; canonical 7171 was not modified. This bridge is only for old-snapshot UI QA; new Tactical materialization is covered by the server regressions above.
+
+Observed in browser:
+- before selection: 0 green move cells, 0 blue selected cells, 0 red occupied cells, 0 minor/major grid elements;
+- active newly built Scout projected `source_visual_revision=1` and persisted seed `shipbuilder:catalog:20:1`; its SVG reported genome version 4 and Frigate footprint .48;
+- the SVG container was exactly 1x1 with `overflow:hidden`, while the invisible click cell was .96x.96;
+- selecting the active Scout produced one blue cell, 514 server-authoritative green move cells and four red occupied cells;
+- red occupied coordinates were (14,12), (10,11), (14,9), (14,11), and **none** appeared in the green move set;
+- diagonal legal destinations around blockers remained present, including (13,10), (13,12), (11,12) and (11,14);
+- clicking the selected Ship cell again returned all overlay counts to zero.
+
+Legacy starting Scouts in this existing save still have no persisted `visual_genome` because they were created before the persistent visual contract was assigned to them. Tactical now reproduces their Fleet/System design-seeded SVG exactly instead of using a Tactical-only seed. A future new-game/legacy-backfill task may assign persisted per-instance genomes to those historical starting Ships if desired; this is separate from Tactical rendering authority.

@@ -4,6 +4,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"moox/internal/battle"
 	"moox/internal/core"
 	"moox/internal/protocol"
 	"moox/internal/ruleset"
@@ -75,6 +76,59 @@ func TestTacticalMetadataSupportsTwoByTwoWithOpenFieldDeployment(t *testing.T) {
 			t.Fatalf("ships %d and %d share deployment %v", prior, ship.ShipID, key)
 		}
 		occupied[key] = ship.ShipID
+	}
+}
+
+func TestTacticalMetadataPreservesPersistentShipVisualGenome(t *testing.T) {
+	attacker := tacticalMetadataShip(101, 1, "fusion_drive", true)
+	attacker.SourceDesignID = 501
+	attacker.SourceDesignRevision = 3
+	attacker.Spec.StrategicPictureID = 17
+	genome := testPersistentVisualGenome()
+	genome.HullID = attacker.Spec.HullID
+	attacker.SourceVisualRevision = 7
+	attacker.VisualGenome = &genome
+	state := &core.GameState{Ships: []core.Ship{
+		attacker,
+		tacticalMetadataShip(201, 2, "nuclear_drive", false),
+	}}
+	encounter := Encounter{
+		SystemID:     7,
+		Attacker:     EncounterSide{EmpireID: 1, SeatID: 1, CombatFleetIDs: []core.ID{11}, ShipIDs: []core.ID{101}},
+		Defender:     EncounterSide{EmpireID: 2, SeatID: 2, CombatFleetIDs: []core.ID{22}, ShipIDs: []core.ID{201}},
+		Participants: []protocol.SeatID{1, 2},
+	}
+	tactical, reason, err := tacticalMetadataForEncounter(state, encounter, tacticalMetadataRules(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reason != "" || tactical == nil {
+		t.Fatalf("tactical metadata unsupported: tactical=%+v reason=%q", tactical, reason)
+	}
+	var got *battle.TacticalShipSpec
+	for i := range tactical.Ships {
+		if tactical.Ships[i].ShipID == attacker.ID {
+			got = &tactical.Ships[i]
+			break
+		}
+	}
+	if got == nil {
+		t.Fatal("attacker TacticalShipSpec missing")
+	}
+	if got.SourceDesignID != attacker.SourceDesignID || got.SourceDesignRevision != attacker.SourceDesignRevision || got.StrategicPictureID != attacker.Spec.StrategicPictureID {
+		t.Fatalf("source design identity=(%d,%d,%d) want (%d,%d,%d)", got.SourceDesignID, got.SourceDesignRevision, got.StrategicPictureID, attacker.SourceDesignID, attacker.SourceDesignRevision, attacker.Spec.StrategicPictureID)
+	}
+	if got.SourceVisualRevision != attacker.SourceVisualRevision {
+		t.Fatalf("source visual revision=%d want %d", got.SourceVisualRevision, attacker.SourceVisualRevision)
+	}
+	if got.VisualGenome == nil || got.VisualGenome.Seed != genome.Seed || got.VisualGenome.HullID != genome.HullID {
+		t.Fatalf("persisted visual genome not preserved: %+v", got.VisualGenome)
+	}
+	if got.VisualGenome == attacker.VisualGenome {
+		t.Fatal("TacticalShipSpec aliases strategic Ship visual genome")
+	}
+	if len(got.VisualGenome.Primitives) > 0 && len(attacker.VisualGenome.Primitives) > 0 && &got.VisualGenome.Primitives[0] == &attacker.VisualGenome.Primitives[0] {
+		t.Fatal("TacticalShipSpec aliases strategic Ship visual primitive slice")
 	}
 }
 
