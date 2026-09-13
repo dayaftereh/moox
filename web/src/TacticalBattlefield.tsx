@@ -41,7 +41,7 @@ type TacticalMoveAnimation = { sequence: number; fromX: number; fromY: number; t
 
 const MIN_ZOOM = 0.45
 const MAX_ZOOM = 7
-const FOCUS_ZOOM = 2.2
+const FOCUS_ZOOM = 3.2
 const DAMAGE_FEEDBACK_MS = 4200
 
 function humanize(value: string | undefined) {
@@ -168,7 +168,9 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     }
   }, [points])
 
-  const [camera, setCamera] = useState<CameraState>(() => ({ cx: bounds.cx, cy: bounds.cy, zoom: 1 }))
+  const [camera, setCamera] = useState<CameraState>(() => activeShip
+    ? { cx: activeShip.x, cy: activeShip.y, zoom: FOCUS_ZOOM }
+    : { cx: bounds.cx, cy: bounds.cy, zoom: 1 })
   const pointersRef = useRef(new Map<number, PointerPoint>())
   const gestureRef = useRef<GestureSnapshot | null>(null)
   const draggedRef = useRef(false)
@@ -219,9 +221,9 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const focusShip = (ship: TacticalShipView) => setCamera((current) => ({ cx: ship.x, cy: ship.y, zoom: Math.max(current.zoom, FOCUS_ZOOM) }))
 
   useEffect(() => {
-    if (!activeShip || !ownActivation) return
+    if (!activeShip) return
     setCamera((current) => ({ cx: activeShip.x, cy: activeShip.y, zoom: Math.max(current.zoom, FOCUS_ZOOM) }))
-  }, [activeShip?.ship_id, ownActivation])
+  }, [activeShip?.ship_id])
 
   useEffect(() => {
     const events = tactical.events ?? []
@@ -526,17 +528,24 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
               const active = ship.ship_id === tactical.state.active_ship_id
               const genome = decodeShipVisualGenome(ship.visual_genome)
               const visualHullID = genome?.hullId ?? ship.hull_id
+              const weaponTotal = (ship.weapons ?? []).reduce((sum, weapon) => sum + weapon.count, 0)
+              const weaponReady = (ship.weapons ?? []).reduce((sum, weapon) => sum + (weapon.ready ? weapon.count : 0), 0)
+              const statusLabel = `${t('battlefield.movement')}: ${ship.movement_current}/${ship.movement_max} · ${t('battlefield.weapons')}: ${weaponReady}/${weaponTotal} ${t('battlefield.ready')}`
               return (
                 <button
                   type="button"
                   key={ship.ship_id}
                   className={`tactical-roster-ship ${active ? 'is-active' : ''} ${selectedShipID === ship.ship_id ? 'is-selected' : ''}`}
                   aria-current={active ? 'true' : undefined}
-                  aria-label={`${shipName(ship.ship_id)} · ${ship.movement_current}/${ship.movement_max}`}
-                  title={`${shipName(ship.ship_id)} · ${ship.movement_current}/${ship.movement_max}`}
+                  aria-label={`${shipName(ship.ship_id)} · ${statusLabel}`}
+                  title={`${shipName(ship.ship_id)} · ${statusLabel}`}
                   onClick={() => selectShip(ship)}
                 >
-                  <span className="tactical-roster-glyph" aria-hidden="true"><ProceduralShipGlyph seed={genome?.seed ?? `${ship.empire_id}:${ship.source_design_id ?? ship.ship_id}:${ship.source_design_revision ?? 0}:${ship.strategic_picture_id ?? 0}`} hullId={visualHullID} genome={genome} weaponCount={(ship.weapons ?? []).reduce((sum, weapon) => sum + weapon.count, 0)} footprint={shipHullFootprint(visualHullID)} /></span>
+                  <span className="tactical-roster-glyph" aria-hidden="true"><ProceduralShipGlyph seed={genome?.seed ?? `${ship.empire_id}:${ship.source_design_id ?? ship.ship_id}:${ship.source_design_revision ?? 0}:${ship.strategic_picture_id ?? 0}`} hullId={visualHullID} genome={genome} weaponCount={weaponTotal} footprint={shipHullFootprint(visualHullID)} /></span>
+                  <span className="tactical-roster-metrics" aria-hidden="true">
+                    <span><GameIcon name="command" /><strong>{ship.movement_current}</strong><small>/{ship.movement_max}</small></span>
+                    <span><GameIcon name="fleet-combat" /><strong>{weaponReady}</strong><small>/{weaponTotal}</small></span>
+                  </span>
                   <span className="tactical-roster-state" aria-hidden="true" />
                 </button>
               )
@@ -544,33 +553,35 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
           </div>
         </section>
 
-        <section className="tactical-hud-actions" aria-label={t('battlefield.modeControls')}>
-          <button
-            type="button"
-            className={`tactical-scan-toggle ${mode === 'scan' ? 'is-active' : ''}`}
-            onClick={() => {
-              setMode((current) => current === 'scan' ? 'combat' : 'scan')
-              setScannedShipID(null)
-            }}
-          >
-            <GameIcon name="info" />{t('battlefield.scan')}
-          </button>
-          {legalFireActions.length > 0 && (
-            <div className="tactical-weapon-strip" aria-label={t('battlefield.weaponAction')}>
-              {legalFireActions.map((action) => (
-                <button key={action.weapon_slot} type="button" className={selectedWeaponSlot === action.weapon_slot ? 'is-active' : ''} disabled={commandsDisabled || busy} onClick={() => setSelectedWeaponSlot(action.weapon_slot)}>
-                  <strong>{humanize(action.weapon_id)}</strong><small>{t('battlefield.targets', { count: action.targets.length })}</small>
-                </button>
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section className="tactical-hud-commit">
-          <button type="button" className="tactical-wait-ship" disabled={!ownActivation || !tactical.can_wait_activation || controlsDisabled} onClick={waitActivation}>{t('battlefield.waitActivation')}</button>
-          <button type="button" className="tactical-next-ship" disabled={!tactical.can_end_activation || controlsDisabled} onClick={endActivation}><GameIcon name="check" />{busy ? t('battlefield.commandBusy') : t('battlefield.finishActivation')}</button>
-          <button type="button" className="tactical-retreat" disabled={controlsDisabled} onClick={requestRetreat}>{t('battlefield.retreat')}</button>
-          <button type="button" className="tactical-overview" onClick={onBack}>{t('battle.backToEncounter')}</button>
+        <section className="tactical-hud-controls" aria-label={t('battlefield.modeControls')}>
+          <div className="tactical-control-tools">
+            <button
+              type="button"
+              className={`tactical-scan-toggle ${mode === 'scan' ? 'is-active' : ''}`}
+              onClick={() => {
+                setMode((current) => current === 'scan' ? 'combat' : 'scan')
+                setScannedShipID(null)
+              }}
+            >
+              <GameIcon name="info" />{t('battlefield.scan')}
+            </button>
+            {legalFireActions.length > 0 && (
+              <div className="tactical-weapon-strip" aria-label={t('battlefield.weaponAction')}>
+                {legalFireActions.map((action) => (
+                  <button key={action.weapon_slot} type="button" className={selectedWeaponSlot === action.weapon_slot ? 'is-active' : ''} disabled={commandsDisabled || busy} onClick={() => setSelectedWeaponSlot(action.weapon_slot)}>
+                    <GameIcon name="fleet-combat" />
+                    <span><strong>{humanize(action.weapon_id)}</strong><small>{t('battlefield.targets', { count: action.targets.length })}</small></span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="tactical-control-commit">
+            <button type="button" className="tactical-wait-ship" disabled={!ownActivation || !tactical.can_wait_activation || controlsDisabled} onClick={waitActivation}><GameIcon name="command" />{t('battlefield.waitActivation')}</button>
+            <button type="button" className="tactical-next-ship" disabled={!tactical.can_end_activation || controlsDisabled} onClick={endActivation}><GameIcon name="check" />{busy ? t('battlefield.commandBusy') : t('battlefield.finishActivation')}</button>
+            <button type="button" className="tactical-retreat" disabled={controlsDisabled} onClick={requestRetreat}><GameIcon name="flag" />{t('battlefield.retreat')}</button>
+            <button type="button" className="tactical-overview" onClick={onBack}><GameIcon name="galaxy" />{t('battle.backToEncounter')}</button>
+          </div>
         </section>
       </footer>
 
