@@ -276,13 +276,20 @@ func (h *Host) SavePlanningDraft(gameID string, seatID protocol.SeatID, draft Pl
 	if draft.GameID != gameID || draft.SeatID != seatID {
 		return PlanningDraftSnapshot{}, fmt.Errorf("planning draft identity does not match route game/seat")
 	}
-	batch, err := draft.commandBatch()
-	if err != nil {
+	if _, err := draft.commandBatch(); err != nil {
 		return PlanningDraftSnapshot{}, fmt.Errorf("%w: %v", ErrSessionRejected, err)
 	}
 	status := hosted.session.Status()
-	if draft.Turn != status.Turn || draft.BaseRevision != status.Revision || status.Phase != session.PhasePlanning {
+	if draft.Turn != status.Turn || draft.BaseRevision > status.Revision || status.Phase != session.PhasePlanning {
 		return PlanningDraftSnapshot{}, fmt.Errorf("%w: planning draft targets turn/revision %d/%d while session is %d/%d phase %s", ErrSessionRejected, draft.Turn, draft.BaseRevision, status.Turn, status.Revision, status.Phase)
+	}
+	if draft.BaseRevision != status.Revision {
+		draft = clonePlanningDraft(draft)
+		draft.BaseRevision = status.Revision
+	}
+	batch, err := draft.commandBatch()
+	if err != nil {
+		return PlanningDraftSnapshot{}, fmt.Errorf("%w: %v", ErrSessionRejected, err)
 	}
 	if existing, ok := hosted.planningDrafts[seatID]; ok {
 		if existing.Turn != status.Turn || existing.BaseRevision != status.Revision || existing.GameID != gameID {
@@ -439,6 +446,7 @@ func (g *hostedGame) mutate(scope string, battleID uint64, reason string, fn fun
 	}
 	driveErr := g.driveToInteractiveBoundary()
 	after := g.session.Status()
+	g.rebasePlanningDrafts(before, after)
 	g.changeSequence++
 	if after.Phase == session.PhaseCompleted && before.Phase != session.PhaseCompleted {
 		reason = "game_completed"
@@ -461,6 +469,27 @@ func (g *hostedGame) mutate(scope string, battleID uint64, reason string, fn fun
 		return receipt, driveErr
 	}
 	return receipt, nil
+}
+
+func (g *hostedGame) rebasePlanningDrafts(before, after session.Status) {
+	if g.immediateResolver == nil || before.GameID != after.GameID || before.Turn != after.Turn || before.Phase != session.PhasePlanning || after.Phase != session.PhasePlanning || before.Revision == after.Revision {
+		return
+	}
+	for seatID, draft := range g.planningDrafts {
+		if draft.GameID != after.GameID || draft.Turn != after.Turn || draft.BaseRevision == after.Revision {
+			continue
+		}
+		rebased := clonePlanningDraft(draft)
+		rebased.BaseRevision = after.Revision
+		batch, err := rebased.commandBatch()
+		if err != nil {
+			continue
+		}
+		if _, err := g.session.PlanningPreview(batch, g.immediateResolver); err != nil {
+			continue
+		}
+		g.planningDrafts[seatID] = rebased
+	}
 }
 
 func (g *hostedGame) driveToInteractiveBoundary() error {
