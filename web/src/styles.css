@@ -5285,6 +5285,35 @@ button.galaxy-node-marker-player-fleet.is-open {
 .tactical-overview { border: 1px solid rgba(94, 134, 157, .34); background: rgba(5, 17, 28, .7); color: #9fb4c4; padding-inline: 6px; }
 .tactical-hud-commit button:disabled { opacity: .38; }
 
+.tactical-confirm-backdrop {
+  position: fixed;
+  z-index: 120;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  background: rgba(1, 6, 12, .76);
+  backdrop-filter: blur(3px);
+}
+.tactical-confirm-dialog {
+  width: min(430px, 100%);
+  overflow: hidden;
+  border: 1px solid rgba(229, 104, 104, .72);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(27, 20, 24, .98), rgba(12, 15, 21, .99));
+  box-shadow: 0 22px 60px rgba(0, 0, 0, .58), inset 0 0 0 1px rgba(255, 255, 255, .03);
+  color: #f4edf0;
+}
+.tactical-confirm-dialog header { padding: 15px 16px 8px; border-bottom: 1px solid rgba(229, 104, 104, .22); }
+.tactical-confirm-eyebrow { display: block; margin-bottom: 3px; color: #e88c8c; font-size: .58rem; font-weight: 900; letter-spacing: .11em; text-transform: uppercase; }
+.tactical-confirm-dialog h2 { margin: 0; color: #fff3f3; font-size: 1rem; }
+.tactical-confirm-dialog p { margin: 0; padding: 15px 16px; color: #e5cfd0; font-size: .78rem; line-height: 1.55; }
+.tactical-confirm-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 0 16px 16px; }
+.tactical-confirm-actions button { min-height: 38px; border-radius: 8px; font-size: .68rem; font-weight: 900; }
+.tactical-confirm-cancel { border: 1px solid rgba(121, 151, 171, .38); background: rgba(18, 31, 42, .86); color: #d6e0e6; }
+.tactical-confirm-danger { border: 1px solid rgba(239, 111, 111, .82); background: linear-gradient(180deg, rgba(141, 48, 52, .96), rgba(94, 29, 34, .98)); color: #fff0ef; }
+.tactical-confirm-danger:disabled { opacity: .42; }
+
 .tactical-scan-layer {
   position: absolute;
   z-index: 46;

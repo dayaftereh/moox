@@ -136,6 +136,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const [scannedShipID, setScannedShipID] = useState<number | null>(null)
   const [selectedShipID, setSelectedShipID] = useState<number | null>(() => ownActivation ? activeShip?.ship_id ?? null : null)
   const [busy, setBusy] = useState(false)
+  const [retreatConfirmOpen, setRetreatConfirmOpen] = useState(false)
   const [commandError, setCommandError] = useState('')
 
   const points = useMemo(() => {
@@ -180,6 +181,15 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   useEffect(() => {
     if (scannedShipID != null && !ships.some((ship) => ship.ship_id === scannedShipID)) setScannedShipID(null)
   }, [ships, scannedShipID])
+
+  useEffect(() => {
+    if (!retreatConfirmOpen) return undefined
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setRetreatConfirmOpen(false)
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [retreatConfirmOpen])
 
   useEffect(() => {
     if (selectedShipID != null && !ships.some((ship) => ship.ship_id === selectedShipID && ship.seat_id === ownSeatID && !ship.destroyed)) setSelectedShipID(null)
@@ -307,8 +317,16 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     void runCommand(tacticalEndActivationCommand(tactical, activeShip.ship_id))
   }
 
-  const retreat = () => {
+  const requestRetreat = () => {
     if (controlsDisabled || !activeShip) return
+    setRetreatConfirmOpen(true)
+  }
+
+  const cancelRetreat = () => setRetreatConfirmOpen(false)
+
+  const confirmRetreat = () => {
+    if (controlsDisabled || !activeShip) return
+    setRetreatConfirmOpen(false)
     void runCommand(tacticalRetreatCommand(tactical, activeShip.ship_id))
   }
 
@@ -539,10 +557,26 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
 
         <section className="tactical-hud-commit">
           <button type="button" className="tactical-next-ship" disabled={!tactical.can_end_activation || controlsDisabled} onClick={endActivation}><GameIcon name="check" />{busy ? t('battlefield.commandBusy') : t('battlefield.finishActivation')}</button>
-          <button type="button" className="tactical-retreat" disabled={controlsDisabled} onClick={retreat}>{t('battlefield.retreat')}</button>
+          <button type="button" className="tactical-retreat" disabled={controlsDisabled} onClick={requestRetreat}>{t('battlefield.retreat')}</button>
           <button type="button" className="tactical-overview" onClick={onBack}>{t('battle.backToEncounter')}</button>
         </section>
       </footer>
+
+      {retreatConfirmOpen && (
+        <div className="tactical-confirm-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) cancelRetreat() }}>
+          <section className="tactical-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="tactical-retreat-confirm-title">
+            <header>
+              <span className="tactical-confirm-eyebrow">{t('battlefield.retreat')}</span>
+              <h2 id="tactical-retreat-confirm-title">{t('battlefield.retreatConfirmTitle')}</h2>
+            </header>
+            <p>{t('battlefield.retreatConfirmWarning')}</p>
+            <div className="tactical-confirm-actions">
+              <button type="button" className="tactical-confirm-cancel" autoFocus onClick={cancelRetreat}>{t('common.cancel')}</button>
+              <button type="button" className="tactical-confirm-danger" disabled={controlsDisabled} onClick={confirmRetreat}>{t('battlefield.retreatConfirmAction')}</button>
+            </div>
+          </section>
+        </div>
+      )}
     </div>
   )
 }
