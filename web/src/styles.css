@@ -5400,8 +5400,8 @@ button.galaxy-node-marker-player-fleet.is-open {
   .tactical-hud {
     grid-template-columns: 1fr;
     grid-template-areas:
-      "controls"
-      "roster";
+      "roster"
+      "controls";
     max-height: 44dvh;
     overflow: auto;
     padding-inline: 7px;
@@ -5409,9 +5409,9 @@ button.galaxy-node-marker-player-fleet.is-open {
   .tactical-hud-roster { grid-area: roster; }
   .tactical-hud-controls { grid-area: controls; flex-direction: column; gap: 5px; }
   .tactical-control-tools { flex: 0 0 auto; overflow: visible; }
-  .tactical-control-commit { display: flex; grid-template-columns: none; width: auto; align-self: flex-end; gap: 3px; }
-  .tactical-control-commit button { flex: 0 0 32px; width: 32px; min-width: 32px; height: 32px; min-height: 32px; padding: 0; gap: 0; white-space: nowrap; line-height: 1; font-size: 0; }
-  .tactical-control-commit button svg { width: 14px; height: 14px; }
+  .tactical-control-commit { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; flex: 0 0 auto; gap: 3px; align-items: center; }
+  .tactical-control-commit button { min-width: 0; min-height: 32px; padding: 4px 4px; gap: 4px; white-space: nowrap; line-height: 1; font-size: .55rem; }
+  .tactical-control-commit button svg { width: 13px; height: 13px; }
   .tactical-ship-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 64px; max-height: 134px; }
   .tactical-roster-ship { width: 100%; min-width: 0; }
   .tactical-roster-glyph,
