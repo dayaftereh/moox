@@ -96,3 +96,7 @@ Then:
 5. clicking Laser Scout #35 switched authority #24 -> #35; server projected its ready Laser Cannon with two legal Darlok targets and the UI showed `Laser Cannon · 2 Ziel(e)`.
 
 This is the requested Wait/Done contract: a ship can be revisited until the player explicitly presses Done/Fertig, and its spent movement/weapon state survives every Wait switch.
+
+## Automatic completion when resources are exhausted
+
+Follow-up implemented 2026-09-13: after a successful move or Beam fire, the server automatically completes the active ship iff `movement_current <= 0` and no weapon slot remains `ready`. This does not weaken Wait/Done semantics: as long as movement or any ready weapon remains, the ship stays unfinished and can be revisited. See `SLICE_15_6_GATE3_TACTICAL_AUTO_FINISH_2026-09-13.md`.

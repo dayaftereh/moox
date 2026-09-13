@@ -546,6 +546,11 @@ func (s *Session) PrepareCommand(seatID protocol.SeatID, command protocol.Comman
 	if err != nil {
 		return nil, err
 	}
+	if result == nil && (command.Kind == CommandMoveShip || command.Kind == CommandFireBeam) {
+		if err := autoCompleteExhaustedActiveShip(s.spec, &prepared.runtime, command.Sequence); err != nil {
+			return nil, err
+		}
+	}
 	prepared.runtime.state.NextCommandSequence++
 	if result != nil {
 		normalized, err := normalizeResult(s.spec, *result)
@@ -1024,25 +1029,34 @@ func prepareWaitActivation(spec Spec, r *tacticalRuntime, seatID protocol.SeatID
 	return r.appendEvent("activation_waited", seatID, commandSequence, map[string]any{"ship_id": payload.ShipID, "target_ship_id": targetShipID, "round": r.state.Round})
 }
 
-func prepareEndActivation(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, commandSequence uint32, payload EndActivationPayload) error {
+func tacticalShipResourcesExhausted(state *TacticalShipState) bool {
+	if state == nil || state.Destroyed || state.ActivationComplete || state.MovementCurrent > 0 {
+		return false
+	}
+	for _, weapon := range state.Weapons {
+		if weapon.Ready {
+			return false
+		}
+	}
+	return true
+}
+
+func autoCompleteExhaustedActiveShip(spec Spec, r *tacticalRuntime, commandSequence uint32) error {
 	active := tacticalShipSpec(*spec.Tactical, r.state.ActiveShipID)
-	if active == nil {
-		return fmt.Errorf("active tactical ship %d is missing from spec", r.state.ActiveShipID)
-	}
-	if seatID == 0 || active.SeatID != seatID {
-		return fmt.Errorf("seat %d does not control active ship %d", seatID, r.state.ActiveShipID)
-	}
-	if payload.ShipID != r.state.ActiveShipID {
-		return fmt.Errorf("end-activation ship %d is not active ship %d", payload.ShipID, r.state.ActiveShipID)
-	}
-	activeState := r.shipState(payload.ShipID)
-	if activeState == nil || activeState.Destroyed || activeState.ActivationComplete {
-		return fmt.Errorf("ship %d cannot end activation", payload.ShipID)
+	activeState := r.shipState(r.state.ActiveShipID)
+	if active == nil || !tacticalShipResourcesExhausted(activeState) {
+		return nil
 	}
 	activeState.ActivationComplete = true
-	if err := r.appendEvent("activation_ended", seatID, commandSequence, map[string]any{"ship_id": payload.ShipID, "round": r.state.Round}); err != nil {
+	if err := r.appendEvent("activation_auto_ended", active.SeatID, commandSequence, map[string]any{
+		"ship_id": active.ShipID, "round": r.state.Round, "reason": "resources_exhausted",
+	}); err != nil {
 		return err
 	}
+	return advanceAfterActivationCompletion(spec, r)
+}
+
+func advanceAfterActivationCompletion(spec Spec, r *tacticalRuntime) error {
 	if nextShipID := nextUnfinishedShipAfter(r, r.state.ActiveShipID); nextShipID != 0 {
 		r.state.ActiveShipID = nextShipID
 		return nil
@@ -1064,6 +1078,28 @@ func prepareEndActivation(spec Spec, r *tacticalRuntime, seatID protocol.SeatID,
 	}
 	r.state.ActiveShipID = r.state.InitiativeOrder[0]
 	return r.appendEvent("round_started", 0, 0, map[string]any{"round": r.state.Round, "initiative_order": r.state.InitiativeOrder, "active_ship_id": r.state.ActiveShipID})
+}
+
+func prepareEndActivation(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, commandSequence uint32, payload EndActivationPayload) error {
+	active := tacticalShipSpec(*spec.Tactical, r.state.ActiveShipID)
+	if active == nil {
+		return fmt.Errorf("active tactical ship %d is missing from spec", r.state.ActiveShipID)
+	}
+	if seatID == 0 || active.SeatID != seatID {
+		return fmt.Errorf("seat %d does not control active ship %d", seatID, r.state.ActiveShipID)
+	}
+	if payload.ShipID != r.state.ActiveShipID {
+		return fmt.Errorf("end-activation ship %d is not active ship %d", payload.ShipID, r.state.ActiveShipID)
+	}
+	activeState := r.shipState(payload.ShipID)
+	if activeState == nil || activeState.Destroyed || activeState.ActivationComplete {
+		return fmt.Errorf("ship %d cannot end activation", payload.ShipID)
+	}
+	activeState.ActivationComplete = true
+	if err := r.appendEvent("activation_ended", seatID, commandSequence, map[string]any{"ship_id": payload.ShipID, "round": r.state.Round}); err != nil {
+		return err
+	}
+	return advanceAfterActivationCompletion(spec, r)
 }
 
 func tacticalRangeIndex(ax, ay, bx, by int) int {

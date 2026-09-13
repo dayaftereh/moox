@@ -539,6 +539,76 @@ func TestTacticalTwoByTwoActivationAndRoundReset(t *testing.T) {
 	}
 }
 
+func TestTacticalAutoCompletesUnarmedShipWhenMovementIsExhausted(t *testing.T) {
+	spec := baselineTacticalBattleSpec()
+	spec.Tactical.Ships[0].Weapons = nil
+	s, err := NewSession(spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Start(); err != nil {
+		t.Fatal(err)
+	}
+
+	s.mu.Lock()
+	s.tactical.shipState(100).MovementCurrent = 2
+	s.mu.Unlock()
+
+	move, _ := NewMoveShipCommand(1, MoveShipPayload{ShipID: 100, X: 12, Y: 10})
+	submitPrepared(t, s, 1, move)
+	view := s.View().Tactical
+	lead := tacticalStateForTest(t, view.State.Ships, 100)
+	if lead.MovementCurrent != 0 || !lead.ActivationComplete {
+		t.Fatalf("exhausted unarmed ship not auto-completed: %+v", lead)
+	}
+	if view.State.ActiveShipID != 200 {
+		t.Fatalf("active after auto-complete=%d want 200", view.State.ActiveShipID)
+	}
+	last := view.Events[len(view.Events)-1]
+	if last.Kind != "activation_auto_ended" || last.SeatID != 1 || last.CommandSequence != 1 {
+		t.Fatalf("auto-complete event=%+v", last)
+	}
+}
+
+func TestTacticalAutoCompleteRequiresMovementAndWeaponsExhausted(t *testing.T) {
+	s := newStartedTacticalSession(t)
+	s.mu.Lock()
+	s.tactical.shipState(100).MovementCurrent = 2
+	// Keep the defender alive regardless of the deterministic Laser roll so the
+	// test exercises activation progression rather than battle victory.
+	s.tactical.shipState(200).ArmorCurrent = 100
+	s.mu.Unlock()
+
+	move, _ := NewMoveShipCommand(1, MoveShipPayload{ShipID: 100, X: 12, Y: 10})
+	submitPrepared(t, s, 1, move)
+	afterMove := s.View().Tactical
+	lead := tacticalStateForTest(t, afterMove.State.Ships, 100)
+	if lead.MovementCurrent != 0 {
+		t.Fatalf("movement after exact-budget move=%d want 0", lead.MovementCurrent)
+	}
+	if lead.ActivationComplete || afterMove.State.ActiveShipID != 100 {
+		t.Fatalf("ship auto-completed while a weapon remained ready: active=%d state=%+v", afterMove.State.ActiveShipID, lead)
+	}
+	if len(lead.Weapons) != 1 || !lead.Weapons[0].Ready {
+		t.Fatalf("expected ready weapon after move: %+v", lead.Weapons)
+	}
+
+	fire, _ := NewFireBeamCommand(2, FireBeamPayload{ShipID: 100, TargetShipID: 200, WeaponSlot: 0})
+	submitPrepared(t, s, 1, fire)
+	afterFire := s.View().Tactical
+	lead = tacticalStateForTest(t, afterFire.State.Ships, 100)
+	if len(lead.Weapons) != 1 || lead.Weapons[0].Ready {
+		t.Fatalf("weapon still ready after fire: %+v", lead.Weapons)
+	}
+	if !lead.ActivationComplete || afterFire.State.ActiveShipID != 200 {
+		t.Fatalf("fully exhausted ship not auto-completed: active=%d state=%+v", afterFire.State.ActiveShipID, lead)
+	}
+	last := afterFire.Events[len(afterFire.Events)-1]
+	if last.Kind != "activation_auto_ended" || last.SeatID != 1 || last.CommandSequence != 2 {
+		t.Fatalf("auto-complete event=%+v", last)
+	}
+}
+
 func TestTacticalWaitSwitchesFriendlyShipsWithoutCompletingOrRefreshing(t *testing.T) {
 	spec := baselineTacticalBattleSpec()
 	spec.Attacker.ShipIDs = []core.ID{100, 101}
