@@ -60,3 +60,8 @@ Browser QA confirmed the computed occupied-cell fill is non-transparent and the 
 - Occupied cells are visibly filled translucent red.
 
 Canonical 7171 was not mutated during isolated QA.
+
+## Follow-up - weapon selection UX (2026-09-14)
+The temporary single-weapon strip above the Tactical action row is hidden for now. The underlying server-projected fire actions and automatic first legal weapon selection remain intact, so current single-weapon combat behavior is preserved.
+
+Next Tactical UI step: design and implement deliberate multi-weapon selection for ships with more than one weapon/slot, then reconnect that selector to the existing selected weapon state instead of restoring the old one-line weapon strip as-is.

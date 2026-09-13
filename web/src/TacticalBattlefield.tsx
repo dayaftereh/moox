@@ -553,18 +553,6 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         </section>
 
         <section className="tactical-hud-controls" aria-label={t('battlefield.modeControls')}>
-          <div className="tactical-control-tools">
-            {legalFireActions.length > 0 && (
-              <div className="tactical-weapon-strip" aria-label={t('battlefield.weaponAction')}>
-                {legalFireActions.map((action) => (
-                  <button key={action.weapon_slot} type="button" className={selectedWeaponSlot === action.weapon_slot ? 'is-active' : ''} disabled={commandsDisabled || busy} onClick={() => setSelectedWeaponSlot(action.weapon_slot)}>
-                    <GameIcon name="fleet-combat" />
-                    <span><strong>{humanize(action.weapon_id)}</strong><small>{t('battlefield.targets', { count: action.targets.length })}</small></span>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
           <div className="tactical-control-commit">
             <button
               type="button"
