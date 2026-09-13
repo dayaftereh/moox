@@ -96,7 +96,6 @@ export function BattleRouteView({ snapshot, battleID, resolution, onContinue, on
         empireName={empireName}
         commandsDisabled={commandsDisabled}
         onCommand={onBattleCommand}
-        onBack={() => setTacticalShellOpen(false)}
         t={t}
       />
     )
@@ -142,7 +141,6 @@ export function BattleRouteView({ snapshot, battleID, resolution, onContinue, on
                   empireName={empireName}
                   commandsDisabled={commandsDisabled}
                   onCommand={onBattleCommand}
-                  onBack={() => setTacticalShellOpen(false)}
                   t={t}
                 />
               ) : (

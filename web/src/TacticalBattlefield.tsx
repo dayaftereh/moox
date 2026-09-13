@@ -26,7 +26,6 @@ type TacticalBattlefieldProps = {
   empireName: (empireID: number) => string
   commandsDisabled: boolean
   onCommand: (command: ProtocolCommand) => Promise<void>
-  onBack: () => void
   t: Translator
 }
 
@@ -119,7 +118,7 @@ function reachableGridPath(moves: Array<{ x: number; y: number }>): string {
   }).join(' ')
 }
 
-export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, commandsDisabled, onCommand, onBack, t }: TacticalBattlefieldProps) {
+export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, commandsDisabled, onCommand, t }: TacticalBattlefieldProps) {
   const tactical = battle.tactical
   if (!tactical) return <Notice title={t('battle.tacticalUnavailableTitle')} tone="warning">{t('battle.noTacticalSpec')}</Notice>
 
@@ -555,16 +554,6 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
 
         <section className="tactical-hud-controls" aria-label={t('battlefield.modeControls')}>
           <div className="tactical-control-tools">
-            <button
-              type="button"
-              className={`tactical-scan-toggle ${mode === 'scan' ? 'is-active' : ''}`}
-              onClick={() => {
-                setMode((current) => current === 'scan' ? 'combat' : 'scan')
-                setScannedShipID(null)
-              }}
-            >
-              <GameIcon name="info" />{t('battlefield.scan')}
-            </button>
             {legalFireActions.length > 0 && (
               <div className="tactical-weapon-strip" aria-label={t('battlefield.weaponAction')}>
                 {legalFireActions.map((action) => (
@@ -577,10 +566,19 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             )}
           </div>
           <div className="tactical-control-commit">
+            <button
+              type="button"
+              className={`tactical-scan-toggle ${mode === 'scan' ? 'is-active' : ''}`}
+              onClick={() => {
+                setMode((current) => current === 'scan' ? 'combat' : 'scan')
+                setScannedShipID(null)
+              }}
+            >
+              <GameIcon name="info" />{t('battlefield.scan')}
+            </button>
             <button type="button" className="tactical-wait-ship" disabled={!ownActivation || !tactical.can_wait_activation || controlsDisabled} onClick={waitActivation}><GameIcon name="command" />{t('battlefield.waitActivation')}</button>
             <button type="button" className="tactical-next-ship" disabled={!tactical.can_end_activation || controlsDisabled} onClick={endActivation}><GameIcon name="check" />{busy ? t('battlefield.commandBusy') : t('battlefield.finishActivation')}</button>
             <button type="button" className="tactical-retreat" disabled={controlsDisabled} onClick={requestRetreat}><GameIcon name="flag" />{t('battlefield.retreat')}</button>
-            <button type="button" className="tactical-overview" onClick={onBack}><GameIcon name="galaxy" />{t('battle.backToEncounter')}</button>
           </div>
         </section>
       </footer>

@@ -4992,8 +4992,8 @@ button.galaxy-node-marker-player-fleet.is-open {
   vector-effect: non-scaling-stroke;
 }
 .tactical-occupied-cell {
-  fill: none;
-  stroke: rgba(255, 80, 77, .98);
+  fill: rgba(255, 80, 77, .28);
+  stroke: rgba(255, 96, 92, .98);
   stroke-width: 1.25;
   shape-rendering: crispEdges;
   vector-effect: non-scaling-stroke;
@@ -5179,10 +5179,14 @@ button.galaxy-node-marker-player-fleet.is-open {
   text-transform: uppercase;
 }
 .tactical-ship-strip {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  grid-auto-rows: 64px;
   min-width: 0;
+  max-height: 134px;
   gap: 6px;
-  overflow-x: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
   scrollbar-width: thin;
 }
 .tactical-roster-ship {
@@ -5190,10 +5194,10 @@ button.galaxy-node-marker-player-fleet.is-open {
   display: grid;
   grid-template-rows: 36px auto;
   place-items: center;
-  flex: 0 0 76px;
-  width: 76px;
-  min-width: 76px;
-  min-height: 61px;
+  width: 100%;
+  min-width: 0;
+  min-height: 0;
+  height: 64px;
   padding: 3px 4px 4px;
   border: 1px solid rgba(92, 137, 165, .34);
   border-radius: 9px;
@@ -5243,12 +5247,13 @@ button.galaxy-node-marker-player-fleet.is-open {
 .tactical-current-ship small { color: #91a8b9; font-size: .58rem; line-height: 1.35; }
 
 .tactical-hud-controls {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
+  min-width: 0;
   gap: 6px;
   align-items: stretch;
 }
-.tactical-control-tools { display: flex; min-width: 0; align-items: center; gap: 5px; overflow: hidden; }
+.tactical-control-tools { display: flex; flex: 1 1 auto; min-width: 0; align-items: center; gap: 5px; overflow: hidden; }
+.tactical-control-tools:empty { display: none; }
 .tactical-scan-toggle {
   display: inline-flex;
   flex: 0 0 auto;
@@ -5292,7 +5297,8 @@ button.galaxy-node-marker-player-fleet.is-open {
 
 .tactical-control-commit {
   display: grid;
-  grid-template-columns: repeat(4, minmax(72px, auto));
+  grid-template-columns: repeat(4, minmax(72px, 1fr));
+  flex: 0 1 auto;
   gap: 4px;
   align-items: stretch;
 }
@@ -5324,7 +5330,6 @@ button.galaxy-node-marker-player-fleet.is-open {
 .tactical-roster-ship,
 .tactical-control-commit button { -webkit-tap-highlight-color: transparent; }
 .tactical-retreat { border: 1px solid rgba(226, 111, 111, .66); background: rgba(105, 35, 39, .7); color: #ffe0de; }
-.tactical-overview { border: 1px solid rgba(94, 134, 157, .34); background: rgba(5, 17, 28, .7); color: #9fb4c4; }
 .tactical-control-commit button:disabled { opacity: .38; }
 
 .tactical-confirm-backdrop {
@@ -5377,8 +5382,9 @@ button.galaxy-node-marker-player-fleet.is-open {
 
 @media (max-width: 980px) {
   .tactical-hud { grid-template-columns: minmax(250px, .82fr) minmax(0, 1.18fr); }
-  .tactical-hud-controls { grid-template-columns: minmax(0, 1fr) auto; }
-  .tactical-control-commit { grid-template-columns: repeat(2, minmax(76px, auto)); }
+  .tactical-hud-controls { flex-wrap: wrap; }
+  .tactical-control-tools { flex: 1 1 220px; }
+  .tactical-control-commit { grid-template-columns: repeat(4, minmax(72px, 1fr)); flex: 1 1 330px; }
   .tactical-scan-popover { bottom: 116px; }
 }
 
@@ -5401,11 +5407,12 @@ button.galaxy-node-marker-player-fleet.is-open {
     padding-inline: 7px;
   }
   .tactical-hud-roster { grid-area: roster; }
-  .tactical-hud-controls { grid-area: controls; grid-template-columns: 1fr; gap: 5px; }
-  .tactical-control-tools { overflow: visible; }
-  .tactical-control-commit { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .tactical-hud-controls { grid-area: controls; flex-direction: column; gap: 5px; }
+  .tactical-control-tools { flex: 0 0 auto; overflow: visible; }
+  .tactical-control-commit { grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; }
   .tactical-control-commit button { min-width: 0; min-height: 38px; padding-inline: 4px; white-space: normal; line-height: 1.05; }
-  .tactical-roster-ship { flex-basis: 72px; width: 72px; min-width: 72px; }
+  .tactical-ship-strip { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 64px; max-height: 134px; }
+  .tactical-roster-ship { width: 100%; min-width: 0; }
   .tactical-roster-glyph,
   .tactical-roster-glyph .procedural-ship-glyph { width: 44px; height: 34px; }
   .tactical-weapon-strip button { min-width: 108px; }
