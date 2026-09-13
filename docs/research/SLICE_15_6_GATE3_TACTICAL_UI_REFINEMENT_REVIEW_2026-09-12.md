@@ -246,3 +246,7 @@ Implemented in the dedicated follow-ups `SLICE_15_6_GATE3_TACTICAL_MOBILE_PERFOR
 ## Direct selection / hull scale / Finish follow-up
 
 Implemented and browser-QA green in SLICE_15_6_GATE3_TACTICAL_SELECTION_SCALE_FINISH_DAMAGE_DWELL_2026-09-12.md. Own ships are now directly selectable/focusable by their exact unrotated 1x1 cell. The selected cell is filled blue, all other occupied live-ship cells are red outlines, and only server-projected legal movement is green. Circles are removed. Persisted visual hull drives the shared Scout .40 -> Doom Star 1.00 one-cell scale with a tighter geometry-derived viewBox. The bottom strip is limited to unfinished own activations. Fertig submits the existing authoritative battle.end_activation for the current active ship; inactive selection remains inspection/focus only until a server Wait/select authority exists. Damage numbers now dwell for 4s (React feedback lifetime 4.2s).
+
+## Authoritative Wait / Done follow-up (2026-09-13)
+
+Gate-3 testing proved local focus-only selection was insufficient. attle.wait_activation is now authoritative: Warten or clicking another unfinished own ship changes active_ship_id without completing or refreshing the current ship; movement and fired-weapon state are preserved and the player can switch back until explicitly pressing Fertig. Tactical view projects allowed friendly wait targets. Done remains activation_complete and round refresh happens only after every live ship is explicitly complete. See SLICE_15_6_GATE3_TACTICAL_WAIT_DONE_REORDER_2026-09-13.md.

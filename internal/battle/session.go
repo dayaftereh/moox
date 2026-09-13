@@ -310,7 +310,10 @@ func (s *Session) View() View {
 		tactical := buildTacticalView(*s.spec.Tactical, *s.tactical)
 		if s.phase != PhaseActive {
 			tactical.LegalMoves = nil
+			tactical.LegalFireActions = nil
 			tactical.CanEndActivation = false
+			tactical.CanWaitActivation = false
+			tactical.WaitTargetShipIDs = nil
 		}
 		view.Tactical = &tactical
 	}

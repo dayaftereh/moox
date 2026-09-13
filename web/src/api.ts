@@ -495,6 +495,7 @@ export type TacticalEvent = { sequence: number; kind: string; seat_id?: number; 
 export type TacticalView = {
   state: TacticalState; events: TacticalEvent[]; ships: TacticalShipView[]
   legal_moves?: TacticalMoveOption[]; legal_fire_actions?: TacticalFireAction[]; can_end_activation: boolean
+  can_wait_activation?: boolean; wait_target_ship_ids?: number[]
 }
 
 export type BattleSpec = {
@@ -820,6 +821,9 @@ export function tacticalFireBeamCommand(tactical: TacticalView, shipID: number, 
 
 export function tacticalEndActivationCommand(tactical: TacticalView, shipID: number): ProtocolCommand {
   return { schema_version: 1, sequence: tactical.state.next_command_sequence, kind: 'battle.end_activation', payload: { ship_id: shipID } }
+}
+export function tacticalWaitActivationCommand(tactical: TacticalView, shipID: number, targetShipID?: number): ProtocolCommand {
+  return { schema_version: 1, sequence: tactical.state.next_command_sequence, kind: 'battle.wait_activation', payload: targetShipID ? { ship_id: shipID, target_ship_id: targetShipID } : { ship_id: shipID } }
 }
 export function tacticalRetreatCommand(tactical: TacticalView, shipID: number): ProtocolCommand {
   return { schema_version: 1, sequence: tactical.state.next_command_sequence, kind: 'battle.retreat', payload: { ship_id: shipID } }

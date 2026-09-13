@@ -15,6 +15,7 @@ const (
 	CommandMoveShip        = "battle.move_ship"
 	CommandFireBeam        = "battle.fire_beam"
 	CommandEndActivation   = "battle.end_activation"
+	CommandWaitActivation  = "battle.wait_activation"
 	CommandRetreat         = "battle.retreat"
 	TacticalOutcomeVictory = "tactical_victory"
 	TacticalOutcomeRetreat = "tactical_retreat"
@@ -174,12 +175,14 @@ type TacticalFireAction struct {
 }
 
 type TacticalView struct {
-	State            TacticalState        `json:"state"`
-	Events           []TacticalEvent      `json:"events"`
-	Ships            []TacticalShipView   `json:"ships"`
-	LegalMoves       []TacticalMoveOption `json:"legal_moves,omitempty"`
-	LegalFireActions []TacticalFireAction `json:"legal_fire_actions,omitempty"`
-	CanEndActivation bool                 `json:"can_end_activation"`
+	State             TacticalState        `json:"state"`
+	Events            []TacticalEvent      `json:"events"`
+	Ships             []TacticalShipView   `json:"ships"`
+	LegalMoves        []TacticalMoveOption `json:"legal_moves,omitempty"`
+	LegalFireActions  []TacticalFireAction `json:"legal_fire_actions,omitempty"`
+	CanEndActivation  bool                 `json:"can_end_activation"`
+	CanWaitActivation bool                 `json:"can_wait_activation"`
+	WaitTargetShipIDs []core.ID            `json:"wait_target_ship_ids,omitempty"`
 }
 
 type MoveShipPayload struct {
@@ -196,6 +199,10 @@ type FireBeamPayload struct {
 
 type EndActivationPayload struct {
 	ShipID core.ID `json:"ship_id"`
+}
+type WaitActivationPayload struct {
+	ShipID       core.ID `json:"ship_id"`
+	TargetShipID core.ID `json:"target_ship_id,omitempty"`
 }
 type RetreatPayload struct {
 	ShipID core.ID `json:"ship_id"`
@@ -233,6 +240,9 @@ func NewFireBeamCommand(sequence uint32, payload FireBeamPayload) (protocol.Comm
 
 func NewEndActivationCommand(sequence uint32, payload EndActivationPayload) (protocol.Command, error) {
 	return protocol.NewCommand(sequence, CommandEndActivation, payload)
+}
+func NewWaitActivationCommand(sequence uint32, payload WaitActivationPayload) (protocol.Command, error) {
+	return protocol.NewCommand(sequence, CommandWaitActivation, payload)
 }
 func NewRetreatCommand(sequence uint32, payload RetreatPayload) (protocol.Command, error) {
 	return protocol.NewCommand(sequence, CommandRetreat, payload)
@@ -520,6 +530,11 @@ func (s *Session) PrepareCommand(seatID protocol.SeatID, command protocol.Comman
 		if err = decodeBattlePayload(command, &payload); err == nil {
 			err = prepareEndActivation(s.spec, &prepared.runtime, seatID, command.Sequence, payload)
 		}
+	case CommandWaitActivation:
+		var payload WaitActivationPayload
+		if err = decodeBattlePayload(command, &payload); err == nil {
+			err = prepareWaitActivation(s.spec, &prepared.runtime, seatID, command.Sequence, payload)
+		}
 	case CommandRetreat:
 		var payload RetreatPayload
 		if err = decodeBattlePayload(command, &payload); err == nil {
@@ -705,6 +720,10 @@ func buildTacticalView(spec TacticalSpec, r tacticalRuntime) TacticalView {
 	state := r.shipState(r.state.ActiveShipID)
 	if state != nil && !state.Destroyed && !state.ActivationComplete {
 		view.CanEndActivation = true
+		if activeSpec := tacticalShipSpec(spec, r.state.ActiveShipID); activeSpec != nil {
+			view.WaitTargetShipIDs = waitTargetShipIDs(spec, &r, activeSpec.SeatID, r.state.ActiveShipID)
+			view.CanWaitActivation = len(view.WaitTargetShipIDs) != 0
+		}
 		view.LegalMoves = legalMoves(spec, &r)
 		view.LegalFireActions = legalFireActions(spec, &r)
 	}
@@ -913,6 +932,98 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	return nil, nil
 }
 
+func waitTargetShipIDs(spec TacticalSpec, r *tacticalRuntime, seatID protocol.SeatID, activeShipID core.ID) []core.ID {
+	if seatID == 0 || len(r.state.InitiativeOrder) < 2 {
+		return nil
+	}
+	start := 0
+	for i, id := range r.state.InitiativeOrder {
+		if id == activeShipID {
+			start = (i + 1) % len(r.state.InitiativeOrder)
+			break
+		}
+	}
+	out := make([]core.ID, 0)
+	for offset := 0; offset < len(r.state.InitiativeOrder); offset++ {
+		id := r.state.InitiativeOrder[(start+offset)%len(r.state.InitiativeOrder)]
+		if id == activeShipID {
+			continue
+		}
+		state := r.shipState(id)
+		ship := tacticalShipSpec(spec, id)
+		if state == nil || ship == nil || state.Destroyed || state.ActivationComplete || ship.SeatID != seatID {
+			continue
+		}
+		out = append(out, id)
+	}
+	return out
+}
+
+func nextUnfinishedShipAfter(r *tacticalRuntime, activeShipID core.ID) core.ID {
+	if len(r.state.InitiativeOrder) == 0 {
+		return 0
+	}
+	start := 0
+	for i, id := range r.state.InitiativeOrder {
+		if id == activeShipID {
+			start = (i + 1) % len(r.state.InitiativeOrder)
+			break
+		}
+	}
+	for offset := 0; offset < len(r.state.InitiativeOrder); offset++ {
+		id := r.state.InitiativeOrder[(start+offset)%len(r.state.InitiativeOrder)]
+		if id == activeShipID {
+			continue
+		}
+		state := r.shipState(id)
+		if state != nil && !state.Destroyed && !state.ActivationComplete {
+			return id
+		}
+	}
+	return 0
+}
+
+func prepareWaitActivation(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, commandSequence uint32, payload WaitActivationPayload) error {
+	if spec.Tactical == nil {
+		return fmt.Errorf("battle has no tactical spec")
+	}
+	active := tacticalShipSpec(*spec.Tactical, r.state.ActiveShipID)
+	if active == nil {
+		return fmt.Errorf("active tactical ship %d is missing from spec", r.state.ActiveShipID)
+	}
+	if seatID == 0 || active.SeatID != seatID {
+		return fmt.Errorf("seat %d does not control active ship %d", seatID, r.state.ActiveShipID)
+	}
+	if payload.ShipID != r.state.ActiveShipID {
+		return fmt.Errorf("wait ship %d is not active ship %d", payload.ShipID, r.state.ActiveShipID)
+	}
+	activeState := r.shipState(payload.ShipID)
+	if activeState == nil || activeState.Destroyed || activeState.ActivationComplete {
+		return fmt.Errorf("ship %d cannot wait", payload.ShipID)
+	}
+	targets := waitTargetShipIDs(*spec.Tactical, r, seatID, payload.ShipID)
+	if len(targets) == 0 {
+		return fmt.Errorf("ship %d has no unfinished friendly wait target", payload.ShipID)
+	}
+	targetShipID := payload.TargetShipID
+	if targetShipID == 0 {
+		targetShipID = targets[0]
+	} else {
+		allowed := false
+		for _, id := range targets {
+			if id == targetShipID {
+				allowed = true
+				break
+			}
+		}
+		if !allowed {
+			return fmt.Errorf("ship %d is not an unfinished friendly wait target for ship %d", targetShipID, payload.ShipID)
+		}
+	}
+	r.state.ActiveShipID = targetShipID
+	return r.appendEvent("activation_waited", seatID, commandSequence, map[string]any{"ship_id": payload.ShipID, "target_ship_id": targetShipID, "round": r.state.Round})
+}
+
 func prepareEndActivation(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, commandSequence uint32, payload EndActivationPayload) error {
 	active := tacticalShipSpec(*spec.Tactical, r.state.ActiveShipID)
 	if active == nil {
@@ -932,19 +1043,9 @@ func prepareEndActivation(spec Spec, r *tacticalRuntime, seatID protocol.SeatID,
 	if err := r.appendEvent("activation_ended", seatID, commandSequence, map[string]any{"ship_id": payload.ShipID, "round": r.state.Round}); err != nil {
 		return err
 	}
-	currentIndex := -1
-	for i, id := range r.state.InitiativeOrder {
-		if id == r.state.ActiveShipID {
-			currentIndex = i
-			break
-		}
-	}
-	for i := currentIndex + 1; i < len(r.state.InitiativeOrder); i++ {
-		state := r.shipState(r.state.InitiativeOrder[i])
-		if state != nil && !state.Destroyed && !state.ActivationComplete {
-			r.state.ActiveShipID = state.ShipID
-			return nil
-		}
+	if nextShipID := nextUnfinishedShipAfter(r, r.state.ActiveShipID); nextShipID != 0 {
+		r.state.ActiveShipID = nextShipID
+		return nil
 	}
 	r.state.Round++
 	for i := range r.state.Ships {

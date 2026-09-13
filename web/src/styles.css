@@ -5264,15 +5264,15 @@ button.galaxy-node-marker-player-fleet.is-open {
 .tactical-weapon-strip button strong { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tactical-weapon-strip button small { color: #8da5b6; font-size: .52rem; font-weight: 700; }
 
-.tactical-hud-commit { display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto; gap: 4px; }
+.tactical-hud-commit { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 4px; }
 .tactical-hud-commit button {
   min-height: 30px;
   border-radius: 7px;
   font-size: .6rem;
   font-weight: 900;
 }
+.tactical-wait-ship,
 .tactical-next-ship {
-  grid-column: 1 / -1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -5281,6 +5281,14 @@ button.galaxy-node-marker-player-fleet.is-open {
   background: linear-gradient(180deg, rgba(40, 120, 78, .88), rgba(23, 79, 52, .92));
   color: #ecfff3;
 }
+.tactical-wait-ship {
+  border: 1px solid rgba(94, 166, 230, .68);
+  background: linear-gradient(180deg, rgba(42, 92, 142, .88), rgba(24, 58, 93, .92));
+  color: #e5f3ff;
+}
+.tactical-ship,
+.tactical-roster-ship,
+.tactical-hud-commit button { -webkit-tap-highlight-color: transparent; }
 .tactical-retreat { border: 1px solid rgba(226, 111, 111, .66); background: rgba(105, 35, 39, .7); color: #ffe0de; }
 .tactical-overview { border: 1px solid rgba(94, 134, 157, .34); background: rgba(5, 17, 28, .7); color: #9fb4c4; padding-inline: 6px; }
 .tactical-hud-commit button:disabled { opacity: .38; }

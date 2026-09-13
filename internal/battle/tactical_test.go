@@ -11,6 +11,17 @@ import (
 	"moox/internal/protocol"
 )
 
+func tacticalStateForTest(t *testing.T, ships []TacticalShipState, id core.ID) TacticalShipState {
+	t.Helper()
+	for _, ship := range ships {
+		if ship.ShipID == id {
+			return ship
+		}
+	}
+	t.Fatalf("tactical ship %d missing from state", id)
+	return TacticalShipState{}
+}
+
 func baselineTacticalBattleSpec() Spec {
 	rules := TacticalRulesSnapshot{
 		SchemaVersion:                1,
@@ -525,6 +536,185 @@ func TestTacticalTwoByTwoActivationAndRoundReset(t *testing.T) {
 		if !ship.Destroyed && (ship.ActivationComplete || ship.MovementCurrent != ship.MovementMax) {
 			t.Fatalf("round reset ship=%+v", ship)
 		}
+	}
+}
+
+func TestTacticalWaitSwitchesFriendlyShipsWithoutCompletingOrRefreshing(t *testing.T) {
+	spec := baselineTacticalBattleSpec()
+	spec.Attacker.ShipIDs = []core.ID{100, 101}
+	spec.Defender.ShipIDs = []core.ID{200, 201}
+	attackerLead := spec.Tactical.Ships[0]
+	defenderLead := spec.Tactical.Ships[1]
+	attackerWing := defenderLead
+	attackerWing.ShipID = 101
+	attackerWing.EmpireID = 1
+	attackerWing.SeatID = 1
+	attackerWing.X = 10
+	attackerWing.Y = 12
+	attackerWing.Facing = 0
+	defenderLead.X = 20
+	defenderLead.Y = 10
+	defenderLead.Facing = 8
+	defenderWing := attackerLead
+	defenderWing.ShipID = 201
+	defenderWing.EmpireID = 2
+	defenderWing.SeatID = 2
+	defenderWing.X = 20
+	defenderWing.Y = 12
+	defenderWing.Facing = 8
+	spec.Tactical.Ships = []TacticalShipSpec{attackerLead, attackerWing, defenderLead, defenderWing}
+
+	s, err := NewSession(spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Start(); err != nil {
+		t.Fatal(err)
+	}
+	initial := s.View().Tactical
+	if initial.State.ActiveShipID != 100 || !initial.CanWaitActivation || !reflect.DeepEqual(initial.WaitTargetShipIDs, []core.ID{101}) {
+		t.Fatalf("initial wait projection active=%d can_wait=%v targets=%v", initial.State.ActiveShipID, initial.CanWaitActivation, initial.WaitTargetShipIDs)
+	}
+
+	move, _ := NewMoveShipCommand(1, MoveShipPayload{ShipID: 100, X: 11, Y: 10})
+	submitPrepared(t, s, 1, move)
+	afterMove := s.View().Tactical
+	lead := tacticalStateForTest(t, afterMove.State.Ships, 100)
+	if lead.MovementCurrent != lead.MovementMax-1 {
+		t.Fatalf("lead movement after move=%d/%d", lead.MovementCurrent, lead.MovementMax)
+	}
+
+	waitToWing, _ := NewWaitActivationCommand(2, WaitActivationPayload{ShipID: 100, TargetShipID: 101})
+	submitPrepared(t, s, 1, waitToWing)
+	afterWait := s.View().Tactical
+	if afterWait.State.ActiveShipID != 101 {
+		t.Fatalf("active after wait=%d want 101", afterWait.State.ActiveShipID)
+	}
+	lead = tacticalStateForTest(t, afterWait.State.Ships, 100)
+	if lead.ActivationComplete || lead.MovementCurrent != lead.MovementMax-1 {
+		t.Fatalf("wait mutated prior ship=%+v", lead)
+	}
+	if !afterWait.CanWaitActivation || !reflect.DeepEqual(afterWait.WaitTargetShipIDs, []core.ID{100}) {
+		t.Fatalf("return wait projection can_wait=%v targets=%v", afterWait.CanWaitActivation, afterWait.WaitTargetShipIDs)
+	}
+	last := afterWait.Events[len(afterWait.Events)-1]
+	if last.Kind != "activation_waited" || last.SeatID != 1 || last.CommandSequence != 2 {
+		t.Fatalf("wait event=%+v", last)
+	}
+
+	waitBack, _ := NewWaitActivationCommand(3, WaitActivationPayload{ShipID: 101, TargetShipID: 100})
+	submitPrepared(t, s, 1, waitBack)
+	back := s.View().Tactical
+	if back.State.ActiveShipID != 100 {
+		t.Fatalf("active after wait back=%d want 100", back.State.ActiveShipID)
+	}
+	lead = tacticalStateForTest(t, back.State.Ships, 100)
+	if lead.MovementCurrent != lead.MovementMax-1 || lead.ActivationComplete {
+		t.Fatalf("returned ship lost state=%+v", lead)
+	}
+}
+
+func TestTacticalWaitPreservesFiredWeaponReadiness(t *testing.T) {
+	spec := baselineTacticalBattleSpec()
+	spec.Attacker.ShipIDs = []core.ID{100, 101}
+	attackerLead := spec.Tactical.Ships[0]
+	defender := spec.Tactical.Ships[1]
+	wing := attackerLead
+	wing.ShipID = 101
+	wing.X = 10
+	wing.Y = 12
+	spec.Tactical.Ships = []TacticalShipSpec{attackerLead, wing, defender}
+
+	s, err := NewSession(spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Start(); err != nil {
+		t.Fatal(err)
+	}
+	fire, _ := NewFireBeamCommand(1, FireBeamPayload{ShipID: 100, TargetShipID: 200, WeaponSlot: 0})
+	submitPrepared(t, s, 1, fire)
+	lead := tacticalStateForTest(t, s.View().Tactical.State.Ships, 100)
+	if len(lead.Weapons) != 1 || lead.Weapons[0].Ready {
+		t.Fatalf("weapon unexpectedly ready after fire: %+v", lead.Weapons)
+	}
+
+	wait, _ := NewWaitActivationCommand(2, WaitActivationPayload{ShipID: 100, TargetShipID: 101})
+	submitPrepared(t, s, 1, wait)
+	back, _ := NewWaitActivationCommand(3, WaitActivationPayload{ShipID: 101, TargetShipID: 100})
+	submitPrepared(t, s, 1, back)
+	view := s.View().Tactical
+	lead = tacticalStateForTest(t, view.State.Ships, 100)
+	if len(lead.Weapons) != 1 || lead.Weapons[0].Ready {
+		t.Fatalf("wait refreshed fired weapon: %+v", lead.Weapons)
+	}
+	for _, action := range view.LegalFireActions {
+		if action.ShipID == 100 && action.WeaponSlot == 0 {
+			t.Fatalf("fired weapon became legal after wait: %+v", action)
+		}
+	}
+}
+
+func TestTacticalWaitAutoTargetAndDoneRequireExplicitCompletion(t *testing.T) {
+	spec := baselineTacticalBattleSpec()
+	spec.Attacker.ShipIDs = []core.ID{100, 101}
+	attackerLead := spec.Tactical.Ships[0]
+	defender := spec.Tactical.Ships[1]
+	wing := attackerLead
+	wing.ShipID = 101
+	wing.X = 10
+	wing.Y = 12
+	spec.Tactical.Ships = []TacticalShipSpec{attackerLead, wing, defender}
+
+	s, err := NewSession(spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Start(); err != nil {
+		t.Fatal(err)
+	}
+	if active := s.View().Tactical.State.ActiveShipID; active != 100 {
+		t.Fatalf("initial active=%d want 100", active)
+	}
+	wait, _ := NewWaitActivationCommand(1, WaitActivationPayload{ShipID: 100})
+	submitPrepared(t, s, 1, wait)
+	if active := s.View().Tactical.State.ActiveShipID; active != 101 {
+		t.Fatalf("auto wait active=%d want 101", active)
+	}
+	if tacticalStateForTest(t, s.View().Tactical.State.Ships, 100).ActivationComplete {
+		t.Fatal("wait incorrectly completed ship 100")
+	}
+
+	doneWing, _ := NewEndActivationCommand(2, EndActivationPayload{ShipID: 101})
+	submitPrepared(t, s, 1, doneWing)
+	view := s.View().Tactical
+	if tacticalStateForTest(t, view.State.Ships, 101).ActivationComplete != true {
+		t.Fatal("Done did not complete ship 101")
+	}
+	if tacticalStateForTest(t, view.State.Ships, 100).ActivationComplete {
+		t.Fatal("Done on ship 101 completed waited ship 100")
+	}
+	if view.State.Round != 1 {
+		t.Fatalf("round advanced with unfinished waited ship: %d", view.State.Round)
+	}
+}
+
+func TestTacticalWaitRejectsEnemyTargetWithoutMutation(t *testing.T) {
+	s, err := NewSession(baselineTacticalBattleSpec())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Start(); err != nil {
+		t.Fatal(err)
+	}
+	before := s.View()
+	cmd, _ := NewWaitActivationCommand(1, WaitActivationPayload{ShipID: 100, TargetShipID: 200})
+	if _, err := s.PrepareCommand(1, cmd); err == nil {
+		t.Fatal("enemy wait target unexpectedly accepted")
+	}
+	after := s.View()
+	if !reflect.DeepEqual(before, after) {
+		t.Fatalf("rejected wait mutated battle before=%+v after=%+v", before.Tactical.State, after.Tactical.State)
 	}
 }
 

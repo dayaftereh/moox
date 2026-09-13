@@ -5,6 +5,7 @@ import {
   tacticalFireBeamCommand,
   tacticalMoveCommand,
   tacticalRetreatCommand,
+  tacticalWaitActivationCommand,
   type BattleView,
   type ProtocolCommand,
   type TacticalEvent,
@@ -127,6 +128,8 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const remainingOwnShips = ownShips.filter((ship) => !ship.destroyed && !ship.activation_complete)
   const legalMoves = tactical.legal_moves ?? []
   const legalFireActions = tactical.legal_fire_actions ?? []
+  const waitTargetShipIDs = tactical.wait_target_ship_ids ?? []
+  const waitTargetShipIDSet = useMemo(() => new Set(waitTargetShipIDs), [waitTargetShipIDs])
   const activeShip = ships.find((ship) => ship.ship_id === tactical.state.active_ship_id)
   const ownActivation = activeShip?.seat_id === ownSeatID
   const [mode, setMode] = useState<TacticalMode>('combat')
@@ -305,11 +308,19 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     if (ship.seat_id === ownSeatID) {
       setSelectedShipID(ship.ship_id)
       focusShip(ship)
+      if (!controlsDisabled && ownActivation && activeShip && ship.ship_id !== activeShip.ship_id && waitTargetShipIDSet.has(ship.ship_id)) {
+        void runCommand(tacticalWaitActivationCommand(tactical, activeShip.ship_id, ship.ship_id))
+      }
       return
     }
     if (controlsDisabled || !activeShip || !selectedFireAction) return
     if (!legalTargetByID.has(ship.ship_id)) return
     void runCommand(tacticalFireBeamCommand(tactical, activeShip.ship_id, ship.ship_id, selectedFireAction.weapon_slot))
+  }
+
+  const waitActivation = () => {
+    if (controlsDisabled || !ownActivation || !tactical.can_wait_activation || !activeShip) return
+    void runCommand(tacticalWaitActivationCommand(tactical, activeShip.ship_id))
   }
 
   const endActivation = () => {
@@ -556,6 +567,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         </section>
 
         <section className="tactical-hud-commit">
+          <button type="button" className="tactical-wait-ship" disabled={!ownActivation || !tactical.can_wait_activation || controlsDisabled} onClick={waitActivation}>{t('battlefield.waitActivation')}</button>
           <button type="button" className="tactical-next-ship" disabled={!tactical.can_end_activation || controlsDisabled} onClick={endActivation}><GameIcon name="check" />{busy ? t('battlefield.commandBusy') : t('battlefield.finishActivation')}</button>
           <button type="button" className="tactical-retreat" disabled={controlsDisabled} onClick={requestRetreat}>{t('battlefield.retreat')}</button>
           <button type="button" className="tactical-overview" onClick={onBack}>{t('battle.backToEncounter')}</button>
