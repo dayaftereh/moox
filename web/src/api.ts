@@ -265,6 +265,8 @@ export type MilitaryDesignerWeaponChoice = {
   lock_reason?: string
   base_space: number
   base_cost_pp: number
+  min_damage: number
+  max_damage: number
 }
 export type MilitaryDesignerVariant = { key: string; hull_id: string; weapons?: ShipWeaponMount[]; spec: ShipDesignSpec; command_point_cost: number }
 export type MilitaryDesignerCatalog = { hulls: MilitaryDesignerHullChoice[]; weapons: MilitaryDesignerWeaponChoice[]; variants: MilitaryDesignerVariant[]; production_cost_numerator: number; production_cost_denominator: number }

@@ -35,7 +35,7 @@ type PointerPoint = { x: number; y: number }
 type GestureSnapshot = { x: number; y: number; distance: number }
 type TacticalDamageLayerKind = 'shield' | 'armor' | 'structure'
 type TacticalDamageLayer = { kind: TacticalDamageLayerKind; amount: number }
-type TacticalBeamAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number; layers: TacticalDamageLayer[] }
+type TacticalBeamAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number; shotCount: number; layers: TacticalDamageLayer[] }
 type TacticalMoveAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number }
 
 const MIN_ZOOM = 0.45
@@ -74,23 +74,41 @@ function eventNumber(data: Record<string, unknown> | undefined, key: string): nu
 }
 
 function damageLayersForBeam(events: TacticalEvent[], beam: TacticalEvent): TacticalDamageLayer[] {
-  if (beam.data?.hit !== true) return []
+  const isVolley = beam.kind === 'beam_volley_resolved'
+  const hit = isVolley ? (eventNumber(beam.data, 'hit_count') ?? 0) > 0 : beam.data?.hit === true
+  if (!hit) return []
   const targetShipID = eventNumber(beam.data, 'target_ship_id')
-  const damageEvent = events.find((event) => event.kind === 'battle_damage_applied'
+  const weaponSlot = eventNumber(beam.data, 'weapon_slot')
+  const shotIndex = eventNumber(beam.data, 'shot_index')
+  const damageEvents = events.filter((event) => event.kind === 'battle_damage_applied'
     && event.command_sequence === beam.command_sequence
-    && (targetShipID == null || eventNumber(event.data, 'target_ship_id') === targetShipID))
-  if (!damageEvent) return []
-  const layers: TacticalDamageLayer[] = []
-  const shieldBefore = eventNumber(damageEvent.data, 'shield_before')
-  const shieldAfter = eventNumber(damageEvent.data, 'shield_after')
-  if (shieldBefore != null && shieldAfter != null && shieldBefore > shieldAfter) layers.push({ kind: 'shield', amount: shieldBefore - shieldAfter })
-  const armorBefore = eventNumber(damageEvent.data, 'armor_before')
-  const armorAfter = eventNumber(damageEvent.data, 'armor_after')
-  if (armorBefore != null && armorAfter != null && armorBefore > armorAfter) layers.push({ kind: 'armor', amount: armorBefore - armorAfter })
-  const structureBefore = eventNumber(damageEvent.data, 'structure_damage_before')
-  const structureAfter = eventNumber(damageEvent.data, 'structure_damage_after')
-  if (structureBefore != null && structureAfter != null && structureAfter > structureBefore) layers.push({ kind: 'structure', amount: structureAfter - structureBefore })
-  return layers
+    && (targetShipID == null || eventNumber(event.data, 'target_ship_id') === targetShipID)
+    && (weaponSlot == null || eventNumber(event.data, 'weapon_slot') === weaponSlot)
+    && (shotIndex == null || eventNumber(event.data, 'shot_index') === shotIndex))
+  const amounts = new Map<TacticalDamageLayerKind, number>()
+  for (const damageEvent of damageEvents) {
+    const shieldBefore = eventNumber(damageEvent.data, 'shield_before')
+    const shieldAfter = eventNumber(damageEvent.data, 'shield_after')
+    if (shieldBefore != null && shieldAfter != null && shieldBefore > shieldAfter) amounts.set('shield', (amounts.get('shield') ?? 0) + shieldBefore - shieldAfter)
+    const armorBefore = eventNumber(damageEvent.data, 'armor_before')
+    const armorAfter = eventNumber(damageEvent.data, 'armor_after')
+    if (armorBefore != null && armorAfter != null && armorBefore > armorAfter) amounts.set('armor', (amounts.get('armor') ?? 0) + armorBefore - armorAfter)
+    const structureBefore = eventNumber(damageEvent.data, 'structure_damage_before')
+    const structureAfter = eventNumber(damageEvent.data, 'structure_damage_after')
+    if (structureBefore != null && structureAfter != null && structureAfter > structureBefore) amounts.set('structure', (amounts.get('structure') ?? 0) + structureAfter - structureBefore)
+  }
+  return (['shield', 'armor', 'structure'] as TacticalDamageLayerKind[])
+    .map((kind) => ({ kind, amount: amounts.get(kind) ?? 0 }))
+    .filter((layer) => layer.amount > 0)
+}
+
+function beamShotOffset(animation: TacticalBeamAnimation, index: number) {
+  if (animation.shotCount <= 1) return { x: 0, y: 0 }
+  const dx = animation.toX - animation.fromX
+  const dy = animation.toY - animation.fromY
+  const length = Math.max(.001, Math.hypot(dx, dy))
+  const spread = (index - (animation.shotCount - 1) / 2) * .09
+  return { x: (-dy / length) * spread, y: (dx / length) * spread }
 }
 
 function reachableGridPath(moves: Array<{ x: number; y: number }>): string {
@@ -236,7 +254,9 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     const unseen = events.filter((event) => event.sequence > (observedEventSequenceRef.current ?? 0)).sort((a, b) => a.sequence - b.sequence)
     observedEventSequenceRef.current = newestSequence
     for (const event of unseen) {
-      if (event.kind === 'beam_fired') {
+      if (event.kind === 'beam_fired' || event.kind === 'beam_volley_resolved') {
+        const shotCount = eventNumber(event.data, 'shot_count') ?? 1
+        if (event.kind === 'beam_fired' && shotCount > 1) continue
         const sourceID = eventNumber(event.data, 'ship_id')
         const targetID = eventNumber(event.data, 'target_ship_id')
         const source = ships.find((ship) => ship.ship_id === sourceID)
@@ -244,7 +264,9 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         if (source && target) {
           setBeamAnimation({
             sequence: event.sequence, fromX: source.x, fromY: source.y, toX: target.x, toY: target.y,
-            hit: event.data?.hit === true, damage: eventNumber(event.data, 'damage') ?? 0,
+            hit: event.kind === 'beam_volley_resolved' ? (eventNumber(event.data, 'hit_count') ?? 0) > 0 : event.data?.hit === true,
+            damage: event.kind === 'beam_volley_resolved' ? eventNumber(event.data, 'total_damage') ?? 0 : eventNumber(event.data, 'damage') ?? 0,
+            shotCount,
             layers: damageLayersForBeam(events, event),
           })
         }
@@ -488,9 +510,16 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
           )}
 
           {beamAnimation && (
-            <g className={`tactical-beam-animation ${beamAnimation.hit ? 'is-hit' : 'is-miss'}`} data-sequence={beamAnimation.sequence} data-hit={beamAnimation.hit ? 'true' : 'false'} data-damage={beamAnimation.damage} pointerEvents="none">
-              <line x1={beamAnimation.fromX} y1={beamAnimation.fromY} x2={beamAnimation.toX} y2={beamAnimation.toY} className="tactical-beam-glow" />
-              <line x1={beamAnimation.fromX} y1={beamAnimation.fromY} x2={beamAnimation.toX} y2={beamAnimation.toY} className="tactical-beam-core" />
+            <g key={beamAnimation.sequence} className={`tactical-beam-animation ${beamAnimation.hit ? 'is-hit' : 'is-miss'}`} data-sequence={beamAnimation.sequence} data-hit={beamAnimation.hit ? 'true' : 'false'} data-damage={beamAnimation.damage} data-shot-count={beamAnimation.shotCount} pointerEvents="none">
+              {Array.from({ length: Math.min(beamAnimation.shotCount, 8) }, (_, index) => {
+                const offset = beamShotOffset(beamAnimation, index)
+                return (
+                  <g key={index} transform={`translate(${offset.x} ${offset.y})`}>
+                    <line x1={beamAnimation.fromX} y1={beamAnimation.fromY} x2={beamAnimation.toX} y2={beamAnimation.toY} className="tactical-beam-glow" />
+                    <line x1={beamAnimation.fromX} y1={beamAnimation.fromY} x2={beamAnimation.toX} y2={beamAnimation.toY} className="tactical-beam-core" />
+                  </g>
+                )
+              })}
               <circle cx={beamAnimation.toX} cy={beamAnimation.toY} r={0.36} className="tactical-beam-impact" />
               {(beamAnimation.layers.length > 0 ? beamAnimation.layers : (beamAnimation.hit && beamAnimation.damage > 0 ? [{ kind: 'structure' as const, amount: beamAnimation.damage }] : [])).map((layer, index) => (
                 <text
@@ -574,7 +603,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                       <GameIcon name="fleet-combat" />
                       <span>
                         <strong>S{weapon.slot + 1} {humanize(weapon.weapon_id)} ×{weapon.count}</strong>
-                        <small>{!weapon.ready ? t('battlefield.weaponSpent') : action ? t('battlefield.targets', { count: action.targets.length }) : t('battlefield.noWeaponTargets')}</small>
+                        <small>{t('battlefield.baseDamageShort', { min: weapon.min_damage * weapon.count, max: weapon.max_damage * weapon.count })} · {!weapon.ready ? t('battlefield.weaponSpent') : action ? t('battlefield.targets', { count: action.targets.length }) : t('battlefield.noWeaponTargets')}</small>
                       </span>
                     </button>
                   )

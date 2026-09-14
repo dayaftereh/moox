@@ -281,3 +281,24 @@ Validation:
 - QA used isolated port 7187 only; the canonical Triangle game on 7171 remained Turn 1 / planning / revision 1 / seed 32778 with zero battles.
 
 Future missiles/ammunition, modifiers, arcs, per-weapon damage/destruction inside a mount and broader Slice-17 designer systems remain intentionally out of scope.
+
+## Follow-up - damage feedback and repeated beam animation (2026-09-14)
+
+User playtest exposed two presentation gaps after the weapon-slot vertical slice. Authoritative combat damage itself was correct. Completed Triangle Battle #1 proves grouped Laser x2 mounts resolved two physical shots per slot; observed volley totals included 3+3=6, 3+2=5 and 1+3=4. The misleading part was the client feedback: grouped beam events were collapsed into one React animation state, so only the last physical shot/damage was visually obvious. A later fire from a second independent slot also reused the same SVG beam node, so the CSS beam animation could fail to restart.
+
+Follow-up implementation:
+
+- grouped mounts keep authoritative per-physical-weapon hit/damage resolution unchanged;
+- grouped client feedback now consumes the existing `beam_volley_resolved` aggregate event instead of visually exposing only the last `beam_fired` event;
+- a grouped mount renders parallel beam lines using its `shot_count` and displays aggregate layer damage for the volley;
+- damage-layer matching now keys by command, target, weapon slot and shot index, preventing one physical shot's armor/structure feedback from being reused for another;
+- the outer beam SVG is keyed by event sequence so a later independent weapon slot always remounts/restarts the animation;
+- the military designer catalog now projects the authoritative weapon min/max damage;
+- Ship Designer shows base damage range for both the available Laser and each installed grouped mount;
+- Tactical weapon-slot labels show the grouped **base** damage range, e.g. Laser x2 => Base 2-8, while actual target damage remains range-dependent and each physical shot can independently hit/miss.
+
+Validation on isolated port 7187:
+
+- two separate Laser x1 slots: after firing S1, firing S2 created a new beam animation with sequence 9 and restarted CSS animation;
+- grouped Laser x2: UI showed Base 2-8, rendered two parallel beam groups, and displayed aggregate damage 6 with -4 armor / -2 structure for the tested deterministic volley;
+- focused grouped-volley and designer-catalog tests pass; full `go test ./... -count=1` and `npm run build` pass.

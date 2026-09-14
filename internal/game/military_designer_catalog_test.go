@@ -44,6 +44,9 @@ func TestMilitaryDesignerCatalogProjectsOrderedAuthoritativeBaseline(t *testing.
 	if len(catalog.Weapons) != 1 || catalog.Weapons[0].ID != "laser_cannon" || catalog.Weapons[0].TechnologyID != 100 || !catalog.Weapons[0].Available {
 		t.Fatalf("weapon choices=%+v", catalog.Weapons)
 	}
+	if catalog.Weapons[0].MinDamage != 1 || catalog.Weapons[0].MaxDamage != 4 {
+		t.Fatalf("Laser damage range=%d..%d want 1..4", catalog.Weapons[0].MinDamage, catalog.Weapons[0].MaxDamage)
+	}
 	if catalog.ProductionCostNumerator != 1 || catalog.ProductionCostDenominator != 1 {
 		t.Fatalf("production ratio=%d/%d want 1/1", catalog.ProductionCostNumerator, catalog.ProductionCostDenominator)
 	}

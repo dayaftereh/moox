@@ -1025,6 +1025,8 @@ func TestTacticalGroupedLaserMountResolvesEveryPhysicalWeapon(t *testing.T) {
 
 	beamEvents := 0
 	volleyEvents := 0
+	beamDamageTotal := 0
+	volleyDamageTotal := -1
 	shotIndexes := []int{}
 	for _, event := range view.Tactical.Events {
 		switch event.Kind {
@@ -1038,6 +1040,7 @@ func TestTacticalGroupedLaserMountResolvesEveryPhysicalWeapon(t *testing.T) {
 				t.Fatalf("beam shot_count=%v want 2", data["shot_count"])
 			}
 			shotIndexes = append(shotIndexes, int(data["shot_index"].(float64)))
+			beamDamageTotal += int(data["damage"].(float64))
 		case "beam_volley_resolved":
 			volleyEvents++
 			var data map[string]any
@@ -1047,9 +1050,13 @@ func TestTacticalGroupedLaserMountResolvesEveryPhysicalWeapon(t *testing.T) {
 			if data["shot_count"] != float64(2) || data["weapon_slot"] != float64(0) {
 				t.Fatalf("volley data=%v", data)
 			}
+			volleyDamageTotal = int(data["total_damage"].(float64))
 		}
 	}
 	if beamEvents != 2 || volleyEvents != 1 || !reflect.DeepEqual(shotIndexes, []int{1, 2}) {
 		t.Fatalf("grouped volley events beam=%d volley=%d indexes=%v", beamEvents, volleyEvents, shotIndexes)
+	}
+	if volleyDamageTotal != beamDamageTotal || volleyDamageTotal <= 0 {
+		t.Fatalf("grouped volley total damage=%d want sum of physical shots=%d", volleyDamageTotal, beamDamageTotal)
 	}
 }

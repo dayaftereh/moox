@@ -43,6 +43,8 @@ type MilitaryDesignerWeaponChoice struct {
 	LockReason      string `json:"lock_reason,omitempty"`
 	BaseSpace       int    `json:"base_space"`
 	BaseCostPP      int    `json:"base_cost_pp"`
+	MinDamage       int    `json:"min_damage"`
+	MaxDamage       int    `json:"max_damage"`
 }
 
 type MilitaryDesignerVariant struct {
@@ -112,6 +114,7 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 			ID: weapon.ID, NameKey: r.TechnologyNameKeyByID[weapon.TechnologyID], Kind: weapon.Kind,
 			TechnologyID: weapon.TechnologyID, TechnologyKnown: technologyKnown, Available: technologyKnown,
 			LockReason: lockReason, BaseSpace: weapon.BaseSpace, BaseCostPP: weapon.BaseCostPP,
+			MinDamage: weapon.MinDamage, MaxDamage: weapon.MaxDamage,
 		})
 	}
 

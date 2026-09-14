@@ -295,7 +295,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
                 <div className="card-heading"><div><p className="eyebrow">{t('shipbuilder.available')}</p><h3>{t('shipbuilder.availableComponents')}</h3></div></div>
                 {laser ? (
                   <div className={`shipdesigner-component-row${laser.available ? '' : ' locked'}`}>
-                    <div><strong>{t('shipbuilder.laserCannon')}</strong><small>{laser.base_space} {t('shipbuilder.space')} · {laser.base_cost_pp} PP</small></div>
+                    <div><strong>{t('shipbuilder.laserCannon')}</strong><small>{laser.base_space} {t('shipbuilder.space')} · {laser.base_cost_pp} PP · {t('shipbuilder.baseDamageRange', { min: laser.min_damage, max: laser.max_damage })}</small></div>
                     <button type="button" className="button-secondary" disabled={!canAddLaser} onClick={addLaserMount}>{laser.available ? t('shipbuilder.add') : t('shipbuilder.locked')}</button>
                   </div>
                 ) : <p className="muted">{t('shipbuilder.noAvailableComponents')}</p>}
@@ -315,7 +315,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
                         <span>{t('shipbuilder.slot', { slot: mount.slot + 1 })}</span>
                         <div className="shipdesigner-weapon-mount-copy">
                           <strong>{mount.count}× {t('shipbuilder.laserCannon')}</strong>
-                          {laser && <small>{mount.count * laser.base_space} {t('shipbuilder.space')} · {mount.count * laser.base_cost_pp} PP</small>}
+                          {laser && <small>{mount.count * laser.base_space} {t('shipbuilder.space')} · {mount.count * laser.base_cost_pp} PP · {t('shipbuilder.baseDamageRange', { min: mount.count * laser.min_damage, max: mount.count * laser.max_damage })}</small>}
                         </div>
                         <div className="shipdesigner-weapon-quantity">
                           <button type="button" className="button-ghost" aria-label={t('shipbuilder.decreaseQuantity')} onClick={() => changeWeaponMountCount(mount.slot, -1)}>−</button>
