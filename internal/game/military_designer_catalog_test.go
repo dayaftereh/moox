@@ -44,6 +44,9 @@ func TestMilitaryDesignerCatalogProjectsOrderedAuthoritativeBaseline(t *testing.
 	if len(catalog.Weapons) != 1 || catalog.Weapons[0].ID != "laser_cannon" || catalog.Weapons[0].TechnologyID != 100 || !catalog.Weapons[0].Available {
 		t.Fatalf("weapon choices=%+v", catalog.Weapons)
 	}
+	if catalog.ProductionCostNumerator != 1 || catalog.ProductionCostDenominator != 1 {
+		t.Fatalf("production ratio=%d/%d want 1/1", catalog.ProductionCostNumerator, catalog.ProductionCostDenominator)
+	}
 	if len(catalog.Variants) != 2 {
 		t.Fatalf("variants=%+v want unarmed + Laser", catalog.Variants)
 	}
@@ -70,5 +73,24 @@ func TestMilitaryDesignerCatalogLocksUnknownLaserAndOmitsIllegalPreview(t *testi
 	}
 	if len(catalog.Variants) != 1 || catalog.Variants[0].Key != "frigate:none" {
 		t.Fatalf("variants=%+v want only unarmed", catalog.Variants)
+	}
+}
+func TestMilitaryDesignerCatalogProjectsFeudalProductionRatio(t *testing.T) {
+	rules := loadColonyShipRules(t)
+	empire := core.NewSmallFixture(1817).Empires[0]
+	addBaselineMilitaryTechnologies(&empire)
+	modifier := rules.RaceModifiers[empire.RaceID]
+	modifier.GovernmentTraitID = "government_feudal"
+	rules.RaceModifiers[empire.RaceID] = modifier
+
+	catalog, err := rules.MilitaryDesignerCatalog(&empire)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if catalog.ProductionCostNumerator != 2 || catalog.ProductionCostDenominator != 3 {
+		t.Fatalf("production ratio=%d/%d want 2/3", catalog.ProductionCostNumerator, catalog.ProductionCostDenominator)
+	}
+	if catalog.Variants[0].Spec.BaseDesignCostPP != 25 || catalog.Variants[0].Spec.ProductionCostPP != 17 {
+		t.Fatalf("Feudal base preview=%+v", catalog.Variants[0].Spec)
 	}
 }

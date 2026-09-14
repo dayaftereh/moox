@@ -3942,6 +3942,13 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 .shipdesigner-installed-row > strong { overflow-wrap: anywhere; font-size: .72rem; }
 .shipdesigner-installed-row.weapon { border: 1px solid var(--accent); border-radius: var(--radius-sm); background: var(--accent-soft); }
 .shipdesigner-installed-row .button-ghost { min-height: 34px; padding: 5px 8px; }
+.shipdesigner-weapon-mount-copy { display: grid; gap: 2px; min-width: 0; }
+.shipdesigner-weapon-mount-copy > strong { overflow-wrap: anywhere; font-size: .72rem; }
+.shipdesigner-weapon-mount-copy > small { color: var(--muted); font-size: .62rem; }
+.shipdesigner-weapon-quantity { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+.shipdesigner-weapon-quantity .button-ghost { min-width: 32px; min-height: 32px; padding: 4px 7px; }
+.shipdesigner-weapon-count { min-width: 24px; text-align: center; font-size: .72rem; }
+.shipdesigner-weapon-remove { margin-left: 2px; }
 .shipdesigner-future-note { margin: 10px 0 0; font-size: .63rem; line-height: 1.4; }
 .shipdesigner-summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .shipdesigner-summary-grid > div {
@@ -3971,6 +3978,9 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .shipdesigner-preview { min-height: 210px; }
   .shipdesigner-preview-ship { height: 180px; }
   .shipdesigner-component-row > button { min-height: 44px; }
+  .shipdesigner-installed-row.weapon { grid-template-columns: 72px minmax(0, 1fr); }
+  .shipdesigner-weapon-quantity { grid-column: 1 / -1; justify-content: flex-end; }
+  .shipdesigner-weapon-quantity .button-ghost { min-height: 40px; }
   .shipdesigner-save-row { flex-direction: column; align-items: stretch; }
   .shipdesigner-save-row .button-primary { width: 100%; min-height: 44px; }
 }

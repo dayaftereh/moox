@@ -54,9 +54,11 @@ type MilitaryDesignerVariant struct {
 }
 
 type MilitaryDesignerCatalog struct {
-	Hulls    []MilitaryDesignerHullChoice   `json:"hulls"`
-	Weapons  []MilitaryDesignerWeaponChoice `json:"weapons"`
-	Variants []MilitaryDesignerVariant      `json:"variants"`
+	Hulls                     []MilitaryDesignerHullChoice   `json:"hulls"`
+	Weapons                   []MilitaryDesignerWeaponChoice `json:"weapons"`
+	Variants                  []MilitaryDesignerVariant      `json:"variants"`
+	ProductionCostNumerator   int                            `json:"production_cost_numerator"`
+	ProductionCostDenominator int                            `json:"production_cost_denominator"`
 }
 
 func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDesignerCatalog, error) {
@@ -94,7 +96,11 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 		return hulls[i].ID < hulls[j].ID
 	})
 
-	catalog := MilitaryDesignerCatalog{Hulls: hulls}
+	catalog := MilitaryDesignerCatalog{Hulls: hulls, ProductionCostNumerator: 1, ProductionCostDenominator: 1}
+	if modifier, ok := r.RaceModifiers[empire.RaceID]; ok && modifier.GovernmentTraitID == "government_feudal" {
+		catalog.ProductionCostNumerator = 2
+		catalog.ProductionCostDenominator = 3
+	}
 	if r.TacticalCombat != nil {
 		weapon := r.TacticalCombat.Weapon
 		technologyKnown := empireKnowsTechnology(empire, weapon.TechnologyID)

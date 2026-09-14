@@ -267,7 +267,7 @@ export type MilitaryDesignerWeaponChoice = {
   base_cost_pp: number
 }
 export type MilitaryDesignerVariant = { key: string; hull_id: string; weapons?: ShipWeaponMount[]; spec: ShipDesignSpec; command_point_cost: number }
-export type MilitaryDesignerCatalog = { hulls: MilitaryDesignerHullChoice[]; weapons: MilitaryDesignerWeaponChoice[]; variants: MilitaryDesignerVariant[] }
+export type MilitaryDesignerCatalog = { hulls: MilitaryDesignerHullChoice[]; weapons: MilitaryDesignerWeaponChoice[]; variants: MilitaryDesignerVariant[]; production_cost_numerator: number; production_cost_denominator: number }
 export type SaveMilitaryDesignPayload = { design_id?: number; name: string; hull_id: string; strategic_picture_id: number; weapons?: ShipWeaponMount[] }
 export type Ship = { id: number; empire_id: number; source_design_id: number; source_design_revision: number; source_visual_revision?: number; name: string; spec: ShipDesignSpec; visual_genome?: ShipVisualGenomeWire }
 export type StrategicFleet = {
