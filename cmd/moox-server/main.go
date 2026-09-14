@@ -33,7 +33,7 @@ func main() {
 		rulesDir              = flag.String("rules", filepath.Join("data", "rulesets", "moo2-1.31"), "normalized ruleset directory")
 		webDir                = flag.String("web", filepath.Join("web", "dist"), "built web asset directory; omitted if index.html is absent")
 		enableObserver        = flag.Bool("enable-observer", false, "enable privileged observer snapshot endpoint")
-		enablePersistence     = flag.Bool("enable-persistence", false, "enable privileged live save/import/restore endpoints")
+		enablePersistence     = flag.Bool("enable-persistence", false, "enable privileged explicit live snapshot save/import/restore endpoints; no automatic disk autosave/reload")
 		demoFixture           = flag.Bool("demo-fixture", false, "development only: pre-register the legacy core.NewSmallFixture demo game")
 		referenceGames        = flag.Bool("reference-games", false, "development only: pre-register game-1 plus the durable 3-player 2pc triangle reference game")
 		allowInsecureNonLocal = flag.Bool("insecure-allow-nonloopback", false, "UNSAFE: allow unauthenticated direct non-loopback binding")
@@ -68,6 +68,9 @@ func main() {
 		}
 	}()
 	log.Printf("MOOX development server listening on http://%s (games=%d observer=%t persistence=%t)", listener.Addr(), len(host.ListGames()), *enableObserver, *enablePersistence)
+	if *enablePersistence {
+		log.Printf("live persistence is explicit snapshot export/import/restore only; process restart does not auto-save or auto-load hosted games")
+	}
 	if assets == nil {
 		log.Printf("web assets not found at %s; API/WS only (use Vite dev server or build web/)", *webDir)
 	}
