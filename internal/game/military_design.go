@@ -68,15 +68,24 @@ func validateSaveMilitaryDesignPayload(payload SaveMilitaryDesignPayload) error 
 }
 
 func validateBaselineMilitaryWeapons(weapons []core.ShipWeaponMount) error {
-	if len(weapons) == 0 {
-		return nil
+	if len(weapons) > 8 {
+		return fmt.Errorf("military design supports at most 8 weapon mounts")
 	}
-	if len(weapons) != 1 {
-		return fmt.Errorf("Slice 07 military design supports zero or one weapon mount")
-	}
-	mount := weapons[0]
-	if mount.Slot != 0 || mount.WeaponID != "laser_cannon" || mount.Count != 1 {
-		return fmt.Errorf("Slice 07 military design supports only slot 0 laser_cannon count 1")
+	previousSlot := -1
+	for i, mount := range weapons {
+		if mount.Slot < 0 || mount.Slot > 7 {
+			return fmt.Errorf("weapon[%d] slot %d is outside 0..7", i, mount.Slot)
+		}
+		if i > 0 && mount.Slot <= previousSlot {
+			return fmt.Errorf("weapon mounts must be strictly ascending by slot")
+		}
+		if mount.WeaponID != "laser_cannon" {
+			return fmt.Errorf("weapon[%d] %q is not supported in the current slice", i, mount.WeaponID)
+		}
+		if mount.Count <= 0 {
+			return fmt.Errorf("weapon[%d] count must be positive", i)
+		}
+		previousSlot = mount.Slot
 	}
 	return nil
 }
@@ -216,19 +225,24 @@ func (r *EconomyRules) clearedMilitaryDesignSpec(empire *core.Empire, hullID str
 		shieldID = shield.ID
 	}
 	weaponSnapshot := append([]core.ShipWeaponMount(nil), weapons...)
-	if len(weaponSnapshot) == 1 {
+	if len(weaponSnapshot) > 0 {
 		if r.TacticalCombat == nil {
 			return core.ShipDesignSpec{}, fmt.Errorf("tactical combat rules are unavailable")
 		}
 		weapon := r.TacticalCombat.Weapon
-		if weapon.ID != weaponSnapshot[0].WeaponID || weapon.TechnologyID != 100 {
+		if weapon.ID != "laser_cannon" || weapon.TechnologyID != 100 {
 			return core.ShipDesignSpec{}, fmt.Errorf("tactical rules do not define the supported Laser Cannon")
 		}
 		if !empireKnowsTechnology(empire, weapon.TechnologyID) {
 			return core.ShipDesignSpec{}, fmt.Errorf("empire %d has no Laser Cannon technology %d", empire.ID, weapon.TechnologyID)
 		}
-		spaceUsed += weapon.BaseSpace
-		baseCost += weapon.BaseCostPP
+		for i, mount := range weaponSnapshot {
+			if mount.WeaponID != weapon.ID {
+				return core.ShipDesignSpec{}, fmt.Errorf("weapon[%d] %q is not the supported Laser Cannon", i, mount.WeaponID)
+			}
+			spaceUsed += weapon.BaseSpace * mount.Count
+			baseCost += weapon.BaseCostPP * mount.Count
+		}
 	}
 	if spaceUsed > hull.BaseSpace {
 		return core.ShipDesignSpec{}, fmt.Errorf("military design uses %d space but hull %q has only %d", spaceUsed, hull.ID, hull.BaseSpace)

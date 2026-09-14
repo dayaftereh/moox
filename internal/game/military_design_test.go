@@ -296,18 +296,89 @@ func TestSaveMilitaryDesignLaserRequiresTechnologyWithoutMutation(t *testing.T) 
 	}
 }
 
-func TestSaveMilitaryDesignRejectsUnsupportedWeaponSurface(t *testing.T) {
+func TestSaveMilitaryDesignSupportsGroupedAndSplitLaserMounts(t *testing.T) {
+	cases := []struct {
+		name    string
+		weapons []core.ShipWeaponMount
+	}{
+		{name: "grouped", weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 2}}},
+		{name: "split", weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1}, {Slot: 1, WeaponID: "laser_cannon", Count: 1}}},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			rules := loadColonyShipRules(t)
+			resolver, err := NewEconomyResolver(rules)
+			if err != nil {
+				t.Fatal(err)
+			}
+			state := core.NewSmallFixture(0xB705)
+			empire := &state.Empires[0]
+			addBaselineMilitaryTechnologies(empire)
+			addColonyShipTestTechnology(empire, 100)
+			command, err := NewSaveMilitaryDesignCommand(1, SaveMilitaryDesignPayload{
+				Name: "Multi Laser", HullID: SupportedMilitaryHullID, StrategicPictureID: 0, Weapons: tc.weapons,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := resolver.saveMilitaryDesign(state, empire.ID, 1, command); err != nil {
+				t.Fatal(err)
+			}
+			design := state.ShipDesigns[len(state.ShipDesigns)-1]
+			if !reflect.DeepEqual(design.Spec.Weapons, tc.weapons) {
+				t.Fatalf("weapons=%+v want=%+v", design.Spec.Weapons, tc.weapons)
+			}
+			if design.Spec.SpaceUsed != 20 || design.Spec.BaseDesignCostPP != 35 || design.Spec.ProductionCostPP != 35 {
+				t.Fatalf("two-Laser costs space=%d base=%d production=%d", design.Spec.SpaceUsed, design.Spec.BaseDesignCostPP, design.Spec.ProductionCostPP)
+			}
+			if err := state.Validate(); err != nil {
+				t.Fatalf("multi-Laser design state invalid: %v", err)
+			}
+		})
+	}
+}
+
+func TestSaveMilitaryDesignRejectsInvalidWeaponMountContract(t *testing.T) {
 	cases := []SaveMilitaryDesignPayload{
-		{Name: "wrong slot", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 1, WeaponID: "laser_cannon", Count: 1}}},
 		{Name: "wrong id", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "nuclear_missile", Count: 1}}},
-		{Name: "wrong count", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 2}}},
-		{Name: "two mounts", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1}, {Slot: 1, WeaponID: "laser_cannon", Count: 1}}},
+		{Name: "negative slot", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: -1, WeaponID: "laser_cannon", Count: 1}}},
+		{Name: "high slot", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 8, WeaponID: "laser_cannon", Count: 1}}},
+		{Name: "zero count", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 0}}},
+		{Name: "duplicate slot", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1}, {Slot: 0, WeaponID: "laser_cannon", Count: 1}}},
+		{Name: "descending slots", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 1, WeaponID: "laser_cannon", Count: 1}, {Slot: 0, WeaponID: "laser_cannon", Count: 1}}},
+		{Name: "too many mounts", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1}, {Slot: 1, WeaponID: "laser_cannon", Count: 1}, {Slot: 2, WeaponID: "laser_cannon", Count: 1}, {Slot: 3, WeaponID: "laser_cannon", Count: 1}, {Slot: 4, WeaponID: "laser_cannon", Count: 1}, {Slot: 5, WeaponID: "laser_cannon", Count: 1}, {Slot: 6, WeaponID: "laser_cannon", Count: 1}, {Slot: 7, WeaponID: "laser_cannon", Count: 1}, {Slot: 8, WeaponID: "laser_cannon", Count: 1}}},
 	}
 	for _, payload := range cases {
 		payload.StrategicPictureID = 0
 		if _, err := NewSaveMilitaryDesignCommand(1, payload); err == nil {
-			t.Fatalf("expected unsupported weapon payload to reject: %+v", payload.Weapons)
+			t.Fatalf("expected invalid weapon payload to reject: %+v", payload.Weapons)
 		}
+	}
+}
+
+func TestSaveMilitaryDesignRejectsLaserHullSpaceOverflowWithoutMutation(t *testing.T) {
+	rules := loadColonyShipRules(t)
+	resolver, err := NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := core.NewSmallFixture(0xB706)
+	empire := &state.Empires[0]
+	addBaselineMilitaryTechnologies(empire)
+	addColonyShipTestTechnology(empire, 100)
+	beforeNextID := state.NextID
+	command, err := NewSaveMilitaryDesignCommand(1, SaveMilitaryDesignPayload{
+		Name: "Too Many Lasers", HullID: SupportedMilitaryHullID, StrategicPictureID: 0,
+		Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 3}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.saveMilitaryDesign(state, empire.ID, 1, command); err == nil {
+		t.Fatal("expected Laser hull-space overflow to reject")
+	}
+	if len(state.ShipDesigns) != 0 || state.NextID != beforeNextID {
+		t.Fatalf("failed overflow save mutated state: designs=%d next_id=%d want=%d", len(state.ShipDesigns), state.NextID, beforeNextID)
 	}
 }
 
