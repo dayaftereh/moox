@@ -354,14 +354,18 @@ func validateBaselineCombatant(s TacticalShipSpec) error {
 	default:
 		return fmt.Errorf("tactical ship %d turning mode %q is unsupported", s.ShipID, s.TurningMode)
 	}
-	if len(s.Weapons) > 1 {
-		return fmt.Errorf("tactical ship %d supports at most one standard Laser in Slice 15.5", s.ShipID)
+	if len(s.Weapons) > 8 {
+		return fmt.Errorf("tactical ship %d has %d weapon mounts, maximum is 8", s.ShipID, len(s.Weapons))
 	}
-	if len(s.Weapons) == 1 {
-		w := s.Weapons[0]
-		if w.Slot != 0 || w.WeaponID != "laser_cannon" || w.Count != 1 || w.MinDamage != 1 || w.MaxDamage != 4 {
-			return fmt.Errorf("tactical ship %d weapon is outside the Slice 15.5 standard Laser baseline", s.ShipID)
+	previousSlot := -1
+	for i, w := range s.Weapons {
+		if w.Slot < 0 || w.Slot > 7 || (i > 0 && w.Slot <= previousSlot) {
+			return fmt.Errorf("tactical ship %d weapon slots must be unique, ascending and within 0..7", s.ShipID)
 		}
+		if w.WeaponID != "laser_cannon" || w.Count <= 0 || w.MinDamage != 1 || w.MaxDamage != 4 {
+			return fmt.Errorf("tactical ship %d weapon slot %d is outside the supported Laser baseline", s.ShipID, w.Slot)
+		}
+		previousSlot = w.Slot
 	}
 	return nil
 }
@@ -834,8 +838,8 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	if !ready.Ready {
 		return nil, fmt.Errorf("ship %d weapon slot %d is not ready", active.ShipID, payload.WeaponSlot)
 	}
-	if weapon.WeaponID != "laser_cannon" || weapon.Count != 1 || weapon.MinDamage != 1 || weapon.MaxDamage != 4 {
-		return nil, fmt.Errorf("weapon slot %d is outside the Slice 07 Laser fixture", payload.WeaponSlot)
+	if weapon.WeaponID != "laser_cannon" || weapon.Count <= 0 || weapon.MinDamage != 1 || weapon.MaxDamage != 4 {
+		return nil, fmt.Errorf("weapon slot %d is outside the supported Laser baseline", payload.WeaponSlot)
 	}
 
 	activePosition := r.shipState(active.ShipID)
@@ -846,82 +850,101 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	if rangeIndex < 0 || rangeIndex >= len(spec.Tactical.Rules.BeamToHitRangeModifiers) {
 		return nil, fmt.Errorf("Beam range index %d is outside the evidenced table", rangeIndex)
 	}
-	rawRoll, err := r.random(100, spec.Tactical.Rules)
-	if err != nil {
-		return nil, err
-	}
 	rangeHitModifier := spec.Tactical.Rules.BeamToHitRangeModifiers[rangeIndex]
 	threshold := spec.Tactical.Rules.BeamBaseHitThreshold - rangeHitModifier
 	if threshold > spec.Tactical.Rules.BeamMaxHitThreshold {
 		threshold = spec.Tactical.Rules.BeamMaxHitThreshold
 	}
-	effectiveRoll := rawRoll
-	if rawRoll > spec.Tactical.Rules.BeamMaxHitThreshold {
-		effectiveRoll = spec.Tactical.Rules.BeamEffectiveRollCap
-	} else {
-		effectiveRoll += active.BeamOffense - targetSpec.BeamDefense
-		if effectiveRoll > spec.Tactical.Rules.BeamEffectiveRollCap {
-			effectiveRoll = spec.Tactical.Rules.BeamEffectiveRollCap
-		}
-	}
-	hit := effectiveRoll >= threshold
-	damage := 0
-	selectionRoll := 0
-	layer := ""
-	beforeArmor, afterArmor := targetState.ArmorCurrent, targetState.ArmorCurrent
-	beforeStructure, afterStructure := targetState.StructureDamage, targetState.StructureDamage
-	if hit {
-		damage = beamDamage(*weapon, spec.Tactical.Rules.BeamDamageRangeModifiers[rangeIndex], effectiveRoll, threshold, spec.Tactical.Rules.BeamEffectiveRollCap)
-		selectionRoll, err = r.random(100, spec.Tactical.Rules)
+	hitCount := 0
+	totalDamage := 0
+	for shotIndex := 0; shotIndex < weapon.Count; shotIndex++ {
+		rawRoll, err := r.random(100, spec.Tactical.Rules)
 		if err != nil {
 			return nil, err
 		}
-		remainingDamage := damage
-		if targetState.ArmorCurrent > 0 {
-			absorbed := remainingDamage
-			if absorbed > targetState.ArmorCurrent {
-				absorbed = targetState.ArmorCurrent
+		effectiveRoll := rawRoll
+		if rawRoll > spec.Tactical.Rules.BeamMaxHitThreshold {
+			effectiveRoll = spec.Tactical.Rules.BeamEffectiveRollCap
+		} else {
+			effectiveRoll += active.BeamOffense - targetSpec.BeamDefense
+			if effectiveRoll > spec.Tactical.Rules.BeamEffectiveRollCap {
+				effectiveRoll = spec.Tactical.Rules.BeamEffectiveRollCap
 			}
-			targetState.ArmorCurrent -= absorbed
-			remainingDamage -= absorbed
-			afterArmor = targetState.ArmorCurrent
 		}
-		if remainingDamage > 0 {
-			// Slice 15.5 keeps internal subsystem damage deferred. Damage that is
-			// not absorbed by Armor therefore applies to aggregate Structure.
-			targetState.StructureDamage += remainingDamage
-			if targetState.StructureDamage > targetSpec.StructureMax {
-				targetState.StructureDamage = targetSpec.StructureMax
+		hit := effectiveRoll >= threshold
+		damage := 0
+		selectionRoll := 0
+		layer := ""
+		beforeArmor, afterArmor := targetState.ArmorCurrent, targetState.ArmorCurrent
+		beforeStructure, afterStructure := targetState.StructureDamage, targetState.StructureDamage
+		if hit {
+			hitCount++
+			damage = beamDamage(*weapon, spec.Tactical.Rules.BeamDamageRangeModifiers[rangeIndex], effectiveRoll, threshold, spec.Tactical.Rules.BeamEffectiveRollCap)
+			totalDamage += damage
+			selectionRoll, err = r.random(100, spec.Tactical.Rules)
+			if err != nil {
+				return nil, err
 			}
-			afterStructure = targetState.StructureDamage
+			remainingDamage := damage
+			if targetState.ArmorCurrent > 0 {
+				absorbed := remainingDamage
+				if absorbed > targetState.ArmorCurrent {
+					absorbed = targetState.ArmorCurrent
+				}
+				targetState.ArmorCurrent -= absorbed
+				remainingDamage -= absorbed
+				afterArmor = targetState.ArmorCurrent
+			}
+			if remainingDamage > 0 {
+				// Internal subsystem damage remains deferred. Grouped volleys apply
+				// each physical weapon sequentially to aggregate Armor/Structure.
+				targetState.StructureDamage += remainingDamage
+				if targetState.StructureDamage > targetSpec.StructureMax {
+					targetState.StructureDamage = targetSpec.StructureMax
+				}
+				afterStructure = targetState.StructureDamage
+			}
+			switch {
+			case beforeArmor > 0 && afterStructure > beforeStructure:
+				layer = "armor_structure"
+			case beforeArmor > afterArmor:
+				layer = "armor"
+			case afterStructure > beforeStructure:
+				layer = "structure"
+			case targetState.StructureDamage >= targetSpec.StructureMax:
+				layer = "structure_overkill"
+			}
 		}
-		switch {
-		case beforeArmor > 0 && afterStructure > beforeStructure:
-			layer = "armor_structure"
-		case beforeArmor > afterArmor:
-			layer = "armor"
-		case afterStructure > beforeStructure:
-			layer = "structure"
+		if err := r.appendEvent("beam_fired", seatID, commandSequence, map[string]any{
+			"ship_id": active.ShipID, "target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
+			"shot_index": shotIndex + 1, "shot_count": weapon.Count,
+			"range_index": rangeIndex, "raw_hit_roll": rawRoll, "effective_hit_roll": effectiveRoll,
+			"threshold": threshold, "hit": hit, "damage": damage,
+		}); err != nil {
+			return nil, err
+		}
+		if hit {
+			if err := r.appendEvent("battle_damage_applied", seatID, commandSequence, map[string]any{
+				"target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
+				"shot_index": shotIndex + 1, "shot_count": weapon.Count,
+				"layer": layer, "damage": damage, "selection_roll": selectionRoll,
+				"armor_before": beforeArmor, "armor_after": afterArmor,
+				"structure_damage_before": beforeStructure, "structure_damage_after": afterStructure,
+			}); err != nil {
+				return nil, err
+			}
 		}
 	}
 	ready.Ready = false
-	if err := r.appendEvent("beam_fired", seatID, commandSequence, map[string]any{
-		"ship_id": active.ShipID, "target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
-		"range_index": rangeIndex, "raw_hit_roll": rawRoll, "effective_hit_roll": effectiveRoll,
-		"threshold": threshold, "hit": hit, "damage": damage,
-	}); err != nil {
-		return nil, err
-	}
-	if hit {
-		if err := r.appendEvent("battle_damage_applied", seatID, commandSequence, map[string]any{
-			"target_ship_id": targetSpec.ShipID, "layer": layer, "damage": damage, "selection_roll": selectionRoll,
-			"armor_before": beforeArmor, "armor_after": afterArmor,
-			"structure_damage_before": beforeStructure, "structure_damage_after": afterStructure,
+	if weapon.Count > 1 {
+		if err := r.appendEvent("beam_volley_resolved", seatID, commandSequence, map[string]any{
+			"ship_id": active.ShipID, "target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
+			"shot_count": weapon.Count, "hit_count": hitCount, "total_damage": totalDamage,
 		}); err != nil {
 			return nil, err
 		}
 	}
-	if hit && targetState.StructureDamage >= targetSpec.StructureMax {
+	if hitCount > 0 && targetState.StructureDamage >= targetSpec.StructureMax {
 		targetState.Destroyed = true
 		if err := r.appendEvent("ship_destroyed", seatID, commandSequence, map[string]any{"ship_id": targetSpec.ShipID}); err != nil {
 			return nil, err

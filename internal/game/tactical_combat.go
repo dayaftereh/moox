@@ -155,14 +155,18 @@ func baselineCombatantUnsupportedReason(ship core.Ship, rules *ruleset.TacticalC
 	if _, ok := tacticalDriveRule(rules, ship.Spec.WarpDriveID); !ok {
 		return fmt.Sprintf("Slice 15.5 tactical combatant drive %q is unsupported", ship.Spec.WarpDriveID)
 	}
-	if len(ship.Spec.Weapons) > 1 {
-		return "Slice 15.5 tactical combatant supports at most one standard Laser"
+	if len(ship.Spec.Weapons) > 8 {
+		return "tactical combatant supports at most eight weapon mounts"
 	}
-	if len(ship.Spec.Weapons) == 1 {
-		weapon := ship.Spec.Weapons[0]
-		if weapon.Slot != 0 || weapon.WeaponID != rules.Weapon.ID || weapon.Count != 1 {
-			return "Slice 15.5 tactical combatant weapon must be exactly one slot-0 standard Laser"
+	previousSlot := -1
+	for i, weapon := range ship.Spec.Weapons {
+		if weapon.Slot < 0 || weapon.Slot > 7 || (i > 0 && weapon.Slot <= previousSlot) {
+			return "tactical combatant weapon slots must be unique, ascending and within 0..7"
 		}
+		if weapon.WeaponID != rules.Weapon.ID || weapon.Count <= 0 {
+			return "tactical combatant supports only positive-count standard Laser mounts"
+		}
+		previousSlot = weapon.Slot
 	}
 	return ""
 }
@@ -194,8 +198,11 @@ func baselineTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing, 
 		genome := core.CloneShipVisualGenome(*ship.VisualGenome)
 		out.VisualGenome = &genome
 	}
-	if len(ship.Spec.Weapons) == 1 {
-		out.Weapons = []battle.TacticalWeaponSpec{{Slot: 0, WeaponID: rules.Weapon.ID, Count: 1, MinDamage: rules.Weapon.MinDamage, MaxDamage: rules.Weapon.MaxDamage}}
+	for _, mount := range ship.Spec.Weapons {
+		out.Weapons = append(out.Weapons, battle.TacticalWeaponSpec{
+			Slot: mount.Slot, WeaponID: mount.WeaponID, Count: mount.Count,
+			MinDamage: rules.Weapon.MinDamage, MaxDamage: rules.Weapon.MaxDamage,
+		})
 	}
 	return out
 }

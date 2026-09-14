@@ -951,3 +951,105 @@ func TestTacticalRetreatCompletesBattleForOpposingSeat(t *testing.T) {
 		t.Fatalf("completed retreat view=%+v", completed)
 	}
 }
+
+func TestTacticalSplitWeaponSlotsFireIndependently(t *testing.T) {
+	spec := baselineTacticalBattleSpec()
+	spec.Tactical.Ships[0].Weapons = []TacticalWeaponSpec{
+		{Slot: 0, WeaponID: "laser_cannon", Count: 1, MinDamage: 1, MaxDamage: 4},
+		{Slot: 1, WeaponID: "laser_cannon", Count: 1, MinDamage: 1, MaxDamage: 4},
+	}
+	s, err := NewSession(spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Start(); err != nil {
+		t.Fatal(err)
+	}
+	initial := s.View()
+	if initial.Tactical == nil || len(initial.Tactical.LegalFireActions) != 2 {
+		t.Fatalf("initial fire actions=%+v", initial.Tactical)
+	}
+	if initial.Tactical.LegalFireActions[0].WeaponSlot != 0 || initial.Tactical.LegalFireActions[1].WeaponSlot != 1 {
+		t.Fatalf("fire action slots=%+v", initial.Tactical.LegalFireActions)
+	}
+
+	fire0, _ := NewFireBeamCommand(1, FireBeamPayload{ShipID: 100, TargetShipID: 200, WeaponSlot: 0})
+	submitPrepared(t, s, 1, fire0)
+	after := s.View()
+	attacker := tacticalStateForTest(t, after.Tactical.State.Ships, 100)
+	if len(attacker.Weapons) != 2 || attacker.Weapons[0].Ready || !attacker.Weapons[1].Ready {
+		t.Fatalf("split mount readiness after slot0 fire=%+v", attacker.Weapons)
+	}
+	if len(after.Tactical.LegalFireActions) != 1 || after.Tactical.LegalFireActions[0].WeaponSlot != 1 {
+		t.Fatalf("remaining fire actions=%+v want only slot1", after.Tactical.LegalFireActions)
+	}
+
+	fire1, _ := NewFireBeamCommand(2, FireBeamPayload{ShipID: 100, TargetShipID: 200, WeaponSlot: 1})
+	prepared, err := s.PrepareCommand(1, fire1)
+	if err != nil {
+		t.Fatalf("independent slot1 fire rejected: %v", err)
+	}
+	if err := s.CommitPreparedCommand(prepared); err != nil {
+		t.Fatal(err)
+	}
+	afterSecond := s.View()
+	attacker = tacticalStateForTest(t, afterSecond.Tactical.State.Ships, 100)
+	if attacker.Weapons[1].Ready {
+		t.Fatalf("slot1 remained ready after independent fire: %+v", attacker.Weapons)
+	}
+}
+
+func TestTacticalGroupedLaserMountResolvesEveryPhysicalWeapon(t *testing.T) {
+	spec := baselineTacticalBattleSpec()
+	spec.Tactical.Ships[0].Weapons = []TacticalWeaponSpec{{Slot: 0, WeaponID: "laser_cannon", Count: 2, MinDamage: 1, MaxDamage: 4}}
+	s, err := NewSession(spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Start(); err != nil {
+		t.Fatal(err)
+	}
+	fire, _ := NewFireBeamCommand(1, FireBeamPayload{ShipID: 100, TargetShipID: 200, WeaponSlot: 0})
+	prepared, err := s.PrepareCommand(1, fire)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.CommitPreparedCommand(prepared); err != nil {
+		t.Fatal(err)
+	}
+	view := s.View()
+	attacker := tacticalStateForTest(t, view.Tactical.State.Ships, 100)
+	if len(attacker.Weapons) != 1 || attacker.Weapons[0].Ready {
+		t.Fatalf("grouped slot readiness=%+v", attacker.Weapons)
+	}
+
+	beamEvents := 0
+	volleyEvents := 0
+	shotIndexes := []int{}
+	for _, event := range view.Tactical.Events {
+		switch event.Kind {
+		case "beam_fired":
+			beamEvents++
+			var data map[string]any
+			if err := json.Unmarshal(event.Data, &data); err != nil {
+				t.Fatal(err)
+			}
+			if data["shot_count"] != float64(2) {
+				t.Fatalf("beam shot_count=%v want 2", data["shot_count"])
+			}
+			shotIndexes = append(shotIndexes, int(data["shot_index"].(float64)))
+		case "beam_volley_resolved":
+			volleyEvents++
+			var data map[string]any
+			if err := json.Unmarshal(event.Data, &data); err != nil {
+				t.Fatal(err)
+			}
+			if data["shot_count"] != float64(2) || data["weapon_slot"] != float64(0) {
+				t.Fatalf("volley data=%v", data)
+			}
+		}
+	}
+	if beamEvents != 2 || volleyEvents != 1 || !reflect.DeepEqual(shotIndexes, []int{1, 2}) {
+		t.Fatalf("grouped volley events beam=%d volley=%d indexes=%v", beamEvents, volleyEvents, shotIndexes)
+	}
+}

@@ -186,3 +186,46 @@ func TestTacticalMetadataAllowsThreeByTwoAndIgnoresCivilianAndColonyContext(t *t
 		}
 	}
 }
+
+func TestTacticalMetadataPreservesWeaponSlotsAndCounts(t *testing.T) {
+	attacker := tacticalMetadataShip(101, 1, "fusion_drive", true)
+	attacker.Spec.Weapons = []core.ShipWeaponMount{
+		{Slot: 0, WeaponID: "laser_cannon", Count: 2},
+		{Slot: 1, WeaponID: "laser_cannon", Count: 1},
+	}
+	state := &core.GameState{Ships: []core.Ship{
+		attacker,
+		tacticalMetadataShip(201, 2, "nuclear_drive", false),
+	}}
+	encounter := Encounter{
+		SystemID:     7,
+		Attacker:     EncounterSide{EmpireID: 1, SeatID: 1, CombatFleetIDs: []core.ID{11}, ShipIDs: []core.ID{101}},
+		Defender:     EncounterSide{EmpireID: 2, SeatID: 2, CombatFleetIDs: []core.ID{22}, ShipIDs: []core.ID{201}},
+		Participants: []protocol.SeatID{1, 2},
+	}
+	tactical, reason, err := tacticalMetadataForEncounter(state, encounter, tacticalMetadataRules(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reason != "" || tactical == nil {
+		t.Fatalf("multi-mount tactical metadata unsupported: tactical=%+v reason=%q", tactical, reason)
+	}
+	var projected *battle.TacticalShipSpec
+	for i := range tactical.Ships {
+		if tactical.Ships[i].ShipID == attacker.ID {
+			projected = &tactical.Ships[i]
+			break
+		}
+	}
+	if projected == nil || len(projected.Weapons) != 2 {
+		t.Fatalf("projected attacker weapons=%+v", projected)
+	}
+	if projected.Weapons[0].Slot != 0 || projected.Weapons[0].Count != 2 || projected.Weapons[1].Slot != 1 || projected.Weapons[1].Count != 1 {
+		t.Fatalf("projected weapons=%+v", projected.Weapons)
+	}
+	for _, weapon := range projected.Weapons {
+		if weapon.WeaponID != "laser_cannon" || weapon.MinDamage != 1 || weapon.MaxDamage != 4 {
+			t.Fatalf("projected Laser baseline=%+v", weapon)
+		}
+	}
+}
