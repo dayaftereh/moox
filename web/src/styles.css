@@ -5259,10 +5259,11 @@ button.galaxy-node-marker-player-fleet.is-open {
 .tactical-hud-controls {
   display: flex;
   min-width: 0;
-  gap: 6px;
+  flex-direction: column;
+  gap: 5px;
   align-items: stretch;
 }
-.tactical-control-tools { display: flex; flex: 1 1 auto; min-width: 0; align-items: center; gap: 5px; overflow: hidden; }
+.tactical-control-tools { display: flex; flex: 0 0 auto; width: 100%; min-width: 0; align-items: center; gap: 5px; overflow: hidden; }
 .tactical-control-tools:empty { display: none; }
 .tactical-scan-toggle {
   display: inline-flex;
@@ -5281,11 +5282,11 @@ button.galaxy-node-marker-player-fleet.is-open {
 }
 .tactical-scan-toggle svg { width: 13px; height: 13px; }
 .tactical-scan-toggle.is-active { border-color: rgba(112, 202, 255, .86); background: rgba(30, 76, 105, .72); color: #ecf9ff; }
-.tactical-weapon-strip { display: flex; min-width: 0; gap: 5px; overflow-x: auto; scrollbar-width: thin; }
+.tactical-weapon-strip { display: flex; width: 100%; min-width: 0; gap: 5px; overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: thin; padding-bottom: 1px; }
 .tactical-weapon-strip button {
   display: inline-flex;
   flex: 0 0 auto;
-  min-width: 116px;
+  min-width: 126px;
   min-height: 34px;
   align-items: center;
   justify-content: flex-start;
@@ -5303,7 +5304,9 @@ button.galaxy-node-marker-player-fleet.is-open {
 .tactical-weapon-strip button strong { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tactical-weapon-strip button small { color: #8da5b6; font-size: .52rem; font-weight: 700; }
 .tactical-weapon-strip button.is-active { border-color: rgba(99, 220, 157, .82); background: rgba(30, 91, 61, .56); color: #eafff0; box-shadow: inset 0 0 0 1px rgba(99, 220, 157, .18); }
-.tactical-weapon-strip button:disabled { opacity: .38; }
+.tactical-weapon-strip button.is-spent { border-color: rgba(121, 139, 151, .28); background: rgba(20, 28, 34, .7); color: #81919c; }
+.tactical-weapon-strip button:disabled { opacity: .58; cursor: default; }
+.tactical-weapon-strip button.is-spent:disabled { opacity: .7; }
 
 .tactical-control-commit {
   display: grid;
@@ -5392,9 +5395,9 @@ button.galaxy-node-marker-player-fleet.is-open {
 
 @media (max-width: 980px) {
   .tactical-hud { grid-template-columns: minmax(250px, .82fr) minmax(0, 1.18fr); }
-  .tactical-hud-controls { flex-wrap: wrap; }
-  .tactical-control-tools { flex: 1 1 220px; }
-  .tactical-control-commit { grid-template-columns: repeat(4, minmax(72px, 1fr)); flex: 1 1 330px; }
+  .tactical-hud-controls { flex-wrap: nowrap; }
+  .tactical-control-tools { flex: 0 0 auto; }
+  .tactical-control-commit { grid-template-columns: repeat(4, minmax(72px, 1fr)); width: 100%; flex: 0 0 auto; }
   .tactical-scan-popover { bottom: 116px; }
 }
 
@@ -5418,7 +5421,7 @@ button.galaxy-node-marker-player-fleet.is-open {
   }
   .tactical-hud-roster { grid-area: roster; }
   .tactical-hud-controls { grid-area: controls; flex-direction: column; gap: 5px; }
-  .tactical-control-tools { flex: 0 0 auto; overflow: visible; }
+  .tactical-control-tools { flex: 0 0 auto; width: 100%; overflow: hidden; }
   .tactical-control-commit { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; flex: 0 0 auto; gap: 3px; align-items: center; }
   .tactical-control-commit button { min-width: 0; min-height: 32px; padding: 4px 4px; gap: 4px; white-space: nowrap; line-height: 1; font-size: .55rem; }
   .tactical-control-commit button svg { width: 13px; height: 13px; }
@@ -5426,7 +5429,10 @@ button.galaxy-node-marker-player-fleet.is-open {
   .tactical-roster-ship { width: 100%; min-width: 0; }
   .tactical-roster-glyph,
   .tactical-roster-glyph .procedural-ship-glyph { width: 44px; height: 34px; }
-  .tactical-weapon-strip button { min-width: 108px; }
+  .tactical-weapon-strip { width: 100%; padding-bottom: 2px; }
+  .tactical-weapon-strip button { min-width: 112px; min-height: 32px; padding: 4px 6px; }
+  .tactical-weapon-strip button strong { max-width: 128px; font-size: .56rem; }
+  .tactical-weapon-strip button small { font-size: .49rem; }
   .tactical-scan-popover { right: 8px; bottom: 156px; width: calc(100% - 16px); max-height: 48vh; }
   .tactical-screen .tactical-viewport-hint { display: none; }
 }

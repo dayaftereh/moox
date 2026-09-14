@@ -204,6 +204,8 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   }, [activeShip?.ship_id, ownActivation])
 
   const selectedFireAction = legalFireActions.find((action) => action.weapon_slot === selectedWeaponSlot) ?? legalFireActions[0]
+  const fireActionBySlot = useMemo(() => new Map(legalFireActions.map((action) => [action.weapon_slot, action])), [legalFireActions])
+  const activeWeapons = ownActivation ? (activeShip?.weapons ?? []) : []
   const legalTargetByID = useMemo(() => new Map((selectedFireAction?.targets ?? []).map((target) => [target.target_ship_id, target])), [selectedFireAction])
   const legalMoveByCell = useMemo(() => new Map(legalMoves.map((move) => [`${move.x}:${move.y}`, move])), [legalMoves])
   const reachableGridD = useMemo(() => reachableGridPath(legalMoves), [legalMoves])
@@ -553,6 +555,33 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         </section>
 
         <section className="tactical-hud-controls" aria-label={t('battlefield.modeControls')}>
+          {activeWeapons.length > 0 && (
+            <div className="tactical-control-tools">
+              <div className="tactical-weapon-strip" aria-label={t('battlefield.weaponAction')}>
+                {activeWeapons.map((weapon) => {
+                  const action = fireActionBySlot.get(weapon.slot)
+                  const isSelected = selectedWeaponSlot === weapon.slot
+                  const canSelect = weapon.ready && !!action && !controlsDisabled
+                  return (
+                    <button
+                      key={weapon.slot}
+                      type="button"
+                      className={(isSelected ? 'is-active' : '') + (weapon.ready ? '' : ' is-spent')}
+                      disabled={!canSelect}
+                      aria-pressed={isSelected}
+                      onClick={() => setSelectedWeaponSlot(weapon.slot)}
+                    >
+                      <GameIcon name="fleet-combat" />
+                      <span>
+                        <strong>S{weapon.slot + 1} {humanize(weapon.weapon_id)} ×{weapon.count}</strong>
+                        <small>{!weapon.ready ? t('battlefield.weaponSpent') : action ? t('battlefield.targets', { count: action.targets.length }) : t('battlefield.noWeaponTargets')}</small>
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
           <div className="tactical-control-commit">
             <button
               type="button"
