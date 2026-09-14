@@ -1,7 +1,7 @@
 # Slice 15.6 Gate 3 - Weapon Slots, Quantity and Tactical Selection Plan
 
 Date: 2026-09-14
-Status: user-approved scope amendment / implementation not started
+Status: implemented and validated
 Baseline before this planning document: `12e7cbc` (`fix: defer tactical weapon selector`)
 
 ## Why this block exists
@@ -245,9 +245,9 @@ If this chat/session is lost, resume as follows:
 2. Read this file first: `docs/research/SLICE_15_6_GATE3_WEAPON_SLOTS_TACTICAL_SELECTION_PLAN_2026-09-14.md`.
 3. Also read the current session checkpoint for the weapon-slot design session if it is still available.
 4. Confirm `git status` before editing; do not discard unrelated work.
-5. Current planning baseline was clean/synced at commit `12e7cbc` before this document was added.
-6. No implementation for multi-slot/count support had started at the time this plan was written.
-7. The next concrete implementation action is **Block A: explicit contract amendment + rules/tests**, followed by Blocks B-F in order.
+5. Implementation is complete through commit `72508de`; `main` was clean/synced before this closure update.
+6. The weapon-slot/count vertical slice is implemented end to end and validated on server rules, Ship Designer, Tactical authority and Tactical UI.
+7. Resume normal remaining Slice 15.6 Gate-3 work; reopen this block only for new weapon mechanics or follow-up polish.
 
 ## Decision record
 
@@ -257,3 +257,27 @@ User approval on 2026-09-14:
 - use MOO-style distinction between quantity within one slot and repeated independent slots;
 - finish the Tactical weapon-selection workflow by first expanding the Ship Designer/rules foundation;
 - keep the architecture suitable for later missile/ammunition mechanics.
+## Implementation completion - 2026-09-14
+
+The approved weapon-slot vertical slice is complete.
+
+Implemented commits:
+
+- `f4d4be6` - authoritative military design accepts up to eight positive-count Laser mounts and accounts space/cost per physical weapon;
+- `51fb804` - Ship Designer adds stable weapon-slot rows, add-new-slot behavior, per-slot quantity +/-/remove and dynamic cost/space preview;
+- `f83a212` - design mounts propagate into Tactical, split slots retain independent readiness, and grouped mounts resolve one deterministic physical shot per weapon while spending only the selected slot;
+- `80e1377` - Tactical HUD exposes compact selectable S1/S2/... weapon groups above Scannen/Warten/Fertig/Rückzug, including spent state and mobile horizontal layout;
+- `72508de` - regression fixture updated so unsupported manual-lifecycle coverage continues to exercise a genuinely unsupported shield case instead of the newly supported Laser x2 case.
+
+Validation:
+
+- `go test ./... -count=1` passes;
+- `npm run build` passes;
+- `git diff --check` passes before closure;
+- isolated real-browser Ship Designer QA proved both one slot `Laser x2` and two slots `Laser x1`, with identical 20/25 weapon-space usage and 35 PP total preview on the current Frigate baseline;
+- 390x844 mobile Ship Designer QA showed no horizontal page overflow and 40px quantity-control touch row;
+- isolated 390x844 Tactical QA showed S1/S2 above the unchanged four 32px action buttons in a 191px HUD;
+- selecting S2 and firing changed the authoritative/UI state from 2/2 to 1/2 ready, marked only S2 as `Verbraucht`/disabled and automatically selected still-ready S1;
+- QA used isolated port 7187 only; the canonical Triangle game on 7171 remained Turn 1 / planning / revision 1 / seed 32778 with zero battles.
+
+Future missiles/ammunition, modifiers, arcs, per-weapon damage/destruction inside a mount and broader Slice-17 designer systems remain intentionally out of scope.
