@@ -1,6 +1,6 @@
 # Slice 15.6 Gate 3 - Tactical UI refinement review
 Date: 2026-09-12
-Status: **OPEN - review focus after Block5E completion**
+Status: **CLOSED / accepted Slice-15.6 Tactical baseline; further polish deferred**
 User workstream shorthand: **5A Tactical UI**
 ## Naming / history guard
 The user refers to this resumed workstream as `5A Tactical UI`. Existing Slice 15.6 documentation already uses `Block5A` for the completed Galaxy knowledge/exploration authority block, so the repository history is not renumbered or rewritten. This document is the active Tactical UI refinement review within Slice 15.6 Gate 3.
@@ -55,11 +55,11 @@ The next pass is deliberately UI/HMI-first and should be evaluated in the real T
 - Civilian strategic vessels must remain excluded from Tactical materialization.
 - Desktop and mobile/touch are both required acceptance surfaces.
 - Block5F scanner/deep-space Fleet intelligence remains queued until this Tactical UI review has a stable direction.
-## Immediate next step
-Review the live Tactical screen with the user and convert the requested visual/interaction changes into small implementation blocks, each with browser-visible acceptance against the real Triangle encounter.
+## Closeout decision (2026-09-14)
+The user has now play-tested the real Triangle Tactical path through movement, activation controls, independent weapon slots and grouped Laser volleys and confirmed that the Lasers behave as expected. This Tactical review is therefore accepted as the Slice-15.6 playable baseline. It is intentionally **not** the final Tactical UX/mechanics version. Any further visual polish or deeper authority mechanics must not keep Slice 15.6 open; they move to the explicit later Tactical breadth backlog.
 
 ## Block 1 - immersive Tactical shell and command HUD
-Status: **IMPLEMENTED / browser-QA green on parallel 7172 reference server; user review pending**
+Status: **IMPLEMENTED / browser-QA green / user-accepted Slice-15.6 baseline**
 
 The original MOO2 Tactical screen supplied by the user is used as interaction/layout reference, not as a pixel-for-pixel asset copy. The first refinement block establishes the same overall information hierarchy while preserving MOOX server authority:
 
@@ -117,7 +117,7 @@ This is the preferred Block1 browser evidence because it uses the exact larger-F
 
 
 ## Block 2 - implicit move/fire interaction and Galaxy-style camera
-Status: **IMPLEMENTED / browser-QA green; user visual review pending**
+Status: **IMPLEMENTED / browser-QA green / user-accepted Slice-15.6 baseline**
 
 User feedback after Block1 was to remove explicit Move/Fire mode selection, reduce the HUD footprint, make the tactical grid materially visible, and make camera interaction match the Galaxy-map mental model.
 
@@ -167,7 +167,7 @@ The exact live 7171 user battle remains the acceptance surface for the user's vi
 
 
 ## Block 3 - persisted ship visuals and selective movement cells
-Status: **IMPLEMENTED / browser-QA green; user visual review pending**
+Status: **IMPLEMENTED / browser-QA green / user-accepted Slice-15.6 baseline**
 
 This block replaces the remaining Tactical-only ship-art identity and permanent-grid presentation with the same ship identity contract already used by Fleet/System/Ship Designer.
 
@@ -208,7 +208,7 @@ Legacy starting Scouts in this existing save still have no persisted `visual_gen
 
 
 ## Block 4 - automatic activation feedback and combat motion
-Status: **IMPLEMENTED / browser-QA green; user visual review pending**
+Status: **IMPLEMENTED / browser-QA green / user-accepted Slice-15.6 baseline**
 
 Block3 still required a second local click to expose movement overlays even though the Battle server had already selected the active Ship. User review correctly identified this as a broken-feeling activation model. Block4 removes that duplicate UI selection state: server `active_ship_id` is now the only activation authority.
 
