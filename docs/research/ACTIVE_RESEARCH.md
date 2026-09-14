@@ -5,16 +5,16 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: `docs/slices/_OPEN_15_4_RICH_GAMEPLAY_PERSISTENCE_UX_2026-09-09.md`.
-- Active implementation slice: **Slice 15.4 Gate 3**. Blocks 1-5 are complete; Block 6 Battle Entry/Return route + shell is next.
+- Open slice marker: **none**. Slice 15.6 is closed; do not open Slice 16/17 until the next work item is deliberately selected.
+- Active implementation slice: **none**. Slice 15.6 Gates 1-4 are complete; Slice 16 and Slice 17 remain prepared future breadth.
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
 - Economy ruleset schema: **8**.
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
-- Slices **13-14 and 15.1-15.2 are closed**; the **15.3 playability visual baseline is frozen/parked**; **15.4 Gate 3 is active with Blocks 1-5 complete**; 15.5-15.6, 16-17 and reserved Slice 20 remain prepared.
-- Current objective: **Slice 15.4 Gate 3 Block 6 - Battle Entry/Return route and shell, preserving the 15.5 Tactical boundary.**
+- Slices **13-14 and the Slice-15 browser-playability progression through 15.6 are closed/accepted at their intended baselines**; the 15.3 richer-art pass remains parked. Slice 16, Slice 17 and reserved Slice 20 remain prepared.
+- Current objective: **post-Slice-15.6 review; deliberately choose whether to open prepared Slice 16 (New Game/preset-race breadth) or Slice 17 (Military Ship Designer breadth).**
 - Slice-15.1 closure evidence: `docs/research/SLICE_15_1_MOBILE_FIRST_UX_GATE4_2026-09-04.md`.
 - Slice-15.2 Gate-1 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE1_2026-09-04.md`.
 - Slice-15.2 Gate-2 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE2_2026-09-04.md`.
@@ -409,3 +409,5 @@ Original copyrighted assets remain private reference material and are not distri
 - Slice 15.6 Gate3 closeout scope frozen: non-required scanner intelligence, special-ship per-instance visual genomes, Tactical activation batching/fire-all/deeper split-fire, broad Ship Designer breadth and further non-blocking Tactical polish are explicitly deferred. Broad Military Ship Designer work remains Slice 17. See `SLICE_15_6_GATE3_CLOSEOUT_DEFERRALS_2026-09-14.md`.
 
 - Slice 15.6 closeout persistence restart disposition: repeated 7171 restarts loading fresh reference state were traced to intended dev-host semantics, not a Save/Load defect. `-enable-persistence` exposes explicit snapshot endpoints and `-reference-games` bootstraps fresh in-memory games per process; browser Save/Load remains mandatory for final acceptance. Server help/logging now makes the no-autosave boundary explicit. See `SLICE_15_6_CLOSEOUT_PERSISTENCE_RESTART_DISPOSITION_2026-09-14.md`.
+
+- Slice 15.6 Gate4 CLOSED (2026-09-14): canonical visible-browser seed-0x8009 journey passed New Game -> Save/Load/Resume -> research/supply -> ordinary interactive Tactical -> Battle Return -> Troop Transport/Invasion -> authoritative Conquest Victory. Final Go regression and Web production build passed. See `SLICE_15_6_GATE3_FINAL_ACCEPTANCE_RUN_2026-09-14.md` and `SLICE_15_6_GATE4_CLOSE_2026-09-14.md`.

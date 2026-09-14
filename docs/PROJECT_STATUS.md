@@ -1,6 +1,6 @@
 # Master of Orion X project status
 
-Snapshot: **2026-09-02**
+Snapshot: **2026-09-14**
 
 This document is the high-level status page for Master of Orion X. Detailed reverse-engineering evidence remains in `docs/research/`; the live handoff and next prepared objective are tracked in `docs/research/ACTIVE_RESEARCH.md`.
 
@@ -11,6 +11,8 @@ Master of Orion X is now in **Phase 1 deterministic runtime development**, build
 The project is no longer an empty bootstrap repository: it has a pure-Go Master of Orion II 1.31 analyzer, verified original-file parsers, normalized runtime datasets, localization keys, a private reference-extraction pipeline and substantial semantic graphics mapping derived from original 1.31 data/executable behavior.
 
 The deterministic runtime now has its **first complete supported headless match lifecycle**. Slice 12 connects the existing New Game, Economy/Research/Construction, expansion, diplomacy/war, Fleet movement, tactical/encounter authority and invasion/Colony conquest paths to authoritative zero-Colony Empire elimination and an immutable conquest winner in `session.PhaseCompleted`. The canonical seed `0x8009` is played end-to-end using public application/session commands and exact replay/save-load verification. This does not mean broad MOO2 fidelity is complete: alternative victory families, deeper tactical/economy systems, AI, leaders/espionage and endgame presentation remain post-milestone work.
+
+The **Slice 15.6 final browser vertical slice is now closed with Gates 1-4 complete**. A canonical visible-browser `0x8009` Human-vs-Darlok journey proved New Game, meaningful progress, Save/Load/Resume, the required research/supply path, an ordinary interactive Tactical encounter and Battle Return, Troop Transport/Invasion and an authoritative Conquest Victory. The 15.6 closeout intentionally defers broader scanner intelligence, deeper Tactical authority, richer art and broad Military Ship Designer breadth rather than keeping the milestone open.
 
 ## Current repository / tool baseline
 
@@ -35,7 +37,7 @@ Slices 01-14 are closed. Slice 14 Live GameSession save/resume passed independen
 5. Slice 12 - **closed** - Empire elimination and first deterministic headless victory loop (`90b83d8`).
 6. Slice 13 - **closed** - deterministic built-in strategic AI baseline; implementation/evidence commit `371aa0c`.
 7. Slice 14 - **closed; Gates 1-4 complete** - live GameSession save/resume baseline.
-8. Slice 15 - **prepared parent epic** - playable browser strategic HMI, decomposed into:
+8. Slice 15 - **browser-playability vertical-slice baseline closed through Slice 15.6** - final canonical browser acceptance and Gate-4 closure completed 2026-09-14.
    - 15.1 **closed; Gates 1-4 complete** - mobile-first UX architecture / navigation / bilingual design-system shell.
    - 15.2 **open; Gates 1-3 complete, Gate 4 pending** - functional strategic gameplay HMI; Gate 2 freezes DecisionView transport, pure Planning previews, persistent gas-giant/asteroid/star metadata with Outpost targets, a real unbounded-UX construction queue, Colony Population transfer/table behavior, live build/research ETA and sticky strategic resources.
    - 15.3 **open · Gate 1** - MOOX visual identity / graphics / asset pipeline.

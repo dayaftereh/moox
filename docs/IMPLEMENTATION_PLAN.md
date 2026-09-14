@@ -1,6 +1,6 @@
 # MOOX Implementation Plan
 
-## Current position - 2026-09-01
+## Current position - 2026-09-14
 
 MOOX is actively inside the deterministic headless runtime. The authoritative `GameSession` boundary now executes a substantial first strategic Economy/Research/Construction path rather than only infrastructure.
 
@@ -22,7 +22,8 @@ Implemented/established runtime baseline includes:
 
 The first supported deterministic headless match lifecycle is now complete through Slice 12: authoritative server/web transport, deterministic New Game, war/peace, Troop Transport/invasion/Colony conquest and zero-Colony conquest victory are connected end-to-end. Broader tactical depth, complete Economy/pollution, race/customization extensions, leaders/espionage, AI, alternative victory families and endgame fidelity remain important post-milestone work.
 
-Slice 14 **Live GameSession save/resume baseline** is closed after independent Gate-4 QA. Slice 15 is the parent browser-playability epic. **Slices 15.1 and 15.2 are closed with Gates 1-4 complete; Slice 15.3 is open at Gate 1 for art/asset audit and direction exploration.** Gate 2 freezes additive player-safe DecisionView transport, a pure Planning-preview path, persistent star/orbital-body state including gas-giant/asteroid Outposts, a real ordered construction queue with no user-visible count cap, Colony Population-transfer UX/legal previews, live build/research ETA, eight-category Research metadata and sticky BC/Freighters/Command-Point resources. The accepted mobile-first/desktop-adaptive bilingual shell and NetBird review contract remain the browser foundation. Slice 16 and Slice 17 remain later independent breadth work. `docs/research/ACTIVE_RESEARCH.md` remains the authoritative handoff.
+Slice 14 **Live GameSession save/resume baseline** is closed after independent Gate-4 QA. The Slice-15 browser-playability progression has now also reached its accepted endpoint: **Slice 15.6 is CLOSED with Gates 1-4 complete** after a canonical visible-browser `0x8009` New Game -> Save/Load/Resume -> research/supply -> interactive Tactical/Battle Return -> Troop Transport/Invasion -> Conquest Victory run. The 15.3 richer-art pass remains intentionally parked; non-required scanner intelligence and deeper Tactical breadth remain deferred; broad Military Ship Designer breadth stays in prepared Slice 17. Slice 16 (New Game/preset-race breadth) and Slice 17 remain prepared but are not automatically opened by this closure. `docs/research/ACTIVE_RESEARCH.md` remains the authoritative handoff.
+
 ## Guiding architecture
 
 Build the game rules as a deterministic, headless simulation core first. UI, rendering, audio and platform integration should depend on that core rather than contain game rules themselves.

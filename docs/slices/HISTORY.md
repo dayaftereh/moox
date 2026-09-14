@@ -339,3 +339,13 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Slice 15.5 closed at Gate 4: the first browser-playable server-authoritative Tactical baseline supports 1v1-2v2 movement/facing, Laser combat through ship destruction, Tactical Scan, responsive effectively-unbounded battlefield controls, rejection/refetch safety and exact Battle Return reconciliation; handoff is now Slice 15.6 full browser vertical-slice integration.
 - Slice 15.6 opened at Gate 1: cross-slice audit found the minimal Military Design browser bridge (Frigate with optional one Laser) as the only concrete New-Game-to-Tactical gap; full Built-in-AI browser conquest, Save/Resume, responsive/runtime thresholds and no-dev-tool evidence rules are captured in the Gate-2 draft.
 - Slice 15.6 Gate 2 frozen: complete-browser acceptance plus durable Ship Designer shell contract accepted; Gate3 implementation may begin in small recovered blocks.
+
+
+## 2026-09-14 - Slice 15.6 final browser vertical slice closed
+
+- Closed Slice 15.6 with Gates 1-4 complete.
+- Canonical visible-browser seed `0x8009` acceptance passed New Game, meaningful research, real Save/Load/Resume, expansion/supply, ordinary interactive Tactical + Battle Return, Troop Transport/Invasion and authoritative Human Conquest Victory over Darlok.
+- Final authoritative acceptance result: conquest, Human Empire 2 / Seat 1, Darlok Empire 3 eliminated, completed Round 562 / Revision 1137.
+- Full `go test ./... -count=1` and `npm run build` passed; responsive evidence includes desktop/<=980 closeout plus existing real 390x844 Ship Designer/Tactical QA.
+- Explicitly deferred non-required scanner intelligence, special-ship visual genomes, deeper Tactical batching/fire-all/split-fire, richer art and broad Military Ship Designer breadth (Slice 17) rather than carrying them as hidden Slice-15.6 work.
+- Closure evidence: `docs/research/SLICE_15_6_GATE3_FINAL_ACCEPTANCE_RUN_2026-09-14.md` and `docs/research/SLICE_15_6_GATE4_CLOSE_2026-09-14.md`.
