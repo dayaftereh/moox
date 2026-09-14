@@ -1,6 +1,6 @@
 # Slice 15.6 Gate3 Block5F — Foreign Fleet Detection / Scanner Intelligence
 
-Status: **PLANNED FOLLOW-UP after Block5E arrival/contact/Tactical acceptance**
+Status: **DEFERRED BEYOND SLICE 15.6 - strategic scanner/intelligence breadth**
 
 ## Why this block exists
 
@@ -118,3 +118,7 @@ At minimum, the eventual implementation should prove:
 - **Then Block5F:** scanner coverage + detected foreign transit contacts + incoming warnings/read-only inspection.
 
 Block5F is intentionally adjacent to 5E so the current Fleet/route architecture is extended while still fresh, rather than postponed to a distant slice and forcing another Galaxy-map redesign.
+
+## Slice 15.6 closeout disposition
+
+This plan is retained as research input but is no longer a Slice-15.6 closure dependency. The implemented Block5E co-located/visited-system foreign Fleet inspection remains in the 15.6 baseline. Deep-space scanner-authorized foreign Fleet detection, route/ETA intelligence and redaction depth move to later strategic intelligence/scanner breadth; exact slice ownership will be frozen when that work starts. See `SLICE_15_6_GATE3_CLOSEOUT_DEFERRALS_2026-09-14.md`.
