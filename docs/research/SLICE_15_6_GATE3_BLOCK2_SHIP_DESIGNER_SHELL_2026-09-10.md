@@ -49,7 +49,7 @@ The fix adds an explicit military-design immediate-command classifier and sessio
 
 - requires Planning;
 - requires exact base revision;
-- rejects after the first turn submission;
+- rejects after the requesting player has submitted their own turn;
 - checks seat/elimination authority;
 - clones state;
 - resolves through the existing authoritative military-design economy rule;
@@ -76,9 +76,9 @@ Fresh test game:
 
 Verified in managed Chrome 152:
 
-- existing `Scout` appears as `Fregatte · r1` in the design library;
-- Frigate shows `1 CP · 25 Space`;
-- stepping right shows Destroyer with `2 CP · 60 Space`, visibly locked as not yet supported;
+- existing `Scout` appears as `Fregatte Â· r1` in the design library;
+- Frigate shows `1 CP Â· 25 Space`;
+- stepping right shows Destroyer with `2 CP Â· 60 Space`, visibly locked as not yet supported;
 - Save is disabled on the locked Destroyer;
 - clicking the ship preview changed the generated SVG path while preserving the hull/gameplay values;
 - no horizontal page overflow at the actual 776 CSS-px managed-browser viewport;
@@ -87,7 +87,7 @@ Verified in managed Chrome 152:
   - Command Points: **1 CP**;
   - design space: **10 / 25**;
   - installed row: `Slot 1 / 1x Laser Cannon`;
-- Save completed through the real browser and returned `Design saved · revision 1 · visual 1`;
+- Save completed through the real browser and returned `Design saved Â· revision 1 Â· visual 1`;
 - the design library immediately contained both `Scout` and `Falcon Mk I`.
 
 Authoritative post-save snapshot:
@@ -120,3 +120,15 @@ This proves the persisted-design-to-Colony-choice data handoff. The next block w
 ## Next
 
 Gate 3 Block 3: verify the named saved design through the real Colony Construction UI, queue the exact design/revision through visible browser interaction, and confirm the construction state preserves the design identity. Keep this as a separate recovered session block.
+
+## Multiplayer Planning submission guard correction - 2026-09-14
+
+A live Triangle playtest exposed that the server implementation was stricter than the documented contract. The UI/documentation correctly treated design saving as open until **the player's own** turn submission, but `ResolveMilitaryDesignCommand` rejected as soon as **any** seat had submitted. In the Triangle reference game the two built-in AI seats can submit while the local human is still planning, which made legitimate human Ship Designer saves fail with `military design is closed after the first turn submission`.
+
+The corrected authoritative rule is:
+
+- Planning military-design gameplay mutations remain open for an unsubmitted requesting seat even if other seats already submitted;
+- once the requesting seat has submitted its own turn, its gameplay design mutations are closed until the next Planning turn;
+- accepted military-design mutations rebase already-accepted current-turn submissions to the new authoritative revision. This is safe for the current command surface because a design-catalog mutation is empire-local and does not mutate already-built ships or the semantics of other empires' submitted commands; it also preserves the Planning live-snapshot invariant that partial submissions use the current revision.
+
+Dedicated session regressions cover both the partial-other-seat case and the own-seat lock case.

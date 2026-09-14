@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"moox/internal/core"
@@ -156,5 +157,95 @@ func TestGameSessionMilitaryDesignBuildReplaysDeterministically(t *testing.T) {
 	}
 	if !reflect.DeepEqual(first.Events, second.Events) {
 		t.Fatalf("identical military event history diverged\nfirst=%+v\nsecond=%+v", first.Events, second.Events)
+	}
+}
+
+func TestMilitaryDesignImmediateRemainsOpenWhileOtherSeatSubmitted(t *testing.T) {
+	state, seats := twoSeatFixture(t)
+	state.Empires[0].KnownTechnologyIDs = []int{58, 120, 167, 187}
+	rules := loadSessionColonyBaseRules(t)
+	resolver, err := game.NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, err := NewGameSession("military-design-partial-submit", state, seats)
+	if err != nil {
+		t.Fatal(err)
+	}
+	status := s.Status()
+	if err := s.SubmitTurn(protocol.CommandBatch{
+		SchemaVersion: protocol.CommandSchemaVersion, GameID: status.GameID, SeatID: 2,
+		Turn: status.Turn, BaseRevision: status.Revision,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	otherView, err := s.PlayerView(2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	ownView, err := s.PlayerView(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !otherView.Seat.Submitted || ownView.Seat.Submitted {
+		t.Fatalf("expected only other seat submitted: own=%+v other=%+v", ownView.Seat, otherView.Seat)
+	}
+	command, err := game.NewSaveMilitaryDesignCommand(1, game.SaveMilitaryDesignPayload{
+		Name: "Planning Scout", HullID: game.SupportedMilitaryHullID, StrategicPictureID: 0,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	before := s.Status().Revision
+	if err := s.ResolveMilitaryDesignCommand(1, before, command, resolver); err != nil {
+		t.Fatalf("military design should remain open for unsubmitted seat while another seat is submitted: %v", err)
+	}
+	after := s.Status()
+	if after.Revision != before+1 {
+		t.Fatalf("revision=%d want %d", after.Revision, before+1)
+	}
+	if s.seats[1].submission == nil || s.seats[1].submission.BaseRevision != after.Revision {
+		t.Fatalf("other seat submission=%+v want base revision %d", s.seats[1].submission, after.Revision)
+	}
+	view, err := s.ObserverView()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(view.State.ShipDesigns) != 1 || view.State.ShipDesigns[0].Name != "Planning Scout" {
+		t.Fatalf("saved designs=%+v", view.State.ShipDesigns)
+	}
+	if _, err := s.MarshalLiveSnapshot(rules); err != nil {
+		t.Fatalf("planning live snapshot with rebased partial submission must remain valid: %v", err)
+	}
+}
+
+func TestMilitaryDesignImmediateClosesAfterOwnSeatSubmission(t *testing.T) {
+	state, seats := twoSeatFixture(t)
+	state.Empires[0].KnownTechnologyIDs = []int{58, 120, 167, 187}
+	rules := loadSessionColonyBaseRules(t)
+	resolver, err := game.NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	s, err := NewGameSession("military-design-own-submit", state, seats)
+	if err != nil {
+		t.Fatal(err)
+	}
+	status := s.Status()
+	if err := s.SubmitTurn(protocol.CommandBatch{
+		SchemaVersion: protocol.CommandSchemaVersion, GameID: status.GameID, SeatID: 1,
+		Turn: status.Turn, BaseRevision: status.Revision,
+	}); err != nil {
+		t.Fatal(err)
+	}
+	command, err := game.NewSaveMilitaryDesignCommand(1, game.SaveMilitaryDesignPayload{
+		Name: "Too Late", HullID: game.SupportedMilitaryHullID, StrategicPictureID: 0,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = s.ResolveMilitaryDesignCommand(1, s.Status().Revision, command, resolver)
+	if err == nil || !strings.Contains(err.Error(), "military design is closed after seat 1 submitted turn 1") {
+		t.Fatalf("own submitted seat military design error=%v", err)
 	}
 }
