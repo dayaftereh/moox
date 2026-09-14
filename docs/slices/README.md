@@ -37,26 +37,26 @@ When a planned slice actually starts:
 
 Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1 always requires a fresh repository checkup and original-evidence review at the time work begins.
 
-### Current active / prepared queue - 2026-09-04
+### Current active / prepared queue - 2026-09-14
 
 Active:
 
-- `PLANNED_15_2_FUNCTIONAL_STRATEGIC_GAMEPLAY_HMI.md` - **open; Gates 1-2 complete, Gate 3 pending**.
+- **none** - Slice 15.6 is closed with Gates 1-4 complete. No `_OPEN_*.md` marker should exist until the next slice is deliberately opened.
+
+Closed/parked Slice-15 state:
+
+- Slice 15.1 and 15.2: closed.
+- Slice 15.3: playability visual baseline frozen/parked; richer-art follow-up remains backlog rather than active slice work.
+- Slice 15.4: closed rich gameplay/persistence UX baseline.
+- Slice 15.5: closed accepted interactive Tactical baseline.
+- Slice 15.6: closed final browser vertical slice; canonical New Game -> Save/Resume -> Tactical -> Invasion -> Conquest acceptance passed.
 
 Prepared queue:
 
-1. `PLANNED_15_PLAYABLE_BROWSER_STRATEGIC_HMI_LOOP.md` - parent epic for the first saveable Human-vs-AI browser match.
-   - `PLANNED_15_1_UX_NAVIGATION_DESIGN_SYSTEM.md` - UX architecture, navigation, responsive shell and design-system contract.
-   - `PLANNED_15_2_FUNCTIONAL_STRATEGIC_GAMEPLAY_HMI.md` - functional authoritative galaxy/colony/research/fleet/diplomacy gameplay HMI.
-   - `PLANNED_15_3_VISUAL_IDENTITY_GRAPHICS_ASSET_PIPELINE.md` - MOOX corporate/visual identity plus graphics/image/model asset pipeline.
-   - `_OPEN_15_4_RICH_GAMEPLAY_PERSISTENCE_UX_2026-09-09.md` - **open; Gate 1 complete** rich Encounter/Invasion/decision presentation plus save/load/reconnect UX, stopping before the interactive battlefield.
-   - `PLANNED_15_5_INTERACTIVE_TACTICAL_COMBAT.md` - dedicated interactive 2D Tactical Combat with authoritative movement/legal targets and mouse/touch battlefield.
-   - `PLANNED_15_6_FULL_BROWSER_VERTICAL_SLICE.md` - final complete-game browser integration, polish and end-to-end QA including the accepted Tactical path.
-2. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - widen narrow New Game settings and preset-race support.
-3. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for broader combat/design fidelity after the first interactive Tactical baseline.
-4. `PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md` - dedicated authoritative Spy/intelligence mechanics and first-class Espionage HMI integration; Slice 20 is intentionally reserved while 18/19 remain unassigned.
-
-Milestone after Slice 15.6: a human can start, save/resume, play the accepted interactive Tactical battle path and finish the supported Human-vs-built-in-AI match from the browser through one coherent MOOX visual/interaction language. Re-audit after the prepared Slice 20 Espionage baseline before numbering additional Tactical weapon/special/planetary breadth, deeper Diplomacy/Leaders/post-baseline Espionage and alternative-victory depth.
+1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - widen narrow New Game settings and preset-race support.
+2. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for broader combat/design fidelity.
+3. `PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md` - dedicated authoritative Spy/intelligence mechanics; Slice 20 remains reserved while 18/19 are unassigned.
+Milestone after Slice 15.6: **achieved 2026-09-14** - a human can start, save/resume, play the accepted interactive Tactical battle path and finish the supported Human-vs-built-in-AI match from the browser through one coherent MOOX visual/interaction language. Re-audit after the prepared Slice 20 Espionage baseline before numbering additional Tactical weapon/special/planetary breadth, deeper Diplomacy/Leaders/post-baseline Espionage and alternative-victory depth.
 
 The queue order is the current recommendation, not a hard dependency lock. Reprioritization is allowed before a later slice is opened if the dependency check still passes.
 ## Four gates

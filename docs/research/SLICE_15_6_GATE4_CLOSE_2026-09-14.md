@@ -45,6 +45,7 @@ The acceptance run's elevated round count is an automation artifact from an old 
 
 - Desktop Victory surface: no horizontal overflow.
 - <=980px responsive path: no horizontal overflow.
+- Final terminal Victory route was independently loaded in a fresh headless Chrome at exact 390x844 CSS viewport: document/body width 390, no horizontal overflow, Victory/Human-win text visible.
 - Existing real 390x844 Slice-15.6 browser QA remains green for the two most interaction-dense surfaces, Ship Designer and Tactical battlefield, including touch-sized controls and multi-slot Tactical UI.
 
 ## Final regression gates

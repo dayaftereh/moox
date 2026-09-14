@@ -79,7 +79,8 @@ The unusually high displayed round number is not a game-rule requirement. During
 
 - Final desktop Victory view: 791x605 CSS viewport, no horizontal document overflow.
 - The same current Chrome activated the <=980px responsive path without horizontal overflow.
-- Real 390x844 mobile metrics were already exercised in this Slice after the weapon-slot work:
+- A fresh final headless Chrome was also run at exactly 390x844 against the completed Victory route: `innerWidth=390`, `innerHeight=844`, document/body width 390, no horizontal overflow, `SPIEL ABGESCHLOSSEN` and `Human gewinnt durch Eroberung` both visible.
+- Real 390x844 mobile metrics were also exercised earlier in this Slice after the weapon-slot work:
   - Ship Designer: no page overflow; installed mount row and 40px quantity controls fit.
   - Tactical: 390px-wide HUD, compact slot strip, four 32px action buttons, no horizontal overflow; independent S1/S2 selection and spent-slot fallback passed.
 - Therefore the final closeout does not invent a second browser emulation mechanism solely for the terminal Victory card; the mobile-critical interactive surfaces already have real-device-metric evidence.
