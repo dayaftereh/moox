@@ -83,11 +83,11 @@
       "generator": "web/scripts/generate-difficulty-art.mjs"
     },
     {
-      "id": "new-game:difficulty:very_hard",
+      "id": "new-game:difficulty:very-hard",
       "domain": "difficulty",
-      "option_id": "very_hard",
+      "option_id": "very-hard",
       "format": "svg",
-      "path": "/assets/new-game/difficulty/very_hard.svg",
+      "path": "/assets/new-game/difficulty/very-hard.svg",
       "provenance": "original-procedural-mox",
       "generator": "web/scripts/generate-difficulty-art.mjs"
     },

@@ -11,7 +11,7 @@ const configs = [
   { id: 'easy', ranks: 1, primary: '#78c7e8', secondary: '#bfe9ff', glow: '#2b7196', spikes: 0, broken: false },
   { id: 'normal', ranks: 2, primary: '#87d0ee', secondary: '#d9f2ff', glow: '#317ca0', spikes: 0, broken: false },
   { id: 'hard', ranks: 3, primary: '#e1a449', secondary: '#ffe4a1', glow: '#9a6328', spikes: 3, broken: false },
-  { id: 'very_hard', ranks: 4, primary: '#dc7650', secondary: '#ffd0a0', glow: '#8e3f31', spikes: 5, broken: false },
+  { id: 'very_hard', assetId: 'very-hard', ranks: 4, primary: '#dc7650', secondary: '#ffd0a0', glow: '#8e3f31', spikes: 5, broken: false },
   { id: 'impossible', ranks: 5, primary: '#e86f68', secondary: '#ffe4ca', glow: '#8b355d', spikes: 7, broken: true },
 ]
 
@@ -93,6 +93,6 @@ function render(config) {
 fs.mkdirSync(outDir, { recursive: true })
 for (const config of configs) {
   const svg = render(config).replace(/^[ \t]+$/gm, '')
-  fs.writeFileSync(path.join(outDir, `${config.id}.svg`), svg, 'utf8')
+  fs.writeFileSync(path.join(outDir, `${config.assetId ?? config.id}.svg`), svg, 'utf8')
 }
 console.log(`Generated ${configs.length} deterministic Difficulty SVG assets in ${outDir}`)

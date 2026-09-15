@@ -180,7 +180,7 @@ The Gate-1 command-emblem progression is accepted as the production motif family
 - one coherent crest/shield silhouette family with increasing rank weight/aggression;
 - no copied or traced MOO2 artwork;
 - provenance: original MOOX procedural/vector artwork;
-- runtime IDs: new-game:difficulty:<difficulty-id>.
+- runtime IDs: new-game:difficulty:<asset-option-id>.
 
 Frozen runtime paths:
 

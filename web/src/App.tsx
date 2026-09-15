@@ -3,6 +3,7 @@ import {
   aggregatePopulation,
   createGame,
   exportLiveSnapshot,
+  getDifficultyCatalog,
   getPlayerSnapshot,
   importLiveSnapshot,
   listGames,
@@ -17,6 +18,9 @@ import {
   submitDiplomacy,
   submitInvasion,
   submitPlanning,
+  type DifficultyCatalog,
+  type DifficultyID,
+  type DifficultyProfile,
   type DiplomacyCommandKind,
   type DiplomaticStance,
   type DraftOrder,
@@ -50,6 +54,7 @@ import {
 import './styles.css'
 
 type GalaxyPrototypeSize = 'tiny' | 'small' | 'medium' | 'large' | 'huge'
+const difficultyIDs: readonly DifficultyID[] = ['easy', 'normal', 'hard', 'very_hard', 'impossible']
 
 function GalaxySizeArt({ size }: { size: GalaxyPrototypeSize }) {
   return (
@@ -57,6 +62,46 @@ function GalaxySizeArt({ size }: { size: GalaxyPrototypeSize }) {
       <img src={newGameAssetPath('galaxy-size', size, 'svg')} alt="" draggable={false} />
     </div>
   )
+}
+
+function difficultyAssetOptionID(difficulty: DifficultyID): string {
+  return difficulty === 'very_hard' ? 'very-hard' : difficulty
+}
+
+function DifficultyArt({ difficulty }: { difficulty: DifficultyID }) {
+  return (
+    <div className="new-game-difficulty-art" aria-hidden="true">
+      <img src={newGameAssetPath('difficulty', difficultyAssetOptionID(difficulty), 'svg')} alt="" draggable={false} />
+    </div>
+  )
+}
+
+function difficultyTitleKey(id: DifficultyID): TranslationKey {
+  switch (id) {
+    case 'easy': return 'newGame.difficultyEasy'
+    case 'normal': return 'newGame.difficultyNormal'
+    case 'hard': return 'newGame.difficultyHard'
+    case 'very_hard': return 'newGame.difficultyVeryHard'
+    case 'impossible': return 'newGame.difficultyImpossible'
+  }
+}
+
+function difficultyNumber(eighths: number, signed = true): string {
+  const value = eighths / 8
+  const formatted = new Intl.NumberFormat(document.documentElement.lang || 'en', { maximumFractionDigits: 3 }).format(Math.abs(value))
+  if (!signed || value === 0) return formatted
+  return `${value > 0 ? '+' : '-'}${formatted}`
+}
+
+function difficultyDetails(t: Translator, profile: DifficultyProfile): string[] {
+  return [
+    t('newGame.difficultyAiOnly'),
+    t('newGame.difficultyFood', { value: difficultyNumber(profile.ai_food_per_farmer_eighths) }),
+    t('newGame.difficultyProduction', { value: difficultyNumber(profile.ai_production_per_worker_eighths) }),
+    t('newGame.difficultyResearch', { value: difficultyNumber(profile.ai_research_per_scientist_eighths) }),
+    t('newGame.difficultyTax', { value: difficultyNumber(profile.ai_tax_bc_per_population_eighths) }),
+    t('newGame.difficultyCommandDeficit', { value: difficultyNumber(profile.ai_command_deficit_bc_per_point_eighths, false) }),
+  ]
 }
 type AssignmentDraft = {
   farmers: string
@@ -159,6 +204,9 @@ function App() {
   const [newGameID, setNewGameID] = useState('game-1')
   const [newGameSeed, setNewGameSeed] = useState('0x8009')
   const [galaxyPrototypeSize, setGalaxyPrototypeSize] = useState<GalaxyPrototypeSize>('small')
+  const [difficultyID, setDifficultyID] = useState<DifficultyID>('normal')
+  const [difficultyCatalog, setDifficultyCatalog] = useState<DifficultyCatalog | null>(null)
+  const [difficultyCatalogError, setDifficultyCatalogError] = useState('')
   const [humanName, setHumanName] = useState('Human')
   const [darlokName, setDarlokName] = useState('Darlok')
   const [creatingGame, setCreatingGame] = useState(false)
@@ -194,6 +242,25 @@ function App() {
   activeSeatRef.current = seatID
   snapshotRef.current = snapshot
   draftOrdersRef.current = draftOrders
+
+  const difficultyProfilesByID = useMemo(() => new Map((difficultyCatalog?.profiles ?? []).map((profile) => [profile.id, profile] as const)), [difficultyCatalog])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    setDifficultyCatalogError('')
+    void getDifficultyCatalog(controller.signal)
+      .then((catalog) => {
+        setDifficultyCatalog(catalog)
+        setDifficultyCatalogError('')
+        setDifficultyID((current) => catalog.profiles.some((profile) => profile.id === current) ? current : catalog.default_id)
+      })
+      .catch((reason) => {
+        if (controller.signal.aborted) return
+        setDifficultyCatalog(null)
+        setDifficultyCatalogError(errorText(reason))
+      })
+    return () => controller.abort()
+  }, [])
 
   useEffect(() => {
     const syncRoute = () => setRoute(parseRoute())
@@ -618,6 +685,7 @@ function App() {
           { seat_id: 2, controller: 'builtin_ai' },
         ],
         settings: {
+          difficulty_id: difficultyID,
           galaxy_size: 'small',
           galaxy_age: 'normal',
           technology_level: 'average',
@@ -1056,7 +1124,36 @@ function App() {
 
           <div className="new-game-settings-grid">
             <Card className="new-game-visual-card">
+              <VisualSelector<DifficultyID>
+                settingId="difficulty"
+                label={t('newGame.difficulty')}
+                selectedId={difficultyID}
+                onChange={setDifficultyID}
+                previousLabel={t('newGame.previousOption')}
+                nextLabel={t('newGame.nextOption')}
+                positionLabel={(current, total) => t('newGame.optionPosition', { current, total })}
+                infoLabel={(optionTitle) => t('newGame.moreInfo', { option: optionTitle })}
+                closeInfoLabel={t('newGame.closeInfo')}
+                options={difficultyIDs.map((id) => {
+                  const profile = difficultyProfilesByID.get(id)
+                  return {
+                    id,
+                    title: t(difficultyTitleKey(id)),
+                    details: profile
+                      ? difficultyDetails(t, profile)
+                      : [difficultyCatalogError ? t('newGame.difficultyCatalogUnavailable') : t('newGame.difficultyCatalogLoading')],
+                    visual: <DifficultyArt difficulty={id} />,
+                    availability: profile ? 'supported' as const : 'planned' as const,
+                    availabilityLabel: profile
+                      ? t('newGame.supportedNow')
+                      : difficultyCatalogError ? t('newGame.difficultyCatalogUnavailable') : t('newGame.difficultyCatalogLoading'),
+                  }
+                })}
+              />
+            </Card>
+            <Card className="new-game-visual-card">
             <VisualSelector<GalaxyPrototypeSize>
+              settingId="galaxy-size"
               label={t('newGame.galaxySize')}
               selectedId={galaxyPrototypeSize}
               onChange={setGalaxyPrototypeSize}
@@ -1092,7 +1189,7 @@ function App() {
                 <label>{t('newGame.humanEmpire')}<input value={humanName} onChange={(event) => setHumanName(event.target.value)} required /></label>
                 <label>{t('newGame.darlokEmpire')}<input value={darlokName} onChange={(event) => setDarlokName(event.target.value)} required /></label>
               </div>
-              <button type="submit" className="button-primary button-wide" disabled={creatingGame || galaxyPrototypeSize !== 'small'}><GameIcon name="star" />{creatingGame ? t('newGame.creating') : t('newGame.create')}</button>
+              <button type="submit" className="button-primary button-wide" disabled={creatingGame || galaxyPrototypeSize !== 'small' || !difficultyCatalog || !difficultyProfilesByID.has(difficultyID)}><GameIcon name="star" />{creatingGame ? t('newGame.creating') : t('newGame.create')}</button>
             </form>
           </Card>
         </main>

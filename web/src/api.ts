@@ -1,4 +1,21 @@
 import type { ShipVisualGenome } from './shipVisualGenome'
+export type DifficultyID = 'easy' | 'normal' | 'hard' | 'very_hard' | 'impossible'
+
+export type DifficultyProfile = {
+  id: DifficultyID
+  ai_food_per_farmer_eighths: number
+  ai_production_per_worker_eighths: number
+  ai_research_per_scientist_eighths: number
+  ai_tax_bc_per_population_eighths: number
+  ai_command_deficit_bc_per_point_eighths: number
+}
+
+export type DifficultyCatalog = {
+  schema_version: number
+  default_id: DifficultyID
+  profiles: DifficultyProfile[]
+}
+
 export type NewGamePlayer = {
   seat_id: number
   empire_id: number
@@ -7,6 +24,7 @@ export type NewGamePlayer = {
 }
 
 export type NewGameSettings = {
+  difficulty_id: DifficultyID
   galaxy_size: 'small'
   galaxy_age: 'normal'
   technology_level: 'average'
@@ -742,6 +760,9 @@ export function isAPIError(reason: unknown): reason is APIError {
 
 export async function createGame(request: CreateGameRequest): Promise<CreateGameResponse> {
   return requestJSON<CreateGameResponse>('/api/v1/games', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(request) })
+}
+export async function getDifficultyCatalog(signal?: AbortSignal): Promise<DifficultyCatalog> {
+  return requestJSON<DifficultyCatalog>('/api/v1/new-game/difficulties', { signal })
 }
 export async function listGames(signal?: AbortSignal): Promise<GameSummary[]> {
   return requestJSON<GameSummary[]>('/api/v1/games', { signal })

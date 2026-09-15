@@ -10,6 +10,7 @@ export type VisualSelectorOption<TId extends string = string> = {
 }
 
 type VisualSelectorProps<TId extends string> = {
+  settingId?: string
   label: string
   options: readonly VisualSelectorOption<TId>[]
   selectedId: TId
@@ -22,6 +23,7 @@ type VisualSelectorProps<TId extends string> = {
 }
 
 export function VisualSelector<TId extends string>({
+  settingId,
   label,
   options,
   selectedId,
@@ -87,6 +89,7 @@ export function VisualSelector<TId extends string>({
   return (
     <section
       className="visual-selector"
+      data-setting-id={settingId}
       data-availability={selected.availability ?? 'supported'}
       aria-label={label}
       aria-roledescription="carousel"

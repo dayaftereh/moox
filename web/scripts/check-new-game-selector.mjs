@@ -18,7 +18,8 @@ const difficultyAssetDir = path.join(webRoot, 'public', 'assets', 'new-game', 'd
 const difficultyGeneratorPath = path.join(here, 'generate-difficulty-art.mjs')
 
 const ids = ['tiny', 'small', 'medium', 'large', 'huge']
-const difficultyIds = ['easy', 'normal', 'hard', 'very_hard', 'impossible']
+const difficultyAssets = [['easy', 'easy'], ['normal', 'normal'], ['hard', 'hard'], ['very_hard', 'very-hard'], ['impossible', 'impossible']]
+const difficultyIds = difficultyAssets.map(([id]) => id)
 const failures = []
 
 function assert(condition, message) {
@@ -57,18 +58,18 @@ for (const id of ids) {
 
 const difficultyEntries = manifest.entries.filter((entry) => entry.domain === 'difficulty')
 assert(difficultyEntries.length === difficultyIds.length, `expected ${difficultyIds.length} difficulty manifest entries, found ${difficultyEntries.length}`)
-for (const id of difficultyIds) {
-  const expectedPath = `/assets/new-game/difficulty/${id}.svg`
-  const entry = difficultyEntries.find((candidate) => candidate.option_id === id)
+for (const [id, assetId] of difficultyAssets) {
+  const expectedPath = `/assets/new-game/difficulty/${assetId}.svg`
+  const entry = difficultyEntries.find((candidate) => candidate.option_id === assetId)
   assert(Boolean(entry), `missing difficulty manifest entry for ${id}`)
   if (entry) {
-    assert(entry.id === `new-game:difficulty:${id}`, `invalid difficulty semantic id for ${id}`)
+    assert(entry.id === `new-game:difficulty:${assetId}`, `invalid difficulty semantic id for ${id}`)
     assert(entry.format === 'svg', `invalid difficulty format for ${id}: ${entry.format}`)
     assert(entry.path === expectedPath, `invalid difficulty runtime path for ${id}: ${entry.path}`)
     assert(entry.provenance === 'original-procedural-mox', `invalid difficulty provenance for ${id}`)
     assert(entry.generator === 'web/scripts/generate-difficulty-art.mjs', `invalid difficulty generator for ${id}`)
   }
-  const assetPath = path.join(difficultyAssetDir, `${id}.svg`)
+  const assetPath = path.join(difficultyAssetDir, `${assetId}.svg`)
   assert(fs.existsSync(assetPath), `missing Difficulty SVG asset ${assetPath}`)
   if (!fs.existsSync(assetPath)) continue
   const svg = fs.readFileSync(assetPath, 'utf8')
@@ -130,9 +131,9 @@ try {
   })
   assert(generated.status === 0, `isolated difficulty-art generation failed: ${generated.stderr || generated.stdout}`)
   if (generated.status === 0) {
-    for (const id of difficultyIds) {
-      const currentPath = path.join(difficultyAssetDir, `${id}.svg`)
-      const regeneratedPath = path.join(difficultyTempDir, `${id}.svg`)
+    for (const [id, assetId] of difficultyAssets) {
+      const currentPath = path.join(difficultyAssetDir, `${assetId}.svg`)
+      const regeneratedPath = path.join(difficultyTempDir, `${assetId}.svg`)
       assert(fs.existsSync(regeneratedPath), `difficulty generator did not produce ${id}.svg`)
       if (!fs.existsSync(currentPath) || !fs.existsSync(regeneratedPath)) continue
       assert(sha256(fs.readFileSync(currentPath)) === sha256(fs.readFileSync(regeneratedPath)), `difficulty ${id}.svg is not reproducible from the committed generator`)
