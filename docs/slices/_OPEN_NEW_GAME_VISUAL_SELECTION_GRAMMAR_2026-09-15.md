@@ -15,8 +15,8 @@ Permanent Gate-1 evidence: `docs/research/SLICE_16_1_GATE1_NEW_GAME_VISUAL_SELEC
 
 - [x] Inventory current New Game form and server-authoritative settings schema.
 - [x] Audit existing Ship Designer arrow/carousel interaction components for reuse.
-- [ ] Prototype one selector with placeholder/original art at desktop and 390 px mobile.
-- [ ] Verify keyboard, mouse and touch-size controls.
+- [x] Prototype one selector with placeholder/original art at desktop and 390 px mobile.
+- [x] Verify keyboard, mouse and touch-size controls.
 - [ ] Define a stable New Game asset manifest/path convention.
 - [ ] Confirm which settings can share one generic selector and which require specialized cards.
 
