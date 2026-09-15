@@ -36,6 +36,7 @@ import { OrbitalBodyArt } from './components/OrbitalBodyArt'
 import { Card, EmptyState, Metric, Notice, PageHeader } from './components/ui'
 import { type TranslationKey, type TranslationVars, useI18n } from './i18n'
 import { type AppRoute, type GameSection, navigate, parseRoute } from './navigation'
+import { newGameAssetPath } from './newGameAssets'
 import { ShipBuilderView } from './ShipBuilderView'
 import {
   StrategicColoniesView,
@@ -50,16 +51,10 @@ import './styles.css'
 
 type GalaxyPrototypeSize = 'tiny' | 'small' | 'medium' | 'large' | 'huge'
 
-function GalaxyPrototypeArt({ size }: { size: GalaxyPrototypeSize }) {
+function GalaxySizeArt({ size }: { size: GalaxyPrototypeSize }) {
   return (
-    <div className="new-game-galaxy-art" data-scale={size} aria-hidden="true">
-      <span className="galaxy-core" />
-      <span className="galaxy-orbit galaxy-orbit-a" />
-      <span className="galaxy-orbit galaxy-orbit-b" />
-      <span className="galaxy-star galaxy-star-a" />
-      <span className="galaxy-star galaxy-star-b" />
-      <span className="galaxy-star galaxy-star-c" />
-      <span className="galaxy-star galaxy-star-d" />
+    <div className="new-game-galaxy-art" aria-hidden="true">
+      <img src={newGameAssetPath('galaxy-size', size, 'svg')} alt="" draggable={false} />
     </div>
   )
 }
@@ -1079,8 +1074,8 @@ function App() {
               ] as const).map(([id, title, detail]) => ({
                 id,
                 title,
-                details: [detail, id === 'small' ? t('newGame.supportedContract') : t('newGame.unsupportedContract')],
-                visual: <GalaxyPrototypeArt size={id} />,
+                details: [detail, t('newGame.galaxyArtDisclaimer'), id === 'small' ? t('newGame.supportedContract') : t('newGame.unsupportedContract')],
+                visual: <GalaxySizeArt size={id} />,
                 availability: id === 'small' ? 'supported' : 'planned',
                 availabilityLabel: id === 'small' ? t('newGame.supportedNow') : t('newGame.plannedOption'),
               }))}

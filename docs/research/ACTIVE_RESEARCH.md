@@ -14,13 +14,14 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-14 and the Slice-15 browser-playability progression through 15.6 are closed/accepted at their intended baselines**; the 15.3 richer-art pass remains parked. Slice 16, Slice 17 and reserved Slice 20 remain prepared.
-- Current objective: **review and freeze the revised single-card, image-dominant Slice 16.1 selector after user UI/art review; do not freeze the earlier side-arrow/nested-card prototype.**
+- Current objective: **review the astronomy-informed five-image Galaxy Size SVG set inside the compact info-on-demand selector, then freeze the Slice 16.1 Gate-2 reusable visual contract if accepted.**
 - Slice-15.1 closure evidence: `docs/research/SLICE_15_1_MOBILE_FIRST_UX_GATE4_2026-09-04.md`.
 - Slice-15.2 Gate-1 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE1_2026-09-04.md`.
 - Slice-15.2 Gate-2 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE2_2026-09-04.md`.
 - Slice-15.2 Gate-3 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE3_2026-09-05.md`.
 - Slice-15.2 Gate-4 blocker remediation: `docs/research/SLICE_15_2_GATE4_BLOCKER_REMEDIATION_2026-09-05.md`.
 - Slice-16.1 Gate-1 evidence: `docs/research/SLICE_16_1_GATE1_NEW_GAME_VISUAL_SELECTION_GRAMMAR_2026-09-15.md` - current New Game/server-contract inventory plus Ship Designer previous/next reuse audit.
+- Slice-16.1 Gate-2 Galaxy Size art review: `docs/research/SLICE_16_1_GATE2_GALAXY_SIZE_ART_2026-09-15.md` - astronomy-informed SVG progression, format/provenance decision and live asset QA.
 - Prepared future Espionage mechanics: `docs/slices/PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md`.
 - Accepted downstream 15.2/15.3 strategic product direction: `docs/research/SLICE_15_2_STRATEGIC_HMI_PRODUCT_DIRECTION_2026-09-04.md` - 2D Galaxy primary view, orbital star-system dialog, legal Colonize confirmation, Colony table + full Colony Detail/build queue, location-grouped Fleets, eight-category Research, first-class Diplomacy and planned Espionage, plus retained OX lettermark / future spacecraft-space icon.
 

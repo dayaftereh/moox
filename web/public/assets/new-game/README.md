@@ -37,9 +37,9 @@ The New Game manifest may reference those race assets when composition/race sele
 
 ## Format policy
 
-- SVG: frames, arrows, badges, symbolic setting art, diagrams, emblems and number art.
-- WebP/PNG: painterly or organic artwork such as race portraits and rich illustrations.
+- SVG: frames, arrows, badges, symbolic setting art, diagrams, emblems, number art and deterministic vector-native procedural illustrations such as the Galaxy Size set.
+- WebP/PNG: painterly or organic raster artwork such as race portraits and texture-heavy illustrations.
 - Accessibility text lives in the localized UI/catalog and never depends on raster text embedded in artwork.
 - Generated/original-art provenance belongs in the relevant Slice evidence/art workflow before a runtime asset is accepted.
 
-The manifest starts empty because Slice 16.1 uses original CSS geometry as a prototype; later 16.x slices add only assets that actually exist in the repository.
+Slice 16.1 now registers the five generated Galaxy Size SVGs in the manifest. Later 16.x slices add entries only for assets that actually exist in the repository.

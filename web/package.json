@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "npm run check:encoding && tsc -b && vite build",
     "preview": "vite preview",
-    "check:encoding": "node scripts/check-mojibake.mjs"
+    "check:encoding": "node scripts/check-mojibake.mjs",
+    "generate:galaxy-art": "node scripts/generate-galaxy-size-art.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",

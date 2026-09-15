@@ -9,5 +9,51 @@
     "technology-level",
     "player-count"
   ],
-  "entries": []
+  "entries": [
+    {
+      "id": "new-game:galaxy-size:tiny",
+      "domain": "galaxy-size",
+      "option_id": "tiny",
+      "format": "svg",
+      "path": "/assets/new-game/galaxy-size/tiny.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-galaxy-size-art.mjs"
+    },
+    {
+      "id": "new-game:galaxy-size:small",
+      "domain": "galaxy-size",
+      "option_id": "small",
+      "format": "svg",
+      "path": "/assets/new-game/galaxy-size/small.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-galaxy-size-art.mjs"
+    },
+    {
+      "id": "new-game:galaxy-size:medium",
+      "domain": "galaxy-size",
+      "option_id": "medium",
+      "format": "svg",
+      "path": "/assets/new-game/galaxy-size/medium.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-galaxy-size-art.mjs"
+    },
+    {
+      "id": "new-game:galaxy-size:large",
+      "domain": "galaxy-size",
+      "option_id": "large",
+      "format": "svg",
+      "path": "/assets/new-game/galaxy-size/large.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-galaxy-size-art.mjs"
+    },
+    {
+      "id": "new-game:galaxy-size:huge",
+      "domain": "galaxy-size",
+      "option_id": "huge",
+      "format": "svg",
+      "path": "/assets/new-game/galaxy-size/huge.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-galaxy-size-art.mjs"
+    }
+  ]
 }

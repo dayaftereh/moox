@@ -5667,78 +5667,19 @@ button.galaxy-node-marker-player-fleet.is-open {
   line-height: 1.55;
 }
 .new-game-galaxy-art {
-  --orbit-a-width: 44%;
-  --orbit-a-height: 31%;
-  --orbit-b-width: 68%;
-  --orbit-b-height: 48%;
-  --core-size: 48px;
-  position: relative;
   width: 100%;
   height: 100%;
   min-height: 100%;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 50% 50%, rgba(41, 119, 176, .22), transparent 34%),
-    radial-gradient(circle at 22% 24%, rgba(255,255,255,.08), transparent 1px),
-    linear-gradient(145deg, #06101c, #02060b);
+  background: #02050a;
 }
-.new-game-galaxy-art .galaxy-core {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: var(--core-size);
-  height: var(--core-size);
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff 0 5%, #8cd6ff 16%, #2f7cac 38%, rgba(15, 53, 83, .26) 64%, transparent 72%);
-  box-shadow: 0 0 44px rgba(94, 191, 255, .62);
-}
-.new-game-galaxy-art .galaxy-orbit {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  border: 1px solid rgba(122, 202, 255, .34);
-  border-radius: 50%;
-}
-.new-game-galaxy-art .galaxy-orbit-a {
-  width: var(--orbit-a-width);
-  height: var(--orbit-a-height);
-  transform: translate(-50%, -50%) rotate(-18deg);
-}
-.new-game-galaxy-art .galaxy-orbit-b {
-  width: var(--orbit-b-width);
-  height: var(--orbit-b-height);
-  transform: translate(-50%, -50%) rotate(24deg);
-  opacity: .64;
-}
-.new-game-galaxy-art .galaxy-star {
-  position: absolute;
+.new-game-galaxy-art img {
   display: block;
-  width: 8px;
-  height: 8px;
-  margin: 0;
-  border-radius: 50%;
-  background: #c9edff;
-  box-shadow: 0 0 12px rgba(143, 213, 255, .8);
-}
-.new-game-galaxy-art .galaxy-star-a { left: 28%; top: 37%; }
-.new-game-galaxy-art .galaxy-star-b { left: 67%; top: 32%; }
-.new-game-galaxy-art .galaxy-star-c { left: 63%; top: 67%; }
-.new-game-galaxy-art .galaxy-star-d { left: 35%; top: 70%; }
-.new-game-galaxy-art[data-scale="tiny"] {
-  --orbit-a-width: 30%; --orbit-a-height: 22%; --orbit-b-width: 46%; --orbit-b-height: 32%; --core-size: 36px;
-}
-.new-game-galaxy-art[data-scale="small"] {
-  --orbit-a-width: 38%; --orbit-a-height: 28%; --orbit-b-width: 58%; --orbit-b-height: 40%; --core-size: 42px;
-}
-.new-game-galaxy-art[data-scale="medium"] {
-  --orbit-a-width: 46%; --orbit-a-height: 34%; --orbit-b-width: 70%; --orbit-b-height: 49%; --core-size: 48px;
-}
-.new-game-galaxy-art[data-scale="large"] {
-  --orbit-a-width: 55%; --orbit-a-height: 40%; --orbit-b-width: 82%; --orbit-b-height: 57%; --core-size: 54px;
-}
-.new-game-galaxy-art[data-scale="huge"] {
-  --orbit-a-width: 64%; --orbit-a-height: 46%; --orbit-b-width: 92%; --orbit-b-height: 64%; --core-size: 60px;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  pointer-events: none;
 }
 @media (min-width: 700px) {
   .new-game-visual-card {

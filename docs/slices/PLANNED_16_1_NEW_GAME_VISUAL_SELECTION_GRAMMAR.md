@@ -8,7 +8,7 @@ Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 
 Replace the current form-like New Game setup with one coherent, image-led selection grammar that can be reused by the later Slice-16 settings: difficulty, galaxy settings, race selection, starting technology level and opponent/player composition.
 
-The visual target is a **carousel / previous-next selector** rather than a dense wall of dropdowns. The user should always understand the currently selected option from a strong central visual, short title and a few concise facts, with clear left/right arrows to browse alternatives.
+The visual target is a **carousel / previous-next selector** rather than a dense wall of dropdowns. The user should always understand the currently selected option from a strong central visual and short title, with clear left/right arrows to browse alternatives. Detailed facts belong behind the reusable artwork info control so the card stays compact.
 
 ## Binding UX direction
 
