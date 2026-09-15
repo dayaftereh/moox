@@ -1,7 +1,7 @@
 ﻿# Open Slice 16.3 - Galaxy visual selector
 
 Opened: 2026-09-15
-Status: **Gate 1 complete / Gate 2 next**
+Status: **Gate 2 active**
 
 Planned specification: `docs/slices/PLANNED_16_3_GALAXY_VISUAL_SELECTOR.md`
 Parent: `docs/slices/PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`
@@ -42,4 +42,4 @@ Depends on: closed Slice 16.1 shared visual selection grammar; closed Slice 16.2
 
 ## Next
 
-Gate 2 should freeze supported IDs/facts, Tiny policy, coordinate generalization, age climate-table schema/selection, and final production-art direction. Stop before Gate 2 until explicitly continued.
+Gate 2 is active. Freeze supported IDs/facts, Tiny policy, coordinate generalization, age climate-table schema/selection, and final production-art direction. Do not start Gate-3 implementation until Gate 2 is committed/checkpointed.

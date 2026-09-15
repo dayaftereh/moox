@@ -6,7 +6,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 
 - Branch: `main`.
 - Open slice marker: `docs/slices/_OPEN_GALAXY_VISUAL_SELECTOR_2026-09-15.md`.
-- Active implementation slice: **Slice 16.3 - Galaxy visual selector; Gate 1 complete, Gate 2 next**.
+- Active implementation slice: **Slice 16.3 - Galaxy visual selector; Gate 2 active**.
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
@@ -14,7 +14,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-14 and the Slice-15 browser-playability progression through 15.6 are closed/accepted at their intended baselines**; the 15.3 richer-art pass remains parked. Slice 16, Slice 17 and reserved Slice 20 remain prepared.
-- Current objective: **review/freeze Slice 16.3 Gate 2 from the completed Gate-1 audit: four authoritative size rows, Mineral/Normal/Organic age semantics, Tiny policy, coordinate generalization, normalized age climate contract, server-owned facts and final art direction.**
+- Current objective: **freeze Slice 16.3 Gate 2: supported size/age IDs, Tiny policy, exact server-owned facts, data-driven grid/coordinate contract, normalized age climate-table schema/selection, and final responsive production-art direction. No Gate-3 runtime implementation yet.**
 - Slice-15.1 closure evidence: `docs/research/SLICE_15_1_MOBILE_FIRST_UX_GATE4_2026-09-04.md`.
 - Slice-15.2 Gate-1 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE1_2026-09-04.md`.
 - Slice-15.2 Gate-2 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE2_2026-09-04.md`.

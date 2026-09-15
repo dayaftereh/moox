@@ -42,7 +42,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **Slice 16.3 - Gate 1 complete / Gate 2 next** - `_OPEN_GALAXY_VISUAL_SELECTOR_2026-09-15.md`; four original size rows and Mineral/Normal/Organic age semantics audited, Organic climate table rechecked, runtime-readiness classified and size/age visual prototypes documented.
+- **Slice 16.3 - Gate 2 active** - `_OPEN_GALAXY_VISUAL_SELECTOR_2026-09-15.md`; freezing four size IDs, three original Galaxy-Age IDs, Tiny policy, deterministic coordinate generalization, server-owned facts, age climate schema and production-art direction.
 
 Closed/parked Slice-15 state:
 
