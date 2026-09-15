@@ -1,6 +1,6 @@
 ﻿# Planned slice 16.1 - New Game visual selection grammar
 
-Status: **open; Gate 1-2 complete, Gate 3 next (2026-09-15)**.
+Status: **open; Gate 1-3 complete, Gate 4 next (2026-09-15)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 
@@ -89,9 +89,13 @@ Permanent freeze evidence: `docs/research/SLICE_16_1_GATE2_FREEZE_2026-09-15.md`
 
 ## Gate 3 - implementation
 
-- [ ] Implement the shared visual selector foundation.
-- [ ] Migrate Slice-16 setting screens to the common grammar as their sub-slices land.
-- [ ] Add deterministic UI tests where practical and browser-visible QA.
+- [x] Implement the shared visual selector foundation.
+- [x] Migrate the Slice-16 reference setting to the common grammar and bind later setting migrations to their sub-slices.
+- [x] Add deterministic UI tests where practical and browser-visible QA.
+
+Permanent implementation evidence: `docs/research/SLICE_16_1_GATE3_IMPLEMENTATION_2026-09-15.md`.
+
+Downstream Difficulty/Galaxy Age/Race/Starting Tech/Player Composition breadth remains owned by Slice 16.2-16.6 and must reuse this foundation rather than being pre-built inside 16.1.
 
 ## Gate 4 - close
 

@@ -1056,10 +1056,10 @@ function App() {
 
           <div className="new-game-settings-grid">
             <Card className="new-game-visual-card">
-            <VisualSelector
+            <VisualSelector<GalaxyPrototypeSize>
               label={t('newGame.galaxySize')}
               selectedId={galaxyPrototypeSize}
-              onChange={(id) => setGalaxyPrototypeSize(id as GalaxyPrototypeSize)}
+              onChange={setGalaxyPrototypeSize}
               previousLabel={t('newGame.previousOption')}
               nextLabel={t('newGame.nextOption')}
               positionLabel={(current, total) => t('newGame.optionPosition', { current, total })}

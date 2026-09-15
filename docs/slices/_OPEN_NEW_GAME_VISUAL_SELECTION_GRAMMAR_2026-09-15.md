@@ -4,12 +4,13 @@ Opened: 2026-09-15
 Planned specification: `docs/slices/PLANNED_16_1_NEW_GAME_VISUAL_SELECTION_GRAMMAR.md`
 Permanent Gate-1 evidence: `docs/research/SLICE_16_1_GATE1_NEW_GAME_VISUAL_SELECTION_GRAMMAR_2026-09-15.md`
 Permanent Gate-2 freeze evidence: `docs/research/SLICE_16_1_GATE2_FREEZE_2026-09-15.md`
+Permanent Gate-3 implementation evidence: `docs/research/SLICE_16_1_GATE3_IMPLEMENTATION_2026-09-15.md`
 
 ## Recovery state
 
 - Branch: `main`.
 - Opened from clean synchronized HEAD `4720219`.
-- Gate 1 and Gate 2 are complete; Gate 3 is next.
+- Gate 1, Gate 2 and Gate 3 are complete; Gate 4 is next.
 - No gameplay/server contract changes have been made yet.
 
 ## Gate 1 checklist
@@ -33,4 +34,4 @@ Permanent Gate-2 freeze evidence: `docs/research/SLICE_16_1_GATE2_FREEZE_2026-09
 
 ## Next
 
-Proceed to Gate 3 implementation from the frozen selector contract. Use the shared `VisualSelector`, responsive settings grid, info-on-demand dialog and semantic asset paths as the common foundation while later Slice-16 setting screens land. Preserve server-authoritative supported/planned behavior.
+Proceed to Gate 4 closure acceptance. Re-run build plus the reusable New Game selector browser smoke at desktop and 390 px mobile, confirm keyboard/mouse/touch behavior and preserve the frozen server-authoritative supported/planned contract.

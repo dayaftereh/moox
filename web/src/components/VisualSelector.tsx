@@ -1,7 +1,7 @@
 import { type KeyboardEvent, type ReactNode, useEffect, useRef, useState } from 'react'
 
-export type VisualSelectorOption = {
-  id: string
+export type VisualSelectorOption<TId extends string = string> = {
+  id: TId
   title: string
   details: readonly string[]
   visual: ReactNode
@@ -9,11 +9,11 @@ export type VisualSelectorOption = {
   availabilityLabel?: string
 }
 
-type VisualSelectorProps = {
+type VisualSelectorProps<TId extends string> = {
   label: string
-  options: readonly VisualSelectorOption[]
-  selectedId: string
-  onChange: (id: string) => void
+  options: readonly VisualSelectorOption<TId>[]
+  selectedId: TId
+  onChange: (id: TId) => void
   previousLabel: string
   nextLabel: string
   positionLabel: (current: number, total: number) => string
@@ -21,7 +21,7 @@ type VisualSelectorProps = {
   closeInfoLabel: string
 }
 
-export function VisualSelector({
+export function VisualSelector<TId extends string>({
   label,
   options,
   selectedId,
@@ -31,7 +31,7 @@ export function VisualSelector({
   positionLabel,
   infoLabel,
   closeInfoLabel,
-}: VisualSelectorProps) {
+}: VisualSelectorProps<TId>) {
   const [infoOpen, setInfoOpen] = useState(false)
   const infoButtonRef = useRef<HTMLButtonElement>(null)
   const closeButtonRef = useRef<HTMLButtonElement>(null)

@@ -3,7 +3,9 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
-const outDir = path.resolve(here, '../public/assets/new-game/galaxy-size')
+const outDir = process.env.MOOX_GALAXY_ART_OUT_DIR
+  ? path.resolve(process.env.MOOX_GALAXY_ART_OUT_DIR)
+  : path.resolve(here, '../public/assets/new-game/galaxy-size')
 fs.mkdirSync(outDir, { recursive: true })
 
 const W = 1200

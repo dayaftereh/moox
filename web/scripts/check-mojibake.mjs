@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 const roots = ['src', 'public']
-const textExtensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.css', '.html', '.json', '.md', '.txt', '.svg'])
+const textExtensions = new Set(['.ts', '.tsx', '.js', '.jsx', '.mjs', '.css', '.html', '.json', '.md', '.txt', '.svg'])
 const suspiciousSequences = [
   'Â·', 'Â ', 'Â°',
   'â€”', 'â€“', 'â€¦', 'â†’', 'â†', 'â€º', 'â€¹', 'â€™', 'â€œ', 'â€',
