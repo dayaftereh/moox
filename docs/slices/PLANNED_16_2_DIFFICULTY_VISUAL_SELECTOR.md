@@ -1,6 +1,6 @@
 # Planned slice 16.2 - Difficulty visual selector
 
-Status: **open; Gates 1-2 complete, Gate 3 next (2026-09-15)**.
+Status: **open; Gates 1-3 complete, Gate 4 next (2026-09-15)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slice 16.1 shared visual selection grammar.
@@ -74,10 +74,10 @@ Permanent Gate-2 freeze evidence: `docs/research/SLICE_16_2_GATE2_DIFFICULTY_FRE
 
 ## Gate 3 - implementation
 
-- [ ] Add authoritative difficulty setting/catalog support.
-- [ ] Add the visual carousel selector.
-- [ ] Bind concise modifier facts from server/normalized data.
-- [ ] Add deterministic New Game fixtures for each supported level.
+- [x] Add authoritative difficulty setting/catalog support.
+- [x] Add the visual carousel selector.
+- [x] Bind concise modifier facts from server/normalized data.
+- [x] Add deterministic New Game fixtures for each supported level.
 
 ## Gate 4 - close
 
