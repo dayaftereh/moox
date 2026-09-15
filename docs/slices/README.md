@@ -42,7 +42,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **None.** Slice 16.2 is closed; Slice 16.3 is the next prepared objective but has no `_OPEN_` marker until work actually starts.
+- **Slice 16.3 - Gate 1 active** - `_OPEN_GALAXY_VISUAL_SELECTOR_2026-09-15.md`; auditing original/runtime galaxy size+age semantics, generator support/counts and honest visual prototype directions before any freeze/implementation.
 
 Closed/parked Slice-15 state:
 
@@ -54,7 +54,7 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slices 16.1-16.2 are closed and Slice 16.3 is the next prepared objective, not yet open.
+1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slices 16.1-16.2 are closed and Slice 16.3 is active at Gate 1.
 2. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for broader combat/design fidelity.
 3. `PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md` - dedicated authoritative Spy/intelligence mechanics; Slice 20 remains reserved while 18/19 are unassigned.
 
