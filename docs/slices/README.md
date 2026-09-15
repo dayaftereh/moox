@@ -42,7 +42,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **Slice 16.2 - Gate 2 active** - `_OPEN_DIFFICULTY_VISUAL_SELECTOR_2026-09-15.md`; server-owned Difficulty IDs/ownership and Tutor separation drafted, exact evidence-backed modifier profiles and Very-Hard mechanics still being frozen.
+- **Slice 16.2 - Gates 1-2 complete / Gate 3 next** - `_OPEN_DIFFICULTY_VISUAL_SELECTOR_2026-09-15.md`; server Difficulty IDs/default, Tutor separation, Average-normalized additive AI economy profile, Very-Hard midpoint, player-facing fact payload and command-emblem SVG contract are frozen.
 
 Closed/parked Slice-15 state:
 
@@ -54,7 +54,7 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slice 16.1 is closed and Slice 16.2 is active at Gate 2 next.
+1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slice 16.1 is closed and Slice 16.2 is active at Gate 3 next.
 2. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for broader combat/design fidelity.
 3. `PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md` - dedicated authoritative Spy/intelligence mechanics; Slice 20 remains reserved while 18/19 are unassigned.
 

@@ -1,6 +1,6 @@
 # Planned slice 16.2 - Difficulty visual selector
 
-Status: **open; Gate 1 complete, Gate 2 active (2026-09-15)**.
+Status: **open; Gates 1-2 complete, Gate 3 next (2026-09-15)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slice 16.1 shared visual selection grammar.
@@ -64,11 +64,13 @@ Permanent Gate-1 evidence: `docs/research/SLICE_16_2_GATE1_DIFFICULTY_AUDIT_2026
 
 ## Gate 2 - freeze
 
-Gate-2 working draft: `docs/research/SLICE_16_2_GATE2_DIFFICULTY_FREEZE_DRAFT_2026-09-15.md`.
+Gate-2 working draft (superseded): `docs/research/SLICE_16_2_GATE2_DIFFICULTY_FREEZE_DRAFT_2026-09-15.md`.
 
-- [ ] Freeze supported difficulty set and server identifiers.
-- [ ] Freeze display labels and modifier summary text.
-- [ ] Freeze final image/icon motif and asset format.
+Permanent Gate-2 freeze evidence: `docs/research/SLICE_16_2_GATE2_DIFFICULTY_FREEZE_2026-09-15.md`.
+
+- [x] Freeze supported difficulty set and server identifiers.
+- [x] Freeze display labels and modifier summary text.
+- [x] Freeze final image/icon motif and asset format.
 
 ## Gate 3 - implementation
 

@@ -3,13 +3,14 @@
 Opened: 2026-09-15
 Planned specification: `docs/slices/PLANNED_16_2_DIFFICULTY_VISUAL_SELECTOR.md`
 Permanent Gate-1 evidence: `docs/research/SLICE_16_2_GATE1_DIFFICULTY_AUDIT_2026-09-15.md`
-Gate-2 working draft: `docs/research/SLICE_16_2_GATE2_DIFFICULTY_FREEZE_DRAFT_2026-09-15.md`
+Gate-2 working draft (superseded): `docs/research/SLICE_16_2_GATE2_DIFFICULTY_FREEZE_DRAFT_2026-09-15.md`
+Permanent Gate-2 freeze evidence: `docs/research/SLICE_16_2_GATE2_DIFFICULTY_FREEZE_2026-09-15.md`
 
 ## Recovery state
 
 - Branch: `main`.
 - Opened from clean closed Slice-16.1 baseline `4f9046d`.
-- Gate 1 audit is complete; Gate 2 is active in a fresh explicit session.
+- Gate 1 and Gate 2 are complete; Gate 3 implementation is next.
 - Slice 16.1 shared visual-selection grammar is the required UI foundation.
 - No Difficulty gameplay/server implementation has been made yet.
 
@@ -33,4 +34,4 @@ Gate-2 working draft: `docs/research/SLICE_16_2_GATE2_DIFFICULTY_FREEZE_DRAFT_20
 
 ## Next
 
-Gate 2 freeze discussion: supported difficulty set/server IDs, Tutor policy, explicit Very-Hard mechanics, evidence-backed numeric effects, concise modifier-summary text, and final emblem/asset format. Do not start Gate-3 implementation before those decisions are frozen.
+Proceed to Gate 3 implementation from the frozen Difficulty contract: authoritative DifficultyID/profile catalog, New Game/API/state/persistence, additive built-in-AI per-role economy modifiers, command-deficit rate, deterministic fixtures, five production SVGs, shared VisualSelector integration and localized facts sourced from server-owned profile data.

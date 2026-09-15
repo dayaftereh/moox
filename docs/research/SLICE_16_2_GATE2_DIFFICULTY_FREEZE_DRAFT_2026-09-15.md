@@ -1,10 +1,11 @@
 # Slice 16.2 Gate 2 - Difficulty freeze draft
 
 Date: 2026-09-15
-Status: **Gate 2 active; freeze draft started in fresh session**
+Status: **superseded by final Gate-2 freeze**
 
 Gate-1 evidence: `docs/research/SLICE_16_2_GATE1_DIFFICULTY_AUDIT_2026-09-15.md`
 Shared UI foundation: closed Slice 16.1.
+Final freeze: `docs/research/SLICE_16_2_GATE2_DIFFICULTY_FREEZE_2026-09-15.md`.
 
 ## Architectural ownership decision
 
