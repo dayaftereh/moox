@@ -98,3 +98,38 @@ Browser-backed QA against the live `moox-server` on port 7171:
 - 1280 px desktop viewport remained within width (document `scrollWidth=1265`) and uses 64 px side controls.
 
 The placeholder galaxy visual is original CSS/vector-style geometry local to the application and introduces no external/copyrighted artwork.
+## 5. Frozen Gate-1 asset convention
+
+Slice 16.1 now reserves one stable manifest and path grammar:
+
+- manifest URL: `/assets/new-game/manifest.json`;
+- repository root: `web/public/assets/new-game/`;
+- semantic ID: `new-game:<domain>:<option-id>`;
+- runtime setting-art path: `/assets/new-game/<domain>/<option-id>.<svg|webp|png>`;
+- domains: `difficulty`, `galaxy-size`, `galaxy-age`, `technology-level`, `player-count`;
+- option IDs are lowercase kebab-case and stable across localized display copy.
+
+`web/src/newGameAssets.ts` owns typed path helpers and validates semantic option/race IDs. The public manifest intentionally starts with no file entries because the Slice-16.1 prototype uses original CSS geometry rather than pretending missing runtime assets exist. Later sub-slices add entries only when corresponding files land.
+
+Race portrait identity remains canonical at `/assets/races/<race-id>/portrait.webp` (or intentional PNG) plus `emblem.svg`, matching Slice 16.4; New Game references those assets rather than duplicating them.
+
+## 6. Generic selector versus specialized-card classification
+
+The shared `VisualSelector` owns navigation, focus/keyboard behavior, option position, availability/locked state and responsive frame. Setting-specific bodies own artwork and facts.
+
+| Slice / setting | Shared selector shell | Specialized body / reason |
+| --- | --- | --- |
+| 16.2 Difficulty | yes | Setting-specific emblem/strength art and evidence-backed facts only. |
+| 16.3 Galaxy size | yes | Galaxy diagram/illustration body; invalid player-count combinations can use shared locked state. |
+| 16.3 Galaxy age | yes | Stellar/nebular illustration body; same shell. |
+| 16.4 Preset race | yes | Specialized 4:5 portrait body with race emblem/facts and optional detail affordance; navigation/frame stay shared. |
+| 16.5 Starting technology | yes | Standard image/fact body; a desktop three-card presentation is allowed only as a layout variant of the same selection contract. |
+| 16.6 Opponent count | yes | Number art plus compact capacity facts; enabled maximum remains server-authoritative. |
+| 16.6 Opponent/player composition | partial | Specialized multi-slot portrait/controller layout; embeds the generic opponent-count selector rather than forcing the whole composition into one card. |
+| 16.6 Final New Game summary | no carousel requirement | Specialized visual summary composed from the already-selected assets. |
+
+Game ID, seed and editable empire names remain ordinary form/text controls; forcing them into the image selector would reduce clarity without adding selection semantics.
+
+## Gate 1 conclusion
+
+All six Gate-1 items are complete. Gate 2 can now freeze the reusable selector component contract, responsive layout, accessibility/keyboard behavior, asset naming/runtime conventions and unsupported/disabled-state presentation before later 16.x implementation breadth depends on them.

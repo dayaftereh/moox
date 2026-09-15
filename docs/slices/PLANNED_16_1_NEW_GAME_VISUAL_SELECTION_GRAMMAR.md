@@ -1,6 +1,6 @@
 ﻿# Planned slice 16.1 - New Game visual selection grammar
 
-Status: **open; Gate 1 active (2026-09-15)**.
+Status: **open; Gate 1 complete (2026-09-15), Gate 2 not started**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 
@@ -75,8 +75,8 @@ The selector must avoid horizontal page overflow at the established mobile QA wi
 - [x] Audit existing Ship Designer arrow/carousel interaction components for reuse.
 - [x] Prototype one selector with placeholder/original art at desktop and 390 px mobile.
 - [x] Verify keyboard, mouse and touch-size controls.
-- [ ] Define a stable New Game asset manifest/path convention.
-- [ ] Confirm which settings can share one generic selector and which require specialized cards.
+- [x] Define a stable New Game asset manifest/path convention.
+- [x] Confirm which settings can share one generic selector and which require specialized cards.
 
 ## Gate 2 - freeze
 

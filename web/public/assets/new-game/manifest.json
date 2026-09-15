@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "asset_root": "/assets/new-game",
+  "id_format": "new-game:<domain>:<option-id>",
+  "domains": [
+    "difficulty",
+    "galaxy-size",
+    "galaxy-age",
+    "technology-level",
+    "player-count"
+  ],
+  "entries": []
+}

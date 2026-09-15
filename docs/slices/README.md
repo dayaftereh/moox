@@ -42,7 +42,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **Slice 16.1 - Gate 1 active** - `_OPEN_NEW_GAME_VISUAL_SELECTION_GRAMMAR_2026-09-15.md`; visual-selector audit/prototype work is in progress.
+- **Slice 16.1 - Gate 1 complete / Gate 2 next** - `_OPEN_NEW_GAME_VISUAL_SELECTION_GRAMMAR_2026-09-15.md`; selector audit/prototype, responsive interaction QA, asset convention and generic/specialized classification are frozen as Gate-1 evidence.
 
 Closed/parked Slice-15 state:
 
