@@ -8,6 +8,7 @@ import (
 
 	"moox/internal/core"
 	"moox/internal/protocol"
+	"moox/internal/ruleset"
 )
 
 var ErrInvalidNewGameSettings = errors.New("invalid new game settings")
@@ -16,9 +17,18 @@ type GalaxySize string
 type GalaxyAge string
 
 const (
-	GalaxySizeSmall GalaxySize = "small"
-	GalaxyAgeNormal GalaxyAge  = "normal"
+	GalaxySizeSmall  GalaxySize = "small"
+	GalaxySizeMedium GalaxySize = "medium"
+	GalaxySizeLarge  GalaxySize = "large"
+	GalaxySizeHuge   GalaxySize = "huge"
+
+	GalaxyAgeMineralRich GalaxyAge = "mineral_rich"
+	GalaxyAgeNormal      GalaxyAge = "normal"
+	GalaxyAgeOrganicRich GalaxyAge = "organic_rich"
 )
+
+var SupportedGalaxySizeIDs = []GalaxySize{GalaxySizeSmall, GalaxySizeMedium, GalaxySizeLarge, GalaxySizeHuge}
+var SupportedGalaxyAgeIDs = []GalaxyAge{GalaxyAgeMineralRich, GalaxyAgeNormal, GalaxyAgeOrganicRich}
 
 type NewGamePlayerSpec struct {
 	SeatID              protocol.SeatID `json:"seat_id"`
@@ -116,13 +126,21 @@ func (r *EconomyRules) NewGame(seed uint64, settings NewGameSettings) (NewGameRe
 		return NewGameResult{}, fmt.Errorf("initialize new game technologies: %w", err)
 	}
 
-	systems, err := r.generateNewGameSystems(state, rng)
+	sizeProfile, err := r.newGameGalaxySizeProfile(settings.GalaxySize)
+	if err != nil {
+		return NewGameResult{}, err
+	}
+	ageProfile, err := r.newGameGalaxyAgeProfile(settings.GalaxyAge)
+	if err != nil {
+		return NewGameResult{}, err
+	}
+	systems, err := r.generateNewGameSystems(state, rng, sizeProfile, ageProfile)
 	if err != nil {
 		return NewGameResult{}, err
 	}
 	homeIndexes := farthestNewGameSystemPair(systems)
 	for _, index := range homeIndexes {
-		if err := r.fillNewGameHomeSystem(&systems[index], rng); err != nil {
+		if err := r.fillNewGameHomeSystem(&systems[index], rng, ageProfile); err != nil {
 			return NewGameResult{}, err
 		}
 	}
@@ -291,11 +309,11 @@ func (r *EconomyRules) validateNewGameSettings(settings NewGameSettings) error {
 	if !core.IsSupportedDifficultyID(settings.DifficultyID) {
 		return fmt.Errorf("unsupported difficulty_id %q", settings.DifficultyID)
 	}
-	if settings.GalaxySize != GalaxySizeSmall {
-		return fmt.Errorf("unsupported galaxy_size %q; Slice 09 supports only %q", settings.GalaxySize, GalaxySizeSmall)
+	if _, err := r.newGameGalaxySizeProfile(settings.GalaxySize); err != nil {
+		return err
 	}
-	if settings.GalaxyAge != GalaxyAgeNormal {
-		return fmt.Errorf("unsupported galaxy_age %q; Slice 09 supports only %q", settings.GalaxyAge, GalaxyAgeNormal)
+	if _, err := r.newGameGalaxyAgeProfile(settings.GalaxyAge); err != nil {
+		return err
 	}
 	if settings.TechnologyLevel != NewGameTechnologyAverage {
 		return fmt.Errorf("unsupported technology_level %q; Slice 09 supports only %q", settings.TechnologyLevel, NewGameTechnologyAverage)
@@ -351,22 +369,38 @@ func (r *EconomyRules) validateNewGameSettings(settings NewGameSettings) error {
 	return nil
 }
 
-func (r *EconomyRules) generateNewGameSystems(state *core.GameState, rng *core.RNG) ([]newGameSystemPlan, error) {
-	const stars = 20
-	plans := make([]newGameSystemPlan, stars)
-	spectral := make([]int, stars)
-	weights := make([]int, 7)
-	for i := range weights {
-		weights[i] = r.NewGameGalaxy.SpectralWeights[i][1]
+func (r *EconomyRules) newGameGalaxySizeProfile(id GalaxySize) (*ruleset.NewGameGalaxySize, error) {
+	for i := range r.NewGameGalaxy.GalaxySizes {
+		if r.NewGameGalaxy.GalaxySizes[i].ID == string(id) {
+			return &r.NewGameGalaxy.GalaxySizes[i], nil
+		}
 	}
-	for i := 0; i < stars; i++ {
-		value, err := weightedNewGameChoice(rng, weights)
+	return nil, fmt.Errorf("unsupported galaxy_size %q", id)
+}
+
+func (r *EconomyRules) newGameGalaxyAgeProfile(id GalaxyAge) (*ruleset.NewGameGalaxyAge, error) {
+	for i := range r.NewGameGalaxy.GalaxyAges {
+		if r.NewGameGalaxy.GalaxyAges[i].ID == string(id) {
+			return &r.NewGameGalaxy.GalaxyAges[i], nil
+		}
+	}
+	return nil, fmt.Errorf("unsupported galaxy_age %q", id)
+}
+
+func (r *EconomyRules) generateNewGameSystems(state *core.GameState, rng *core.RNG, size *ruleset.NewGameGalaxySize, age *ruleset.NewGameGalaxyAge) ([]newGameSystemPlan, error) {
+	if size == nil || age == nil {
+		return nil, fmt.Errorf("new game galaxy size/age profile is required")
+	}
+	plans := make([]newGameSystemPlan, size.Stars)
+	spectral := make([]int, size.Stars)
+	for i := 0; i < size.Stars; i++ {
+		value, err := weightedNewGameChoice(rng, age.SpectralWeights)
 		if err != nil {
 			return nil, err
 		}
 		spectral[i] = value
 	}
-	for i := 0; i < stars; i++ {
+	for i := 0; i < size.Stars; i++ {
 		jx, err := rng.Intn(81)
 		if err != nil {
 			return nil, err
@@ -375,21 +409,21 @@ func (r *EconomyRules) generateNewGameSystems(state *core.GameState, rng *core.R
 		if err != nil {
 			return nil, err
 		}
-		column, row := i%5, i/5
+		column, row := i%size.GridColumns, i/size.GridColumns
 		plans[i] = newGameSystemPlan{
 			ID: state.NewID(), Name: fmt.Sprintf("System %02d", i+1),
 			X: 100 + 200*column + jx - 40, Y: 100 + 200*row + jy - 40, Spectral: spectral[i],
 		}
 	}
 	for i := range plans {
-		if err := r.generateNewGamePlanets(&plans[i], rng); err != nil {
+		if err := r.generateNewGamePlanets(&plans[i], rng, age); err != nil {
 			return nil, fmt.Errorf("generate planets for system %d: %w", plans[i].ID, err)
 		}
 	}
 	return plans, nil
 }
 
-func (r *EconomyRules) generateNewGamePlanets(system *newGameSystemPlan, rng *core.RNG) error {
+func (r *EconomyRules) generateNewGamePlanets(system *newGameSystemPlan, rng *core.RNG, age *ruleset.NewGameGalaxyAge) error {
 	if system.Spectral < 0 || system.Spectral > 6 {
 		return fmt.Errorf("invalid spectral class %d", system.Spectral)
 	}
@@ -419,7 +453,7 @@ func (r *EconomyRules) generateNewGamePlanets(system *newGameSystemPlan, rng *co
 		}
 		system.Bodies = append(system.Bodies, newGameBodyPlan{Orbit: orbit, Kind: kind})
 		if kind == core.OrbitalBodyPlanet {
-			planet, err := r.newGamePlanetProperties(rng, system.Spectral, orbit)
+			planet, err := r.newGamePlanetProperties(rng, system.Spectral, orbit, age)
 			if err != nil {
 				return err
 			}
@@ -513,7 +547,7 @@ func (r *EconomyRules) newGameBodyType(rng *core.RNG, orbit int) (int, error) {
 	}
 }
 
-func (r *EconomyRules) newGamePlanetProperties(rng *core.RNG, spectral, orbit int) (newGamePlanetPlan, error) {
+func (r *EconomyRules) newGamePlanetProperties(rng *core.RNG, spectral, orbit int, age *ruleset.NewGameGalaxyAge) (newGamePlanetPlan, error) {
 	if spectral < 0 {
 		return newGamePlanetPlan{}, fmt.Errorf("invalid spectral class %d", spectral)
 	}
@@ -539,7 +573,10 @@ func (r *EconomyRules) newGamePlanetProperties(rng *core.RNG, spectral, orbit in
 	mineralIndex := r.NewGameGalaxy.MineralClasses[mineralRoll][spectral]
 	gravityIndex := r.NewGameGalaxy.GravityByMineralSize[mineralIndex][sizeIndex]
 	group := r.NewGameGalaxy.PlanetGroupBySpectralOrbit[spectral][orbit]
-	climateIndex, err := weightedNewGameChoice(rng, r.NewGameGalaxy.NormalClimateWeights[group])
+	if age == nil {
+		return newGamePlanetPlan{}, fmt.Errorf("new game galaxy age profile is required")
+	}
+	climateIndex, err := weightedNewGameChoice(rng, age.ClimateWeights[group])
 	if err != nil {
 		return newGamePlanetPlan{}, err
 	}
@@ -549,7 +586,7 @@ func (r *EconomyRules) newGamePlanetProperties(rng *core.RNG, spectral, orbit in
 	return newGamePlanetPlan{Orbit: orbit, SizeID: newGameSizeIDs[sizeIndex], MineralID: newGameMineralIDs[mineralIndex], GravityID: newGameGravityIDs[gravityIndex], ClimateID: newGameClimateIDs[climateIndex]}, nil
 }
 
-func (r *EconomyRules) fillNewGameHomeSystem(system *newGameSystemPlan, rng *core.RNG) error {
+func (r *EconomyRules) fillNewGameHomeSystem(system *newGameSystemPlan, rng *core.RNG, age *ruleset.NewGameGalaxyAge) error {
 	for len(system.Planets) < r.NewGameGalaxy.Homeworld.MinimumPlanets {
 		used := make(map[int]struct{}, len(system.Planets))
 		for _, planet := range system.Planets {
@@ -565,7 +602,7 @@ func (r *EconomyRules) fillNewGameHomeSystem(system *newGameSystemPlan, rng *cor
 		if orbit < 0 {
 			return fmt.Errorf("cannot fill home system %d to %d planets", system.ID, r.NewGameGalaxy.Homeworld.MinimumPlanets)
 		}
-		planet, err := r.newGamePlanetProperties(rng, system.Spectral, orbit)
+		planet, err := r.newGamePlanetProperties(rng, system.Spectral, orbit, age)
 		if err != nil {
 			return err
 		}

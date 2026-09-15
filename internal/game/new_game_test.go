@@ -257,8 +257,8 @@ func TestNewGameRejectsUnsupportedSettings(t *testing.T) {
 	rules := loadCommittedEconomyRules(t)
 	cases := []NewGameSettings{
 		{},
-		func() NewGameSettings { s := canonicalNewGameSettings(); s.GalaxySize = "medium"; return s }(),
-		func() NewGameSettings { s := canonicalNewGameSettings(); s.GalaxyAge = "organic_rich"; return s }(),
+		func() NewGameSettings { s := canonicalNewGameSettings(); s.GalaxySize = "tiny"; return s }(),
+		func() NewGameSettings { s := canonicalNewGameSettings(); s.GalaxyAge = "young"; return s }(),
 		func() NewGameSettings {
 			s := canonicalNewGameSettings()
 			s.TechnologyLevel = NewGameTechnologyPreWarp
@@ -272,6 +272,96 @@ func TestNewGameRejectsUnsupportedSettings(t *testing.T) {
 	for i, settings := range cases {
 		if _, err := rules.NewGame(7, settings); err == nil {
 			t.Fatalf("case %d unexpectedly accepted", i)
+		}
+	}
+}
+
+func TestNewGameAllGalaxySizeAgeTuplesAreDeterministicAndBounded(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	sizes := []struct {
+		id          GalaxySize
+		stars       int
+		gridColumns int
+		gridRows    int
+	}{
+		{GalaxySizeSmall, 20, 5, 4},
+		{GalaxySizeMedium, 36, 6, 6},
+		{GalaxySizeLarge, 54, 9, 6},
+		{GalaxySizeHuge, 71, 9, 8},
+	}
+	ages := []GalaxyAge{GalaxyAgeMineralRich, GalaxyAgeNormal, GalaxyAgeOrganicRich}
+	for _, size := range sizes {
+		for _, age := range ages {
+			t.Run(string(size.id)+"/"+string(age), func(t *testing.T) {
+				settings := canonicalNewGameSettings()
+				settings.GalaxySize = size.id
+				settings.GalaxyAge = age
+				first, err := rules.NewGame(0x8009, settings)
+				if err != nil {
+					t.Fatal(err)
+				}
+				second, err := rules.NewGame(0x8009, settings)
+				if err != nil {
+					t.Fatal(err)
+				}
+				firstJSON, err := json.Marshal(first.State)
+				if err != nil {
+					t.Fatal(err)
+				}
+				secondJSON, err := json.Marshal(second.State)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if !bytes.Equal(firstJSON, secondJSON) {
+					t.Fatal("same seed/settings did not produce byte-identical state")
+				}
+				if got := len(first.State.Galaxy.Systems); got != size.stars {
+					t.Fatalf("systems=%d want=%d", got, size.stars)
+				}
+				for i, system := range first.State.Galaxy.Systems {
+					column, row := i%size.gridColumns, i/size.gridColumns
+					centerX, centerY := 100+200*column, 100+200*row
+					if system.X < centerX-40 || system.X > centerX+40 || system.Y < centerY-40 || system.Y > centerY+40 {
+						t.Fatalf("system[%d] coordinate=(%d,%d) outside frozen cell jitter around (%d,%d)", i, system.X, system.Y, centerX, centerY)
+					}
+				}
+			})
+		}
+	}
+}
+
+func TestNewGameGalaxyAgeProfilesMatchFrozenGate2Data(t *testing.T) {
+	rules := loadCommittedEconomyRules(t)
+	if got := len(rules.NewGameGalaxy.GalaxyAges); got != 3 {
+		t.Fatalf("galaxy ages=%d want=3", got)
+	}
+	wantSpectral := [][]int{
+		{20, 25, 10, 10, 32, 1, 2},
+		{10, 15, 16, 16, 37, 2, 4},
+		{5, 5, 30, 21, 30, 3, 6},
+	}
+	wantNormalClimate := [][]int{
+		{15, 55, 25, 5, 0, 0, 0, 0, 0, 0},
+		{15, 50, 25, 10, 5, 0, 0, 0, 0, 0},
+		{10, 15, 10, 10, 10, 10, 11, 11, 11, 2},
+		{20, 0, 70, 0, 8, 2, 0, 0, 0, 0},
+	}
+	wantOrganicClimate := [][]int{
+		{15, 40, 20, 25, 0, 0, 0, 0, 0, 0},
+		{5, 30, 20, 25, 20, 0, 0, 0, 0, 0},
+		{5, 8, 8, 13, 13, 13, 13, 13, 10, 4},
+		{20, 0, 50, 0, 30, 0, 0, 0, 0, 0},
+	}
+	for i, age := range rules.NewGameGalaxy.GalaxyAges {
+		if !reflect.DeepEqual(age.SpectralWeights, wantSpectral[i]) {
+			t.Fatalf("age[%d] spectral=%v want=%v", i, age.SpectralWeights, wantSpectral[i])
+		}
+		wantClimate := wantNormalClimate
+		if i == 2 {
+			wantClimate = wantOrganicClimate
+		}
+		if !reflect.DeepEqual(age.ClimateWeights, wantClimate) {
+			t.Fatalf("age[%d] climate=%v want=%v", i, age.ClimateWeights, wantClimate)
 		}
 	}
 }

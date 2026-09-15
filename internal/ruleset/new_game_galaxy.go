@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-const NewGameGalaxySchemaVersion = 1
+const NewGameGalaxySchemaVersion = 2
 
 type NewGameGalaxyFile struct {
 	SchemaVersion              int                   `json:"schema_version"`
@@ -15,13 +15,11 @@ type NewGameGalaxyFile struct {
 	GalaxySizes                []NewGameGalaxySize   `json:"galaxy_sizes"`
 	GalaxyAges                 []NewGameGalaxyAge    `json:"galaxy_ages"`
 	SizeRollUpperThresholds    []int                 `json:"size_roll_upper_thresholds"`
-	SpectralWeights            [][]int               `json:"spectral_weights"`
 	SatelliteCounts            [][]int               `json:"satellite_counts"`
 	BodyTypes                  [][]int               `json:"body_types"`
 	MineralClasses             [][]int               `json:"mineral_classes"`
 	GravityByMineralSize       [][]int               `json:"gravity_by_mineral_size"`
 	PlanetGroupBySpectralOrbit [][]int               `json:"planet_group_by_spectral_orbit"`
-	NormalClimateWeights       [][]int               `json:"normal_climate_weights"`
 	Homeworld                  NewGameHomeworldRules `json:"homeworld"`
 	Start                      NewGameStartRules     `json:"start"`
 	Algorithms                 NewGameAlgorithms     `json:"algorithms"`
@@ -36,8 +34,10 @@ type NewGameGalaxySize struct {
 }
 
 type NewGameGalaxyAge struct {
-	ID    string `json:"id"`
-	Index int    `json:"index"`
+	ID              string  `json:"id"`
+	Index           int     `json:"index"`
+	SpectralWeights []int   `json:"spectral_weights"`
+	ClimateWeights  [][]int `json:"climate_weights"`
 }
 
 type NewGameHomeworldRules struct {
@@ -93,12 +93,16 @@ func (f *NewGameGalaxyFile) Validate() error {
 	if len(f.GalaxySizes) != 4 {
 		return fmt.Errorf("galaxy size count=%d, expected 4", len(f.GalaxySizes))
 	}
+	expectedSizeIDs := []string{"small", "medium", "large", "huge"}
 	expectedStars := []int{20, 36, 54, 71}
 	expectedCols := []int{5, 6, 9, 9}
 	expectedRows := []int{4, 6, 6, 8}
 	for i, size := range f.GalaxySizes {
-		if size.Index != i || size.ID == "" || size.Stars != expectedStars[i] || size.GridColumns != expectedCols[i] || size.GridRows != expectedRows[i] {
+		if size.Index != i || size.ID != expectedSizeIDs[i] || size.Stars != expectedStars[i] || size.GridColumns != expectedCols[i] || size.GridRows != expectedRows[i] {
 			return fmt.Errorf("galaxy size[%d] is invalid", i)
+		}
+		if size.Stars <= 0 || size.GridColumns <= 0 || size.GridRows <= 0 || size.Stars > size.GridColumns*size.GridRows {
+			return fmt.Errorf("galaxy size[%d] has invalid star/grid capacity", i)
 		}
 	}
 	if !equalNewGameInts(f.SizeRollUpperThresholds, []int{1, 3, 7, 9, 10}) {
@@ -112,17 +116,30 @@ func (f *NewGameGalaxyFile) Validate() error {
 		if age.Index != i || age.ID != expectedAges[i] {
 			return fmt.Errorf("galaxy age[%d]=%q/%d is invalid", i, age.ID, age.Index)
 		}
-	}
-	if err := validateMatrix("spectral_weights", f.SpectralWeights, 7, 3, 0, 100); err != nil {
-		return err
-	}
-	for col := 0; col < 3; col++ {
-		sum := 0
-		for row := 0; row < 7; row++ {
-			sum += f.SpectralWeights[row][col]
+		if len(age.SpectralWeights) != 7 {
+			return fmt.Errorf("galaxy age[%d] spectral weight count=%d, expected 7", i, len(age.SpectralWeights))
 		}
-		if sum != 100 {
-			return fmt.Errorf("spectral_weights column %d sums to %d, expected 100", col, sum)
+		spectralSum := 0
+		for spectral, weight := range age.SpectralWeights {
+			if weight < 0 || weight > 100 {
+				return fmt.Errorf("galaxy age[%d] spectral_weights[%d]=%d outside 0..100", i, spectral, weight)
+			}
+			spectralSum += weight
+		}
+		if spectralSum != 100 {
+			return fmt.Errorf("galaxy age[%d] spectral weights sum to %d, expected 100", i, spectralSum)
+		}
+		if err := validateMatrix(fmt.Sprintf("galaxy_ages[%d].climate_weights", i), age.ClimateWeights, 4, 10, 0, 100); err != nil {
+			return err
+		}
+		for group, weights := range age.ClimateWeights {
+			total := 0
+			for _, weight := range weights {
+				total += weight
+			}
+			if total <= 0 {
+				return fmt.Errorf("galaxy age[%d] climate group %d has no weight", i, group)
+			}
 		}
 	}
 	if err := validateMatrix("satellite_counts", f.SatelliteCounts, 10, 6, 0, 5); err != nil {
@@ -139,18 +156,6 @@ func (f *NewGameGalaxyFile) Validate() error {
 	}
 	if err := validateMatrix("planet_group_by_spectral_orbit", f.PlanetGroupBySpectralOrbit, 6, 5, 0, 3); err != nil {
 		return err
-	}
-	if err := validateMatrix("normal_climate_weights", f.NormalClimateWeights, 4, 10, 0, 100); err != nil {
-		return err
-	}
-	for i, weights := range f.NormalClimateWeights {
-		sum := 0
-		for _, w := range weights {
-			sum += w
-		}
-		if sum <= 0 {
-			return fmt.Errorf("normal_climate_weights group %d has no weight", i)
-		}
 	}
 	if f.Homeworld.MinimumPlanets != 3 || f.Homeworld.SizeID != "medium" || f.Homeworld.MineralID != "abundant" || f.Homeworld.GravityID != "normal_g" || f.Homeworld.ClimateID != "terran" {
 		return fmt.Errorf("homeworld baseline is invalid")
