@@ -54,6 +54,51 @@
       "path": "/assets/new-game/galaxy-size/huge.svg",
       "provenance": "original-procedural-mox",
       "generator": "web/scripts/generate-galaxy-size-art.mjs"
+    },
+    {
+      "id": "new-game:difficulty:easy",
+      "domain": "difficulty",
+      "option_id": "easy",
+      "format": "svg",
+      "path": "/assets/new-game/difficulty/easy.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-difficulty-art.mjs"
+    },
+    {
+      "id": "new-game:difficulty:normal",
+      "domain": "difficulty",
+      "option_id": "normal",
+      "format": "svg",
+      "path": "/assets/new-game/difficulty/normal.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-difficulty-art.mjs"
+    },
+    {
+      "id": "new-game:difficulty:hard",
+      "domain": "difficulty",
+      "option_id": "hard",
+      "format": "svg",
+      "path": "/assets/new-game/difficulty/hard.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-difficulty-art.mjs"
+    },
+    {
+      "id": "new-game:difficulty:very_hard",
+      "domain": "difficulty",
+      "option_id": "very_hard",
+      "format": "svg",
+      "path": "/assets/new-game/difficulty/very_hard.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-difficulty-art.mjs"
+    },
+    {
+      "id": "new-game:difficulty:impossible",
+      "domain": "difficulty",
+      "option_id": "impossible",
+      "format": "svg",
+      "path": "/assets/new-game/difficulty/impossible.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-difficulty-art.mjs"
     }
   ]
 }

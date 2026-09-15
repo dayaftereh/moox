@@ -14,8 +14,11 @@ const appPath = path.join(webRoot, 'src', 'App.tsx')
 const selectorPath = path.join(webRoot, 'src', 'components', 'VisualSelector.tsx')
 const stylesPath = path.join(webRoot, 'src', 'styles.css')
 const generatorPath = path.join(here, 'generate-galaxy-size-art.mjs')
+const difficultyAssetDir = path.join(webRoot, 'public', 'assets', 'new-game', 'difficulty')
+const difficultyGeneratorPath = path.join(here, 'generate-difficulty-art.mjs')
 
 const ids = ['tiny', 'small', 'medium', 'large', 'huge']
+const difficultyIds = ['easy', 'normal', 'hard', 'very_hard', 'impossible']
 const failures = []
 
 function assert(condition, message) {
@@ -50,6 +53,30 @@ for (const id of ids) {
   assert(svg.includes('<title'), `${id}.svg missing title metadata`)
   assert(svg.includes('<desc'), `${id}.svg missing description metadata`)
   assert(!/<text\b/i.test(svg), `${id}.svg embeds text; localized UI copy must stay outside artwork`)
+}
+
+const difficultyEntries = manifest.entries.filter((entry) => entry.domain === 'difficulty')
+assert(difficultyEntries.length === difficultyIds.length, `expected ${difficultyIds.length} difficulty manifest entries, found ${difficultyEntries.length}`)
+for (const id of difficultyIds) {
+  const expectedPath = `/assets/new-game/difficulty/${id}.svg`
+  const entry = difficultyEntries.find((candidate) => candidate.option_id === id)
+  assert(Boolean(entry), `missing difficulty manifest entry for ${id}`)
+  if (entry) {
+    assert(entry.id === `new-game:difficulty:${id}`, `invalid difficulty semantic id for ${id}`)
+    assert(entry.format === 'svg', `invalid difficulty format for ${id}: ${entry.format}`)
+    assert(entry.path === expectedPath, `invalid difficulty runtime path for ${id}: ${entry.path}`)
+    assert(entry.provenance === 'original-procedural-mox', `invalid difficulty provenance for ${id}`)
+    assert(entry.generator === 'web/scripts/generate-difficulty-art.mjs', `invalid difficulty generator for ${id}`)
+  }
+  const assetPath = path.join(difficultyAssetDir, `${id}.svg`)
+  assert(fs.existsSync(assetPath), `missing Difficulty SVG asset ${assetPath}`)
+  if (!fs.existsSync(assetPath)) continue
+  const svg = fs.readFileSync(assetPath, 'utf8')
+  assert(svg.includes('width="1200" height="675"'), `difficulty ${id}.svg missing frozen native dimensions`)
+  assert(svg.includes('viewBox="0 0 1200 675"'), `difficulty ${id}.svg missing frozen 16:9 viewBox`)
+  assert(svg.includes('<title'), `difficulty ${id}.svg missing title metadata`)
+  assert(svg.includes('<desc'), `difficulty ${id}.svg missing description metadata`)
+  assert(!/<text\b/i.test(svg), `difficulty ${id}.svg embeds text; localized UI copy must stay outside artwork`)
 }
 
 const app = fs.readFileSync(appPath, 'utf8')
@@ -94,11 +121,32 @@ try {
   fs.rmSync(tempDir, { recursive: true, force: true })
 }
 
+const difficultyTempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'moox-difficulty-art-'))
+try {
+  const generated = spawnSync(process.execPath, [difficultyGeneratorPath], {
+    cwd: webRoot,
+    env: { ...process.env, MOOX_DIFFICULTY_ART_OUT_DIR: difficultyTempDir },
+    encoding: 'utf8',
+  })
+  assert(generated.status === 0, `isolated difficulty-art generation failed: ${generated.stderr || generated.stdout}`)
+  if (generated.status === 0) {
+    for (const id of difficultyIds) {
+      const currentPath = path.join(difficultyAssetDir, `${id}.svg`)
+      const regeneratedPath = path.join(difficultyTempDir, `${id}.svg`)
+      assert(fs.existsSync(regeneratedPath), `difficulty generator did not produce ${id}.svg`)
+      if (!fs.existsSync(currentPath) || !fs.existsSync(regeneratedPath)) continue
+      assert(sha256(fs.readFileSync(currentPath)) === sha256(fs.readFileSync(regeneratedPath)), `difficulty ${id}.svg is not reproducible from the committed generator`)
+    }
+  }
+} finally {
+  fs.rmSync(difficultyTempDir, { recursive: true, force: true })
+}
+
 if (failures.length > 0) {
   console.error(`New Game selector contract check failed (${failures.length}):`)
   for (const failure of failures) console.error(`- ${failure}`)
   process.exit(1)
 }
 
-console.log(`New Game selector contract check passed: ${ids.length} deterministic SVG options, typed selector contract, responsive/accessibility invariants.`)
+console.log(`New Game selector contract check passed: ${ids.length + difficultyIds.length} deterministic SVG options across Galaxy Size and Difficulty, typed selector contract, responsive/accessibility invariants.`)
 console.log(`Repository: ${repoRoot}`)

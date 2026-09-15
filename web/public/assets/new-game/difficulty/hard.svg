@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">MOX difficulty hard command crest</title>
+  <desc id="desc">Original vector command crest for the hard difficulty option, using a shared shield family with 3 rank marks.</desc>
+  <defs>
+    <radialGradient id="background" cx="50%" cy="45%" r="72%"><stop offset="0" stop-color="#102033"/><stop offset="0.56" stop-color="#07111d"/><stop offset="1" stop-color="#02060b"/></radialGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe4a1"/><stop offset="0.52" stop-color="#e1a449"/><stop offset="1" stop-color="#9a6328"/></linearGradient>
+    <radialGradient id="core" cx="50%" cy="38%" r="62%"><stop offset="0" stop-color="#ffe4a1" stop-opacity="0.24"/><stop offset="0.55" stop-color="#e1a449" stop-opacity="0.08"/><stop offset="1" stop-color="#07111d" stop-opacity="0"/></radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e1a449" stop-opacity="0.15"/><stop offset="0.5" stop-color="#ffe4a1" stop-opacity="0.8"/><stop offset="1" stop-color="#9a6328" stop-opacity="0.18"/></linearGradient>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="13" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="1200" height="675" fill="url(#background)"/>
+  <g><circle cx="88" cy="92" r="2" fill="#ffe4a1" opacity="0.72"/>
+    <circle cx="176" cy="148" r="1.5" fill="#7d9ab1" opacity="0.42"/>
+    <circle cx="278" cy="74" r="2.2" fill="#7d9ab1" opacity="0.42"/>
+    <circle cx="382" cy="132" r="1.4" fill="#7d9ab1" opacity="0.72"/>
+    <circle cx="492" cy="72" r="1.8" fill="#ffe4a1" opacity="0.42"/>
+    <circle cx="604" cy="111" r="2.1" fill="#7d9ab1" opacity="0.42"/>
+    <circle cx="721" cy="76" r="1.4" fill="#7d9ab1" opacity="0.72"/>
+    <circle cx="834" cy="139" r="1.9" fill="#7d9ab1" opacity="0.42"/>
+    <circle cx="944" cy="84" r="1.6" fill="#ffe4a1" opacity="0.42"/>
+    <circle cx="1092" cy="132" r="2.3" fill="#7d9ab1" opacity="0.72"/>
+    <circle cx="128" cy="266" r="1.6" fill="#7d9ab1" opacity="0.42"/>
+    <circle cx="244" cy="331" r="2.1" fill="#7d9ab1" opacity="0.42"/>
+    <circle cx="355" cy="245" r="1.3" fill="#ffe4a1" opacity="0.72"/>
+    <circle cx="472" cy="306" r="2.4" fill="#7d9ab1" opacity="0.42"/>
+    <circle cx="716" cy="298" r="1.5" fill="#7d9ab1" opacity="0.42"/>
+    <circle cx="832" cy="245" r="2.2" fill="#7d9ab1" opacity="0.72"/>
+    <circle cx="958" cy="318" r="1.5" fill="#ffe4a1" opacity="0.42"/>
+    <circle cx="1098" cy="259" r="1.9" fill="#7d9ab1" opacity="0.42"/>
+    <circle cx="96" cy="520" r="2.2" fill="#7d9ab1" opacity="0.72"/>
+    <circle cx="214" cy="585" r="1.3" fill="#7d9ab1" opacity="0.42"/>
+    <circle cx="342" cy="505" r="1.7" fill="#ffe4a1" opacity="0.42"/>
+    <circle cx="448" cy="596" r="2" fill="#7d9ab1" opacity="0.72"/>
+    <circle cx="744" cy="572" r="1.4" fill="#7d9ab1" opacity="0.42"/>
+    <circle cx="856" cy="516" r="2.2" fill="#7d9ab1" opacity="0.42"/>
+    <circle cx="982" cy="589" r="1.3" fill="#ffe4a1" opacity="0.72"/>
+    <circle cx="1110" cy="506" r="2.1" fill="#7d9ab1" opacity="0.42"/></g>
+  <ellipse cx="600" cy="335" rx="370" ry="290" fill="url(#core)"/>
+  <g opacity="0.9"><ellipse cx="600" cy="335" rx="300" ry="250" fill="none" stroke="url(#ring)" stroke-width="3" opacity="0.6"/></g>
+  <g filter="url(#glow)" opacity="0.5"><path d="M600 164 L790 242 L758 435 Q718 522 600 575 Q482 522 442 435 L410 242 Z" fill="none" stroke="#9a6328" stroke-width="22"/></g>
+  <g>
+    <path d="M600 164 L790 242 L758 435 Q718 522 600 575 Q482 522 442 435 L410 242 Z" fill="#08131f" fill-opacity="0.86" stroke="url(#accent)" stroke-width="14" stroke-linejoin="round"/>
+    <path d="M600 194 L748 255 L724 413 Q693 480 600 525 Q507 480 476 413 L452 255 Z" fill="none" stroke="#e1a449" stroke-opacity="0.35" stroke-width="4"/>
+    <path d="M512 248 L525 212.4 L538 248" fill="none" stroke="url(#accent)" stroke-width="10" stroke-linejoin="round"/>
+      <path d="M587 248 L600 182 L613 248" fill="none" stroke="url(#accent)" stroke-width="10" stroke-linejoin="round"/>
+      <path d="M662 248 L675 212.4 L688 248" fill="none" stroke="url(#accent)" stroke-width="10" stroke-linejoin="round"/>
+    <circle cx="600" cy="326" r="78" fill="#06111b" stroke="url(#accent)" stroke-width="12"/>
+    <path d="M555 326 L584 297 L600 319 L616 297 L645 326 L624 363 L576 363 Z" fill="none" stroke="url(#accent)" stroke-width="10" stroke-linejoin="round"/>
+    <circle cx="600" cy="326" r="18" fill="#ffe4a1" opacity="0.82"/>
+    <path d="M486 382 L600 436 L714 382" fill="none" stroke="url(#accent)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M490 414 L600 468 L710 414" fill="none" stroke="url(#accent)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M494 446 L600 500 L706 446" fill="none" stroke="url(#accent)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <g opacity="0.52"><path d="M265 336 H390 M810 336 H935" stroke="#e1a449" stroke-width="3" stroke-dasharray="12 18"/><circle cx="247" cy="336" r="5" fill="#ffe4a1"/><circle cx="953" cy="336" r="5" fill="#ffe4a1"/></g>
+</svg>
