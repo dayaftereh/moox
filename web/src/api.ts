@@ -1,4 +1,27 @@
 import type { ShipVisualGenome } from './shipVisualGenome'
+export type GalaxySizeID = 'small' | 'medium' | 'large' | 'huge'
+export type GalaxyAgeID = 'mineral_rich' | 'normal' | 'organic_rich'
+export type GalaxyBias = 'lower' | 'baseline' | 'higher'
+
+export type GalaxySizeProfile = {
+  id: GalaxySizeID
+  star_count: number
+}
+
+export type GalaxyAgeProfile = {
+  id: GalaxyAgeID
+  mineral_resource_bias: GalaxyBias
+  food_world_bias: GalaxyBias
+}
+
+export type GalaxyCatalog = {
+  schema_version: number
+  default_size_id: GalaxySizeID
+  default_age_id: GalaxyAgeID
+  sizes: GalaxySizeProfile[]
+  ages: GalaxyAgeProfile[]
+}
+
 export type DifficultyID = 'easy' | 'normal' | 'hard' | 'very_hard' | 'impossible'
 
 export type DifficultyProfile = {
@@ -25,8 +48,8 @@ export type NewGamePlayer = {
 
 export type NewGameSettings = {
   difficulty_id: DifficultyID
-  galaxy_size: 'small'
-  galaxy_age: 'normal'
+  galaxy_size: GalaxySizeID
+  galaxy_age: GalaxyAgeID
   technology_level: 'average'
   strategic_combat: false
   players: Array<{
@@ -763,6 +786,9 @@ export async function createGame(request: CreateGameRequest): Promise<CreateGame
 }
 export async function getDifficultyCatalog(signal?: AbortSignal): Promise<DifficultyCatalog> {
   return requestJSON<DifficultyCatalog>('/api/v1/new-game/difficulties', { signal })
+}
+export async function getGalaxyCatalog(signal?: AbortSignal): Promise<GalaxyCatalog> {
+  return requestJSON<GalaxyCatalog>('/api/v1/new-game/galaxy', { signal })
 }
 export async function listGames(signal?: AbortSignal): Promise<GameSummary[]> {
   return requestJSON<GameSummary[]>('/api/v1/games', { signal })

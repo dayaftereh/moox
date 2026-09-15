@@ -163,6 +163,7 @@ async function main() {
       viewportWidth: document.documentElement.clientWidth,
       createDisabled: q('.new-game-form button[type=submit]')?.disabled,
       dotCount: root?.querySelectorAll('.visual-selector-dots i').length ?? 0,
+      availability: root?.getAttribute('data-availability'),
       dialogOpen: Boolean(q('.visual-selector-dialog')),
     }
   })()`
@@ -173,101 +174,157 @@ async function main() {
   assert(snap.source === '/assets/new-game/galaxy-size/small.svg', `unexpected initial art source ${snap.source}`)
   assert(snap.imageReady, 'Small artwork did not load at native 1200x675')
   assert(snap.scrollWidth === snap.viewportWidth && snap.viewportWidth === 390, `mobile horizontal overflow: ${snap.scrollWidth}/${snap.viewportWidth}`)
-  assert(snap.info?.width >= 44 && snap.info?.height >= 44, `mobile info target below 44px: ${JSON.stringify(snap.info)}`)
-  assert(snap.arrows.every((item) => item?.width >= 44 && item?.height >= 44), `mobile arrow target below 44px: ${JSON.stringify(snap.arrows)}`)
-  assert(snap.radius === '16px', `expected 16px mobile art radius, got ${snap.radius}`)
-  assert(snap.dotCount === 5, `expected five position dots, got ${snap.dotCount}`)
-  assert(snap.createDisabled === false, 'Small should remain the currently supported Create Game option')
-
-  await evaluate(`document.querySelector('.visual-selector[data-setting-id=\"galaxy-size\"] .visual-selector-arrow')?.click(); true`)
-  await sleep(100)
-  snap = await evaluate(snapshotExpression)
-  assert(snap.selected === 'Winzig', `previous arrow should select Tiny/Winzig, got ${snap.selected}`)
-  assert(snap.source === '/assets/new-game/galaxy-size/tiny.svg', `Tiny art path wrong: ${snap.source}`)
-  assert(snap.createDisabled === true, 'Tiny preview must keep Create Game disabled')
+  assert(snap.info?.width >= 44 && snap.info?.height >= 44, `mobile Size info target below 44px: ${JSON.stringify(snap.info)}`)
+  assert(snap.arrows.every((item) => item?.width >= 44 && item?.height >= 44), `mobile Size arrow target below 44px: ${JSON.stringify(snap.arrows)}`)
+  assert(snap.radius === '16px', `expected 16px mobile Size art radius, got ${snap.radius}`)
+  assert(snap.dotCount === 4, `expected four Size position dots, got ${snap.dotCount}`)
+  assert(snap.availability === 'supported', `Small availability=${snap.availability}`)
+  assert(snap.createDisabled === false, 'Authoritative Small+Normal defaults must allow Create Game')
 
   await touchTap('.visual-selector[data-setting-id="galaxy-size"] .visual-selector-arrow:not(:disabled):last-of-type')
   await sleep(100)
   snap = await evaluate(snapshotExpression)
-  assert(snap.selected === 'Klein', `touch tap on next arrow should select Small/Klein, got ${snap.selected}`)
-  assert(snap.createDisabled === false, 'Touch navigation back to Small should re-enable Create Game')
+  assert(snap.selected === 'Mittel', `touch next should select Medium/Mittel, got ${snap.selected}`)
+  assert(snap.source === '/assets/new-game/galaxy-size/medium.svg', `Medium art path wrong: ${snap.source}`)
+  assert(snap.createDisabled === false, 'Medium is authoritative and must keep Create Game enabled')
 
-  await evaluate(`document.querySelector('.visual-selector[data-setting-id=\"galaxy-size\"]')?.focus(); true`)
-  await key('ArrowLeft', 'ArrowLeft', 37)
-  await sleep(80)
-  snap = await evaluate(snapshotExpression)
-  assert(snap.selected === 'Winzig', `ArrowLeft should select Tiny/Winzig, got ${snap.selected}`)
-  await key('ArrowRight', 'ArrowRight', 39)
-  await sleep(80)
-  snap = await evaluate(snapshotExpression)
-  assert(snap.selected === 'Klein', `ArrowRight should return to Small/Klein, got ${snap.selected}`)
-  assert(snap.createDisabled === false, 'Keyboard navigation back to Small should re-enable Create Game')
-
+  await evaluate(`document.querySelector('.visual-selector[data-setting-id="galaxy-size"]')?.focus(); true`)
   await key('End', 'End', 35)
   await sleep(80)
   snap = await evaluate(snapshotExpression)
   assert(snap.selected === 'Riesig', `End should select Huge/Riesig, got ${snap.selected}`)
   assert(snap.source === '/assets/new-game/galaxy-size/huge.svg', `Huge art path wrong: ${snap.source}`)
-  assert(snap.createDisabled === true, 'Huge preview must keep Create Game disabled')
+  assert(snap.createDisabled === false, 'Huge is authoritative and must keep Create Game enabled')
 
-  await evaluate(`document.querySelector('.visual-selector[data-setting-id=\"galaxy-size\"] .visual-selector-info-button')?.click(); true`)
+  await evaluate(`document.querySelector('.visual-selector[data-setting-id="galaxy-size"] .visual-selector-info-button')?.click(); true`)
   await sleep(80)
-  const dialog = await evaluate(`(() => ({
+  const sizeDialog = await evaluate(`(() => ({
     open: Boolean(document.querySelector('.visual-selector-dialog')),
     title: document.querySelector('.visual-selector-dialog h3')?.textContent,
     paragraphs: [...document.querySelectorAll('.visual-selector-dialog-copy p')].map((item) => item.textContent),
+    status: document.querySelector('.visual-selector-dialog-status')?.textContent,
     activeClass: document.activeElement?.className,
     bodyModal: document.body.classList.contains('modal-open'),
   }))()`)
-  assert(dialog.open, 'info dialog did not open')
-  assert(dialog.title === 'Riesig', `info dialog title mismatch: ${dialog.title}`)
-  assert(dialog.paragraphs.length >= 3, `expected detailed info paragraphs, got ${dialog.paragraphs.length}`)
-  assert(dialog.activeClass === 'visual-selector-dialog-close', `dialog close control did not receive focus: ${dialog.activeClass}`)
-  assert(dialog.bodyModal, 'modal-open body state missing while info dialog is open')
-
+  assert(sizeDialog.open, 'Size info dialog did not open')
+  assert(sizeDialog.title === 'Riesig', `Size dialog title mismatch: ${sizeDialog.title}`)
+  assert(sizeDialog.status === 'Jetzt unterstützt', `Size dialog status mismatch: ${sizeDialog.status}`)
+  assert(sizeDialog.paragraphs.some((text) => text?.includes('71 Sternsysteme')), `Huge server star-count fact missing: ${JSON.stringify(sizeDialog.paragraphs)}`)
+  assert(sizeDialog.activeClass === 'visual-selector-dialog-close', `Size dialog close control did not receive focus: ${sizeDialog.activeClass}`)
+  assert(sizeDialog.bodyModal, 'modal-open body state missing while Size dialog is open')
   await key('Escape', 'Escape', 27)
-  await sleep(100)
-  const closed = await evaluate(`({
-    open: Boolean(document.querySelector('.visual-selector-dialog')),
-    activeClass: document.activeElement?.className,
-    bodyModal: document.body.classList.contains('modal-open'),
-  })`)
-  assert(!closed.open, 'Escape did not close info dialog')
-  assert(closed.activeClass === 'visual-selector-info-button', `focus did not return to info control: ${closed.activeClass}`)
-  assert(!closed.bodyModal, 'modal-open body state remained after close')
-
-  await evaluate(`document.querySelector('.visual-selector[data-setting-id=\"galaxy-size\"]')?.focus(); true`)
-  await key('Home', 'Home', 36)
-  await sleep(80)
-  snap = await evaluate(snapshotExpression)
-  assert(snap.selected === 'Winzig', `Home should select Tiny/Winzig, got ${snap.selected}`)
-
-  const expected = [
-    ['Winzig', 'tiny', true],
-    ['Klein', 'small', false],
-    ['Mittel', 'medium', true],
-    ['Groß', 'large', true],
-    ['Riesig', 'huge', true],
-  ]
-  for (let index = 0; index < expected.length; index++) {
-    if (index > 0) {
-      await evaluate(`document.querySelectorAll('.visual-selector[data-setting-id=\"galaxy-size\"] .visual-selector-arrow')[1]?.click(); true`)
-      await sleep(70)
-    }
-    snap = await evaluate(snapshotExpression)
-    const [label, id, disabled] = expected[index]
-    assert(snap.selected === label, `option ${index + 1} label mismatch: expected ${label}, got ${snap.selected}`)
-    assert(snap.source === `/assets/new-game/galaxy-size/${id}.svg`, `option ${label} art path mismatch: ${snap.source}`)
-    assert(snap.imageReady, `${label} artwork did not load at native 1200x675`)
-    assert(snap.createDisabled === disabled, `${label} supported/planned create state mismatch`)
-  }
+  await sleep(90)
+  const sizeClosed = await evaluate(`({ open: Boolean(document.querySelector('.visual-selector-dialog')), activeClass: document.activeElement?.className, bodyModal: document.body.classList.contains('modal-open') })`)
+  assert(!sizeClosed.open, 'Escape did not close Size info dialog')
+  assert(sizeClosed.activeClass === 'visual-selector-info-button', `focus did not return to Size info control: ${sizeClosed.activeClass}`)
+  assert(!sizeClosed.bodyModal, 'modal-open body state remained after Size close')
 
   await evaluate(`document.querySelector('.visual-selector[data-setting-id="galaxy-size"]')?.focus(); true`)
   await key('Home', 'Home', 36)
-  await key('ArrowRight', 'ArrowRight', 39)
-  await sleep(100)
+  const expectedSizes = [
+    ['Klein', 'small', '20 Sternsysteme'],
+    ['Mittel', 'medium', '36 Sternsysteme'],
+    ['Groß', 'large', '54 Sternsysteme'],
+    ['Riesig', 'huge', '71 Sternsysteme'],
+  ]
+  for (let index = 0; index < expectedSizes.length; index++) {
+    if (index > 0) {
+      await evaluate(`document.querySelectorAll('.visual-selector[data-setting-id="galaxy-size"] .visual-selector-arrow')[1]?.click(); true`)
+      await sleep(70)
+    }
+    snap = await evaluate(snapshotExpression)
+    const [label, id] = expectedSizes[index]
+    assert(snap.selected === label, `Size option ${index + 1} label mismatch: expected ${label}, got ${snap.selected}`)
+    assert(snap.source === `/assets/new-game/galaxy-size/${id}.svg`, `Size ${label} art path mismatch: ${snap.source}`)
+    assert(snap.imageReady, `Size ${label} artwork did not load at native 1200x675`)
+    assert(snap.availability === 'supported', `Size ${label} is not marked supported`)
+    assert(snap.createDisabled === false, `Size ${label} incorrectly disabled Create Game`)
+  }
+  await evaluate(`document.querySelector('.visual-selector[data-setting-id="galaxy-size"]')?.focus(); true`)
+  await key('Home', 'Home', 36)
+  await sleep(70)
   snap = await evaluate(snapshotExpression)
-  assert(snap.selected === 'Klein' && snap.createDisabled === false, 'Galaxy Size must return to supported Small before Difficulty QA')
+  assert(snap.selected === 'Klein', 'Galaxy Size must return to Small before Age/Difficulty QA')
+
+  const ageSnapshotExpression = `(() => {
+    const root = document.querySelector('.visual-selector[data-setting-id="galaxy-age"]')
+    const rect = (element) => { const r = element?.getBoundingClientRect(); return r ? { width: r.width, height: r.height } : null }
+    const image = root?.querySelector('.new-game-galaxy-art img')
+    const art = root?.querySelector('.visual-selector-art')
+    const arrows = [...(root?.querySelectorAll('.visual-selector-arrow') ?? [])].map(rect)
+    return {
+      selected: root?.querySelector('.visual-selector-current h3')?.textContent,
+      source: image?.getAttribute('src'),
+      imageReady: Boolean(image?.complete && image?.naturalWidth === 1200 && image?.naturalHeight === 675),
+      art: rect(art),
+      radius: art ? getComputedStyle(art).borderRadius : '',
+      info: rect(root?.querySelector('.visual-selector-info-button')),
+      arrows,
+      dotCount: root?.querySelectorAll('.visual-selector-dots i').length ?? 0,
+      availability: root?.getAttribute('data-availability'),
+      createDisabled: document.querySelector('.new-game-form button[type=submit]')?.disabled,
+    }
+  })()`
+
+  let ageSnap = await evaluate(ageSnapshotExpression)
+  assert(ageSnap.selected === 'Normal', `expected initial Galaxy Age Normal, got ${ageSnap.selected}`)
+  assert(ageSnap.source === '/assets/new-game/galaxy-age/normal.svg', `unexpected initial Galaxy Age art source ${ageSnap.source}`)
+  assert(ageSnap.imageReady, 'Normal Galaxy Age artwork did not load at native 1200x675')
+  assert(ageSnap.info?.width >= 44 && ageSnap.info?.height >= 44, `mobile Age info target below 44px: ${JSON.stringify(ageSnap.info)}`)
+  assert(ageSnap.arrows.every((item) => item?.width >= 44 && item?.height >= 44), `mobile Age arrow target below 44px: ${JSON.stringify(ageSnap.arrows)}`)
+  assert(ageSnap.radius === '16px', `expected 16px mobile Age art radius, got ${ageSnap.radius}`)
+  assert(ageSnap.dotCount === 3, `expected three Age position dots, got ${ageSnap.dotCount}`)
+  assert(ageSnap.availability === 'supported', `Age Normal availability=${ageSnap.availability}`)
+  assert(ageSnap.createDisabled === false, 'Age Normal must allow Create Game')
+
+  await evaluate(`document.querySelector('.visual-selector[data-setting-id="galaxy-age"]')?.focus(); true`)
+  await key('Home', 'Home', 36)
+  await sleep(80)
+  ageSnap = await evaluate(ageSnapshotExpression)
+  assert(ageSnap.selected === 'Mineralreich', `Home should select Mineral Rich/Mineralreich, got ${ageSnap.selected}`)
+  assert(ageSnap.source === '/assets/new-game/galaxy-age/mineral-rich.svg', `Mineral Rich art path wrong: ${ageSnap.source}`)
+  assert(ageSnap.createDisabled === false, 'Mineral Rich must keep Create Game enabled')
+
+  await evaluate(`document.querySelector('.visual-selector[data-setting-id="galaxy-age"] .visual-selector-info-button')?.click(); true`)
+  await sleep(80)
+  const ageDialog = await evaluate(`(() => ({
+    title: document.querySelector('.visual-selector-dialog h3')?.textContent,
+    paragraphs: [...document.querySelectorAll('.visual-selector-dialog-copy p')].map((item) => item.textContent),
+    status: document.querySelector('.visual-selector-dialog-status')?.textContent,
+  }))()`)
+  assert(ageDialog.title === 'Mineralreich', `Age dialog title mismatch: ${ageDialog.title}`)
+  assert(ageDialog.status === 'Jetzt unterstützt', `Age dialog status mismatch: ${ageDialog.status}`)
+  assert(ageDialog.paragraphs.some((text) => text?.includes('Mineralreiche Welten: wahrscheinlicher')), `Mineral Rich server bias fact missing: ${JSON.stringify(ageDialog.paragraphs)}`)
+  assert(ageDialog.paragraphs.some((text) => text?.includes('Nahrungsfreundliche Welten: weniger wahrscheinlich')), `Mineral Rich food bias fact missing: ${JSON.stringify(ageDialog.paragraphs)}`)
+  await key('Escape', 'Escape', 27)
+  await sleep(80)
+
+  const expectedAges = [
+    ['Mineralreich', 'mineral-rich'],
+    ['Normal', 'normal'],
+    ['Organisch reich', 'organic-rich'],
+  ]
+  await evaluate(`document.querySelector('.visual-selector[data-setting-id="galaxy-age"]')?.focus(); true`)
+  await key('Home', 'Home', 36)
+  for (let index = 0; index < expectedAges.length; index++) {
+    if (index > 0) {
+      await evaluate(`document.querySelectorAll('.visual-selector[data-setting-id="galaxy-age"] .visual-selector-arrow')[1]?.click(); true`)
+      await sleep(70)
+    }
+    ageSnap = await evaluate(ageSnapshotExpression)
+    const [label, assetId] = expectedAges[index]
+    assert(ageSnap.selected === label, `Age option ${index + 1} label mismatch: expected ${label}, got ${ageSnap.selected}`)
+    assert(ageSnap.source === `/assets/new-game/galaxy-age/${assetId}.svg`, `Age ${label} art path mismatch: ${ageSnap.source}`)
+    assert(ageSnap.imageReady, `Age ${label} artwork did not load at native 1200x675`)
+    assert(ageSnap.availability === 'supported', `Age ${label} is not marked supported`)
+    assert(ageSnap.createDisabled === false, `Age ${label} incorrectly disabled Create Game`)
+  }
+  await evaluate(`document.querySelector('.visual-selector[data-setting-id="galaxy-age"]')?.focus(); true`)
+  await key('Home', 'Home', 36)
+  await key('ArrowRight', 'ArrowRight', 39)
+  await sleep(80)
+  ageSnap = await evaluate(ageSnapshotExpression)
+  assert(ageSnap.selected === 'Normal' && ageSnap.createDisabled === false, 'Galaxy Age must return to Normal before Difficulty QA')
 
   const difficultySnapshotExpression = `(() => {
     const root = document.querySelector('.visual-selector[data-setting-id="difficulty"]')
@@ -372,6 +429,10 @@ async function main() {
   assert(difficultySnap.art?.width >= 400 && difficultySnap.art?.width <= 620, `desktop Difficulty artwork width outside responsive compact range: ${difficultySnap.art?.width}`)
   assert(difficultySnap.radius === '20px', `expected 20px desktop Difficulty art radius, got ${difficultySnap.radius}`)
   assert(difficultySnap.arrows.every((item) => item?.width >= 52 && item?.height >= 52), `desktop Difficulty arrow target below 52px: ${JSON.stringify(difficultySnap.arrows)}`)
+  ageSnap = await evaluate(ageSnapshotExpression)
+  assert(ageSnap.art?.width >= 400 && ageSnap.art?.width <= 620, `desktop Galaxy Age artwork width outside responsive compact range: ${ageSnap.art?.width}`)
+  assert(ageSnap.radius === '20px', `expected 20px desktop Galaxy Age art radius, got ${ageSnap.radius}`)
+  assert(ageSnap.arrows.every((item) => item?.width >= 52 && item?.height >= 52), `desktop Galaxy Age arrow target below 52px: ${JSON.stringify(ageSnap.arrows)}`)
 
   if (failures.length > 0) {
     console.error(`New Game selector browser smoke failed (${failures.length}):`)
@@ -380,7 +441,7 @@ async function main() {
     return
   }
 
-  console.log('New Game selector browser smoke passed: Galaxy Size + Difficulty, mobile + desktop layout, ten assets, mouse/touch/keyboard, server-derived info, focus and supported/planned behavior.')
+  console.log('New Game selector browser smoke passed: Galaxy Size + Galaxy Age + Difficulty, 12 bound options, mobile + desktop layout, mouse/touch/keyboard, server-derived info, focus and authoritative support behavior.')
 }
 
 main().catch((error) => {

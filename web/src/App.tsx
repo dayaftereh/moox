@@ -4,6 +4,7 @@ import {
   createGame,
   exportLiveSnapshot,
   getDifficultyCatalog,
+  getGalaxyCatalog,
   getPlayerSnapshot,
   importLiveSnapshot,
   listGames,
@@ -21,6 +22,12 @@ import {
   type DifficultyCatalog,
   type DifficultyID,
   type DifficultyProfile,
+  type GalaxyAgeID,
+  type GalaxyAgeProfile,
+  type GalaxyBias,
+  type GalaxyCatalog,
+  type GalaxySizeID,
+  type GalaxySizeProfile,
   type DiplomacyCommandKind,
   type DiplomaticStance,
   type DraftOrder,
@@ -53,15 +60,69 @@ import {
 } from './StrategicViews'
 import './styles.css'
 
-type GalaxyPrototypeSize = 'tiny' | 'small' | 'medium' | 'large' | 'huge'
+const galaxySizeIDs: readonly GalaxySizeID[] = ['small', 'medium', 'large', 'huge']
+const galaxyAgeIDs: readonly GalaxyAgeID[] = ['mineral_rich', 'normal', 'organic_rich']
 const difficultyIDs: readonly DifficultyID[] = ['easy', 'normal', 'hard', 'very_hard', 'impossible']
 
-function GalaxySizeArt({ size }: { size: GalaxyPrototypeSize }) {
+function GalaxySizeArt({ size }: { size: GalaxySizeID }) {
   return (
     <div className="new-game-galaxy-art" aria-hidden="true">
       <img src={newGameAssetPath('galaxy-size', size, 'svg')} alt="" draggable={false} />
     </div>
   )
+}
+
+function galaxyAgeAssetOptionID(age: GalaxyAgeID): string {
+  if (age === 'mineral_rich') return 'mineral-rich'
+  if (age === 'organic_rich') return 'organic-rich'
+  return age
+}
+
+function GalaxyAgeArt({ age }: { age: GalaxyAgeID }) {
+  return (
+    <div className="new-game-galaxy-art" aria-hidden="true">
+      <img src={newGameAssetPath('galaxy-age', galaxyAgeAssetOptionID(age), 'svg')} alt="" draggable={false} />
+    </div>
+  )
+}
+
+function galaxySizeTitleKey(id: GalaxySizeID): TranslationKey {
+  switch (id) {
+    case 'small': return 'newGame.sizeSmall'
+    case 'medium': return 'newGame.sizeMedium'
+    case 'large': return 'newGame.sizeLarge'
+    case 'huge': return 'newGame.sizeHuge'
+  }
+}
+
+function galaxyAgeTitleKey(id: GalaxyAgeID): TranslationKey {
+  switch (id) {
+    case 'mineral_rich': return 'newGame.ageMineralRich'
+    case 'normal': return 'newGame.ageNormal'
+    case 'organic_rich': return 'newGame.ageOrganicRich'
+  }
+}
+
+function galaxyBiasDetailKey(kind: 'mineral' | 'food', bias: GalaxyBias): TranslationKey {
+  if (kind === 'mineral') {
+    if (bias === 'higher') return 'newGame.mineralBiasHigher'
+    if (bias === 'lower') return 'newGame.mineralBiasLower'
+    return 'newGame.mineralBiasBaseline'
+  }
+  if (bias === 'higher') return 'newGame.foodBiasHigher'
+  if (bias === 'lower') return 'newGame.foodBiasLower'
+  return 'newGame.foodBiasBaseline'
+}
+
+function galaxySizeDetails(t: Translator, profile: GalaxySizeProfile): string[] {
+  return [t('newGame.galaxyStarSystems', { count: profile.star_count })]
+}
+
+function galaxyAgeDetails(t: Translator, profile: GalaxyAgeProfile): string[] {
+  return [
+    t(galaxyBiasDetailKey('mineral', profile.mineral_resource_bias)),
+    t(galaxyBiasDetailKey('food', profile.food_world_bias)),
+  ]
 }
 
 function difficultyAssetOptionID(difficulty: DifficultyID): string {
@@ -203,7 +264,10 @@ function App() {
   const [games, setGames] = useState<GameSummary[]>([])
   const [newGameID, setNewGameID] = useState('game-1')
   const [newGameSeed, setNewGameSeed] = useState('0x8009')
-  const [galaxyPrototypeSize, setGalaxyPrototypeSize] = useState<GalaxyPrototypeSize>('small')
+  const [galaxySizeID, setGalaxySizeID] = useState<GalaxySizeID>('small')
+  const [galaxyAgeID, setGalaxyAgeID] = useState<GalaxyAgeID>('normal')
+  const [galaxyCatalog, setGalaxyCatalog] = useState<GalaxyCatalog | null>(null)
+  const [galaxyCatalogError, setGalaxyCatalogError] = useState('')
   const [difficultyID, setDifficultyID] = useState<DifficultyID>('normal')
   const [difficultyCatalog, setDifficultyCatalog] = useState<DifficultyCatalog | null>(null)
   const [difficultyCatalogError, setDifficultyCatalogError] = useState('')
@@ -244,6 +308,8 @@ function App() {
   draftOrdersRef.current = draftOrders
 
   const difficultyProfilesByID = useMemo(() => new Map((difficultyCatalog?.profiles ?? []).map((profile) => [profile.id, profile] as const)), [difficultyCatalog])
+  const galaxySizeProfilesByID = useMemo(() => new Map((galaxyCatalog?.sizes ?? []).map((profile) => [profile.id, profile] as const)), [galaxyCatalog])
+  const galaxyAgeProfilesByID = useMemo(() => new Map((galaxyCatalog?.ages ?? []).map((profile) => [profile.id, profile] as const)), [galaxyCatalog])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -258,6 +324,24 @@ function App() {
         if (controller.signal.aborted) return
         setDifficultyCatalog(null)
         setDifficultyCatalogError(errorText(reason))
+      })
+    return () => controller.abort()
+  }, [])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    setGalaxyCatalogError('')
+    void getGalaxyCatalog(controller.signal)
+      .then((catalog) => {
+        setGalaxyCatalog(catalog)
+        setGalaxyCatalogError('')
+        setGalaxySizeID((current) => catalog.sizes.some((profile) => profile.id === current) ? current : catalog.default_size_id)
+        setGalaxyAgeID((current) => catalog.ages.some((profile) => profile.id === current) ? current : catalog.default_age_id)
+      })
+      .catch((reason) => {
+        if (controller.signal.aborted) return
+        setGalaxyCatalog(null)
+        setGalaxyCatalogError(errorText(reason))
       })
     return () => controller.abort()
   }, [])
@@ -686,8 +770,8 @@ function App() {
         ],
         settings: {
           difficulty_id: difficultyID,
-          galaxy_size: 'small',
-          galaxy_age: 'normal',
+          galaxy_size: galaxySizeID,
+          galaxy_age: galaxyAgeID,
           technology_level: 'average',
           strategic_combat: false,
           players: [
@@ -1152,31 +1236,60 @@ function App() {
               />
             </Card>
             <Card className="new-game-visual-card">
-            <VisualSelector<GalaxyPrototypeSize>
-              settingId="galaxy-size"
-              label={t('newGame.galaxySize')}
-              selectedId={galaxyPrototypeSize}
-              onChange={setGalaxyPrototypeSize}
-              previousLabel={t('newGame.previousOption')}
-              nextLabel={t('newGame.nextOption')}
-              positionLabel={(current, total) => t('newGame.optionPosition', { current, total })}
-              infoLabel={(optionTitle) => t('newGame.moreInfo', { option: optionTitle })}
-              closeInfoLabel={t('newGame.closeInfo')}
-              options={([
-                ['tiny', t('newGame.sizeTiny'), t('newGame.detailTiny')],
-                ['small', t('newGame.sizeSmall'), t('newGame.detailSmall')],
-                ['medium', t('newGame.sizeMedium'), t('newGame.detailMedium')],
-                ['large', t('newGame.sizeLarge'), t('newGame.detailLarge')],
-                ['huge', t('newGame.sizeHuge'), t('newGame.detailHuge')],
-              ] as const).map(([id, title, detail]) => ({
-                id,
-                title,
-                details: [detail, t('newGame.galaxyArtDisclaimer'), id === 'small' ? t('newGame.supportedContract') : t('newGame.unsupportedContract')],
-                visual: <GalaxySizeArt size={id} />,
-                availability: id === 'small' ? 'supported' : 'planned',
-                availabilityLabel: id === 'small' ? t('newGame.supportedNow') : t('newGame.plannedOption'),
-              }))}
-            />
+              <VisualSelector<GalaxySizeID>
+                settingId="galaxy-size"
+                label={t('newGame.galaxySize')}
+                selectedId={galaxySizeID}
+                onChange={setGalaxySizeID}
+                previousLabel={t('newGame.previousOption')}
+                nextLabel={t('newGame.nextOption')}
+                positionLabel={(current, total) => t('newGame.optionPosition', { current, total })}
+                infoLabel={(optionTitle) => t('newGame.moreInfo', { option: optionTitle })}
+                closeInfoLabel={t('newGame.closeInfo')}
+                options={galaxySizeIDs.map((id) => {
+                  const profile = galaxySizeProfilesByID.get(id)
+                  return {
+                    id,
+                    title: t(galaxySizeTitleKey(id)),
+                    details: profile
+                      ? galaxySizeDetails(t, profile)
+                      : [galaxyCatalogError ? t('newGame.galaxyCatalogUnavailable') : t('newGame.galaxyCatalogLoading')],
+                    visual: <GalaxySizeArt size={id} />,
+                    availability: profile ? 'supported' as const : 'planned' as const,
+                    availabilityLabel: profile
+                      ? t('newGame.supportedNow')
+                      : galaxyCatalogError ? t('newGame.galaxyCatalogUnavailable') : t('newGame.galaxyCatalogLoading'),
+                  }
+                })}
+              />
+            </Card>
+            <Card className="new-game-visual-card">
+              <VisualSelector<GalaxyAgeID>
+                settingId="galaxy-age"
+                label={t('newGame.galaxyAge')}
+                selectedId={galaxyAgeID}
+                onChange={setGalaxyAgeID}
+                previousLabel={t('newGame.previousOption')}
+                nextLabel={t('newGame.nextOption')}
+                positionLabel={(current, total) => t('newGame.optionPosition', { current, total })}
+                infoLabel={(optionTitle) => t('newGame.moreInfo', { option: optionTitle })}
+                closeInfoLabel={t('newGame.closeInfo')}
+                options={galaxyAgeIDs.map((id) => {
+                  const profile = galaxyAgeProfilesByID.get(id)
+                  return {
+                    id,
+                    title: t(galaxyAgeTitleKey(id)),
+                    details: profile
+                      ? galaxyAgeDetails(t, profile)
+                      : [galaxyCatalogError ? t('newGame.galaxyCatalogUnavailable') : t('newGame.galaxyCatalogLoading')],
+                    visual: <GalaxyAgeArt age={id} />,
+                    availability: profile ? 'supported' as const : 'planned' as const,
+                    availabilityLabel: profile
+                      ? t('newGame.supportedNow')
+                      : galaxyCatalogError ? t('newGame.galaxyCatalogUnavailable') : t('newGame.galaxyCatalogLoading'),
+                  }
+                })}
+              />
             </Card>
           </div>
 
@@ -1189,7 +1302,7 @@ function App() {
                 <label>{t('newGame.humanEmpire')}<input value={humanName} onChange={(event) => setHumanName(event.target.value)} required /></label>
                 <label>{t('newGame.darlokEmpire')}<input value={darlokName} onChange={(event) => setDarlokName(event.target.value)} required /></label>
               </div>
-              <button type="submit" className="button-primary button-wide" disabled={creatingGame || galaxyPrototypeSize !== 'small' || !difficultyCatalog || !difficultyProfilesByID.has(difficultyID)}><GameIcon name="star" />{creatingGame ? t('newGame.creating') : t('newGame.create')}</button>
+              <button type="submit" className="button-primary button-wide" disabled={creatingGame || !difficultyCatalog || !difficultyProfilesByID.has(difficultyID) || !galaxyCatalog || !galaxySizeProfilesByID.has(galaxySizeID) || !galaxyAgeProfilesByID.has(galaxyAgeID)}><GameIcon name="star" />{creatingGame ? t('newGame.creating') : t('newGame.create')}</button>
             </form>
           </Card>
         </main>
