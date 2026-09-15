@@ -121,7 +121,7 @@ func TestHTTPCreateGameDuplicateAndInputErrors(t *testing.T) {
 	}
 
 	badSettings := serverNewGameRequest("bad-settings", "1")
-	badSettings.Settings.GalaxySize = "medium"
+	badSettings.Settings.GalaxySize = "tiny"
 	postJSON(t, server.URL+"/api/v1/games", badSettings, "", http.StatusBadRequest, &bad)
 	if bad.Error.Code != "bad_request" {
 		t.Fatalf("bad settings error=%+v", bad)

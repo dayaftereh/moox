@@ -78,7 +78,7 @@ func TestHostCreateGameRegistersGeneratedSessionAtomically(t *testing.T) {
 func TestHostCreateGameRejectsInvalidSettingsWithoutRegistration(t *testing.T) {
 	host := loadNewGameHost(t)
 	settings := appNewGameSettings()
-	settings.GalaxySize = "medium"
+	settings.GalaxySize = "tiny"
 	_, err := host.CreateGame(CreateGameRequest{GameID: "bad-game", Seed: 1, Settings: settings})
 	if !errors.Is(err, game.ErrInvalidNewGameSettings) {
 		t.Fatalf("error=%v want ErrInvalidNewGameSettings", err)

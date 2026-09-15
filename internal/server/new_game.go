@@ -26,6 +26,29 @@ func (s *apiServer) handleDifficultyCatalog(w http.ResponseWriter, _ *http.Reque
 	})
 }
 
+type galaxyCatalogResponse struct {
+	SchemaVersion int                      `json:"schema_version"`
+	DefaultSizeID game.GalaxySize          `json:"default_size_id"`
+	DefaultAgeID  game.GalaxyAge           `json:"default_age_id"`
+	Sizes         []game.GalaxySizeProfile `json:"sizes"`
+	Ages          []game.GalaxyAgeProfile  `json:"ages"`
+}
+
+func (s *apiServer) handleGalaxyCatalog(w http.ResponseWriter, _ *http.Request) {
+	catalog, err := s.host.NewGameGalaxyCatalog()
+	if err != nil {
+		writeAPIError(w, http.StatusServiceUnavailable, "service_unavailable", err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, galaxyCatalogResponse{
+		SchemaVersion: app.SchemaVersion,
+		DefaultSizeID: catalog.DefaultSizeID,
+		DefaultAgeID:  catalog.DefaultAgeID,
+		Sizes:         catalog.Sizes,
+		Ages:          catalog.Ages,
+	})
+}
+
 type newGameRequest struct {
 	SchemaVersion int                        `json:"schema_version"`
 	GameID        string                     `json:"game_id"`

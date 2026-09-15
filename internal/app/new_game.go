@@ -41,6 +41,19 @@ func NewHostWithNewGame(rules *game.EconomyRules) (*Host, error) {
 	return host, nil
 }
 
+func (h *Host) NewGameGalaxyCatalog() (game.GalaxyCatalog, error) {
+	if h == nil {
+		return game.GalaxyCatalog{}, fmt.Errorf("host is nil")
+	}
+	h.mu.RLock()
+	rules := h.newGameRules
+	h.mu.RUnlock()
+	if rules == nil {
+		return game.GalaxyCatalog{}, fmt.Errorf("new game creation is not configured")
+	}
+	return game.GalaxyCatalogFromRules(rules)
+}
+
 func (h *Host) CreateGame(request CreateGameRequest) (CreateGameResult, error) {
 	if h == nil {
 		return CreateGameResult{}, fmt.Errorf("host is nil")
