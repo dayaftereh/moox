@@ -1,4 +1,4 @@
-# Work slice protocol
+﻿# Work slice protocol
 
 This directory defines the recovery-safe workflow for focused Master of Orion X implementation slices.
 
@@ -42,7 +42,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **none** - Slice 15.6 is closed with Gates 1-4 complete. No `_OPEN_*.md` marker should exist until the next slice is deliberately opened.
+- **Slice 16.1 - Gate 1 active** - `_OPEN_NEW_GAME_VISUAL_SELECTION_GRAMMAR_2026-09-15.md`; visual-selector audit/prototype work is in progress.
 
 Closed/parked Slice-15 state:
 
@@ -54,7 +54,7 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - **next prepared New Game milestone**, now decomposed into binding 16.1-16.6 sub-slices with image-led New Game UX and original MOOX race portraits.
+1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - **active via Slice 16.1 Gate 1**, decomposed into binding 16.1-16.6 sub-slices with image-led New Game UX and original MOOX race portraits.
 2. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for broader combat/design fidelity.
 3. `PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md` - dedicated authoritative Spy/intelligence mechanics; Slice 20 remains reserved while 18/19 are unassigned.
 
@@ -154,3 +154,4 @@ At the start of work:
 4. only if no open marker exists, use `docs/research/ACTIVE_RESEARCH.md` to choose the next slice.
 
 This convention is specifically intended to make interrupted chats or agent handoffs obvious and recoverable.
+

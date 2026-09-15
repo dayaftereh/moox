@@ -1,6 +1,6 @@
-# Planned slice 16.1 - New Game visual selection grammar
+﻿# Planned slice 16.1 - New Game visual selection grammar
 
-Status: **planned / binding Slice-16 product direction; not open**.
+Status: **open; Gate 1 active (2026-09-15)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 
@@ -71,8 +71,8 @@ The selector must avoid horizontal page overflow at the established mobile QA wi
 
 ## Gate 1 - audit / prototype
 
-- [ ] Inventory the current New Game form and its server-authoritative settings schema.
-- [ ] Audit existing Ship Designer arrow/carousel interaction components for reuse.
+- [x] Inventory the current New Game form and its server-authoritative settings schema.
+- [x] Audit existing Ship Designer arrow/carousel interaction components for reuse.
 - [ ] Prototype one selector with placeholder/original art at desktop and 390 px mobile.
 - [ ] Verify keyboard, mouse and touch-size controls.
 - [ ] Define a stable New Game asset manifest/path convention.
