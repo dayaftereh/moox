@@ -17,6 +17,7 @@ The leading `_OPEN_` is intentional: it is the repository-visible signal that wo
 By default there should be exactly one `_OPEN_*.md` marker. Do not start a later slice while an open marker exists unless parallel work was explicitly intended.
 
 The marker is a compact recovery/checklist file. Long-lived evidence, reverse-engineering findings, architectural decisions and final results belong in a permanent domain document, for example `docs/research/<SLICE>_<DATE>.md`.
+
 ## Planned-slice specifications
 
 Future work may be prepared without opening it. Prepared queue entries use:
@@ -37,7 +38,7 @@ When a planned slice actually starts:
 
 Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1 always requires a fresh repository checkup and original-evidence review at the time work begins.
 
-### Current active / prepared queue - 2026-09-14
+### Current active / prepared queue - 2026-09-15
 
 Active:
 
@@ -53,12 +54,44 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - widen narrow New Game settings and preset-race support.
+1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - **next prepared New Game milestone**, now decomposed into binding 16.1-16.6 sub-slices with image-led New Game UX and original MOOX race portraits.
 2. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for broader combat/design fidelity.
 3. `PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md` - dedicated authoritative Spy/intelligence mechanics; Slice 20 remains reserved while 18/19 are unassigned.
+
+### Binding Slice-16 decomposition
+
+The following six specifications are the prepared Slice-16 work breakdown. They are intentionally separate recovery-safe slices and must be read together with the parent `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
+
+1. **Slice 16.1 - New Game visual selection grammar**  
+   `PLANNED_16_1_NEW_GAME_VISUAL_SELECTION_GRAMMAR.md`  
+   Shared image-led carousel/previous-next interaction, desktop/mobile layout, accessibility and asset-manifest conventions.
+
+2. **Slice 16.2 - Difficulty visual selector**  
+   `PLANNED_16_2_DIFFICULTY_VISUAL_SELECTOR.md`  
+   Preferred Easy/Normal/Hard/Very Hard/Impossible presentation with an original visual strength/progression motif and evidence-backed gameplay mapping.
+
+3. **Slice 16.3 - Galaxy visual selector**  
+   `PLANNED_16_3_GALAXY_VISUAL_SELECTOR.md`  
+   Galaxy size/age breadth shown through original galaxy illustrations and the shared left/right selection grammar.
+
+4. **Slice 16.4 - Preset race portraits and carousel**  
+   `PLANNED_16_4_PRESET_RACE_PORTRAITS_CAROUSEL.md`  
+   Runtime compatibility audit for the 13 normalized preset races plus one original reusable MOOX portrait identity per accepted race. Complex portraits default to PNG/WebP; SVG is preferred for frames, emblems and symbolic art. Original MOO2 portrait/UI art must not be copied/traced/reused.
+
+5. **Slice 16.5 - Starting technology visual selector**  
+   `PLANNED_16_5_STARTING_TECH_VISUAL_SELECTOR.md`  
+   Three visual starting-technology/technology-level cards when the expected authoritative three-level contract is confirmed by Gate 1.
+
+6. **Slice 16.6 - Player composition and final New Game integration**  
+   `PLANNED_16_6_PLAYER_COMPOSITION_FINAL_NEW_GAME_INTEGRATION.md`  
+   Visual opponent-count selector targeting MOOX-styled numerals 1-9, reusable opponent race portraits, cross-setting validation, final launch summary and complete Slice-16 deterministic acceptance.
+
+This decomposition is **binding product direction**, not permission to skip the four-gate protocol. Exact original/runtime settings, modifiers, race compatibility and player-count limits still require Gate-1 evidence before gameplay support is enabled.
+
 Milestone after Slice 15.6: **achieved 2026-09-14** - a human can start, save/resume, play the accepted interactive Tactical battle path and finish the supported Human-vs-built-in-AI match from the browser through one coherent MOOX visual/interaction language. Re-audit after the prepared Slice 20 Espionage baseline before numbering additional Tactical weapon/special/planetary breadth, deeper Diplomacy/Leaders/post-baseline Espionage and alternative-victory depth.
 
 The queue order is the current recommendation, not a hard dependency lock. Reprioritization is allowed before a later slice is opened if the dependency check still passes.
+
 ## Four gates
 
 Every slice uses the same four gates.
