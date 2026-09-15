@@ -1,6 +1,6 @@
 # Planned slice 16.3 - Galaxy visual selector
 
-Status: **open; Gates 1-2 complete, Gate 3 next (2026-09-15)**.
+Status: **open; Gates 1-3 complete, Gate 4 next (2026-09-16)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slice 16.1 shared visual selection grammar.
@@ -72,10 +72,12 @@ Permanent Gate-2 freeze evidence: `docs/research/SLICE_16_3_GATE2_GALAXY_VISUAL_
 
 ## Gate 3 - implementation
 
-- [ ] Extend authoritative New Game validation/generation for the accepted settings.
-- [ ] Add visual carousel selectors for size and age.
-- [ ] Add deterministic seed fixtures per supported tuple.
-- [ ] Keep invalid size/player-count combinations server-rejected and visibly disabled.
+- [x] Extend authoritative New Game validation/generation for the accepted settings.
+- [x] Add visual carousel selectors for size and age.
+- [x] Add deterministic seed fixtures per supported tuple.
+- [x] Keep invalid Size/Age/player settings server-rejected and unavailable in the bound selector contract.
+
+Permanent Gate-3 implementation evidence: `docs/research/SLICE_16_3_GATE3_IMPLEMENTATION_2026-09-16.md`.
 
 ## Gate 4 - close
 

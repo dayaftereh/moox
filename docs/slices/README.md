@@ -42,7 +42,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **Slice 16.3 - Gates 1-2 complete / Gate 3 next** - `_OPEN_GALAXY_VISUAL_SELECTOR_2026-09-15.md`; four Size IDs and three original Galaxy-Age IDs frozen with Tiny excluded, generalized deterministic grid-jitter, self-contained age data, authoritative Galaxy catalog and production asset/UX contract.
+- **Slice 16.3 - Gates 1-3 complete / Gate 4 next** - `_OPEN_GALAXY_VISUAL_SELECTOR_2026-09-15.md`; four Size IDs and three original Galaxy-Age IDs are implemented across deterministic generation, authoritative Galaxy catalog, production assets and typed visual selectors; final closure acceptance remains.
 
 Closed/parked Slice-15 state:
 
@@ -54,7 +54,7 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slices 16.1-16.2 are closed and Slice 16.3 is active with Gate 1 complete / Gate 2 next.
+1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slices 16.1-16.2 are closed and Slice 16.3 is active with Gates 1-3 complete / Gate 4 next.
 2. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for broader combat/design fidelity.
 3. `PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md` - dedicated authoritative Spy/intelligence mechanics; Slice 20 remains reserved while 18/19 are unassigned.
 

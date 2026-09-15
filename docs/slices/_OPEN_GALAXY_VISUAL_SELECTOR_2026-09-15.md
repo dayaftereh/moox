@@ -1,19 +1,20 @@
 ﻿# Open Slice 16.3 - Galaxy visual selector
 
 Opened: 2026-09-15
-Status: **Gates 1-2 complete / Gate 3 next**
+Status: **Gates 1-3 complete / Gate 4 next**
 
 Planned specification: `docs/slices/PLANNED_16_3_GALAXY_VISUAL_SELECTOR.md`
 Parent: `docs/slices/PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`
 Permanent Gate-1 evidence: `docs/research/SLICE_16_3_GATE1_GALAXY_VISUAL_SELECTOR_AUDIT_2026-09-15.md`
 Permanent Gate-2 freeze evidence: `docs/research/SLICE_16_3_GATE2_GALAXY_VISUAL_SELECTOR_FREEZE_2026-09-15.md`
+Permanent Gate-3 implementation evidence: `docs/research/SLICE_16_3_GATE3_IMPLEMENTATION_2026-09-16.md`
 Depends on: closed Slice 16.1 shared visual selection grammar; closed Slice 16.2 Difficulty selector/server-catalog pattern is a reusable reference, not a dependency for galaxy mechanics.
 
 ## Recovery state
 
 - Slice 16.2 is closed at `713fcc7` and has no open marker.
 - Exactly one `_OPEN_` marker should exist while this slice is active: this file.
-- Gate 1 audit is complete. Gate 2 freeze is next; no new galaxy setting has been enabled yet.
+- Gates 1-3 are complete. The four Size and three Age settings are now authoritative and implemented; Gate 4 closure acceptance is next.
 - Preview convention: run MOX on `0.0.0.0:7171` with `-insecure-allow-nonloopback` so external/NetBird review stays available.
 
 ## Gate 1 audit
@@ -52,6 +53,16 @@ Depends on: closed Slice 16.1 shared visual selection grammar; closed Slice 16.2
 - Existing Small/Medium/Large/Huge art is production direction; Age research prototypes promote to kebab-case runtime SVGs.
 - Current two-player Human/Darlok composition remains unchanged by Slice 16.3.
 
+## Gate-3 implementation summary
+
+- Ruleset schema v2 now owns self-contained per-Age spectral/climate data.
+- All 12 Size/Age tuples generate deterministically; Small+Normal keeps the pre-16.3 golden baseline.
+- Authoritative Galaxy catalog is live at `GET /api/v1/new-game/galaxy`.
+- Production Galaxy Age assets are deterministic and manifest-registered.
+- Bound selectors expose only Small/Medium/Large/Huge plus Mineral Rich/Normal/Organic Rich; Tiny remains historical/prototype-only.
+- Size and Age facts are server-derived; Create Game submits the selected IDs.
+- Full Go/web/browser/external-health regression passed.
+
 ## Next
 
-Gate 3 implementation is next. Do not reopen product semantics unless implementation uncovers contradictory evidence; implement the frozen ruleset/profile/catalog/generator/UI/test contract and checkpoint in small blocks.
+Gate 4 closure acceptance is next. Do not open or execute Gate 4 until explicitly continued.
