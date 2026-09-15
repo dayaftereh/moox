@@ -66,10 +66,6 @@ func (h *Host) CreateGame(request CreateGameRequest) (CreateGameResult, error) {
 		return CreateGameResult{}, fmt.Errorf("new game creation is not configured")
 	}
 
-	generated, err := rules.NewGame(request.Seed, request.Settings)
-	if err != nil {
-		return CreateGameResult{}, err
-	}
 	controllers := make(map[protocol.SeatID]session.ControllerType, len(request.Controllers))
 	for _, controller := range request.Controllers {
 		if controller.SeatID == 0 {
@@ -79,6 +75,17 @@ func (h *Host) CreateGame(request CreateGameRequest) (CreateGameResult, error) {
 			return CreateGameResult{}, fmt.Errorf("duplicate controller assignment for seat %d", controller.SeatID)
 		}
 		controllers[controller.SeatID] = controller.Controller
+	}
+	settings := request.Settings
+	settings.Players = append([]game.NewGamePlayerSpec(nil), request.Settings.Players...)
+	for i := range settings.Players {
+		if controller, ok := controllers[settings.Players[i].SeatID]; ok {
+			settings.Players[i].BuiltinAIControlled = controller == session.ControllerBuiltinAI
+		}
+	}
+	generated, err := rules.NewGame(request.Seed, settings)
+	if err != nil {
+		return CreateGameResult{}, err
 	}
 	seats := make([]session.Seat, len(generated.Players))
 	seenControllerSeats := make(map[protocol.SeatID]struct{}, len(generated.Players))
@@ -93,12 +100,6 @@ func (h *Host) CreateGame(request CreateGameRequest) (CreateGameResult, error) {
 			EmpireID:   player.EmpireID,
 			Name:       player.Name,
 			Controller: controller,
-		}
-		for empireIndex := range generated.State.Empires {
-			if generated.State.Empires[empireIndex].ID == player.EmpireID {
-				generated.State.Empires[empireIndex].BuiltinAIControlled = controller == session.ControllerBuiltinAI
-				break
-			}
 		}
 	}
 	for seatID := range controllers {

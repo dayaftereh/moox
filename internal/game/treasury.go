@@ -64,7 +64,13 @@ func (r *EconomyResolver) prepareTreasurySettlement(state *core.GameState, empir
 
 	surplusFoodIncomeBC := empire.FoodLogistics.SurplusFoodIncomeBC
 	freighterOperatingCostBC := empire.FoodLogistics.FreighterOperatingCostBC
-	shipCommandMaintenanceBC := float64(commandPointOverage(commandPoints)) * r.Rules.CommandPoints.StandardOverageBCPerPoint
+	commandDeficitBCPerPoint := r.Rules.CommandPoints.StandardOverageBCPerPoint
+	if profile, applyDifficulty, err := difficultyProfileForEmpire(state, *empire); err != nil {
+		return treasurySettlementPlan{}, err
+	} else if applyDifficulty {
+		commandDeficitBCPerPoint = difficultyEighths(profile.AICommandDeficitBCPerPointEighths)
+	}
+	shipCommandMaintenanceBC := float64(commandPointOverage(commandPoints)) * commandDeficitBCPerPoint
 	grossIncomeBC := taxIncomeBC + surplusFoodIncomeBC
 	totalModeledMaintenanceBC := buildingMaintenanceBC + freighterOperatingCostBC + shipCommandMaintenanceBC
 	netModeledIncomeBC := grossIncomeBC - totalModeledMaintenanceBC

@@ -9,6 +9,37 @@ import (
 
 const conqueredOrganicOutputFactor = 0.75
 
+func applyDifficultyToCohortBase(cohort core.PopulationCohort, base core.ColonyEconomy, profile DifficultyProfile) core.ColonyEconomy {
+	factor := 1.0
+	if cohort.AssimilationState == core.PopulationConquered {
+		factor = conqueredOrganicOutputFactor
+	}
+	return core.ColonyEconomy{
+		Food:       difficultyAdjustedRoleOutput(base.Food, cohort.Farmers, factor, difficultyEighths(profile.AIFoodPerFarmerEighths), true),
+		Production: difficultyAdjustedRoleOutput(base.Production, cohort.Workers, factor, difficultyEighths(profile.AIProductionPerWorkerEighths), false),
+		Research:   difficultyAdjustedRoleOutput(base.Research, cohort.Scientists, factor, difficultyEighths(profile.AIResearchPerScientistEighths), false),
+	}
+}
+
+func difficultyAdjustedRoleOutput(base, workers, factor, delta float64, preserveZero bool) float64 {
+	if workers <= 0 || factor <= 0 {
+		return base
+	}
+	normalPerWorker := base / (workers * factor)
+	if preserveZero && normalPerWorker <= 0 {
+		return base
+	}
+	return workers * factor * math.Max(1, normalPerWorker+delta)
+}
+
+func applyDifficultyToTaxBase(population, baseTax float64, profile DifficultyProfile) float64 {
+	if population <= 0 {
+		return baseTax
+	}
+	normalPerPopulation := baseTax / population
+	return population * math.Max(0, normalPerPopulation+difficultyEighths(profile.AITaxBCPerPopulationEighths))
+}
+
 // CalculateCohortBaseEconomy computes only job-derived Food/PP/RP for one
 // organic cohort using the cohort origin race. Tax remains owner-wide.
 func (r *EconomyRules) CalculateCohortBaseEconomy(cohort core.PopulationCohort, planet core.Planet, raceID string) (core.ColonyEconomy, error) {
@@ -104,6 +135,10 @@ func (r *EconomyRules) CalculateOwnerAdjustedTax(baseTax float64, colony core.Co
 }
 
 func (r *EconomyResolver) calculateRaceAwareColonyEconomy(state *core.GameState, colony core.Colony, planet core.Planet, owner core.Empire) (core.ColonyEconomy, core.ColonyEconomyContext, core.ColonyEconomy, error) {
+	profile, applyDifficulty, err := difficultyProfileForEmpire(state, owner)
+	if err != nil {
+		return core.ColonyEconomy{}, core.ColonyEconomyContext{}, core.ColonyEconomy{}, err
+	}
 	base := core.ColonyEconomy{}
 	adjusted := core.ColonyEconomy{}
 	for _, cohort := range colony.Population.Cohorts {
@@ -114,6 +149,9 @@ func (r *EconomyResolver) calculateRaceAwareColonyEconomy(state *core.GameState,
 		cohortBase, err := r.Rules.CalculateCohortBaseEconomy(cohort, planet, origin.RaceID)
 		if err != nil {
 			return core.ColonyEconomy{}, core.ColonyEconomyContext{}, core.ColonyEconomy{}, err
+		}
+		if applyDifficulty {
+			cohortBase = applyDifficultyToCohortBase(cohort, cohortBase, profile)
 		}
 		cohortAdjusted, err := r.Rules.CalculateContextualCohortEconomy(cohortBase, colony, planet, origin.RaceID, owner.RaceID)
 		if err != nil {
@@ -129,6 +167,9 @@ func (r *EconomyResolver) calculateRaceAwareColonyEconomy(state *core.GameState,
 	baseTax, err := r.Rules.CalculateOwnerTaxBase(colony.Population.Total(), owner.RaceID)
 	if err != nil {
 		return core.ColonyEconomy{}, core.ColonyEconomyContext{}, core.ColonyEconomy{}, err
+	}
+	if applyDifficulty {
+		baseTax = applyDifficultyToTaxBase(colony.Population.Total(), baseTax, profile)
 	}
 	adjustedTax, err := r.Rules.CalculateOwnerAdjustedTax(baseTax, colony, owner.RaceID)
 	if err != nil {

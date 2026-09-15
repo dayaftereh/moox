@@ -46,3 +46,14 @@ func DifficultyProfileFor(id core.DifficultyID) (DifficultyProfile, error) {
 func difficultyEighths(value int) float64 {
 	return float64(value) / 8.0
 }
+
+func difficultyProfileForEmpire(state *core.GameState, empire core.Empire) (DifficultyProfile, bool, error) {
+	if !empire.BuiltinAIControlled {
+		return DifficultyProfile{}, false, nil
+	}
+	profile, err := DifficultyProfileFor(state.EffectiveDifficultyID())
+	if err != nil {
+		return DifficultyProfile{}, false, err
+	}
+	return profile, true, nil
+}
