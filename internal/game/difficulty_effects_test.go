@@ -131,3 +131,53 @@ func TestDifficultyCommandDeficitRateAppliesOnlyToBuiltinAI(t *testing.T) {
 		t.Fatalf("human command maintenance=%v want standard 10", empire.Treasury.ShipCommandMaintenanceBC)
 	}
 }
+
+func normalizedInitialDifficultyState(t *testing.T, state *core.GameState) []byte {
+	t.Helper()
+	raw, err := json.Marshal(state)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var clone core.GameState
+	if err := json.Unmarshal(raw, &clone); err != nil {
+		t.Fatal(err)
+	}
+	clone.DifficultyID = core.DifficultyNormal
+	aiEmpires := map[core.ID]bool{}
+	for _, empire := range clone.Empires {
+		if empire.BuiltinAIControlled {
+			aiEmpires[empire.ID] = true
+		}
+	}
+	for i := range clone.Empires {
+		if aiEmpires[clone.Empires[i].ID] {
+			clone.Empires[i].FoodLogistics = core.EmpireFoodLogistics{}
+		}
+	}
+	for i := range clone.Colonies {
+		if aiEmpires[clone.Colonies[i].EmpireID] {
+			clone.Colonies[i].Economy = core.ColonyEconomy{}
+			clone.Colonies[i].AdjustedEconomy = core.ColonyEconomy{}
+			clone.Colonies[i].PopulationDynamics = core.ColonyPopulationDynamics{}
+		}
+	}
+	normalized, err := json.Marshal(&clone)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return normalized
+}
+
+func TestDifficultyChangesOnlyFrozenInitialStateEffects(t *testing.T) {
+	normal := generatedDifficultyGame(t, core.DifficultyNormal)
+	want := string(normalizedInitialDifficultyState(t, normal.State))
+	for _, id := range core.SupportedDifficultyIDs {
+		t.Run(string(id), func(t *testing.T) {
+			result := generatedDifficultyGame(t, id)
+			got := string(normalizedInitialDifficultyState(t, result.State))
+			if got != want {
+				t.Fatalf("difficulty %q changed initial authoritative state outside difficulty_id and direct/derived built-in-AI food/economy fields", id)
+			}
+		})
+	}
+}
