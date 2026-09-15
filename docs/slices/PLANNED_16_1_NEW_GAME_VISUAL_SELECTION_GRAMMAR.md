@@ -1,6 +1,6 @@
 ﻿# Planned slice 16.1 - New Game visual selection grammar
 
-Status: **open; Gate 1 complete, Gate 2 active / UI review candidate (2026-09-15)**.
+Status: **open; Gate 1-2 complete, Gate 3 next (2026-09-15)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 
@@ -80,10 +80,12 @@ The selector must avoid horizontal page overflow at the established mobile QA wi
 
 ## Gate 2 - freeze
 
-- [ ] Freeze the selector component contract and responsive layout.
-- [ ] Freeze accessibility/keyboard behavior.
-- [ ] Freeze asset naming/runtime format conventions.
-- [ ] Freeze unsupported/disabled-state presentation.
+- [x] Freeze the selector component contract and responsive layout.
+- [x] Freeze accessibility/keyboard behavior.
+- [x] Freeze asset naming/runtime format conventions.
+- [x] Freeze unsupported/disabled-state presentation.
+
+Permanent freeze evidence: `docs/research/SLICE_16_1_GATE2_FREEZE_2026-09-15.md`.
 
 ## Gate 3 - implementation
 
