@@ -1059,7 +1059,8 @@ function App() {
           <PageHeader eyebrow={t('newGame.eyebrow')} title={t('newGame.title')} subtitle={t('newGame.subtitle')} actions={<button type="button" className="button-ghost" onClick={() => navigate({ kind: 'home' })}>{t('common.back')}</button>} />
           {error && <Notice title={t('state.errorTitle')} tone="danger"><p>{error}</p></Notice>}
 
-          <Card className="new-game-visual-card">
+          <div className="new-game-settings-grid">
+            <Card className="new-game-visual-card">
             <VisualSelector
               label={t('newGame.galaxySize')}
               selectedId={galaxyPrototypeSize}
@@ -1085,7 +1086,8 @@ function App() {
             <p className={`new-game-selector-contract ${galaxyPrototypeSize === 'small' ? 'is-supported' : 'is-planned'}`}>
               {galaxyPrototypeSize === 'small' ? t('newGame.supportedContract') : t('newGame.unsupportedContract')}
             </p>
-          </Card>
+            </Card>
+          </div>
 
           <Card>
             <form className="new-game-form" onSubmit={submitNewGame}>
