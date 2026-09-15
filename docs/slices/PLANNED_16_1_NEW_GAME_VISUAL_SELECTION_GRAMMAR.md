@@ -1,6 +1,6 @@
 ﻿# Planned slice 16.1 - New Game visual selection grammar
 
-Status: **open; Gate 1-3 complete, Gate 4 next (2026-09-15)**.
+Status: **closed; Gates 1-4 complete (2026-09-15)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 
@@ -99,10 +99,12 @@ Downstream Difficulty/Galaxy Age/Race/Starting Tech/Player Composition breadth r
 
 ## Gate 4 - close
 
-- [ ] Desktop and 390 px mobile browser acceptance.
-- [ ] Keyboard/mouse/touch interaction smoke.
-- [ ] No horizontal overflow or hidden required facts.
-- [ ] Full web build and repository diff checks.
+- [x] Desktop and 390 px mobile browser acceptance.
+- [x] Keyboard/mouse/touch interaction smoke.
+- [x] No horizontal overflow or hidden required facts.
+- [x] Full web build and repository diff checks.
+
+Permanent closure evidence: `docs/research/SLICE_16_1_GATE4_CLOSE_2026-09-15.md`.
 
 ## Exit criterion
 

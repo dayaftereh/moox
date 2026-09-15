@@ -349,3 +349,15 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Full `go test ./... -count=1` and `npm run build` passed; responsive evidence includes desktop/<=980 closeout plus existing real 390x844 Ship Designer/Tactical QA.
 - Explicitly deferred non-required scanner intelligence, special-ship visual genomes, deeper Tactical batching/fire-all/split-fire, richer art and broad Military Ship Designer breadth (Slice 17) rather than carrying them as hidden Slice-15.6 work.
 - Closure evidence: `docs/research/SLICE_15_6_GATE3_FINAL_ACCEPTANCE_RUN_2026-09-14.md` and `docs/research/SLICE_15_6_GATE4_CLOSE_2026-09-14.md`.
+
+## 2026-09-15 - Slice 16.1 New Game visual selection grammar closed
+
+- Closed Slice 16.1 with Gates 1-4 complete after explicit user acceptance of the compact Galaxy Size selector/art direction.
+- Frozen and implemented the reusable typed `VisualSelector<TId>`, responsive setting-card grid, rounded image-led artwork, info-on-demand modal/bottom-sheet behavior, keyboard/mouse/touch interaction baseline, semantic New Game asset conventions and server-authoritative supported/planned presentation.
+- Accepted five original deterministic Galaxy Size SVG reference assets (Tiny/Small/Medium/Large/Huge) plus reproducible generator/manifest integration; arm count is treated as illustrative morphology, not a direct size metric.
+- Added build-time UTF-8 and deterministic selector/asset contract checks plus reusable real-Chrome browser smoke at 390 px mobile and desktop.
+- Final Gate-4 acceptance passed full web build, no-horizontal-overflow checks, mouse interaction, real CDP touch tap, ArrowLeft/ArrowRight/Home/End keyboard navigation, info-dialog focus/Escape behavior and Small-only Create Game support semantics.
+- Detailed explanatory copy remains refinable downstream without reopening the frozen interaction/asset contract.
+- Slice 16.2-16.6 remain separate prepared work; no next `_OPEN_` marker was created during closure.
+- Closure evidence: `docs/research/SLICE_16_1_GATE4_CLOSE_2026-09-15.md`.
+- Closing commit subject: `docs: close slice 16.1 visual selection grammar`.

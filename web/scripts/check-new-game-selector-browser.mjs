@@ -127,6 +127,12 @@ async function main() {
     await send('Input.dispatchKeyEvent', { type: 'keyDown', key: keyName, code, windowsVirtualKeyCode: virtualKeyCode, nativeVirtualKeyCode: virtualKeyCode })
     await send('Input.dispatchKeyEvent', { type: 'keyUp', key: keyName, code, windowsVirtualKeyCode: virtualKeyCode, nativeVirtualKeyCode: virtualKeyCode })
   }
+  const touchTap = async (selector) => {
+    const point = await evaluate(`(() => { const r = document.querySelector(${JSON.stringify(selector)})?.getBoundingClientRect(); return r ? { x: r.x + r.width / 2, y: r.y + r.height / 2 } : null })()`)
+    if (!point) throw new Error(`touch target not found: ${selector}`)
+    await send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: point.x, y: point.y, radiusX: 1, radiusY: 1, force: 1 }] })
+    await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
+  }
 
   await send('Page.enable')
   await send('Runtime.enable')
@@ -179,7 +185,17 @@ async function main() {
   assert(snap.source === '/assets/new-game/galaxy-size/tiny.svg', `Tiny art path wrong: ${snap.source}`)
   assert(snap.createDisabled === true, 'Tiny preview must keep Create Game disabled')
 
+  await touchTap('.visual-selector-arrow:not(:disabled):last-of-type')
+  await sleep(100)
+  snap = await evaluate(snapshotExpression)
+  assert(snap.selected === 'Klein', `touch tap on next arrow should select Small/Klein, got ${snap.selected}`)
+  assert(snap.createDisabled === false, 'Touch navigation back to Small should re-enable Create Game')
+
   await evaluate(`document.querySelector('.visual-selector').focus(); true`)
+  await key('ArrowLeft', 'ArrowLeft', 37)
+  await sleep(80)
+  snap = await evaluate(snapshotExpression)
+  assert(snap.selected === 'Winzig', `ArrowLeft should select Tiny/Winzig, got ${snap.selected}`)
   await key('ArrowRight', 'ArrowRight', 39)
   await sleep(80)
   snap = await evaluate(snapshotExpression)
@@ -260,7 +276,7 @@ async function main() {
     return
   }
 
-  console.log('New Game selector browser smoke passed: mobile + desktop layout, five options, mouse, keyboard, info modal, focus return and supported/planned behavior.')
+  console.log('New Game selector browser smoke passed: mobile + desktop layout, five options, mouse, touch, keyboard, info modal, focus return and supported/planned behavior.')
 }
 
 main().catch((error) => {
