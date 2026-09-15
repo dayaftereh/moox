@@ -3,12 +3,13 @@
 Opened: 2026-09-15
 Planned specification: `docs/slices/PLANNED_16_2_DIFFICULTY_VISUAL_SELECTOR.md`
 Permanent Gate-1 evidence: `docs/research/SLICE_16_2_GATE1_DIFFICULTY_AUDIT_2026-09-15.md`
+Gate-2 working draft: `docs/research/SLICE_16_2_GATE2_DIFFICULTY_FREEZE_DRAFT_2026-09-15.md`
 
 ## Recovery state
 
 - Branch: `main`.
 - Opened from clean closed Slice-16.1 baseline `4f9046d`.
-- Gate 1 audit is complete; Gate 2 is next.
+- Gate 1 audit is complete; Gate 2 is active in a fresh explicit session.
 - Slice 16.1 shared visual-selection grammar is the required UI foundation.
 - No Difficulty gameplay/server implementation has been made yet.
 

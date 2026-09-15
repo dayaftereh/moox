@@ -42,7 +42,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **Slice 16.2 - Gate 1 complete / Gate 2 next** - `_OPEN_DIFFICULTY_VISUAL_SELECTOR_2026-09-15.md`; original difficulty vocabulary/effects and current runtime gap audited, deliberate MOOX naming direction documented, five-state icon progression prototyped.
+- **Slice 16.2 - Gate 2 active** - `_OPEN_DIFFICULTY_VISUAL_SELECTOR_2026-09-15.md`; server-owned Difficulty IDs/ownership and Tutor separation drafted, exact evidence-backed modifier profiles and Very-Hard mechanics still being frozen.
 
 Closed/parked Slice-15 state:
 
