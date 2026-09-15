@@ -1060,13 +1060,6 @@ function App() {
           {error && <Notice title={t('state.errorTitle')} tone="danger"><p>{error}</p></Notice>}
 
           <Card className="new-game-visual-card">
-            <div className="new-game-selector-heading">
-              <div>
-                <p className="eyebrow">{t('newGame.selectorPrototype')}</p>
-                <h2>{t('newGame.galaxySize')}</h2>
-              </div>
-              <p className="muted">{t('newGame.selectorHint')}</p>
-            </div>
             <VisualSelector
               label={t('newGame.galaxySize')}
               selectedId={galaxyPrototypeSize}
@@ -1083,7 +1076,6 @@ function App() {
               ] as const).map(([id, title, scaleFact]) => ({
                 id,
                 title,
-                eyebrow: t('newGame.galaxySize'),
                 facts: [scaleFact, t('newGame.ageNormal'), t('newGame.techAverage')],
                 visual: <GalaxyPrototypeArt size={id} />,
                 availability: id === 'small' ? 'supported' : 'planned',

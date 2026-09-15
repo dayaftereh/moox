@@ -1,9 +1,8 @@
-﻿import { type KeyboardEvent, type ReactNode } from 'react'
+import { type KeyboardEvent, type ReactNode } from 'react'
 
 export type VisualSelectorOption = {
   id: string
   title: string
-  eyebrow?: string
   facts: readonly string[]
   visual: ReactNode
   availability?: 'supported' | 'planned'
@@ -31,7 +30,7 @@ export function VisualSelector({ label, options, selectedId, onChange, previousL
     onChange(options[nextIndex].id)
   }
 
-  function onKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+  function onKeyDown(event: KeyboardEvent<HTMLElement>) {
     if (event.key === 'ArrowLeft') {
       event.preventDefault()
       step(-1)
@@ -48,29 +47,36 @@ export function VisualSelector({ label, options, selectedId, onChange, previousL
   }
 
   return (
-    <section className="visual-selector" aria-label={label}>
-      <div className="visual-selector-stage" tabIndex={0} onKeyDown={onKeyDown} aria-roledescription="carousel">
-        <button type="button" className="visual-selector-arrow" onClick={() => step(-1)} disabled={selectedIndex <= 0} aria-label={previousLabel}>‹</button>
-        <article className="visual-selector-card" data-availability={selected.availability ?? 'supported'} aria-live="polite">
-          <div className="visual-selector-art">{selected.visual}</div>
-          <div className="visual-selector-copy">
-            {selected.eyebrow && <p className="eyebrow">{selected.eyebrow}</p>}
-            <div className="visual-selector-title-row">
-              <h3>{selected.title}</h3>
-              {selected.availabilityLabel && <span className="visual-selector-availability">{selected.availabilityLabel}</span>}
-            </div>
-            <div className="visual-selector-facts">
-              {selected.facts.map((fact) => <span key={fact}>{fact}</span>)}
-            </div>
-          </div>
-        </article>
-        <button type="button" className="visual-selector-arrow" onClick={() => step(1)} disabled={selectedIndex >= options.length - 1} aria-label={nextLabel}>›</button>
+    <section
+      className="visual-selector"
+      data-availability={selected.availability ?? 'supported'}
+      aria-label={label}
+      aria-roledescription="carousel"
+      tabIndex={0}
+      onKeyDown={onKeyDown}
+    >
+      <h2 className="visual-selector-heading">{label}</h2>
+
+      <div className="visual-selector-art" aria-live="polite">{selected.visual}</div>
+
+      <div className="visual-selector-controls">
+        <button type="button" className="visual-selector-arrow" onClick={() => step(-1)} disabled={selectedIndex <= 0} aria-label={previousLabel}>&lt;</button>
+        <div className="visual-selector-current">
+          <h3>{selected.title}</h3>
+          {selected.availabilityLabel && <span className="visual-selector-availability">{selected.availabilityLabel}</span>}
+        </div>
+        <button type="button" className="visual-selector-arrow" onClick={() => step(1)} disabled={selectedIndex >= options.length - 1} aria-label={nextLabel}>&gt;</button>
       </div>
+
+      <div className="visual-selector-facts">
+        {selected.facts.map((fact) => <span key={fact}>{fact}</span>)}
+      </div>
+
       <div className="visual-selector-position" aria-label={positionLabel(selectedIndex + 1, options.length)}>
-        <span>{positionLabel(selectedIndex + 1, options.length)}</span>
         <div className="visual-selector-dots" aria-hidden="true">
           {options.map((option, index) => <i key={option.id} data-current={index === selectedIndex ? 'true' : 'false'} />)}
         </div>
+        <span>{positionLabel(selectedIndex + 1, options.length)}</span>
       </div>
     </section>
   )

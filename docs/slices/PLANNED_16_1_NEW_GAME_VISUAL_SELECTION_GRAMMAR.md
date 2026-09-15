@@ -1,6 +1,6 @@
 ﻿# Planned slice 16.1 - New Game visual selection grammar
 
-Status: **open; Gate 1 complete (2026-09-15), Gate 2 not started**.
+Status: **open; Gate 1 complete, Gate 2 active / UI review candidate (2026-09-15)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 

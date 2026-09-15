@@ -8,7 +8,7 @@ Permanent Gate-1 evidence: `docs/research/SLICE_16_1_GATE1_NEW_GAME_VISUAL_SELEC
 
 - Branch: `main`.
 - Opened from clean synchronized HEAD `4720219`.
-- Gate 1 is active.
+- Gate 1 is complete; Gate 2 is active / review candidate.
 - No gameplay/server contract changes have been made yet.
 
 ## Gate 1 checklist
