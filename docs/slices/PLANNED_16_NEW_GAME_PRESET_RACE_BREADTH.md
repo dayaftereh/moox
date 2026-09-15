@@ -1,8 +1,8 @@
 # Planned slice 16 - New Game and preset-race breadth
 
-Status: **planned / queued; not open**.
+Status: **program in progress; Slices 16.1-16.2 closed, Slice 16.3 next prepared / not open**.
 
-Position: **next prepared New Game breadth milestone after closed Slice 15.6**. Slice 17 remains the alternative prepared Military Ship Designer breadth milestone; neither is active until deliberately opened.
+Position: **Slice 16.1 and Slice 16.2 are closed; Slice 16.3 is the next prepared New Game breadth slice but remains unopened until explicitly started.** Slice 17 remains the alternative prepared Military Ship Designer breadth milestone.
 
 ## Objective
 

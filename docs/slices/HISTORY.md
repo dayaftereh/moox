@@ -361,3 +361,18 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Slice 16.2-16.6 remain separate prepared work; no next `_OPEN_` marker was created during closure.
 - Closure evidence: `docs/research/SLICE_16_1_GATE4_CLOSE_2026-09-15.md`.
 - Closing commit subject: `docs: close slice 16.1 visual selection grammar`.
+
+
+## 2026-09-15 - Slice 16.2 Difficulty visual selector closed
+
+- Closed Slice 16.2 with Gates 1-4 complete after explicit user acceptance of the redesigned V2 Difficulty threat-sigil family.
+- Added the authoritative five-level Difficulty contract: `easy`, `normal`, `hard`, `very_hard`, `impossible`, with Normal as the default/effective legacy baseline and Tutor kept separate for future onboarding/tutorial work.
+- Implemented server-owned additive built-in-AI food/production/research/tax modifiers plus Difficulty-specific command-deficit cost; human empires remain on the standard ruleset values.
+- Added New Game/state persistence, server catalog endpoint, exact validation/defaulting and deterministic fixtures for all five levels.
+- Reused the typed Slice-16.1 `VisualSelector<DifficultyID>`; all explanatory numeric facts are rendered from server-owned profile data.
+- Replaced the first overlay-heavy command-crest art family during Gate 4 with the accepted minimalist deterministic threat-sigil V2 family; server ID `very_hard` maps to kebab-case asset ID/path `very-hard`.
+- Added permanent Gate-4 isolation coverage proving same-seed/same-settings determinism and no hidden initial-state differences outside the frozen Difficulty fields and direct normal food/economy derivatives; command-deficit tests separately prove 11/10/9/8.5/8 BC for built-in AI and standard 10 BC for humans.
+- Final acceptance passed `go test ./...`, web build, UTF-8 guard, deterministic ten-asset check, real Chrome mobile/desktop mouse/touch/keyboard smoke, `git diff --check`, and external preview health through NetBird/LAN while bound to `0.0.0.0:7171`.
+- Slice 16.3 is the next prepared objective but was deliberately not opened during Slice-16.2 closure.
+- Closure evidence: `docs/research/SLICE_16_2_GATE4_CLOSE_2026-09-15.md`.
+- Closing commit subject: `docs: close slice 16.2 difficulty selector`.

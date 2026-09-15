@@ -1,6 +1,6 @@
 # Planned slice 16.2 - Difficulty visual selector
 
-Status: **open; Gates 1-3 complete, Gate 4 next (2026-09-15)**.
+Status: **closed; Gates 1-4 complete (2026-09-15)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slice 16.1 shared visual selection grammar.
@@ -81,10 +81,12 @@ Permanent Gate-2 freeze evidence: `docs/research/SLICE_16_2_GATE2_DIFFICULTY_FRE
 
 ## Gate 4 - close
 
-- [ ] Equal seed + equal settings remains byte/deterministically equal.
-- [ ] Difficulty changes produce only their frozen intended effects.
-- [ ] Desktop/mobile carousel QA.
-- [ ] Full tests/build/diff checks.
+- [x] Equal seed + equal settings remains byte/deterministically equal.
+- [x] Difficulty changes produce only their frozen intended effects.
+- [x] Desktop/mobile carousel QA.
+- [x] Full tests/build/diff checks.
+
+Permanent Gate-4 closure evidence: `docs/research/SLICE_16_2_GATE4_CLOSE_2026-09-15.md`.
 
 ## Exit criterion
 
