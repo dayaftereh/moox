@@ -44,7 +44,7 @@ const FOCUS_ZOOM = 3.2
 const DAMAGE_FEEDBACK_MS = 4200
 
 function humanize(value: string | undefined) {
-  if (!value) return 'â€”'
+  if (!value) return '—'
   return value.replace(/[_-]+/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
@@ -432,7 +432,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
       </div>
 
 
-      {commandError && <div className="tactical-command-error"><Notice title={t('battlefield.commandRejectedTitle')} tone="warning">{commandError} Â· {t('battlefield.commandRejectedBody')}</Notice></div>}
+      {commandError && <div className="tactical-command-error"><Notice title={t('battlefield.commandRejectedTitle')} tone="warning">{commandError} · {t('battlefield.commandRejectedBody')}</Notice></div>}
 
       <div className="tactical-viewport-shell">
         <svg
@@ -653,7 +653,7 @@ function TacticalScanDetails({ ship, shipName, empireName, t }: { ship: Tactical
     <div className="tactical-scan-details galaxy-fleet-info-content">
       <div>
         <h4>{shipName(ship.ship_id)}</h4>
-        <p className="muted">{empireName(ship.empire_id)} Â· {humanize(ship.hull_id)} Â· {humanize(ship.warp_drive_id)}</p>
+        <p className="muted">{empireName(ship.empire_id)} · {humanize(ship.hull_id)} · {humanize(ship.warp_drive_id)}</p>
       </div>
       <dl className="tactical-scan-facts galaxy-fleet-info-grid">
         <div><dt>{t('battlefield.position')}</dt><dd>{ship.x}, {ship.y}</dd></div>
@@ -674,8 +674,8 @@ function TacticalScanDetails({ ship, shipName, empireName, t }: { ship: Tactical
         <strong>{t('battlefield.weapons')}</strong>
         {ship.weapons?.length ? ship.weapons.map((weapon) => (
           <div className="tactical-weapon-row" key={weapon.slot}>
-            <span>{humanize(weapon.weapon_id)} Ã— {weapon.count}</span>
-            <span>{weapon.min_damage}â€“{weapon.max_damage}</span>
+            <span>{humanize(weapon.weapon_id)} × {weapon.count}</span>
+            <span>{weapon.min_damage}–{weapon.max_damage}</span>
             <span className={`badge ${weapon.ready ? '' : 'danger'}`}>{weapon.ready ? t('battlefield.ready') : t('battlefield.spent')}</span>
           </div>
         )) : <p className="muted">{t('battlefield.unarmed')}</p>}

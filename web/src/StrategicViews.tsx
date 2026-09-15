@@ -1891,7 +1891,7 @@ function SystemDialog({ snapshot, system, onClose, onOpenColony, onPlanOrder, on
                   return (
                     <span className={'badge system-contact-badge relation-' + tone} key={'contact-' + index + '-' + contact.empire_id}>
                       <GameIcon name={strategicContactIcon(contact.kind)} />
-                      {t('common.empireFallback', { id: contact.empire_id })} Â· {contact.kind}
+                      {t('common.empireFallback', { id: contact.empire_id })} · {contact.kind}
                     </span>
                   )
                 })}
@@ -2307,7 +2307,7 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
       <header className="colony-detail-toolbar">
         <div className="colony-detail-toolbar-title">
           <strong>{t('colonies.colony', { id: colony.id })}</strong>
-          <span>{planetContext ? `${planetContext.system.name} Â· ${planetContext.planet.name}` : t('colonies.planet', { id: colony.planet_id })}</span>
+          <span>{planetContext ? `${planetContext.system.name} · ${planetContext.planet.name}` : t('colonies.planet', { id: colony.planet_id })}</span>
         </div>
         <button type="button" className="button-ghost colony-detail-back" onClick={onBack}>{t('common.back')}</button>
       </header>
@@ -2454,14 +2454,14 @@ function ConstructionSummary({ colony, preview, draftOrders, onOpen, t }: {
             <span style={{ width: `${currentProgressPercent}%` }} />
           </div>
           <div className="construction-summary-progress-meta">
-            <span>{currentProgressPP.toFixed(1)} / {currentCostPP.toFixed(0)} PP Â· {currentProgressPercent.toFixed(0)}%</span>
+            <span>{currentProgressPP.toFixed(1)} / {currentCostPP.toFixed(0)} PP · {currentProgressPercent.toFixed(0)}%</span>
             <strong>{projected ? formatEta(t, projected.eta_turns) : t('common.noEta')}</strong>
           </div>
         </div>
       )}
       <div className="construction-summary-meta">
         {(!current || currentCostPP === undefined || currentCostPP <= 0) && <span>{projected ? formatEta(t, projected.eta_turns) : t('common.noEta')}</span>}
-        {items.length > 1 && <small>{items.slice(1, 4).map((item) => humanizeToken(item.project_id)).join(' Â· ')}{items.length > 4 ? ' â€¦' : ''}</small>}
+        {items.length > 1 && <small>{items.slice(1, 4).map((item) => humanizeToken(item.project_id)).join(' · ')}{items.length > 4 ? ' …' : ''}</small>}
       </div>
       <button type="button" className="button-secondary button-wide" onClick={onOpen}><GameIcon name="build" />{t('construction.openManager')}</button>
     </Card>
@@ -2637,7 +2637,7 @@ function ConstructionEditor({ colony, preview, choices, shipDesigns, draftOrders
                   <span className={constructionProjectUsesLargeArt(choice.project_kind) ? 'construction-catalog-glyph construction-catalog-glyph-rich' : 'construction-catalog-glyph'} data-kind={choice.project_kind} aria-hidden="true"><ConstructionChoiceArt choice={choice} shipDesigns={shipDesigns} variant="compact" /></span>
                   <span className="construction-catalog-copy">
                     <strong>{displayChoice(choice)}</strong>
-                    <small>{humanizeToken(choice.project_kind)} Â· {t('construction.cost', { pp: choice.production_cost_pp.toFixed(0) })}</small>
+                    <small>{humanizeToken(choice.project_kind)} · {t('construction.cost', { pp: choice.production_cost_pp.toFixed(0) })}</small>
                   </span>
                   {alreadyQueued && <span className="badge">{t('construction.queued')}</span>}
                 </button>
@@ -2746,7 +2746,7 @@ function ConstructionEditor({ colony, preview, choices, shipDesigns, draftOrders
               <span style={{ width: `${currentProgressPercent}%` }} />
             </div>
             <div className="construction-current-meta">
-              <span>{currentCostPP ? `${currentProgressPP.toFixed(1)} / ${currentCostPP.toFixed(0)} PP Â· ${currentProgressPercent.toFixed(0)}%` : `${currentProgressPP.toFixed(1)} PP`}</span>
+              <span>{currentCostPP ? `${currentProgressPP.toFixed(1)} / ${currentCostPP.toFixed(0)} PP · ${currentProgressPercent.toFixed(0)}%` : `${currentProgressPP.toFixed(1)} PP`}</span>
               <span>{currentProjected ? formatEta(t, currentProjected.eta_turns) : t('common.noEta')}</span>
             </div>
           </section>
@@ -2770,7 +2770,7 @@ function ConstructionEditor({ colony, preview, choices, shipDesigns, draftOrders
                     </span>
                     <span className="construction-queue-copy-text">
                       <strong>{displayItem(item)}</strong>
-                      <small>{humanizeToken(item.project_kind)} Â· {projectedItem ? formatEta(t, projectedItem.eta_turns) : t('common.noEta')}</small>
+                      <small>{humanizeToken(item.project_kind)} · {projectedItem ? formatEta(t, projectedItem.eta_turns) : t('common.noEta')}</small>
                     </span>
                   </button>
                   <div className="action-row compact-actions construction-queue-actions">
@@ -2816,8 +2816,8 @@ function PopulationTransferRow({ choice, onPlanOrder, t }: {
   function confirmTransfer() {
     const message = [
       t('transfer.title'),
-      `${choice.source_colony_id} â†’ ${choice.destination_colony_id}`,
-      `${choice.source_job} â†’ ${choice.destination_job}`,
+      `${choice.source_colony_id} → ${choice.destination_colony_id}`,
+      `${choice.source_job} → ${choice.destination_job}`,
       `${t('transfer.freighters')}: ${choice.freighters_required}`,
       `${t('transfer.eta')}: ${choice.eta}`,
     ].join('\n')
@@ -2839,8 +2839,8 @@ function PopulationTransferRow({ choice, onPlanOrder, t }: {
   return (
     <div className="list-row">
       <span>
-        <strong>{choice.source_colony_id} â†’ {choice.destination_colony_id}</strong>
-        <small>{choice.source_job} â†’ {choice.destination_job} Â· {t('transfer.freighters')}: {choice.freighters_required} Â· {t('transfer.eta')}: {choice.eta}{choice.same_system ? ` Â· ${t('transfer.sameSystem')}` : ''}</small>
+        <strong>{choice.source_colony_id} → {choice.destination_colony_id}</strong>
+        <small>{choice.source_job} → {choice.destination_job} · {t('transfer.freighters')}: {choice.freighters_required} · {t('transfer.eta')}: {choice.eta}{choice.same_system ? ` · ${t('transfer.sameSystem')}` : ''}</small>
       </span>
       <button type="button" className="button-secondary" onClick={confirmTransfer}><GameIcon name="check" />{t('transfer.confirm')}</button>
     </div>
@@ -2877,9 +2877,9 @@ export function StrategicFleetsView({ snapshot, onPlanOrder, t }: { snapshot: Pl
                 <span className="badge fleet-role-badge"><GameIcon name={fleetRoleIcon(fleet)} />{t('fleets.ships')}: {fleet.ship_ids?.length ?? 0}</span>
               </div>
               <dl className="detail-list compact">
-                <div><dt>{t('fleets.atSystem')}</dt><dd>{fleet.at_system_id ?? 'â€”'}</dd></div>
-                <div><dt>{t('fleets.destination')}</dt><dd>{fleet.destination_system_id ?? 'â€”'}</dd></div>
-                <div><dt>{t('fleets.eta')}</dt><dd>{fleet.remaining_turns ?? 'â€”'}</dd></div>
+                <div><dt>{t('fleets.atSystem')}</dt><dd>{fleet.at_system_id ?? '—'}</dd></div>
+                <div><dt>{t('fleets.destination')}</dt><dd>{fleet.destination_system_id ?? '—'}</dd></div>
+                <div><dt>{t('fleets.eta')}</dt><dd>{fleet.remaining_turns ?? '—'}</dd></div>
               </dl>
               {moves.length === 0 ? <p className="muted">{t('fleets.noMoves')}</p> : (
                 <div className="choice-grid">
@@ -2898,7 +2898,7 @@ export function StrategicFleetsView({ snapshot, onPlanOrder, t }: { snapshot: Pl
                         },
                       })}
                     >
-                      <strong>{t('fleets.move')} â†’ {choice.destination_system_id}</strong>
+                      <strong>{t('fleets.move')} → {choice.destination_system_id}</strong>
                       <small>{t('fleets.eta')}: {choice.eta}</small>
                     </button>
                   ))}
@@ -3003,7 +3003,7 @@ export function StrategicResearchOverlay({ snapshot, preview, draftOrders, onPla
             <h2>{t('research.changeTitle')}</h2>
           </div>
           <div className="research-overlay-current">
-            <span>{t('research.rpRate')}</span><strong>{active?.rp_per_turn.toFixed(1) ?? 'â€”'} RP</strong>
+            <span>{t('research.rpRate')}</span><strong>{active?.rp_per_turn.toFixed(1) ?? '—'} RP</strong>
             <span>{t('research.eta')}</span><strong>{formatEta(t, active?.eta_turns)}</strong>
           </div>
           <button type="button" className="button-ghost research-overlay-close" onClick={onClose} aria-label={t('common.close')}><GameIcon name="close" /></button>

@@ -300,7 +300,7 @@ function App() {
       // The rejected mutation is never automatically resubmitted.
       setError(errorText(reason))
     } catch (refreshReason) {
-      setError(errorText(reason) + ' Â· ' + errorText(refreshReason))
+      setError(errorText(reason) + ' · ' + errorText(refreshReason))
     }
     return true
   }, [loadSnapshot])
@@ -581,7 +581,7 @@ function App() {
       shortLabel: 'RP',
       icon: 'research',
       value: `${researchRate.toFixed(1)} RP`,
-      delta: hasActiveResearch ? `[${researchPercent.toFixed(0)}%${researchETA !== undefined ? ` Â· ${researchETA}T` : ''}]` : '[â€”]',
+      delta: hasActiveResearch ? `[${researchPercent.toFixed(0)}%${researchETA !== undefined ? ` · ${researchETA}T` : ''}]` : '[—]',
       deltaTone: researchNearBreakthrough ? 'warning' as const : 'neutral' as const,
       tone: researchNearBreakthrough ? 'warning' as const : 'neutral' as const,
       progressPercent: researchPercent,
@@ -591,9 +591,9 @@ function App() {
         { label: t('resourceDetail.researchProgress'), value: researchCost > 0 ? `${researchProgress.toFixed(1)} / ${researchCost.toFixed(1)} RP` : researchProgress.toFixed(1) },
         { label: t('resourceDetail.researchPercent'), value: `${researchPercent.toFixed(1)}%` },
         { label: t('resourceDetail.researchRemaining'), value: `${researchRemaining.toFixed(1)} RP` },
-        { label: t('resourceDetail.researchEta'), value: researchETA !== undefined ? `${researchETA}` : 'â€”', tone: researchNearBreakthrough ? 'warning' as const : 'neutral' as const },
-        { label: t('resourceDetail.researchField'), value: researchFieldID !== undefined ? `#${researchFieldID}${researchChoice?.category_id ? ` Â· ${researchChoice.category_id}` : ''}` : 'â€”' },
-        { label: t('resourceDetail.researchMode'), value: researchProjection?.selection_mode ?? researchState?.selection_mode ?? 'â€”' },
+        { label: t('resourceDetail.researchEta'), value: researchETA !== undefined ? `${researchETA}` : '—', tone: researchNearBreakthrough ? 'warning' as const : 'neutral' as const },
+        { label: t('resourceDetail.researchField'), value: researchFieldID !== undefined ? `#${researchFieldID}${researchChoice?.category_id ? ` · ${researchChoice.category_id}` : ''}` : '—' },
+        { label: t('resourceDetail.researchMode'), value: researchProjection?.selection_mode ?? researchState?.selection_mode ?? '—' },
         { label: t('resourceDetail.breakthrough'), value: !hasActiveResearch ? t('resourceDetail.researchNone') : researchNearBreakthrough ? t('resourceDetail.breakthroughNear') : t('resourceDetail.breakthroughNormal'), tone: researchNearBreakthrough ? 'warning' as const : 'neutral' as const },
       ],
     },
@@ -1039,8 +1039,8 @@ function App() {
               <div className="session-list">
                 {games.map((game) => (
                   <button type="button" className="session-row" key={game.game_id} onClick={() => enterGame(game.game_id)}>
-                    <span><strong>{game.game_id}</strong><small>{t('top.turn', { turn: game.turn })} Â· {localizedPhase(t, game.phase)}</small></span>
-                    <span aria-hidden="true">â€º</span>
+                    <span><strong>{game.game_id}</strong><small>{t('top.turn', { turn: game.turn })} · {localizedPhase(t, game.phase)}</small></span>
+                    <span aria-hidden="true">›</span>
                   </button>
                 ))}
               </div>
@@ -1149,7 +1149,7 @@ function App() {
               {colonyBaseTargets.map((planet) => (
                 <button type="button" className="colony-base-target" key={planet.id} disabled={mutationLocked || colonyBaseBusy} onClick={() => void runColonyBase('colonize', planet.id)}>
                   <span className="colony-base-target-art" aria-hidden="true"><OrbitalBodyArt kind="planet" id={planet.id} climateId={planet.climate_id} /></span>
-                  <span><strong>{planet.name}</strong><small>{planet.climate_id} Â· {planet.size_id} Â· {planet.mineral_id}</small></span>
+                  <span><strong>{planet.name}</strong><small>{planet.climate_id} · {planet.size_id} · {planet.mineral_id}</small></span>
                   <GameIcon name="flag" aria-hidden="true" />
                 </button>
               ))}
@@ -1200,7 +1200,7 @@ function App() {
               <div className="invasion-target-copy">
                 <span className="badge">{invasionSystem?.name ?? t('invasion.systemFallback', { id: invasionDecision.system_id })}</span>
                 <strong>{invasionPlanet?.name ?? t('invasion.colonyFallback', { id: invasionDecision.colony_id })}</strong>
-                <small>{invasionPlanet ? `${invasionPlanet.climate_id} Â· ${invasionPlanet.size_id} Â· ${invasionPlanet.mineral_id}` : t('invasion.colonyId', { id: invasionDecision.colony_id })}</small>
+                <small>{invasionPlanet ? `${invasionPlanet.climate_id} · ${invasionPlanet.size_id} · ${invasionPlanet.mineral_id}` : t('invasion.colonyId', { id: invasionDecision.colony_id })}</small>
               </div>
               <div className="invasion-defender-card">
                 <span>{t('invasion.defender')}</span>
@@ -1211,7 +1211,7 @@ function App() {
             <div className="invasion-transport-summary">
               <div><GameIcon name="transport" /><span><strong>{t('invasion.transportTitle')}</strong><small>{t('invasion.transports', { count: invasionDecision.eligible_transport_fleet_ids.length })}</small></span></div>
               <div className="invasion-transport-chips">
-                {invasionDecision.eligible_transport_fleet_ids.map((fleetID) => { const fleet = invasionTransportFleets.find((candidate) => candidate.id === fleetID); return <span className="badge" key={fleetID}>{t('invasion.fleet', { id: fleetID })}{fleet?.special_kind ? ` Â· ${fleet.special_kind}` : ''}</span> })}
+                {invasionDecision.eligible_transport_fleet_ids.map((fleetID) => { const fleet = invasionTransportFleets.find((candidate) => candidate.id === fleetID); return <span className="badge" key={fleetID}>{t('invasion.fleet', { id: fleetID })}{fleet?.special_kind ? ` · ${fleet.special_kind}` : ''}</span> })}
               </div>
             </div>
             <p className="muted invasion-authority-note">{t('invasion.authorityNote')}</p>
@@ -1393,7 +1393,7 @@ function GalaxyView({ snapshot, t }: { snapshot: PlayerSnapshot; t: Translator }
           <dl className="detail-list">
             <div><dt>{t('galaxy.empireId')}</dt><dd>{snapshot.view.empire.id}</dd></div>
             <div><dt>{t('galaxy.race')}</dt><dd>{snapshot.view.empire.race_id}</dd></div>
-            <div><dt>{t('galaxy.seat')}</dt><dd>{snapshot.view.seat.seat.id} Â· {snapshot.view.seat.seat.controller}</dd></div>
+            <div><dt>{t('galaxy.seat')}</dt><dd>{snapshot.view.seat.seat.id} · {snapshot.view.seat.seat.controller}</dd></div>
           </dl>
         </Card>
         <Card>
