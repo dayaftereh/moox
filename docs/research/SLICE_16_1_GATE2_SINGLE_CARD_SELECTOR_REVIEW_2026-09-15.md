@@ -87,3 +87,48 @@ The New Game visual settings now sit inside `.new-game-settings-grid`, using an 
 - each selector preserves the same internal heading -> visual -> previous/value/next -> facts grammar.
 
 This is still a Gate-2 review candidate rather than a frozen contract until user visual review and image/art direction are complete.
+## Info-on-demand follow-up review
+
+The compact-card review was refined again to reduce permanent text and reserve the card surface for image-led selection.
+
+### Visible card contract
+
+The selector now keeps only the high-value controls visible:
+
+- setting title above the artwork;
+- rounded artwork;
+- an overlaid `?` information control on the artwork;
+- previous arrow / large centered current selection / next arrow;
+- small position dots.
+
+The former fact chips and permanent server-contract paragraph are no longer rendered below the card. Availability and explanation text move into the on-demand information surface.
+
+### Information surface
+
+The reusable `VisualSelector` now accepts per-option detail paragraphs plus localized labels for opening/closing information. Clicking/tapping `?` opens:
+
+- a centered modal on larger viewports;
+- a bottom-sheet style modal on narrow/mobile viewports;
+- the current setting and option name;
+- current support/planned status;
+- detailed explanatory paragraphs.
+
+The Galaxy-size prototype remains contract-honest: Small explains that it is the current authoritative baseline; Tiny/Medium/Large/Huge explicitly remain preview-only until exact generator/player-capacity semantics are frozen later.
+
+### Accessibility and browser QA
+
+- Mobile viewport: `390 px` with no horizontal overflow.
+- Info control: `44 x 44 px` on mobile.
+- Artwork radius: `16 px` mobile, `20 px` desktop/tablet.
+- Former `.visual-selector-facts` and `.new-game-selector-contract` render count: `0`.
+- Opening info moves focus to the dialog close control and applies body modal locking.
+- Tab is contained on the dialog's only focusable control in the current implementation.
+- Escape and the close button dismiss the dialog; focus returns to the artwork info control.
+- Arrow-key selector navigation remains functional when the dialog is closed.
+- Planned options still disable Create Game.
+
+### Style isolation
+
+The placeholder New Game galaxy illustration is now fully scoped under `.new-game-galaxy-art`. Generic class names such as `.galaxy-star` no longer leak New Game styling into the actual galaxy-map UI.
+
+Gate 2 remains open for user review before the selector contract is formally frozen.

@@ -1068,24 +1068,23 @@ function App() {
               previousLabel={t('newGame.previousOption')}
               nextLabel={t('newGame.nextOption')}
               positionLabel={(current, total) => t('newGame.optionPosition', { current, total })}
+              infoLabel={(optionTitle) => t('newGame.moreInfo', { option: optionTitle })}
+              closeInfoLabel={t('newGame.closeInfo')}
               options={([
-                ['tiny', t('newGame.sizeTiny'), t('newGame.factTiny')],
-                ['small', t('newGame.sizeSmall'), t('newGame.factSmall')],
-                ['medium', t('newGame.sizeMedium'), t('newGame.factMedium')],
-                ['large', t('newGame.sizeLarge'), t('newGame.factLarge')],
-                ['huge', t('newGame.sizeHuge'), t('newGame.factHuge')],
-              ] as const).map(([id, title, scaleFact]) => ({
+                ['tiny', t('newGame.sizeTiny'), t('newGame.detailTiny')],
+                ['small', t('newGame.sizeSmall'), t('newGame.detailSmall')],
+                ['medium', t('newGame.sizeMedium'), t('newGame.detailMedium')],
+                ['large', t('newGame.sizeLarge'), t('newGame.detailLarge')],
+                ['huge', t('newGame.sizeHuge'), t('newGame.detailHuge')],
+              ] as const).map(([id, title, detail]) => ({
                 id,
                 title,
-                facts: [scaleFact, t('newGame.ageNormal'), t('newGame.techAverage')],
+                details: [detail, id === 'small' ? t('newGame.supportedContract') : t('newGame.unsupportedContract')],
                 visual: <GalaxyPrototypeArt size={id} />,
                 availability: id === 'small' ? 'supported' : 'planned',
                 availabilityLabel: id === 'small' ? t('newGame.supportedNow') : t('newGame.plannedOption'),
               }))}
             />
-            <p className={`new-game-selector-contract ${galaxyPrototypeSize === 'small' ? 'is-supported' : 'is-planned'}`}>
-              {galaxyPrototypeSize === 'small' ? t('newGame.supportedContract') : t('newGame.unsupportedContract')}
-            </p>
             </Card>
           </div>
 
