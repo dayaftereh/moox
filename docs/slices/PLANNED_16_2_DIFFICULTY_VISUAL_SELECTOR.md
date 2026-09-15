@@ -1,6 +1,6 @@
 # Planned slice 16.2 - Difficulty visual selector
 
-Status: **planned / binding Slice-16 product direction; not open**.
+Status: **open; Gate 1 complete, Gate 2 next (2026-09-15)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slice 16.1 shared visual selection grammar.
@@ -55,10 +55,12 @@ Do not invent numbers in the frontend. Every displayed fact must come from norma
 
 ## Gate 1 - audit
 
-- [ ] Re-check original difficulty levels and exact gameplay effects.
-- [ ] Map existing server/runtime difficulty model, if any.
-- [ ] Decide whether the five MOOX display labels map 1:1 or represent deliberate modern naming.
-- [ ] Prototype all five icon/art states in one coherent progression.
+- [x] Re-check original difficulty levels and exact gameplay effects.
+- [x] Map existing server/runtime difficulty model, if any.
+- [x] Decide whether the five MOOX display labels map 1:1 or represent deliberate modern naming.
+- [x] Prototype all five icon/art states in one coherent progression.
+
+Permanent Gate-1 evidence: `docs/research/SLICE_16_2_GATE1_DIFFICULTY_AUDIT_2026-09-15.md`.
 
 ## Gate 2 - freeze
 

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="360" viewBox="0 0 1500 360" role="img" aria-labelledby="title desc">
+  <title id="title">Slice 16.2 Difficulty icon progression prototype</title>
+  <desc id="desc">Five original command-emblem prototypes for Easy, Normal, Hard, Very Hard and Impossible, increasing in weight, rank marks and visual aggression without changing the common silhouette family.</desc>
+  <defs>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#101a2a"/>
+      <stop offset="1" stop-color="#060b12"/>
+    </linearGradient>
+    <linearGradient id="soft" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b7e4ff"/>
+      <stop offset="1" stop-color="#4c93bd"/>
+    </linearGradient>
+    <linearGradient id="mid" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d5efff"/>
+      <stop offset="1" stop-color="#5ea5cf"/>
+    </linearGradient>
+    <linearGradient id="hard" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffe7a2"/>
+      <stop offset="1" stop-color="#d08428"/>
+    </linearGradient>
+    <linearGradient id="vhard" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffd29b"/>
+      <stop offset="1" stop-color="#b9542d"/>
+    </linearGradient>
+    <linearGradient id="imp" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff1ca"/>
+      <stop offset="0.45" stop-color="#e97258"/>
+      <stop offset="1" stop-color="#782a50"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="7" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1500" height="360" fill="#03070d"/>
+
+  <!-- Common card shell -->
+  <g font-family="Segoe UI, Arial, sans-serif" text-anchor="middle">
+    <g transform="translate(20 20)">
+      <rect width="276" height="320" rx="24" fill="url(#panel)" stroke="#29445d"/>
+      <circle cx="138" cy="132" r="82" fill="#09131e" stroke="#4b87aa" stroke-width="3"/>
+      <path d="M138 62 L188 83 L181 151 Q170 194 138 213 Q106 194 95 151 L88 83 Z" fill="none" stroke="url(#soft)" stroke-width="10" stroke-linejoin="round"/>
+      <circle cx="138" cy="126" r="25" fill="none" stroke="url(#soft)" stroke-width="8"/>
+      <path d="M118 174 L138 185 L158 174" fill="none" stroke="#84c8ef" stroke-width="7" stroke-linecap="round"/>
+      <text x="138" y="260" fill="#edf7ff" font-size="28" font-weight="700">Easy</text>
+      <text x="138" y="291" fill="#8ea8bd" font-size="15">calm / welcoming / one rank mark</text>
+    </g>
+
+    <g transform="translate(316 20)">
+      <rect width="276" height="320" rx="24" fill="url(#panel)" stroke="#31516c"/>
+      <circle cx="138" cy="132" r="82" fill="#09131e" stroke="#5a9fc5" stroke-width="3"/>
+      <path d="M138 58 L192 81 L184 153 Q171 198 138 217 Q105 198 92 153 L84 81 Z" fill="none" stroke="url(#mid)" stroke-width="11" stroke-linejoin="round"/>
+      <circle cx="138" cy="123" r="27" fill="none" stroke="url(#mid)" stroke-width="8"/>
+      <path d="M112 170 L138 184 L164 170 M118 188 L138 199 L158 188" fill="none" stroke="#9dd8f7" stroke-width="7" stroke-linecap="round"/>
+      <text x="138" y="260" fill="#edf7ff" font-size="28" font-weight="700">Normal</text>
+      <text x="138" y="291" fill="#8ea8bd" font-size="15">balanced / centered / two marks</text>
+    </g>
+
+    <g transform="translate(612 20)">
+      <rect width="276" height="320" rx="24" fill="url(#panel)" stroke="#6d5632"/>
+      <circle cx="138" cy="132" r="82" fill="#0d1218" stroke="#a87735" stroke-width="3"/>
+      <path d="M138 53 L197 79 L187 157 Q171 202 138 221 Q105 202 89 157 L79 79 Z" fill="none" stroke="url(#hard)" stroke-width="12" stroke-linejoin="round"/>
+      <path d="M110 119 L126 101 L138 116 L150 101 L166 119 L157 144 L119 144 Z" fill="none" stroke="url(#hard)" stroke-width="8" stroke-linejoin="round"/>
+      <path d="M108 168 L138 185 L168 168 M114 187 L138 201 L162 187 M120 205 L138 215 L156 205" fill="none" stroke="#e5aa54" stroke-width="7" stroke-linecap="round"/>
+      <text x="138" y="260" fill="#fff4d8" font-size="28" font-weight="700">Hard</text>
+      <text x="138" y="291" fill="#bca47e" font-size="15">armored / assertive / three marks</text>
+    </g>
+
+    <g transform="translate(908 20)">
+      <rect width="276" height="320" rx="24" fill="url(#panel)" stroke="#754433"/>
+      <circle cx="138" cy="132" r="82" fill="#0e1016" stroke="#b65f3e" stroke-width="3"/>
+      <path d="M138 48 L202 77 L191 160 Q173 205 138 226 Q103 205 85 160 L74 77 Z" fill="none" stroke="url(#vhard)" stroke-width="13" stroke-linejoin="round"/>
+      <path d="M96 106 L114 86 L128 102 L138 79 L148 102 L162 86 L180 106 L164 143 L112 143 Z" fill="none" stroke="url(#vhard)" stroke-width="9" stroke-linejoin="round"/>
+      <path d="M104 165 L138 184 L172 165 M109 184 L138 201 L167 184 M114 202 L138 216 L162 202 M120 219 L138 229 L156 219" fill="none" stroke="#e47d4d" stroke-width="7" stroke-linecap="round"/>
+      <text x="138" y="260" fill="#fff0df" font-size="28" font-weight="700">Very Hard</text>
+      <text x="138" y="291" fill="#c69d88" font-size="15">heavier crest / hostile / four marks</text>
+    </g>
+
+    <g transform="translate(1204 20)">
+      <rect width="276" height="320" rx="24" fill="url(#panel)" stroke="#7d3f55"/>
+      <circle cx="138" cy="132" r="84" fill="#100d15" stroke="#d26967" stroke-width="4"/>
+      <circle cx="138" cy="132" r="70" fill="none" stroke="#8e365c" stroke-width="3" stroke-dasharray="7 8"/>
+      <path d="M138 43 L207 75 L195 164 Q175 209 138 231 Q101 209 81 164 L69 75 Z" fill="none" stroke="url(#imp)" stroke-width="14" stroke-linejoin="round" filter="url(#glow)"/>
+      <path d="M90 107 L112 82 L126 101 L138 69 L150 101 L164 82 L186 107 L167 146 L109 146 Z" fill="none" stroke="url(#imp)" stroke-width="10" stroke-linejoin="round"/>
+      <path d="M100 163 L138 184 L176 163 M105 182 L138 201 L171 182 M110 200 L138 216 L166 200 M115 218 L138 231 L161 218 M121 235 L138 245 L155 235" fill="none" stroke="#f08a70" stroke-width="7" stroke-linecap="round"/>
+      <path d="M75 99 L54 87 M201 99 L222 87 M76 167 L55 181 M200 167 L221 181" stroke="#d36d72" stroke-width="5" stroke-linecap="round"/>
+      <text x="138" y="260" fill="#fff0e7" font-size="28" font-weight="700">Impossible</text>
+      <text x="138" y="291" fill="#caa0ae" font-size="15">elite / cracked aura / five marks</text>
+    </g>
+  </g>
+</svg>
