@@ -1,11 +1,12 @@
 ﻿# Open Slice 16.3 - Galaxy visual selector
 
 Opened: 2026-09-15
-Status: **Gate 2 active**
+Status: **Gates 1-2 complete / Gate 3 next**
 
 Planned specification: `docs/slices/PLANNED_16_3_GALAXY_VISUAL_SELECTOR.md`
 Parent: `docs/slices/PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`
 Permanent Gate-1 evidence: `docs/research/SLICE_16_3_GATE1_GALAXY_VISUAL_SELECTOR_AUDIT_2026-09-15.md`
+Permanent Gate-2 freeze evidence: `docs/research/SLICE_16_3_GATE2_GALAXY_VISUAL_SELECTOR_FREEZE_2026-09-15.md`
 Depends on: closed Slice 16.1 shared visual selection grammar; closed Slice 16.2 Difficulty selector/server-catalog pattern is a reusable reference, not a dependency for galaxy mechanics.
 
 ## Recovery state
@@ -40,6 +41,17 @@ Depends on: closed Slice 16.1 shared visual selection grammar; closed Slice 16.2
 - Current New Game remains exactly two Human/Darlok players; do not invent size-dependent player-cap facts.
 - Existing Small/Medium/Large/Huge art is the size prototype; new research-only age SVGs use a mineral-to-biosphere composition cue without changing star count/map shape.
 
+## Gate-2 freeze summary
+
+- Gameplay Size IDs: `small / medium / large / huge`; Tiny is not authoritative and will not appear in the bound selector/catalog.
+- Galaxy Age IDs: `mineral_rich / normal / organic_rich`; default Normal.
+- Exact Size facts: 20/36/54/71 star systems.
+- Grid-jitter normalization generalized data-driven with cell size 200 and unchanged Small output/RNG order.
+- Every Age profile owns its 7 spectral weights and 4x10 climate weights; Organic uses the rechecked 0x57CF table.
+- Server catalog route is frozen as `GET /api/v1/new-game/galaxy`; frontend receives exact star counts plus qualitative mineral/food bias fields.
+- Existing Small/Medium/Large/Huge art is production direction; Age research prototypes promote to kebab-case runtime SVGs.
+- Current two-player Human/Darlok composition remains unchanged by Slice 16.3.
+
 ## Next
 
-Gate 2 is active. Freeze supported IDs/facts, Tiny policy, coordinate generalization, age climate-table schema/selection, and final production-art direction. Do not start Gate-3 implementation until Gate 2 is committed/checkpointed.
+Gate 3 implementation is next. Do not reopen product semantics unless implementation uncovers contradictory evidence; implement the frozen ruleset/profile/catalog/generator/UI/test contract and checkpoint in small blocks.

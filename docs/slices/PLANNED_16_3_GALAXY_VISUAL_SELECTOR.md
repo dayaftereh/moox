@@ -1,6 +1,6 @@
 # Planned slice 16.3 - Galaxy visual selector
 
-Status: **open; Gate 2 active (2026-09-15)**.
+Status: **open; Gates 1-2 complete, Gate 3 next (2026-09-15)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slice 16.1 shared visual selection grammar.
@@ -64,9 +64,11 @@ Permanent Gate-1 evidence: `docs/research/SLICE_16_3_GATE1_GALAXY_VISUAL_SELECTO
 
 ## Gate 2 - freeze
 
-- [ ] Freeze supported galaxy sizes and ages.
-- [ ] Freeze exact runtime IDs and displayed facts.
-- [ ] Freeze asset variants and responsive presentation.
+- [x] Freeze supported galaxy sizes and ages.
+- [x] Freeze exact runtime IDs and displayed facts.
+- [x] Freeze asset variants and responsive presentation.
+
+Permanent Gate-2 freeze evidence: `docs/research/SLICE_16_3_GATE2_GALAXY_VISUAL_SELECTOR_FREEZE_2026-09-15.md`.
 
 ## Gate 3 - implementation
 

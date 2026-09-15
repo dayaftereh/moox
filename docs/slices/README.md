@@ -42,7 +42,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **Slice 16.3 - Gate 2 active** - `_OPEN_GALAXY_VISUAL_SELECTOR_2026-09-15.md`; freezing four size IDs, three original Galaxy-Age IDs, Tiny policy, deterministic coordinate generalization, server-owned facts, age climate schema and production-art direction.
+- **Slice 16.3 - Gates 1-2 complete / Gate 3 next** - `_OPEN_GALAXY_VISUAL_SELECTOR_2026-09-15.md`; four Size IDs and three original Galaxy-Age IDs frozen with Tiny excluded, generalized deterministic grid-jitter, self-contained age data, authoritative Galaxy catalog and production asset/UX contract.
 
 Closed/parked Slice-15 state:
 
