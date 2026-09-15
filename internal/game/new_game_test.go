@@ -36,7 +36,7 @@ func TestNewGameGoldenSeedStateFingerprint(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := fmt.Sprintf("%x", sha256.Sum256(data))
-	const want = "a1f42cba5c70a00e1b57cd3d2a3081079885d51465b2ca7eb01ab8c7d5925c24"
+	const want = "ad89bf90bd8b111de9e28ed1e4fcb253cb9c695e7b861f9d3d44f463b77351f9"
 	if got != want {
 		t.Fatalf("golden seed state sha256=%s want=%s", got, want)
 	}

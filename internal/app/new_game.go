@@ -94,6 +94,12 @@ func (h *Host) CreateGame(request CreateGameRequest) (CreateGameResult, error) {
 			Name:       player.Name,
 			Controller: controller,
 		}
+		for empireIndex := range generated.State.Empires {
+			if generated.State.Empires[empireIndex].ID == player.EmpireID {
+				generated.State.Empires[empireIndex].BuiltinAIControlled = controller == session.ControllerBuiltinAI
+				break
+			}
+		}
 	}
 	for seatID := range controllers {
 		if _, ok := seenControllerSeats[seatID]; !ok {

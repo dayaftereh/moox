@@ -62,6 +62,7 @@ func NewHandler(cfg Config) (http.Handler, error) {
 	server := &apiServer{host: cfg.Host, observerEnabled: cfg.ObserverEnabled, persistenceEnabled: cfg.PersistenceEnabled}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", server.handleHealth)
+	mux.HandleFunc("GET /api/v1/new-game/difficulties", server.handleDifficultyCatalog)
 	mux.HandleFunc("GET /api/v1/games", server.handleGames)
 	mux.HandleFunc("POST /api/v1/games", server.handleCreateGame)
 	mux.HandleFunc("GET /api/v1/games/{gameID}/seats/{seatID}/snapshot", server.handlePlayerSnapshot)

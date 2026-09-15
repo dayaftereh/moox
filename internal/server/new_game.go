@@ -8,8 +8,23 @@ import (
 	"strings"
 
 	"moox/internal/app"
+	"moox/internal/core"
 	"moox/internal/game"
 )
+
+type difficultyCatalogResponse struct {
+	SchemaVersion int                      `json:"schema_version"`
+	DefaultID     core.DifficultyID        `json:"default_id"`
+	Profiles      []game.DifficultyProfile `json:"profiles"`
+}
+
+func (s *apiServer) handleDifficultyCatalog(w http.ResponseWriter, _ *http.Request) {
+	writeJSON(w, http.StatusOK, difficultyCatalogResponse{
+		SchemaVersion: app.SchemaVersion,
+		DefaultID:     game.DefaultDifficultyID,
+		Profiles:      game.DifficultyProfiles(),
+	})
+}
 
 type newGameRequest struct {
 	SchemaVersion int                        `json:"schema_version"`

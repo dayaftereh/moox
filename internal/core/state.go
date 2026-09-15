@@ -11,6 +11,7 @@ type ID uint64
 
 type GameState struct {
 	SchemaVersion         int                    `json:"schema_version"`
+	DifficultyID          DifficultyID           `json:"difficulty_id,omitempty"`
 	Seed                  uint64                 `json:"seed"`
 	RNGState              uint64                 `json:"rng_state"`
 	Turn                  uint64                 `json:"turn"`
@@ -66,6 +67,7 @@ type Outpost struct {
 type Empire struct {
 	ID                        ID                           `json:"id"`
 	Name                      string                       `json:"name"`
+	BuiltinAIControlled       bool                         `json:"builtin_ai_controlled,omitempty"`
 	RaceID                    string                       `json:"race_id"`
 	PlayerColorSlot           int                          `json:"player_color_slot,omitempty"`
 	Capital                   ID                           `json:"capital_colony_id,omitempty"`
@@ -281,6 +283,9 @@ func (s *GameState) AddEvent(kind, message string) {
 func (s *GameState) Validate() error {
 	if s.SchemaVersion != StateSchemaVersion {
 		return fmt.Errorf("unsupported state schema version %d", s.SchemaVersion)
+	}
+	if s.DifficultyID != "" && !IsSupportedDifficultyID(s.DifficultyID) {
+		return fmt.Errorf("unsupported difficulty_id %q", s.DifficultyID)
 	}
 	if s.NextID == 0 {
 		return fmt.Errorf("next_id must be non-zero")

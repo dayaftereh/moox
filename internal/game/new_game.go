@@ -27,6 +27,7 @@ type NewGamePlayerSpec struct {
 }
 
 type NewGameSettings struct {
+	DifficultyID    core.DifficultyID      `json:"difficulty_id,omitempty"`
 	GalaxySize      GalaxySize             `json:"galaxy_size"`
 	GalaxyAge       GalaxyAge              `json:"galaxy_age"`
 	TechnologyLevel NewGameTechnologyLevel `json:"technology_level"`
@@ -76,6 +77,9 @@ var newGameGravityIDs = []string{"low_g", "normal_g", "heavy_g"}
 var newGameClimateIDs = []string{"toxic", "radiated", "barren", "desert", "tundra", "ocean", "swamp", "arid", "terran", "gaia"}
 
 func (r *EconomyRules) NewGame(seed uint64, settings NewGameSettings) (NewGameResult, error) {
+	if settings.DifficultyID == "" {
+		settings.DifficultyID = core.DifficultyNormal
+	}
 	if r == nil || r.NewGameGalaxy == nil {
 		return NewGameResult{}, fmt.Errorf("new game galaxy rules are unavailable")
 	}
@@ -84,6 +88,7 @@ func (r *EconomyRules) NewGame(seed uint64, settings NewGameSettings) (NewGameRe
 	}
 
 	state := core.NewGameState(seed)
+	state.DifficultyID = settings.DifficultyID
 	rng := state.RNG()
 	state.Galaxy.ID = state.NewID()
 
@@ -281,6 +286,9 @@ func (r *EconomyRules) finalizeNewGameEconomy(state *core.GameState) error {
 	return nil
 }
 func (r *EconomyRules) validateNewGameSettings(settings NewGameSettings) error {
+	if !core.IsSupportedDifficultyID(settings.DifficultyID) {
+		return fmt.Errorf("unsupported difficulty_id %q", settings.DifficultyID)
+	}
 	if settings.GalaxySize != GalaxySizeSmall {
 		return fmt.Errorf("unsupported galaxy_size %q; Slice 09 supports only %q", settings.GalaxySize, GalaxySizeSmall)
 	}
