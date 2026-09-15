@@ -1,6 +1,6 @@
 # Planned slice 16.3 - Galaxy visual selector
 
-Status: **open; Gate 1 active (2026-09-15)**.
+Status: **open; Gate 1 complete, Gate 2 next (2026-09-15)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slice 16.1 shared visual selection grammar.
@@ -15,7 +15,7 @@ Use the shared previous/next carousel for galaxy configuration. The central imag
 
 ### Galaxy size
 
-The supported size set is frozen by Gate 1 from original/runtime evidence. The presentation should communicate an obvious progression such as:
+The supported size set is audited by Gate 1 and frozen only in Gate 2. Gate-1 evidence identifies the fidelity-oriented four-row candidate `small / medium / large / huge`; the older Slice-16.1 `tiny` artwork is not an authoritative fifth generator row. The presentation should communicate an obvious progression such as:
 
 - small / compact;
 - medium / broader;
@@ -33,15 +33,15 @@ Suggested art behavior:
 
 ### Galaxy age
 
-Galaxy age should use the same selector grammar, with artwork showing a different stellar/nebular character once the exact supported age options are audited.
+Gate-1 audit corrected the original semantics: Galaxy Age cycles **Mineral Rich / Normal / Organic Rich**. It is not a young/normal/old astronomical-age selector.
 
-Candidate visual cues:
+Candidate visual cues therefore communicate composition bias rather than temporal age:
 
-- younger: brighter blue-white stars, more active nebulae;
-- normal: balanced stellar palette;
-- older: warmer/redder stellar population, calmer/darker field.
+- Mineral Rich: stronger faceted/mineral-resource cue;
+- Normal: balanced mineral/biosphere cue;
+- Organic Rich: stronger biosphere/food-world cue.
 
-These are presentation cues only. Gameplay effects must come from the authoritative generator contract.
+Keep the same galaxy silhouette, decorative star count and overall map footprint across the three Age illustrations so the artwork does not imply a size change or generated-map preview. Do not invent exact planet ratios or frontend-owned spectral-colour semantics. Gameplay effects and facts must come from the authoritative generator/server contract.
 
 ## Information strip
 
@@ -54,11 +54,13 @@ Show short facts derived from server/normalized settings data, such as:
 
 ## Gate 1 - audit
 
-- [ ] Re-check original galaxy size and age tables.
-- [ ] Map current generator support and star/system counts.
-- [ ] Identify settings that are runtime-ready without new generator mechanics.
-- [ ] Prototype one coherent image series for size and one for age.
-- [ ] Verify no illustration implies data the generator does not guarantee.
+- [x] Re-check original galaxy size and age tables.
+- [x] Map current generator support and star/system counts.
+- [x] Identify settings that are runtime-ready without new generator mechanics.
+- [x] Prototype one coherent image series for size and one for age.
+- [x] Verify no illustration implies data the generator does not guarantee.
+
+Permanent Gate-1 evidence: `docs/research/SLICE_16_3_GATE1_GALAXY_VISUAL_SELECTOR_AUDIT_2026-09-15.md`.
 
 ## Gate 2 - freeze
 

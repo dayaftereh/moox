@@ -6,7 +6,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 
 - Branch: `main`.
 - Open slice marker: `docs/slices/_OPEN_GALAXY_VISUAL_SELECTOR_2026-09-15.md`.
-- Active implementation slice: **Slice 16.3 - Galaxy visual selector; Gate 1 active**.
+- Active implementation slice: **Slice 16.3 - Galaxy visual selector; Gate 1 complete, Gate 2 next**.
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
@@ -14,7 +14,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-14 and the Slice-15 browser-playability progression through 15.6 are closed/accepted at their intended baselines**; the 15.3 richer-art pass remains parked. Slice 16, Slice 17 and reserved Slice 20 remain prepared.
-- Current objective: **audit original/runtime galaxy size and age semantics, current generator support/counts, runtime-ready settings and honest visual prototype directions for Slice 16.3 Gate 1; do not freeze Gate 2 or implement new generator mechanics yet.**
+- Current objective: **review/freeze Slice 16.3 Gate 2 from the completed Gate-1 audit: four authoritative size rows, Mineral/Normal/Organic age semantics, Tiny policy, coordinate generalization, normalized age climate contract, server-owned facts and final art direction.**
 - Slice-15.1 closure evidence: `docs/research/SLICE_15_1_MOBILE_FIRST_UX_GATE4_2026-09-04.md`.
 - Slice-15.2 Gate-1 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE1_2026-09-04.md`.
 - Slice-15.2 Gate-2 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE2_2026-09-04.md`.
@@ -30,6 +30,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-16.2 Gate-3 implementation: `docs/research/SLICE_16_2_GATE3_IMPLEMENTATION_2026-09-15.md` - server catalog/state contract, built-in-AI economy and CP effects, deterministic fixtures, five production SVGs, typed shared selector and live browser QA.
 - Slice-16.2 Gate-4 icon redesign V2 review: `docs/research/SLICE_16_2_GATE4_DIFFICULTY_ICON_REDESIGN_V2_2026-09-15.md` - accepted minimalist threat-sigil replacement for the overlay-heavy command-crest family.
 - Slice-16.2 Gate-4 closure: `docs/research/SLICE_16_2_GATE4_CLOSE_2026-09-15.md` - user visual acceptance, deterministic/effect-isolation proof, full Go/web/browser regression, external 0.0.0.0 preview health and repository closeout.
+- Slice-16.3 Gate-1 galaxy audit: `docs/research/SLICE_16_3_GATE1_GALAXY_VISUAL_SELECTOR_AUDIT_2026-09-15.md` - four original size rows/counts/grids, corrected Mineral/Normal/Organic Galaxy Age semantics, direct Organic climate-table recheck, runtime-readiness matrix and honest size/age prototypes.
 - Prepared future Espionage mechanics: `docs/slices/PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md`.
 - Accepted downstream 15.2/15.3 strategic product direction: `docs/research/SLICE_15_2_STRATEGIC_HMI_PRODUCT_DIRECTION_2026-09-04.md` - 2D Galaxy primary view, orbital star-system dialog, legal Colonize confirmation, Colony table + full Colony Detail/build queue, location-grouped Fleets, eight-category Research, first-class Diplomacy and planned Espionage, plus retained OX lettermark / future spacecraft-space icon.
 
