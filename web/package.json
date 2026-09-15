@@ -11,7 +11,8 @@
     "generate:galaxy-art": "node scripts/generate-galaxy-size-art.mjs",
     "check:new-game-selector": "node scripts/check-new-game-selector.mjs",
     "check:new-game-selector:browser": "node scripts/check-new-game-selector-browser.mjs",
-    "generate:difficulty-art": "node scripts/generate-difficulty-art.mjs"
+    "generate:difficulty-art": "node scripts/generate-difficulty-art.mjs",
+    "generate:galaxy-age-art": "node scripts/generate-galaxy-age-art.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",

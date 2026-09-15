@@ -99,6 +99,33 @@
       "path": "/assets/new-game/difficulty/impossible.svg",
       "provenance": "original-procedural-mox",
       "generator": "web/scripts/generate-difficulty-art.mjs"
+    },
+    {
+      "id": "new-game:galaxy-age:mineral-rich",
+      "domain": "galaxy-age",
+      "option_id": "mineral-rich",
+      "format": "svg",
+      "path": "/assets/new-game/galaxy-age/mineral-rich.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-galaxy-age-art.mjs"
+    },
+    {
+      "id": "new-game:galaxy-age:normal",
+      "domain": "galaxy-age",
+      "option_id": "normal",
+      "format": "svg",
+      "path": "/assets/new-game/galaxy-age/normal.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-galaxy-age-art.mjs"
+    },
+    {
+      "id": "new-game:galaxy-age:organic-rich",
+      "domain": "galaxy-age",
+      "option_id": "organic-rich",
+      "format": "svg",
+      "path": "/assets/new-game/galaxy-age/organic-rich.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-galaxy-age-art.mjs"
     }
   ]
 }
