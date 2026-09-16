@@ -1,7 +1,7 @@
 ﻿# Open Slice 16.3 - Galaxy visual selector
 
 Opened: 2026-09-15
-Status: **Gates 1-3 complete / Gate 4 next**
+Status: **Gate 4 active**
 
 Planned specification: `docs/slices/PLANNED_16_3_GALAXY_VISUAL_SELECTOR.md`
 Parent: `docs/slices/PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`

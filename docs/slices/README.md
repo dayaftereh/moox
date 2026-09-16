@@ -42,7 +42,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **Slice 16.3 - Gates 1-3 complete / Gate 4 next** - `_OPEN_GALAXY_VISUAL_SELECTOR_2026-09-15.md`; four Size IDs and three original Galaxy-Age IDs are implemented across deterministic generation, authoritative Galaxy catalog, production assets and typed visual selectors; final closure acceptance remains.
+- **Slice 16.3 - Gate 4 active** - `_OPEN_GALAXY_VISUAL_SELECTOR_2026-09-15.md`; final deterministic mapping, browser acceptance and full regression closeout are in progress.
 
 Closed/parked Slice-15 state:
 

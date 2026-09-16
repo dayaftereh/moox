@@ -1,6 +1,6 @@
 # Planned slice 16.3 - Galaxy visual selector
 
-Status: **open; Gates 1-3 complete, Gate 4 next (2026-09-16)**.
+Status: **open; Gate 4 active (2026-09-16)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slice 16.1 shared visual selection grammar.
