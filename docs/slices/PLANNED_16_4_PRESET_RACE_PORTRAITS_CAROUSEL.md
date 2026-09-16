@@ -1,6 +1,6 @@
 # Planned slice 16.4 - Preset race portraits and carousel
 
-Status: **open; Gate 4 active (2026-09-16)**.
+Status: **closed; Gates 1-4 complete (2026-09-16)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slice 16.1 shared visual selection grammar and Gate-1 compatibility audit of the normalized preset races.
@@ -135,12 +135,14 @@ Permanent Gate-3 evidence: `docs/research/SLICE_16_4_GATE3_IMPLEMENTATION_2026-0
 
 ## Gate 4 - close
 
-- [ ] Every supported race has a non-placeholder portrait.
-- [ ] No copied/traced original-game art remains in runtime assets.
-- [ ] Portrait family passes desktop and real/mobile-width visual review.
-- [ ] Text/ARIA remains sufficient with images disabled.
-- [ ] Equal seed/settings/race tuples remain deterministic.
-- [ ] Full tests/build/diff checks.
+- [x] Every supported race has a non-placeholder portrait.
+- [x] No copied/traced original-game art remains in runtime assets.
+- [x] Portrait family passes desktop and real/mobile-width visual review.
+- [x] Text/ARIA remains sufficient with images disabled.
+- [x] Equal seed/settings/race tuples remain deterministic.
+- [x] Full tests/build/diff checks.
+
+Permanent Gate-4 closure evidence: `docs/research/SLICE_16_4_GATE4_CLOSE_2026-09-16.md`.
 
 ## Downstream race-mechanics follow-up
 

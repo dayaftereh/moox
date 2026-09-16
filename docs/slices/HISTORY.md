@@ -387,3 +387,14 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Final closeout passed full `go test ./... -count=1`, web build, UTF-8 guard, deterministic 13-SVG asset guard, 12-option mobile/desktop Chrome smoke, external health checks and git diff checks.
 - Closure evidence: `docs/research/SLICE_16_3_GATE4_CLOSE_2026-09-16.md`.
 - Slice 16.4 remains prepared but was not opened during this closure.
+## 2026-09-16 - Slice 16.4 Preset race portraits and carousel closed
+
+- Closed Slice 16.4 with Gates 1-4 complete after the 13-race runtime/visual audit, bounded support freeze and full implementation/acceptance.
+- Authoritative New Game race catalog now exposes all 13 normalized presets in canonical order; Human and Klackon are local-player supported, Darlok remains the fixed AI baseline, and all other presets remain honestly planned/locked.
+- Added original reusable 1200x1500 WebP portraits for Human, Klackon and Darlok with deterministic retained SVG sources, manifest safe-area/focal metadata and `original-procedural-mox` provenance.
+- Gate 4 hardened the shared selector so Supported/Planned status remains visible text, and the browser smoke proves race identity/status/ARIA remains usable with the portrait hidden.
+- Live Chrome acceptance selected Klackon, captured the real Create Game POST with seat-1 `race_id=klackon`, then verified the authoritative seat snapshot also reports Klackon.
+- Equal-seed Klackon/Darlok New Game determinism, race catalog contract, full Go suite, web build, race asset guard, mobile/desktop browser smoke, external health and diff checks all passed.
+- Full preset-race mechanics completion and Custom Race Designer remain deliberately reserved for Slice 22.
+- Closure evidence: `docs/research/SLICE_16_4_GATE4_CLOSE_2026-09-16.md`.
+- Slice 16.5 remains prepared but was not opened during this closure.
