@@ -357,7 +357,7 @@ Gate 2 / Gate 3 do not:
 - declare all 13 presets gameplay-complete;
 - implement missing race parity systems listed in the Gate-1 audit;
 - implement opponent composition;
-- implement custom race design;
+- implement custom race design; full preset completion and Custom Race Designer are explicitly reserved for `PLANNED_22_PRESET_RACE_COMPLETION_CUSTOM_RACE_DESIGNER.md`;
 - generate/finalize all 13 painterly portraits before the first working carousel;
 - change Galaxy, Difficulty, Galaxy Age or Tactical Combat contracts;
 - change seed/RNG behavior except for the selected supported player race's already-authoritative mechanics.

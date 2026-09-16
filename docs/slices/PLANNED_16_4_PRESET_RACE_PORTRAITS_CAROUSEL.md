@@ -140,6 +140,10 @@ Permanent Gate-2 evidence: `docs/research/SLICE_16_4_GATE2_FREEZE_2026-09-16.md`
 - [ ] Equal seed/settings/race tuples remain deterministic.
 - [ ] Full tests/build/diff checks.
 
+## Downstream race-mechanics follow-up
+
+Slice 16.4 deliberately freezes only an honest early supported subset. Full preset-race mechanics completion and the Custom Race Designer are reserved in `PLANNED_22_PRESET_RACE_COMPLETION_CUSTOM_RACE_DESIGNER.md`, so deferred traits/races are not lost when this portrait/catalog slice closes.
+
 ## Exit criterion
 
 Preset race selection feels like choosing a civilization, not selecting a database row: every supported race has its own original MOOX portrait and stable reusable visual identity, while the underlying preset mechanics remain server-authoritative and evidence-backed.

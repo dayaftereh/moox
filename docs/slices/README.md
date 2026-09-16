@@ -38,7 +38,7 @@ When a planned slice actually starts:
 
 Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1 always requires a fresh repository checkup and original-evidence review at the time work begins.
 
-### Current active / prepared queue - 2026-09-15
+### Current active / prepared queue - 2026-09-16
 
 Active:
 
@@ -57,6 +57,7 @@ Prepared queue:
 1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slices 16.1-16.3 are closed and Slice 16.4 has Gate 2 complete / Gate 3 next.
 2. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for broader combat/design fidelity.
 3. `PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md` - dedicated authoritative Spy/intelligence mechanics; Slice 20 remains reserved while 18/19 are unassigned.
+4. `PLANNED_22_PRESET_RACE_COMPLETION_CUSTOM_RACE_DESIGNER.md` - downstream race-mechanics completion and server-authoritative Custom Race Designer; reserved for after prerequisite race-dependent gameplay systems mature.
 
 ### Binding Slice-16 decomposition
 
