@@ -1,6 +1,6 @@
 # Open slice 16.5 - Starting technology visual selector
 
-Status: **Gate 1 complete / Gate 2 next**
+Status: **Gate 2 active**
 
 Parent: `docs/slices/PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`
 Plan: `docs/slices/PLANNED_16_5_STARTING_TECH_VISUAL_SELECTOR.md`
@@ -30,6 +30,16 @@ Prototype evidence: `docs/research/prototypes/SLICE_16_5_STARTING_TECH_2026-09-1
 - Do not hard-code hidden technology grants in the frontend.
 - Advanced start must remain server-owned because its 19 extra grants are RNG-, race- and cross-Empire-order dependent.
 
+## Gate 2 checklist
+
+- [ ] Freeze the supported technology-start set and player-facing labels for `pre_warp`, `average` and `advanced`.
+- [ ] Freeze the complete authoritative start-state contract for each level, not only technology ownership.
+- [ ] Freeze the Slice-16.5 implementation boundary for Pre-Warp and Advanced bootstrap parity.
+- [ ] Freeze server-owned explanatory facts and prohibit fixed frontend Advanced grant lists/counts beyond stable evidence-backed facts.
+- [ ] Freeze Advanced seed/race/cross-Empire initialization semantics and deterministic fixture expectations.
+- [ ] Freeze original three-stage art direction, asset format, safe area and 390 px behavior.
+- [ ] Freeze shared selector/card accessibility and navigation behavior inherited from Slice 16.1.
+
 ## Next
 
-Gate 2 should freeze the supported three-level contract, the exact full-start implementation boundary, server-owned explanatory facts, Advanced race/RNG semantics and final art/card behavior before Gate 3 implementation.
+Write permanent Gate-2 freeze evidence from the Gate-1 audit before changing runtime behavior. Gate 3 must implement only the resulting frozen full-start/server/UI contract.
