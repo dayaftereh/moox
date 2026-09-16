@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">MOOX Average starting technology prototype</title>
+  <desc id="desc">Research-only original MOOX illustration showing a coherent progression from planetary workshop to interstellar launch to networked stellar command. It is not a technology-tree screenshot and promises no fixed Advanced technology list.</desc>
+  <defs>
+    <radialGradient id="background" cx="50%" cy="44%" r="80%"><stop offset="0" stop-color="#102033"/><stop offset="0.62" stop-color="#07111c"/><stop offset="1" stop-color="#02060b"/></radialGradient>
+    <radialGradient id="coreGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#d5f1ff" stop-opacity="0.26"/><stop offset="0.58" stop-color="#5da9d6" stop-opacity="0.08"/><stop offset="1" stop-color="#02060b" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="1200" height="675" rx="40" fill="url(#background)"/>
+  <rect x="28" y="28" width="1144" height="619" rx="32" fill="none" stroke="#294054" stroke-width="3" opacity="0.7"/>
+  <g><circle cx="92" cy="88" r="1.4" fill="#dcecff" opacity="0.68"/>
+    <circle cx="162" cy="142" r="1" fill="#7690aa" opacity="0.38"/>
+    <circle cx="244" cy="76" r="1.4" fill="#7690aa" opacity="0.38"/>
+    <circle cx="328" cy="130" r="1.1" fill="#7690aa" opacity="0.68"/>
+    <circle cx="435" cy="72" r="1" fill="#dcecff" opacity="0.38"/>
+    <circle cx="548" cy="112" r="1.4" fill="#7690aa" opacity="0.38"/>
+    <circle cx="676" cy="68" r="1.2" fill="#7690aa" opacity="0.68"/>
+    <circle cx="786" cy="132" r="1.5" fill="#7690aa" opacity="0.38"/>
+    <circle cx="892" cy="83" r="1" fill="#dcecff" opacity="0.38"/>
+    <circle cx="1014" cy="146" r="1.6" fill="#7690aa" opacity="0.68"/>
+    <circle cx="1110" cy="92" r="1.1" fill="#7690aa" opacity="0.38"/>
+    <circle cx="122" cy="356" r="1.2" fill="#7690aa" opacity="0.38"/>
+    <circle cx="216" cy="302" r="1" fill="#dcecff" opacity="0.68"/>
+    <circle cx="994" cy="332" r="1.1" fill="#7690aa" opacity="0.38"/>
+    <circle cx="1096" cy="380" r="1.5" fill="#7690aa" opacity="0.38"/>
+    <circle cx="1042" cy="546" r="1" fill="#7690aa" opacity="0.68"/>
+    <circle cx="155" cy="552" r="1.1" fill="#dcecff" opacity="0.38"/></g>
+  <ellipse cx="600" cy="370" rx="390" ry="225" fill="url(#coreGlow)"/>
+  
+  
+    <defs>
+      <radialGradient id="planetGlow" cx="45%" cy="36%" r="70%">
+        <stop offset="0" stop-color="#d5f1ff" stop-opacity="0.28"/>
+        <stop offset="0.48" stop-color="#5da9d6" stop-opacity="0.18"/>
+        <stop offset="1" stop-color="#07111c" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <circle cx="600" cy="520" r="220" fill="url(#planetGlow)"/>
+    <path d="M390 548 C452 474 528 440 610 444 C698 448 777 489 816 550 C744 597 670 620 590 619 C510 618 443 594 390 548 Z" fill="#0a1622" stroke="#5da9d6" stroke-width="5" opacity="0.95"/>
+    <path d="M429 545 C493 502 548 492 610 495 C678 497 735 514 784 548" fill="none" stroke="#d5f1ff" stroke-width="5" opacity="0.34"/>
+  
+  
+    <ellipse cx="600" cy="407" rx="286" ry="102" fill="none" stroke="#31485b" stroke-width="12" opacity="0.52"/>
+    <ellipse cx="600" cy="407" rx="286" ry="102" fill="none" stroke="#5da9d6" stroke-width="6" stroke-dasharray="84 20" opacity="0.732"/>
+    <g opacity="0.762">
+      <rect x="570" y="312" width="60" height="86" rx="12" fill="#0c1c2b" stroke="#d5f1ff" stroke-width="5"/>
+      <path d="M600 312 L600 260 M574 280 L626 280" stroke="#d5f1ff" stroke-width="6" stroke-linecap="round"/>
+      <circle cx="600" cy="257" r="12" fill="#d5f1ff" opacity="0.78"/>
+    </g>
+  
+  <g><path d="M470 512 L600 477" stroke="#5da9d6" stroke-width="5" opacity="0.46"/>
+    <path d="M600 477 L730 512" stroke="#5da9d6" stroke-width="5" opacity="0.46"/><g><circle cx="470" cy="512" r="24" fill="#0d1d2b" stroke="#d5f1ff" stroke-width="5"/><circle cx="470" cy="512" r="9" fill="#5da9d6" opacity="0.54"/></g>
+    <g><circle cx="600" cy="477" r="24" fill="#0d1d2b" stroke="#d5f1ff" stroke-width="5"/><circle cx="600" cy="477" r="12" fill="#5da9d6" opacity="0.54"/></g>
+    <g><circle cx="730" cy="512" r="24" fill="#0d1d2b" stroke="#d5f1ff" stroke-width="5"/><circle cx="730" cy="512" r="9" fill="#5da9d6" opacity="0.54"/></g></g>
+  <g transform="translate(356 340) scale(0.72)" opacity="0.9">
+    <path d="M0 -20 L34 16 L10 12 L0 24 L-10 12 L-34 16 Z" fill="#0d2234" stroke="#d5f1ff" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M0 -12 L0 12" stroke="#5da9d6" stroke-width="5" stroke-linecap="round"/>
+  </g>
+    <g transform="translate(438 296) scale(0.62)" opacity="0.9">
+    <path d="M0 -20 L34 16 L10 12 L0 24 L-10 12 L-34 16 Z" fill="#0d2234" stroke="#d5f1ff" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M0 -12 L0 12" stroke="#5da9d6" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(850 336)" opacity="0.92">
+    <path d="M-58 8 L-18 -28 L44 -24 L68 8 L42 35 L-20 34 Z" fill="#0d2234" stroke="#d5f1ff" stroke-width="5"/>
+    <circle cx="8" cy="4" r="22" fill="#5da9d6" opacity="0.36" stroke="#d5f1ff" stroke-width="4"/>
+    <path d="M-58 8 L-82 8 M68 8 L88 8" stroke="#5da9d6" stroke-width="6" stroke-linecap="round"/>
+  </g>
+  <circle cx="600" cy="394" r="8" fill="#d5f1ff" opacity="0.8"/>
+</svg>
