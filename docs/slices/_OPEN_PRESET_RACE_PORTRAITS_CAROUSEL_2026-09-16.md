@@ -1,6 +1,6 @@
 # Open slice 16.4 - Preset race portraits and carousel
 
-Status: **Gate 1 complete / Gate 2 next**
+Status: **Gate 2 active**
 
 Parent: `docs/slices/PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`
 Plan: `docs/slices/PLANNED_16_4_PRESET_RACE_PORTRAITS_CAROUSEL.md`
@@ -32,6 +32,17 @@ Prototype/format evidence: `docs/research/prototypes/SLICE_16_4_RACE_PORTRAITS_2
 - Alkari/Meklar/Silicoid research prototypes prove one shared 4:5 visual system can preserve radically different silhouettes/materials and survive centered 1:1/mobile crops.
 - WebP at quality 82 used only ~5.6-6.6% of the prototype PNG byte size with ~0.996 SSIM.
 
+## Gate 2 checklist
+
+- [ ] Freeze the supported preset-race set for Slice 16 and classify unsupported presets honestly.
+- [ ] Freeze bounded-fix scope: what Slice 16.4 implements now vs what remains deferred to later gameplay-system slices.
+- [ ] Freeze server-owned preset-race catalog/fact contract and New Game support semantics.
+- [ ] Freeze portrait style bible, 4:5 master, safe area and WebP runtime format.
+- [ ] Freeze semantic asset paths/manifest naming for portraits and emblems.
+- [ ] Freeze compact race-card facts without promising unavailable mechanics.
+- [ ] Freeze shared carousel behavior, accessibility and 390 px mobile hierarchy.
+- [ ] Record representative-portrait visual acceptance as provisional: current Gate-1 prototypes are accepted for integration exploration, but final painterly art may still change.
+
 ## Next
 
-Gate 2 should freeze the supported-race policy and bounded-fix scope, the authoritative race-catalog/fact contract, final art style/safe-zone, WebP runtime format and carousel behavior. Do not start Gate 2 until explicitly continued.
+Write permanent Gate-2 freeze evidence from the Gate-1 audit before changing runtime behavior. Then implement only the frozen support/catalog/asset/carousel contract.

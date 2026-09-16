@@ -1,6 +1,6 @@
 # Planned slice 16.4 - Preset race portraits and carousel
 
-Status: **open; Gate 1 complete, Gate 2 next (2026-09-16)**.
+Status: **open; Gate 2 active (2026-09-16)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slice 16.1 shared visual selection grammar and Gate-1 compatibility audit of the normalized preset races.
