@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-labelledby="title desc">
+  <title id="title">MOX silicoid Gate 1 race portrait composition prototype</title>
+  <desc id="desc">Original research-only MOOX portrait composition prototype. It tests a shared 4:5 cinematic portrait system and mobile-safe silhouette without copying original Master of Orion II portrait artwork.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="36%" r="78%">
+      <stop offset="0" stop-color="#162434"/><stop offset="0.48" stop-color="#08111c"/><stop offset="1" stop-color="#02050a"/>
+    </radialGradient>
+    <radialGradient id="halo" cx="50%" cy="43%" r="50%">
+      <stop offset="0" stop-color="#84d9df" stop-opacity="0.17"/><stop offset="1" stop-color="#84d9df" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d47cff"/><stop offset="0.55" stop-color="#84d9df"/><stop offset="1" stop-color="#35314b"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#647588"/><stop offset="0.45" stop-color="#1f2a35"/><stop offset="1" stop-color="#080d13"/>
+    </linearGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="18"/></filter>
+    <filter id="glow"><feGaussianBlur stdDeviation="7"/></filter>
+  </defs>
+  <rect width="1200" height="1500" fill="url(#bg)"/>
+    <ellipse cx="600" cy="625" rx="455" ry="525" fill="url(#halo)"/>
+    <g opacity="0.48"><circle cx="98" cy="139" r="2" fill="#d9efff"/><circle cx="174" cy="273" r="1.4" fill="#d9efff"/><circle cx="1025" cy="181" r="1.7" fill="#d9efff"/><circle cx="1105" cy="337" r="2" fill="#d9efff"/><circle cx="127" cy="655" r="1.5" fill="#d9efff"/><circle cx="1063" cy="691" r="1.5" fill="#d9efff"/><circle cx="203" cy="1041" r="1.2" fill="#d9efff"/><circle cx="1043" cy="1114" r="1.7" fill="#d9efff"/><circle cx="316" cy="1280" r="1.4" fill="#d9efff"/><circle cx="921" cy="1310" r="1.3" fill="#d9efff"/></g>
+    <path d="M150 1260 C330 1370 870 1370 1050 1260" fill="none" stroke="#31465b" stroke-width="3" opacity="0.38"/>
+    <path d="M212 1320 C390 1405 810 1405 988 1320" fill="none" stroke="#84d9df" stroke-width="2" opacity="0.16"/>
+
+    <g>
+      <!-- lattice background -->
+      <g opacity="0.17" stroke="#ba8cff" stroke-width="4" fill="none">
+        <path d="M298 1110 L418 930 L558 1040 L703 902 L874 1075"/>
+        <path d="M355 1195 L485 1110 L629 1210 L768 1090 L930 1215"/>
+      </g>
+      <!-- non-humanoid crystalline body -->
+      <path d="M244 1304 L334 1002 L472 930 L510 711 L636 620 L726 748 L889 844 L964 1304 Z" fill="#181925" stroke="url(#rim)" stroke-width="9"/>
+      <path d="M334 1002 L470 930 L510 711 L416 768 Z" fill="#453651" stroke="#a873d5" stroke-width="6"/>
+      <path d="M510 711 L636 620 L608 892 L470 930 Z" fill="#2d4051" stroke="#83d7df" stroke-width="6"/>
+      <path d="M636 620 L726 748 L815 644 L766 915 L608 892 Z" fill="#4a2d58" stroke="#dc7dff" stroke-width="6"/>
+      <path d="M726 748 L889 844 L766 915 Z" fill="#293b4e" stroke="#91e6e9" stroke-width="6"/>
+      <path d="M470 930 L608 892 L558 1188 L398 1125 Z" fill="#344252" stroke="#77cad8" stroke-width="5"/>
+      <path d="M608 892 L766 915 L827 1198 L558 1188 Z" fill="#40294e" stroke="#bf70e7" stroke-width="5"/>
+      <!-- asymmetric crown/sensory crystals -->
+      <path d="M476 704 L420 409 L550 553 Z" fill="#345c6b" stroke="#8be9ed" stroke-width="7"/>
+      <path d="M585 626 L600 250 L680 566 Z" fill="#58356c" stroke="#e28cff" stroke-width="8"/>
+      <path d="M690 663 L824 381 L759 721 Z" fill="#314c60" stroke="#85dde5" stroke-width="7"/>
+      <path d="M755 772 L963 606 L859 865 Z" fill="#4e315e" stroke="#d77bfc" stroke-width="6"/>
+      <!-- internal refractive energy, not face -->
+      <ellipse cx="617" cy="782" rx="128" ry="88" fill="#6ee8ed" opacity="0.08" filter="url(#soft)"/>
+      <path d="M538 791 L602 719 L683 771 L650 858 L560 850 Z" fill="#79e7e9" opacity="0.13" stroke="#d9ffff" stroke-width="5"/>
+      <circle cx="605" cy="788" r="18" fill="#ecb0ff"/><circle cx="605" cy="788" r="67" fill="#d577ff" opacity="0.14" filter="url(#glow)"/>
+      <!-- mineral feeding / grown command lattice -->
+      <path d="M318 1262 L234 1125 L353 1081 M877 1268 L1010 1135 L863 1068" fill="none" stroke="#7997a6" stroke-width="18" stroke-linecap="round"/>
+      <circle cx="236" cy="1126" r="28" fill="#29333c" stroke="#82e3e8" stroke-width="6"/>
+      <circle cx="1005" cy="1135" r="28" fill="#35283f" stroke="#d988ff" stroke-width="6"/>
+    </g>
+</svg>

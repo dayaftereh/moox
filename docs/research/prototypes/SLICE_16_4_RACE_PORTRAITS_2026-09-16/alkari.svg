@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-labelledby="title desc">
+  <title id="title">MOX alkari Gate 1 race portrait composition prototype</title>
+  <desc id="desc">Original research-only MOOX portrait composition prototype. It tests a shared 4:5 cinematic portrait system and mobile-safe silhouette without copying original Master of Orion II portrait artwork.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="36%" r="78%">
+      <stop offset="0" stop-color="#162434"/><stop offset="0.48" stop-color="#08111c"/><stop offset="1" stop-color="#02050a"/>
+    </radialGradient>
+    <radialGradient id="halo" cx="50%" cy="43%" r="50%">
+      <stop offset="0" stop-color="#76b9e8" stop-opacity="0.17"/><stop offset="1" stop-color="#76b9e8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffe2a3"/><stop offset="0.55" stop-color="#76b9e8"/><stop offset="1" stop-color="#41587a"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#647588"/><stop offset="0.45" stop-color="#1f2a35"/><stop offset="1" stop-color="#080d13"/>
+    </linearGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="18"/></filter>
+    <filter id="glow"><feGaussianBlur stdDeviation="7"/></filter>
+  </defs>
+  <rect width="1200" height="1500" fill="url(#bg)"/>
+    <ellipse cx="600" cy="625" rx="455" ry="525" fill="url(#halo)"/>
+    <g opacity="0.48"><circle cx="98" cy="139" r="2" fill="#d9efff"/><circle cx="174" cy="273" r="1.4" fill="#d9efff"/><circle cx="1025" cy="181" r="1.7" fill="#d9efff"/><circle cx="1105" cy="337" r="2" fill="#d9efff"/><circle cx="127" cy="655" r="1.5" fill="#d9efff"/><circle cx="1063" cy="691" r="1.5" fill="#d9efff"/><circle cx="203" cy="1041" r="1.2" fill="#d9efff"/><circle cx="1043" cy="1114" r="1.7" fill="#d9efff"/><circle cx="316" cy="1280" r="1.4" fill="#d9efff"/><circle cx="921" cy="1310" r="1.3" fill="#d9efff"/></g>
+    <path d="M150 1260 C330 1370 870 1370 1050 1260" fill="none" stroke="#31465b" stroke-width="3" opacity="0.38"/>
+    <path d="M212 1320 C390 1405 810 1405 988 1320" fill="none" stroke="#76b9e8" stroke-width="2" opacity="0.16"/>
+
+    <g>
+      <ellipse cx="600" cy="650" rx="325" ry="420" fill="#07101a" stroke="#76b9e8" stroke-width="5" opacity="0.92"/>
+      <!-- swept cockpit / gyroscopic flight reference -->
+      <ellipse cx="600" cy="625" rx="400" ry="340" fill="none" stroke="#426c91" stroke-width="10" opacity="0.20" transform="rotate(-17 600 625)"/>
+      <ellipse cx="600" cy="625" rx="400" ry="340" fill="none" stroke="#426c91" stroke-width="5" opacity="0.12" transform="rotate(23 600 625)"/>
+      <!-- shoulders -->
+      <path d="M286 1115 C344 978 440 926 520 910 L680 910 C766 928 858 986 914 1115 L1000 1330 H200 Z" fill="#111c28" stroke="url(#rim)" stroke-width="9"/>
+      <path d="M318 1120 C378 1036 438 1005 508 985 L436 1188 L264 1270 Z" fill="#253645" stroke="#7ea9c3" stroke-width="6" opacity="0.86"/>
+      <path d="M882 1120 C822 1036 762 1005 692 985 L764 1188 L936 1270 Z" fill="#253645" stroke="#7ea9c3" stroke-width="6" opacity="0.86"/>
+      <!-- long avian-reptilian neck -->
+      <path d="M512 940 C470 835 470 746 510 665 L690 665 C728 750 726 842 682 946 C640 982 554 982 512 940 Z" fill="#7f8f83" stroke="#d7d2aa" stroke-width="7"/>
+      <path d="M530 918 C496 822 508 760 536 704 M670 918 C704 822 692 760 664 704" fill="none" stroke="#a9b6a0" stroke-width="10" opacity="0.46"/>
+      <!-- head / beak -->
+      <path d="M454 480 C478 365 542 300 618 298 C704 300 772 366 782 486 L736 610 C698 680 656 725 590 724 C520 719 478 669 451 592 Z" fill="#95a493" stroke="#e3d8ab" stroke-width="8"/>
+      <path d="M514 352 C526 267 564 208 617 173 C642 241 694 274 748 286 C700 329 653 342 592 341 Z" fill="#b5b89b" stroke="#ffe2a3" stroke-width="7"/>
+      <path d="M467 514 C530 480 588 472 654 492 C617 532 578 566 512 580 Z" fill="#463c32" stroke="#d8c595" stroke-width="7"/>
+      <path d="M654 492 L778 515 L674 560 L606 552 Z" fill="#b99d69" stroke="#f0d39c" stroke-width="8"/>
+      <!-- eyes -->
+      <path d="M520 439 Q567 405 606 438 Q567 475 523 457 Z" fill="#101a22" stroke="#b9eaff" stroke-width="5"/>
+      <circle cx="565" cy="444" r="12" fill="#70d8ff"/><circle cx="565" cy="444" r="26" fill="#70d8ff" opacity="0.13" filter="url(#glow)"/>
+      <!-- keratin / feather-scale planes -->
+      <path d="M480 600 L432 676 L503 654 M719 602 L765 682 L696 653" fill="none" stroke="#d8dfc7" stroke-width="14" stroke-linecap="round" opacity="0.72"/>
+      <!-- abstract artifact geometry -->
+      <g transform="translate(879 418)" opacity="0.48">
+        <path d="M0 -62 L54 -30 L54 32 L0 64 L-54 32 L-54 -30 Z" fill="none" stroke="#f4be64" stroke-width="7"/>
+        <circle r="22" fill="none" stroke="#ffe4a5" stroke-width="5"/><path d="M-78 0 H78 M0-84 V84" stroke="#d69a45" stroke-width="3"/>
+      </g>
+    </g>
+</svg>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-labelledby="title desc">
+  <title id="title">MOX meklar Gate 1 race portrait composition prototype</title>
+  <desc id="desc">Original research-only MOOX portrait composition prototype. It tests a shared 4:5 cinematic portrait system and mobile-safe silhouette without copying original Master of Orion II portrait artwork.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="36%" r="78%">
+      <stop offset="0" stop-color="#162434"/><stop offset="0.48" stop-color="#08111c"/><stop offset="1" stop-color="#02050a"/>
+    </radialGradient>
+    <radialGradient id="halo" cx="50%" cy="43%" r="50%">
+      <stop offset="0" stop-color="#69d5e6" stop-opacity="0.17"/><stop offset="1" stop-color="#69d5e6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#d78b4b"/><stop offset="0.55" stop-color="#69d5e6"/><stop offset="1" stop-color="#593c31"/>
+    </linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#647588"/><stop offset="0.45" stop-color="#1f2a35"/><stop offset="1" stop-color="#080d13"/>
+    </linearGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="18"/></filter>
+    <filter id="glow"><feGaussianBlur stdDeviation="7"/></filter>
+  </defs>
+  <rect width="1200" height="1500" fill="url(#bg)"/>
+    <ellipse cx="600" cy="625" rx="455" ry="525" fill="url(#halo)"/>
+    <g opacity="0.48"><circle cx="98" cy="139" r="2" fill="#d9efff"/><circle cx="174" cy="273" r="1.4" fill="#d9efff"/><circle cx="1025" cy="181" r="1.7" fill="#d9efff"/><circle cx="1105" cy="337" r="2" fill="#d9efff"/><circle cx="127" cy="655" r="1.5" fill="#d9efff"/><circle cx="1063" cy="691" r="1.5" fill="#d9efff"/><circle cx="203" cy="1041" r="1.2" fill="#d9efff"/><circle cx="1043" cy="1114" r="1.7" fill="#d9efff"/><circle cx="316" cy="1280" r="1.4" fill="#d9efff"/><circle cx="921" cy="1310" r="1.3" fill="#d9efff"/></g>
+    <path d="M150 1260 C330 1370 870 1370 1050 1260" fill="none" stroke="#31465b" stroke-width="3" opacity="0.38"/>
+    <path d="M212 1320 C390 1405 810 1405 988 1320" fill="none" stroke="#69d5e6" stroke-width="2" opacity="0.16"/>
+
+    <g>
+      <!-- industrial exoskeleton silhouette -->
+      <path d="M215 1320 L252 892 L363 760 L470 706 L730 706 L840 760 L948 892 L985 1320 Z" fill="#0c1117" stroke="url(#rim)" stroke-width="10"/>
+      <path d="M265 1120 L198 995 L229 782 L340 730 L408 828 L352 1008 Z" fill="url(#metal)" stroke="#7894a8" stroke-width="8"/>
+      <path d="M935 1120 L1002 995 L971 782 L860 730 L792 828 L848 1008 Z" fill="url(#metal)" stroke="#7894a8" stroke-width="8"/>
+      <!-- machinery shoulder pistons -->
+      <path d="M246 940 L128 1100 M954 940 L1072 1100" stroke="#a76740" stroke-width="28" stroke-linecap="round"/>
+      <circle cx="238" cy="944" r="42" fill="#17222c" stroke="#7ed7e0" stroke-width="7"/><circle cx="962" cy="944" r="42" fill="#17222c" stroke="#7ed7e0" stroke-width="7"/>
+      <!-- life support cradle -->
+      <ellipse cx="600" cy="610" rx="238" ry="286" fill="#101a22" stroke="#83bac7" stroke-width="10"/>
+      <ellipse cx="600" cy="610" rx="184" ry="230" fill="#061017" stroke="#4fd5e6" stroke-width="5" opacity="0.92"/>
+      <ellipse cx="600" cy="610" rx="169" ry="213" fill="#42b5c7" opacity="0.06"/>
+      <!-- small atrophied biological core -->
+      <path d="M534 510 C540 428 573 390 612 391 C653 392 681 433 680 515 L655 628 C646 675 626 706 596 707 C564 704 544 674 537 628 Z" fill="#8b6d5f" stroke="#d9a88f" stroke-width="7"/>
+      <path d="M550 491 Q590 460 624 487 Q588 516 553 507 Z" fill="#10212a" stroke="#8ff4ff" stroke-width="5"/>
+      <circle cx="589" cy="492" r="10" fill="#92f4ff"/>
+      <path d="M661 491 Q632 462 607 488" fill="none" stroke="#e1b7a2" stroke-width="5" opacity="0.55"/>
+      <!-- neural support crown -->
+      <path d="M502 471 C458 397 482 318 540 284 L561 373 M698 471 C742 397 718 318 660 284 L639 373" fill="none" stroke="#80909c" stroke-width="17" stroke-linecap="round"/>
+      <path d="M511 388 L443 310 M689 388 L757 310 M545 353 L531 242 M655 353 L669 242" stroke="#52d5e6" stroke-width="7" opacity="0.65"/>
+      <!-- industrial service conduits -->
+      <path d="M416 727 C370 609 389 494 466 420 M784 727 C830 609 811 494 734 420" fill="none" stroke="#c97545" stroke-width="18" opacity="0.78"/>
+      <path d="M447 1280 V980 M753 1280 V980" stroke="#4f6170" stroke-width="38"/>
+      <path d="M447 1280 V980 M753 1280 V980" stroke="#74dfe9" stroke-width="5" opacity="0.55"/>
+      <!-- core status light -->
+      <circle cx="600" cy="833" r="25" fill="#0c2028" stroke="#7cf5ff" stroke-width="7"/><circle cx="600" cy="833" r="55" fill="#54e0eb" opacity="0.13" filter="url(#glow)"/>
+    </g>
+</svg>

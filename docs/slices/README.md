@@ -42,7 +42,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **Slice 16.4 - Gate 1 active** - `_OPEN_PRESET_RACE_PORTRAITS_CAROUSEL_2026-09-16.md`; auditing 13 preset races, runtime compatibility, evidence-backed visual DNA and representative portrait prototypes.
+- **Slice 16.4 - Gate 1 complete / Gate 2 next** - `_OPEN_PRESET_RACE_PORTRAITS_CAROUSEL_2026-09-16.md`; 13-race readiness/visual-DNA audit and Alkari/Meklar/Silicoid 4:5/WebP/mobile prototypes are complete; support/art/carousel freeze is next.
 
 Closed/parked Slice-15 state:
 
