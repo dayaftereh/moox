@@ -1,6 +1,6 @@
 ﻿# Planned slice 16.5 - Starting technology visual selector
 
-Status: **open; Gate 1 active (2026-09-16)**.
+Status: **open; Gate 1 complete, Gate 2 next (2026-09-16)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slice 16.1 shared visual selection grammar.
@@ -62,11 +62,14 @@ The frontend must not hard-code hidden technology grants.
 
 ## Gate 1 - audit
 
-- [ ] Re-check original and normalized New Game technology-level options.
-- [ ] Confirm whether the supported target is exactly three levels and their authoritative IDs.
-- [ ] Inventory exact start-state effects/granted technologies for each level.
-- [ ] Identify race-specific interactions.
-- [ ] Prototype the three-image visual progression.
+- [x] Re-check original and normalized New Game technology-level options.
+- [x] Confirm whether the supported target is exactly three levels and their authoritative IDs.
+- [x] Inventory exact start-state effects/granted technologies for each level.
+- [x] Identify race-specific interactions.
+- [x] Prototype the three-image visual progression.
+
+Permanent Gate-1 evidence: `docs/research/SLICE_16_5_GATE1_STARTING_TECH_AUDIT_2026-09-16.md`.
+Prototype evidence: `docs/research/prototypes/SLICE_16_5_STARTING_TECH_2026-09-16/`.
 
 ## Gate 2 - freeze
 
