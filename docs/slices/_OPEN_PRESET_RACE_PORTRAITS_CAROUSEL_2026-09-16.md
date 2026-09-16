@@ -1,6 +1,6 @@
 # Open slice 16.4 - Preset race portraits and carousel
 
-Status: **Gate 2 active**
+Status: **Gate 2 complete / Gate 3 next**
 
 Parent: `docs/slices/PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`
 Plan: `docs/slices/PLANNED_16_4_PRESET_RACE_PORTRAITS_CAROUSEL.md`
@@ -34,15 +34,29 @@ Prototype/format evidence: `docs/research/prototypes/SLICE_16_4_RACE_PORTRAITS_2
 
 ## Gate 2 checklist
 
-- [ ] Freeze the supported preset-race set for Slice 16 and classify unsupported presets honestly.
-- [ ] Freeze bounded-fix scope: what Slice 16.4 implements now vs what remains deferred to later gameplay-system slices.
-- [ ] Freeze server-owned preset-race catalog/fact contract and New Game support semantics.
-- [ ] Freeze portrait style bible, 4:5 master, safe area and WebP runtime format.
-- [ ] Freeze semantic asset paths/manifest naming for portraits and emblems.
-- [ ] Freeze compact race-card facts without promising unavailable mechanics.
-- [ ] Freeze shared carousel behavior, accessibility and 390 px mobile hierarchy.
-- [ ] Record representative-portrait visual acceptance as provisional: current Gate-1 prototypes are accepted for integration exploration, but final painterly art may still change.
+- [x] Freeze the supported preset-race set for Slice 16 and classify unsupported presets honestly.
+- [x] Freeze bounded-fix scope: what Slice 16.4 implements now vs what remains deferred to later gameplay-system slices.
+- [x] Freeze server-owned preset-race catalog/fact contract and New Game support semantics.
+- [x] Freeze portrait style bible, 4:5 master, safe area and WebP runtime format.
+- [x] Freeze semantic asset paths/manifest naming for portraits and emblems.
+- [x] Freeze compact race-card facts without promising unavailable mechanics.
+- [x] Freeze shared carousel behavior, accessibility and 390 px mobile hierarchy.
+- [x] Record representative-portrait visual acceptance as provisional: current Gate-1 prototypes are accepted for integration exploration, but final painterly art may still change.
+
+## Gate-2 freeze
+
+Permanent evidence: `docs/research/SLICE_16_4_GATE2_FREEZE_2026-09-16.md`.
+
+Frozen implementation direction:
+
+- all 13 canonical races are catalog-visible in normalized order;
+- Human + Klackon are the first local-player supported set;
+- Darlok remains the fixed AI baseline and planned for local-player selection;
+- broader race parity mechanics remain deferred;
+- runtime portraits use the frozen 4:5 WebP / safe-area / manifest contract;
+- Human/Klackon/Darlok need unique runtime portraits in Gate 3;
+- current representative portrait direction is provisionally accepted for integration, not permanently art-locked.
 
 ## Next
 
-Write permanent Gate-2 freeze evidence from the Gate-1 audit before changing runtime behavior. Then implement only the frozen support/catalog/asset/carousel contract.
+Gate 3 is next. Implement the frozen server catalog, narrow Human/Klackon runtime support, canonical Human/Klackon/Darlok portrait assets/manifest and the shared race carousel only when Gate 3 is explicitly continued.

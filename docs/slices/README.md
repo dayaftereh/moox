@@ -42,7 +42,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **Slice 16.4 - Gate 2 active** - `_OPEN_PRESET_RACE_PORTRAITS_CAROUSEL_2026-09-16.md`; 13-race readiness/visual-DNA audit and representative portrait prototypes are complete; support/catalog/art/carousel contract freeze is active.
+- **Slice 16.4 - Gate 2 complete / Gate 3 next** - `_OPEN_PRESET_RACE_PORTRAITS_CAROUSEL_2026-09-16.md`; 13-race catalog visibility, Human/Klackon player support, fixed Darlok AI baseline and 4:5 WebP portrait/carousel contract are frozen.
 
 Closed/parked Slice-15 state:
 
@@ -54,7 +54,7 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slices 16.1-16.3 are closed and Slice 16.4 is active at Gate 2.
+1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slices 16.1-16.3 are closed and Slice 16.4 has Gate 2 complete / Gate 3 next.
 2. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for broader combat/design fidelity.
 3. `PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md` - dedicated authoritative Spy/intelligence mechanics; Slice 20 remains reserved while 18/19 are unassigned.
 
