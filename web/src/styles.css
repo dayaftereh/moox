@@ -5553,6 +5553,27 @@ button.galaxy-node-marker-player-fleet.is-open {
   font-size: clamp(1.5rem, 5vw, 1.9rem);
   line-height: 1.05;
 }
+.visual-selector-current-status {
+  width: fit-content;
+  margin-top: 7px;
+  padding: 3px 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  color: var(--muted-strong);
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+.visual-selector-current-status[data-availability="supported"] {
+  border-color: color-mix(in srgb, var(--accent) 62%, var(--border-soft));
+  background: var(--accent-soft);
+  color: var(--text);
+}
+.visual-selector-current-status[data-availability="planned"] {
+  border-style: dashed;
+}
 .visual-selector-position {
   display: flex;
   align-items: center;

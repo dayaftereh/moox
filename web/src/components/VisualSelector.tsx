@@ -115,6 +115,11 @@ export function VisualSelector<TId extends string>({
         <button type="button" className="visual-selector-arrow" onClick={() => step(-1)} disabled={selectedIndex <= 0} aria-label={previousLabel}>&lt;</button>
         <div className="visual-selector-current">
           <h3>{selected.title}</h3>
+          {selected.availabilityLabel && (
+            <span className="visual-selector-current-status" data-availability={selected.availability ?? 'supported'}>
+              {selected.availabilityLabel}
+            </span>
+          )}
         </div>
         <button type="button" className="visual-selector-arrow" onClick={() => step(1)} disabled={selectedIndex >= options.length - 1} aria-label={nextLabel}>&gt;</button>
       </div>

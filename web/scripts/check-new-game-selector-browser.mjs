@@ -426,6 +426,10 @@ async function main() {
     const image = root?.querySelector('.new-game-race-art img')
     return {
       selected: root?.querySelector('.visual-selector-current h3')?.textContent,
+      statusText: root?.querySelector('.visual-selector-current-status')?.textContent?.trim() ?? '',
+      selectorAria: root?.getAttribute('aria-label') ?? '',
+      infoAria: root?.querySelector('.visual-selector-info-button')?.getAttribute('aria-label') ?? '',
+      arrowAria: [...(root?.querySelectorAll('.visual-selector-arrow') ?? [])].map((item) => item.getAttribute('aria-label') ?? ''),
       availability: root?.getAttribute('data-availability'),
       source: image?.getAttribute('src') ?? null,
       imageReady: image ? Boolean(image.complete && image.naturalWidth === 1200 && image.naturalHeight === 1500) : false,
@@ -455,6 +459,17 @@ async function main() {
   assert(raceSnap.arrows.every((item) => item?.width >= 44 && item?.height >= 44), `mobile Race arrow target below 44px: ${JSON.stringify(raceSnap.arrows)}`)
   assert(raceSnap.scrollWidth === raceSnap.viewportWidth && raceSnap.viewportWidth === 390, `Race selector mobile horizontal overflow: ${raceSnap.scrollWidth}/${raceSnap.viewportWidth}`)
   assert(raceSnap.createDisabled === false, 'Human must allow Create Game')
+  assert(raceSnap.statusText === 'Jetzt unterstützt', `Human visible availability text mismatch: ${raceSnap.statusText}`)
+  assert(raceSnap.selectorAria === 'Spielerrasse', `Race selector aria-label mismatch: ${raceSnap.selectorAria}`)
+  assert(raceSnap.infoAria.includes('Menschen'), `Race info aria-label must identify current race: ${raceSnap.infoAria}`)
+  assert(raceSnap.arrowAria.every((label) => label.length > 0), `Race arrows require text aria-labels: ${JSON.stringify(raceSnap.arrowAria)}`)
+
+  await evaluate(`(() => { const image = document.querySelector('.visual-selector[data-setting-id="player-race"] .new-game-race-art img'); if (image) image.style.visibility = 'hidden'; return true })()`)
+  raceSnap = await evaluate(raceSnapshotExpression)
+  assert(raceSnap.selected === 'Menschen', 'Race name must remain visible with portrait hidden')
+  assert(raceSnap.statusText === 'Jetzt unterstützt', 'Race availability text must remain visible with portrait hidden')
+  assert(raceSnap.selectorAria === 'Spielerrasse' && raceSnap.infoAria.includes('Menschen'), 'Race ARIA identity must remain sufficient with portrait hidden')
+  await evaluate(`(() => { const image = document.querySelector('.visual-selector[data-setting-id="player-race"] .new-game-race-art img'); if (image) image.style.visibility = ''; return true })()`)
 
   await evaluate(`document.querySelector('.visual-selector[data-setting-id="player-race"]')?.focus(); true`)
   await key('Home', 'Home', 36)
@@ -464,6 +479,7 @@ async function main() {
   assert(raceSnap.availability === 'planned', `Alkari availability=${raceSnap.availability}`)
   assert(raceSnap.placeholder && !raceSnap.source, 'Planned Alkari must use the neutral planned visual, not another race portrait')
   assert(raceSnap.createDisabled === true, 'Planned Alkari must lock Create Game')
+  assert(raceSnap.statusText === 'Geplant / gesperrt', `Planned Alkari visible availability text mismatch: ${raceSnap.statusText}`)
 
   await touchTap('.visual-selector[data-setting-id="player-race"] .visual-selector-arrow:not(:disabled):last-of-type')
   await sleep(90)
