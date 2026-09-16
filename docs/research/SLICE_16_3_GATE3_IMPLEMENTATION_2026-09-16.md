@@ -246,6 +246,20 @@ The reusable Chrome smoke now validates three semantically scoped selectors:
 
 Desktop coverage validates responsive artwork sizing/radius and >=52 px arrow controls for Difficulty, Galaxy Size and Galaxy Age.
 
+## User visual refinement before Gate 4
+
+After the initial Gate-3 implementation review, the user requested stronger semantic separation between the three Galaxy Age illustrations without changing any generator/catalog mechanics.
+
+The production SVG generator was refined accordingly:
+
+- **Mineral Rich** now combines the mineral/resource mass with an explicit industrial production cluster: gear, compact conveyor/work line and ore pieces.
+- **Normal** keeps the same two visual families at equal, deliberately reduced opacity so it reads as balanced rather than strongly industrial or strongly biotech.
+- **Organic Rich** now combines the biosphere/leaf cue with biotech/pharma-inspired visual language: a molecule network, laboratory vial and capsule motif.
+
+This is presentation language only. The biotech/pharma imagery does **not** introduce or imply a pharmaceutical gameplay bonus; authoritative gameplay facts remain only the frozen mineral-resource and food-world bias fields.
+
+The identical galaxy silhouette, 1200x675 SVG contract, no embedded localized text, deterministic regeneration and existing Size/Age mechanics remain unchanged. The static 13-SVG guard and full New Game browser smoke both pass after the refinement.
+
 ## Final Gate-3 regression
 
 The final implementation regression passed before documentation closeout:

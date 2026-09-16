@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
-  <title id="title">MOX galaxy age mineral_rich composition prototype</title>
-  <desc id="desc">Research-only illustration using the same galaxy silhouette for every age and an abstract mineral-to-biosphere composition cue. It is not a generated map preview or an exact planet ratio.</desc>
+  <title id="title">MOX galaxy age mineral_rich composition illustration</title>
+  <desc id="desc">Deterministic illustration using the same galaxy silhouette for every age and abstract industrial-to-biotech composition cues. It is visual language only, not a generated map preview, exact planet ratio, or pharmaceutical gameplay promise.</desc>
   <defs>
     <radialGradient id="background" cx="50%" cy="46%" r="76%"><stop offset="0" stop-color="#102033"/><stop offset="0.58" stop-color="#07111d"/><stop offset="1" stop-color="#02060b"/></radialGradient>
     <radialGradient id="galaxyGlow" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#ffe7aa" stop-opacity="0.22"/><stop offset="0.65" stop-color="#e3aa55" stop-opacity="0.07"/><stop offset="1" stop-color="#02060b" stop-opacity="0"/></radialGradient>
@@ -35,13 +35,50 @@
     <circle cx="600" cy="310" r="18" fill="#ffe7aa" opacity="0.82"/>
   </g>
   <g opacity="1">
-    <path d="M254 493 L294 440 L350 460 L370 520 L318 558 L265 535 Z" fill="#241b12" stroke="#e4aa55" stroke-width="9" stroke-linejoin="round"/>
-    <path d="M294 440 L318 558 M254 493 L370 520 M294 440 L370 520" fill="none" stroke="#ffe2a0" stroke-width="4" opacity="0.72"/>
+    <!-- ore / resource mass -->
+    <path d="M224 506 L263 449 L310 460 L333 506 L294 548 L244 538 Z" fill="#241b12" stroke="#e4aa55" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M263 449 L294 548 M224 506 L333 506 M263 449 L333 506" fill="none" stroke="#ffe2a0" stroke-width="4" opacity="0.74"/>
+
+    <!-- production gear -->
+    <g transform="translate(348 480)">
+      <circle r="43" fill="#0b1118" stroke="#d58e38" stroke-width="8"/>
+      <circle r="16" fill="#e3aa55" opacity="0.92"/>
+      <path d="M0-62 V-42 M0 42 V62 M-62 0 H-42 M42 0 H62 M-44-44 L-30-30 M30 30 L44 44 M44-44 L30-30 M-30 30 L-44 44" fill="none" stroke="#ffe7aa" stroke-width="10" stroke-linecap="square"/>
+      <path d="M0-35 V35 M-35 0 H35 M-25-25 L25 25 M25-25 L-25 25" fill="none" stroke="#ffe7aa" stroke-width="6" opacity="0.82"/>
+    </g>
+
+    <!-- compact conveyor / work line -->
+    <path d="M220 568 H395" fill="none" stroke="#8ba0af" stroke-width="10" stroke-linecap="round" opacity="0.86"/>
+    <circle cx="246" cy="568" r="12" fill="#101820" stroke="#d9edf8" stroke-width="4"/>
+    <circle cx="369" cy="568" r="12" fill="#101820" stroke="#d9edf8" stroke-width="4"/>
+    <path d="M272 548 L293 528 L316 548 Z M323 548 L340 531 L359 548 Z" fill="#e3aa55" stroke="#ffe7aa" stroke-width="3" opacity="0.92"/>
+    <path d="M211 425 V468 M228 409 V455" stroke="#7f95a6" stroke-width="9" stroke-linecap="round" opacity="0.70"/>
   </g>
-  <g opacity="0.28">
-    <circle cx="904" cy="500" r="58" fill="#07191a" stroke="#69cbb5" stroke-width="9"/>
-    <path d="M862 510 C884 478 914 466 947 474 C929 493 917 522 918 548 C895 544 876 531 862 510 Z" fill="#75d0a8" opacity="0.82"/>
-    <path d="M879 469 C895 458 915 453 934 457" fill="none" stroke="#c9fff1" stroke-width="6" stroke-linecap="round" opacity="0.76"/>
+  <g opacity="0.14">
+    <!-- living / biosphere cell -->
+    <circle cx="912" cy="500" r="68" fill="#07191a" stroke="#69cbb5" stroke-width="9"/>
+    <path d="M864 512 C886 480 916 468 949 476 C931 495 919 524 920 550 C897 546 878 533 864 512 Z" fill="#75d0a8" opacity="0.86"/>
+    <path d="M881 471 C897 460 917 455 936 459" fill="none" stroke="#c9fff1" stroke-width="6" stroke-linecap="round" opacity="0.78"/>
+
+    <!-- biotech molecule network -->
+    <path d="M951 451 L980 467 L980 500 L951 517 L922 500 L922 467 Z" fill="#0b2022" stroke="#8be6d4" stroke-width="5" opacity="0.96"/>
+    <path d="M951 451 L951 430 M980 467 L1001 454 M980 500 L1002 513" fill="none" stroke="#c9fff1" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="951" cy="428" r="8" fill="#c9fff1"/>
+    <circle cx="1005" cy="451" r="8" fill="#8be6d4"/>
+    <circle cx="1006" cy="516" r="8" fill="#8d82e8"/>
+
+    <!-- laboratory vial -->
+    <path d="M842 448 H866 M848 448 V477 L828 529 C823 542 832 553 846 553 H874 C888 553 897 542 892 529 L872 477 V448" fill="#0a2324" stroke="#bdf8eb" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M837 523 H884" stroke="#69cbb5" stroke-width="9" opacity="0.82"/>
+    <circle cx="852" cy="508" r="6" fill="#d9fff5" opacity="0.9"/>
+    <circle cx="869" cy="535" r="5" fill="#8d82e8" opacity="0.85"/>
+
+    <!-- pharma capsule cue -->
+    <g transform="translate(963 555) rotate(-18)">
+      <rect x="-36" y="-14" width="72" height="28" rx="14" fill="#d9fff5" stroke="#69cbb5" stroke-width="5"/>
+      <path d="M0 -14 V14" stroke="#6a70c9" stroke-width="5"/>
+      <path d="M-31 0 H-5" stroke="#8d82e8" stroke-width="8" stroke-linecap="round" opacity="0.72"/>
+    </g>
   </g>
 
     <path d="M382 520 C500 558 700 558 818 520" fill="none" stroke="#4f6a7f" stroke-width="5" stroke-linecap="round" opacity="0.62"/>
