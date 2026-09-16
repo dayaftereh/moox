@@ -5,8 +5,8 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: **none**.
-- Active implementation slice: **none; Slice 16.3 is closed. Slice 16.4 is next prepared but not open.**
+- Open slice marker: `docs/slices/_OPEN_PRESET_RACE_PORTRAITS_CAROUSEL_2026-09-16.md`.
+- Active implementation slice: **Slice 16.4 - Preset race portraits and carousel; Gate 1 active**.
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
@@ -14,7 +14,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-14 and the Slice-15 browser-playability progression through 15.6 are closed/accepted at their intended baselines**; the 15.3 richer-art pass remains parked. Slice 16, Slice 17 and reserved Slice 20 remain prepared.
-- Current objective: **Slice 16.3 is closed. Review/start prepared Slice 16.4 (Preset race portraits and carousel) only when explicitly requested; no next `_OPEN_` marker exists yet.**
+- Current objective: **audit all 13 normalized preset races, classify runtime compatibility, extract evidence-backed race/visual cues, write per-race visual DNA and prototype three coherent representative portraits before any Gate-2 freeze.**
 - Slice-15.1 closure evidence: `docs/research/SLICE_15_1_MOBILE_FIRST_UX_GATE4_2026-09-04.md`.
 - Slice-15.2 Gate-1 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE1_2026-09-04.md`.
 - Slice-15.2 Gate-2 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE2_2026-09-04.md`.
