@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "id": "race:human:portrait",
+      "race_id": "human",
+      "kind": "portrait",
+      "format": "webp",
+      "path": "/assets/races/human/portrait.webp",
+      "alt_name_key": "race.human.name",
+      "focal_point": { "x": 0.5, "y": 0.36 },
+      "safe_area": { "x": 0.14, "y": 0.08, "width": 0.72, "height": 0.84 },
+      "provenance": "original-procedural-mox",
+      "source_note": "Generated from web/scripts/generate-race-portrait-sources.mjs; source SVG retained under docs/research/prototypes/SLICE_16_4_RUNTIME_PORTRAITS_2026-09-16/human.svg and rasterized to WebP for runtime use."
+    },
+    {
+      "id": "race:klackon:portrait",
+      "race_id": "klackon",
+      "kind": "portrait",
+      "format": "webp",
+      "path": "/assets/races/klackon/portrait.webp",
+      "alt_name_key": "race.klackon.name",
+      "focal_point": { "x": 0.5, "y": 0.36 },
+      "safe_area": { "x": 0.14, "y": 0.08, "width": 0.72, "height": 0.84 },
+      "provenance": "original-procedural-mox",
+      "source_note": "Generated from web/scripts/generate-race-portrait-sources.mjs; source SVG retained under docs/research/prototypes/SLICE_16_4_RUNTIME_PORTRAITS_2026-09-16/klackon.svg and rasterized to WebP for runtime use."
+    },
+    {
+      "id": "race:darlok:portrait",
+      "race_id": "darlok",
+      "kind": "portrait",
+      "format": "webp",
+      "path": "/assets/races/darlok/portrait.webp",
+      "alt_name_key": "race.darlok.name",
+      "focal_point": { "x": 0.5, "y": 0.36 },
+      "safe_area": { "x": 0.14, "y": 0.08, "width": 0.72, "height": 0.84 },
+      "provenance": "original-procedural-mox",
+      "source_note": "Generated from web/scripts/generate-race-portrait-sources.mjs; source SVG retained under docs/research/prototypes/SLICE_16_4_RUNTIME_PORTRAITS_2026-09-16/darlok.svg and rasterized to WebP for runtime use."
+    }
+  ]
+}

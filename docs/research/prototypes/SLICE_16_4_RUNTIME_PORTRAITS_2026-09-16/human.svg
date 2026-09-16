@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1500" viewBox="0 0 1200 1500" role="img" aria-labelledby="title desc">
+  <title id="title">MOX human race portrait source</title>
+  <desc id="desc">Original MOOX 4:5 race portrait source generated for Slice 16.4. No Master of Orion II portrait pixels are copied.</desc>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="34%" r="78%"><stop offset="0" stop-color="#152536"/><stop offset="0.52" stop-color="#07111c"/><stop offset="1" stop-color="#02050a"/></radialGradient>
+    <radialGradient id="halo" cx="50%" cy="40%" r="52%"><stop offset="0" stop-color="#79c9ef" stop-opacity="0.18"/><stop offset="1" stop-color="#79c9ef" stop-opacity="0"/></radialGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f1c6a2"/><stop offset="0.55" stop-color="#79c9ef"/><stop offset="1" stop-color="#304c66"/></linearGradient>
+    <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#61778a"/><stop offset="0.45" stop-color="#1d2b37"/><stop offset="1" stop-color="#080e15"/></linearGradient>
+    <filter id="soft"><feGaussianBlur stdDeviation="18"/></filter>
+    <filter id="glow"><feGaussianBlur stdDeviation="7"/></filter>
+  </defs>
+  <rect width="1200" height="1500" fill="url(#bg)"/>
+    <ellipse cx="600" cy="625" rx="455" ry="525" fill="url(#halo)"/>
+    <g opacity="0.46"><circle cx="91" cy="154" r="2" fill="#d9efff"/><circle cx="185" cy="276" r="1.5" fill="#d9efff"/><circle cx="1027" cy="185" r="1.6" fill="#d9efff"/><circle cx="1112" cy="344" r="2" fill="#d9efff"/><circle cx="138" cy="665" r="1.4" fill="#d9efff"/><circle cx="1068" cy="700" r="1.5" fill="#d9efff"/><circle cx="211" cy="1054" r="1.2" fill="#d9efff"/><circle cx="1038" cy="1118" r="1.7" fill="#d9efff"/><circle cx="321" cy="1287" r="1.3" fill="#d9efff"/><circle cx="918" cy="1317" r="1.2" fill="#d9efff"/></g>
+    <path d="M150 1260 C330 1370 870 1370 1050 1260" fill="none" stroke="#31465b" stroke-width="3" opacity="0.38"/>
+    <path d="M212 1320 C390 1405 810 1405 988 1320" fill="none" stroke="#79c9ef" stroke-width="2" opacity="0.16"/>
+  <g>
+    <path d="M258 1324 C300 1115 390 975 500 925 L700 925 C810 975 900 1115 942 1324 Z" fill="#111c29" stroke="url(#rim)" stroke-width="9"/>
+    <path d="M420 1034 L500 925 H700 L782 1034 L715 1245 H485 Z" fill="#1c3041" stroke="#557a94" stroke-width="6"/>
+    <path d="M526 948 C494 855 492 792 520 720 H680 C708 792 706 855 674 948 C642 982 558 982 526 948 Z" fill="#b98268" stroke="#efc0a4" stroke-width="7"/>
+    <path d="M438 505 C450 380 512 301 600 294 C688 301 750 380 762 505 L731 647 C709 732 659 790 600 793 C541 790 491 732 469 647 Z" fill="#b98268" stroke="#f0c8ae" stroke-width="8"/>
+    <path d="M462 498 C484 352 532 274 600 274 C668 274 716 352 738 498 C698 454 655 434 600 430 C545 434 502 454 462 498 Z" fill="#2c2526" stroke="#83665d" stroke-width="5"/>
+    <path d="M500 526 Q548 493 583 526 Q548 559 505 546 Z" fill="#16232b" stroke="#c9ecff" stroke-width="4"/>
+    <path d="M700 526 Q652 493 617 526 Q652 559 695 546 Z" fill="#16232b" stroke="#c9ecff" stroke-width="4"/>
+    <circle cx="548" cy="532" r="10" fill="#72d9f8"/><circle cx="652" cy="532" r="10" fill="#72d9f8"/>
+    <path d="M566 642 Q600 661 634 642" fill="none" stroke="#6f443b" stroke-width="8" stroke-linecap="round"/>
+    <path d="M497 930 L600 1024 L703 930" fill="#d9e5ec" opacity="0.88"/>
+    <path d="M600 1024 V1244" stroke="#79c9ef" stroke-width="6" opacity="0.5"/>
+    <g transform="translate(865 440)" opacity="0.55"><circle r="70" fill="none" stroke="#79c9ef" stroke-width="5"/><path d="M-50 20 C-20 -22 20 -22 50 20 M0-70 V70" fill="none" stroke="#d7f3ff" stroke-width="5"/><circle cy="-22" r="13" fill="#79c9ef"/></g>
+  </g>
+</svg>

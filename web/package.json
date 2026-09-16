@@ -5,14 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npm run check:encoding && npm run check:new-game-selector && tsc -b && vite build",
+    "build": "npm run check:encoding && npm run check:new-game-selector && npm run check:race-assets && tsc -b && vite build",
     "preview": "vite preview",
     "check:encoding": "node scripts/check-mojibake.mjs",
     "generate:galaxy-art": "node scripts/generate-galaxy-size-art.mjs",
     "check:new-game-selector": "node scripts/check-new-game-selector.mjs",
     "check:new-game-selector:browser": "node scripts/check-new-game-selector-browser.mjs",
     "generate:difficulty-art": "node scripts/generate-difficulty-art.mjs",
-    "generate:galaxy-age-art": "node scripts/generate-galaxy-age-art.mjs"
+    "generate:galaxy-age-art": "node scripts/generate-galaxy-age-art.mjs",
+    "check:race-assets": "node scripts/check-race-assets.mjs",
+    "generate:race-portrait-sources": "node scripts/generate-race-portrait-sources.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",
