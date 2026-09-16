@@ -39,6 +39,25 @@ export type DifficultyCatalog = {
   profiles: DifficultyProfile[]
 }
 
+export type PresetRaceID = 'alkari' | 'bulrathi' | 'darlok' | 'elerian' | 'gnolam' | 'human' | 'klackon' | 'meklar' | 'mrrshan' | 'psilon' | 'sakkra' | 'silicoid' | 'trilarian'
+export type PresetRaceAvailability = 'supported' | 'planned'
+
+export type PresetRaceProfile = {
+  id: PresetRaceID
+  order: number
+  name_key: string
+  player_availability: PresetRaceAvailability
+  trait_ids: string[]
+  card_fact_trait_ids: string[]
+}
+
+export type PresetRaceCatalog = {
+  schema_version: number
+  default_player_race_id: PresetRaceID
+  fixed_opponent_race_id: PresetRaceID
+  profiles: PresetRaceProfile[]
+}
+
 export type NewGamePlayer = {
   seat_id: number
   empire_id: number
@@ -55,7 +74,7 @@ export type NewGameSettings = {
   players: Array<{
     seat_id: number
     empire_name: string
-    race_id: 'human' | 'darlok'
+    race_id: PresetRaceID
   }>
 }
 
@@ -789,6 +808,9 @@ export async function getDifficultyCatalog(signal?: AbortSignal): Promise<Diffic
 }
 export async function getGalaxyCatalog(signal?: AbortSignal): Promise<GalaxyCatalog> {
   return requestJSON<GalaxyCatalog>('/api/v1/new-game/galaxy', { signal })
+}
+export async function getRaceCatalog(signal?: AbortSignal): Promise<PresetRaceCatalog> {
+  return requestJSON<PresetRaceCatalog>('/api/v1/new-game/races', { signal })
 }
 export async function listGames(signal?: AbortSignal): Promise<GameSummary[]> {
   return requestJSON<GameSummary[]>('/api/v1/games', { signal })

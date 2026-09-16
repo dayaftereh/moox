@@ -5683,6 +5683,80 @@ button.galaxy-node-marker-player-fleet.is-open {
   user-select: none;
   pointer-events: none;
 }
+.visual-selector[data-setting-id="player-race"] .visual-selector-art {
+  width: min(82vw, 320px);
+  aspect-ratio: 4 / 5;
+  margin-inline: auto;
+}
+.new-game-race-art {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #02050a;
+}
+.new-game-race-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  pointer-events: none;
+}
+.new-game-race-art-planned {
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 45%),
+    #02050a;
+}
+.new-game-race-placeholder {
+  position: relative;
+  width: 62%;
+  aspect-ratio: 1;
+  opacity: 0.72;
+}
+.new-game-race-placeholder-orbit,
+.new-game-race-placeholder-core,
+.new-game-race-placeholder-arc {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}
+.new-game-race-placeholder-orbit {
+  width: 92%;
+  height: 64%;
+  border: 2px solid color-mix(in srgb, var(--accent) 60%, #7890a5);
+  border-radius: 50%;
+  transform: rotate(-18deg);
+}
+.new-game-race-placeholder-core {
+  width: 28%;
+  height: 28%;
+  border: 2px solid color-mix(in srgb, var(--accent) 75%, white);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 16%, #07111c);
+  box-shadow: 0 0 28px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.new-game-race-placeholder-arc {
+  width: 54%;
+  height: 72%;
+  border-left: 3px solid color-mix(in srgb, var(--accent) 45%, #788ca0);
+  border-right: 3px solid color-mix(in srgb, var(--accent) 45%, #788ca0);
+  border-radius: 48%;
+}
+.new-game-race-loading {
+  min-height: min(82vw, 400px);
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+  text-align: center;
+  padding: 24px;
+}
+.new-game-race-loading h2,
+.new-game-race-loading p {
+  margin: 0;
+}
 @media (min-width: 700px) {
   .new-game-visual-card {
     width: min(100%, 640px);
@@ -5694,6 +5768,10 @@ button.galaxy-node-marker-player-fleet.is-open {
   .visual-selector-art {
     aspect-ratio: 16 / 9;
     border-radius: 20px;
+  }
+  .visual-selector[data-setting-id="player-race"] .visual-selector-art {
+    width: min(100%, 400px);
+    aspect-ratio: 4 / 5;
   }
   .visual-selector-controls {
     grid-template-columns: 52px minmax(0, 1fr) 52px;

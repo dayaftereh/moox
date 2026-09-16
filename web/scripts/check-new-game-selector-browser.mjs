@@ -418,6 +418,120 @@ async function main() {
     assert(difficultySnap.createDisabled === false, `Difficulty ${label} incorrectly disabled Create Game`)
   }
 
+  const raceSnapshotExpression = `(() => {
+    const q = (selector) => document.querySelector(selector)
+    const rect = (element) => { const r = element?.getBoundingClientRect(); return r ? { width: r.width, height: r.height } : null }
+    const root = q('.visual-selector[data-setting-id="player-race"]')
+    const art = root?.querySelector('.visual-selector-art')
+    const image = root?.querySelector('.new-game-race-art img')
+    return {
+      selected: root?.querySelector('.visual-selector-current h3')?.textContent,
+      availability: root?.getAttribute('data-availability'),
+      source: image?.getAttribute('src') ?? null,
+      imageReady: image ? Boolean(image.complete && image.naturalWidth === 1200 && image.naturalHeight === 1500) : false,
+      placeholder: Boolean(root?.querySelector('.new-game-race-placeholder')),
+      art: rect(art),
+      ratio: art ? getComputedStyle(art).aspectRatio : '',
+      radius: art ? getComputedStyle(art).borderRadius : '',
+      info: rect(root?.querySelector('.visual-selector-info-button')),
+      arrows: [...(root?.querySelectorAll('.visual-selector-arrow') ?? [])].map(rect),
+      dotCount: root?.querySelectorAll('.visual-selector-dots i').length ?? 0,
+      createDisabled: q('.new-game-form button[type=submit]')?.disabled,
+      playerEmpire: q('.new-game-form label:nth-of-type(4) input')?.value,
+      scrollWidth: document.documentElement.scrollWidth,
+      viewportWidth: document.documentElement.clientWidth,
+    }
+  })()`
+
+  let raceSnap = await evaluate(raceSnapshotExpression)
+  assert(raceSnap.selected === 'Menschen', `expected initial Human/Menschen, got ${raceSnap.selected}`)
+  assert(raceSnap.availability === 'supported', `Human availability=${raceSnap.availability}`)
+  assert(raceSnap.source === '/assets/races/human/portrait.webp', `Human portrait path wrong: ${raceSnap.source}`)
+  assert(raceSnap.imageReady, 'Human portrait did not load at native 1200x1500')
+  assert(raceSnap.dotCount === 13, `expected 13 Race position dots, got ${raceSnap.dotCount}`)
+  assert(raceSnap.art?.width <= 320 && raceSnap.art?.height <= 400.5, `mobile Race art exceeds frozen 320x400 target: ${JSON.stringify(raceSnap.art)}`)
+  assert(raceSnap.ratio === '4 / 5', `expected 4/5 mobile Race aspect ratio, got ${raceSnap.ratio}`)
+  assert(raceSnap.info?.width >= 44 && raceSnap.info?.height >= 44, `mobile Race info target below 44px: ${JSON.stringify(raceSnap.info)}`)
+  assert(raceSnap.arrows.every((item) => item?.width >= 44 && item?.height >= 44), `mobile Race arrow target below 44px: ${JSON.stringify(raceSnap.arrows)}`)
+  assert(raceSnap.scrollWidth === raceSnap.viewportWidth && raceSnap.viewportWidth === 390, `Race selector mobile horizontal overflow: ${raceSnap.scrollWidth}/${raceSnap.viewportWidth}`)
+  assert(raceSnap.createDisabled === false, 'Human must allow Create Game')
+
+  await evaluate(`document.querySelector('.visual-selector[data-setting-id="player-race"]')?.focus(); true`)
+  await key('Home', 'Home', 36)
+  await sleep(80)
+  raceSnap = await evaluate(raceSnapshotExpression)
+  assert(raceSnap.selected === 'Alkari', `Race Home should select Alkari, got ${raceSnap.selected}`)
+  assert(raceSnap.availability === 'planned', `Alkari availability=${raceSnap.availability}`)
+  assert(raceSnap.placeholder && !raceSnap.source, 'Planned Alkari must use the neutral planned visual, not another race portrait')
+  assert(raceSnap.createDisabled === true, 'Planned Alkari must lock Create Game')
+
+  await touchTap('.visual-selector[data-setting-id="player-race"] .visual-selector-arrow:not(:disabled):last-of-type')
+  await sleep(90)
+  raceSnap = await evaluate(raceSnapshotExpression)
+  assert(raceSnap.selected === 'Bulrathi', `Race touch next should select Bulrathi, got ${raceSnap.selected}`)
+  assert(raceSnap.createDisabled === true, 'Planned Bulrathi must keep Create Game locked')
+
+  await evaluate(`document.querySelector('.visual-selector[data-setting-id="player-race"]')?.focus(); true`)
+  await key('Home', 'Home', 36)
+  await sleep(60)
+  const expectedRaces = [
+    ['Alkari', 'alkari', 'planned', false],
+    ['Bulrathi', 'bulrathi', 'planned', false],
+    ['Darlok', 'darlok', 'planned', true],
+    ['Elerian', 'elerian', 'planned', false],
+    ['Gnolam', 'gnolam', 'planned', false],
+    ['Menschen', 'human', 'supported', true],
+    ['Klackon', 'klackon', 'supported', true],
+    ['Meklar', 'meklar', 'planned', false],
+    ['Mrrshan', 'mrrshan', 'planned', false],
+    ['Psilon', 'psilon', 'planned', false],
+    ['Sakkra', 'sakkra', 'planned', false],
+    ['Silicoid', 'silicoid', 'planned', false],
+    ['Trilarian', 'trilarian', 'planned', false],
+  ]
+  for (let index = 0; index < expectedRaces.length; index++) {
+    if (index > 0) {
+      await evaluate(`document.querySelectorAll('.visual-selector[data-setting-id="player-race"] .visual-selector-arrow')[1]?.click(); true`)
+      await sleep(60)
+    }
+    raceSnap = await evaluate(raceSnapshotExpression)
+    const [label, id, availability, hasPortrait] = expectedRaces[index]
+    assert(raceSnap.selected === label, `Race option ${index + 1} label mismatch: expected ${label}, got ${raceSnap.selected}`)
+    assert(raceSnap.availability === availability, `Race ${label} availability=${raceSnap.availability} want=${availability}`)
+    assert(raceSnap.createDisabled === (availability !== 'supported'), `Race ${label} create lock mismatch: disabled=${raceSnap.createDisabled}`)
+    if (hasPortrait) {
+      assert(raceSnap.source === `/assets/races/${id}/portrait.webp`, `Race ${label} portrait path mismatch: ${raceSnap.source}`)
+      assert(raceSnap.imageReady, `Race ${label} portrait did not load at native 1200x1500`)
+      assert(!raceSnap.placeholder, `Race ${label} unexpectedly shows planned placeholder`)
+    } else {
+      assert(raceSnap.source === null && raceSnap.placeholder, `Race ${label} must use planned placeholder without borrowed portrait`)
+    }
+  }
+
+  await evaluate(`document.querySelector('.visual-selector[data-setting-id="player-race"]')?.focus(); true`)
+  await key('Home', 'Home', 36)
+  for (let index = 0; index < 6; index++) {
+    await key('ArrowRight', 'ArrowRight', 39)
+    await sleep(45)
+  }
+  raceSnap = await evaluate(raceSnapshotExpression)
+  assert(raceSnap.selected === 'Klackon', `expected Klackon after six Race ArrowRight steps, got ${raceSnap.selected}`)
+  assert(raceSnap.playerEmpire === 'Klackon', `default player empire did not follow supported Klackon selection: ${raceSnap.playerEmpire}`)
+  await evaluate(`document.querySelector('.visual-selector[data-setting-id="player-race"] .visual-selector-info-button')?.click(); true`)
+  await sleep(80)
+  const raceDialog = await evaluate(`(() => ({
+    title: document.querySelector('.visual-selector-dialog h3')?.textContent,
+    paragraphs: [...document.querySelectorAll('.visual-selector-dialog-copy p')].map((item) => item.textContent),
+    activeClass: document.activeElement?.className,
+  }))()`)
+  assert(raceDialog.title === 'Klackon', `Klackon dialog title mismatch: ${raceDialog.title}`)
+  for (const fact of ['Vereinigung', '+1 Nahrung', '+1 Industrie', 'Unkreativ']) {
+    assert(raceDialog.paragraphs.includes(fact), `Klackon server-curated fact missing: ${fact}; got ${JSON.stringify(raceDialog.paragraphs)}`)
+  }
+  assert(raceDialog.activeClass === 'visual-selector-dialog-close', `Race dialog close control did not receive focus: ${raceDialog.activeClass}`)
+  await key('Escape', 'Escape', 27)
+  await sleep(80)
+
   await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false })
   await sleep(120)
   snap = await evaluate(snapshotExpression)
@@ -431,6 +545,11 @@ async function main() {
   assert(difficultySnap.arrows.every((item) => item?.width >= 52 && item?.height >= 52), `desktop Difficulty arrow target below 52px: ${JSON.stringify(difficultySnap.arrows)}`)
   ageSnap = await evaluate(ageSnapshotExpression)
   assert(ageSnap.art?.width >= 400 && ageSnap.art?.width <= 620, `desktop Galaxy Age artwork width outside responsive compact range: ${ageSnap.art?.width}`)
+  raceSnap = await evaluate(raceSnapshotExpression)
+  assert(raceSnap.art?.width >= 399 && raceSnap.art?.width <= 401, `desktop Race artwork width outside frozen 400px target: ${raceSnap.art?.width}`)
+  assert(raceSnap.art?.height >= 499 && raceSnap.art?.height <= 501, `desktop Race artwork height outside frozen 500px target: ${raceSnap.art?.height}`)
+  assert(raceSnap.ratio === '4 / 5', `desktop Race aspect ratio mismatch: ${raceSnap.ratio}`)
+  assert(raceSnap.arrows.every((item) => item?.width >= 52 && item?.height >= 52), `desktop Race arrow target below 52px: ${JSON.stringify(raceSnap.arrows)}`)
   assert(ageSnap.radius === '20px', `expected 20px desktop Galaxy Age art radius, got ${ageSnap.radius}`)
   assert(ageSnap.arrows.every((item) => item?.width >= 52 && item?.height >= 52), `desktop Galaxy Age arrow target below 52px: ${JSON.stringify(ageSnap.arrows)}`)
 
@@ -441,7 +560,7 @@ async function main() {
     return
   }
 
-  console.log('New Game selector browser smoke passed: Galaxy Size + Galaxy Age + Difficulty, 12 bound options, mobile + desktop layout, mouse/touch/keyboard, server-derived info, focus and authoritative support behavior.')
+  console.log('New Game selector browser smoke passed: Difficulty + Galaxy Size + Galaxy Age + Player Race, 25 browsable options, mobile + desktop layout, mouse/touch/keyboard, server-derived facts, race support locks, focus and authoritative behavior.')
 }
 
 main().catch((error) => {

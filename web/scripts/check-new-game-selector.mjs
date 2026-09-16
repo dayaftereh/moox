@@ -122,6 +122,12 @@ assert(app.includes("newGameAssetPath('galaxy-age', galaxyAgeAssetOptionID(age),
 assert(app.includes('getGalaxyCatalog(controller.signal)'), 'App does not load the authoritative Galaxy catalog')
 assert(app.includes('galaxy_size: galaxySizeID'), 'Create Game does not submit selected galaxy_size')
 assert(app.includes('galaxy_age: galaxyAgeID'), 'Create Game does not submit selected galaxy_age')
+assert(app.includes('<VisualSelector<PresetRaceID>'), 'App does not use the typed PresetRaceID VisualSelector contract')
+assert(app.includes('getRaceCatalog(controller.signal)'), 'App does not load the authoritative Race catalog')
+assert(app.includes('settingId="player-race"'), 'App does not bind the semantic player-race selector')
+assert(app.includes('race_id: playerRaceID'), 'Create Game does not submit selected player race')
+assert(app.includes("raceProfilesByID.get(playerRaceID)?.player_availability !== 'supported'"), 'Create Game is not locked by authoritative race support state')
+assert(styles.includes('.visual-selector[data-setting-id="player-race"] .visual-selector-art'), '4:5 player-race artwork style contract missing')
 assert(selector.includes('VisualSelectorOption<TId extends string = string>'), 'VisualSelector option ID contract is not generic')
 assert(selector.includes('VisualSelectorProps<TId extends string>'), 'VisualSelector props are not typed by option ID')
 assert(selector.includes("event.key === 'ArrowLeft'"), 'VisualSelector missing ArrowLeft navigation')
@@ -205,5 +211,5 @@ if (failures.length > 0) {
   process.exit(1)
 }
 
-console.log(`New Game selector contract check passed: ${ids.length + difficultyIds.length + galaxyAgeAssets.length} deterministic SVG assets across Galaxy Size, Difficulty and Galaxy Age, typed selector contract, responsive/accessibility invariants.`)
+console.log(`New Game selector contract check passed: ${ids.length + difficultyIds.length + galaxyAgeAssets.length} deterministic SVG assets across Galaxy Size, Difficulty and Galaxy Age plus authoritative typed Player Race binding, responsive/accessibility invariants.`)
 console.log(`Repository: ${repoRoot}`)

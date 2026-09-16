@@ -5,6 +5,7 @@ import {
   exportLiveSnapshot,
   getDifficultyCatalog,
   getGalaxyCatalog,
+  getRaceCatalog,
   getPlayerSnapshot,
   importLiveSnapshot,
   listGames,
@@ -28,6 +29,9 @@ import {
   type GalaxyCatalog,
   type GalaxySizeID,
   type GalaxySizeProfile,
+  type PresetRaceCatalog,
+  type PresetRaceID,
+  type PresetRaceProfile,
   type DiplomacyCommandKind,
   type DiplomaticStance,
   type DraftOrder,
@@ -63,6 +67,7 @@ import './styles.css'
 const galaxySizeIDs: readonly GalaxySizeID[] = ['small', 'medium', 'large', 'huge']
 const galaxyAgeIDs: readonly GalaxyAgeID[] = ['mineral_rich', 'normal', 'organic_rich']
 const difficultyIDs: readonly DifficultyID[] = ['easy', 'normal', 'hard', 'very_hard', 'impossible']
+const runtimeRacePortraitIDs = new Set<PresetRaceID>(['human', 'klackon', 'darlok'])
 
 function GalaxySizeArt({ size }: { size: GalaxySizeID }) {
   return (
@@ -123,6 +128,34 @@ function galaxyAgeDetails(t: Translator, profile: GalaxyAgeProfile): string[] {
     t(galaxyBiasDetailKey('mineral', profile.mineral_resource_bias)),
     t(galaxyBiasDetailKey('food', profile.food_world_bias)),
   ]
+}
+
+function RaceArt({ race }: { race: PresetRaceID }) {
+  if (runtimeRacePortraitIDs.has(race)) {
+    return (
+      <div className="new-game-race-art" aria-hidden="true">
+        <img src={`/assets/races/${race}/portrait.webp`} alt="" draggable={false} />
+      </div>
+    )
+  }
+  return (
+    <div className="new-game-race-art new-game-race-art-planned" aria-hidden="true">
+      <div className="new-game-race-placeholder">
+        <span className="new-game-race-placeholder-orbit" />
+        <span className="new-game-race-placeholder-core" />
+        <span className="new-game-race-placeholder-arc" />
+      </div>
+    </div>
+  )
+}
+
+function raceTitle(t: Translator, profile: PresetRaceProfile): string {
+  return t(profile.name_key as TranslationKey)
+}
+
+function raceDetails(t: Translator, profile: PresetRaceProfile): string[] {
+  const facts = profile.card_fact_trait_ids.map((traitID) => t(`raceTrait.${traitID}` as TranslationKey))
+  return profile.player_availability === 'planned' ? [t('newGame.racePlannedDetail'), ...facts] : facts
 }
 
 function difficultyAssetOptionID(difficulty: DifficultyID): string {
@@ -271,7 +304,10 @@ function App() {
   const [difficultyID, setDifficultyID] = useState<DifficultyID>('normal')
   const [difficultyCatalog, setDifficultyCatalog] = useState<DifficultyCatalog | null>(null)
   const [difficultyCatalogError, setDifficultyCatalogError] = useState('')
-  const [humanName, setHumanName] = useState('Human')
+  const [playerRaceID, setPlayerRaceID] = useState<PresetRaceID>('human')
+  const [raceCatalog, setRaceCatalog] = useState<PresetRaceCatalog | null>(null)
+  const [raceCatalogError, setRaceCatalogError] = useState('')
+  const [playerName, setPlayerName] = useState('Human')
   const [darlokName, setDarlokName] = useState('Darlok')
   const [creatingGame, setCreatingGame] = useState(false)
   const [gameID, setGameID] = useState('')
@@ -310,6 +346,7 @@ function App() {
   const difficultyProfilesByID = useMemo(() => new Map((difficultyCatalog?.profiles ?? []).map((profile) => [profile.id, profile] as const)), [difficultyCatalog])
   const galaxySizeProfilesByID = useMemo(() => new Map((galaxyCatalog?.sizes ?? []).map((profile) => [profile.id, profile] as const)), [galaxyCatalog])
   const galaxyAgeProfilesByID = useMemo(() => new Map((galaxyCatalog?.ages ?? []).map((profile) => [profile.id, profile] as const)), [galaxyCatalog])
+  const raceProfilesByID = useMemo(() => new Map((raceCatalog?.profiles ?? []).map((profile) => [profile.id, profile] as const)), [raceCatalog])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -342,6 +379,23 @@ function App() {
         if (controller.signal.aborted) return
         setGalaxyCatalog(null)
         setGalaxyCatalogError(errorText(reason))
+      })
+    return () => controller.abort()
+  }, [])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    setRaceCatalogError('')
+    void getRaceCatalog(controller.signal)
+      .then((catalog) => {
+        setRaceCatalog(catalog)
+        setRaceCatalogError('')
+        setPlayerRaceID((current) => catalog.profiles.some((profile) => profile.id === current) ? current : catalog.default_player_race_id)
+      })
+      .catch((reason) => {
+        if (controller.signal.aborted) return
+        setRaceCatalog(null)
+        setRaceCatalogError(errorText(reason))
       })
     return () => controller.abort()
   }, [])
@@ -775,7 +829,7 @@ function App() {
           technology_level: 'average',
           strategic_combat: false,
           players: [
-            { seat_id: 1, empire_name: humanName, race_id: 'human' },
+            { seat_id: 1, empire_name: playerName, race_id: playerRaceID },
             { seat_id: 2, empire_name: darlokName, race_id: 'darlok' },
           ],
         },
@@ -1291,6 +1345,37 @@ function App() {
                 })}
               />
             </Card>
+            <Card className="new-game-visual-card new-game-race-card">
+              {raceCatalog ? (
+                <VisualSelector<PresetRaceID>
+                  settingId="player-race"
+                  label={t('newGame.playerRace')}
+                  selectedId={playerRaceID}
+                  onChange={(id) => {
+                    setPlayerRaceID(id)
+                    setPlayerName((current) => current === 'Human' || current === 'Klackon' ? (id === 'klackon' ? 'Klackon' : id === 'human' ? 'Human' : current) : current)
+                  }}
+                  previousLabel={t('newGame.previousOption')}
+                  nextLabel={t('newGame.nextOption')}
+                  positionLabel={(current, total) => t('newGame.optionPosition', { current, total })}
+                  infoLabel={(optionTitle) => t('newGame.moreInfo', { option: optionTitle })}
+                  closeInfoLabel={t('newGame.closeInfo')}
+                  options={raceCatalog.profiles.map((profile) => ({
+                    id: profile.id,
+                    title: raceTitle(t, profile),
+                    details: raceDetails(t, profile),
+                    visual: <RaceArt race={profile.id} />,
+                    availability: profile.player_availability,
+                    availabilityLabel: profile.player_availability === 'supported' ? t('newGame.supportedNow') : t('newGame.plannedOption'),
+                  }))}
+                />
+              ) : (
+                <div className="new-game-race-loading">
+                  <h2>{t('newGame.playerRace')}</h2>
+                  <p>{raceCatalogError ? t('newGame.raceCatalogUnavailable') : t('newGame.raceCatalogLoading')}</p>
+                </div>
+              )}
+            </Card>
           </div>
 
           <Card>
@@ -1299,10 +1384,10 @@ function App() {
                 <label>{t('newGame.gameId')}<input value={newGameID} onChange={(event) => setNewGameID(event.target.value)} required /></label>
                 <label>{t('newGame.seed')}<input value={newGameSeed} onChange={(event) => setNewGameSeed(event.target.value)} required placeholder={t('newGame.seedPlaceholder')} /></label>
                 <label>{t('newGame.techCombat')}<input value={t('newGame.techCombatValue')} disabled /></label>
-                <label>{t('newGame.humanEmpire')}<input value={humanName} onChange={(event) => setHumanName(event.target.value)} required /></label>
+                <label>{t('newGame.playerEmpire')}<input value={playerName} onChange={(event) => setPlayerName(event.target.value)} required /></label>
                 <label>{t('newGame.darlokEmpire')}<input value={darlokName} onChange={(event) => setDarlokName(event.target.value)} required /></label>
               </div>
-              <button type="submit" className="button-primary button-wide" disabled={creatingGame || !difficultyCatalog || !difficultyProfilesByID.has(difficultyID) || !galaxyCatalog || !galaxySizeProfilesByID.has(galaxySizeID) || !galaxyAgeProfilesByID.has(galaxyAgeID)}><GameIcon name="star" />{creatingGame ? t('newGame.creating') : t('newGame.create')}</button>
+              <button type="submit" className="button-primary button-wide" disabled={creatingGame || !difficultyCatalog || !difficultyProfilesByID.has(difficultyID) || !galaxyCatalog || !galaxySizeProfilesByID.has(galaxySizeID) || !galaxyAgeProfilesByID.has(galaxyAgeID) || !raceCatalog || raceProfilesByID.get(playerRaceID)?.player_availability !== 'supported'}><GameIcon name="star" />{creatingGame ? t('newGame.creating') : t('newGame.create')}</button>
             </form>
           </Card>
         </main>
