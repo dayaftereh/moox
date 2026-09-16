@@ -1,6 +1,6 @@
 # Open slice 16.5 - Starting technology visual selector
 
-Status: **Gate 2 active**
+Status: **Gate 2 complete / Gate 3 next**
 
 Parent: `docs/slices/PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`
 Plan: `docs/slices/PLANNED_16_5_STARTING_TECH_VISUAL_SELECTOR.md`
@@ -32,13 +32,13 @@ Prototype evidence: `docs/research/prototypes/SLICE_16_5_STARTING_TECH_2026-09-1
 
 ## Gate 2 checklist
 
-- [ ] Freeze the supported technology-start set and player-facing labels for `pre_warp`, `average` and `advanced`.
-- [ ] Freeze the complete authoritative start-state contract for each level, not only technology ownership.
-- [ ] Freeze the Slice-16.5 implementation boundary for Pre-Warp and Advanced bootstrap parity.
-- [ ] Freeze server-owned explanatory facts and prohibit fixed frontend Advanced grant lists/counts beyond stable evidence-backed facts.
-- [ ] Freeze Advanced seed/race/cross-Empire initialization semantics and deterministic fixture expectations.
-- [ ] Freeze original three-stage art direction, asset format, safe area and 390 px behavior.
-- [ ] Freeze shared selector/card accessibility and navigation behavior inherited from Slice 16.1.
+- [x] Freeze the supported technology-start set and player-facing labels for `pre_warp`, `average` and `advanced`.
+- [x] Freeze the complete authoritative start-state contract for each level, not only technology ownership.
+- [x] Freeze the Slice-16.5 implementation boundary for Pre-Warp and Advanced bootstrap parity.
+- [x] Freeze server-owned explanatory facts and prohibit fixed frontend Advanced grant lists/counts beyond stable evidence-backed facts.
+- [x] Freeze Advanced seed/race/cross-Empire initialization semantics and deterministic fixture expectations.
+- [x] Freeze original three-stage art direction, asset format, safe area and 390 px behavior.
+- [x] Freeze shared selector/card accessibility and navigation behavior inherited from Slice 16.1.
 
 ## Next
 

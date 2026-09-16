@@ -1,6 +1,6 @@
 ﻿# Planned slice 16.5 - Starting technology visual selector
 
-Status: **open; Gate 2 active (2026-09-16)**.
+Status: **open; Gate 2 complete, Gate 3 next (2026-09-17)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slice 16.1 shared visual selection grammar.
@@ -73,10 +73,12 @@ Prototype evidence: `docs/research/prototypes/SLICE_16_5_STARTING_TECH_2026-09-1
 
 ## Gate 2 - freeze
 
-- [ ] Freeze supported technology-start set and labels.
-- [ ] Freeze exact server contract/effects.
-- [ ] Freeze art direction and asset format.
-- [ ] Freeze compact explanatory facts.
+- [x] Freeze supported technology-start set and labels.
+- [x] Freeze exact server contract/effects.
+- [x] Freeze art direction and asset format.
+- [x] Freeze compact explanatory facts.
+
+Permanent Gate-2 evidence: `docs/research/SLICE_16_5_GATE2_STARTING_TECH_FREEZE_2026-09-17.md`.
 
 ## Gate 3 - implementation
 

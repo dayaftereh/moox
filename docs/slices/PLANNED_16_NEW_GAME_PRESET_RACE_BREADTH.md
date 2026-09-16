@@ -1,8 +1,8 @@
-# Planned slice 16 - New Game and preset-race breadth
+﻿# Planned slice 16 - New Game and preset-race breadth
 
-Status: **program in progress; Slices 16.1-16.4 closed, Slice 16.5 next prepared / not open**.
+Status: **program in progress; Slices 16.1-16.4 closed, Slice 16.5 Gate 2 complete / Gate 3 next**.
 
-Position: **Slices 16.1, 16.2, 16.3 and 16.4 are closed; Slice 16.5 is the next prepared New Game breadth slice but remains unopened until explicitly started.** Slice 17 remains the alternative prepared Military Ship Designer breadth milestone.
+Position: **Slices 16.1, 16.2, 16.3 and 16.4 are closed; Slice 16.5 is open with Gate 2 complete and Gate 3 next.** Slice 17 remains the alternative prepared Military Ship Designer breadth milestone.
 
 > **Downstream race breadth:** Slice 16 intentionally does not force all 13 presets or Custom Race Designer parity into this milestone. `PLANNED_22_PRESET_RACE_COMPLETION_CUSTOM_RACE_DESIGNER.md` is now the reserved follow-up for completing remaining preset-race mechanics and building Custom Races on the same authoritative trait/pick pipeline once prerequisite gameplay systems exist.
 
