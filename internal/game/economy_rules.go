@@ -85,6 +85,7 @@ type EconomyRules struct {
 	MineralIndustryPerWorker                      map[string]float64
 	RaceModifiers                                 map[string]RaceEconomyModifiers
 	RaceResearchModifiers                         map[string]RaceResearchModifiers
+	PresetRaces                                   []ruleset.Race
 	AquaticFoodBonus                              float64
 	AquaticFoodClimateIDs                         map[string]struct{}
 	BaseResearchPerScientist                      float64
@@ -499,6 +500,7 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		MineralIndustryPerWorker:                      make(map[string]float64, len(planetClasses.MineralClasses)),
 		RaceModifiers:                                 make(map[string]RaceEconomyModifiers, len(races.Races)),
 		RaceResearchModifiers:                         make(map[string]RaceResearchModifiers, len(races.Races)),
+		PresetRaces:                                   append([]ruleset.Race(nil), races.Races...),
 		AquaticFoodBonus:                              float64(economy.AquaticFoodBonus.Value),
 		AquaticFoodClimateIDs:                         aquaticClimates,
 		BaseResearchPerScientist:                      float64(economy.BaseResearchPerScientist.Value),

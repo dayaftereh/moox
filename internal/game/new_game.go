@@ -327,6 +327,8 @@ func (r *EconomyRules) validateNewGameSettings(settings NewGameSettings) error {
 	seenSeats := map[protocol.SeatID]struct{}{}
 	seenRaces := map[string]struct{}{}
 	seenNames := map[string]struct{}{}
+	darlokCount := 0
+	supportedPlayerCount := 0
 	previousSeat := protocol.SeatID(0)
 	for i, player := range settings.Players {
 		if player.SeatID == 0 {
@@ -340,14 +342,19 @@ func (r *EconomyRules) validateNewGameSettings(settings NewGameSettings) error {
 		}
 		seenSeats[player.SeatID] = struct{}{}
 		previousSeat = player.SeatID
-		if player.RaceID != "human" && player.RaceID != "darlok" {
-			return fmt.Errorf("player[%d] unsupported race_id %q", i, player.RaceID)
-		}
 		if _, exists := seenRaces[player.RaceID]; exists {
 			return fmt.Errorf("race_id %q must appear exactly once", player.RaceID)
 		}
 		if _, ok := r.RaceModifiers[player.RaceID]; !ok {
 			return fmt.Errorf("ruleset has no race %q", player.RaceID)
+		}
+		switch {
+		case player.RaceID == FixedOpponentRaceID:
+			darlokCount++
+		case IsSupportedPlayerRaceID(player.RaceID):
+			supportedPlayerCount++
+		default:
+			return fmt.Errorf("player[%d] unsupported player race_id %q", i, player.RaceID)
 		}
 		seenRaces[player.RaceID] = struct{}{}
 		name := strings.TrimSpace(player.EmpireName)
@@ -360,11 +367,11 @@ func (r *EconomyRules) validateNewGameSettings(settings NewGameSettings) error {
 		}
 		seenNames[nameKey] = struct{}{}
 	}
-	if _, ok := seenRaces["human"]; !ok {
-		return fmt.Errorf("Slice 09 requires one human player")
+	if darlokCount != 1 {
+		return fmt.Errorf("Slice 16.4 requires exactly one %s opponent", FixedOpponentRaceID)
 	}
-	if _, ok := seenRaces["darlok"]; !ok {
-		return fmt.Errorf("Slice 09 requires one darlok player")
+	if supportedPlayerCount != 1 {
+		return fmt.Errorf("Slice 16.4 requires exactly one supported player race")
 	}
 	return nil
 }

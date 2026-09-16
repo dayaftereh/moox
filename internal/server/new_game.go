@@ -49,6 +49,27 @@ func (s *apiServer) handleGalaxyCatalog(w http.ResponseWriter, _ *http.Request) 
 	})
 }
 
+type raceCatalogResponse struct {
+	SchemaVersion       int                      `json:"schema_version"`
+	DefaultPlayerRaceID string                   `json:"default_player_race_id"`
+	FixedOpponentRaceID string                   `json:"fixed_opponent_race_id"`
+	Profiles            []game.PresetRaceProfile `json:"profiles"`
+}
+
+func (s *apiServer) handleRaceCatalog(w http.ResponseWriter, _ *http.Request) {
+	catalog, err := s.host.NewGameRaceCatalog()
+	if err != nil {
+		writeAPIError(w, http.StatusServiceUnavailable, "service_unavailable", err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, raceCatalogResponse{
+		SchemaVersion:       app.SchemaVersion,
+		DefaultPlayerRaceID: catalog.DefaultPlayerRaceID,
+		FixedOpponentRaceID: catalog.FixedOpponentRaceID,
+		Profiles:            catalog.Profiles,
+	})
+}
+
 type newGameRequest struct {
 	SchemaVersion int                        `json:"schema_version"`
 	GameID        string                     `json:"game_id"`
