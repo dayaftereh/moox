@@ -1,6 +1,6 @@
 # Open slice 16.4 - Preset race portraits and carousel
 
-Status: **Gate 2 complete / Gate 3 next**
+Status: **Gate 3 active**
 
 Parent: `docs/slices/PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`
 Plan: `docs/slices/PLANNED_16_4_PRESET_RACE_PORTRAITS_CAROUSEL.md`
