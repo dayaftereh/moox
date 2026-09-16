@@ -376,3 +376,14 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Slice 16.3 is the next prepared objective but was deliberately not opened during Slice-16.2 closure.
 - Closure evidence: `docs/research/SLICE_16_2_GATE4_CLOSE_2026-09-15.md`.
 - Closing commit subject: `docs: close slice 16.2 difficulty selector`.
+## 2026-09-16 - Slice 16.3 Galaxy visual selector closed
+
+- Closed Slice 16.3 with Gates 1-4 complete after explicit user acceptance of the refined Galaxy Age visual language.
+- Authoritative Galaxy Size is now Small/Medium/Large/Huge with 20/36/54/71 systems; Tiny remains historical/prototype-only and is not a gameplay option.
+- Authoritative Galaxy Age is Mineral Rich/Normal/Organic Rich with server-owned qualitative mineral-resource/food-world bias facts and audited original-derived spectral/climate generator data.
+- All 12 Size/Age tuples are deterministic; same seed + same complete settings produces byte-identical authoritative state, while the established Small+Normal baseline remains backward-compatible.
+- Gate-4 live Chrome acceptance selected Huge + Organic Rich, captured the real POST as `galaxy_size=huge` / `galaxy_age=organic_rich`, and verified the created authoritative snapshot contains exactly 71 systems.
+- Final accepted Age art differentiates Mineral Rich with mining/industry/production cues, Normal as balanced/neutral, and Organic Rich with biotech/pharma-inspired presentation cues without changing gameplay semantics.
+- Final closeout passed full `go test ./... -count=1`, web build, UTF-8 guard, deterministic 13-SVG asset guard, 12-option mobile/desktop Chrome smoke, external health checks and git diff checks.
+- Closure evidence: `docs/research/SLICE_16_3_GATE4_CLOSE_2026-09-16.md`.
+- Slice 16.4 remains prepared but was not opened during this closure.

@@ -1,6 +1,6 @@
 # Planned slice 16.3 - Galaxy visual selector
 
-Status: **open; Gate 4 active (2026-09-16)**.
+Status: **closed; Gates 1-4 complete (2026-09-16)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slice 16.1 shared visual selection grammar.
@@ -81,10 +81,12 @@ Permanent Gate-3 implementation evidence: `docs/research/SLICE_16_3_GATE3_IMPLEM
 
 ## Gate 4 - close
 
-- [ ] Repeat equal-seed/settings generation and hash equality.
-- [ ] Verify visual selection maps exactly to authoritative generator settings.
-- [ ] Desktop/mobile browser QA.
-- [ ] Full tests/build/diff checks.
+- [x] Repeat equal-seed/settings generation and hash equality.
+- [x] Verify visual selection maps exactly to authoritative generator settings.
+- [x] Desktop/mobile browser QA.
+- [x] Full tests/build/diff checks.
+
+Permanent Gate-4 closure evidence: `docs/research/SLICE_16_3_GATE4_CLOSE_2026-09-16.md`.
 
 ## Exit criterion
 
