@@ -1,6 +1,6 @@
-# Planned slice 16.5 - Starting technology visual selector
+﻿# Planned slice 16.5 - Starting technology visual selector
 
-Status: **planned / binding Slice-16 product direction; not open**.
+Status: **open; Gate 1 active (2026-09-16)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slice 16.1 shared visual selection grammar.
