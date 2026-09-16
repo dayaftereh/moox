@@ -1,6 +1,6 @@
 # Planned slice 16.4 - Preset race portraits and carousel
 
-Status: **open; Gate 3 active (2026-09-16)**.
+Status: **open; Gate 3 complete, Gate 4 next (2026-09-16)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slice 16.1 shared visual selection grammar and Gate-1 compatibility audit of the normalized preset races.
@@ -124,12 +124,14 @@ Permanent Gate-2 evidence: `docs/research/SLICE_16_4_GATE2_FREEZE_2026-09-16.md`
 
 ## Gate 3 - implementation
 
-- [ ] Produce/curate one original portrait for every supported race.
-- [ ] Add race asset manifest and optional emblems.
-- [ ] Expose authoritative preset race catalog data to the New Game HMI.
-- [ ] Implement left/right race carousel using Slice 16.1 grammar.
-- [ ] Reuse the same race portrait identity for opponent composition where possible.
-- [ ] Add deterministic New Game fixtures for each supported race/start tuple.
+- [x] Produce/curate one original portrait for every supported race.
+- [x] Add race asset manifest and optional emblems.
+- [x] Expose authoritative preset race catalog data to the New Game HMI.
+- [x] Implement left/right race carousel using Slice 16.1 grammar.
+- [x] Reuse the same race portrait identity for opponent composition where possible.
+- [x] Add deterministic New Game fixtures for each supported race/start tuple.
+
+Permanent Gate-3 evidence: `docs/research/SLICE_16_4_GATE3_IMPLEMENTATION_2026-09-16.md`.
 
 ## Gate 4 - close
 

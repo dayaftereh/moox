@@ -1,6 +1,6 @@
 # Open slice 16.4 - Preset race portraits and carousel
 
-Status: **Gate 3 active**
+Status: **Gate 3 complete / Gate 4 next**
 
 Parent: `docs/slices/PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`
 Plan: `docs/slices/PLANNED_16_4_PRESET_RACE_PORTRAITS_CAROUSEL.md`
@@ -57,6 +57,26 @@ Frozen implementation direction:
 - Human/Klackon/Darlok need unique runtime portraits in Gate 3;
 - current representative portrait direction is provisionally accepted for integration, not permanently art-locked.
 
+## Gate 3 checklist
+
+- [x] Produce/curate one original portrait for every supported race.
+- [x] Add race asset manifest and optional emblems.
+- [x] Expose authoritative preset race catalog data to the New Game HMI.
+- [x] Implement left/right race carousel using Slice 16.1 grammar.
+- [x] Reuse the same race portrait identity for opponent composition where possible.
+- [x] Add deterministic New Game fixtures for each supported race/start tuple.
+
+Permanent Gate-3 evidence: `docs/research/SLICE_16_4_GATE3_IMPLEMENTATION_2026-09-16.md`.
+
+Gate-3 implementation summary:
+
+- authoritative 13-race server catalog is live;
+- Human + Klackon are local-player supported, Darlok remains fixed AI baseline;
+- Human/Klackon/Darlok canonical WebP portraits and manifest are integrated;
+- shared race VisualSelector renders all 13 profiles, locks Create on planned races and submits the selected supported race;
+- live Klackon -> POST -> authoritative snapshot mapping passed;
+- full Go/web/browser/external-health regression passed.
+
 ## Next
 
-Gate 3 is next. Implement the frozen server catalog, narrow Human/Klackon runtime support, canonical Human/Klackon/Darlok portrait assets/manifest and the shared race carousel only when Gate 3 is explicitly continued.
+Gate 4 closure acceptance is next. Do not open or execute Gate 4 until explicitly continued.
