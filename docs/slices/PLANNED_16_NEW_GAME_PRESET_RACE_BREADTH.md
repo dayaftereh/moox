@@ -25,10 +25,12 @@ The following direction is now part of the prepared Slice-16 contract and must n
 - Opponent composition reuses the same canonical race portraits instead of separate New Game-only art.
 - A final launch summary shows the selected galaxy, difficulty, Human race, technology start, opponent count/composition and seed visually before game creation.
 - Images are never the sole source of information: all settings remain accessible by text/ARIA and server-authoritative validation.
+- **Tactical Combat is the intentional MOOX combat mode.** Slice 16 does not expose a Tactical/Strategic selector; the New Game contract keeps `strategic_combat=false`, and unsupported `true` remains rejected.
+- **Random Events and Antaran Attacks are outside Slice 16.** Their New Game toggles become meaningful only together with real authoritative gameplay systems, deferred to dedicated future gameplay slices after their prerequisite combat/encounter systems exist.
 
 ## Existing narrow boundary
 
-Current runtime explicitly accepts only Small galaxy, Normal age, Average technology, Tactical combat, exactly two players, exactly one Human and one Darlok. The normalized ruleset already contains 13 preset races.
+The New Game breadth is being widened incrementally through Slices 16.1-16.6. Tactical Combat remains intentionally fixed as the MOOX combat mode; Strategic Combat is not a product option. Random Events and Antaran Attacks remain disabled until their dedicated later gameplay systems exist. The normalized ruleset already contains 13 preset races.
 
 ## Dependencies
 
@@ -67,6 +69,13 @@ Slice 16 is intentionally decomposed into six recovery-safe sub-slices. These fi
 The normal four-gate protocol still applies. The six sub-slices are not permission to implement unsupported settings optimistically: each sub-slice performs its own evidence/current-runtime check before freezing gameplay semantics.
 
 ## Scope guard
+
+### Explicit product deviation / deferred New Game toggles
+
+- **No Strategic Combat choice:** MOOX deliberately keeps Tactical Combat as the only supported combat mode; Slice 16 should not spend UI space on an intentionally unsupported alternative.
+- **No Random Events checkbox in Slice 16:** the checkbox arrives only with a dedicated future Random Events slice once authoritative mechanics exist.
+- **No Antaran Attacks checkbox in Slice 16:** the checkbox arrives only with a dedicated future Antaran slice once authoritative attack mechanics and prerequisites exist.
+- Do not add disabled/fake toggles merely for original-screen visual parity.
 
 In scope candidates to freeze during Gate 1 / the relevant 16.x audit:
 

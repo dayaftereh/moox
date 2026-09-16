@@ -54,6 +54,9 @@ For larger counts, use compact portrait chips/cards under the main number select
 
 This slice owns the final interaction between all accepted settings:
 
+- **Combat mode is not selectable:** Tactical Combat remains fixed (`strategic_combat=false`) by product decision.
+- **Random Events and Antaran Attacks remain outside Slice 16:** their future toggles belong to dedicated later gameplay slices, not this final integration.
+
 - galaxy size / age;
 - difficulty;
 - Human preset race;
@@ -119,4 +122,4 @@ This should feel like a launch briefing, not a debug settings dump.
 
 ## Exit criterion
 
-The player can configure a substantially broader game from one polished image-led New Game flow, including visual race choice and opponent composition, and every accepted option maps exactly to a deterministic server-authoritative game setup.
+The player can configure a substantially broader game from one polished image-led New Game flow, including visual race choice and opponent composition, and every accepted option maps exactly to a deterministic server-authoritative game setup. Tactical Combat remains the fixed MOOX combat mode; Random Events and Antaran Attacks are intentionally absent until dedicated later slices make those systems real.
