@@ -63,7 +63,7 @@ assert(i18n.includes("'newGame.techAverage': 'Durchschnitt'"), 'compact German A
 assert(i18n.includes("'newGame.techAdvanced': 'Fortschrittlich'"), 'compact German Advanced label missing')
 assert(styles.includes('.visual-selector[data-setting-id="technology-level"] .visual-selector-current h3'), 'technology-specific one-line title rule missing')
 assert(styles.includes('white-space: nowrap'), 'technology title no-wrap rule missing')
-assert(/\.new-game-galaxy-art img,\s*\.new-game-difficulty-art img,\s*\.new-game-technology-art img,\s*\.new-game-opponent-count-art img\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*cover;/s.test(styles), 'technology artwork must scale to selector frame')
+assert(/\.new-game-galaxy-art img,\s*\.new-game-difficulty-art img,\s*\.new-game-technology-art img,\s*\.new-game-opponent-count-art img\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*contain;[^}]*object-position:\s*center;/s.test(styles), 'selector artwork must scale fully without cropping')
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'moox-tech-art-'))
 try {

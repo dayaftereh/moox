@@ -480,18 +480,22 @@ async function main() {
       opponentChips: document.querySelectorAll('.new-game-opponent-chip[data-role="opponent"]').length,
       opponentAvailability: opponentRoot?.getAttribute('data-availability'),
       reason: document.querySelector('.new-game-composition-reason')?.textContent ?? '',
+      reasonLayout: (() => { const el = document.querySelector('.new-game-composition-reason'); if (!el) return null; const cs = getComputedStyle(el); return { clientHeight: el.clientHeight, scrollHeight: el.scrollHeight, overflow: cs.overflow, whiteSpace: cs.whiteSpace, textOverflow: cs.textOverflow } })(),
       createDisabled: document.querySelector('.new-game-form button[type=submit]')?.disabled,
     }
   })()`)
   assert(darlokComposition.localText.includes('Darlok') && darlokComposition.localText.includes('Du'), `Darlok local-player preview missing: ${JSON.stringify(darlokComposition)}`)
   assert(darlokComposition.opponentChips === 0 && darlokComposition.opponentAvailability === 'planned', `Darlok must not fabricate an opponent assignment: ${JSON.stringify(darlokComposition)}`)
   assert(darlokComposition.reason.length > 0 && darlokComposition.createDisabled === true, `Darlok planned reason/create lock missing: ${JSON.stringify(darlokComposition)}`)
+  assert(darlokComposition.reasonLayout && darlokComposition.reasonLayout.scrollHeight <= darlokComposition.reasonLayout.clientHeight + 1 && darlokComposition.reasonLayout.overflow === 'visible' && darlokComposition.reasonLayout.whiteSpace === 'normal' && darlokComposition.reasonLayout.textOverflow === 'clip', `Darlok planned reason is visually clipped: ${JSON.stringify(darlokComposition.reasonLayout)}`)
   await key('ArrowRight', 'ArrowRight', 39)
   await key('ArrowRight', 'ArrowRight', 39)
   await key('ArrowRight', 'ArrowRight', 39)
   await sleep(90)
   raceSnap = await evaluate(raceSnapshotExpression)
   assert(raceSnap.selected === 'Menschen' && raceSnap.availability === 'supported', 'Race selector must restore Human after Darlok preview smoke')
+  const restoredCompositionReason = await evaluate(`document.querySelector('.new-game-composition-reason')?.textContent ?? ''`)
+  assert(restoredCompositionReason === '', `planned player-race reason must disappear after restoring Human: ${restoredCompositionReason}`)
 
   await evaluate(`(() => { const image = document.querySelector('.visual-selector[data-setting-id="player-race"] .new-game-race-art img'); if (image) image.style.visibility = 'hidden'; return true })()`)
   raceSnap = await evaluate(raceSnapshotExpression)
@@ -665,6 +669,8 @@ async function main() {
       selected: title?.textContent,
       source: image?.getAttribute('src'),
       imageReady: Boolean(image?.complete && image?.naturalWidth === 1200 && image?.naturalHeight === 675),
+      objectFit: image ? getComputedStyle(image).objectFit : '',
+      objectPosition: image ? getComputedStyle(image).objectPosition : '',
       width: rect?.width,
       artWidth: artRect?.width,
       availability: root?.getAttribute('data-availability'),
@@ -684,6 +690,7 @@ async function main() {
   let opponentSnap = await evaluate(opponentSnapshotExpression)
   assert(opponentSnap.selected === '1 Gegner', `opponent count 1 label mismatch: ${opponentSnap.selected}`)
   assert(opponentSnap.source === '/assets/new-game/opponent-count/1.svg' && opponentSnap.imageReady, `opponent count 1 art invalid: ${JSON.stringify(opponentSnap)}`)
+  assert(opponentSnap.objectFit === 'contain' && opponentSnap.objectPosition === '50% 50%', `opponent SVG must scale fully without cropping: ${JSON.stringify(opponentSnap)}`)
   assert(opponentSnap.availability === 'supported' && opponentSnap.opponentChips === 1 && opponentSnap.createDisabled === false, `opponent count 1 support mismatch: ${JSON.stringify(opponentSnap)}`)
   assert(opponentSnap.launchText.includes('Darlok'), 'launch briefing must include Darlok for one opponent')
   await evaluate(`document.querySelectorAll('.visual-selector[data-setting-id="opponent-count"] .visual-selector-arrow')[1]?.click(); true`)
