@@ -1557,7 +1557,7 @@ function App() {
             </Card>
           </div>
 
-          <Card>
+          <Card className="new-game-finalize-card">
             <form className="new-game-form" onSubmit={submitNewGame}>
               <div className="form-grid">
                 <label data-field="seed">

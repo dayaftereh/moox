@@ -152,6 +152,7 @@ label { display: grid; gap: 7px; color: var(--muted-strong); font-size: .8rem; f
 .session-row > span:first-child { display: grid; gap: 4px; }
 .session-row small { color: var(--muted); }
 .status-line { margin-top: -2px; }
+.new-game-finalize-card { margin-top: 16px; }
 .new-game-form { display: grid; gap: 18px; }
 .new-game-seed-control { display: grid; grid-template-columns: minmax(0, 1fr) 44px; gap: 8px; align-items: stretch; }
 .new-game-seed-control input { min-width: 0; }
