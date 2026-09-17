@@ -1,4 +1,4 @@
-# Planned slice 16.6 - Player composition and final New Game integration
+﻿# Planned slice 16.6 - Player composition and New Game integration
 
 Status: **planned / binding Slice-16 product direction; not open**.
 
@@ -7,7 +7,7 @@ Depends on: Slices 16.1-16.5.
 
 ## Objective
 
-Complete Slice 16 by turning opponent/player composition into the same image-led selection experience and then integrating all accepted New Game settings into one coherent, deterministic creation flow.
+Complete the player-composition and cross-setting integration stage of Slice 16 by turning opponent/player composition into the same image-led selection experience and integrating the currently accepted New Game settings into one coherent, deterministic creation flow. Full Advanced starting-technology parity and final Slice-16 closure are explicitly deferred to Slice 16.7.
 
 ## Binding player-count direction
 
@@ -25,7 +25,7 @@ The number graphics should look intentionally designed, not like plain HTML digi
 
 ## Opponent composition
 
-The final composition UI should distinguish:
+The composition UI should distinguish:
 
 - Human player's selected preset race;
 - opponent count;
@@ -52,10 +52,10 @@ For larger counts, use compact portrait chips/cards under the main number select
 
 ## Cross-setting validation
 
-This slice owns the final interaction between all accepted settings:
+This slice owns the cross-setting interaction between all currently accepted settings:
 
 - **Combat mode is not selectable:** Tactical Combat remains fixed (`strategic_combat=false`) by product decision.
-- **Random Events and Antaran Attacks remain outside Slice 16:** their future toggles belong to dedicated later gameplay slices, not this final integration.
+- **Random Events and Antaran Attacks remain outside Slice 16:** their future toggles belong to dedicated later gameplay slices, not this integration.
 
 - galaxy size / age;
 - difficulty;
@@ -110,7 +110,7 @@ This should feel like a launch briefing, not a debug settings dump.
 - [ ] Add deterministic seed/settings/race/player-count fixture matrix.
 - [ ] Ensure Save/Resume and subsequent browser play work for every accepted setup class.
 
-## Gate 4 - final Slice-16 acceptance
+## Gate 4 - player-composition integration acceptance
 
 - [ ] Desktop and real 390 px mobile New Game walkthrough.
 - [ ] Create/play smoke for every supported difficulty/galaxy/tech/player-count class.
@@ -118,7 +118,7 @@ This should feel like a launch briefing, not a debug settings dump.
 - [ ] Equal seed + complete settings tuple remains deterministic.
 - [ ] No unsupported combination can be created through UI or API.
 - [ ] Full Go tests/vet, Web production build and `git diff --check`.
-- [ ] Update parent Slice-16 plan, ACTIVE_RESEARCH, PROJECT_STATUS and HISTORY; close Slice 16.
+- [ ] Update parent Slice-16 plan, ACTIVE_RESEARCH, PROJECT_STATUS and HISTORY; hand off final Advanced parity and Slice-16 closure to Slice 16.7.
 
 ## Exit criterion
 

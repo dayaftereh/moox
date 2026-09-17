@@ -1,4 +1,4 @@
-# Work slice protocol
+﻿# Work slice protocol
 
 This directory defines the recovery-safe workflow for focused Master of Orion X implementation slices.
 
@@ -42,7 +42,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **Slice 16.5 - Gate 2 complete / Gate 3 next** - `_OPEN_STARTING_TECH_VISUAL_SELECTOR_2026-09-16.md`; the frozen contract exposes all three catalog choices, enables Pre-Warp/Average in Gate 3, keeps Advanced planned, and freezes full-start, server-fact, determinism, SVG and accessibility behavior.
+- **Slice 16.5 - Gate 2 complete / Gate 3 next** - `_OPEN_STARTING_TECH_VISUAL_SELECTOR_2026-09-16.md`; the frozen contract exposes all three catalog choices, enables Pre-Warp/Average in Gate 3, keeps Advanced planned for dedicated Slice 16.7 parity, and freezes full-start, server-fact, determinism, SVG and accessibility behavior.
 
 Closed/parked Slice-15 state:
 
@@ -83,9 +83,13 @@ The following six specifications are the prepared Slice-16 work breakdown. They 
    `PLANNED_16_5_STARTING_TECH_VISUAL_SELECTOR.md`  
    Three visual starting-technology/technology-level cards when the expected authoritative three-level contract is confirmed by Gate 1.
 
-6. **Slice 16.6 - Player composition and final New Game integration**  
+6. **Slice 16.6 - Player composition and New Game integration**
    `PLANNED_16_6_PLAYER_COMPOSITION_FINAL_NEW_GAME_INTEGRATION.md`  
-   Visual opponent-count selector targeting MOOX-styled numerals 1-9, reusable opponent race portraits, cross-setting validation, final launch summary and complete Slice-16 deterministic acceptance.
+   Visual opponent-count selector targeting MOOX-styled numerals 1-9, reusable opponent race portraits, cross-setting validation and launch-summary integration.
+
+7. **Slice 16.7 - Advanced starting technology parity and Slice-16 closure**
+   `PLANNED_16_7_ADVANCED_STARTING_TECH_PARITY.md`
+   Full authoritative Advanced start parity across technology, empire/population/fleet/research bootstrap and accepted cross-setting interactions. This is the final 16.x slice.
 
 This decomposition is **binding product direction**, not permission to skip the four-gate protocol. Exact original/runtime settings, modifiers, race compatibility and player-count limits still require Gate-1 evidence before gameplay support is enabled.
 
@@ -155,4 +159,3 @@ At the start of work:
 4. only if no open marker exists, use `docs/research/ACTIVE_RESEARCH.md` to choose the next slice.
 
 This convention is specifically intended to make interrupted chats or agent handoffs obvious and recoverable.
-

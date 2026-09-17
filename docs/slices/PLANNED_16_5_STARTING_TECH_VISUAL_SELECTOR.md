@@ -80,6 +80,8 @@ Prototype evidence: `docs/research/prototypes/SLICE_16_5_STARTING_TECH_2026-09-1
 
 Permanent Gate-2 evidence: `docs/research/SLICE_16_5_GATE2_STARTING_TECH_FREEZE_2026-09-17.md`.
 
+Advanced parity handoff: dvanced remains catalog-visible/planned during Slice 16.5 runtime implementation. Full authoritative Advanced empire/population/fleet/research bootstrap and enablement are explicitly owned by PLANNED_16_7_ADVANCED_STARTING_TECH_PARITY.md.
+
 ## Gate 3 - implementation
 
 - [ ] Extend New Game validation/state generation for accepted technology levels.

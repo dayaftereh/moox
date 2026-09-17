@@ -32,7 +32,7 @@ The following direction is now part of the prepared Slice-16 contract and must n
 
 ## Existing narrow boundary
 
-The New Game breadth is being widened incrementally through Slices 16.1-16.6. Tactical Combat remains intentionally fixed as the MOOX combat mode; Strategic Combat is not a product option. Random Events and Antaran Attacks remain disabled until their dedicated later gameplay systems exist. The normalized ruleset already contains 13 preset races.
+The New Game breadth is being widened incrementally through Slices 16.1-16.7. Slice 16.7 is the explicit final 16.x slice and owns full Advanced starting-technology parity. Tactical Combat remains intentionally fixed as the MOOX combat mode; Strategic Combat is not a product option. Random Events and Antaran Attacks remain disabled until their dedicated later gameplay systems exist. The normalized ruleset already contains 13 preset races.
 
 ## Dependencies
 
@@ -64,11 +64,15 @@ Slice 16 is intentionally decomposed into six recovery-safe sub-slices. These fi
    `PLANNED_16_5_STARTING_TECH_VISUAL_SELECTOR.md`  
    Evidence-backed technology-start breadth with three visual cards when confirmed by Gate 1.
 
-6. **16.6 - Player composition and final New Game integration**  
+6. **16.6 - Player composition and New Game integration**
    `PLANNED_16_6_PLAYER_COMPOSITION_FINAL_NEW_GAME_INTEGRATION.md`  
-   Visual opponent count, opponent races/controllers, cross-setting validation, final launch summary and full Slice-16 acceptance.
+   Visual opponent count, opponent races/controllers, cross-setting validation and launch-summary integration.
 
-The normal four-gate protocol still applies. The six sub-slices are not permission to implement unsupported settings optimistically: each sub-slice performs its own evidence/current-runtime check before freezing gameplay semantics.
+7. **16.7 - Advanced starting technology parity and Slice-16 closure**
+   `PLANNED_16_7_ADVANCED_STARTING_TECH_PARITY.md`
+   Normalize and enable the catalog-visible Advanced start with full empire/population/fleet/research parity, then close the 16.x program. This is the final Slice-16 sub-slice.
+
+The normal four-gate protocol still applies. The seven sub-slices are not permission to implement unsupported settings optimistically: each sub-slice performs its own evidence/current-runtime check before freezing gameplay semantics.
 
 ## Scope guard
 
@@ -107,7 +111,7 @@ Defer:
 - [ ] Identify preset races blocked by missing trait/government/population mechanics.
 - [ ] Choose a bounded expansion set rather than enabling unsupported options optimistically.
 - [ ] Define seed/hash fixtures for each newly accepted setup.
-- [ ] Confirm the 16.1-16.6 work breakdown still matches current runtime dependencies.
+- [ ] Confirm the 16.1-16.7 work breakdown still matches current runtime dependencies.
 - [ ] Present Gate-2 breadth contract.
 
 ## Parent Gate 2 - Implementation decision
@@ -119,7 +123,7 @@ Defer:
 
 ## Parent Gate 3 - Implementation
 
-- [ ] Complete 16.1-16.6 in dependency order or an explicitly justified equivalent order.
+- [ ] Complete 16.1-16.7 in dependency order or an explicitly justified equivalent order.
 - [ ] Expand validated New Game settings/race support.
 - [ ] Add required preset-race runtime modifiers only where evidence-backed.
 - [ ] Produce original runtime artwork for every visual option that is accepted into the final Slice-16 contract.
