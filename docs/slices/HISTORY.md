@@ -398,3 +398,13 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Full preset-race mechanics completion and Custom Race Designer remain deliberately reserved for Slice 22.
 - Closure evidence: `docs/research/SLICE_16_4_GATE4_CLOSE_2026-09-16.md`.
 - Slice 16.5 remains prepared but was not opened during this closure.
+
+## 2026-09-17 - Slice 16.5 Starting technology visual selector closed
+
+- Closed Slice 16.5 after user acceptance of the live `Pre-Warp / Durchschnitt / Fortschrittlich` selector baseline.
+- Froze and regression-tested exact Pre-Warp/Average initial state: one home colony per Empire, Population 8 with 4/2/2 jobs, 50 BC, 0 freighters, exact starting research fields, Pre-Warp's six normalized applications, and the Average Scout/Colony Ship bootstrap.
+- Added repeated multi-seed determinism coverage for Human/Klackon x Pre-Warp/Average while keeping Advanced authoritatively rejected and catalog-visible/planned for Slice 16.7.
+- Extended the real Chrome New Game browser smoke to Starting Technology at 390 x 844 mobile and 1280 x 900 desktop, including distinct rendered artwork fingerprints, one-line labels, touch targets, support locks, responsive sizing and overflow checks.
+- Accepted the current deterministic artwork as the Slice-16.5 baseline; deeper visual refinement remains future polish and is not a closure blocker.
+- Closure evidence: `docs/research/SLICE_16_5_GATE4_CLOSE_2026-09-17.md`.
+- Next prepared Slice-16 step: **Slice 16.6 Gate 1 - player composition and final New Game integration audit**.

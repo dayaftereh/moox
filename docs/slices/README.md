@@ -1,4 +1,4 @@
-﻿# Work slice protocol
+# Work slice protocol
 
 This directory defines the recovery-safe workflow for focused Master of Orion X implementation slices.
 
@@ -38,11 +38,11 @@ When a planned slice actually starts:
 
 Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1 always requires a fresh repository checkup and original-evidence review at the time work begins.
 
-### Current active / prepared queue - 2026-09-16
+### Current active / prepared queue - 2026-09-17
 
 Active:
 
-- **Slice 16.5 - Gate 2 complete / Gate 3 next** - `_OPEN_STARTING_TECH_VISUAL_SELECTOR_2026-09-16.md`; the frozen contract exposes all three catalog choices, enables Pre-Warp/Average in Gate 3, keeps Advanced planned for dedicated Slice 16.7 parity, and freezes full-start, server-fact, determinism, SVG and accessibility behavior.
+- **No `_OPEN_` slice marker after Slice 16.5 closure.** Slice 16.5 is closed with Pre-Warp and Average authoritative, Advanced catalog-visible/planned for Slice 16.7, and accepted desktop/390 px visual-selector behavior. Slice 16.6 Gate 1 is the next prepared step.
 
 Closed/parked Slice-15 state:
 
@@ -54,7 +54,7 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slices 16.1-16.4 are closed and Slice 16.5 has Gate 2 complete with Gate 3 next.
+1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slices 16.1-16.5 are closed and Slice 16.6 Gate 1 is next prepared.
 2. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for broader combat/design fidelity.
 3. `PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md` - dedicated authoritative Spy/intelligence mechanics; Slice 20 remains reserved while 18/19 are unassigned.
 4. `PLANNED_22_PRESET_RACE_COMPLETION_CUSTOM_RACE_DESIGNER.md` - downstream race-mechanics completion and server-authoritative Custom Race Designer; reserved for after prerequisite race-dependent gameplay systems mature.

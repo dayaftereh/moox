@@ -548,6 +548,80 @@ async function main() {
   await key('Escape', 'Escape', 27)
   await sleep(80)
 
+  const technologySnapshotExpression = `(() => {
+    const root = document.querySelector('.visual-selector[data-setting-id="technology-level"]')
+    const rect = (element) => { const r = element?.getBoundingClientRect(); return r ? { width: r.width, height: r.height } : null }
+    const image = root?.querySelector('.new-game-technology-art img')
+    const art = root?.querySelector('.visual-selector-art')
+    const title = root?.querySelector('.visual-selector-current h3')
+    const arrows = [...(root?.querySelectorAll('.visual-selector-arrow') ?? [])].map(rect)
+    let fingerprint = null
+    if (image?.complete && image.naturalWidth > 0) {
+      const canvas = document.createElement('canvas')
+      canvas.width = 64
+      canvas.height = 36
+      const context = canvas.getContext('2d', { willReadFrequently: true })
+      context.drawImage(image, 0, 0, 64, 36)
+      const data = context.getImageData(0, 0, 64, 36).data
+      let hash = 2166136261 >>> 0
+      for (let index = 0; index < data.length; index += 4) {
+        hash ^= data[index]; hash = Math.imul(hash, 16777619)
+        hash ^= data[index + 1]; hash = Math.imul(hash, 16777619)
+        hash ^= data[index + 2]; hash = Math.imul(hash, 16777619)
+      }
+      fingerprint = (hash >>> 0).toString(16)
+    }
+    return {
+      selected: title?.textContent,
+      source: image?.getAttribute('src'),
+      imageReady: Boolean(image?.complete && image?.naturalWidth === 1200 && image?.naturalHeight === 675),
+      image: rect(image),
+      art: rect(art),
+      radius: art ? getComputedStyle(art).borderRadius : '',
+      whiteSpace: title ? getComputedStyle(title).whiteSpace : '',
+      titleFits: title ? title.scrollWidth <= title.clientWidth : false,
+      arrows,
+      availability: root?.getAttribute('data-availability'),
+      statusText: root?.querySelector('.visual-selector-current-status')?.textContent,
+      createDisabled: document.querySelector('.new-game-form button[type=submit]')?.disabled,
+      scrollWidth: document.documentElement.scrollWidth,
+      viewportWidth: document.documentElement.clientWidth,
+      fingerprint,
+    }
+  })()`
+
+  await evaluate(`document.querySelector('.visual-selector[data-setting-id="technology-level"]')?.focus(); true`)
+  await key('Home', 'Home', 36)
+  await sleep(90)
+  const expectedTechnologies = [
+    ['Pre-Warp', 'pre-warp', 'supported'],
+    ['Durchschnitt', 'average', 'supported'],
+    ['Fortschrittlich', 'advanced', 'planned'],
+  ]
+  const technologyFingerprints = new Set()
+  let technologySnap
+  for (let index = 0; index < expectedTechnologies.length; index++) {
+    if (index > 0) {
+      await evaluate(`document.querySelectorAll('.visual-selector[data-setting-id="technology-level"] .visual-selector-arrow')[1]?.click(); true`)
+      await sleep(90)
+    }
+    technologySnap = await evaluate(technologySnapshotExpression)
+    const [label, assetID, availability] = expectedTechnologies[index]
+    assert(technologySnap.selected === label, `Technology option ${index + 1} label mismatch: expected ${label}, got ${technologySnap.selected}`)
+    assert(technologySnap.source === `/assets/new-game/technology-level/${assetID}.svg?v=slice16-5-g3-art2`, `Technology ${label} art path mismatch: ${technologySnap.source}`)
+    assert(technologySnap.imageReady, `Technology ${label} artwork did not load at native 1200x675`)
+    assert(technologySnap.art?.width > 300 && technologySnap.art?.width < 360, `mobile Technology ${label} art width unexpected: ${technologySnap.art?.width}`)
+    assert(Math.abs((technologySnap.image?.width ?? 0) - (technologySnap.art?.width ?? 0)) <= 3, `Technology ${label} image is not scaled to its frame: ${JSON.stringify(technologySnap)}`)
+    assert(Math.abs((technologySnap.image?.height ?? 0) - (technologySnap.art?.height ?? 0)) <= 3, `Technology ${label} image height does not match frame`)
+    assert(technologySnap.whiteSpace === 'nowrap' && technologySnap.titleFits, `Technology ${label} title is not a one-line fit at 390px`)
+    assert(technologySnap.arrows.every((item) => item?.width >= 44 && item?.height >= 44), `mobile Technology arrow target below 44px: ${JSON.stringify(technologySnap.arrows)}`)
+    assert(technologySnap.availability === availability, `Technology ${label} availability=${technologySnap.availability} want=${availability}`)
+    assert(technologySnap.createDisabled === (availability !== 'supported'), `Technology ${label} Create Game lock mismatch`)
+    assert(technologySnap.scrollWidth === technologySnap.viewportWidth && technologySnap.viewportWidth === 390, `Technology ${label} caused mobile horizontal overflow: ${technologySnap.scrollWidth}/${technologySnap.viewportWidth}`)
+    if (technologySnap.fingerprint) technologyFingerprints.add(technologySnap.fingerprint)
+  }
+  assert(technologyFingerprints.size === 3, `Technology artwork fingerprints are not distinct: ${JSON.stringify([...technologyFingerprints])}`)
+  assert(technologySnap.statusText === 'Geplant / gesperrt', `Advanced visible availability text mismatch: ${technologySnap.statusText}`)
   await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false })
   await sleep(120)
   snap = await evaluate(snapshotExpression)
@@ -561,6 +635,13 @@ async function main() {
   assert(difficultySnap.arrows.every((item) => item?.width >= 52 && item?.height >= 52), `desktop Difficulty arrow target below 52px: ${JSON.stringify(difficultySnap.arrows)}`)
   ageSnap = await evaluate(ageSnapshotExpression)
   assert(ageSnap.art?.width >= 400 && ageSnap.art?.width <= 620, `desktop Galaxy Age artwork width outside responsive compact range: ${ageSnap.art?.width}`)
+  technologySnap = await evaluate(technologySnapshotExpression)
+  assert(technologySnap.art?.width >= 400 && technologySnap.art?.width <= 620, `desktop Technology artwork width outside responsive compact range: ${technologySnap.art?.width}`)
+  assert(Math.abs((technologySnap.image?.width ?? 0) - (technologySnap.art?.width ?? 0)) <= 3, `desktop Technology image is not scaled to its frame: ${JSON.stringify(technologySnap)}`)
+  assert(technologySnap.radius === '20px', `expected 20px desktop Technology art radius, got ${technologySnap.radius}`)
+  assert(technologySnap.whiteSpace === 'nowrap' && technologySnap.titleFits, 'desktop Technology title is not a one-line fit')
+  assert(technologySnap.arrows.every((item) => item?.width >= 52 && item?.height >= 52), `desktop Technology arrow target below 52px: ${JSON.stringify(technologySnap.arrows)}`)
+  assert(technologySnap.scrollWidth === technologySnap.viewportWidth, `desktop Technology horizontal overflow: ${technologySnap.scrollWidth}/${technologySnap.viewportWidth}`)
   raceSnap = await evaluate(raceSnapshotExpression)
   assert(raceSnap.art?.width >= 399 && raceSnap.art?.width <= 401, `desktop Race artwork width outside frozen 400px target: ${raceSnap.art?.width}`)
   assert(raceSnap.art?.height >= 499 && raceSnap.art?.height <= 501, `desktop Race artwork height outside frozen 500px target: ${raceSnap.art?.height}`)
@@ -576,7 +657,7 @@ async function main() {
     return
   }
 
-  console.log('New Game selector browser smoke passed: Difficulty + Galaxy Size + Galaxy Age + Player Race, 25 browsable options, mobile + desktop layout, mouse/touch/keyboard, server-derived facts, race support locks, focus and authoritative behavior.')
+  console.log('New Game selector browser smoke passed: Difficulty + Galaxy Size + Galaxy Age + Starting Technology + Player Race, 28 browsable options, 390px mobile + desktop layout, distinct technology artwork, mouse/touch/keyboard, server-derived facts, support locks, focus and authoritative behavior.')
 }
 
 main().catch((error) => {

@@ -1,6 +1,6 @@
 # Planned slice 16.5 - Starting technology visual selector
 
-Status: **open; Gate 3 complete, Gate 4 next (2026-09-17)**.
+Status: **closed; Gates 1-4 complete (2026-09-17)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slice 16.1 shared visual selection grammar.
@@ -91,10 +91,14 @@ Advanced parity handoff: dvanced remains catalog-visible/planned during Slice 1
 
 ## Gate 4 - close
 
-- [ ] Each accepted technology start creates the exact frozen initial state.
-- [ ] Equal settings remain deterministic.
-- [ ] Three images clearly differentiate progression on desktop and 390 px mobile.
-- [ ] Full tests/build/diff checks.
+- [x] Each accepted technology start creates the exact frozen initial state.
+- [x] Equal settings remain deterministic.
+- [x] Three images clearly differentiate progression on desktop and 390 px mobile.
+- [x] Full tests/build/diff checks.
+
+Permanent Gate-4 evidence: `docs/research/SLICE_16_5_GATE4_CLOSE_2026-09-17.md`.
+
+User acceptance: the current three-image art direction is accepted as the Slice-16.5 baseline; deeper artwork refinement remains future polish rather than a closure blocker.
 
 ## Exit criterion
 
