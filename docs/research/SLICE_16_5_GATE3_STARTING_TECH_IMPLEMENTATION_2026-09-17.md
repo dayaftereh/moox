@@ -39,3 +39,28 @@ Verification completed on 2026-09-17:
 - `go test ./... -count=1` - pass.
 - `npm run build` in `web/` - pass, including UTF-8, New Game selector, race assets, technology-start contract, TypeScript and Vite build.
 - Gate 4 remains responsible for exact frozen-state closure, repeated determinism acceptance, desktop/390 px visual review and final full diff/build closeout.
+## Live visual refinement after user review
+
+User review on 2026-09-17 found two HMI problems after Gate 3 went live:
+
+- the three technology illustrations were technically separate SVG files but shared almost the same central-core composition, so they looked effectively identical in the selector;
+- the localized option titles repeated the word "technology" and could wrap instead of staying as a compact single-line choice.
+
+Refinement applied:
+
+- rebuilt the deterministic SVG generator around three deliberately distinct compositions while keeping one coherent MOOX visual language:
+  - Pre-Warp: planetary surface / launchpad / primitive orbital satellite;
+  - Average: orbital station plus two scouts and one colony ship;
+  - Advanced: multi-node hyperlane network and expanded fleet presence;
+- added stable per-art `data-art-signature` markers and extended `check:technology-start` so the three compositions are contract-tested as distinct and reproducible;
+- shortened selector labels to `Pre-Warp`, `Average`, `Advanced` in English and `Pre-Warp`, `Durchschnittlich`, `Fortschrittlich` in German;
+- added a technology-selector-specific no-wrap title rule for compact desktop/mobile presentation;
+- added a technology-art asset version query so browsers do not keep the previous visually-similar SVGs from cache after the update;
+- rendered all three live-served SVGs through headless Chrome at 1200x675 and confirmed different rendered outputs before removing temporary QA screenshots.
+
+Verification after refinement:
+
+- `npm run build` - pass;
+- `check:technology-start` - pass with three distinct/reproducible SVG composition signatures and compact one-line labels;
+- live server returns HTTP 200 for all three updated SVGs;
+- live JS bundle contains the new art cache-busting version and compact German labels.

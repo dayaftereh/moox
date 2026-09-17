@@ -9,13 +9,15 @@ const webRoot = path.resolve(here, '..')
 const repoRoot = path.resolve(webRoot, '..')
 const appPath = path.join(webRoot, 'src', 'App.tsx')
 const apiPath = path.join(webRoot, 'src', 'api.ts')
+const i18nPath = path.join(webRoot, 'src', 'i18n.tsx')
+const stylesPath = path.join(webRoot, 'src', 'styles.css')
 const manifestPath = path.join(webRoot, 'public', 'assets', 'new-game', 'manifest.json')
 const generatorPath = path.join(webRoot, 'scripts', 'generate-technology-level-art.mjs')
 const assetDir = path.join(webRoot, 'public', 'assets', 'new-game', 'technology-level')
 const expected = [
-  ['pre_warp', 'pre-warp'],
-  ['average', 'average'],
-  ['advanced', 'advanced'],
+  ['pre_warp', 'pre-warp', 'surface-launchpad'],
+  ['average', 'average', 'orbital-fleet'],
+  ['advanced', 'advanced', 'hyperlane-network'],
 ]
 
 function fail(message) {
@@ -31,7 +33,7 @@ const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
 const entries = manifest.entries.filter((entry) => entry.domain === 'technology-level')
 assert(entries.length === 3, `manifest technology-level entries=${entries.length} want=3`)
 
-for (const [id, assetID] of expected) {
+for (const [id, assetID, signature] of expected) {
   const entry = entries.find((candidate) => candidate.option_id === assetID)
   assert(entry, `missing manifest entry for ${assetID}`)
   assert(entry.id === `new-game:technology-level:${assetID}`, `unexpected semantic id for ${assetID}: ${entry.id}`)
@@ -42,17 +44,25 @@ for (const [id, assetID] of expected) {
   assert(svg.includes('width="1200" height="675"'), `${assetID} dimensions are not 1200x675`)
   assert(svg.includes('<title>') && svg.includes('<desc>'), `${assetID} missing title/desc`)
   assert(!svg.includes('<text'), `${assetID} must not contain rasterizing text elements`)
+  assert(svg.includes(`data-art-signature="${signature}"`), `${assetID} missing distinct composition signature ${signature}`)
   assert(id === 'pre_warp' || assetID === id, `unexpected id mapping ${id} -> ${assetID}`)
 }
 
 const app = fs.readFileSync(appPath, 'utf8')
 const api = fs.readFileSync(apiPath, 'utf8')
+const i18n = fs.readFileSync(i18nPath, 'utf8')
+const styles = fs.readFileSync(stylesPath, 'utf8')
 assert(app.includes('VisualSelector<NewGameTechnologyLevel>'), 'typed technology VisualSelector binding missing')
 assert(app.includes('getTechnologyCatalog(controller.signal)'), 'technology catalog fetch missing')
 assert(app.includes('technology_level: technologyLevelID'), 'Create Game is not bound to selected technology level')
+assert(app.includes("const technologyLevelAssetVersion = 'slice16-5-g3-art2'"), 'technology artwork cache-busting version missing')
 assert(app.includes("technologyProfilesByID.get(technologyLevelID)?.availability !== 'supported'"), 'Create Game support-boundary lock missing')
 assert(api.includes("export type NewGameTechnologyLevel = 'pre_warp' | 'average' | 'advanced'"), 'typed technology-level API union missing')
 assert(api.includes("'/api/v1/new-game/technologies'"), 'technology catalog endpoint binding missing')
+assert(i18n.includes("'newGame.techAverage': 'Durchschnittlich'"), 'compact German Average label missing')
+assert(i18n.includes("'newGame.techAdvanced': 'Fortschrittlich'"), 'compact German Advanced label missing')
+assert(styles.includes('.visual-selector[data-setting-id="technology-level"] .visual-selector-current h3'), 'technology-specific one-line title rule missing')
+assert(styles.includes('white-space: nowrap'), 'technology title no-wrap rule missing')
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'moox-tech-art-'))
 try {
@@ -70,4 +80,4 @@ try {
   fs.rmSync(tmp, { recursive: true, force: true })
 }
 
-console.log('Technology start contract passed: 3 server-bound options, Advanced planned/locked, and 3 reproducible SVG assets.')
+console.log('Technology start contract passed: 3 server-bound options, 3 distinct/reproducible SVG compositions, compact one-line labels, and Advanced planned/locked.')

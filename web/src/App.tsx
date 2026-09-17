@@ -73,6 +73,7 @@ const galaxyAgeIDs: readonly GalaxyAgeID[] = ['mineral_rich', 'normal', 'organic
 const difficultyIDs: readonly DifficultyID[] = ['easy', 'normal', 'hard', 'very_hard', 'impossible']
 const runtimeRacePortraitIDs = new Set<PresetRaceID>(['human', 'klackon', 'darlok'])
 const technologyLevelIDs: readonly NewGameTechnologyLevel[] = ['pre_warp', 'average', 'advanced']
+const technologyLevelAssetVersion = 'slice16-5-g3-art2'
 
 function GalaxySizeArt({ size }: { size: GalaxySizeID }) {
   return (
@@ -170,7 +171,7 @@ function technologyLevelAssetOptionID(level: NewGameTechnologyLevel): string {
 function TechnologyLevelArt({ level }: { level: NewGameTechnologyLevel }) {
   return (
     <div className="new-game-technology-art" aria-hidden="true">
-      <img src={newGameAssetPath('technology-level', technologyLevelAssetOptionID(level), 'svg')} alt="" draggable={false} />
+      <img src={`${newGameAssetPath('technology-level', technologyLevelAssetOptionID(level), 'svg')}?v=${technologyLevelAssetVersion}`} alt="" draggable={false} />
     </div>
   )
 }
