@@ -42,7 +42,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **No `_OPEN_` slice marker after Slice 16.5 closure.** Slice 16.5 is closed with Pre-Warp and Average authoritative, Advanced catalog-visible/planned for Slice 16.7, and accepted desktop/390 px visual-selector behavior. Slice 16.6 Gate 1 is the next prepared step.
+- **Slice 16.6 - Gate 1 complete / Gate 2 next** - `_OPEN_PLAYER_COMPOSITION_FINAL_NEW_GAME_INTEGRATION_2026-09-17.md`; original 1-7 opponent range audited, production two-player/pair-home limitation recorded, three-player/two-AI controller evidence confirmed, and conservative composition/disabled-state candidates prototyped without widening runtime support.
 
 Closed/parked Slice-15 state:
 
@@ -54,7 +54,7 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slices 16.1-16.5 are closed and Slice 16.6 Gate 1 is next prepared.
+1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slices 16.1-16.5 are closed and Slice 16.6 has Gate 1 complete with Gate 2 next.
 2. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for broader combat/design fidelity.
 3. `PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md` - dedicated authoritative Spy/intelligence mechanics; Slice 20 remains reserved while 18/19 are unassigned.
 4. `PLANNED_22_PRESET_RACE_COMPLETION_CUSTOM_RACE_DESIGNER.md` - downstream race-mechanics completion and server-authoritative Custom Race Designer; reserved for after prerequisite race-dependent gameplay systems mature.
@@ -85,7 +85,7 @@ The following six specifications are the prepared Slice-16 work breakdown. They 
 
 6. **Slice 16.6 - Player composition and New Game integration**
    `PLANNED_16_6_PLAYER_COMPOSITION_FINAL_NEW_GAME_INTEGRATION.md`  
-   Visual opponent-count selector targeting MOOX-styled numerals 1-9, reusable opponent race portraits, cross-setting validation and launch-summary integration.
+   Visual opponent-count selector targeting MOOX-styled numerals 1-7, reusable opponent race portraits, cross-setting validation and launch-summary integration.
 
 7. **Slice 16.7 - Advanced starting technology parity and Slice-16 closure**
    `PLANNED_16_7_ADVANCED_STARTING_TECH_PARITY.md`

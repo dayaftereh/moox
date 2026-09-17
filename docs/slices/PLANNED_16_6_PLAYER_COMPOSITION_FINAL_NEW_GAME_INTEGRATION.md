@@ -1,6 +1,6 @@
-﻿# Planned slice 16.6 - Player composition and New Game integration
+# Planned slice 16.6 - Player composition and New Game integration
 
-Status: **planned / binding Slice-16 product direction; not open**.
+Status: **open; Gate 1 complete, Gate 2 next (2026-09-17)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slices 16.1-16.5.
@@ -17,7 +17,7 @@ Preferred MOOX interaction:
 
 - large central illustrated number tile;
 - previous/next arrows from the shared 16.1 selector;
-- visually distinct number art for **1 through 9 opponents** as the target presentation range;
+- visually distinct number art for **1 through 7 opponents** as the original-parity presentation range; any future 8-9 opponent mode is a deliberate MOOX extension, not original parity;
 - exact enabled maximum is server-authoritative and depends on the supported player-count/galaxy-size contract frozen in Gate 1/2;
 - unavailable counts remain visible only if useful, but are clearly disabled with a short reason.
 
@@ -88,11 +88,16 @@ This should feel like a launch briefing, not a debug settings dump.
 
 ## Gate 1 - composition audit
 
-- [ ] Audit original/runtime player-count limits and galaxy-size dependencies.
-- [ ] Audit built-in AI support for more than one opponent.
-- [ ] Freeze deterministic race-assignment/randomization behavior candidates.
-- [ ] Prototype number tiles 1-9 and compact opponent portrait layout.
-- [ ] Verify how disabled counts/combinations are explained on mobile.
+- [x] Audit original/runtime player-count limits and galaxy-size dependencies.
+- [x] Audit built-in AI support for more than one opponent.
+- [x] Freeze deterministic race-assignment/randomization behavior candidates.
+- [x] Prototype number tiles 1-7 and compact opponent portrait layout.
+- [x] Verify how disabled counts/combinations are explained on mobile.
+
+Permanent Gate-1 evidence: `docs/research/SLICE_16_6_GATE1_PLAYER_COMPOSITION_AUDIT_2026-09-17.md`.
+Research prototype: `docs/research/prototypes/SLICE_16_6_OPPONENT_COMPOSITION_2026-09-17.svg`.
+
+Gate-1 finding: the original documented range is 2-8 total players (1-7 opponents), while current production MOOX is exactly two players and its generic home-star allocator is pair-only. The strongest evidence-backed Gate-2 V1 candidate is one local Human/Klackon plus one or two Builtin-AI opponents using unique races from Darlok and the other supported Human/Klackon race; 3-7 opponents remain visible original-range targets but require an explicit wider race/runtime policy before support.
 
 ## Gate 2 - freeze
 

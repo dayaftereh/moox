@@ -1,8 +1,8 @@
 # Planned slice 16 - New Game and preset-race breadth
 
-Status: **program in progress; Slices 16.1-16.5 closed, Slice 16.6 Gate 1 next**.
+Status: **program in progress; Slices 16.1-16.5 closed, Slice 16.6 Gate 1 complete / Gate 2 next**.
 
-Position: **Slices 16.1 through 16.5 are closed; Slice 16.6 is the next prepared Slice-16 objective.** Slice 17 remains the alternative prepared Military Ship Designer breadth milestone.
+Position: **Slices 16.1 through 16.5 are closed; Slice 16.6 is open with Gate 1 complete and Gate 2 next.** Slice 17 remains the alternative prepared Military Ship Designer breadth milestone.
 
 > **Downstream race breadth:** Slice 16 intentionally does not force all 13 presets or Custom Race Designer parity into this milestone. `PLANNED_22_PRESET_RACE_COMPLETION_CUSTOM_RACE_DESIGNER.md` is now the reserved follow-up for completing remaining preset-race mechanics and building Custom Races on the same authoritative trait/pick pipeline once prerequisite gameplay systems exist.
 
@@ -23,7 +23,7 @@ The following direction is now part of the prepared Slice-16 contract and must n
 - Race portraits may be inspired by classic space-4X archetypes, but original MOO2 portrait/UI artwork must not be copied, traced, repainted or reused.
 - Complex race portraits default to optimized **PNG/WebP raster art**; SVG is preferred for frames, emblems, arrows, number tiles, abstract icons and simple symbolic art. Full-vector race portraits are optional, not mandatory.
 - Starting technology/technology level is presented with **three strong visual cards/illustrations** if Gate 1 confirms the expected three-level authoritative contract.
-- Opponent count uses a visual number selector, targeting original MOOX-styled numerals **1-9**, with the enabled range constrained by the authoritative galaxy/player-count contract.
+- Opponent count uses a visual number selector, targeting original-facing MOOX-styled numerals **1-7**, with the enabled range constrained by the authoritative galaxy/player-count contract.
 - Opponent composition reuses the same canonical race portraits instead of separate New Game-only art.
 - A final launch summary shows the selected galaxy, difficulty, Human race, technology start, opponent count/composition and seed visually before game creation.
 - Images are never the sole source of information: all settings remain accessible by text/ARIA and server-authoritative validation.
