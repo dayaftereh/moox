@@ -444,11 +444,21 @@ async function main() {
       arrows: [...(root?.querySelectorAll('.visual-selector-arrow') ?? [])].map(rect),
       dotCount: root?.querySelectorAll('.visual-selector-dots i').length ?? 0,
       createDisabled: q('.new-game-form button[type=submit]')?.disabled,
-      playerEmpire: q('.new-game-form label:nth-of-type(4) input')?.value,
+      playerEmpire: q('.new-game-form label[data-field="player-empire"] input')?.value,
       scrollWidth: document.documentElement.scrollWidth,
       viewportWidth: document.documentElement.clientWidth,
     }
   })()`
+
+  const formCleanup = await evaluate(`(() => ({
+    text: document.querySelector('.new-game-form')?.textContent ?? '',
+    fieldCount: document.querySelectorAll('.new-game-form .form-grid label').length,
+    hasGameIDInput: Boolean([...document.querySelectorAll('.new-game-form label')].find((label) => /Spiel-ID|Game ID/.test(label.textContent ?? ''))),
+    hasTechCombatInput: [...document.querySelectorAll('.new-game-form label')].some((label) => { const text = label.textContent ?? ''; return text.includes('Technologie / Kampf') || text.includes('Technology / Combat') }),
+  }))()`)
+  assert(formCleanup.hasGameIDInput === false, `server-owned Game ID field must be absent: ${JSON.stringify(formCleanup)}`)
+  assert(formCleanup.hasTechCombatInput === false, `redundant Technology / Combat field must be absent: ${JSON.stringify(formCleanup)}`)
+  assert(formCleanup.fieldCount === 2, `New Game text form should contain only Seed and Player Empire: ${JSON.stringify(formCleanup)}`)
 
   let raceSnap = await evaluate(raceSnapshotExpression)
   assert(raceSnap.selected === 'Menschen', `expected initial Human/Menschen, got ${raceSnap.selected}`)

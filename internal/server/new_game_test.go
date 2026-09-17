@@ -50,6 +50,31 @@ func serverNewGameRequest(gameID, seed string) newGameRequest {
 	}
 }
 
+func TestHTTPCreateGameAllocatesServerGameID(t *testing.T) {
+	server, _ := newNewGameServer(t)
+	defer server.Close()
+
+	firstRequest := serverNewGameRequest("", "0x8009")
+	var first newGameResponse
+	postJSON(t, server.URL+"/api/v1/games", firstRequest, "", http.StatusCreated, &first)
+	if first.Game.GameID != "game-1" {
+		t.Fatalf("first server-assigned game ID=%q want game-1", first.Game.GameID)
+	}
+
+	secondRequest := serverNewGameRequest("", "0x8010")
+	var second newGameResponse
+	postJSON(t, server.URL+"/api/v1/games", secondRequest, "", http.StatusCreated, &second)
+	if second.Game.GameID != "game-2" {
+		t.Fatalf("second server-assigned game ID=%q want game-2", second.Game.GameID)
+	}
+}
+
+func TestHTTPCreateGameRejectsWhitespaceGameID(t *testing.T) {
+	server, _ := newNewGameServer(t)
+	defer server.Close()
+	postJSON(t, server.URL+"/api/v1/games", serverNewGameRequest(" game-custom ", "0x8009"), "", http.StatusBadRequest, nil)
+}
+
 func TestHTTPCreateGameThenPlayerSnapshot(t *testing.T) {
 	server, host := newNewGameServer(t)
 	defer server.Close()

@@ -143,8 +143,8 @@ func (s *apiServer) handleCreateGame(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, http.StatusBadRequest, "bad_request", fmt.Sprintf("unsupported schema_version %d", request.SchemaVersion))
 		return
 	}
-	if request.GameID == "" || strings.TrimSpace(request.GameID) != request.GameID {
-		writeAPIError(w, http.StatusBadRequest, "bad_request", "game_id must be non-empty without leading or trailing whitespace")
+	if request.GameID != "" && strings.TrimSpace(request.GameID) != request.GameID {
+		writeAPIError(w, http.StatusBadRequest, "bad_request", "game_id must not have leading or trailing whitespace")
 		return
 	}
 	if len(request.Controllers) != len(request.Settings.Players) {
@@ -156,7 +156,17 @@ func (s *apiServer) handleCreateGame(w http.ResponseWriter, r *http.Request) {
 		writeAPIError(w, http.StatusBadRequest, "bad_request", err.Error())
 		return
 	}
-	created, err := s.host.CreateGame(app.CreateGameRequest{GameID: request.GameID, Seed: seed, Settings: request.Settings, Controllers: request.Controllers})
+	gameID := request.GameID
+	if gameID == "" {
+		gameID = nextServerGameID(s.host.ListGames())
+	}
+	created, err := s.host.CreateGame(app.CreateGameRequest{GameID: gameID, Seed: seed, Settings: request.Settings, Controllers: request.Controllers})
+	if request.GameID == "" && errors.Is(err, app.ErrGameExists) {
+		for retries := 0; retries < 32 && errors.Is(err, app.ErrGameExists); retries++ {
+			gameID = nextServerGameID(s.host.ListGames())
+			created, err = s.host.CreateGame(app.CreateGameRequest{GameID: gameID, Seed: seed, Settings: request.Settings, Controllers: request.Controllers})
+		}
+	}
 	if err != nil {
 		switch {
 		case errors.Is(err, game.ErrInvalidNewGameSettings):
@@ -169,6 +179,24 @@ func (s *apiServer) handleCreateGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSONStatus(w, http.StatusCreated, newGameResponse{SchemaVersion: app.SchemaVersion, Game: created.Game, Players: created.Players})
+}
+
+func nextServerGameID(games []app.GameSummary) string {
+	used := make(map[int]struct{}, len(games))
+	for _, summary := range games {
+		if !strings.HasPrefix(summary.GameID, "game-") {
+			continue
+		}
+		n, err := strconv.Atoi(strings.TrimPrefix(summary.GameID, "game-"))
+		if err == nil && n > 0 {
+			used[n] = struct{}{}
+		}
+	}
+	for n := 1; ; n++ {
+		if _, exists := used[n]; !exists {
+			return fmt.Sprintf("game-%d", n)
+		}
+	}
 }
 
 func parseNewGameSeed(raw string) (uint64, error) {

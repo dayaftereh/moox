@@ -329,7 +329,6 @@ function App() {
   const { t } = useI18n()
   const [route, setRoute] = useState<AppRoute>(() => parseRoute())
   const [games, setGames] = useState<GameSummary[]>([])
-  const [newGameID, setNewGameID] = useState('game-1')
   const [newGameSeed, setNewGameSeed] = useState('0x8009')
   const [galaxySizeID, setGalaxySizeID] = useState<GalaxySizeID>('small')
   const [galaxyAgeID, setGalaxyAgeID] = useState<GalaxyAgeID>('normal')
@@ -906,7 +905,7 @@ function App() {
       ]
       const created = await createGame({
         schema_version: 1,
-        game_id: newGameID,
+        game_id: '',
         seed: newGameSeed,
         controllers: composedControllers,
         settings: {
@@ -1554,10 +1553,8 @@ function App() {
           <Card>
             <form className="new-game-form" onSubmit={submitNewGame}>
               <div className="form-grid">
-                <label>{t('newGame.gameId')}<input value={newGameID} onChange={(event) => setNewGameID(event.target.value)} required /></label>
-                <label>{t('newGame.seed')}<input value={newGameSeed} onChange={(event) => setNewGameSeed(event.target.value)} required placeholder={t('newGame.seedPlaceholder')} /></label>
-                <label>{t('newGame.techCombat')}<input value={t('newGame.techCombatValue')} disabled /></label>
-                <label>{t('newGame.playerEmpire')}<input value={playerName} onChange={(event) => setPlayerName(event.target.value)} required /></label>
+                <label data-field="seed">{t('newGame.seed')}<input value={newGameSeed} onChange={(event) => setNewGameSeed(event.target.value)} required placeholder={t('newGame.seedPlaceholder')} /></label>
+                <label data-field="player-empire">{t('newGame.playerEmpire')}<input value={playerName} onChange={(event) => setPlayerName(event.target.value)} required /></label>
               </div>
               <section className="new-game-launch-briefing" aria-label={t('newGame.launchBriefing')}>
                 <h2>{t('newGame.launchBriefing')}</h2>
