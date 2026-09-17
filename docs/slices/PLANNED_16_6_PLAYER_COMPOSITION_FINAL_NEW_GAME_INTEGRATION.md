@@ -1,6 +1,6 @@
 # Planned slice 16.6 - Player composition and New Game integration
 
-Status: **open; Gate 1 complete, Gate 2 next (2026-09-17)**.
+Status: **open; Gates 1-2 complete, Gate 3 next (2026-09-17)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slices 16.1-16.5.
@@ -101,10 +101,14 @@ Gate-1 finding: the original documented range is 2-8 total players (1-7 opponent
 
 ## Gate 2 - freeze
 
-- [ ] Freeze supported opponent/player-count matrix.
-- [ ] Freeze opponent race/controller assignment rules.
-- [ ] Freeze duplicate/random policy.
-- [ ] Freeze final cross-setting validation and New Game summary layout.
+- [x] Freeze supported opponent/player-count matrix.
+- [x] Freeze opponent race/controller assignment rules.
+- [x] Freeze duplicate/random policy.
+- [x] Freeze final cross-setting validation and New Game summary layout.
+
+Permanent Gate-2 freeze: `docs/research/SLICE_16_6_GATE2_PLAYER_COMPOSITION_FREEZE_2026-09-17.md`.
+
+Frozen V1: all four galaxy sizes support 1-2 Builtin-AI opponents; counts 3-7 remain catalog-visible/planned. Opponent 1 is Darlok, opponent 2 is the other supported Human/Klackon race, duplicates/random are disallowed, home placement preserves the exact current farthest pair then adds deterministic maximin homes, and `/api/v1/new-game/compositions` owns availability/assignments/reasons.
 
 ## Gate 3 - implementation
 

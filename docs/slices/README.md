@@ -42,7 +42,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **Slice 16.6 - Gate 1 complete / Gate 2 next** - `_OPEN_PLAYER_COMPOSITION_FINAL_NEW_GAME_INTEGRATION_2026-09-17.md`; original 1-7 opponent range audited, production two-player/pair-home limitation recorded, three-player/two-AI controller evidence confirmed, and conservative composition/disabled-state candidates prototyped without widening runtime support.
+- **Slice 16.6 - Gates 1-2 complete / Gate 3 next** - `_OPEN_PLAYER_COMPOSITION_FINAL_NEW_GAME_INTEGRATION_2026-09-17.md`; original 1-7 opponent range audited, production two-player/pair-home limitation recorded, three-player/two-AI controller evidence confirmed, and conservative composition/disabled-state candidates prototyped without widening runtime support.
 
 Closed/parked Slice-15 state:
 
@@ -54,7 +54,7 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slices 16.1-16.5 are closed and Slice 16.6 has Gate 1 complete with Gate 2 next.
+1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slices 16.1-16.5 are closed and Slice 16.6 has Gates 1-2 complete with Gate 3 next.
 2. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for broader combat/design fidelity.
 3. `PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md` - dedicated authoritative Spy/intelligence mechanics; Slice 20 remains reserved while 18/19 are unassigned.
 4. `PLANNED_22_PRESET_RACE_COMPLETION_CUSTOM_RACE_DESIGNER.md` - downstream race-mechanics completion and server-authoritative Custom Race Designer; reserved for after prerequisite race-dependent gameplay systems mature.
