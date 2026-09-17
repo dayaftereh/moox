@@ -153,6 +153,16 @@ label { display: grid; gap: 7px; color: var(--muted-strong); font-size: .8rem; f
 .session-row small { color: var(--muted); }
 .status-line { margin-top: -2px; }
 .new-game-form { display: grid; gap: 18px; }
+.new-game-seed-control { display: grid; grid-template-columns: minmax(0, 1fr) 44px; gap: 8px; align-items: stretch; }
+.new-game-seed-control input { min-width: 0; }
+.new-game-seed-reroll { display: grid; width: 44px; min-width: 44px; height: 44px; place-items: center; align-self: end; padding: 0; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); background: #152640; color: #d9efff; cursor: pointer; transition: transform .12s ease, border-color .12s ease, background .12s ease; }
+.new-game-seed-reroll:hover { border-color: #5895ff; background: #1b3151; transform: translateY(-1px); }
+.new-game-seed-reroll:active { transform: translateY(0); }
+.new-game-seed-reroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.new-game-seed-reroll svg { width: 23px; height: 23px; }
+.new-game-seed-reroll rect { fill: none; stroke: currentColor; stroke-width: 1.8; }
+.new-game-seed-reroll circle { fill: currentColor; }
+
 .form-grid { display: grid; gap: 13px; }
 
 /* game shell */

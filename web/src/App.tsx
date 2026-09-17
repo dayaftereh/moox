@@ -261,6 +261,13 @@ function lifecycleKey(lifecycle: GameLifecycle): TranslationKey {
   }
 }
 
+function generateNewGameSeed(): string {
+  const words = new Uint32Array(2)
+  crypto.getRandomValues(words)
+  if (words[0] === 0 && words[1] === 0) words[1] = 1
+  return `0x${words[0].toString(16).padStart(8, '0')}${words[1].toString(16).padStart(8, '0')}`
+}
+
 function errorText(reason: unknown): string {
   if (isAPIError(reason)) return `${reason.code}: ${reason.message}`
   if (reason instanceof Error) return reason.message
@@ -1553,7 +1560,22 @@ function App() {
           <Card>
             <form className="new-game-form" onSubmit={submitNewGame}>
               <div className="form-grid">
-                <label data-field="seed">{t('newGame.seed')}<input value={newGameSeed} onChange={(event) => setNewGameSeed(event.target.value)} required placeholder={t('newGame.seedPlaceholder')} /></label>
+                <label data-field="seed">
+                  {t('newGame.seed')}
+                  <span className="new-game-seed-control">
+                    <input value={newGameSeed} onChange={(event) => setNewGameSeed(event.target.value)} required placeholder={t('newGame.seedPlaceholder')} />
+                    <button type="button" className="new-game-seed-reroll" data-action="regenerate-seed" aria-label={t('newGame.regenerateSeed')} title={t('newGame.regenerateSeed')} onClick={() => setNewGameSeed(generateNewGameSeed())}>
+                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <rect x="4" y="4" width="16" height="16" rx="3" />
+                        <circle cx="8.5" cy="8.5" r="1.25" />
+                        <circle cx="15.5" cy="8.5" r="1.25" />
+                        <circle cx="12" cy="12" r="1.25" />
+                        <circle cx="8.5" cy="15.5" r="1.25" />
+                        <circle cx="15.5" cy="15.5" r="1.25" />
+                      </svg>
+                    </button>
+                  </span>
+                </label>
                 <label data-field="player-empire">{t('newGame.playerEmpire')}<input value={playerName} onChange={(event) => setPlayerName(event.target.value)} required /></label>
               </div>
               <section className="new-game-launch-briefing" aria-label={t('newGame.launchBriefing')}>
