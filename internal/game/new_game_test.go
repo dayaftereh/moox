@@ -259,11 +259,7 @@ func TestNewGameRejectsUnsupportedSettings(t *testing.T) {
 		{},
 		func() NewGameSettings { s := canonicalNewGameSettings(); s.GalaxySize = "tiny"; return s }(),
 		func() NewGameSettings { s := canonicalNewGameSettings(); s.GalaxyAge = "young"; return s }(),
-		func() NewGameSettings {
-			s := canonicalNewGameSettings()
-			s.TechnologyLevel = NewGameTechnologyPreWarp
-			return s
-		}(),
+
 		func() NewGameSettings { s := canonicalNewGameSettings(); s.StrategicCombat = true; return s }(),
 		func() NewGameSettings { s := canonicalNewGameSettings(); s.Players[1].RaceID = "human"; return s }(),
 		func() NewGameSettings { s := canonicalNewGameSettings(); s.Players[1].SeatID = 1; return s }(),

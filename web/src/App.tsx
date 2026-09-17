@@ -1,4 +1,4 @@
-﻿import { type ChangeEvent, type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { type ChangeEvent, type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   aggregatePopulation,
   createGame,
@@ -6,6 +6,7 @@ import {
   getDifficultyCatalog,
   getGalaxyCatalog,
   getRaceCatalog,
+  getTechnologyCatalog,
   getPlayerSnapshot,
   importLiveSnapshot,
   listGames,
@@ -32,6 +33,9 @@ import {
   type PresetRaceCatalog,
   type PresetRaceID,
   type PresetRaceProfile,
+  type NewGameTechnologyCatalog,
+  type NewGameTechnologyLevel,
+  type NewGameTechnologyProfile,
   type DiplomacyCommandKind,
   type DiplomaticStance,
   type DraftOrder,
@@ -68,6 +72,7 @@ const galaxySizeIDs: readonly GalaxySizeID[] = ['small', 'medium', 'large', 'hug
 const galaxyAgeIDs: readonly GalaxyAgeID[] = ['mineral_rich', 'normal', 'organic_rich']
 const difficultyIDs: readonly DifficultyID[] = ['easy', 'normal', 'hard', 'very_hard', 'impossible']
 const runtimeRacePortraitIDs = new Set<PresetRaceID>(['human', 'klackon', 'darlok'])
+const technologyLevelIDs: readonly NewGameTechnologyLevel[] = ['pre_warp', 'average', 'advanced']
 
 function GalaxySizeArt({ size }: { size: GalaxySizeID }) {
   return (
@@ -158,6 +163,21 @@ function raceDetails(t: Translator, profile: PresetRaceProfile): string[] {
   return profile.player_availability === 'planned' ? [t('newGame.racePlannedDetail'), ...facts] : facts
 }
 
+function technologyLevelAssetOptionID(level: NewGameTechnologyLevel): string {
+  return level === 'pre_warp' ? 'pre-warp' : level
+}
+
+function TechnologyLevelArt({ level }: { level: NewGameTechnologyLevel }) {
+  return (
+    <div className="new-game-technology-art" aria-hidden="true">
+      <img src={newGameAssetPath('technology-level', technologyLevelAssetOptionID(level), 'svg')} alt="" draggable={false} />
+    </div>
+  )
+}
+
+function technologyTitle(t: Translator, profile: NewGameTechnologyProfile): string {
+  return t(profile.name_key as TranslationKey)
+}
 function difficultyAssetOptionID(difficulty: DifficultyID): string {
   return difficulty === 'very_hard' ? 'very-hard' : difficulty
 }
@@ -307,6 +327,9 @@ function App() {
   const [playerRaceID, setPlayerRaceID] = useState<PresetRaceID>('human')
   const [raceCatalog, setRaceCatalog] = useState<PresetRaceCatalog | null>(null)
   const [raceCatalogError, setRaceCatalogError] = useState('')
+  const [technologyLevelID, setTechnologyLevelID] = useState<NewGameTechnologyLevel>('average')
+  const [technologyCatalog, setTechnologyCatalog] = useState<NewGameTechnologyCatalog | null>(null)
+  const [technologyCatalogError, setTechnologyCatalogError] = useState('')
   const [playerName, setPlayerName] = useState('Human')
   const [darlokName, setDarlokName] = useState('Darlok')
   const [creatingGame, setCreatingGame] = useState(false)
@@ -347,6 +370,7 @@ function App() {
   const galaxySizeProfilesByID = useMemo(() => new Map((galaxyCatalog?.sizes ?? []).map((profile) => [profile.id, profile] as const)), [galaxyCatalog])
   const galaxyAgeProfilesByID = useMemo(() => new Map((galaxyCatalog?.ages ?? []).map((profile) => [profile.id, profile] as const)), [galaxyCatalog])
   const raceProfilesByID = useMemo(() => new Map((raceCatalog?.profiles ?? []).map((profile) => [profile.id, profile] as const)), [raceCatalog])
+  const technologyProfilesByID = useMemo(() => new Map((technologyCatalog?.profiles ?? []).map((profile) => [profile.id, profile] as const)), [technologyCatalog])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -400,6 +424,22 @@ function App() {
     return () => controller.abort()
   }, [])
 
+  useEffect(() => {
+    const controller = new AbortController()
+    setTechnologyCatalogError('')
+    void getTechnologyCatalog(controller.signal)
+      .then((catalog) => {
+        setTechnologyCatalog(catalog)
+        setTechnologyCatalogError('')
+        setTechnologyLevelID((current) => catalog.profiles.some((profile) => profile.id === current) ? current : catalog.default_id)
+      })
+      .catch((reason) => {
+        if (controller.signal.aborted) return
+        setTechnologyCatalog(null)
+        setTechnologyCatalogError(errorText(reason))
+      })
+    return () => controller.abort()
+  }, [])
   useEffect(() => {
     const syncRoute = () => setRoute(parseRoute())
     window.addEventListener('hashchange', syncRoute)
@@ -826,7 +866,7 @@ function App() {
           difficulty_id: difficultyID,
           galaxy_size: galaxySizeID,
           galaxy_age: galaxyAgeID,
-          technology_level: 'average',
+          technology_level: technologyLevelID,
           strategic_combat: false,
           players: [
             { seat_id: 1, empire_name: playerName, race_id: playerRaceID },
@@ -1345,7 +1385,37 @@ function App() {
                 })}
               />
             </Card>
-            <Card className="new-game-visual-card new-game-race-card">
+            <Card className="new-game-visual-card">
+              {technologyCatalog ? (
+                <VisualSelector<NewGameTechnologyLevel>
+                  settingId="technology-level"
+                  label={t('newGame.technologyLevel')}
+                  selectedId={technologyLevelID}
+                  onChange={setTechnologyLevelID}
+                  previousLabel={t('newGame.previousOption')}
+                  nextLabel={t('newGame.nextOption')}
+                  positionLabel={(current, total) => t('newGame.optionPosition', { current, total })}
+                  infoLabel={(optionTitle) => t('newGame.moreInfo', { option: optionTitle })}
+                  closeInfoLabel={t('newGame.closeInfo')}
+                  options={technologyLevelIDs.map((id) => {
+                    const profile = technologyProfilesByID.get(id)
+                    return {
+                      id,
+                      title: profile ? technologyTitle(t, profile) : id,
+                      details: profile ? profile.facts : [technologyCatalogError ? t('newGame.technologyCatalogUnavailable') : t('newGame.technologyCatalogLoading')],
+                      visual: <TechnologyLevelArt level={id} />,
+                      availability: profile?.availability ?? 'planned' as const,
+                      availabilityLabel: profile?.availability === 'supported' ? t('newGame.supportedNow') : t('newGame.plannedOption'),
+                    }
+                  })}
+                />
+              ) : (
+                <div className="new-game-race-loading">
+                  <h2>{t('newGame.technologyLevel')}</h2>
+                  <p>{technologyCatalogError ? t('newGame.technologyCatalogUnavailable') : t('newGame.technologyCatalogLoading')}</p>
+                </div>
+              )}
+            </Card>            <Card className="new-game-visual-card new-game-race-card">
               {raceCatalog ? (
                 <VisualSelector<PresetRaceID>
                   settingId="player-race"
@@ -1387,7 +1457,7 @@ function App() {
                 <label>{t('newGame.playerEmpire')}<input value={playerName} onChange={(event) => setPlayerName(event.target.value)} required /></label>
                 <label>{t('newGame.darlokEmpire')}<input value={darlokName} onChange={(event) => setDarlokName(event.target.value)} required /></label>
               </div>
-              <button type="submit" className="button-primary button-wide" disabled={creatingGame || !difficultyCatalog || !difficultyProfilesByID.has(difficultyID) || !galaxyCatalog || !galaxySizeProfilesByID.has(galaxySizeID) || !galaxyAgeProfilesByID.has(galaxyAgeID) || !raceCatalog || raceProfilesByID.get(playerRaceID)?.player_availability !== 'supported'}><GameIcon name="star" />{creatingGame ? t('newGame.creating') : t('newGame.create')}</button>
+              <button type="submit" className="button-primary button-wide" disabled={creatingGame || !difficultyCatalog || !difficultyProfilesByID.has(difficultyID) || !galaxyCatalog || !galaxySizeProfilesByID.has(galaxySizeID) || !galaxyAgeProfilesByID.has(galaxyAgeID) || !technologyCatalog || technologyProfilesByID.get(technologyLevelID)?.availability !== 'supported' || !raceCatalog || raceProfilesByID.get(playerRaceID)?.player_availability !== 'supported'}><GameIcon name="star" />{creatingGame ? t('newGame.creating') : t('newGame.create')}</button>
             </form>
           </Card>
         </main>

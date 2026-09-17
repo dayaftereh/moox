@@ -160,7 +160,7 @@ func (r *EconomyRules) NewGame(seed uint64, settings NewGameSettings) (NewGameRe
 		return NewGameResult{}, err
 	}
 
-	if err := r.initializeNewGameStartingAssets(state, homeIndexes[:]); err != nil {
+	if err := r.initializeNewGameStartingAssets(state, homeIndexes[:], settings.TechnologyLevel); err != nil {
 		return NewGameResult{}, err
 	}
 	// Allocate non-planet body IDs only after every legacy New Game object has
@@ -207,7 +207,7 @@ func (r *EconomyRules) materializeNewGameSystems(state *core.GameState, systems 
 	return nil
 }
 
-func (r *EconomyRules) initializeNewGameStartingAssets(state *core.GameState, homeIndexes []int) error {
+func (r *EconomyRules) initializeNewGameStartingAssets(state *core.GameState, homeIndexes []int, technologyLevel NewGameTechnologyLevel) error {
 	if len(homeIndexes) != len(state.Empires) {
 		return fmt.Errorf("home system count %d does not match empire count %d", len(homeIndexes), len(state.Empires))
 	}
@@ -231,6 +231,10 @@ func (r *EconomyRules) initializeNewGameStartingAssets(state *core.GameState, ho
 		empire.Capital = colony.ID
 		homeworld.ColonyID = colony.ID
 		state.Colonies = append(state.Colonies, colony)
+	}
+
+	if technologyLevel == NewGameTechnologyPreWarp {
+		return nil
 	}
 
 	scoutSpecs := make([]core.ShipDesignSpec, len(state.Empires))
@@ -315,8 +319,8 @@ func (r *EconomyRules) validateNewGameSettings(settings NewGameSettings) error {
 	if _, err := r.newGameGalaxyAgeProfile(settings.GalaxyAge); err != nil {
 		return err
 	}
-	if settings.TechnologyLevel != NewGameTechnologyAverage {
-		return fmt.Errorf("unsupported technology_level %q; Slice 09 supports only %q", settings.TechnologyLevel, NewGameTechnologyAverage)
+	if settings.TechnologyLevel != NewGameTechnologyPreWarp && settings.TechnologyLevel != NewGameTechnologyAverage {
+		return fmt.Errorf("unsupported technology_level %q; supported levels are %q and %q", settings.TechnologyLevel, NewGameTechnologyPreWarp, NewGameTechnologyAverage)
 	}
 	if settings.StrategicCombat {
 		return fmt.Errorf("strategic_combat is not supported in Slice 09")

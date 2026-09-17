@@ -57,7 +57,7 @@ func (r *EconomyRules) NewReferenceTriangleGame(seed uint64) (NewGameResult, err
 		return NewGameResult{}, err
 	}
 	homeIndexes := []int{0, 1, 2}
-	if err := r.initializeNewGameStartingAssets(state, homeIndexes); err != nil {
+	if err := r.initializeNewGameStartingAssets(state, homeIndexes, NewGameTechnologyAverage); err != nil {
 		return NewGameResult{}, err
 	}
 	if err := materializeNewGameBodies(state, systems); err != nil {

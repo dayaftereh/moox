@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img">
+  <title>Average starting technology</title>
+  <desc>Established interstellar command with scouts and a colony vessel around one homeworld.</desc>
+  <defs>
+    <radialGradient id="bg"><stop offset="0" stop-color="#153a55"/><stop offset="1" stop-color="#07111d"/></radialGradient>
+    <radialGradient id="core"><stop offset="0" stop-color="#f3fbff"/><stop offset="0.32" stop-color="#70d9ff"/><stop offset="1" stop-color="#0b4f76"/></radialGradient>
+    <radialGradient id="node"><stop offset="0" stop-color="#fff4bd"/><stop offset="1" stop-color="#45bde9"/></radialGradient>
+    <linearGradient id="deck" x1="0" x2="1"><stop stop-color="#18364b"/><stop offset="1" stop-color="#0b1f30"/></linearGradient>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <g opacity="0.45"><circle cx="35" cy="28" r="1" fill="#d9f6ff"/><circle cx="132" cy="89" r="2" fill="#d9f6ff"/><circle cx="229" cy="150" r="3" fill="#d9f6ff"/><circle cx="326" cy="211" r="1" fill="#d9f6ff"/><circle cx="423" cy="272" r="2" fill="#d9f6ff"/><circle cx="520" cy="333" r="3" fill="#d9f6ff"/><circle cx="617" cy="394" r="1" fill="#d9f6ff"/><circle cx="714" cy="455" r="2" fill="#d9f6ff"/><circle cx="811" cy="516" r="3" fill="#d9f6ff"/><circle cx="908" cy="577" r="1" fill="#d9f6ff"/><circle cx="1005" cy="48" r="2" fill="#d9f6ff"/><circle cx="1102" cy="109" r="3" fill="#d9f6ff"/><circle cx="69" cy="170" r="1" fill="#d9f6ff"/><circle cx="166" cy="231" r="2" fill="#d9f6ff"/><circle cx="263" cy="292" r="3" fill="#d9f6ff"/><circle cx="360" cy="353" r="1" fill="#d9f6ff"/><circle cx="457" cy="414" r="2" fill="#d9f6ff"/><circle cx="554" cy="475" r="3" fill="#d9f6ff"/><circle cx="651" cy="536" r="1" fill="#d9f6ff"/><circle cx="748" cy="597" r="2" fill="#d9f6ff"/><circle cx="845" cy="68" r="3" fill="#d9f6ff"/><circle cx="942" cy="129" r="1" fill="#d9f6ff"/><circle cx="1039" cy="190" r="2" fill="#d9f6ff"/><circle cx="1136" cy="251" r="3" fill="#d9f6ff"/><circle cx="103" cy="312" r="1" fill="#d9f6ff"/><circle cx="200" cy="373" r="2" fill="#d9f6ff"/><circle cx="297" cy="434" r="3" fill="#d9f6ff"/><circle cx="394" cy="495" r="1" fill="#d9f6ff"/><circle cx="491" cy="556" r="2" fill="#d9f6ff"/><circle cx="588" cy="617" r="3" fill="#d9f6ff"/><circle cx="685" cy="88" r="1" fill="#d9f6ff"/><circle cx="782" cy="149" r="2" fill="#d9f6ff"/><circle cx="879" cy="210" r="3" fill="#d9f6ff"/><circle cx="976" cy="271" r="1" fill="#d9f6ff"/></g>
+  <path d="M80 570 C260 500 940 500 1120 570 L1120 675 L80 675 Z" fill="url(#deck)"/>
+  <ellipse cx="600" cy="338" rx="170" ry="76" fill="none" stroke="#74d4ff" stroke-width="3" opacity="0.33"/><ellipse cx="600" cy="338" rx="275" ry="118" fill="none" stroke="#74d4ff" stroke-width="2" opacity="0.27"/>
+  <circle cx="600" cy="338" r="88" fill="url(#core)"/>
+  <circle cx="600" cy="338" r="118" fill="none" stroke="#e0f7ff" stroke-width="4" opacity="0.52"/>
+  <circle cx="424" cy="288" r="10" fill="url(#node)" opacity="0.55"/><circle cx="597" cy="401" r="14" fill="url(#node)" opacity="0.7000000000000001"/><circle cx="770" cy="214" r="18" fill="url(#node)" opacity="0.8500000000000001"/><circle cx="263" cy="327" r="10" fill="url(#node)" opacity="0.55"/>
+  <path d="M 340 470 l 32 -12 l -10 12 l 10 12 z" fill="#d9f6ff" opacity="0.86"/><path d="M 455 415 l 32 -12 l -10 12 l 10 12 z" fill="#d9f6ff" opacity="0.86"/><path d="M 570 470 l 32 -12 l -10 12 l 10 12 z" fill="#d9f6ff" opacity="0.86"/>
+  <path d="M238 568 H962" stroke="#62c9ef" stroke-width="4" opacity="0.35"/>
+  <path d="M300 600 H900" stroke="#9be7ff" stroke-width="2" opacity="0.22"/>
+</svg>

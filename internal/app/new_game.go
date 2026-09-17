@@ -67,6 +67,18 @@ func (h *Host) NewGameGalaxyCatalog() (game.GalaxyCatalog, error) {
 	return game.GalaxyCatalogFromRules(rules)
 }
 
+func (h *Host) NewGameTechnologyCatalog() (game.NewGameTechnologyCatalog, error) {
+	if h == nil {
+		return game.NewGameTechnologyCatalog{}, fmt.Errorf("host is nil")
+	}
+	h.mu.RLock()
+	rules := h.newGameRules
+	h.mu.RUnlock()
+	if rules == nil {
+		return game.NewGameTechnologyCatalog{}, fmt.Errorf("new game creation is not configured")
+	}
+	return game.TechnologyLevelCatalog(), nil
+}
 func (h *Host) CreateGame(request CreateGameRequest) (CreateGameResult, error) {
 	if h == nil {
 		return CreateGameResult{}, fmt.Errorf("host is nil")

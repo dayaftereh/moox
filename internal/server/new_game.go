@@ -70,6 +70,25 @@ func (s *apiServer) handleRaceCatalog(w http.ResponseWriter, _ *http.Request) {
 	})
 }
 
+type technologyCatalogResponse struct {
+	SchemaVersion int                             `json:"schema_version"`
+	DefaultID     game.NewGameTechnologyLevel     `json:"default_id"`
+	Profiles      []game.NewGameTechnologyProfile `json:"profiles"`
+}
+
+func (s *apiServer) handleTechnologyCatalog(w http.ResponseWriter, _ *http.Request) {
+	catalog, err := s.host.NewGameTechnologyCatalog()
+	if err != nil {
+		writeAPIError(w, http.StatusServiceUnavailable, "service_unavailable", err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, technologyCatalogResponse{
+		SchemaVersion: app.SchemaVersion,
+		DefaultID:     catalog.DefaultID,
+		Profiles:      catalog.Profiles,
+	})
+}
+
 type newGameRequest struct {
 	SchemaVersion int                        `json:"schema_version"`
 	GameID        string                     `json:"game_id"`

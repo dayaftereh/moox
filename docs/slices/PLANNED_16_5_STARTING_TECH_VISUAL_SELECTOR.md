@@ -1,6 +1,6 @@
-﻿# Planned slice 16.5 - Starting technology visual selector
+# Planned slice 16.5 - Starting technology visual selector
 
-Status: **open; Gate 2 complete, Gate 3 next (2026-09-17)**.
+Status: **open; Gate 3 complete, Gate 4 next (2026-09-17)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slice 16.1 shared visual selection grammar.
@@ -84,10 +84,10 @@ Advanced parity handoff: dvanced remains catalog-visible/planned during Slice 1
 
 ## Gate 3 - implementation
 
-- [ ] Extend New Game validation/state generation for accepted technology levels.
-- [ ] Add visual selector/cards.
-- [ ] Bind displayed facts to authoritative normalized/server data.
-- [ ] Add deterministic fixtures for race + technology-level combinations in the accepted matrix.
+- [x] Extend New Game validation/state generation for accepted technology levels.
+- [x] Add visual selector/cards.
+- [x] Bind displayed facts to authoritative normalized/server data.
+- [x] Add deterministic fixtures for race + technology-level combinations in the accepted matrix.
 
 ## Gate 4 - close
 

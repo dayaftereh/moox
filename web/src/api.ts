@@ -58,6 +58,21 @@ export type PresetRaceCatalog = {
   profiles: PresetRaceProfile[]
 }
 
+export type NewGameTechnologyLevel = 'pre_warp' | 'average' | 'advanced'
+export type NewGameTechnologyAvailability = 'supported' | 'planned'
+
+export type NewGameTechnologyProfile = {
+  id: NewGameTechnologyLevel
+  name_key: string
+  availability: NewGameTechnologyAvailability
+  facts: string[]
+}
+
+export type NewGameTechnologyCatalog = {
+  schema_version: number
+  default_id: NewGameTechnologyLevel
+  profiles: NewGameTechnologyProfile[]
+}
 export type NewGamePlayer = {
   seat_id: number
   empire_id: number
@@ -69,7 +84,7 @@ export type NewGameSettings = {
   difficulty_id: DifficultyID
   galaxy_size: GalaxySizeID
   galaxy_age: GalaxyAgeID
-  technology_level: 'average'
+  technology_level: NewGameTechnologyLevel
   strategic_combat: false
   players: Array<{
     seat_id: number
@@ -811,6 +826,10 @@ export async function getGalaxyCatalog(signal?: AbortSignal): Promise<GalaxyCata
 }
 export async function getRaceCatalog(signal?: AbortSignal): Promise<PresetRaceCatalog> {
   return requestJSON<PresetRaceCatalog>('/api/v1/new-game/races', { signal })
+}
+
+export async function getTechnologyCatalog(signal?: AbortSignal): Promise<NewGameTechnologyCatalog> {
+  return requestJSON<NewGameTechnologyCatalog>('/api/v1/new-game/technologies', { signal })
 }
 export async function listGames(signal?: AbortSignal): Promise<GameSummary[]> {
   return requestJSON<GameSummary[]>('/api/v1/games', { signal })

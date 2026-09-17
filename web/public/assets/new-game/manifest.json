@@ -126,6 +126,33 @@
       "path": "/assets/new-game/galaxy-age/organic-rich.svg",
       "provenance": "original-procedural-mox",
       "generator": "web/scripts/generate-galaxy-age-art.mjs"
+    },
+    {
+      "id": "new-game:technology-level:pre-warp",
+      "domain": "technology-level",
+      "option_id": "pre-warp",
+      "format": "svg",
+      "path": "/assets/new-game/technology-level/pre-warp.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-technology-level-art.mjs"
+    },
+    {
+      "id": "new-game:technology-level:average",
+      "domain": "technology-level",
+      "option_id": "average",
+      "format": "svg",
+      "path": "/assets/new-game/technology-level/average.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-technology-level-art.mjs"
+    },
+    {
+      "id": "new-game:technology-level:advanced",
+      "domain": "technology-level",
+      "option_id": "advanced",
+      "format": "svg",
+      "path": "/assets/new-game/technology-level/advanced.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-technology-level-art.mjs"
     }
   ]
 }
