@@ -164,9 +164,57 @@ function raceTitle(t: Translator, profile: PresetRaceProfile): string {
   return t(profile.name_key as TranslationKey)
 }
 
+function raceFacts(t: Translator, profile: PresetRaceProfile): string[] {
+  return profile.card_fact_trait_ids.map((traitID) => t(`raceTrait.${traitID}` as TranslationKey))
+}
+
 function raceDetails(t: Translator, profile: PresetRaceProfile): string[] {
-  const facts = profile.card_fact_trait_ids.map((traitID) => t(`raceTrait.${traitID}` as TranslationKey))
+  const facts = raceFacts(t, profile)
   return profile.player_availability === 'planned' ? [t('newGame.racePlannedDetail'), ...facts] : facts
+}
+
+function RaceInfoButton({ t, profile }: { t: Translator; profile: PresetRaceProfile }) {
+  const [open, setOpen] = useState(false)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const closeRef = useRef<HTMLButtonElement>(null)
+  const title = raceTitle(t, profile)
+
+  useEffect(() => {
+    if (!open) return
+    document.body.classList.add('modal-open')
+    closeRef.current?.focus()
+    const onEscape = (event: globalThis.KeyboardEvent) => { if (event.key === 'Escape') setOpen(false) }
+    window.addEventListener('keydown', onEscape)
+    return () => {
+      window.removeEventListener('keydown', onEscape)
+      document.body.classList.remove('modal-open')
+    }
+  }, [open])
+
+  function closeInfo() {
+    setOpen(false)
+    window.setTimeout(() => triggerRef.current?.focus(), 0)
+  }
+
+  return (
+    <>
+      <button ref={triggerRef} type="button" className="new-game-empire-info-button" onClick={() => setOpen(true)} aria-label={t('newGame.moreInfo', { option: title })} title={t('newGame.moreInfo', { option: title })}>?</button>
+      {open && (
+        <div className="visual-selector-dialog-backdrop" onPointerDown={(event) => { if (event.target === event.currentTarget) closeInfo() }}>
+          <section className="visual-selector-dialog new-game-race-info-dialog" role="dialog" aria-modal="true" aria-labelledby={`empire-race-dialog-${profile.id}`}>
+            <div className="visual-selector-dialog-header">
+              <div><p className="eyebrow">{t('newGame.playerRace')}</p><h3 id={`empire-race-dialog-${profile.id}`}>{title}</h3></div>
+              <button ref={closeRef} type="button" className="visual-selector-dialog-close" onClick={closeInfo} aria-label={t('newGame.closeInfo')}>×</button>
+            </div>
+            <div className="new-game-race-info-dialog-body">
+              <img src={`/assets/races/${profile.id}/portrait.webp`} alt="" draggable={false} />
+              <div className="visual-selector-dialog-copy">{raceFacts(t, profile).map((detail) => <p key={detail}>{detail}</p>)}</div>
+            </div>
+          </section>
+        </div>
+      )}
+    </>
+  )
 }
 
 function technologyLevelAssetOptionID(level: NewGameTechnologyLevel): string {
@@ -1528,25 +1576,6 @@ function App() {
                       }
                     })}
                   />
-                  {selectedPlayerRaceProfile && (
-                    <div className="new-game-opponent-list" aria-label={t('newGame.opponents')}>
-                      <div className="new-game-opponent-chip new-game-local-player-chip" data-role="local-player">
-                        <img src={`/assets/races/${playerRaceID}/portrait.webp`} alt="" draggable={false} />
-                        <span><strong>{raceTitle(t, selectedPlayerRaceProfile)}</strong><small>{t('newGame.localPlayer')}</small></span>
-                      </div>
-                      {selectedOpponentAssignment && selectedOpponentProfile?.availability === 'supported' && selectedOpponentAssignment.opponents.map((opponent) => {
-                        const profile = raceProfilesByID.get(opponent.race_id)
-                        return (
-                          <div className="new-game-opponent-chip" data-role="opponent" key={opponent.race_id}>
-                            <img src={`/assets/races/${opponent.race_id}/portrait.webp`} alt="" draggable={false} />
-                            <span><strong>{profile ? raceTitle(t, profile) : opponent.race_id}</strong><small>{t('newGame.aiController')}</small></span>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  )}
-                  {!selectedOpponentAssignment && selectedPlayerRaceProfile?.player_availability === 'planned' && <p className="new-game-composition-note">{t('newGame.playerRaceCompositionPlanned')}</p>}
-                  {selectedOpponentProfile?.reason_id === 'additional_ai_race_breadth_required' && <p className="new-game-composition-reason">{t('newGame.additionalAIRaceBreadthRequired')}</p>}
                 </>
               ) : (
                 <div className="new-game-race-loading">
@@ -1557,6 +1586,58 @@ function App() {
             </Card>
           </div>
 
+
+          <Card className="new-game-empire-roster-card">
+            <div className="new-game-empire-roster-header">
+              <div>
+                <p className="eyebrow">{t('newGame.playersAndEmpires')}</p>
+                <h2>{t('newGame.playersAndEmpires')}</h2>
+              </div>
+              <span className="badge">{t('newGame.totalEmpires', { count: selectedOpponentCount + 1 })}</span>
+            </div>
+            {!selectedOpponentAssignment && selectedPlayerRaceProfile?.player_availability === 'planned' && <p className="new-game-composition-note">{t('newGame.playerRaceCompositionPlanned')}</p>}
+            {selectedOpponentProfile?.reason_id === 'additional_ai_race_breadth_required' && <p className="new-game-composition-reason">{t('newGame.additionalAIRaceBreadthRequired')}</p>}
+            <div className="new-game-empire-roster-grid" aria-label={t('newGame.playersAndEmpires')}>
+              {selectedPlayerRaceProfile && (
+                <article className="new-game-empire-tile new-game-empire-tile-local" data-role="local-player" data-race-id={playerRaceID}>
+                  <div className="new-game-empire-portrait"><img src={`/assets/races/${playerRaceID}/portrait.webp`} alt="" draggable={false} /></div>
+                  <div className="new-game-empire-copy">
+                    <small>{t('newGame.localPlayer')}</small>
+                    <strong>{raceTitle(t, selectedPlayerRaceProfile)}</strong>
+                    <span>{playerName}</span>
+                  </div>
+                  <RaceInfoButton t={t} profile={selectedPlayerRaceProfile} />
+                </article>
+              )}
+              {Array.from({ length: selectedOpponentCount }, (_, index) => {
+                const opponent = selectedOpponentAssignment && selectedOpponentProfile?.availability === 'supported' ? selectedOpponentAssignment.opponents[index] : undefined
+                const profile = opponent ? raceProfilesByID.get(opponent.race_id) : undefined
+                if (!opponent || !profile) {
+                  return (
+                    <article className="new-game-empire-tile new-game-empire-tile-planned" data-role="planned-opponent" data-slot={index + 1} key={`planned-${index + 1}`}>
+                      <div className="new-game-empire-placeholder" aria-hidden="true">?</div>
+                      <div className="new-game-empire-copy">
+                        <small>{t('newGame.aiSlot', { index: index + 1 })}</small>
+                        <strong>{t('newGame.racePending')}</strong>
+                        <span>{t('newGame.plannedOption')}</span>
+                      </div>
+                    </article>
+                  )
+                }
+                return (
+                  <article className="new-game-empire-tile" data-role="opponent" data-race-id={opponent.race_id} data-slot={index + 1} key={opponent.race_id}>
+                    <div className="new-game-empire-portrait"><img src={`/assets/races/${opponent.race_id}/portrait.webp`} alt="" draggable={false} /></div>
+                    <div className="new-game-empire-copy">
+                      <small>{t('newGame.aiSlot', { index: index + 1 })}</small>
+                      <strong>{raceTitle(t, profile)}</strong>
+                      <span>{opponent.default_empire_name}</span>
+                    </div>
+                    <RaceInfoButton t={t} profile={profile} />
+                  </article>
+                )
+              })}
+            </div>
+          </Card>
           <Card className="new-game-finalize-card">
             <form className="new-game-form" onSubmit={submitNewGame}>
               <div className="form-grid">

@@ -459,8 +459,10 @@ async function main() {
   assert(formCleanup.hasGameIDInput === false, `server-owned Game ID field must be absent: ${JSON.stringify(formCleanup)}`)
   assert(formCleanup.hasTechCombatInput === false, `redundant Technology / Combat field must be absent: ${JSON.stringify(formCleanup)}`)
   assert(formCleanup.fieldCount === 2, `New Game text form should contain only Seed and Player Empire: ${JSON.stringify(formCleanup)}`)
-  const finalizeGap = await evaluate(`(() => { const upper = document.querySelector('.new-game-opponent-card')?.getBoundingClientRect(); const lower = document.querySelector('.new-game-finalize-card')?.getBoundingClientRect(); return upper && lower ? lower.top - upper.bottom : -1 })()`)
-  assert(finalizeGap >= 15 && finalizeGap <= 17, `finalize card needs breathing room after opponent/player-count cards: ${finalizeGap}px`)
+  const finalizeGap = await evaluate(`(() => { const upper = document.querySelector('.new-game-empire-roster-card')?.getBoundingClientRect(); const lower = document.querySelector('.new-game-finalize-card')?.getBoundingClientRect(); return upper && lower ? lower.top - upper.bottom : -1 })()`)
+  const rosterGap = await evaluate(`(() => { const upper = document.querySelector('.new-game-opponent-card')?.getBoundingClientRect(); const lower = document.querySelector('.new-game-empire-roster-card')?.getBoundingClientRect(); return upper && lower ? lower.top - upper.bottom : -1 })()`)
+  assert(rosterGap >= 15 && rosterGap <= 17, `empire roster needs breathing room after selector cards: ${rosterGap}px`)
+  assert(finalizeGap >= 15 && finalizeGap <= 17, `finalize card needs breathing room after empire roster: ${finalizeGap}px`)
   const seedBefore = await evaluate(`(() => { const input = document.querySelector('.new-game-form label[data-field="seed"] input'); const button = document.querySelector('[data-action="regenerate-seed"]'); const rect = button?.getBoundingClientRect(); return { seed: input?.value ?? '', launchSeed: document.querySelector('.new-game-launch-seed strong')?.textContent ?? '', aria: button?.getAttribute('aria-label') ?? '', title: button?.getAttribute('title') ?? '', hasSVG: Boolean(button?.querySelector('svg')), text: button?.textContent?.trim() ?? '', width: rect?.width ?? 0, height: rect?.height ?? 0 } })()`)
   assert(seedBefore.seed === '0x8009', `unexpected initial seed before reroll: ${JSON.stringify(seedBefore)}`)
   assert(seedBefore.aria === 'Neuen Seed erzeugen' && seedBefore.title === 'Neuen Seed erzeugen' && seedBefore.hasSVG && seedBefore.text === '', `seed reroll must be an accessible icon-only dice button: ${JSON.stringify(seedBefore)}`)
@@ -501,10 +503,12 @@ async function main() {
   assert(raceSnap.selected === 'Darlok' && raceSnap.availability === 'planned', `Darlok planned state mismatch: ${JSON.stringify(raceSnap)}`)
   const darlokComposition = await evaluate(`(() => {
     const opponentRoot = document.querySelector('.visual-selector[data-setting-id="opponent-count"]')
-    const local = document.querySelector('.new-game-opponent-chip[data-role="local-player"]')
+    const local = document.querySelector('.new-game-empire-tile[data-role="local-player"]')
     return {
       localText: local?.textContent ?? '',
-      opponentChips: document.querySelectorAll('.new-game-opponent-chip[data-role="opponent"]').length,
+      opponentChips: document.querySelectorAll('.new-game-empire-tile[data-role="opponent"]').length,
+      plannedSlots: document.querySelectorAll('.new-game-empire-tile[data-role="planned-opponent"]').length,
+      rosterTiles: document.querySelectorAll('.new-game-empire-tile').length,
       opponentAvailability: opponentRoot?.getAttribute('data-availability'),
       warningReason: document.querySelector('.new-game-composition-reason')?.textContent ?? '',
       note: document.querySelector('.new-game-composition-note')?.textContent ?? '',
@@ -513,7 +517,7 @@ async function main() {
     }
   })()`)
   assert(darlokComposition.localText.includes('Darlok') && darlokComposition.localText.includes('Du'), `Darlok local-player preview missing: ${JSON.stringify(darlokComposition)}`)
-  assert(darlokComposition.opponentChips === 0 && darlokComposition.opponentAvailability === 'planned', `Darlok must not fabricate an opponent assignment: ${JSON.stringify(darlokComposition)}`)
+  assert(darlokComposition.opponentChips === 0 && darlokComposition.plannedSlots === 1 && darlokComposition.rosterTiles === 2 && darlokComposition.opponentAvailability === 'planned', `Darlok must keep one neutral planned AI slot without fabricating a race: ${JSON.stringify(darlokComposition)}`)
   assert(darlokComposition.warningReason === '' && darlokComposition.note.length > 0 && darlokComposition.createDisabled === true, `Darlok planned state must use a neutral composition note, not a yellow warning: ${JSON.stringify(darlokComposition)}`)
   await key('ArrowRight', 'ArrowRight', 39)
   await key('ArrowRight', 'ArrowRight', 39)
@@ -702,8 +706,10 @@ async function main() {
       artWidth: artRect?.width,
       availability: root?.getAttribute('data-availability'),
       statusText: root?.querySelector('.visual-selector-current-status')?.textContent,
-      opponentChips: document.querySelectorAll('.new-game-opponent-chip[data-role="opponent"]').length,
-      localPlayerText: document.querySelector('.new-game-opponent-chip[data-role="local-player"]')?.textContent ?? '',
+      opponentChips: document.querySelectorAll('.new-game-empire-tile[data-role="opponent"]').length,
+      plannedSlots: document.querySelectorAll('.new-game-empire-tile[data-role="planned-opponent"]').length,
+      rosterTiles: document.querySelectorAll('.new-game-empire-tile').length,
+      localPlayerText: document.querySelector('.new-game-empire-tile[data-role="local-player"]')?.textContent ?? '',
       reason: document.querySelector('.new-game-composition-reason')?.textContent ?? '',
       createDisabled: document.querySelector('.new-game-form button[type=submit]')?.disabled,
       launchText: document.querySelector('.new-game-launch-briefing')?.textContent ?? '',
@@ -718,21 +724,49 @@ async function main() {
   assert(opponentSnap.selected === '1 Gegner', `opponent count 1 label mismatch: ${opponentSnap.selected}`)
   assert(opponentSnap.source === '/assets/new-game/opponent-count/1.svg' && opponentSnap.imageReady, `opponent count 1 art invalid: ${JSON.stringify(opponentSnap)}`)
   assert(opponentSnap.objectFit === 'contain' && opponentSnap.objectPosition === '50% 50%', `opponent SVG must scale fully without cropping: ${JSON.stringify(opponentSnap)}`)
-  assert(opponentSnap.availability === 'supported' && opponentSnap.opponentChips === 1 && opponentSnap.createDisabled === false, `opponent count 1 support mismatch: ${JSON.stringify(opponentSnap)}`)
+  assert(opponentSnap.availability === 'supported' && opponentSnap.opponentChips === 1 && opponentSnap.plannedSlots === 0 && opponentSnap.rosterTiles === 2 && opponentSnap.createDisabled === false, `opponent count 1 support mismatch: ${JSON.stringify(opponentSnap)}`)
   assert(opponentSnap.launchText.includes('Darlok'), 'launch briefing must include Darlok for one opponent')
+  const rosterInfoMeta = await evaluate(`(() => {
+    const buttons = [...document.querySelectorAll('.new-game-empire-info-button')]
+    return { count: buttons.length, labels: buttons.map((button) => button.getAttribute('aria-label') ?? ''), texts: buttons.map((button) => button.textContent?.trim() ?? '') }
+  })()`)
+  assert(rosterInfoMeta.count === 2 && rosterInfoMeta.labels.every((label) => label.length > 0) && rosterInfoMeta.texts.every((text) => text === '?'), `roster race info buttons mismatch: ${JSON.stringify(rosterInfoMeta)}`)
+  await evaluate(`document.querySelector('.new-game-empire-tile[data-role="opponent"] .new-game-empire-info-button')?.click(); true`)
+  await sleep(60)
+  const rosterRaceInfo = await evaluate(`(() => {
+    const dialog = document.querySelector('.new-game-race-info-dialog')
+    return { title: dialog?.querySelector('h3')?.textContent ?? '', copy: dialog?.querySelector('.visual-selector-dialog-copy')?.textContent ?? '', portrait: dialog?.querySelector('img')?.getAttribute('src') ?? '', modal: dialog?.getAttribute('aria-modal') ?? '' }
+  })()`)
+  assert(rosterRaceInfo.title === 'Darlok' && rosterRaceInfo.copy.length > 0 && rosterRaceInfo.portrait === '/assets/races/darlok/portrait.webp' && rosterRaceInfo.modal === 'true', `roster race info dialog must open from the question-mark button: ${JSON.stringify(rosterRaceInfo)}`)
+  await evaluate(`document.querySelector('.new-game-race-info-dialog .visual-selector-dialog-close')?.click(); true`)
+  await sleep(40)
+  assert(await evaluate(`document.querySelector('.new-game-race-info-dialog') === null`), 'roster race info dialog must close cleanly')
   await evaluate(`document.querySelectorAll('.visual-selector[data-setting-id="opponent-count"] .visual-selector-arrow')[1]?.click(); true`)
   await sleep(90)
   opponentSnap = await evaluate(opponentSnapshotExpression)
   assert(opponentSnap.selected === '2 Gegner' && opponentSnap.source === '/assets/new-game/opponent-count/2.svg', `opponent count 2 mismatch: ${JSON.stringify(opponentSnap)}`)
-  assert(opponentSnap.availability === 'supported' && opponentSnap.opponentChips === 2 && opponentSnap.createDisabled === false, `opponent count 2 support mismatch: ${JSON.stringify(opponentSnap)}`)
+  assert(opponentSnap.availability === 'supported' && opponentSnap.opponentChips === 2 && opponentSnap.plannedSlots === 0 && opponentSnap.rosterTiles === 3 && opponentSnap.createDisabled === false, `opponent count 2 support mismatch: ${JSON.stringify(opponentSnap)}`)
   assert(opponentSnap.launchText.includes('Darlok') && (opponentSnap.launchText.includes('Klackon') || opponentSnap.launchText.includes('Human')), 'launch briefing must include both resolved opponents')
   await evaluate(`document.querySelectorAll('.visual-selector[data-setting-id="opponent-count"] .visual-selector-arrow')[1]?.click(); true`)
   await sleep(90)
   opponentSnap = await evaluate(opponentSnapshotExpression)
   assert(opponentSnap.selected === '3 Gegner' && opponentSnap.source === '/assets/new-game/opponent-count/3.svg', `opponent count 3 mismatch: ${JSON.stringify(opponentSnap)}`)
-  assert(opponentSnap.availability === 'planned' && opponentSnap.opponentChips === 0 && opponentSnap.createDisabled === true, `planned opponent count mismatch: ${JSON.stringify(opponentSnap)}`)
+  assert(opponentSnap.availability === 'planned' && opponentSnap.opponentChips === 0 && opponentSnap.plannedSlots === 3 && opponentSnap.rosterTiles === 4 && opponentSnap.createDisabled === true, `planned opponent count mismatch: ${JSON.stringify(opponentSnap)}`)
   assert(opponentSnap.reason.length > 0, 'planned opponent count must show server-derived reason')
   assert(opponentSnap.scrollWidth === opponentSnap.viewportWidth && opponentSnap.viewportWidth === 390, `opponent selector mobile overflow: ${opponentSnap.scrollWidth}/${opponentSnap.viewportWidth}`)
+  for (let step = 0; step < 4; step++) {
+    await evaluate(`document.querySelectorAll('.visual-selector[data-setting-id="opponent-count"] .visual-selector-arrow')[1]?.click(); true`)
+    await sleep(50)
+  }
+  opponentSnap = await evaluate(opponentSnapshotExpression)
+  const plannedSevenRoster = await evaluate(`(() => {
+    const grid = document.querySelector('.new-game-empire-roster-grid')
+    const columns = grid ? getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length : 0
+    return { planned: document.querySelectorAll('.new-game-empire-tile[data-role="planned-opponent"]').length, total: document.querySelectorAll('.new-game-empire-tile').length, infoButtons: document.querySelectorAll('.new-game-empire-info-button').length, columns, text: grid?.textContent ?? '', scrollWidth: document.documentElement.scrollWidth, viewportWidth: document.documentElement.clientWidth }
+  })()`)
+  assert(opponentSnap.selected === '7 Gegner' && opponentSnap.availability === 'planned' && opponentSnap.createDisabled === true, `opponent count 7 planned state mismatch: ${JSON.stringify(opponentSnap)}`)
+  assert(plannedSevenRoster.planned === 7 && plannedSevenRoster.total === 8 && plannedSevenRoster.infoButtons === 1 && plannedSevenRoster.columns === 2, `planned seven-opponent roster must expose all eight empire slots without invented races: ${JSON.stringify(plannedSevenRoster)}`)
+  assert(plannedSevenRoster.text.includes('KI 7') && plannedSevenRoster.text.includes('Rasse geplant') && plannedSevenRoster.scrollWidth === plannedSevenRoster.viewportWidth, `planned seven-opponent roster mobile layout mismatch: ${JSON.stringify(plannedSevenRoster)}`)
 
   await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false })
   await sleep(90)
@@ -742,6 +776,15 @@ async function main() {
     return { race: race ? { width: race.width, height: race.height } : null, opponent: opponent ? { width: opponent.width, height: opponent.height } : null }
   })()`)
   assert(chooserParity.race && chooserParity.opponent && Math.abs(chooserParity.race.height - chooserParity.opponent.height) <= 1 && Math.abs(chooserParity.race.width - chooserParity.opponent.width) <= 1, `Race/Opponent chooser desktop height mismatch: ${JSON.stringify(chooserParity)}`)
+  const rosterDesktop = await evaluate(`(() => {
+    const raceCard = document.querySelector('.new-game-race-card')?.getBoundingClientRect()
+    const opponentCard = document.querySelector('.new-game-opponent-card')?.getBoundingClientRect()
+    const rosterCard = document.querySelector('.new-game-empire-roster-card')?.getBoundingClientRect()
+    const rosterGrid = document.querySelector('.new-game-empire-roster-grid')
+    return { raceHeight: raceCard?.height ?? 0, opponentHeight: opponentCard?.height ?? 0, opponentWidth: opponentCard?.width ?? 0, rosterWidth: rosterCard?.width ?? 0, columns: rosterGrid ? getComputedStyle(rosterGrid).gridTemplateColumns.split(' ').filter(Boolean).length : 0 }
+  })()`)
+  assert(Math.abs(rosterDesktop.raceHeight - rosterDesktop.opponentHeight) <= 1, `desktop selector card heights must match after roster extraction: ${JSON.stringify(rosterDesktop)}`)
+  assert(rosterDesktop.rosterWidth >= rosterDesktop.opponentWidth * 1.9 && rosterDesktop.columns === 4, `desktop empire roster must span full width with four columns: ${JSON.stringify(rosterDesktop)}`)
   await sleep(120)
   snap = await evaluate(snapshotExpression)
   assert(snap.scrollWidth === snap.viewportWidth, `desktop horizontal overflow: ${snap.scrollWidth}/${snap.viewportWidth}`)

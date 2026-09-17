@@ -5879,13 +5879,26 @@ button.galaxy-node-marker-player-fleet.is-open {
 }
 
 
-.new-game-opponent-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
-.new-game-opponent-chip { display: flex; min-width: 0; flex: 1 1 180px; align-items: center; gap: 10px; padding: 9px 11px; border: 1px solid var(--border-soft); border-radius: 14px; background: rgba(8, 22, 35, .72); }
-.new-game-opponent-chip img { width: 54px; height: 54px; flex: 0 0 54px; border-radius: 12px; object-fit: cover; }
-.new-game-opponent-chip span { display: grid; min-width: 0; gap: 2px; }
-.new-game-opponent-chip strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.new-game-opponent-chip small { color: var(--text-muted); }
-.new-game-local-player-chip { border-color: color-mix(in srgb, var(--accent) 62%, var(--border-soft)); background: color-mix(in srgb, var(--accent) 8%, rgba(8, 22, 35, .72)); }
+.new-game-empire-roster-card { margin-top: 16px; }
+.new-game-empire-roster-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.new-game-empire-roster-header .eyebrow { margin-bottom: 3px; }
+.new-game-empire-roster-header h2 { margin: 0; font-size: 1.08rem; }
+.new-game-empire-roster-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.new-game-empire-tile { position: relative; display: grid; min-width: 0; grid-template-columns: 72px minmax(0, 1fr) 38px; align-items: center; gap: 10px; min-height: 112px; padding: 10px; border: 1px solid var(--border-soft); border-radius: 16px; background: rgba(8, 22, 35, .78); }
+.new-game-empire-tile-local { border-color: color-mix(in srgb, var(--accent) 62%, var(--border-soft)); background: color-mix(in srgb, var(--accent) 8%, rgba(8, 22, 35, .78)); }
+.new-game-empire-tile-planned { border-style: dashed; background: rgba(8, 22, 35, .48); }
+.new-game-empire-portrait, .new-game-empire-placeholder { display: grid; width: 72px; height: 90px; place-items: center; overflow: hidden; border: 1px solid color-mix(in srgb, var(--border-soft) 88%, transparent); border-radius: 12px; background: #02050a; }
+.new-game-empire-portrait img { width: 100%; height: 100%; object-fit: contain; object-position: center; }
+.new-game-empire-placeholder { color: var(--text-muted); font-size: 2rem; font-weight: 900; }
+.new-game-empire-copy { display: grid; min-width: 0; gap: 3px; }
+.new-game-empire-copy small { color: var(--text-muted); font-size: .7rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.new-game-empire-copy strong, .new-game-empire-copy span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.new-game-empire-copy span { color: var(--text-muted); font-size: .8rem; }
+.new-game-empire-info-button { display: grid; width: 38px; height: 38px; place-items: center; padding: 0; border: 1px solid var(--border-soft); border-radius: 50%; background: rgba(16, 39, 58, .92); color: var(--accent); font-size: 1rem; font-weight: 900; cursor: pointer; }
+.new-game-empire-info-button:hover { border-color: var(--accent); background: rgba(26, 55, 78, .98); }
+.new-game-empire-info-button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.new-game-race-info-dialog-body { display: grid; grid-template-columns: 150px minmax(0, 1fr); align-items: start; gap: 18px; }
+.new-game-race-info-dialog-body > img { width: 150px; height: 188px; border: 1px solid var(--border-soft); border-radius: 14px; object-fit: contain; object-position: center; background: #02050a; }
 .new-game-composition-reason { min-width: 0; margin: 10px 2px 0; overflow: visible; color: var(--warning); font-size: .9rem; line-height: 1.4; white-space: normal; overflow-wrap: anywhere; word-break: normal; text-overflow: clip; }
 .new-game-composition-note { min-width: 0; margin: 10px 2px 0; color: var(--text-muted); font-size: .9rem; line-height: 1.4; white-space: normal; overflow-wrap: anywhere; }
 .new-game-launch-briefing { display: grid; gap: 12px; padding: 14px; border: 1px solid var(--border-soft); border-radius: 18px; background: rgba(6, 17, 29, .76); }
@@ -5900,6 +5913,22 @@ button.galaxy-node-marker-player-fleet.is-open {
 .new-game-launch-item em { color: var(--text-muted); font-size: .8rem; font-style: normal; }
 @media (max-width: 520px) {
   .new-game-launch-grid { grid-template-columns: minmax(0, 1fr); }
-  .new-game-opponent-chip { flex-basis: 100%; }
+  .new-game-race-info-dialog-body { grid-template-columns: minmax(0, 1fr); }
+  .new-game-race-info-dialog-body > img { width: 120px; height: 150px; margin-inline: auto; }
   .new-game-launch-item > img, .new-game-launch-seed-mark { width: 72px; flex-basis: 72px; }
+}
+
+@media (max-width: 900px) {
+  .new-game-empire-roster-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .new-game-empire-roster-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .new-game-empire-tile { grid-template-columns: 52px minmax(0, 1fr) 32px; gap: 7px; min-height: 88px; padding: 8px; }
+  .new-game-empire-portrait, .new-game-empire-placeholder { width: 52px; height: 66px; border-radius: 10px; }
+  .new-game-empire-info-button { width: 32px; height: 32px; }
+  .new-game-empire-copy strong { font-size: .88rem; }
+  .new-game-empire-copy span { font-size: .72rem; }
+}
+@media (max-width: 340px) {
+  .new-game-empire-roster-grid { grid-template-columns: minmax(0, 1fr); }
 }
