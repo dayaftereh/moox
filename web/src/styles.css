@@ -5713,22 +5713,20 @@ button.galaxy-node-marker-player-fleet.is-open {
   user-select: none;
   pointer-events: none;
 }
-.visual-selector[data-setting-id="player-race"] .visual-selector-art {
-  width: min(82vw, 320px);
-  aspect-ratio: 4 / 5;
-  margin-inline: auto;
-}
 .new-game-race-art {
+  display: grid;
   width: 100%;
   height: 100%;
+  place-items: center;
   overflow: hidden;
-  background: #02050a;
+  background: radial-gradient(circle at 50% 45%, rgba(54, 115, 151, .22), transparent 58%), #02050a;
 }
 .new-game-race-art img {
   display: block;
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   user-select: none;
   pointer-events: none;
 }
@@ -5798,10 +5796,6 @@ button.galaxy-node-marker-player-fleet.is-open {
   .visual-selector-art {
     aspect-ratio: 16 / 9;
     border-radius: 20px;
-  }
-  .visual-selector[data-setting-id="player-race"] .visual-selector-art {
-    width: min(100%, 400px);
-    aspect-ratio: 4 / 5;
   }
   .visual-selector-controls {
     grid-template-columns: 52px minmax(0, 1fr) 52px;
@@ -5875,6 +5869,7 @@ button.galaxy-node-marker-player-fleet.is-open {
 .new-game-opponent-chip span { display: grid; min-width: 0; gap: 2px; }
 .new-game-opponent-chip strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .new-game-opponent-chip small { color: var(--text-muted); }
+.new-game-local-player-chip { border-color: color-mix(in srgb, var(--accent) 62%, var(--border-soft)); background: color-mix(in srgb, var(--accent) 8%, rgba(8, 22, 35, .72)); }
 .new-game-composition-reason { margin: 10px 2px 0; color: var(--warning); font-size: .9rem; line-height: 1.35; }
 .new-game-launch-briefing { display: grid; gap: 12px; padding: 14px; border: 1px solid var(--border-soft); border-radius: 18px; background: rgba(6, 17, 29, .76); }
 .new-game-launch-briefing h2 { margin: 0; font-size: 1rem; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted); }

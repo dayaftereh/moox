@@ -453,8 +453,8 @@ async function main() {
   assert(raceSnap.source === '/assets/races/human/portrait.webp', `Human portrait path wrong: ${raceSnap.source}`)
   assert(raceSnap.imageReady, 'Human portrait did not load at native 1200x1500')
   assert(raceSnap.dotCount === 13, `expected 13 Race position dots, got ${raceSnap.dotCount}`)
-  assert(raceSnap.art?.width <= 320 && raceSnap.art?.height <= 400.5, `mobile Race art exceeds frozen 320x400 target: ${JSON.stringify(raceSnap.art)}`)
-  assert(raceSnap.ratio === '4 / 5', `expected 4/5 mobile Race aspect ratio, got ${raceSnap.ratio}`)
+  assert(raceSnap.art?.width > raceSnap.art?.height, `mobile Race chooser must use the shared landscape frame: ${JSON.stringify(raceSnap.art)}`)
+  assert(raceSnap.ratio === '16 / 10', `expected shared 16/10 mobile Race aspect ratio, got ${raceSnap.ratio}`)
   assert(raceSnap.info?.width >= 44 && raceSnap.info?.height >= 44, `mobile Race info target below 44px: ${JSON.stringify(raceSnap.info)}`)
   assert(raceSnap.arrows.every((item) => item?.width >= 44 && item?.height >= 44), `mobile Race arrow target below 44px: ${JSON.stringify(raceSnap.arrows)}`)
   assert(raceSnap.scrollWidth === raceSnap.viewportWidth && raceSnap.viewportWidth === 390, `Race selector mobile horizontal overflow: ${raceSnap.scrollWidth}/${raceSnap.viewportWidth}`)
@@ -463,6 +463,35 @@ async function main() {
   assert(raceSnap.selectorAria === 'Spielerrasse', `Race selector aria-label mismatch: ${raceSnap.selectorAria}`)
   assert(raceSnap.infoAria.includes('Menschen'), `Race info aria-label must identify current race: ${raceSnap.infoAria}`)
   assert(raceSnap.arrowAria.every((label) => label.length > 0), `Race arrows require text aria-labels: ${JSON.stringify(raceSnap.arrowAria)}`)
+
+  // Darlok planned-player composition preview: browsing must stay coherent without pretending the race is playable.
+  await evaluate(`document.querySelector('.visual-selector[data-setting-id="player-race"]')?.focus(); true`)
+  await key('Home', 'Home', 36)
+  await key('ArrowRight', 'ArrowRight', 39)
+  await key('ArrowRight', 'ArrowRight', 39)
+  await sleep(90)
+  raceSnap = await evaluate(raceSnapshotExpression)
+  assert(raceSnap.selected === 'Darlok' && raceSnap.availability === 'planned', `Darlok planned state mismatch: ${JSON.stringify(raceSnap)}`)
+  const darlokComposition = await evaluate(`(() => {
+    const opponentRoot = document.querySelector('.visual-selector[data-setting-id="opponent-count"]')
+    const local = document.querySelector('.new-game-opponent-chip[data-role="local-player"]')
+    return {
+      localText: local?.textContent ?? '',
+      opponentChips: document.querySelectorAll('.new-game-opponent-chip[data-role="opponent"]').length,
+      opponentAvailability: opponentRoot?.getAttribute('data-availability'),
+      reason: document.querySelector('.new-game-composition-reason')?.textContent ?? '',
+      createDisabled: document.querySelector('.new-game-form button[type=submit]')?.disabled,
+    }
+  })()`)
+  assert(darlokComposition.localText.includes('Darlok') && darlokComposition.localText.includes('Du'), `Darlok local-player preview missing: ${JSON.stringify(darlokComposition)}`)
+  assert(darlokComposition.opponentChips === 0 && darlokComposition.opponentAvailability === 'planned', `Darlok must not fabricate an opponent assignment: ${JSON.stringify(darlokComposition)}`)
+  assert(darlokComposition.reason.length > 0 && darlokComposition.createDisabled === true, `Darlok planned reason/create lock missing: ${JSON.stringify(darlokComposition)}`)
+  await key('ArrowRight', 'ArrowRight', 39)
+  await key('ArrowRight', 'ArrowRight', 39)
+  await key('ArrowRight', 'ArrowRight', 39)
+  await sleep(90)
+  raceSnap = await evaluate(raceSnapshotExpression)
+  assert(raceSnap.selected === 'Menschen' && raceSnap.availability === 'supported', 'Race selector must restore Human after Darlok preview smoke')
 
   await evaluate(`(() => { const image = document.querySelector('.visual-selector[data-setting-id="player-race"] .new-game-race-art img'); if (image) image.style.visibility = 'hidden'; return true })()`)
   raceSnap = await evaluate(raceSnapshotExpression)
@@ -640,7 +669,8 @@ async function main() {
       artWidth: artRect?.width,
       availability: root?.getAttribute('data-availability'),
       statusText: root?.querySelector('.visual-selector-current-status')?.textContent,
-      chips: document.querySelectorAll('.new-game-opponent-chip').length,
+      opponentChips: document.querySelectorAll('.new-game-opponent-chip[data-role="opponent"]').length,
+      localPlayerText: document.querySelector('.new-game-opponent-chip[data-role="local-player"]')?.textContent ?? '',
       reason: document.querySelector('.new-game-composition-reason')?.textContent ?? '',
       createDisabled: document.querySelector('.new-game-form button[type=submit]')?.disabled,
       launchText: document.querySelector('.new-game-launch-briefing')?.textContent ?? '',
@@ -654,23 +684,30 @@ async function main() {
   let opponentSnap = await evaluate(opponentSnapshotExpression)
   assert(opponentSnap.selected === '1 Gegner', `opponent count 1 label mismatch: ${opponentSnap.selected}`)
   assert(opponentSnap.source === '/assets/new-game/opponent-count/1.svg' && opponentSnap.imageReady, `opponent count 1 art invalid: ${JSON.stringify(opponentSnap)}`)
-  assert(opponentSnap.availability === 'supported' && opponentSnap.chips === 1 && opponentSnap.createDisabled === false, `opponent count 1 support mismatch: ${JSON.stringify(opponentSnap)}`)
+  assert(opponentSnap.availability === 'supported' && opponentSnap.opponentChips === 1 && opponentSnap.createDisabled === false, `opponent count 1 support mismatch: ${JSON.stringify(opponentSnap)}`)
   assert(opponentSnap.launchText.includes('Darlok'), 'launch briefing must include Darlok for one opponent')
   await evaluate(`document.querySelectorAll('.visual-selector[data-setting-id="opponent-count"] .visual-selector-arrow')[1]?.click(); true`)
   await sleep(90)
   opponentSnap = await evaluate(opponentSnapshotExpression)
   assert(opponentSnap.selected === '2 Gegner' && opponentSnap.source === '/assets/new-game/opponent-count/2.svg', `opponent count 2 mismatch: ${JSON.stringify(opponentSnap)}`)
-  assert(opponentSnap.availability === 'supported' && opponentSnap.chips === 2 && opponentSnap.createDisabled === false, `opponent count 2 support mismatch: ${JSON.stringify(opponentSnap)}`)
+  assert(opponentSnap.availability === 'supported' && opponentSnap.opponentChips === 2 && opponentSnap.createDisabled === false, `opponent count 2 support mismatch: ${JSON.stringify(opponentSnap)}`)
   assert(opponentSnap.launchText.includes('Darlok') && (opponentSnap.launchText.includes('Klackon') || opponentSnap.launchText.includes('Human')), 'launch briefing must include both resolved opponents')
   await evaluate(`document.querySelectorAll('.visual-selector[data-setting-id="opponent-count"] .visual-selector-arrow')[1]?.click(); true`)
   await sleep(90)
   opponentSnap = await evaluate(opponentSnapshotExpression)
   assert(opponentSnap.selected === '3 Gegner' && opponentSnap.source === '/assets/new-game/opponent-count/3.svg', `opponent count 3 mismatch: ${JSON.stringify(opponentSnap)}`)
-  assert(opponentSnap.availability === 'planned' && opponentSnap.chips === 0 && opponentSnap.createDisabled === true, `planned opponent count mismatch: ${JSON.stringify(opponentSnap)}`)
+  assert(opponentSnap.availability === 'planned' && opponentSnap.opponentChips === 0 && opponentSnap.createDisabled === true, `planned opponent count mismatch: ${JSON.stringify(opponentSnap)}`)
   assert(opponentSnap.reason.length > 0, 'planned opponent count must show server-derived reason')
   assert(opponentSnap.scrollWidth === opponentSnap.viewportWidth && opponentSnap.viewportWidth === 390, `opponent selector mobile overflow: ${opponentSnap.scrollWidth}/${opponentSnap.viewportWidth}`)
 
   await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false })
+  await sleep(90)
+  const chooserParity = await evaluate(`(() => {
+    const race = document.querySelector('.visual-selector[data-setting-id="player-race"] .visual-selector-art')?.getBoundingClientRect()
+    const opponent = document.querySelector('.visual-selector[data-setting-id="opponent-count"] .visual-selector-art')?.getBoundingClientRect()
+    return { race: race ? { width: race.width, height: race.height } : null, opponent: opponent ? { width: opponent.width, height: opponent.height } : null }
+  })()`)
+  assert(chooserParity.race && chooserParity.opponent && Math.abs(chooserParity.race.height - chooserParity.opponent.height) <= 1 && Math.abs(chooserParity.race.width - chooserParity.opponent.width) <= 1, `Race/Opponent chooser desktop height mismatch: ${JSON.stringify(chooserParity)}`)
   await sleep(120)
   snap = await evaluate(snapshotExpression)
   assert(snap.scrollWidth === snap.viewportWidth, `desktop horizontal overflow: ${snap.scrollWidth}/${snap.viewportWidth}`)
@@ -691,9 +728,8 @@ async function main() {
   assert(technologySnap.arrows.every((item) => item?.width >= 52 && item?.height >= 52), `desktop Technology arrow target below 52px: ${JSON.stringify(technologySnap.arrows)}`)
   assert(technologySnap.scrollWidth === technologySnap.viewportWidth, `desktop Technology horizontal overflow: ${technologySnap.scrollWidth}/${technologySnap.viewportWidth}`)
   raceSnap = await evaluate(raceSnapshotExpression)
-  assert(raceSnap.art?.width >= 399 && raceSnap.art?.width <= 401, `desktop Race artwork width outside frozen 400px target: ${raceSnap.art?.width}`)
-  assert(raceSnap.art?.height >= 499 && raceSnap.art?.height <= 501, `desktop Race artwork height outside frozen 500px target: ${raceSnap.art?.height}`)
-  assert(raceSnap.ratio === '4 / 5', `desktop Race aspect ratio mismatch: ${raceSnap.ratio}`)
+  assert(raceSnap.art?.width > raceSnap.art?.height, `desktop Race chooser must use the shared landscape frame: ${JSON.stringify(raceSnap.art)}`)
+  assert(raceSnap.ratio === '16 / 9', `desktop Race aspect ratio mismatch: ${raceSnap.ratio}`)
   assert(raceSnap.arrows.every((item) => item?.width >= 52 && item?.height >= 52), `desktop Race arrow target below 52px: ${JSON.stringify(raceSnap.arrows)}`)
   assert(ageSnap.radius === '20px', `expected 20px desktop Galaxy Age art radius, got ${ageSnap.radius}`)
   assert(ageSnap.arrows.every((item) => item?.width >= 52 && item?.height >= 52), `desktop Galaxy Age arrow target below 52px: ${JSON.stringify(ageSnap.arrows)}`)

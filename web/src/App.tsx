@@ -386,6 +386,7 @@ function App() {
   const galaxySizeProfilesByID = useMemo(() => new Map((galaxyCatalog?.sizes ?? []).map((profile) => [profile.id, profile] as const)), [galaxyCatalog])
   const galaxyAgeProfilesByID = useMemo(() => new Map((galaxyCatalog?.ages ?? []).map((profile) => [profile.id, profile] as const)), [galaxyCatalog])
   const raceProfilesByID = useMemo(() => new Map((raceCatalog?.profiles ?? []).map((profile) => [profile.id, profile] as const)), [raceCatalog])
+  const selectedPlayerRaceProfile = raceProfilesByID.get(playerRaceID)
   const technologyProfilesByID = useMemo(() => new Map((technologyCatalog?.profiles ?? []).map((profile) => [profile.id, profile] as const)), [technologyCatalog])
   const opponentCountProfilesByID = useMemo(() => new Map((compositionCatalog?.counts ?? []).map((profile) => [String(profile.opponent_count), profile] as const)), [compositionCatalog])
   const opponentGalaxyLimitsByID = useMemo(() => new Map((compositionCatalog?.galaxy_limits ?? []).map((limit) => [limit.galaxy_size, limit] as const)), [compositionCatalog])
@@ -1504,22 +1505,33 @@ function App() {
                     closeInfoLabel={t('newGame.closeInfo')}
                     options={opponentCountIDs.map((id) => {
                       const profile = opponentCountProfilesByID.get(id)
+                      const count = Number(id)
+                      const assignmentAvailable = compositionCatalog.assignments.some((assignment) => assignment.player_race_id === playerRaceID && assignment.opponent_count === count)
+                      const withinGalaxyLimit = count <= (opponentGalaxyLimitsByID.get(galaxySizeID)?.max_supported_opponents ?? 0)
+                      const combinationSupported = profile?.availability === 'supported' && assignmentAvailable && withinGalaxyLimit
+                      const details = profile
+                        ? [...profile.facts, ...(profile.reason_id ? [t('newGame.additionalAIRaceBreadthRequired')] : []), ...(!assignmentAvailable && selectedPlayerRaceProfile?.player_availability === 'planned' ? [t('newGame.playerRaceCompositionPlanned')] : [])]
+                        : [compositionCatalogError ? t('newGame.compositionCatalogUnavailable') : t('newGame.compositionCatalogLoading')]
                       return {
                         id,
-                        title: t('newGame.opponentCountValue', { count: Number(id) }),
-                        details: profile ? [...profile.facts, ...(profile.reason_id ? [t('newGame.additionalAIRaceBreadthRequired')] : [])] : [compositionCatalogError ? t('newGame.compositionCatalogUnavailable') : t('newGame.compositionCatalogLoading')],
+                        title: t('newGame.opponentCountValue', { count }),
+                        details,
                         visual: <OpponentCountArt count={id} />,
-                        availability: profile?.availability ?? 'planned' as const,
-                        availabilityLabel: profile?.availability === 'supported' ? t('newGame.supportedNow') : t('newGame.plannedOption'),
+                        availability: combinationSupported ? 'supported' as const : 'planned' as const,
+                        availabilityLabel: combinationSupported ? t('newGame.supportedNow') : t('newGame.plannedOption'),
                       }
                     })}
                   />
-                  {selectedOpponentAssignment && selectedOpponentProfile?.availability === 'supported' && (
+                  {selectedPlayerRaceProfile && (
                     <div className="new-game-opponent-list" aria-label={t('newGame.opponents')}>
-                      {selectedOpponentAssignment.opponents.map((opponent) => {
+                      <div className="new-game-opponent-chip new-game-local-player-chip" data-role="local-player">
+                        <img src={`/assets/races/${playerRaceID}/portrait.webp`} alt="" draggable={false} />
+                        <span><strong>{raceTitle(t, selectedPlayerRaceProfile)}</strong><small>{t('newGame.localPlayer')}</small></span>
+                      </div>
+                      {selectedOpponentAssignment && selectedOpponentProfile?.availability === 'supported' && selectedOpponentAssignment.opponents.map((opponent) => {
                         const profile = raceProfilesByID.get(opponent.race_id)
                         return (
-                          <div className="new-game-opponent-chip" key={opponent.race_id}>
+                          <div className="new-game-opponent-chip" data-role="opponent" key={opponent.race_id}>
                             <img src={`/assets/races/${opponent.race_id}/portrait.webp`} alt="" draggable={false} />
                             <span><strong>{profile ? raceTitle(t, profile) : opponent.race_id}</strong><small>{t('newGame.aiController')}</small></span>
                           </div>
@@ -1527,6 +1539,7 @@ function App() {
                       })}
                     </div>
                   )}
+                  {!selectedOpponentAssignment && selectedPlayerRaceProfile?.player_availability === 'planned' && <p className="new-game-composition-reason">{t('newGame.playerRaceCompositionPlanned')}</p>}
                   {selectedOpponentProfile?.reason_id === 'additional_ai_race_breadth_required' && <p className="new-game-composition-reason">{t('newGame.additionalAIRaceBreadthRequired')}</p>}
                 </>
               ) : (
