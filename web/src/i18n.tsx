@@ -1093,7 +1093,7 @@ const de: Catalog = {
   'newGame.factHuge': 'Maximal geplante Ausdehnung',
   'newGame.technologyLevel': 'Starttechnologie',
   'newGame.technologyCatalogLoading': 'Autoritative Daten zur Starttechnologie werden geladen.',
-  'newGame.technologyCatalogUnavailable': 'Autoritative Daten zur Starttechnologie sind nicht verfugbar; das Erstellen eines Spiels ist gesperrt.',
+  'newGame.technologyCatalogUnavailable': 'Autoritative Daten zur Starttechnologie sind nicht verfügbar; das Erstellen eines Spiels ist gesperrt.',
   'newGame.techPreWarp': 'Pre-Warp',
   'newGame.techAverage': 'Durchschnittliche Technologie',
   'newGame.techAdvanced': 'Fortgeschrittene Technologie',
