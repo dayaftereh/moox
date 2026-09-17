@@ -59,10 +59,11 @@ assert(app.includes("const technologyLevelAssetVersion = 'slice16-5-g3-art2'"), 
 assert(app.includes("technologyProfilesByID.get(technologyLevelID)?.availability !== 'supported'"), 'Create Game support-boundary lock missing')
 assert(api.includes("export type NewGameTechnologyLevel = 'pre_warp' | 'average' | 'advanced'"), 'typed technology-level API union missing')
 assert(api.includes("'/api/v1/new-game/technologies'"), 'technology catalog endpoint binding missing')
-assert(i18n.includes("'newGame.techAverage': 'Durchschnittlich'"), 'compact German Average label missing')
+assert(i18n.includes("'newGame.techAverage': 'Durchschnitt'"), 'compact German Average label missing')
 assert(i18n.includes("'newGame.techAdvanced': 'Fortschrittlich'"), 'compact German Advanced label missing')
 assert(styles.includes('.visual-selector[data-setting-id="technology-level"] .visual-selector-current h3'), 'technology-specific one-line title rule missing')
 assert(styles.includes('white-space: nowrap'), 'technology title no-wrap rule missing')
+assert(/\.new-game-galaxy-art img,\s*\.new-game-difficulty-art img,\s*\.new-game-technology-art img\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*cover;/s.test(styles), 'technology artwork must scale to selector frame')
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'moox-tech-art-'))
 try {

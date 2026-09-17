@@ -64,3 +64,20 @@ Verification after refinement:
 - `check:technology-start` - pass with three distinct/reproducible SVG composition signatures and compact one-line labels;
 - live server returns HTTP 200 for all three updated SVGs;
 - live JS bundle contains the new art cache-busting version and compact German labels.
+## Selector rendering root-cause fix
+
+A second live review found that the correct SVG URLs were switching in the DOM, but the Technology artwork did not inherit the sizing rules already used by Galaxy and Difficulty artwork. The raw 1200x675 SVG therefore rendered at intrinsic size inside a roughly 331 px selector frame, leaving most of the image outside the visible card and making Pre-Warp and Average appear effectively identical.
+
+Fix:
+
+- added `.new-game-technology-art` to the shared artwork frame rule;
+- added `.new-game-technology-art img` to the shared image rule with `display: block; width: 100%; height: 100%; object-fit: cover`;
+- changed the German Average label from `Durchschnittlich` to the requested compact noun `Durchschnitt`;
+- strengthened `check:technology-start` so the Technology image scaling selector and required sizing declarations are part of the contract.
+
+Live browser verification after the fix:
+
+- selector frame: 331 px wide;
+- Technology image: 331 x 185 px instead of 1200 x 675 px;
+- Average uses `average.svg`; Pre-Warp uses `pre-warp.svg`; Advanced uses `advanced.svg`;
+- rendered 64x36 canvas fingerprints are different for all three states: Average `ba1e4ffe`, Pre-Warp `34bb2c49`, Advanced `2715f5f4`.

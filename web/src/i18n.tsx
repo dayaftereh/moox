@@ -1095,7 +1095,7 @@ const de: Catalog = {
   'newGame.technologyCatalogLoading': 'Autoritative Daten zur Starttechnologie werden geladen.',
   'newGame.technologyCatalogUnavailable': 'Autoritative Daten zur Starttechnologie sind nicht verfügbar; das Erstellen eines Spiels ist gesperrt.',
   'newGame.techPreWarp': 'Pre-Warp',
-  'newGame.techAverage': 'Durchschnittlich',
+  'newGame.techAverage': 'Durchschnitt',
   'newGame.techAdvanced': 'Fortschrittlich',
   'newGame.supportedNow': 'Jetzt unterstützt',
   'newGame.plannedOption': 'Geplant / gesperrt',
