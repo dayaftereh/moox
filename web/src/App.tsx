@@ -1539,7 +1539,7 @@ function App() {
                       })}
                     </div>
                   )}
-                  {!selectedOpponentAssignment && selectedPlayerRaceProfile?.player_availability === 'planned' && <p className="new-game-composition-reason">{t('newGame.playerRaceCompositionPlanned')}</p>}
+                  {!selectedOpponentAssignment && selectedPlayerRaceProfile?.player_availability === 'planned' && <p className="new-game-composition-note">{t('newGame.playerRaceCompositionPlanned')}</p>}
                   {selectedOpponentProfile?.reason_id === 'additional_ai_race_breadth_required' && <p className="new-game-composition-reason">{t('newGame.additionalAIRaceBreadthRequired')}</p>}
                 </>
               ) : (

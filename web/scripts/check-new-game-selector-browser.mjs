@@ -433,6 +433,9 @@ async function main() {
       availability: root?.getAttribute('data-availability'),
       source: image?.getAttribute('src') ?? null,
       imageReady: image ? Boolean(image.complete && image.naturalWidth === 1200 && image.naturalHeight === 1500) : false,
+      image: rect(image),
+      imageFit: image ? getComputedStyle(image).objectFit : '',
+      imagePosition: image ? getComputedStyle(image).objectPosition : '',
       placeholder: Boolean(root?.querySelector('.new-game-race-placeholder')),
       art: rect(art),
       ratio: art ? getComputedStyle(art).aspectRatio : '',
@@ -452,6 +455,8 @@ async function main() {
   assert(raceSnap.availability === 'supported', `Human availability=${raceSnap.availability}`)
   assert(raceSnap.source === '/assets/races/human/portrait.webp', `Human portrait path wrong: ${raceSnap.source}`)
   assert(raceSnap.imageReady, 'Human portrait did not load at native 1200x1500')
+  assert(raceSnap.image && Math.abs(raceSnap.image.width - (raceSnap.art.width - 2)) <= 2 && Math.abs(raceSnap.image.height - (raceSnap.art.height - 2)) <= 2, `Race image box must match the selector frame instead of overflowing vertically: ${JSON.stringify({ art: raceSnap.art, image: raceSnap.image })}`)
+  assert(raceSnap.imageFit === 'contain' && raceSnap.imagePosition === '50% 50%', `Race portrait must show the full 4:5 artwork centered: ${JSON.stringify({ fit: raceSnap.imageFit, pos: raceSnap.imagePosition })}`)
   assert(raceSnap.dotCount === 13, `expected 13 Race position dots, got ${raceSnap.dotCount}`)
   assert(raceSnap.art?.width > raceSnap.art?.height, `mobile Race chooser must use the shared landscape frame: ${JSON.stringify(raceSnap.art)}`)
   assert(raceSnap.ratio === '16 / 10', `expected shared 16/10 mobile Race aspect ratio, got ${raceSnap.ratio}`)
@@ -479,23 +484,23 @@ async function main() {
       localText: local?.textContent ?? '',
       opponentChips: document.querySelectorAll('.new-game-opponent-chip[data-role="opponent"]').length,
       opponentAvailability: opponentRoot?.getAttribute('data-availability'),
-      reason: document.querySelector('.new-game-composition-reason')?.textContent ?? '',
-      reasonLayout: (() => { const el = document.querySelector('.new-game-composition-reason'); if (!el) return null; const cs = getComputedStyle(el); return { clientHeight: el.clientHeight, scrollHeight: el.scrollHeight, overflow: cs.overflow, whiteSpace: cs.whiteSpace, textOverflow: cs.textOverflow } })(),
+      warningReason: document.querySelector('.new-game-composition-reason')?.textContent ?? '',
+      note: document.querySelector('.new-game-composition-note')?.textContent ?? '',
+      noteColor: (() => { const el = document.querySelector('.new-game-composition-note'); return el ? getComputedStyle(el).color : '' })(),
       createDisabled: document.querySelector('.new-game-form button[type=submit]')?.disabled,
     }
   })()`)
   assert(darlokComposition.localText.includes('Darlok') && darlokComposition.localText.includes('Du'), `Darlok local-player preview missing: ${JSON.stringify(darlokComposition)}`)
   assert(darlokComposition.opponentChips === 0 && darlokComposition.opponentAvailability === 'planned', `Darlok must not fabricate an opponent assignment: ${JSON.stringify(darlokComposition)}`)
-  assert(darlokComposition.reason.length > 0 && darlokComposition.createDisabled === true, `Darlok planned reason/create lock missing: ${JSON.stringify(darlokComposition)}`)
-  assert(darlokComposition.reasonLayout && darlokComposition.reasonLayout.scrollHeight <= darlokComposition.reasonLayout.clientHeight + 1 && darlokComposition.reasonLayout.overflow === 'visible' && darlokComposition.reasonLayout.whiteSpace === 'normal' && darlokComposition.reasonLayout.textOverflow === 'clip', `Darlok planned reason is visually clipped: ${JSON.stringify(darlokComposition.reasonLayout)}`)
+  assert(darlokComposition.warningReason === '' && darlokComposition.note.length > 0 && darlokComposition.createDisabled === true, `Darlok planned state must use a neutral composition note, not a yellow warning: ${JSON.stringify(darlokComposition)}`)
   await key('ArrowRight', 'ArrowRight', 39)
   await key('ArrowRight', 'ArrowRight', 39)
   await key('ArrowRight', 'ArrowRight', 39)
   await sleep(90)
   raceSnap = await evaluate(raceSnapshotExpression)
   assert(raceSnap.selected === 'Menschen' && raceSnap.availability === 'supported', 'Race selector must restore Human after Darlok preview smoke')
-  const restoredCompositionReason = await evaluate(`document.querySelector('.new-game-composition-reason')?.textContent ?? ''`)
-  assert(restoredCompositionReason === '', `planned player-race reason must disappear after restoring Human: ${restoredCompositionReason}`)
+  const restoredCompositionNote = await evaluate(`document.querySelector('.new-game-composition-note')?.textContent ?? ''`)
+  assert(restoredCompositionNote === '', `planned player-race note must disappear after restoring Human: ${restoredCompositionNote}`)
 
   await evaluate(`(() => { const image = document.querySelector('.visual-selector[data-setting-id="player-race"] .new-game-race-art img'); if (image) image.style.visibility = 'hidden'; return true })()`)
   raceSnap = await evaluate(raceSnapshotExpression)

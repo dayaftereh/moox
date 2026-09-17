@@ -128,7 +128,7 @@ assert(app.includes('settingId="player-race"'), 'App does not bind the semantic 
 assert(app.includes('race_id: playerRaceID'), 'Create Game does not submit selected player race')
 assert(app.includes("raceProfilesByID.get(playerRaceID)?.player_availability !== 'supported'"), 'Create Game is not locked by authoritative race support state')
 assert(!styles.includes('.visual-selector[data-setting-id="player-race"] .visual-selector-art'), 'player-race must use the shared selector artwork frame')
-assert(/\.new-game-race-art img\s*\{[^}]*width:\s*auto;[^}]*height:\s*100%;[^}]*object-fit:\s*contain;/s.test(styles), 'player-race portrait must fit the shared landscape frame without cropping')
+assert(/\.new-game-race-art img\s*\{[^}]*width:\s*100%;[^}]*height:\s*100%;[^}]*object-fit:\s*contain;[^}]*object-position:\s*center;/s.test(styles), 'player-race portrait must fill the image box and contain the full 4:5 artwork without clipping')
 assert(selector.includes('VisualSelectorOption<TId extends string = string>'), 'VisualSelector option ID contract is not generic')
 assert(selector.includes('VisualSelectorProps<TId extends string>'), 'VisualSelector props are not typed by option ID')
 assert(selector.includes("event.key === 'ArrowLeft'"), 'VisualSelector missing ArrowLeft navigation')
