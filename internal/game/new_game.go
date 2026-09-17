@@ -138,7 +138,10 @@ func (r *EconomyRules) NewGame(seed uint64, settings NewGameSettings) (NewGameRe
 	if err != nil {
 		return NewGameResult{}, err
 	}
-	homeIndexes := farthestNewGameSystemPair(systems)
+	homeIndexes, err := selectNewGameHomeSystems(systems, len(settings.Players))
+	if err != nil {
+		return NewGameResult{}, err
+	}
 	for _, index := range homeIndexes {
 		if err := r.fillNewGameHomeSystem(&systems[index], rng, ageProfile); err != nil {
 			return NewGameResult{}, err
@@ -160,7 +163,7 @@ func (r *EconomyRules) NewGame(seed uint64, settings NewGameSettings) (NewGameRe
 		return NewGameResult{}, err
 	}
 
-	if err := r.initializeNewGameStartingAssets(state, homeIndexes[:], settings.TechnologyLevel); err != nil {
+	if err := r.initializeNewGameStartingAssets(state, homeIndexes, settings.TechnologyLevel); err != nil {
 		return NewGameResult{}, err
 	}
 	// Allocate non-planet body IDs only after every legacy New Game object has
@@ -325,14 +328,12 @@ func (r *EconomyRules) validateNewGameSettings(settings NewGameSettings) error {
 	if settings.StrategicCombat {
 		return fmt.Errorf("strategic_combat is not supported in Slice 09")
 	}
-	if len(settings.Players) != 2 {
-		return fmt.Errorf("Slice 09 requires exactly two players, got %d", len(settings.Players))
+	if len(settings.Players) < 2 || len(settings.Players) > 3 {
+		return fmt.Errorf("Slice 16.6 supports exactly two or three players, got %d", len(settings.Players))
 	}
 	seenSeats := map[protocol.SeatID]struct{}{}
 	seenRaces := map[string]struct{}{}
 	seenNames := map[string]struct{}{}
-	darlokCount := 0
-	supportedPlayerCount := 0
 	previousSeat := protocol.SeatID(0)
 	for i, player := range settings.Players {
 		if player.SeatID == 0 {
@@ -352,14 +353,6 @@ func (r *EconomyRules) validateNewGameSettings(settings NewGameSettings) error {
 		if _, ok := r.RaceModifiers[player.RaceID]; !ok {
 			return fmt.Errorf("ruleset has no race %q", player.RaceID)
 		}
-		switch {
-		case player.RaceID == FixedOpponentRaceID:
-			darlokCount++
-		case IsSupportedPlayerRaceID(player.RaceID):
-			supportedPlayerCount++
-		default:
-			return fmt.Errorf("player[%d] unsupported player race_id %q", i, player.RaceID)
-		}
 		seenRaces[player.RaceID] = struct{}{}
 		name := strings.TrimSpace(player.EmpireName)
 		if name == "" {
@@ -371,11 +364,19 @@ func (r *EconomyRules) validateNewGameSettings(settings NewGameSettings) error {
 		}
 		seenNames[nameKey] = struct{}{}
 	}
-	if darlokCount != 1 {
-		return fmt.Errorf("Slice 16.4 requires exactly one %s opponent", FixedOpponentRaceID)
+	playerRaceID := settings.Players[0].RaceID
+	if !IsSupportedPlayerRaceID(playerRaceID) {
+		return fmt.Errorf("player[0] unsupported player race_id %q", playerRaceID)
 	}
-	if supportedPlayerCount != 1 {
-		return fmt.Errorf("Slice 16.4 requires exactly one supported player race")
+	expectedOpponents, ok := ExpectedNewGameOpponentRaceIDs(playerRaceID, len(settings.Players)-1)
+	if !ok {
+		return fmt.Errorf("unsupported opponent composition for player race %q with %d opponents", playerRaceID, len(settings.Players)-1)
+	}
+	for i, expectedRaceID := range expectedOpponents {
+		actual := settings.Players[i+1].RaceID
+		if actual != expectedRaceID {
+			return fmt.Errorf("player[%d] race_id %q does not match frozen Slice 16.6 composition; want %q", i+1, actual, expectedRaceID)
+		}
 	}
 	return nil
 }
@@ -650,6 +651,46 @@ func farthestNewGameSystemPair(systems []newGameSystemPlan) [2]int {
 		}
 	}
 	return best
+}
+
+func selectNewGameHomeSystems(systems []newGameSystemPlan, playerCount int) ([]int, error) {
+	if playerCount < 2 || playerCount > len(systems) {
+		return nil, fmt.Errorf("cannot select %d home systems from %d systems", playerCount, len(systems))
+	}
+	pair := farthestNewGameSystemPair(systems)
+	selected := []int{pair[0], pair[1]}
+	if playerCount == 2 {
+		return selected, nil
+	}
+	chosen := map[int]struct{}{pair[0]: {}, pair[1]: {}}
+	for len(selected) < playerCount {
+		bestIndex := -1
+		bestMinDistance := int64(-1)
+		for candidate := range systems {
+			if _, exists := chosen[candidate]; exists {
+				continue
+			}
+			minDistance := int64(^uint64(0) >> 1)
+			for _, homeIndex := range selected {
+				dx := int64(systems[candidate].X - systems[homeIndex].X)
+				dy := int64(systems[candidate].Y - systems[homeIndex].Y)
+				distance := dx*dx + dy*dy
+				if distance < minDistance {
+					minDistance = distance
+				}
+			}
+			if bestIndex < 0 || minDistance > bestMinDistance || (minDistance == bestMinDistance && (systems[candidate].ID < systems[bestIndex].ID || (systems[candidate].ID == systems[bestIndex].ID && candidate < bestIndex))) {
+				bestIndex = candidate
+				bestMinDistance = minDistance
+			}
+		}
+		if bestIndex < 0 {
+			return nil, fmt.Errorf("unable to select home system %d", len(selected)+1)
+		}
+		selected = append(selected, bestIndex)
+		chosen[bestIndex] = struct{}{}
+	}
+	return selected, nil
 }
 
 func weightedNewGameChoice(rng *core.RNG, weights []int) (int, error) {

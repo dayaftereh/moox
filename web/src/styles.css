@@ -5694,7 +5694,8 @@ button.galaxy-node-marker-player-fleet.is-open {
 }
 .new-game-galaxy-art,
 .new-game-difficulty-art,
-.new-game-technology-art {
+.new-game-technology-art,
+.new-game-opponent-count-art {
   width: 100%;
   height: 100%;
   min-height: 100%;
@@ -5703,7 +5704,8 @@ button.galaxy-node-marker-player-fleet.is-open {
 }
 .new-game-galaxy-art img,
 .new-game-difficulty-art img,
-.new-game-technology-art img {
+.new-game-technology-art img,
+.new-game-opponent-count-art img {
   display: block;
   width: 100%;
   height: 100%;
@@ -5864,4 +5866,28 @@ button.galaxy-node-marker-player-fleet.is-open {
   .visual-selector-current h3 {
     font-size: 1.55rem;
   }
+}
+
+
+.new-game-opponent-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.new-game-opponent-chip { display: flex; min-width: 0; flex: 1 1 180px; align-items: center; gap: 10px; padding: 9px 11px; border: 1px solid var(--border-soft); border-radius: 14px; background: rgba(8, 22, 35, .72); }
+.new-game-opponent-chip img { width: 54px; height: 54px; flex: 0 0 54px; border-radius: 12px; object-fit: cover; }
+.new-game-opponent-chip span { display: grid; min-width: 0; gap: 2px; }
+.new-game-opponent-chip strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.new-game-opponent-chip small { color: var(--text-muted); }
+.new-game-composition-reason { margin: 10px 2px 0; color: var(--warning); font-size: .9rem; line-height: 1.35; }
+.new-game-launch-briefing { display: grid; gap: 12px; padding: 14px; border: 1px solid var(--border-soft); border-radius: 18px; background: rgba(6, 17, 29, .76); }
+.new-game-launch-briefing h2 { margin: 0; font-size: 1rem; letter-spacing: .07em; text-transform: uppercase; color: var(--text-muted); }
+.new-game-launch-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.new-game-launch-item { display: flex; min-width: 0; align-items: center; gap: 10px; padding: 9px; border: 1px solid color-mix(in srgb, var(--border-soft) 86%, transparent); border-radius: 14px; background: rgba(10, 27, 42, .72); }
+.new-game-launch-item > img, .new-game-launch-seed-mark { width: 82px; height: 48px; flex: 0 0 82px; border-radius: 10px; object-fit: cover; background: #02050a; }
+.new-game-launch-seed-mark { display: grid; place-items: center; color: var(--accent); font-size: 1.7rem; font-weight: 800; }
+.new-game-launch-item span { display: grid; min-width: 0; gap: 2px; }
+.new-game-launch-item small { color: var(--text-muted); font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; }
+.new-game-launch-item strong, .new-game-launch-item em { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.new-game-launch-item em { color: var(--text-muted); font-size: .8rem; font-style: normal; }
+@media (max-width: 520px) {
+  .new-game-launch-grid { grid-template-columns: minmax(0, 1fr); }
+  .new-game-opponent-chip { flex-basis: 100%; }
+  .new-game-launch-item > img, .new-game-launch-seed-mark { width: 72px; flex-basis: 72px; }
 }

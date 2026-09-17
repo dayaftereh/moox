@@ -1,6 +1,6 @@
 # Planned slice 16.6 - Player composition and New Game integration
 
-Status: **open; Gates 1-2 complete, Gate 3 next (2026-09-17)**.
+Status: **open; Gates 1-3 complete, Gate 4 next (2026-09-17)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slices 16.1-16.5.
@@ -112,12 +112,14 @@ Frozen V1: all four galaxy sizes support 1-2 Builtin-AI opponents; counts 3-7 re
 
 ## Gate 3 - implementation
 
-- [ ] Extend server New Game request/validation for accepted multi-seat settings.
-- [ ] Extend built-in AI seat bootstrap as required by the frozen matrix.
-- [ ] Add opponent-count visual selector and opponent race composition UI.
-- [ ] Integrate all Slice-16 selectors into one coherent New Game flow.
-- [ ] Add deterministic seed/settings/race/player-count fixture matrix.
-- [ ] Ensure Save/Resume and subsequent browser play work for every accepted setup class.
+- [x] Extend server New Game request/validation for accepted multi-seat settings.
+- [x] Extend built-in AI seat bootstrap as required by the frozen matrix.
+- [x] Add opponent-count visual selector and opponent race composition UI.
+- [x] Integrate all Slice-16 selectors into one coherent New Game flow.
+- [x] Add deterministic seed/settings/race/player-count fixture matrix.
+- [x] Ensure Save/Resume and subsequent browser play work for every accepted setup class.
+
+Permanent Gate-3 implementation evidence: `docs/research/SLICE_16_6_GATE3_PLAYER_COMPOSITION_IMPLEMENTATION_2026-09-17.md`.
 
 ## Gate 4 - player-composition integration acceptance
 

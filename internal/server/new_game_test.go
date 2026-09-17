@@ -43,6 +43,10 @@ func serverNewGameRequest(gameID, seed string) newGameRequest {
 				{SeatID: protocol.SeatID(2), EmpireName: "Darlok", RaceID: "darlok"},
 			},
 		},
+		Controllers: []app.PlayerControllerSpec{
+			{SeatID: 1, Controller: session.ControllerLocalHuman},
+			{SeatID: 2, Controller: session.ControllerBuiltinAI},
+		},
 	}
 }
 
@@ -86,7 +90,7 @@ func TestHTTPCreateGameAcceptsBuiltinAIControllerAssignment(t *testing.T) {
 	server, _ := newNewGameServer(t)
 	defer server.Close()
 	request := serverNewGameRequest("human-ai", "0x8009")
-	request.Controllers = []app.PlayerControllerSpec{{SeatID: 2, Controller: session.ControllerBuiltinAI}}
+	request.Controllers = []app.PlayerControllerSpec{{SeatID: 1, Controller: session.ControllerLocalHuman}, {SeatID: 2, Controller: session.ControllerBuiltinAI}}
 	var created newGameResponse
 	postJSON(t, server.URL+"/api/v1/games", request, "", http.StatusCreated, &created)
 	var human app.PlayerSnapshot

@@ -3,6 +3,7 @@ import {
   aggregatePopulation,
   createGame,
   exportLiveSnapshot,
+  getCompositionCatalog,
   getDifficultyCatalog,
   getGalaxyCatalog,
   getRaceCatalog,
@@ -33,6 +34,8 @@ import {
   type PresetRaceCatalog,
   type PresetRaceID,
   type PresetRaceProfile,
+  type NewGameCompositionCatalog,
+  type NewGameOpponentAssignment,
   type NewGameTechnologyCatalog,
   type NewGameTechnologyLevel,
   type NewGameTechnologyProfile,
@@ -74,6 +77,8 @@ const difficultyIDs: readonly DifficultyID[] = ['easy', 'normal', 'hard', 'very_
 const runtimeRacePortraitIDs = new Set<PresetRaceID>(['human', 'klackon', 'darlok'])
 const technologyLevelIDs: readonly NewGameTechnologyLevel[] = ['pre_warp', 'average', 'advanced']
 const technologyLevelAssetVersion = 'slice16-5-g3-art2'
+const opponentCountIDs = ['1', '2', '3', '4', '5', '6', '7'] as const
+type OpponentCountID = (typeof opponentCountIDs)[number]
 
 function GalaxySizeArt({ size }: { size: GalaxySizeID }) {
   return (
@@ -172,6 +177,14 @@ function TechnologyLevelArt({ level }: { level: NewGameTechnologyLevel }) {
   return (
     <div className="new-game-technology-art" aria-hidden="true">
       <img src={`${newGameAssetPath('technology-level', technologyLevelAssetOptionID(level), 'svg')}?v=${technologyLevelAssetVersion}`} alt="" draggable={false} />
+    </div>
+  )
+}
+
+function OpponentCountArt({ count }: { count: OpponentCountID }) {
+  return (
+    <div className="new-game-opponent-count-art" aria-hidden="true">
+      <img src={newGameAssetPath('opponent-count', count, 'svg')} alt="" draggable={false} />
     </div>
   )
 }
@@ -331,8 +344,10 @@ function App() {
   const [technologyLevelID, setTechnologyLevelID] = useState<NewGameTechnologyLevel>('average')
   const [technologyCatalog, setTechnologyCatalog] = useState<NewGameTechnologyCatalog | null>(null)
   const [technologyCatalogError, setTechnologyCatalogError] = useState('')
+  const [opponentCountID, setOpponentCountID] = useState<OpponentCountID>('1')
+  const [compositionCatalog, setCompositionCatalog] = useState<NewGameCompositionCatalog | null>(null)
+  const [compositionCatalogError, setCompositionCatalogError] = useState('')
   const [playerName, setPlayerName] = useState('Human')
-  const [darlokName, setDarlokName] = useState('Darlok')
   const [creatingGame, setCreatingGame] = useState(false)
   const [gameID, setGameID] = useState('')
   const [seatID, setSeatID] = useState(1)
@@ -372,6 +387,13 @@ function App() {
   const galaxyAgeProfilesByID = useMemo(() => new Map((galaxyCatalog?.ages ?? []).map((profile) => [profile.id, profile] as const)), [galaxyCatalog])
   const raceProfilesByID = useMemo(() => new Map((raceCatalog?.profiles ?? []).map((profile) => [profile.id, profile] as const)), [raceCatalog])
   const technologyProfilesByID = useMemo(() => new Map((technologyCatalog?.profiles ?? []).map((profile) => [profile.id, profile] as const)), [technologyCatalog])
+  const opponentCountProfilesByID = useMemo(() => new Map((compositionCatalog?.counts ?? []).map((profile) => [String(profile.opponent_count), profile] as const)), [compositionCatalog])
+  const opponentGalaxyLimitsByID = useMemo(() => new Map((compositionCatalog?.galaxy_limits ?? []).map((limit) => [limit.galaxy_size, limit] as const)), [compositionCatalog])
+  const selectedOpponentCount = Number(opponentCountID)
+  const selectedOpponentProfile = opponentCountProfilesByID.get(opponentCountID)
+  const selectedOpponentAssignment = useMemo<NewGameOpponentAssignment | undefined>(() => compositionCatalog?.assignments.find((assignment) => assignment.player_race_id === playerRaceID && assignment.opponent_count === selectedOpponentCount), [compositionCatalog, playerRaceID, selectedOpponentCount])
+  const selectedOpponentLimit = opponentGalaxyLimitsByID.get(galaxySizeID)?.max_supported_opponents ?? 0
+  const compositionSupported = selectedOpponentProfile?.availability === 'supported' && selectedOpponentCount <= selectedOpponentLimit && Boolean(selectedOpponentAssignment)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -438,6 +460,23 @@ function App() {
         if (controller.signal.aborted) return
         setTechnologyCatalog(null)
         setTechnologyCatalogError(errorText(reason))
+      })
+    return () => controller.abort()
+  }, [])
+
+  useEffect(() => {
+    const controller = new AbortController()
+    setCompositionCatalogError('')
+    void getCompositionCatalog(controller.signal)
+      .then((catalog) => {
+        setCompositionCatalog(catalog)
+        setCompositionCatalogError('')
+        setOpponentCountID((current) => catalog.counts.some((profile) => String(profile.opponent_count) === current) ? current : String(catalog.default_opponent_count) as OpponentCountID)
+      })
+      .catch((reason) => {
+        if (controller.signal.aborted) return
+        setCompositionCatalog(null)
+        setCompositionCatalogError(errorText(reason))
       })
     return () => controller.abort()
   }, [])
@@ -855,24 +894,27 @@ function App() {
     setCreatingGame(true)
     setError('')
     try {
+      if (!compositionSupported || !selectedOpponentAssignment) throw new Error(t('newGame.compositionUnavailable'))
+      const composedPlayers = [
+        { seat_id: 1, empire_name: playerName, race_id: playerRaceID },
+        ...selectedOpponentAssignment.opponents.map((opponent, index) => ({ seat_id: index + 2, empire_name: opponent.default_empire_name, race_id: opponent.race_id })),
+      ]
+      const composedControllers = [
+        { seat_id: 1, controller: 'local_human' as const },
+        ...selectedOpponentAssignment.opponents.map((_, index) => ({ seat_id: index + 2, controller: 'builtin_ai' as const })),
+      ]
       const created = await createGame({
         schema_version: 1,
         game_id: newGameID,
         seed: newGameSeed,
-        controllers: [
-          { seat_id: 1, controller: 'local_human' },
-          { seat_id: 2, controller: 'builtin_ai' },
-        ],
+        controllers: composedControllers,
         settings: {
           difficulty_id: difficultyID,
           galaxy_size: galaxySizeID,
           galaxy_age: galaxyAgeID,
           technology_level: technologyLevelID,
           strategic_combat: false,
-          players: [
-            { seat_id: 1, empire_name: playerName, race_id: playerRaceID },
-            { seat_id: 2, empire_name: darlokName, race_id: 'darlok' },
-          ],
+          players: composedPlayers,
         },
       })
       setGames(await listGames())
@@ -1447,6 +1489,53 @@ function App() {
                 </div>
               )}
             </Card>
+            <Card className="new-game-visual-card new-game-opponent-card">
+              {compositionCatalog ? (
+                <>
+                  <VisualSelector<OpponentCountID>
+                    settingId="opponent-count"
+                    label={t('newGame.opponents')}
+                    selectedId={opponentCountID}
+                    onChange={setOpponentCountID}
+                    previousLabel={t('newGame.previousOption')}
+                    nextLabel={t('newGame.nextOption')}
+                    positionLabel={(current, total) => t('newGame.optionPosition', { current, total })}
+                    infoLabel={(optionTitle) => t('newGame.moreInfo', { option: optionTitle })}
+                    closeInfoLabel={t('newGame.closeInfo')}
+                    options={opponentCountIDs.map((id) => {
+                      const profile = opponentCountProfilesByID.get(id)
+                      return {
+                        id,
+                        title: t('newGame.opponentCountValue', { count: Number(id) }),
+                        details: profile ? [...profile.facts, ...(profile.reason_id ? [t('newGame.additionalAIRaceBreadthRequired')] : [])] : [compositionCatalogError ? t('newGame.compositionCatalogUnavailable') : t('newGame.compositionCatalogLoading')],
+                        visual: <OpponentCountArt count={id} />,
+                        availability: profile?.availability ?? 'planned' as const,
+                        availabilityLabel: profile?.availability === 'supported' ? t('newGame.supportedNow') : t('newGame.plannedOption'),
+                      }
+                    })}
+                  />
+                  {selectedOpponentAssignment && selectedOpponentProfile?.availability === 'supported' && (
+                    <div className="new-game-opponent-list" aria-label={t('newGame.opponents')}>
+                      {selectedOpponentAssignment.opponents.map((opponent) => {
+                        const profile = raceProfilesByID.get(opponent.race_id)
+                        return (
+                          <div className="new-game-opponent-chip" key={opponent.race_id}>
+                            <img src={`/assets/races/${opponent.race_id}/portrait.webp`} alt="" draggable={false} />
+                            <span><strong>{profile ? raceTitle(t, profile) : opponent.race_id}</strong><small>{t('newGame.aiController')}</small></span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
+                  {selectedOpponentProfile?.reason_id === 'additional_ai_race_breadth_required' && <p className="new-game-composition-reason">{t('newGame.additionalAIRaceBreadthRequired')}</p>}
+                </>
+              ) : (
+                <div className="new-game-race-loading">
+                  <h2>{t('newGame.opponents')}</h2>
+                  <p>{compositionCatalogError ? t('newGame.compositionCatalogUnavailable') : t('newGame.compositionCatalogLoading')}</p>
+                </div>
+              )}
+            </Card>
           </div>
 
           <Card>
@@ -1456,9 +1545,37 @@ function App() {
                 <label>{t('newGame.seed')}<input value={newGameSeed} onChange={(event) => setNewGameSeed(event.target.value)} required placeholder={t('newGame.seedPlaceholder')} /></label>
                 <label>{t('newGame.techCombat')}<input value={t('newGame.techCombatValue')} disabled /></label>
                 <label>{t('newGame.playerEmpire')}<input value={playerName} onChange={(event) => setPlayerName(event.target.value)} required /></label>
-                <label>{t('newGame.darlokEmpire')}<input value={darlokName} onChange={(event) => setDarlokName(event.target.value)} required /></label>
               </div>
-              <button type="submit" className="button-primary button-wide" disabled={creatingGame || !difficultyCatalog || !difficultyProfilesByID.has(difficultyID) || !galaxyCatalog || !galaxySizeProfilesByID.has(galaxySizeID) || !galaxyAgeProfilesByID.has(galaxyAgeID) || !technologyCatalog || technologyProfilesByID.get(technologyLevelID)?.availability !== 'supported' || !raceCatalog || raceProfilesByID.get(playerRaceID)?.player_availability !== 'supported'}><GameIcon name="star" />{creatingGame ? t('newGame.creating') : t('newGame.create')}</button>
+              <section className="new-game-launch-briefing" aria-label={t('newGame.launchBriefing')}>
+                <h2>{t('newGame.launchBriefing')}</h2>
+                <div className="new-game-launch-grid">
+                  <article className="new-game-launch-item">
+                    <img src={newGameAssetPath('galaxy-size', galaxySizeID, 'svg')} alt="" />
+                    <span><small>{t('newGame.launchGalaxy')}</small><strong>{t(galaxySizeTitleKey(galaxySizeID))}</strong><em>{t(galaxyAgeTitleKey(galaxyAgeID))}</em></span>
+                  </article>
+                  <article className="new-game-launch-item">
+                    <img src={newGameAssetPath('difficulty', difficultyAssetOptionID(difficultyID), 'svg')} alt="" />
+                    <span><small>{t('newGame.launchDifficulty')}</small><strong>{t(difficultyTitleKey(difficultyID))}</strong></span>
+                  </article>
+                  <article className="new-game-launch-item">
+                    <img src={`/assets/races/${playerRaceID}/portrait.webp`} alt="" />
+                    <span><small>{t('newGame.launchPlayer')}</small><strong>{playerName}</strong><em>{raceProfilesByID.get(playerRaceID) ? raceTitle(t, raceProfilesByID.get(playerRaceID)!) : playerRaceID}</em></span>
+                  </article>
+                  <article className="new-game-launch-item">
+                    <img src={`${newGameAssetPath('technology-level', technologyLevelAssetOptionID(technologyLevelID), 'svg')}?v=${technologyLevelAssetVersion}`} alt="" />
+                    <span><small>{t('newGame.launchTechnology')}</small><strong>{technologyProfilesByID.get(technologyLevelID) ? technologyTitle(t, technologyProfilesByID.get(technologyLevelID)!) : technologyLevelID}</strong></span>
+                  </article>
+                  <article className="new-game-launch-item">
+                    <img src={newGameAssetPath('opponent-count', opponentCountID, 'svg')} alt="" />
+                    <span><small>{t('newGame.launchOpponents')}</small><strong>{t('newGame.opponentCountValue', { count: selectedOpponentCount })}</strong><em>{selectedOpponentAssignment?.opponents.map((opponent) => raceProfilesByID.get(opponent.race_id) ? raceTitle(t, raceProfilesByID.get(opponent.race_id)!) : opponent.race_id).join(' · ') ?? t('newGame.compositionUnavailable')}</em></span>
+                  </article>
+                  <article className="new-game-launch-item new-game-launch-seed">
+                    <div className="new-game-launch-seed-mark" aria-hidden="true">#</div>
+                    <span><small>{t('newGame.launchSeed')}</small><strong>{newGameSeed}</strong></span>
+                  </article>
+                </div>
+              </section>
+              <button type="submit" className="button-primary button-wide" disabled={creatingGame || !difficultyCatalog || !difficultyProfilesByID.has(difficultyID) || !galaxyCatalog || !galaxySizeProfilesByID.has(galaxySizeID) || !galaxyAgeProfilesByID.has(galaxyAgeID) || !technologyCatalog || technologyProfilesByID.get(technologyLevelID)?.availability !== 'supported' || !raceCatalog || raceProfilesByID.get(playerRaceID)?.player_availability !== 'supported' || !compositionCatalog || !compositionSupported}><GameIcon name="star" />{creatingGame ? t('newGame.creating') : t('newGame.create')}</button>
             </form>
           </Card>
         </main>

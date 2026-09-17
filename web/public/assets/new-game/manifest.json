@@ -154,5 +154,70 @@
       "provenance": "original-procedural-mox",
       "generator": "web/scripts/generate-technology-level-art.mjs"
     }
+  ],
+  "assets": [
+    {
+      "id": "new-game:opponent-count:1",
+      "domain": "opponent-count",
+      "option_id": "1",
+      "format": "svg",
+      "path": "/assets/new-game/opponent-count/1.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-opponent-count-art.mjs"
+    },
+    {
+      "id": "new-game:opponent-count:2",
+      "domain": "opponent-count",
+      "option_id": "2",
+      "format": "svg",
+      "path": "/assets/new-game/opponent-count/2.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-opponent-count-art.mjs"
+    },
+    {
+      "id": "new-game:opponent-count:3",
+      "domain": "opponent-count",
+      "option_id": "3",
+      "format": "svg",
+      "path": "/assets/new-game/opponent-count/3.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-opponent-count-art.mjs"
+    },
+    {
+      "id": "new-game:opponent-count:4",
+      "domain": "opponent-count",
+      "option_id": "4",
+      "format": "svg",
+      "path": "/assets/new-game/opponent-count/4.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-opponent-count-art.mjs"
+    },
+    {
+      "id": "new-game:opponent-count:5",
+      "domain": "opponent-count",
+      "option_id": "5",
+      "format": "svg",
+      "path": "/assets/new-game/opponent-count/5.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-opponent-count-art.mjs"
+    },
+    {
+      "id": "new-game:opponent-count:6",
+      "domain": "opponent-count",
+      "option_id": "6",
+      "format": "svg",
+      "path": "/assets/new-game/opponent-count/6.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-opponent-count-art.mjs"
+    },
+    {
+      "id": "new-game:opponent-count:7",
+      "domain": "opponent-count",
+      "option_id": "7",
+      "format": "svg",
+      "path": "/assets/new-game/opponent-count/7.svg",
+      "provenance": "original-procedural-mox",
+      "generator": "web/scripts/generate-opponent-count-art.mjs"
+    }
   ]
 }

@@ -104,3 +104,46 @@ func TestHTTPPersistenceInvalidSaveMapsToBadRequest(t *testing.T) {
 	defer server.Close()
 	rawSnapshotRequest(t, http.MethodPost, server.URL+"/api/v1/games/import", []byte("{"), http.StatusBadRequest)
 }
+
+func TestHTTPPersistenceThreePlayerCompositionRoundTrip(t *testing.T) {
+	for _, technology := range []game.NewGameTechnologyLevel{game.NewGameTechnologyPreWarp, game.NewGameTechnologyAverage} {
+		t.Run(string(technology), func(t *testing.T) {
+			sourceServer, _ := newPersistenceServer(t, true)
+			defer sourceServer.Close()
+			gameID := "persist-three-" + string(technology)
+			request := serverNewGameRequest(gameID, "0x1663")
+			request.Settings.TechnologyLevel = technology
+			request.Settings.Players = append(request.Settings.Players, game.NewGamePlayerSpec{SeatID: 3, EmpireName: "Klackon", RaceID: "klackon"})
+			request.Controllers = append(request.Controllers, app.PlayerControllerSpec{SeatID: 3, Controller: "builtin_ai"})
+			var created newGameResponse
+			postJSON(t, sourceServer.URL+"/api/v1/games", request, "", http.StatusCreated, &created)
+			if len(created.Players) != 3 {
+				t.Fatalf("created players=%d want=3", len(created.Players))
+			}
+
+			saved := rawSnapshotRequest(t, http.MethodGet, sourceServer.URL+"/api/v1/games/"+gameID+"/live-snapshot", nil, http.StatusOK)
+			targetServer, targetHost := newPersistenceServer(t, true)
+			defer targetServer.Close()
+			rawSnapshotRequest(t, http.MethodPost, targetServer.URL+"/api/v1/games/import", saved, http.StatusCreated)
+			reexported := rawSnapshotRequest(t, http.MethodGet, targetServer.URL+"/api/v1/games/"+gameID+"/live-snapshot", nil, http.StatusOK)
+			if !bytes.Equal(saved, reexported) {
+				t.Fatalf("three-player import/re-export changed snapshot: %d vs %d bytes", len(saved), len(reexported))
+			}
+			wantRaces := []string{"human", "darlok", "klackon"}
+			wantControllers := []string{"local_human", "builtin_ai", "builtin_ai"}
+			for index, player := range created.Players {
+				snapshot, err := targetHost.PlayerSnapshot(gameID, player.SeatID)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if snapshot.View.Empire.RaceID != wantRaces[index] || string(snapshot.View.Seat.Seat.Controller) != wantControllers[index] {
+					t.Fatalf("seat %d race/controller=%s/%s want=%s/%s", player.SeatID, snapshot.View.Empire.RaceID, snapshot.View.Seat.Seat.Controller, wantRaces[index], wantControllers[index])
+				}
+			}
+			rawSnapshotRequest(t, http.MethodPut, targetServer.URL+"/api/v1/games/"+gameID+"/live-snapshot", saved, http.StatusOK)
+			if games := targetHost.ListGames(); len(games) != 1 || games[0].ChangeSequence != 2 {
+				t.Fatalf("restored games=%+v", games)
+			}
+		})
+	}
+}

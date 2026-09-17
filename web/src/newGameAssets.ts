@@ -4,6 +4,7 @@ export type NewGameAssetDomain =
   | 'galaxy-age'
   | 'technology-level'
   | 'player-count'
+  | 'opponent-count'
 
 export type NewGameAssetFormat = 'svg' | 'webp' | 'png'
 

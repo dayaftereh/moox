@@ -79,6 +79,48 @@ func (h *Host) NewGameTechnologyCatalog() (game.NewGameTechnologyCatalog, error)
 	}
 	return game.TechnologyLevelCatalog(), nil
 }
+func (h *Host) NewGameCompositionCatalog() (game.NewGameCompositionCatalog, error) {
+	if h == nil {
+		return game.NewGameCompositionCatalog{}, fmt.Errorf("host is nil")
+	}
+	h.mu.RLock()
+	rules := h.newGameRules
+	h.mu.RUnlock()
+	if rules == nil {
+		return game.NewGameCompositionCatalog{}, fmt.Errorf("new game creation is not configured")
+	}
+	return game.NewGameCompositionCatalogForRules(rules)
+}
+
+func validateNewGameControllerComposition(settings game.NewGameSettings, controllers []PlayerControllerSpec) error {
+	playerSeats := make(map[protocol.SeatID]int, len(settings.Players))
+	for i, player := range settings.Players {
+		playerSeats[player.SeatID] = i
+	}
+	seen := make(map[protocol.SeatID]struct{}, len(controllers))
+	for _, controller := range controllers {
+		if controller.SeatID == 0 {
+			return fmt.Errorf("controller seat ID must be non-zero")
+		}
+		if _, exists := seen[controller.SeatID]; exists {
+			return fmt.Errorf("duplicate controller assignment for seat %d", controller.SeatID)
+		}
+		seen[controller.SeatID] = struct{}{}
+		index, ok := playerSeats[controller.SeatID]
+		if !ok {
+			return fmt.Errorf("controller assignment references unknown player seat %d", controller.SeatID)
+		}
+		expected := session.ControllerBuiltinAI
+		if index == 0 {
+			expected = session.ControllerLocalHuman
+		}
+		if controller.Controller != expected {
+			return fmt.Errorf("seat %d controller %q does not match Slice 16.6 composition; want %q", controller.SeatID, controller.Controller, expected)
+		}
+	}
+	return nil
+}
+
 func (h *Host) CreateGame(request CreateGameRequest) (CreateGameResult, error) {
 	if h == nil {
 		return CreateGameResult{}, fmt.Errorf("host is nil")
@@ -102,6 +144,10 @@ func (h *Host) CreateGame(request CreateGameRequest) (CreateGameResult, error) {
 	}
 	if rules == nil || resolver == nil || immediateResolver == nil {
 		return CreateGameResult{}, fmt.Errorf("new game creation is not configured")
+	}
+
+	if err := validateNewGameControllerComposition(request.Settings, request.Controllers); err != nil {
+		return CreateGameResult{}, fmt.Errorf("%w: %v", game.ErrInvalidNewGameSettings, err)
 	}
 
 	controllers := make(map[protocol.SeatID]session.ControllerType, len(request.Controllers))

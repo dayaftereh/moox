@@ -1,12 +1,13 @@
 # Open slice 16.6 - Player composition and final New Game integration
 
-Status: **Gate 2 complete / Gate 3 next**
+Status: **Gate 3 complete / Gate 4 next**
 
 Parent: `docs/slices/PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`
 Plan: `docs/slices/PLANNED_16_6_PLAYER_COMPOSITION_FINAL_NEW_GAME_INTEGRATION.md`
 Permanent Gate-1 evidence: `docs/research/SLICE_16_6_GATE1_PLAYER_COMPOSITION_AUDIT_2026-09-17.md`
 Prototype evidence: `docs/research/prototypes/SLICE_16_6_OPPONENT_COMPOSITION_2026-09-17.svg`
 Permanent Gate-2 freeze: `docs/research/SLICE_16_6_GATE2_PLAYER_COMPOSITION_FREEZE_2026-09-17.md`
+Permanent Gate-3 implementation: `docs/research/SLICE_16_6_GATE3_PLAYER_COMPOSITION_IMPLEMENTATION_2026-09-17.md`
 
 ## Gate 1 checklist
 
@@ -35,6 +36,26 @@ Permanent Gate-2 freeze: `docs/research/SLICE_16_6_GATE2_PLAYER_COMPOSITION_FREE
 - Duplicate preset races and random opponent assignment remain unsupported.
 - `GET /api/v1/new-game/compositions` is the frozen server-owned availability/assignment contract.
 - The final New Game launch briefing renders galaxy, difficulty, player race/name, starting technology, opponents and seed from the same selected state submitted to Create Game.
+## Gate 3 result
+
+- Server-owned `/api/v1/new-game/compositions` is live with supported 1/2 and planned 3-7 counts.
+- Production New Game supports the frozen 2/3-player classes and deterministic farthest-pair + maximin home placement.
+- Public HTTP controller roles are local-human + Builtin-AI opponents; wrong explicit roles are rejected.
+- The complete 480 accepted Game-layer tuple matrix is deterministic.
+- Seven production opponent-count SVGs, opponent cards, server reasons and final launch briefing are integrated.
+- Real Chrome smoke passes on 390 px + desktop with 35 browsable New Game options.
+- Three-player Pre-Warp and Average persistence export/import/re-export/restore regressions pass.
+
+## Gate 3 checklist
+
+- [x] Composition catalog/API and exact 2/3-player validation.
+- [x] Backward-compatible deterministic N-player home selection.
+- [x] Frozen controller/race composition and rejection coverage.
+- [x] Seven opponent-count assets and manifest/contract checks.
+- [x] Opponent selector/cards/disabled reasons and dynamic request binding.
+- [x] Final launch briefing.
+- [x] 480-tuple determinism plus app/server/persistence regressions.
+- [x] Real 390 px + desktop browser selector smoke.
 ## Guardrails
 
 - Gate 1 is research/prototype only. Do not widen New Game validation before Gate 2.
@@ -55,4 +76,4 @@ Permanent Gate-2 freeze: `docs/research/SLICE_16_6_GATE2_PLAYER_COMPOSITION_FREE
 
 ## Next
 
-Implement Gate 3 exactly from the frozen Gate-2 contract: server composition catalog, 2/3-player validation, backward-compatible N-player home selection, automatic Darlok + alternate Human/Klackon opponent assignment, seven count assets, disabled reasons, opponent cards, launch briefing and deterministic fixture matrices. Do not enable counts 3-7 or Advanced technology.
+Run Gate 4 acceptance against the implemented contract: live create/play walkthroughs for supported 1/2 opponent classes, representative Human/Klackon, Pre-Warp/Average, Small/Huge and Easy/Impossible settings, confirm planned counts 3-7 remain blocked, verify launch briefing/persistence, then close Slice 16.6 and hand off to Slice 16.7.

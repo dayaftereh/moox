@@ -622,6 +622,54 @@ async function main() {
   }
   assert(technologyFingerprints.size === 3, `Technology artwork fingerprints are not distinct: ${JSON.stringify([...technologyFingerprints])}`)
   assert(technologySnap.statusText === 'Geplant / gesperrt', `Advanced visible availability text mismatch: ${technologySnap.statusText}`)
+  // Opponent composition mobile smoke: restore supported technology, then browse 1/2/planned-3.
+  await evaluate(`document.querySelector('.visual-selector[data-setting-id="technology-level"]')?.focus(); true`)
+  await key('Home', 'Home', 36)
+  await sleep(90)
+  const opponentSnapshotExpression = `(() => {
+    const root = document.querySelector('.visual-selector[data-setting-id="opponent-count"]')
+    const image = root?.querySelector('.new-game-opponent-count-art img')
+    const title = root?.querySelector('.visual-selector-current h3')
+    const rect = image?.getBoundingClientRect()
+    const artRect = root?.querySelector('.visual-selector-art')?.getBoundingClientRect()
+    return {
+      selected: title?.textContent,
+      source: image?.getAttribute('src'),
+      imageReady: Boolean(image?.complete && image?.naturalWidth === 1200 && image?.naturalHeight === 675),
+      width: rect?.width,
+      artWidth: artRect?.width,
+      availability: root?.getAttribute('data-availability'),
+      statusText: root?.querySelector('.visual-selector-current-status')?.textContent,
+      chips: document.querySelectorAll('.new-game-opponent-chip').length,
+      reason: document.querySelector('.new-game-composition-reason')?.textContent ?? '',
+      createDisabled: document.querySelector('.new-game-form button[type=submit]')?.disabled,
+      launchText: document.querySelector('.new-game-launch-briefing')?.textContent ?? '',
+      scrollWidth: document.documentElement.scrollWidth,
+      viewportWidth: document.documentElement.clientWidth,
+    }
+  })()`
+  await evaluate(`document.querySelector('.visual-selector[data-setting-id="opponent-count"]')?.focus(); true`)
+  await key('Home', 'Home', 36)
+  await sleep(90)
+  let opponentSnap = await evaluate(opponentSnapshotExpression)
+  assert(opponentSnap.selected === '1 Gegner', `opponent count 1 label mismatch: ${opponentSnap.selected}`)
+  assert(opponentSnap.source === '/assets/new-game/opponent-count/1.svg' && opponentSnap.imageReady, `opponent count 1 art invalid: ${JSON.stringify(opponentSnap)}`)
+  assert(opponentSnap.availability === 'supported' && opponentSnap.chips === 1 && opponentSnap.createDisabled === false, `opponent count 1 support mismatch: ${JSON.stringify(opponentSnap)}`)
+  assert(opponentSnap.launchText.includes('Darlok'), 'launch briefing must include Darlok for one opponent')
+  await evaluate(`document.querySelectorAll('.visual-selector[data-setting-id="opponent-count"] .visual-selector-arrow')[1]?.click(); true`)
+  await sleep(90)
+  opponentSnap = await evaluate(opponentSnapshotExpression)
+  assert(opponentSnap.selected === '2 Gegner' && opponentSnap.source === '/assets/new-game/opponent-count/2.svg', `opponent count 2 mismatch: ${JSON.stringify(opponentSnap)}`)
+  assert(opponentSnap.availability === 'supported' && opponentSnap.chips === 2 && opponentSnap.createDisabled === false, `opponent count 2 support mismatch: ${JSON.stringify(opponentSnap)}`)
+  assert(opponentSnap.launchText.includes('Darlok') && (opponentSnap.launchText.includes('Klackon') || opponentSnap.launchText.includes('Human')), 'launch briefing must include both resolved opponents')
+  await evaluate(`document.querySelectorAll('.visual-selector[data-setting-id="opponent-count"] .visual-selector-arrow')[1]?.click(); true`)
+  await sleep(90)
+  opponentSnap = await evaluate(opponentSnapshotExpression)
+  assert(opponentSnap.selected === '3 Gegner' && opponentSnap.source === '/assets/new-game/opponent-count/3.svg', `opponent count 3 mismatch: ${JSON.stringify(opponentSnap)}`)
+  assert(opponentSnap.availability === 'planned' && opponentSnap.chips === 0 && opponentSnap.createDisabled === true, `planned opponent count mismatch: ${JSON.stringify(opponentSnap)}`)
+  assert(opponentSnap.reason.length > 0, 'planned opponent count must show server-derived reason')
+  assert(opponentSnap.scrollWidth === opponentSnap.viewportWidth && opponentSnap.viewportWidth === 390, `opponent selector mobile overflow: ${opponentSnap.scrollWidth}/${opponentSnap.viewportWidth}`)
+
   await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false })
   await sleep(120)
   snap = await evaluate(snapshotExpression)
@@ -657,7 +705,7 @@ async function main() {
     return
   }
 
-  console.log('New Game selector browser smoke passed: Difficulty + Galaxy Size + Galaxy Age + Starting Technology + Player Race, 28 browsable options, 390px mobile + desktop layout, distinct technology artwork, mouse/touch/keyboard, server-derived facts, support locks, focus and authoritative behavior.')
+  console.log('New Game selector browser smoke passed: Difficulty + Galaxy Size + Galaxy Age + Starting Technology + Player Race + Opponent Composition, 35 browsable options, 390px mobile + desktop layout, distinct technology/opponent artwork, server-derived support locks/reasons, launch briefing, focus and authoritative behavior.')
 }
 
 main().catch((error) => {

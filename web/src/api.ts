@@ -73,6 +73,42 @@ export type NewGameTechnologyCatalog = {
   default_id: NewGameTechnologyLevel
   profiles: NewGameTechnologyProfile[]
 }
+export type NewGameCompositionAvailability = 'supported' | 'planned'
+
+export type NewGameOpponentCountProfile = {
+  opponent_count: number
+  availability: NewGameCompositionAvailability
+  reason_id?: string
+  facts: string[]
+}
+
+export type NewGameOpponentGalaxyLimit = {
+  galaxy_size: GalaxySizeID
+  max_supported_opponents: number
+}
+
+export type NewGameOpponentSpec = {
+  race_id: PresetRaceID
+  controller: 'builtin_ai'
+  default_empire_name: string
+}
+
+export type NewGameOpponentAssignment = {
+  player_race_id: PresetRaceID
+  opponent_count: number
+  opponents: NewGameOpponentSpec[]
+}
+
+export type NewGameCompositionCatalog = {
+  schema_version: number
+  default_opponent_count: number
+  original_opponent_min: number
+  original_opponent_max: number
+  counts: NewGameOpponentCountProfile[]
+  galaxy_limits: NewGameOpponentGalaxyLimit[]
+  assignments: NewGameOpponentAssignment[]
+}
+
 export type NewGamePlayer = {
   seat_id: number
   empire_id: number
@@ -830,6 +866,9 @@ export async function getRaceCatalog(signal?: AbortSignal): Promise<PresetRaceCa
 
 export async function getTechnologyCatalog(signal?: AbortSignal): Promise<NewGameTechnologyCatalog> {
   return requestJSON<NewGameTechnologyCatalog>('/api/v1/new-game/technologies', { signal })
+}
+export async function getCompositionCatalog(signal?: AbortSignal): Promise<NewGameCompositionCatalog> {
+  return requestJSON<NewGameCompositionCatalog>('/api/v1/new-game/compositions', { signal })
 }
 export async function listGames(signal?: AbortSignal): Promise<GameSummary[]> {
   return requestJSON<GameSummary[]>('/api/v1/games', { signal })

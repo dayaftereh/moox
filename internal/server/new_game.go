@@ -89,6 +89,33 @@ func (s *apiServer) handleTechnologyCatalog(w http.ResponseWriter, _ *http.Reque
 	})
 }
 
+type compositionCatalogResponse struct {
+	SchemaVersion        int                                `json:"schema_version"`
+	DefaultOpponentCount int                                `json:"default_opponent_count"`
+	OriginalOpponentMin  int                                `json:"original_opponent_min"`
+	OriginalOpponentMax  int                                `json:"original_opponent_max"`
+	Counts               []game.NewGameOpponentCountProfile `json:"counts"`
+	GalaxyLimits         []game.NewGameOpponentGalaxyLimit  `json:"galaxy_limits"`
+	Assignments          []game.NewGameOpponentAssignment   `json:"assignments"`
+}
+
+func (s *apiServer) handleCompositionCatalog(w http.ResponseWriter, _ *http.Request) {
+	catalog, err := s.host.NewGameCompositionCatalog()
+	if err != nil {
+		writeAPIError(w, http.StatusServiceUnavailable, "service_unavailable", err.Error())
+		return
+	}
+	writeJSON(w, http.StatusOK, compositionCatalogResponse{
+		SchemaVersion:        app.SchemaVersion,
+		DefaultOpponentCount: catalog.DefaultOpponentCount,
+		OriginalOpponentMin:  catalog.OriginalOpponentMin,
+		OriginalOpponentMax:  catalog.OriginalOpponentMax,
+		Counts:               catalog.Counts,
+		GalaxyLimits:         catalog.GalaxyLimits,
+		Assignments:          catalog.Assignments,
+	})
+}
+
 type newGameRequest struct {
 	SchemaVersion int                        `json:"schema_version"`
 	GameID        string                     `json:"game_id"`
@@ -118,6 +145,10 @@ func (s *apiServer) handleCreateGame(w http.ResponseWriter, r *http.Request) {
 	}
 	if request.GameID == "" || strings.TrimSpace(request.GameID) != request.GameID {
 		writeAPIError(w, http.StatusBadRequest, "bad_request", "game_id must be non-empty without leading or trailing whitespace")
+		return
+	}
+	if len(request.Controllers) != len(request.Settings.Players) {
+		writeAPIError(w, http.StatusBadRequest, "bad_request", fmt.Sprintf("Slice 16.6 requires explicit controller assignments for every player; got %d controllers for %d players", len(request.Controllers), len(request.Settings.Players)))
 		return
 	}
 	seed, err := parseNewGameSeed(request.Seed)
