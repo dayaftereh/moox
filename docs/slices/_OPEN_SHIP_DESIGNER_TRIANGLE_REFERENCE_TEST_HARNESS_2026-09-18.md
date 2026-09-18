@@ -1,6 +1,6 @@
 # Open Slice 17.0 - Ship Designer / Triangle Reference Test Harness
 
-Status: **Gate 1 complete / Gate 2 next**
+Status: **Gates 1-2 complete / Gate 3 ready**
 
 Opened: 2026-09-18
 Session: ses-20260918T152048-00240c450344
@@ -32,10 +32,10 @@ Future development controls require a double authorization boundary: explicit se
 
 The Triangle reference game is a durable family, not a disposable fixture: keep the existing baseline and add Turn-1 Mid-Tech plus Turn-1 All-Tech/all-supported variants. Designer and Construction lab controls belong on that Triangle family rather than on separate game-designer-* throwaway games.
 
-## Gate 2 next
+## Gate 2 complete
 
-Freeze the exact Triangle baseline/Mid-Tech/All-Tech matrix and seeds, exact technology profiles, turn-runner bounds/stop semantics, built-Ship materialization contract, reference metadata, HTTP/HMI capability exposure and persistence behavior.
+Frozen in `docs/research/SLICE_17_0_GATE2_REFERENCE_HARNESS_FREEZE_2026-09-18.md`: durable baseline/Mid-Tech/All-Tech Triangle family, exact technology profiles, same deterministic seed/topology, bounded normal-turn runner, built-Ship materialization, reference metadata/security, HTTP/HMI and persistence behavior.
 
 ## Guardrail
 
-Do not begin Gate 2 implementation before explicit user release. Do not open Slice 17.1 or later children. No push.
+Gate 3 implementation is ready but not started. Wait for explicit user release. Do not open Slice 17.1 or later children. No push.

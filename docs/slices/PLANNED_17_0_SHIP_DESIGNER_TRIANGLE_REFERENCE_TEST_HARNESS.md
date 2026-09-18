@@ -1,6 +1,6 @@
 # Planned Slice 17.0 - Ship Designer / Triangle Reference Test Harness
 
-Status: **active; Gate 1 complete / Gate 2 next**.
+Status: **active; Gates 1-2 complete / Gate 3 ready**.
 
 ## Objective
 
@@ -77,12 +77,17 @@ Reference controls must not appear in ordinary games when the server is not star
 
 ## Gate 2 - harness contract freeze
 
-- [ ] Freeze durable Triangle scenario matrix: baseline, Turn-1 Mid-Tech and Turn-1 All-Tech/all-supported, plus any explicitly justified combat-only fixtures.
-- [ ] Freeze exact Mid-Tech and All-Tech technology materialization per Triangle scenario.
-- [ ] Freeze bounded turn-runner semantics and stop conditions.
-- [ ] Freeze how built Ships are materialized without bypassing design snapshot validation.
-- [ ] Freeze HTTP/HMI exposure of reference-only controls.
-- [ ] Freeze deterministic seeds and persistence expectations.
+- [x] Freeze durable Triangle scenario matrix: baseline, Turn-1 Mid-Tech and Turn-1 All-Tech/all-supported, plus any explicitly justified combat-only fixtures.
+- [x] Freeze exact Mid-Tech and All-Tech technology materialization per Triangle scenario.
+- [x] Freeze bounded turn-runner semantics and stop conditions.
+- [x] Freeze how built Ships are materialized without bypassing design snapshot validation.
+- [x] Freeze HTTP/HMI exposure of reference-only controls.
+- [x] Freeze deterministic seeds and persistence expectations.
+
+## Gate 2 evidence
+
+- `docs/research/SLICE_17_0_GATE2_REFERENCE_HARNESS_FREEZE_2026-09-18.md`
+- Frozen: durable baseline/Mid-Tech/All-Tech Triangle family, exact profile semantics/fingerprints, same seed/topology, 1..25 bounded Advance N, 512-turn construction runner ceiling, normal Host/turn authority, built-Ship fixture snapshot rules, double dev authorization, HTTP/HMI contract and non-escalating persistence/import behavior.
 
 ## Gate 3 - implementation
 
