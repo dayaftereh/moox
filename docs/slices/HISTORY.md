@@ -447,3 +447,14 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Reserved `PLANNED_18_GALAXY_GENERATION_STRATEGIC_NAVIGATION_FIDELITY.md` to own the complete correction rather than patching one home-neighbor symptom.
 - Slice 17 remains independent and can complete before Slice 18. Updated intended roadmap: **17 -> 18 -> 20 -> 21 -> 22 -> 23**. Slice 19 remains intentionally unassigned.
 - Slice 18 is planned only; no `_OPEN_` marker was created.
+## 2026-09-18 - Slice 17 decomposed into 17.0-17.5
+
+- Replaced the previous monolithic Slice-17 Ship Design plan with a parent program and six recovery-safe child slices.
+- **17.0 Reference/Test Harness:** extend the existing development-only `-reference-games` and 2-pc Triangle scenario into technology-rich Designer labs, normal-resolver construction advancement and combat-ready immutable Ship fixtures. This avoids research/turn grinding while keeping normal post-bootstrap gameplay rules.
+- **17.1 Hulls and Mandatory Systems:** Frigate through Doom Star, hull buildability, drives, targeting computers, armor, shields, fuel, CP/cost/space and miniaturization foundation.
+- **17.2 Beam Weapons:** Beam breadth, slots/counts, original-evidenced mount modifiers and Tactical handoff.
+- **17.3 Ordnance:** missiles, torpedoes and bombs as authoritative design snapshots; complete projectile behavior remains downstream where not already implemented.
+- **17.4 Specials/Fighters:** ship specials and fighter/carrier systems with explicit per-feature support classification so unimplemented Tactical effects are not disguised as complete.
+- **17.5 Full Designer Integration:** unified browser/server designer, revisions, immutable built-Ship snapshots, Colony Construction, persistence, reference-lab QA and parent closeout.
+- Slice 17 remains the next roadmap program; **17.0 is the next child but is not open**. Slice 18 remains downstream and independent.
+- No gameplay code changed and no `_OPEN_` marker was created.

@@ -40,7 +40,7 @@ Slices 01-14 are closed. Slice 14 Live GameSession save/resume passed independen
 8. Slice 15 - **browser-playability vertical-slice baseline closed through Slice 15.6** - final canonical browser acceptance and Gate-4 closure completed 2026-09-14.
    - 15.1 **closed; Gates 1-4 complete** - mobile-first UX architecture / navigation / bilingual design-system shell.
    - 15.2 **open; Gates 1-3 complete, Gate 4 pending** - functional strategic gameplay HMI; Gate 2 freezes DecisionView transport, pure Planning previews, persistent gas-giant/asteroid/star metadata with Outpost targets, a real unbounded-UX construction queue, Colony Population transfer/table behavior, live build/research ETA and sticky strategic resources.
-   - 15.3 **open ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· Gate 1** - MOOX visual identity / graphics / asset pipeline.
+   - 15.3 **open ÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â· Gate 1** - MOOX visual identity / graphics / asset pipeline.
    - 15.4 **prepared** - rich gameplay decisions / Encounter transitions / persistence UX.
    - 15.5 **prepared** - interactive 2D Tactical Combat: authoritative movement/legal targets plus mouse/touch battlefield on the Slice-07 combat baseline.
    - 15.6 **prepared** - full browser vertical slice / polish / complete-game QA.
@@ -203,7 +203,7 @@ The project now has a complete supported headless conquest lifecycle, so the rem
 
 ### Prepared / reserved roadmap
 
-1. **Slice 17 - Military ship design component/weapon breadth:** next prepared gameplay slice; not open.
+1. **Slice 17 - Military Ship Design parent program:** next prepared gameplay program, decomposed into 17.0 Reference/Test Harness, 17.1 Hulls/mandatory systems, 17.2 Beams, 17.3 Ordnance, 17.4 Specials/Fighters and 17.5 Full Designer Integration; none open.
 2. **Slice 18 - Galaxy Generation / Strategic Navigation Fidelity:** reserved correction of galaxy scale/density, homeworld reachability, black-hole placement and authoritative strategic route blocking; planned, not open.
 3. **Slice 20 - Espionage / intelligence baseline:** authoritative Spies, Espionage/Sabotage, race/technology modifiers, safe projection and AI; Slice 19 remains intentionally unassigned.
 4. **Slice 21 - Colony / Buildings / Planet Effects / Pollution fidelity:** complete the strategic building/planet effect foundation and make Pollution a server-authoritative Economy loop.

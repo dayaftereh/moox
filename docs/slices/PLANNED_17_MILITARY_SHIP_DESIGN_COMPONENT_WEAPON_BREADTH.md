@@ -1,68 +1,99 @@
-# Planned slice 17 - Military ship design component / weapon breadth
+# Planned Slice 17 - Military Ship Design Program
 
 Status: **planned / queued; not open**.
 
-Queue position: **next prepared gameplay slice after closed Slice 16**. Slice 18 is reserved downstream for Galaxy/Navigation fidelity and is not a prerequisite for Slice 17.
+Queue position: **next prepared gameplay program after closed Slice 16**. Slice 18 is reserved downstream for Galaxy/Strategic Navigation fidelity and is not a prerequisite for Slice 17.
 
 ## Objective
 
-Expand the intentionally minimal Slice-07 military design model into a useful canonical multi-hull/component/multi-weapon design baseline that deeper Tactical Combat can consume.
+Expand the intentionally narrow military-design baseline into a complete server-authoritative ship-construction foundation that later Tactical/Triangle combat can consume without hard-coded fixture ships.
 
-## Existing narrow boundary
+Slice 17 is a **parent program**, not one monolithic implementation slice. The original single 17-plan became too broad once full hull, mandatory-component, weapon, ordnance, special/fighter, designer, construction and QA requirements were considered.
 
-The persisted design/Ship snapshot already carries hull, drive, computer, armor, shield, fuel, costs/space and weapon mounts, but runtime design validation explicitly permits only the current supported hull and slot 0 with one `laser_cannon`. Weapon modifiers remain future work.
+## Binding decomposition
 
-## Dependencies
+Slice 17 is executed in dependency order as:
 
-- Existing Research/technology unlock model.
-- Slice 15.6 browser vertical slice establishes the presentation shell, including the first interactive Slice-15.5 Tactical baseline, while this slice remains core/server-authoritative first.
-- Slice 15.2 B2-P reserves the Colony Build -> Ship Designer entry point without implementing a fake route; Slice 17 should activate that affordance so a saved/revised legal design returns to the colony build catalog as an authoritative construction choice.
+1. **17.0 - Ship Designer / Triangle Reference Test Harness**
+   - durable development-only reference scenarios;
+   - high-tech/all-tech designer laboratories;
+   - deterministic construction acceleration using normal turn resolution;
+   - direct built-Ship / battle fixture entry for Tactical/Triangle QA.
+2. **17.1 - Hulls and Mandatory Ship Systems**
+   - Frigate through Doom Star;
+   - drives, computers, armor, shields, fuel;
+   - hull/buildability technology and infrastructure restrictions;
+   - cost/space/Command-Point and miniaturization foundation.
+3. **17.2 - Beam Weapons and Beam Mount Modifiers**
+   - Beam weapon breadth;
+   - mount count/slots;
+   - applicable Beam modifiers;
+   - cost/space/unlock/miniaturization metadata;
+   - compatibility with the existing Laser tactical vertical slice.
+4. **17.3 - Missiles, Torpedoes and Bomb Ordnance**
+   - design-side ordnance representation, ammunition/counts and legal mounting;
+   - authoritative snapshots and costs;
+   - full tactical projectile behavior remains owned by later Tactical work unless explicitly pulled in by Gate 1.
+5. **17.4 - Ship Specials and Fighter Systems**
+   - design-side ship specials, Fighter/Bomber-related systems and special-derived ship stats;
+   - exact tactical effects may remain downstream where their combat subsystem is not yet implemented.
+6. **17.5 - Full Ship Designer Integration and Acceptance**
+   - unified catalog/UI;
+   - design revision and immutable built-Ship snapshots;
+   - Colony Construction handoff;
+   - persistence/replay;
+   - broad designer/reference-lab/browser QA.
 
-## Scope guard
+Only one 17.x child may be active unless a checkpoint explicitly documents a justified parallel exception.
 
-In scope candidates to freeze in Gate 1:
+## Existing foundation
 
-- multiple standard hull identities;
-- multiple researched drives/computers/armor/shields/fuel components;
-- multiple Beam/weapon mounts and counts;
-- deterministic space/cost/unlock validation;
-- production/ref snapshot semantics for revised designs;
-- legal-action projection usable by future Ship Designer UI.
+The program starts from substantial already-implemented infrastructure:
 
-Defer unless Gate 1 proves they fit cleanly:
+- persisted Empire ShipDesigns;
+- built Ships carry immutable ShipDesignSpec snapshots;
+- design IDs and revisions survive persistence;
+- Colony Construction can build a selected military design;
+- Command Points and Combat Fleets already consume built ships;
+- normalized six-hull catalog exists;
+- mandatory drive/computer/armor/shield/fuel fields already exist in ShipDesignSpec;
+- weapon mount snapshots already exist but current runtime validation intentionally permits only the narrow supported baseline;
+- Slice 15.6 already provides the browser Ship Designer shell and Colony Build -> Designer -> Construction handoff;
+- Slice 07 provides a deterministic tactical Laser vertical slice and original combat evidence;
+- development-only `-reference-games` already registers normal reference games plus the durable 3-player 2-pc Triangle scenario.
 
-- missiles/fighters/bombs full tactical behavior;
-- weapon modifications and complete miniaturization;
-- specials;
-- refit workflow;
-- tactical movement/boarding/planetary defense.
+## Program architecture rules
 
-## Gate 1 - Original design-system audit
+- A reference/test harness may alter **initial state**, not gameplay formulas.
+- Test scenarios must use the same designer, validation, construction, turn, fleet and battle code paths as ordinary games after bootstrap.
+- No debug-only technology or free-build rule may leak into normal New Game/API behavior.
+- Built Ship snapshots remain immutable when a design slot is later revised.
+- Design legality is server-owned; HMI consumes catalogs and rejection reasons.
+- Slice 17 defines what is installed on a ship. Later Tactical/Triangle work may own the full combat-time behavior of systems whose tactical mechanics are not yet implemented.
+- A design must never be advertised as tactically complete merely because it can be persisted.
 
-- [ ] Inventory normalized hull/component/weapon evidence and missing normalization.
-- [ ] Re-check original space/cost/technology/miniaturization behavior needed for the bounded baseline.
-- [ ] Define immutable built-Ship snapshot vs mutable design-slot semantics.
-- [ ] Define supported component/weapon set and explicit deferred categories.
-- [ ] Define deterministic design/production/combat handoff fixtures.
-- [ ] Present Gate-2 design contract.
+## Parent opening guard
 
-## Gate 2 - Implementation decision
+Before opening 17.0 Gate 1:
 
-- [ ] Freeze supported hull/component/weapon matrix.
-- [ ] Freeze space/cost/unlock formulas.
-- [ ] Freeze design revision/snapshot behavior.
-- [ ] Freeze tactical compatibility contract.
+- Git clean;
+- zero unrelated `_OPEN_` markers;
+- Slice 16 closed;
+- Slice 18 remains planned only;
+- current reference-game/Triangle scenario still green;
+- current narrow military design/construction/tactical Laser regressions green.
 
-## Gate 3 - Implementation
+## Parent completion contract
 
-- [ ] Expand data/rules and design validation.
-- [ ] Expand legal design/save/queue surfaces.
-- [ ] Preserve exact Ship snapshots across later design revisions.
-- [ ] Add deterministic construction and basic tactical handoff regressions.
+- [ ] 17.0 closed: durable Ship/Combat QA harness exists.
+- [ ] 17.1 closed: hulls + mandatory systems are fully supported to the frozen breadth.
+- [ ] 17.2 closed: Beam design breadth is complete to the frozen contract.
+- [ ] 17.3 closed: ordnance design breadth is complete to the frozen contract.
+- [ ] 17.4 closed: supported specials/fighter design breadth is complete.
+- [ ] 17.5 closed: unified designer/construction/persistence/browser acceptance passes.
+- [ ] Every deferred tactical effect has an explicit downstream owner and is not represented as already working.
+- [ ] Final full Go/vet/web/browser/persistence/reference-game QA passes.
 
-## Gate 4 - Follow-up QA + commit + close
+## Exit criterion
 
-- [ ] Verify legal/illegal design matrix and costs.
-- [ ] Verify save/load/replay and built-Ship snapshot immutability.
-- [ ] Run full tests/vet/web checks and `git diff --check`.
-- [ ] Update evidence/status/HISTORY and close marker.
+Slice 17 is complete when a player can construct and persist a broad, technology-gated military ship design across the frozen hull/component/weapon/special matrix, build that exact immutable design through normal Colony Construction, inspect/test it through durable reference scenarios, and hand the resulting authoritative ship snapshot to later Tactical/Triangle systems without special-case fixture-only design data.

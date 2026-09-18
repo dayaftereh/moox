@@ -42,7 +42,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **None. Slice 16 is closed.** Slice 17 is prepared but must not open until explicitly released.
+- **None. Slice 16 is closed.** Slice 17 is a prepared parent program; Slice 17.0 is the next child but must not open until explicitly released.
 
 Closed/parked Slice-15 state:
 
@@ -54,7 +54,7 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - next prepared gameplay slice; not open.
+1. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - next prepared parent program; child order 17.0 -> 17.1 -> 17.2 -> 17.3 -> 17.4 -> 17.5; none open.
 2. PLANNED_18_GALAXY_GENERATION_STRATEGIC_NAVIGATION_FIDELITY.md - reserved Galaxy Generation / Strategic Navigation fidelity pass; planned, not open.
 3. PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md - dedicated authoritative Spy/intelligence mechanics; Slice 19 remains intentionally unassigned.
 4. PLANNED_21_COLONY_BUILDINGS_PLANET_EFFECTS_POLLUTION_FIDELITY.md - authoritative Colony/Building/Planet effects including Pollution.
@@ -62,6 +62,31 @@ Prepared queue:
 6. PLANNED_23_FULL_ADVANCED_STARTING_CIVILIZATION_PARITY.md - full Advanced parity inheriting Slice-16.7 evidence.
 
 Planned downstream order: **17 -> 18 -> 20 -> 21 -> 22 -> 23**. Slice 19 remains intentionally unassigned. No downstream slice is opened merely by being reserved.
+
+### Binding Slice-17 decomposition
+
+Slice 17 is a parent program. These child specifications are recovery-safe milestones and must be completed in dependency order unless a checkpoint explicitly justifies otherwise:
+
+1. **Slice 17.0 - Ship Designer / Triangle Reference Test Harness**
+   `PLANNED_17_0_SHIP_DESIGNER_TRIANGLE_REFERENCE_TEST_HARNESS.md`
+   Dev-only Designer/Construction/Combat labs, technology-rich reference states and bounded normal-resolver turn advancement.
+2. **Slice 17.1 - Hulls and Mandatory Ship Systems**
+   `PLANNED_17_1_HULLS_MANDATORY_SHIP_SYSTEMS.md`
+   Frigate through Doom Star plus drives, computers, armor, shields, fuel, hull buildability and miniaturization foundation.
+3. **Slice 17.2 - Beam Weapons and Mount Modifiers**
+   `PLANNED_17_2_BEAM_WEAPONS_MOUNT_MODIFIERS.md`
+   Beam breadth, mount slots/counts, applicable modifiers, cost/space/unlocks and Tactical handoff.
+4. **Slice 17.3 - Missiles, Torpedoes and Bomb Ordnance**
+   `PLANNED_17_3_MISSILES_TORPEDOES_BOMBS_ORDNANCE.md`
+   Authoritative ordnance design snapshots while complete projectile combat remains downstream where necessary.
+5. **Slice 17.4 - Ship Specials and Fighter Systems**
+   `PLANNED_17_4_SHIP_SPECIALS_FIGHTER_SYSTEMS.md`
+   Specials/fighter breadth with explicit per-feature strategic/tactical support classification.
+6. **Slice 17.5 - Full Ship Designer Integration and Acceptance**
+   `PLANNED_17_5_FULL_SHIP_DESIGNER_INTEGRATION_ACCEPTANCE.md`
+   Unified Designer, construction, revisions, persistence, reference labs and final browser/program QA.
+
+The parent program file remains `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md`. Slice 18 remains downstream and independent of Slice-17 completion.
 
 ### Binding Slice-16 decomposition
 
