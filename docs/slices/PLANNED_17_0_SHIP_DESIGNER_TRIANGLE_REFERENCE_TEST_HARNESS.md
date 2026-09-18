@@ -15,15 +15,17 @@ Create durable development-only test scenarios so Ship Designer, Construction an
 
 ## Required test modes
 
-### A. Designer Lab
+### A. Durable Triangle Designer Lab family
 
-Provide deterministic reference scenarios with curated pre-materialized technology state, for example:
+The existing `game-triangle-2pc` is the canonical durable reference-game foundation, not a disposable one-off fixture. Slice 17.0 extends that same Triangle concept with deterministic technology-profile variants available before the first Planning phase / on Turn 1:
 
-- baseline / early-tech;
-- mid-tech;
-- high-tech / all supported Slice-17 technologies.
+- baseline Triangle: the existing movement/contact reference state;
+- Triangle Mid-Tech: curated deterministic mid-game technology state;
+- Triangle All-Tech: curated deterministic all-supported technology state for the current runtime / active Slice-17 scope.
 
-The high-tech lab must allow direct QA of things such as Doom Star Construction, Reinforced Hull, Heavy Armor, advanced computers, drives, shields, armor and the weapon/special set completed by the active 17.x child.
+Designer and Construction QA should reuse this Triangle family instead of creating parallel `game-designer-*` throwaway worlds. The variants keep the same three-player 2-pc Triangle topology and ordinary GameSession/Host authority; only reference bootstrap state differs.
+
+The All-Tech profile must allow direct QA of things such as Doom Star Construction, Reinforced Hull, Heavy Armor, advanced computers, drives, shields, armor and the weapon/special set completed by the active 17.x child. `All-Tech` is a reference-lab label, not a claim that every granted technology already has complete Tactical gameplay support.
 
 Technology is granted only during reference-game bootstrap. After bootstrap, normal production/design legality code is used.
 
@@ -75,8 +77,8 @@ Reference controls must not appear in ordinary games when the server is not star
 
 ## Gate 2 - harness contract freeze
 
-- [ ] Freeze scenario matrix: baseline, mid-tech, high-tech/all-supported, construction and combat fixtures.
-- [ ] Freeze exact technology materialization per scenario.
+- [ ] Freeze durable Triangle scenario matrix: baseline, Turn-1 Mid-Tech and Turn-1 All-Tech/all-supported, plus any explicitly justified combat-only fixtures.
+- [ ] Freeze exact Mid-Tech and All-Tech technology materialization per Triangle scenario.
 - [ ] Freeze bounded turn-runner semantics and stop conditions.
 - [ ] Freeze how built Ships are materialized without bypassing design snapshot validation.
 - [ ] Freeze HTTP/HMI exposure of reference-only controls.
@@ -94,7 +96,7 @@ Reference controls must not appear in ordinary games when the server is not star
 
 ## Gate 4 - QA + close
 
-- [ ] Doom Star/high-tech Designer Lab can open without research grinding once downstream 17.x mechanics exist.
+- [ ] Turn-1 Triangle All-Tech Designer Lab can open Doom Star/high-tech design QA without research grinding once downstream 17.x mechanics exist.
 - [ ] Construction Lab builds through normal production/turn resolution.
 - [ ] Combat Lab ships use the same immutable ShipDesignSpec as ordinary constructed ships.
 - [ ] Reference controls are unavailable in normal server mode.

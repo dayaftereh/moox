@@ -30,9 +30,11 @@ High-tech Designer state must not reuse or unlock the deferred Advanced New Game
 
 Future development controls require a double authorization boundary: explicit server reference capability plus immutable per-game reference-scenario metadata. Game-ID naming alone is not authorization.
 
+The Triangle reference game is a durable family, not a disposable fixture: keep the existing baseline and add Turn-1 Mid-Tech plus Turn-1 All-Tech/all-supported variants. Designer and Construction lab controls belong on that Triangle family rather than on separate game-designer-* throwaway games.
+
 ## Gate 2 next
 
-Freeze the exact scenario matrix/seeds, curated technology profiles, turn-runner bounds/stop semantics, built-Ship materialization contract, reference metadata, HTTP/HMI capability exposure and persistence behavior.
+Freeze the exact Triangle baseline/Mid-Tech/All-Tech matrix and seeds, exact technology profiles, turn-runner bounds/stop semantics, built-Ship materialization contract, reference metadata, HTTP/HMI capability exposure and persistence behavior.
 
 ## Guardrail
 

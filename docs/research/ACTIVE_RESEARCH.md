@@ -15,6 +15,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-16 are closed/accepted at their intended baselines**. Slice 17 is a prepared 17.0-17.5 parent program; reserved Slice 18 and Slices 20-23 remain planned only.
 - Current objective: **await explicit release for Slice 17.0 Gate 2 contract freeze; do not open 17.1 or later children.**
+- Slice-17.0 Gate-1 addendum: **Triangle is the durable reference-game family**. Keep baseline game-triangle-2pc and freeze Turn-1 Mid-Tech plus Turn-1 All-Tech/all-supported Triangle variants in Gate 2; do not create parallel game-designer-* throwaway worlds.
 - Slice-15.1 closure evidence: `docs/research/SLICE_15_1_MOBILE_FIRST_UX_GATE4_2026-09-04.md`.
 - Slice-15.2 Gate-1 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE1_2026-09-04.md`.
 - Slice-15.2 Gate-2 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE2_2026-09-04.md`.

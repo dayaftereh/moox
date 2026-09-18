@@ -138,17 +138,19 @@ Existing IDs remain unchanged:
 | Standard reference game | `game-1` | legacy standard reference |
 | Triangle movement/contact lab | `game-triangle-2pc` | `triangle-2pc-v1` |
 
-Reserved 17.0 public IDs:
+Slice 17.0 keeps Triangle as the durable reference-game product instead of creating separate Designer throwaway worlds. The required family is:
 
-| Purpose | Public game ID |
-| --- | --- |
-| Designer early-tech lab | `game-designer-early` |
-| Designer mid-tech lab | `game-designer-mid` |
-| Designer high/all-supported-tech lab | `game-designer-high` |
-| Construction lab | `game-construction-lab` |
-| First runnable combat lab | `game-combat-frigate-laser` |
+| Purpose | Public game ID | Internal scenario identity |
+| --- | --- | --- |
+| Triangle baseline | `game-triangle-2pc` | `triangle-2pc-v1` |
+| Triangle Mid-Tech from Turn 1 | `game-triangle-mid-tech` | `triangle-2pc-mid-tech-v1` |
+| Triangle All-Tech/all-supported from Turn 1 | `game-triangle-all-tech` | `triangle-2pc-all-tech-v1` |
 
-Future combat fixtures use the stable namespace `game-combat-<fixture-slug>` and are only registered when the corresponding production design/tactical support exists. Gate 2 freezes the exact first matrix and seeds; Gate 1 only reserves the durable IDs/namespace above.
+The Mid-Tech and All-Tech variants inherit the same three-player 2-pc Triangle geometry and ordinary GameSession/Host behavior. Their technology profile is materialized during bootstrap before the first Planning phase; after that, gameplay is normal.
+
+Separate `game-designer-*` and generic `game-construction-lab` worlds are deliberately not part of the durable design. Designer and Construction controls attach to the Triangle family. A specialized `game-combat-<fixture-slug>` namespace remains permissible only when a combat test genuinely needs a pre-materialized immediate battle state that cannot be expressed cleanly through the reusable Triangle scenarios.
+
+Gate 2 freezes the exact technology sets, deterministic seeds/seed derivation and whether the All-Tech technical profile means all normalized safe technologies or the narrower all-currently-supported set. The UI may call the latter `All-Tech`, but it must not imply complete Tactical behavior for mechanics whose consumers are still deferred.
 
 Code ownership:
 
@@ -196,8 +198,8 @@ The missing Slice-17.0 work is infrastructure around those paths, not a replacem
 
 Gate 2 must explicitly freeze:
 
-- exact scenario matrix and deterministic seeds;
-- exact early/mid/high technology ID profiles;
+- exact durable Triangle matrix and deterministic seeds/seed derivation for baseline, Turn-1 Mid-Tech and Turn-1 All-Tech;
+- exact Mid-Tech and All-Tech technology ID profiles and the technical meaning of the `All-Tech` label;
 - whether any profile also adjusts known-field state;
 - maximum `Advance N Turns` bound;
 - exact stop/result semantics for Battles, invasions, victory and construction completion;
