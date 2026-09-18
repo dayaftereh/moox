@@ -1,6 +1,6 @@
 # Planned Slice 17.0 - Ship Designer / Triangle Reference Test Harness
 
-Status: **planned; child of Slice 17; not open**.
+Status: **active; Gate 1 complete / Gate 2 next**.
 
 ## Objective
 
@@ -61,12 +61,17 @@ Reference controls must not appear in ordinary games when the server is not star
 
 ## Gate 1 - harness audit
 
-- [ ] Audit `-reference-games`, standard reference game and Triangle reference-game registration.
-- [ ] Audit technology bootstrap APIs/state and define safe deterministic technology grants.
-- [ ] Audit normal Construction/Turn APIs for bounded automated advancement.
-- [ ] Audit BattleSession/Triangle fixture entry and built-Ship snapshot requirements.
-- [ ] Define stable reference scenario IDs and ownership.
-- [ ] Define strict dev-only exposure/authorization boundary.
+- [x] Audit `-reference-games`, standard reference game and Triangle reference-game registration.
+- [x] Audit technology bootstrap APIs/state and define safe deterministic technology grants.
+- [x] Audit normal Construction/Turn APIs for bounded automated advancement.
+- [x] Audit BattleSession/Triangle fixture entry and built-Ship snapshot requirements.
+- [x] Define stable reference scenario IDs and ownership.
+- [x] Define strict dev-only exposure/authorization boundary.
+
+## Gate 1 evidence
+
+- `docs/research/SLICE_17_0_GATE1_REFERENCE_HARNESS_AUDIT_2026-09-18.md`
+- Gate 1 found no architecture blocker. The harness must wrap the normal technology/design/construction/turn/Ship/Battle paths and must remain double-gated by explicit server + per-game reference capability.
 
 ## Gate 2 - harness contract freeze
 

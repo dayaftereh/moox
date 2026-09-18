@@ -45,9 +45,9 @@ Slices 01-14 are closed. Slice 14 Live GameSession save/resume passed independen
    - 15.5 **prepared** - interactive 2D Tactical Combat: authoritative movement/legal targets plus mouse/touch battlefield on the Slice-07 combat baseline.
    - 15.6 **prepared** - full browser vertical slice / polish / complete-game QA.
 9. Slice 16 - **closed** - broader deterministic New Game/preset-race baseline; full Advanced implementation explicitly deferred to Slice 23.
-10. Slice 17 - **prepared** - military ship design component/weapon breadth.
+10. Slice 17 - **active parent program** - military ship design component/weapon breadth; child 17.0 is open with Gate 1 complete / Gate 2 next.
 
-Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. The browser-playability Slice-15 family and New Game Slice-16 family are closed at their accepted baselines. The shell is mobile-first, desktop-adaptive, bilingual DE/EN and remains available over the LLO Desktop NetBird interface for review. **No implementation slice is currently open. Slice 17 is the next prepared gameplay breadth slice.** Slice 20 Espionage/Intelligence and Slices 21-23 remain reserved/planned downstream.
+Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. The browser-playability Slice-15 family and New Game Slice-16 family are closed at their accepted baselines. The shell is mobile-first, desktop-adaptive, bilingual DE/EN and remains available over the LLO Desktop NetBird interface for review. **Slice 17.0 is now the active implementation slice at Gate 1 complete / Gate 2 next. No later 17.x child is open.** Slice 20 Espionage/Intelligence and Slices 21-23 remain reserved/planned downstream.
 
 Important recent checkpoints:
 
@@ -203,7 +203,7 @@ The project now has a complete supported headless conquest lifecycle, so the rem
 
 ### Prepared / reserved roadmap
 
-1. **Slice 17 - Military Ship Design parent program:** next prepared gameplay program, decomposed into 17.0 Reference/Test Harness, 17.1 Hulls/mandatory systems, 17.2 Beams, 17.3 Ordnance, 17.4 Specials/Fighters and 17.5 Full Designer Integration; none open.
+1. **Slice 17 - Military Ship Design parent program:** active parent program, decomposed into 17.0 Reference/Test Harness, 17.1 Hulls/mandatory systems, 17.2 Beams, 17.3 Ordnance, 17.4 Specials/Fighters and 17.5 Full Designer Integration; 17.0 is open at Gate 1 complete / Gate 2 next.
 2. **Slice 18 - Galaxy Generation / Strategic Navigation Fidelity:** reserved correction of galaxy scale/density, homeworld reachability, black-hole placement and authoritative strategic route blocking; planned, not open.
 3. **Slice 20 - Espionage / intelligence baseline:** authoritative Spies, Espionage/Sabotage, race/technology modifiers, safe projection and AI; Slice 19 remains intentionally unassigned.
 4. **Slice 21 - Colony / Buildings / Planet Effects / Pollution fidelity:** complete the strategic building/planet effect foundation and make Pollution a server-authoritative Economy loop.

@@ -5,8 +5,8 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 ## Recovery state
 
 - Branch: `main`.
-- Open slice marker: **none**.
-- Active implementation slice: **none; Slice 17 is now a prepared parent program and Slice 17.0 is the next child, but neither is open**.
+- Open slice marker: **`docs/slices/_OPEN_SHIP_DESIGNER_TRIANGLE_REFERENCE_TEST_HARNESS_2026-09-18.md`**.
+- Active implementation slice: **Slice 17.0 - Ship Designer / Triangle Reference Test Harness; Gate 1 complete / Gate 2 next**.
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
@@ -14,7 +14,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-16 are closed/accepted at their intended baselines**. Slice 17 is a prepared 17.0-17.5 parent program; reserved Slice 18 and Slices 20-23 remain planned only.
-- Current objective: **await explicit release before opening Slice 17.0 Gate 1 (Ship Designer / Triangle Reference Test Harness).**
+- Current objective: **await explicit release for Slice 17.0 Gate 2 contract freeze; do not open 17.1 or later children.**
 - Slice-15.1 closure evidence: `docs/research/SLICE_15_1_MOBILE_FIRST_UX_GATE4_2026-09-04.md`.
 - Slice-15.2 Gate-1 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE1_2026-09-04.md`.
 - Slice-15.2 Gate-2 evidence: `docs/research/SLICE_15_2_FUNCTIONAL_HMI_GATE2_2026-09-04.md`.
@@ -25,7 +25,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-16.1 Gate-2 freeze: `docs/research/SLICE_16_1_GATE2_FREEZE_2026-09-15.md` - accepted selector/responsive/accessibility/asset/unsupported-state contract; later information-copy depth remains refinable.
 - Slice-16.1 Gate-3 implementation: `docs/research/SLICE_16_1_GATE3_IMPLEMENTATION_2026-09-15.md` - typed generic selector foundation, deterministic build contract check and reusable Chrome browser smoke; later setting breadth remains in 16.2-16.6.
 - Slice-16.1 Gate-4 closure: `docs/research/SLICE_16_1_GATE4_CLOSE_2026-09-15.md` - final desktop/390 px browser acceptance, real mouse/touch/keyboard smoke, clean build/diff checks and repository-protocol closeout.
-- Slice-16.2 Gate-1 difficulty audit: `docs/research/SLICE_16_2_GATE1_DIFFICULTY_AUDIT_2026-09-15.md` - original-vocabulary/effects audit, current runtime gap, deliberate MOOX naming decision and five-state command-emblem prototype; no gameplay implementation yet.
+- Slice-17.0 Gate-1 evidence: `docs/research/SLICE_17_0_GATE1_REFERENCE_HARNESS_AUDIT_2026-09-18.md` - audited reference registration, safe deterministic technology bootstrap, normal turn/construction paths, immutable Ship snapshots, Tactical handoff and strict dev-only authorization boundary; Gate 2 is next and not yet released.`r`n- Slice-16.2 Gate-1 difficulty audit: `docs/research/SLICE_16_2_GATE1_DIFFICULTY_AUDIT_2026-09-15.md` - original-vocabulary/effects audit, current runtime gap, deliberate MOOX naming decision and five-state command-emblem prototype; no gameplay implementation yet.
 - Slice-16.2 Gate-2 freeze: `docs/research/SLICE_16_2_GATE2_DIFFICULTY_FREEZE_2026-09-15.md` - stable server IDs, Tutor separation, Average-normalized additive AI economy profile, explicit Very-Hard midpoint, server-owned fact payload and SVG contract.
 - Slice-16.2 Gate-3 implementation: `docs/research/SLICE_16_2_GATE3_IMPLEMENTATION_2026-09-15.md` - server catalog/state contract, built-in-AI economy and CP effects, deterministic fixtures, five production SVGs, typed shared selector and live browser QA.
 - Slice-16.2 Gate-4 icon redesign V2 review: `docs/research/SLICE_16_2_GATE4_DIFFICULTY_ICON_REDESIGN_V2_2026-09-15.md` - accepted minimalist threat-sigil replacement for the overlay-heavy command-crest family.
