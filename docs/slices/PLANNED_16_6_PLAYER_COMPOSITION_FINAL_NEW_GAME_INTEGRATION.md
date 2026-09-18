@@ -1,6 +1,6 @@
 # Planned slice 16.6 - Player composition and New Game integration
 
-Status: **open; Gates 1-3 complete, Gate 4 next (2026-09-17)**.
+Status: **closed; Gates 1-4 complete (2026-09-18)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slices 16.1-16.5.
@@ -123,13 +123,13 @@ Permanent Gate-3 implementation evidence: `docs/research/SLICE_16_6_GATE3_PLAYER
 
 ## Gate 4 - player-composition integration acceptance
 
-- [ ] Desktop and real 390 px mobile New Game walkthrough.
-- [ ] Create/play smoke for every supported difficulty/galaxy/tech/player-count class.
-- [ ] Validate representative preset races and multi-AI sessions.
-- [ ] Equal seed + complete settings tuple remains deterministic.
-- [ ] No unsupported combination can be created through UI or API.
-- [ ] Full Go tests/vet, Web production build and `git diff --check`.
-- [ ] Update parent Slice-16 plan, ACTIVE_RESEARCH, PROJECT_STATUS and HISTORY; hand off final Advanced parity and Slice-16 closure to Slice 16.7.
+- [x] Desktop and real 390 px mobile New Game walkthrough.
+- [x] Create/play smoke for every supported difficulty/galaxy/tech/player-count class.
+- [x] Validate representative preset races and multi-AI sessions.
+- [x] Equal seed + complete settings tuple remains deterministic.
+- [x] No unsupported combination can be created through UI or API.
+- [x] Full Go tests/vet, Web production build and `git diff --check`.
+- [x] Update parent Slice-16 plan, ACTIVE_RESEARCH, PROJECT_STATUS and HISTORY; hand off final Advanced parity and Slice-16 closure to Slice 16.7.
 
 ## Exit criterion
 

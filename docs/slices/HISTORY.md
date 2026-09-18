@@ -408,3 +408,14 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Accepted the current deterministic artwork as the Slice-16.5 baseline; deeper visual refinement remains future polish and is not a closure blocker.
 - Closure evidence: `docs/research/SLICE_16_5_GATE4_CLOSE_2026-09-17.md`.
 - Next prepared Slice-16 step: **Slice 16.6 Gate 1 - player composition and final New Game integration audit**.
+## 2026-09-18 - Slice 16.6 Player composition and final New Game integration closed
+
+- Closed Slice 16.6 with Gates 1-4 complete after live HMI polish and full player-composition acceptance.
+- Public HTTP create/play smoke now covers every supported Difficulty class, all four galaxy sizes, all three galaxy ages, Pre-Warp/Average, Human/Klackon and both 1-/2-opponent classes; multi-AI games advance to the next turn without stalling.
+- Re-ran the complete 480-tuple equal-seed deterministic matrix and Pre-Warp/Average three-player persistence round trips.
+- Unsupported four-player composition, Advanced start and planned Darlok local-player creation are rejected by the API; planned opponent counts remain locked in the HMI.
+- Final New Game HMI keeps Player Race and Opponent Count as equal-height selectors and moves composition to the full-width `Players & Empires` roster, including honest neutral slots up to seven planned opponents and `?` race information for real assignments.
+- Live `7171` acceptance created a Huge / Organic Rich / Impossible / Average Human + Darlok AI + Klackon AI game, advanced turn 1 -> 2, exported/restored the live snapshot and preserved turn/player identity.
+- Full `go test ./... -count=1`, `go vet ./...`, Web build, real 390 px/desktop browser smoke and diff checks passed.
+- Closure evidence: `docs/research/SLICE_16_6_GATE4_CLOSE_2026-09-18.md`.
+- Next prepared Slice-16 step: **Slice 16.7 Gate 1 - Advanced starting technology parity and final Slice-16 closure audit**; it was not opened during this closure.
