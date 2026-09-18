@@ -2,7 +2,7 @@
 
 Status: **planned / queued; not open**.
 
-Queue position: **reserved future Slice 20 by product decision**. Slices 18/19 are currently unassigned and need not be invented merely to fill numbering.
+Queue position: **reserved future Slice 20 by product decision**. Slice 18 is now reserved for Galaxy Generation / Strategic Navigation Fidelity; Slice 19 remains intentionally unassigned and need not be invented merely to fill numbering.
 
 ## Objective
 

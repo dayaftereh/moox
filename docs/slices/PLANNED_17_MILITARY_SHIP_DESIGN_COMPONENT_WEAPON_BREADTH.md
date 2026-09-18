@@ -2,7 +2,7 @@
 
 Status: **planned / queued; not open**.
 
-Queue position: **17 of 17**.
+Queue position: **next prepared gameplay slice after closed Slice 16**. Slice 18 is reserved downstream for Galaxy/Navigation fidelity and is not a prerequisite for Slice 17.
 
 ## Objective
 

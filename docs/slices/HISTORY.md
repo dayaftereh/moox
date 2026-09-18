@@ -437,3 +437,13 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Final prepared/reserved order: **17 -> 20 -> 21 -> 22 -> 23**; 18/19 remain unassigned.
 - Closure evidence: `docs/research/SLICE_16_CLOSE_2026-09-18.md` and `docs/research/SLICE_16_7_GATE2_ADVANCED_DEFERRAL_HANDOFF_2026-09-18.md`.
 - No downstream slice was opened by this closure.
+## 2026-09-18 - Slice 18 reserved for Galaxy / Strategic Navigation fidelity
+
+- Post-Slice-16 audit confirmed the current galaxy is systematically too sparse: the parsec conversion is correct at 30 coordinate units per pc, but `moox_grid_jitter_v1` expands the physical map with Galaxy Size while the original keeps one strategic-scale map and increases density with star count.
+- Direct original evidence confirms `Modify_Home_Worlds_ -> Guarantee_A_Planet_At_Min_Dist_(homeStar,4)`: at least one other planet-bearing system is guaranteed within 4 pc of every homeworld. A second nearby system is not a hard guarantee; multiple nearby systems are an emergent consequence of denser placement.
+- Original `Map_Is_Connected_` requires all normal stars to form one connected component through links <=8 pc; black holes are excluded from that graph.
+- Original `Star_XY_Invalid_` requires a black hole to stay >=5 pc from **every** star, so a black hole cannot occupy the homeworld's <=4-pc start neighborhood.
+- Original HELP and 1.31 code confirm black holes block strategic flight segments; current MOOX renders spectral class 6 but does not yet enforce that route geometry.
+- Reserved `PLANNED_18_GALAXY_GENERATION_STRATEGIC_NAVIGATION_FIDELITY.md` to own the complete correction rather than patching one home-neighbor symptom.
+- Slice 17 remains independent and can complete before Slice 18. Updated intended roadmap: **17 -> 18 -> 20 -> 21 -> 22 -> 23**. Slice 19 remains intentionally unassigned.
+- Slice 18 is planned only; no `_OPEN_` marker was created.
