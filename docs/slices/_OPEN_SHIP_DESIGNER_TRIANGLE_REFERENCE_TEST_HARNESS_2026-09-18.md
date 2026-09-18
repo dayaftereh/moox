@@ -40,6 +40,8 @@ Frozen in `docs/research/SLICE_17_0_GATE2_REFERENCE_HARNESS_FREEZE_2026-09-18.md
 
 Implemented and verified in `docs/research/SLICE_17_0_GATE3_IMPLEMENTATION_2026-09-18.md`. The durable Reference Harness now exists end-to-end through the ordinary authority paths.
 
+Gate-3 amendment `docs/research/SLICE_17_0_GATE3_BUYOUT_DEV_BC_AMENDMENT_2026-09-18.md` adds normal server-authoritative MOO2 BC construction buyout, moves round controls under Development Tools and adds trusted Reference-only +100/+1,000/+10,000 BC grants. Gate 4 remains not started.
+
 ## Guardrail
 
 Gate 4 QA/close is ready but not started. Wait for explicit user release. Do not open Slice 17.1 or later children. No push.

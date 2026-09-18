@@ -94,6 +94,8 @@ Reference controls must not appear in ordinary games when the server is not star
 - [x] Add reusable reference-game bootstrap helpers.
 - [x] Add curated technology-profile reference scenarios.
 - [x] Add normal-resolver turn advancement controls for reference games only.
+- [x] Move +1/+5/+N and construction-runner controls under Development Tools.
+- [x] Add Reference-only +100/+1,000/+10,000 BC grants and normal MOO2 construction buyout with authoritative BC deduction.
 - [x] Add construction-completion runner with hard iteration bound.
 - [x] Add reusable combat-ready Ship snapshot fixtures.
 - [x] Expose clear reference-game identity in HMI.
@@ -103,6 +105,7 @@ Reference controls must not appear in ordinary games when the server is not star
 
 - `docs/research/SLICE_17_0_GATE3_IMPLEMENTATION_2026-09-18.md`
 - Implemented durable Triangle profiles, trusted reference metadata, bounded normal-turn/construction controls, shared immutable Ship fixture materialization, dev-only HTTP security, persistence isolation, bilingual responsive HMI and unit/server/browser regressions.
+- Gate-3 amendment: `docs/research/SLICE_17_0_GATE3_BUYOUT_DEV_BC_AMENDMENT_2026-09-18.md` - normal original-style BC construction buyout plus Reference Development Tools (+BC and +1/+5/+N) implemented and verified.
 
 ## Gate 4 - QA + close
 

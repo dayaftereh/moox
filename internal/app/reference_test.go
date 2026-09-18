@@ -2,10 +2,12 @@ package app
 
 import (
 	"errors"
+	"math"
 	"testing"
 
 	"moox/internal/core"
 	"moox/internal/game"
+	"moox/internal/protocol"
 	"moox/internal/session"
 )
 
@@ -231,5 +233,154 @@ func TestReferencePersistenceCannotEscalateImportAndRestoreRetainsTrustedMetadat
 	}
 	if restored.View.Turn != 1 || restored.Reference == nil || restored.Reference.ProfileID != string(game.ReferenceTriangleProfileMidTech) {
 		t.Fatalf("restored reference snapshot=%+v reference=%+v", restored.View, restored.Reference)
+	}
+}
+
+func TestReferenceGrantBCIsTrustedAndServerAuthoritative(t *testing.T) {
+	host := loadNewGameHost(t)
+	const gameID = "reference-grant-bc"
+	registerReferenceRunnerTestGame(t, host, gameID, game.ReferenceTriangleProfileAllTech)
+	before, err := host.PlayerSnapshot(gameID, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	start := before.View.Empire.Treasury.BalanceBC
+	result, err := host.GrantReferenceBC(gameID, ReferenceGrantBCRequest{
+		SchemaVersion: SchemaVersion, SeatID: 1, BaseRevision: before.View.Revision, AmountBC: 1000,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.AmountBC != 1000 || result.BalanceBC != start+1000 {
+		t.Fatalf("grant result=%+v start=%v", result, start)
+	}
+	after, err := host.PlayerSnapshot(gameID, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if after.View.Empire.Treasury.BalanceBC != start+1000 {
+		t.Fatalf("treasury=%v want=%v", after.View.Empire.Treasury.BalanceBC, start+1000)
+	}
+
+	if _, err := host.CreateGame(CreateGameRequest{GameID: "ordinary-grant", Seed: 0x8124, Settings: appNewGameSettings()}); err != nil {
+		t.Fatal(err)
+	}
+	ordinary, err := host.PlayerSnapshot("ordinary-grant", 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = host.GrantReferenceBC("ordinary-grant", ReferenceGrantBCRequest{
+		SchemaVersion: SchemaVersion, SeatID: 1, BaseRevision: ordinary.View.Revision, AmountBC: 100,
+	})
+	if !errors.Is(err, ErrReferenceForbidden) {
+		t.Fatalf("ordinary BC grant err=%v", err)
+	}
+}
+
+func TestReferenceGrantBCRejectsUnapprovedAmount(t *testing.T) {
+	host := loadNewGameHost(t)
+	const gameID = "reference-grant-bc-invalid"
+	registerReferenceRunnerTestGame(t, host, gameID, game.ReferenceTriangleProfileBaseline)
+	before, err := host.PlayerSnapshot(gameID, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = host.GrantReferenceBC(gameID, ReferenceGrantBCRequest{
+		SchemaVersion: SchemaVersion, SeatID: 1, BaseRevision: before.View.Revision, AmountBC: 500,
+	})
+	if !errors.Is(err, ErrReferenceNotReady) {
+		t.Fatalf("invalid BC amount err=%v", err)
+	}
+}
+
+func TestHostConstructionBuyoutUsesNormalImmediateAuthorityAndNextTurnCompletion(t *testing.T) {
+	host := loadNewGameHost(t)
+	const gameID = "reference-normal-buyout"
+	registerReferenceRunnerTestGame(t, host, gameID, game.ReferenceTriangleProfileAllTech)
+
+	before, err := host.PlayerSnapshot(gameID, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	colonyID := before.View.Colonies[0].ID
+	queue, err := game.NewSetConstructionQueueCommand(1, game.SetConstructionQueuePayload{
+		ColonyID: colonyID,
+		Items:    []game.ConstructionQueueItem{{ProjectKind: core.ConstructionProjectBuilding, ProjectID: "holo_simulator"}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := host.SubmitTurn(gameID, protocol.CommandBatch{
+		SchemaVersion: protocol.CommandSchemaVersion, GameID: gameID, SeatID: 1,
+		Turn: before.View.Turn, BaseRevision: before.View.Revision, Commands: []protocol.Command{queue},
+	}); err != nil {
+		t.Fatal(err)
+	}
+
+	queued, err := host.PlayerSnapshot(gameID, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var quote *game.ConstructionBuyoutQuote
+	for i := range queued.ConstructionBuyouts {
+		if queued.ConstructionBuyouts[i].ColonyID == colonyID {
+			quote = &queued.ConstructionBuyouts[i]
+			break
+		}
+	}
+	if quote == nil || quote.CostBC <= 0 {
+		t.Fatalf("buyout quote=%+v", quote)
+	}
+
+	grant, err := host.GrantReferenceBC(gameID, ReferenceGrantBCRequest{
+		SchemaVersion: SchemaVersion, SeatID: 1, BaseRevision: queued.View.Revision, AmountBC: 10000,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	funded, err := host.PlayerSnapshot(gameID, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	buy, err := game.NewBuyConstructionCommand(1, game.BuyConstructionPayload{ColonyID: colonyID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := host.SubmitImmediateCommand(gameID, 1, funded.View.Revision, buy); err != nil {
+		t.Fatal(err)
+	}
+	bought, err := host.PlayerSnapshot(gameID, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := bought.View.Empire.Treasury.BalanceBC, grant.BalanceBC-quote.CostBC; math.Abs(got-want) > 1e-9 {
+		t.Fatalf("buyout treasury=%v want=%v", got, want)
+	}
+	if bought.View.Colonies[0].Construction == nil || math.Abs(bought.View.Colonies[0].Construction.ProgressPP-quote.ProductionCostPP) > 1e-9 {
+		t.Fatalf("bought construction=%+v quote=%+v", bought.View.Colonies[0].Construction, quote)
+	}
+
+	result, err := host.AdvanceReference(gameID, ReferenceAdvanceRequest{
+		SchemaVersion: SchemaVersion, SeatID: 1, BaseRevision: bought.View.Revision, Mode: ReferenceAdvanceTurns, Turns: 1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.TurnsAdvanced != 1 {
+		t.Fatalf("advance after buyout=%+v", result)
+	}
+	completed, err := host.PlayerSnapshot(gameID, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	found := false
+	for _, building := range completed.View.Colonies[0].Buildings {
+		if building == "holo_simulator" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("bought holo_simulator did not complete on normal turn: %+v", completed.View.Colonies[0].Buildings)
 	}
 }

@@ -82,6 +82,8 @@ The normalized building table already carries the original `technology_id` for e
 - `GameSession.BuildingChoices` applies the authoritative seat-to-empire mapping before returning this projection, so human clients and AI agents can consume the same legal-action list.
 
 This checkpoint deliberately does **not** assign starting technologies to the deterministic fixture and does not claim the original new-game technology grant. Tests inject explicit known technology IDs where a buildability scenario requires them. Original starting/research acquisition behavior remains separate evidence work.
+> **Later status (2026-09-18):** buyout/rush-production is now researched and implemented by the Slice-17.0 Gate-3 amendment. See `docs/research/SLICE_17_0_GATE3_BUYOUT_DEV_BC_AMENDMENT_2026-09-18.md`. The list below is retained as the historical boundary of this 2026-08-27 checkpoint.
+
 ## Deliberately not claimed yet
 
 This checkpoint does not establish or implement:

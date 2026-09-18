@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"moox/internal/core"
+	"moox/internal/game"
 	"moox/internal/protocol"
 	"moox/internal/session"
 )
@@ -28,6 +29,22 @@ type ReferenceGameInfo struct {
 	ControlSeatID        protocol.SeatID `json:"control_seat_id"`
 	MaxTurnsPerRequest   int             `json:"max_turns_per_request"`
 	MaxConstructionTurns int             `json:"max_construction_turns"`
+}
+
+type ReferenceGrantBCRequest struct {
+	SchemaVersion int             `json:"schema_version"`
+	SeatID        protocol.SeatID `json:"seat_id"`
+	BaseRevision  uint64          `json:"base_revision"`
+	AmountBC      int             `json:"amount_bc"`
+}
+
+type ReferenceGrantBCResult struct {
+	SchemaVersion  int     `json:"schema_version"`
+	GameID         string  `json:"game_id"`
+	AmountBC       int     `json:"amount_bc"`
+	BalanceBC      float64 `json:"balance_bc"`
+	GameRevision   uint64  `json:"game_revision"`
+	ChangeSequence uint64  `json:"change_sequence"`
 }
 
 type ReferenceAdvanceMode string
@@ -91,6 +108,45 @@ func cloneReferenceInfo(info *ReferenceGameInfo) *ReferenceGameInfo {
 	}
 	clone := *info
 	return &clone
+}
+
+func (h *Host) GrantReferenceBC(gameID string, request ReferenceGrantBCRequest) (ReferenceGrantBCResult, error) {
+	hosted, err := h.lookup(gameID)
+	if err != nil {
+		return ReferenceGrantBCResult{}, err
+	}
+	hosted.mu.Lock()
+	defer hosted.mu.Unlock()
+	info := hosted.reference
+	if info == nil || request.SeatID != info.ControlSeatID {
+		return ReferenceGrantBCResult{}, fmt.Errorf("%w: game %q seat %d", ErrReferenceForbidden, gameID, request.SeatID)
+	}
+	status := hosted.session.Status()
+	if request.SchemaVersion != SchemaVersion {
+		return ReferenceGrantBCResult{}, fmt.Errorf("%w: unsupported schema_version %d", ErrReferenceNotReady, request.SchemaVersion)
+	}
+	if request.BaseRevision != status.Revision {
+		return ReferenceGrantBCResult{}, fmt.Errorf("%w: base revision %d, current %d", ErrReferenceStaleRevision, request.BaseRevision, status.Revision)
+	}
+	if status.Phase != session.PhasePlanning || status.Result != nil {
+		return ReferenceGrantBCResult{}, fmt.Errorf("%w: phase %q", ErrReferenceNotReady, status.Phase)
+	}
+	command, err := game.NewReferenceGrantBCCommand(1, game.ReferenceGrantBCPayload{AmountBC: request.AmountBC})
+	if err != nil {
+		return ReferenceGrantBCResult{}, fmt.Errorf("%w: %v", ErrReferenceNotReady, err)
+	}
+	if err := hosted.session.ResolveReferenceGrantBCCommand(request.SeatID, request.BaseRevision, command); err != nil {
+		return ReferenceGrantBCResult{}, fmt.Errorf("%w: %v", ErrReferenceNotReady, err)
+	}
+	after := hosted.session.Status()
+	hosted.changeSequence++
+	hosted.rebasePlanningDrafts(status, after)
+	hosted.publish(Notification{SchemaVersion: SchemaVersion, Kind: "snapshot_invalidated", GameID: after.GameID, ChangeSequence: hosted.changeSequence, GameRevision: after.Revision, Scope: "reference", Reason: "reference_bc_granted"})
+	view, err := hosted.session.PlayerView(request.SeatID)
+	if err != nil {
+		return ReferenceGrantBCResult{}, err
+	}
+	return ReferenceGrantBCResult{SchemaVersion: SchemaVersion, GameID: after.GameID, AmountBC: request.AmountBC, BalanceBC: view.Empire.Treasury.BalanceBC, GameRevision: after.Revision, ChangeSequence: hosted.changeSequence}, nil
 }
 
 func (h *Host) AdvanceReference(gameID string, request ReferenceAdvanceRequest) (ReferenceAdvanceResult, error) {

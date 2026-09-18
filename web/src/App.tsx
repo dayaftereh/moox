@@ -19,6 +19,7 @@ import {
   streamURL,
   submitBattleCommand,
   submitColonyBase,
+  submitConstructionBuyout,
   submitDiplomacy,
   submitInvasion,
   submitPlanning,
@@ -1191,6 +1192,20 @@ function App() {
     }
   }
 
+  async function runConstructionBuyout(colonyID: number) {
+    if (!snapshot || mutationLocked || snapshot.view.phase !== 'planning') return
+    setError('')
+    try {
+      const receipt = await submitConstructionBuyout(snapshot, seatID, colonyID)
+      setStatus({ key: 'status.constructionBought', vars: { change: receipt.change_sequence, revision: receipt.game_revision } })
+      await loadSnapshot(snapshot.view.game_id, seatID)
+    } catch (reason) {
+      setError(errorText(reason))
+      await refreshAfterConflict(reason)
+      throw reason
+    }
+  }
+
   async function runInvasion(action: 'invade' | 'decline') {
     if (!snapshot?.view.invasion || mutationLocked) return
     setInvasionBusy(true)
@@ -1731,16 +1746,6 @@ function App() {
     >
       {persistenceControls}
 
-      {snapshot && (
-        <ReferenceLabPanel
-          snapshot={snapshot}
-          seatID={seatID}
-          selectedColonyID={activeSection === 'colonies' ? route.entityID : undefined}
-          reloadSnapshot={() => loadSnapshot()}
-          t={t}
-        />
-      )}
-
       {colonyBaseDecision && (
         <div className="decision-dialog-backdrop colony-base-decision-backdrop" role="presentation">
           <Card className="decision-dialog colony-base-decision" as="section">
@@ -1913,6 +1918,7 @@ function App() {
             onOpenShipDesigner={(designID) => navigate({ kind: 'game', gameID: route.gameID, section: 'shipbuilder', entityID: designID })}
             onPlanOrder={planOrder}
             onRemoveOrder={removePlannedOrder}
+            onBuyConstruction={runConstructionBuyout}
             t={t}
           />
         ) : (
@@ -1927,6 +1933,7 @@ function App() {
             onPlanPopulation={planPopulation}
             onPlanOrder={planOrder}
             onRemoveOrder={removePlannedOrder}
+            onBuyConstruction={runConstructionBuyout}
             t={t}
           />
         )
@@ -2119,6 +2126,9 @@ function MoreView({ snapshot, games, gameID, seatID, setSeatID, selectHostedGame
             <div className="action-row"><button type="button" className="button-secondary" onClick={() => void loadSnapshot()} disabled={!gameID}>{t('more.refreshSnapshot')}</button><button type="button" className="button-ghost" onClick={onHome}>{t('more.mainMenu')}</button></div>
           </div>
         </Card>
+        {snapshot.reference && (
+          <ReferenceLabPanel snapshot={snapshot} seatID={seatID} reloadSnapshot={loadSnapshot} t={t} />
+        )}
         <Card>
           <h2>{t('more.diplomacy')}</h2>
           {(snapshot.view.diplomacy ?? []).length === 0 ? <p className="muted">{t('more.noEmpires')}</p> : (

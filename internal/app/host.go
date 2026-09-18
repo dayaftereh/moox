@@ -34,13 +34,14 @@ type GameSummary struct {
 }
 
 type PlayerSnapshot struct {
-	SchemaVersion  int                         `json:"schema_version"`
-	ChangeSequence uint64                      `json:"change_sequence"`
-	View           session.PlayerView          `json:"view"`
-	Decision       *session.PlayerDecisionView `json:"decision,omitempty"`
-	Battles        []battle.View               `json:"battles"`
-	PlanningDraft  *PlanningDraft              `json:"planning_draft,omitempty"`
-	Reference      *ReferenceGameInfo          `json:"reference,omitempty"`
+	SchemaVersion       int                            `json:"schema_version"`
+	ChangeSequence      uint64                         `json:"change_sequence"`
+	View                session.PlayerView             `json:"view"`
+	Decision            *session.PlayerDecisionView    `json:"decision,omitempty"`
+	Battles             []battle.View                  `json:"battles"`
+	PlanningDraft       *PlanningDraft                 `json:"planning_draft,omitempty"`
+	Reference           *ReferenceGameInfo             `json:"reference,omitempty"`
+	ConstructionBuyouts []game.ConstructionBuyoutQuote `json:"construction_buyouts,omitempty"`
 }
 
 type PlanningDraftOrder struct {
@@ -228,7 +229,13 @@ func (h *Host) PlayerSnapshot(gameID string, seatID protocol.SeatID) (PlayerSnap
 		return PlayerSnapshot{}, fmt.Errorf("project player view: %w", err)
 	}
 	var decision *session.PlayerDecisionView
+	var constructionBuyouts []game.ConstructionBuyoutQuote
 	if hosted.immediateResolver != nil {
+		quotes, err := hosted.session.ConstructionBuyoutQuotes(seatID, hosted.immediateResolver)
+		if err != nil {
+			return PlayerSnapshot{}, fmt.Errorf("project construction buyouts: %w", err)
+		}
+		constructionBuyouts = quotes
 		projected, err := hosted.session.DecisionView(seatID, hosted.immediateResolver)
 		if err != nil {
 			return PlayerSnapshot{}, fmt.Errorf("project player decision view: %w", err)
@@ -248,7 +255,7 @@ func (h *Host) PlayerSnapshot(gameID string, seatID protocol.SeatID) (PlayerSnap
 			delete(hosted.planningDrafts, seatID)
 		}
 	}
-	return PlayerSnapshot{SchemaVersion: SchemaVersion, ChangeSequence: hosted.changeSequence, View: view, Decision: decision, Battles: battles, PlanningDraft: planningDraft, Reference: cloneReferenceInfo(hosted.reference)}, nil
+	return PlayerSnapshot{SchemaVersion: SchemaVersion, ChangeSequence: hosted.changeSequence, View: view, Decision: decision, Battles: battles, PlanningDraft: planningDraft, Reference: cloneReferenceInfo(hosted.reference), ConstructionBuyouts: constructionBuyouts}, nil
 }
 
 func (h *Host) PlanningPreview(gameID string, seatID protocol.SeatID, batch protocol.CommandBatch) (PlanningPreviewSnapshot, error) {
@@ -368,6 +375,12 @@ func (h *Host) SubmitImmediateCommand(gameID string, seatID protocol.SeatID, bas
 		}
 		if game.IsInvasionCommand(command.Kind) {
 			return hosted.session.ResolveInvasionCommand(seatID, baseRevision, command)
+		}
+		if game.IsConstructionBuyoutCommand(command.Kind) {
+			if hosted.immediateResolver == nil {
+				return fmt.Errorf("immediate command resolver is not configured")
+			}
+			return hosted.session.ResolveConstructionBuyoutCommand(seatID, baseRevision, command, hosted.immediateResolver)
 		}
 		if game.IsMilitaryDesignCommand(command.Kind) {
 			if hosted.immediateResolver == nil {

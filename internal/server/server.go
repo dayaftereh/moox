@@ -84,6 +84,7 @@ func NewHandler(cfg Config) (http.Handler, error) {
 	mux.HandleFunc("GET /api/v1/games/{gameID}/stream", server.handleStream)
 	if cfg.ReferenceControlsEnabled {
 		mux.HandleFunc("POST /api/v1/games/{gameID}/reference/advance", server.handleReferenceAdvance)
+		mux.HandleFunc("POST /api/v1/games/{gameID}/reference/grant-bc", server.handleReferenceGrantBC)
 	}
 	if cfg.StaticFS != nil {
 		mux.Handle("GET /", spaHandler{fsys: cfg.StaticFS})

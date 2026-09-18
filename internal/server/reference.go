@@ -49,3 +49,36 @@ func (s *apiServer) handleReferenceAdvance(w http.ResponseWriter, r *http.Reques
 	}
 	writeJSON(w, http.StatusOK, result)
 }
+
+func (s *apiServer) handleReferenceGrantBC(w http.ResponseWriter, r *http.Request) {
+	if !s.referenceControlsEnabled {
+		http.NotFound(w, r)
+		return
+	}
+	if !validateMutationRequest(w, r) {
+		return
+	}
+	var request app.ReferenceGrantBCRequest
+	if err := decodeJSON(w, r, &request); err != nil {
+		writeAPIError(w, http.StatusBadRequest, "bad_request", err.Error())
+		return
+	}
+	if request.SchemaVersion != app.SchemaVersion {
+		writeAPIError(w, http.StatusBadRequest, "bad_request", "unsupported schema_version")
+		return
+	}
+	if request.SeatID == 0 || request.BaseRevision == 0 {
+		writeAPIError(w, http.StatusBadRequest, "bad_request", "seat_id and base_revision must be non-zero")
+		return
+	}
+	if request.AmountBC != 100 && request.AmountBC != 1000 && request.AmountBC != 10000 {
+		writeAPIError(w, http.StatusBadRequest, "bad_request", "amount_bc must be one of 100, 1000, 10000")
+		return
+	}
+	result, err := s.host.GrantReferenceBC(r.PathValue("gameID"), request)
+	if err != nil {
+		writeHostError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, result)
+}

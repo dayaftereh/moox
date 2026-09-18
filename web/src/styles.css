@@ -6040,3 +6040,100 @@ button.galaxy-node-marker-player-fleet.is-open {
     min-width: 0;
   }
 }
+
+
+/* Slice 17.0 Gate-3 amendment: development tools live in More/Advanced only. */
+.reference-lab {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.reference-lab__group + .reference-lab__group {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.reference-lab__group h3 {
+  margin: 0 0 8px;
+  font-size: .92rem;
+}
+
+.reference-lab__group-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.reference-lab__group-heading h3 {
+  margin: 0;
+}
+
+.reference-lab__construction {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.reference-lab__construction-select {
+  display: grid;
+  flex: 1 1 240px;
+  gap: 4px;
+  color: var(--muted);
+  font-size: .74rem;
+}
+
+.reference-lab__construction-select select {
+  min-height: 40px;
+  width: 100%;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-strong);
+  color: inherit;
+}
+
+.construction-buyout-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.construction-buyout-actions small,
+.construction-buyout-state {
+  color: var(--muted-strong);
+  font-size: .8rem;
+}
+
+.construction-buyout-state {
+  margin: 9px 0 0;
+}
+
+@media (max-width: 520px) {
+  .reference-lab__group-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .reference-lab__construction {
+    display: grid;
+  }
+
+  .reference-lab__construction-select {
+    min-width: 0;
+  }
+
+  .construction-buyout-actions {
+    display: grid;
+  }
+
+  .construction-buyout-actions button {
+    width: 100%;
+  }
+}

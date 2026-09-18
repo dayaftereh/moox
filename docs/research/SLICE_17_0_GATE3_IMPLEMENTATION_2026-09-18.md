@@ -290,6 +290,10 @@ PASS, including:
 
 PASS.
 
+## Gate 3 amendment
+
+A later same-Gate amendment adds the normal MOO2 construction-buyout path plus Reference-only BC grants and moves the round controls under Development Tools. See `docs/research/SLICE_17_0_GATE3_BUYOUT_DEV_BC_AMENDMENT_2026-09-18.md`.
+
 ## Gate 3 result
 
 The frozen Slice-17.0 Reference Harness is implemented end-to-end without introducing a parallel simulation path.

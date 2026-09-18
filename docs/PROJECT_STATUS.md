@@ -45,7 +45,7 @@ Slices 01-14 are closed. Slice 14 Live GameSession save/resume passed independen
    - 15.5 **prepared** - interactive 2D Tactical Combat: authoritative movement/legal targets plus mouse/touch battlefield on the Slice-07 combat baseline.
    - 15.6 **prepared** - full browser vertical slice / polish / complete-game QA.
 9. Slice 16 - **closed** - broader deterministic New Game/preset-race baseline; full Advanced implementation explicitly deferred to Slice 23.
-10. Slice 17 - **active parent program** - military ship design component/weapon breadth; child 17.0 is open with Gates 1-3 complete / Gate 4 ready.
+10. Slice 17 - **active parent program** - military ship design component/weapon breadth; child 17.0 is open with Gates 1-3 complete / Gate 4 ready, including the Gate-3 normal construction-buyout + Reference Development-Tools BC amendment.
 
 Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. The browser-playability Slice-15 family and New Game Slice-16 family are closed at their accepted baselines. The shell is mobile-first, desktop-adaptive, bilingual DE/EN and remains available over the LLO Desktop NetBird interface for review. **Slice 17.0 is now the active implementation slice at Gates 1-3 complete / Gate 4 ready. No later 17.x child is open.** Slice 20 Espionage/Intelligence and Slices 21-23 remain reserved/planned downstream.
 

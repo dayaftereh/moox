@@ -753,11 +753,24 @@ export type PlayerView = {
   result?: SessionResult
   seat: { seat: { id: number; empire_id: number; name: string; controller: string }; submitted: boolean }
   seats: Array<{ seat: { id: number; empire_id: number; name: string; controller: string }; submitted: boolean }>
-  empire: { id: number; name: string; race_id: string; player_color_slot?: number }
+  empire: Empire
   colonies: Colony[]
   diplomacy?: DiplomacyView[]
   invasion?: InvasionOpportunity
   recent_resolutions?: ResolutionSummary[]
+}
+
+export type ConstructionBuyoutQuote = {
+  colony_id: number
+  project_kind: string
+  project_id: string
+  ship_design_id?: number
+  ship_design_revision?: number
+  production_cost_pp: number
+  progress_pp: number
+  remaining_pp: number
+  cost_bc: number
+  affordable: boolean
 }
 
 export type PlayerSnapshot = {
@@ -768,6 +781,7 @@ export type PlayerSnapshot = {
   battles: BattleView[]
   planning_draft?: PlanningDraft
   reference?: ReferenceGameInfo
+  construction_buyouts?: ConstructionBuyoutQuote[]
 }
 
 export type PlanningCommandPayload = Record<string, unknown>
@@ -1014,6 +1028,19 @@ export function decodeShipVisualGenome(genome?: ShipVisualGenomeWire): ShipVisua
   }
 }
 
+export async function submitConstructionBuyout(snapshot: PlayerSnapshot, seatID: number, colonyID: number): Promise<Receipt> {
+  return requestJSON<Receipt>(`/api/v1/games/${encodeURIComponent(snapshot.view.game_id)}/immediate-commands`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      schema_version: 1,
+      seat_id: seatID,
+      base_revision: snapshot.view.revision,
+      command: { schema_version: 1, sequence: 1, kind: 'colony.buy_construction', payload: { colony_id: colonyID } },
+    }),
+  })
+}
+
 export async function submitMilitaryDesign(snapshot: PlayerSnapshot, seatID: number, payload: SaveMilitaryDesignPayload): Promise<Receipt> {
   return requestJSON<Receipt>(`/api/v1/games/${encodeURIComponent(snapshot.view.game_id)}/immediate-commands`, {
     method: 'POST',
@@ -1124,6 +1151,23 @@ export function removeDraftOrder(orders: DraftOrder[], key: string): DraftOrder[
   return orders.filter((item) => item.key !== key)
 }
 
+
+export type ReferenceGrantBCResult = {
+  schema_version: number
+  game_id: string
+  amount_bc: number
+  balance_bc: number
+  game_revision: number
+  change_sequence: number
+}
+
+export async function grantReferenceBC(snapshot: PlayerSnapshot, seatID: number, amountBC: 100 | 1000 | 10000): Promise<ReferenceGrantBCResult> {
+  return requestJSON<ReferenceGrantBCResult>(`/api/v1/games/${encodeURIComponent(snapshot.view.game_id)}/reference/grant-bc`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ schema_version: 1, seat_id: seatID, base_revision: snapshot.view.revision, amount_bc: amountBC }),
+  })
+}
 
 export type ReferenceAdvanceMode = 'turns' | 'until_construction_complete'
 

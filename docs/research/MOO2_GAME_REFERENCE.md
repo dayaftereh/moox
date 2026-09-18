@@ -142,6 +142,8 @@ Scientists plus research buildings produce research points (RP). Only one active
 
 The empire has a treasury measured in BC. Income comes from population and economic bonuses/specials; expenses include maintenance and other empire costs. Cash can accelerate colony production via buyout.
 
+For original MOO2 1.31 buyout calculations, let `X` be total PP cost and `Y` already-produced PP. The frozen evidence gives `4*X - 10*Y` through 10% completion, `3.5*X - 5*Y` from 10% through 50%, and `2*X - 2*Y` from 50% through completion. Equivalent marginal costs are 10 BC/PP for the first 10%, 5 BC/PP through 50%, then 2 BC/PP. A bought project completes when normal Turn resolution runs rather than immediately on the Buy click. Sources: StrategyWiki `Master_of_Orion_II:_Battle_at_Antares/Calculations` and `Speeding_up_production`, corroborated by the GameFAQs MOO2 strategy guide. Runtime implementation/evidence: `docs/research/SLICE_17_0_GATE3_BUYOUT_DEV_BC_AMENDMENT_2026-09-18.md`.
+
 ### 5.7 Morale and government
 
 Morale affects colony productivity for most governments. Some government forms change or bypass morale behavior and also alter research/economic performance.
