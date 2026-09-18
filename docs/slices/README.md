@@ -42,7 +42,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **Slice 16.6 - closed; Gates 1-4 complete** - deterministic server-authoritative 2/3-player composition, multi-AI create/play, persistence, planned 4-8 player locks and full-width Players & Empires roster accepted; closure evidence: `docs/research/SLICE_16_6_GATE4_CLOSE_2026-09-18.md`. Slice 16.7 is prepared next but not open.
+- **Slice 16.7 - Gate 1 complete / Gate 2 next** - `_OPEN_ADVANCED_STARTING_TECH_PARITY_2026-09-18.md`; Advanced technology chooser foundation already exists, while Gate 1 proved the separate original territory/population/building bootstrap and recorded the HELP-versus-1.31 fleet conflict. Permanent evidence: `docs/research/SLICE_16_7_GATE1_ADVANCED_PARITY_AUDIT_2026-09-18.md`.
 
 Closed/parked Slice-15 state:
 
@@ -54,7 +54,7 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slices 16.1-16.6 are closed and Slice 16.7 is the prepared final sub-slice, not yet open.
+1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slices 16.1-16.6 are closed and Slice 16.7 has Gate 1 complete with Gate 2 next.
 2. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for broader combat/design fidelity.
 3. `PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md` - dedicated authoritative Spy/intelligence mechanics; Slice 20 remains reserved while 18/19 are unassigned.
 4. `PLANNED_22_PRESET_RACE_COMPLETION_CUSTOM_RACE_DESIGNER.md` - downstream race-mechanics completion and server-authoritative Custom Race Designer; reserved for after prerequisite race-dependent gameplay systems mature.

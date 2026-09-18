@@ -1,6 +1,6 @@
 ﻿# Planned slice 16.7 - Advanced starting technology parity and Slice-16 closure
 
-Status: **planned / binding Slice-16 product direction; not open**.
+Status: **open; Gate 1 complete, Gate 2 next (2026-09-18)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slices 16.1-16.6, especially the Slice 16.5 starting-technology catalog/visual grammar and the Slice 16.6 player-composition integration.
@@ -31,12 +31,14 @@ The existing Slice 16.5 visual card/art direction is reused. Slice 16.7 is prima
 
 ## Gate 1 - Advanced audit
 
-- [ ] Re-audit authoritative/original Advanced start behavior and normalized source IDs.
-- [ ] Diff Advanced against the frozen `pre_warp` and `average` initial-state contracts field by field.
-- [ ] Enumerate all granted technologies/research state and every non-technology bootstrap delta.
-- [ ] Inventory race-specific interactions and unsupported-mechanic dependencies.
-- [ ] Audit interactions with difficulty, galaxy settings and Slice 16.6 player composition.
-- [ ] Define deterministic fixture evidence needed to prove Advanced parity.
+- [x] Re-audit authoritative/original Advanced start behavior and normalized source IDs.
+- [x] Diff Advanced against the frozen `pre_warp` and `average` initial-state contracts field by field.
+- [x] Enumerate all granted technologies/research state and every non-technology bootstrap delta.
+- [x] Inventory race-specific interactions and unsupported-mechanic dependencies.
+- [x] Audit interactions with difficulty, galaxy settings and Slice 16.6 player composition.
+- [x] Define deterministic fixture evidence needed to prove Advanced parity.
+
+Permanent Gate-1 evidence: docs/research/SLICE_16_7_GATE1_ADVANCED_PARITY_AUDIT_2026-09-18.md.
 
 ## Gate 2 - freeze
 
