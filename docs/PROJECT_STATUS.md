@@ -40,7 +40,7 @@ Slices 01-14 are closed. Slice 14 Live GameSession save/resume passed independen
 8. Slice 15 - **browser-playability vertical-slice baseline closed through Slice 15.6** - final canonical browser acceptance and Gate-4 closure completed 2026-09-14.
    - 15.1 **closed; Gates 1-4 complete** - mobile-first UX architecture / navigation / bilingual design-system shell.
    - 15.2 **open; Gates 1-3 complete, Gate 4 pending** - functional strategic gameplay HMI; Gate 2 freezes DecisionView transport, pure Planning previews, persistent gas-giant/asteroid/star metadata with Outpost targets, a real unbounded-UX construction queue, Colony Population transfer/table behavior, live build/research ETA and sticky strategic resources.
-   - 15.3 **open Â· Gate 1** - MOOX visual identity / graphics / asset pipeline.
+   - 15.3 **open Ã‚Â· Gate 1** - MOOX visual identity / graphics / asset pipeline.
    - 15.4 **prepared** - rich gameplay decisions / Encounter transitions / persistence UX.
    - 15.5 **prepared** - interactive 2D Tactical Combat: authoritative movement/legal targets plus mouse/touch battlefield on the Slice-07 combat baseline.
    - 15.6 **prepared** - full browser vertical slice / polish / complete-game QA.
@@ -150,7 +150,7 @@ See `docs/research/ACTIVE_RESEARCH.md` for the explicit closed-milestone list an
 
 ## Active work
 
-Slice 16.6 **Player composition and final New Game integration** is closed. Public HTTP create/play acceptance covers all supported difficulty, galaxy-size/age, Pre-Warp/Average, Human/Klackon and 1-/2-opponent classes; three-player/two-AI turns advance through built-in AI resolution; the 480-tuple deterministic matrix and three-player persistence round trips remain green. The New Game HMI now separates equal-height Player Race/Opponent Count selectors from a full-width Players & Empires roster with honest planned slots. Slice 16.7 Advanced starting-technology parity is prepared next but not open.
+Slice 16.6 **Player composition and final New Game integration** is closed. Public HTTP create/play acceptance covers all supported difficulty, galaxy-size/age, Pre-Warp/Average, Human/Klackon and 1-/2-opponent classes; three-player/two-AI turns advance through built-in AI resolution; the 480-tuple deterministic matrix and three-player persistence round trips remain green. The New Game HMI separates equal-height Player Race/Opponent Count selectors from a full-width Players & Empires roster with honest planned slots. Slice 16.7 Gate 2 is active; feasibility research shows full Advanced parity should be handed to reserved Slice 23 after Slice 21 Building/Planet/Pollution fidelity and Slice 22 race completion rather than pulling those systems into Slice 16.
 
 The Treasury Maintenance/deficit checkpoint is complete. Direct MOO2 1.31 evidence resolves all six Maintenance categories and the staged negative-Treasury liquidation boundary. Without changing Core schema 15 or ruleset schema 7, runtime now charges the complete currently-authoritative active-Freighter bucket (Food use plus Population-transfer reservations) with original aggregate whole-BC truncation and materializes surplus-Food income at the original whole-BC boundary. Full asset liquidation stays deferred until canonical Ship/Spy/Leader/treaty systems exist, and the full Go test/vet baseline is green.
 
@@ -201,24 +201,22 @@ The project now has a complete supported headless conquest lifecycle, so the rem
 
 ## Next milestones
 
-### Prepared tranche - Slices 13-17
+### Prepared / reserved roadmap
 
-1. **Slice 13 - Built-in strategic AI baseline:** deterministic rules-legal/no-cheat AI over the current complete lifecycle.
-2. **Slice 14 - Live GameSession save/resume baseline:** versioned in-progress persistence and exact continuation at stable interactive boundaries.
-3. **Slice 15 - Playable browser strategic HMI parent epic:** 15.1 UX/navigation/design system -> 15.2 functional strategic HMI -> 15.3 MOOX visual identity/assets -> 15.4 rich decisions/persistence UX -> 15.5 interactive 2D Tactical Combat -> 15.6 complete browser vertical slice.
-4. **Slice 16 - New Game + preset-race breadth:** widen the current Small/Normal/Average/two-player/Human+Darlok boundary using evidence-backed settings and preset races.
-5. **Slice 17 - Military ship design component/weapon breadth:** expand the current one-Laser minimal design for broader combat/design fidelity beyond the first interactive Slice-15.5 Tactical baseline.
-6. **Slice 20 - Espionage / intelligence baseline:** dedicated server-authoritative Spy acquisition/allocation, Espionage/Sabotage, race/technology modifiers, player-safe projection, AI and first-class browser integration; 18/19 remain intentionally unassigned.
+1. **Slice 16 - New Game + preset-race breadth:** current program; 16.1-16.6 are closed and 16.7 is being closed with full Advanced implementation deferred after Gate-2 feasibility evidence.
+2. **Slice 17 - Military ship design component/weapon breadth:** expand the current minimal design/runtime for broader combat/design fidelity.
+3. **Slice 20 - Espionage / intelligence baseline:** authoritative Spies, Espionage/Sabotage, race/technology modifiers, safe projection and AI; Slices 18/19 remain intentionally unassigned.
+4. **Slice 21 - Colony / Buildings / Planet Effects / Pollution fidelity:** complete the strategic building/planet effect foundation and make Pollution a server-authoritative Economy loop.
+5. **Slice 22 - Preset race completion + Custom Race Designer:** finish race-dependent mechanics and expose presets/custom races through one authoritative trait system.
+6. **Slice 23 - Full Advanced Starting Civilization parity:** reuse the mature Building/Planet/Pollution/Race/Ship systems plus inherited Slice-16.7 research to implement Advanced without special-case approximations.
 
-### Next product milestone
+Intended downstream order after Slice 16: **17 -> 20 -> 21 -> 22 -> 23**. Every slice still requires a fresh Gate-1 dependency audit before opening.
 
-After Slice 15.6, a human should be able to start, save/resume, play the accepted interactive Tactical battle path and finish the supported deterministic single-player match from the browser without any gameplay authority living in React, through a coherent MOOX visual and interaction language.
+### Numbering policy
 
-### Unnumbered depth after Slice 20
+Slices 18/19 remain intentionally unassigned. Additional Tactical breadth, treaty/trade diplomacy, Leaders, Council/Orion/Antaran victories, random events, multiplayer/external-AI transports and packaging remain unnumbered until a product decision assigns them.
 
-Re-audit after the prepared Slice-20 Espionage baseline before numbering **additional Tactical breadth beyond Slice 15.5**, treaty/trade diplomacy, deeper post-baseline Espionage/Leaders, Economy/Population fidelity, full custom Race Designer, Council/Orion/Antaran victories, random events, multiplayer/external-AI transports and presentation/native packaging.
-
-No prepared slice is an active implementation slice until a fresh Gate 1 creates the corresponding `_OPEN_*.md` marker.
+No prepared slice is active until a fresh Gate 1 creates the corresponding `_OPEN_*.md` marker.
 
 ## Where to look
 

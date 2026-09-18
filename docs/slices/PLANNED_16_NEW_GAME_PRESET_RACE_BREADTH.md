@@ -1,10 +1,10 @@
 # Planned slice 16 - New Game and preset-race breadth
 
-Status: **program in progress; Slices 16.1-16.6 closed, Slice 16.7 Gate 1 complete / Gate 2 next**.
+Status: **program in progress; Slices 16.1-16.6 closed, Slice 16.7 Gate 2 active with full Advanced implementation reserved downstream for Slice 23**.
 
-Position: **Slices 16.1 through 16.6 are closed; Slice 16.7 Gate 1 is complete and Gate 2 is next as the final Slice-16 step.** Slice 17 remains the alternative prepared Military Ship Designer breadth milestone.
+Position: **Slices 16.1 through 16.6 are closed; Slice 16.7 Gate 2 is active as the final Slice-16 step and is preparing a documented Advanced deferral/handoff.** The downstream planned order is 17 -> 20 -> 21 -> 22 -> 23.
 
-> **Downstream race breadth:** Slice 16 intentionally does not force all 13 presets or Custom Race Designer parity into this milestone. `PLANNED_22_PRESET_RACE_COMPLETION_CUSTOM_RACE_DESIGNER.md` is now the reserved follow-up for completing remaining preset-race mechanics and building Custom Races on the same authoritative trait/pick pipeline once prerequisite gameplay systems exist.
+> **Downstream breadth:** Slice 16 intentionally does not force full Building/Planet/Pollution, all 13 preset races, Custom Race Designer, or complete Advanced-start parity into this milestone. Slice 21 owns Colony/Building/Planet/Pollution fidelity; Slice 22 owns preset-race completion + Custom Race Designer; Slice 23 owns full Advanced Starting Civilization parity while inheriting Slice-16.7 research.
 
 ## Objective
 

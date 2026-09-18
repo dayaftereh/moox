@@ -419,3 +419,12 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Full `go test ./... -count=1`, `go vet ./...`, Web build, real 390 px/desktop browser smoke and diff checks passed.
 - Closure evidence: `docs/research/SLICE_16_6_GATE4_CLOSE_2026-09-18.md`.
 - Next prepared Slice-16 step: **Slice 16.7 Gate 1 - Advanced starting technology parity and final Slice-16 closure audit**; it was not opened during this closure.
+## 2026-09-18 - Roadmap reserves Slices 21 and 23
+
+- Slice 16.7 Gate-2 feasibility showed the runtime architecture can carry Advanced multi-Colony starts, but honest original-style parity would pull incomplete Building effects, planet balancing/specials and later race breadth into the New Game milestone.
+- Reserved Slice 21 as **Colony / Buildings / Planet Effects / Pollution Fidelity**.
+- Slice 21 explicitly owns Pollution as a server-authoritative Economy loop, including gross vs Pollution-relevant production, Pollution loss, Pollution-control Buildings/technologies, Pollution-exempt production such as Recyclotron output, and Tolerant interaction.
+- Kept Slice 22 reserved for **Preset Race Completion + Custom Race Designer**, now explicitly downstream of Slice 20 Espionage and Slice 21 strategic/economy breadth.
+- Reserved Slice 23 as **Full Advanced Starting Civilization Parity**, inheriting the permanent Slice-16.7 research and opening only after the relevant Slice-17/20/21/22 foundations mature.
+- Intended downstream order after Slice 16: **17 -> 20 -> 21 -> 22 -> 23**. Slices 18/19 remain intentionally unassigned.
+- Slice 16.7 remains open until its Gate-2 deferral/handoff and Slice-16 closure are completed; Advanced remains planned/locked.

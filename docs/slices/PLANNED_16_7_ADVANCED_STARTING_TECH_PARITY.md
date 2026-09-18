@@ -1,6 +1,6 @@
-﻿# Planned slice 16.7 - Advanced starting technology parity and Slice-16 closure
+# Planned slice 16.7 - Advanced starting technology parity and Slice-16 closure
 
-Status: **open; Gate 1 complete, Gate 2 next (2026-09-18)**.
+Status: **open; Gate 2 Advanced contract freeze active (2026-09-18)**.
 
 Parent: `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md`.
 Depends on: Slices 16.1-16.6, especially the Slice 16.5 starting-technology catalog/visual grammar and the Slice 16.6 player-composition integration.
@@ -48,6 +48,18 @@ Permanent Gate-1 evidence: docs/research/SLICE_16_7_GATE1_ADVANCED_PARITY_AUDIT_
 - [ ] Freeze the server-derived facts shown on the existing Advanced visual card.
 - [ ] Freeze the acceptance matrix required before `advanced` can be enabled for submission.
 
+## Downstream roadmap handoff
+
+Gate-2 feasibility work found that the Core/Persistence architecture can carry Advanced, but complete original-style Advanced parity would pull unfinished Building effects, Pollution/Planet breadth and later race mechanics into Slice 16.
+
+By product decision, the complete implementation target is therefore reserved as `PLANNED_23_FULL_ADVANCED_STARTING_CIVILIZATION_PARITY.md`, downstream of:
+
+- Slice 17 ship/component breadth;
+- Slice 20 Espionage/intelligence;
+- Slice 21 Colony/Buildings/Planet Effects/Pollution fidelity;
+- Slice 22 Preset Race Completion + Custom Race Designer.
+
+Slice 16.7 remains open until its Gate-2 deferral/handoff evidence and Slice-16 closure are completed. This note does **not** open Slice 23 and does not enable `advanced` in the current runtime.
 ## Gate 3 - implementation
 
 - [ ] Enable `advanced` in New Game validation only after the frozen contract is implemented.

@@ -54,10 +54,14 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. `PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md` - parent Slice-16 program; Slices 16.1-16.6 are closed and Slice 16.7 has Gate 1 complete with Gate 2 next.
-2. `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` - multi-hull/component/weapon design baseline for broader combat/design fidelity.
-3. `PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md` - dedicated authoritative Spy/intelligence mechanics; Slice 20 remains reserved while 18/19 are unassigned.
-4. `PLANNED_22_PRESET_RACE_COMPLETION_CUSTOM_RACE_DESIGNER.md` - downstream race-mechanics completion and server-authoritative Custom Race Designer; reserved for after prerequisite race-dependent gameplay systems mature.
+1. PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md - current parent Slice-16 program; Slices 16.1-16.6 are closed and Slice 16.7 Gate 2 is active while full Advanced implementation is being handed downstream.
+2. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - multi-hull/component/weapon design baseline for broader combat/design fidelity.
+3. PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md - dedicated authoritative Spy/intelligence mechanics; Slices 18/19 remain intentionally unassigned.
+4. PLANNED_21_COLONY_BUILDINGS_PLANET_EFFECTS_POLLUTION_FIDELITY.md - authoritative Colony/Building/Planet effects, including Pollution as a real Economy loop and the strategic foundation required by downstream race/Advanced work.
+5. PLANNED_22_PRESET_RACE_COMPLETION_CUSTOM_RACE_DESIGNER.md - mechanically complete preset races plus one server-authoritative Custom Race Designer after prerequisite gameplay systems mature.
+6. PLANNED_23_FULL_ADVANCED_STARTING_CIVILIZATION_PARITY.md - full Advanced starting-civilization parity using mature Slice-21 Building/Planet/Pollution and Slice-22 race systems plus inherited Slice-16.7 evidence.
+
+Planned downstream order after Slice 16 closes: **17 -> 20 -> 21 -> 22 -> 23**. Reprioritization remains allowed before a later slice opens if its dependency audit still passes.
 
 ### Binding Slice-16 decomposition
 

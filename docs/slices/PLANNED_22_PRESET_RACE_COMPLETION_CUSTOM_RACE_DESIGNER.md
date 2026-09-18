@@ -1,8 +1,8 @@
-﻿# Planned slice 22 - Preset race completion and Custom Race Designer
+# Planned slice 22 - Preset race completion and Custom Race Designer
 
 Status: **planned / queued; not open**.
 
-Queue position: **reserved future Slice 22 by product decision**. Slice 22 is deliberately downstream of the current Slice-16 New Game/race-portrait work and must not be opened merely because the number is reserved.
+Queue position: **reserved future Slice 22 by product decision**. Slice 22 is deliberately downstream of Slice 20 Espionage and Slice 21 Colony/Buildings/Planet/Pollution fidelity, and it should close before the full Advanced-start work in Slice 23 opens. Reserving the number does not itself satisfy those dependencies.
 
 ## Objective
 
@@ -46,7 +46,7 @@ Current normalized rules already provide a strong data base for Slice 22:
   - `max_negative_picks = 10`;
 - existing rules loading already resolves preset selections into semantic race modifiers;
 - Slice 16.4 establishes a server-owned race catalog, reusable portraits/manifest and carousel identity contract;
-- Slice 16.6 is expected to establish general player/opponent composition and final New Game integration.
+- Slice 16.6 established general player/opponent composition and final New Game integration.
 
 Gate 1 must re-check original evidence and current runtime before treating any normalized field as a fully implemented gameplay effect.
 
@@ -57,6 +57,7 @@ Before Slice 22 may move beyond Gate 1, verify the state of at least:
 - Slice 16.4 preset race catalog/portrait baseline;
 - Slice 16.6 player/opponent composition and final New Game integration;
 - Slice 20 Espionage/intelligence for spying-dependent races such as Darlok;
+- Slice 21 Colony/Buildings/Planet Effects/Pollution fidelity for Tolerant, homeworld/environment, economy/building and other race-dependent strategic effects;
 - Tactical race-effect breadth needed by ship attack/defense and Trans-Dimensional/Cybernetic effects;
 - Invasion/ground-combat race modifiers;
 - Diplomacy breadth needed by Charismatic/Repulsive;
@@ -65,6 +66,8 @@ Before Slice 22 may move beyond Gate 1, verify the state of at least:
 - any Leader/crew systems required by the accepted Warlord/Charismatic contract.
 
 If a defining trait still depends on an absent subsystem, Gate 2 must either keep that trait/preset unavailable or explicitly queue the missing prerequisite. Do not silently make the trait cosmetic.
+
+Slice 23 must not consume a partially complete Slice-22 race contract as if it were full race parity; Slice 22 closure must state exactly which preset/custom race mechanics are authoritative.
 
 ## Binding architecture direction
 
