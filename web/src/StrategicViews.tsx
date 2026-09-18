@@ -2249,6 +2249,28 @@ function queueItemFromChoice(choice: ConstructionChoice): DraftQueueItem {
   }
 }
 
+function projectedConstructionBuyoutQuote(colonyID: number, item: DraftQueueItem | undefined, costPP: number | undefined, progressPP: number, balanceBC: number): ConstructionBuyoutQuote | undefined {
+  if (!item || !costPP || costPP <= 0 || item.project_kind === 'housing') return undefined
+  const progress = Math.max(0, Math.min(progressPP, costPP))
+  const costBC = progress <= costPP * 0.10
+    ? 4 * costPP - 10 * progress
+    : progress <= costPP * 0.50
+      ? 3.5 * costPP - 5 * progress
+      : 2 * costPP - 2 * progress
+  return {
+    colony_id: colonyID,
+    project_kind: item.project_kind,
+    project_id: item.project_id,
+    ...(item.ship_design_id ? { ship_design_id: item.ship_design_id } : {}),
+    ...(item.ship_design_revision ? { ship_design_revision: item.ship_design_revision } : {}),
+    production_cost_pp: costPP,
+    progress_pp: progress,
+    remaining_pp: Math.max(0, costPP - progress),
+    cost_bc: Math.max(0, costBC),
+    affordable: balanceBC + 1e-9 >= costBC,
+  }
+}
+
 function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenConstruction, onPlanPopulation, onPlanOrder, onRemoveOrder, onBuyConstruction, t }: {
   snapshot: PlayerSnapshot
   colony: Colony
@@ -2394,6 +2416,7 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
           draftOrders={draftOrders}
           onOpen={() => onOpenConstruction(colony.id)}
           buyoutQuote={snapshot.construction_buyouts?.find((quote) => quote.colony_id === colony.id)}
+          balanceBC={snapshot.view.empire.treasury.balance_bc}
           onBuy={onBuyConstruction}
           t={t}
         />
@@ -2428,12 +2451,13 @@ function ColonyDetail({ snapshot, colony, preview, draftOrders, onBack, onOpenCo
     </>
   )
 }
-function ConstructionSummary({ colony, preview, draftOrders, onOpen, buyoutQuote, onBuy, t }: {
+function ConstructionSummary({ colony, preview, draftOrders, onOpen, buyoutQuote, balanceBC, onBuy, t }: {
   colony: Colony
   preview?: PlanningPreviewSnapshot['preview']['projection']['colonies'][number]
   draftOrders: DraftOrder[]
   onOpen: () => void
   buyoutQuote?: ConstructionBuyoutQuote
+  balanceBC: number
   onBuy: (colonyID: number) => Promise<void>
   t: Translator
 }) {
@@ -2448,10 +2472,12 @@ function ConstructionSummary({ colony, preview, draftOrders, onOpen, buyoutQuote
   const currentProgressPercent = currentCostPP && currentCostPP > 0 ? Math.max(0, Math.min(100, (currentProgressPP / currentCostPP) * 100)) : 0
   const futureQueueCount = Math.max(0, items.length - (current ? 1 : 0))
   const authoritativeBuyout = !drafted && current && buyoutQuote && buyoutQuote.project_kind === current.project_kind && buyoutQuote.project_id === current.project_id ? buyoutQuote : undefined
+  const draftedBuyout = drafted ? projectedConstructionBuyoutQuote(colony.id, current, currentCostPP, currentProgressPP, balanceBC) : undefined
+  const effectiveBuyout = draftedBuyout ?? authoritativeBuyout
   const [buying, setBuying] = useState(false)
   const buy = async () => {
-    if (!authoritativeBuyout || authoritativeBuyout.cost_bc <= 1e-9 || buying) return
-    if (!window.confirm(t('construction.buyConfirm', { project: humanizeToken(authoritativeBuyout.project_id), bc: authoritativeBuyout.cost_bc.toFixed(1) }))) return
+    if (!effectiveBuyout || effectiveBuyout.cost_bc <= 1e-9 || buying) return
+    if (!window.confirm(t('construction.buyConfirm', { project: humanizeToken(effectiveBuyout.project_id), bc: effectiveBuyout.cost_bc.toFixed(1) }))) return
     setBuying(true)
     try { await onBuy(colony.id) } finally { setBuying(false) }
   }
@@ -2479,10 +2505,10 @@ function ConstructionSummary({ colony, preview, draftOrders, onOpen, buyoutQuote
         {(!current || currentCostPP === undefined || currentCostPP <= 0) && <span>{projected ? formatEta(t, projected.eta_turns) : t('common.noEta')}</span>}
         {items.length > 1 && <small>{items.slice(1, 4).map((item) => humanizeToken(item.project_id)).join(' · ')}{items.length > 4 ? ' …' : ''}</small>}
       </div>
-      {authoritativeBuyout && (authoritativeBuyout.cost_bc <= 1e-9 ? <p className="construction-buyout-state">{t('construction.boughtAwaitingTurn')}</p> : (
+      {effectiveBuyout && (effectiveBuyout.cost_bc <= 1e-9 ? <p className="construction-buyout-state">{t('construction.boughtAwaitingTurn')}</p> : (
         <div className="construction-buyout-actions">
-          <button type="button" className="button-primary" disabled={!authoritativeBuyout.affordable || buying} onClick={() => void buy()}>{t('construction.buyFor', { bc: authoritativeBuyout.cost_bc.toFixed(1) })}</button>
-          {!authoritativeBuyout.affordable && <small>{t('construction.insufficientBC')}</small>}
+          <button type="button" className="button-primary" disabled={!effectiveBuyout.affordable || buying} onClick={() => void buy()}>{t('construction.buyFor', { bc: effectiveBuyout.cost_bc.toFixed(1) })}</button>
+          {!effectiveBuyout.affordable && <small>{t('construction.insufficientBC')}</small>}
         </div>
       ))}
       <button type="button" className="button-secondary button-wide" onClick={onOpen}><GameIcon name="build" />{t('construction.openManager')}</button>
@@ -2526,6 +2552,7 @@ export function StrategicConstructionView({ snapshot, preview, draftOrders, colo
         onPlanOrder={onPlanOrder}
         onRemoveOrder={onRemoveOrder}
         buyoutQuote={snapshot.construction_buyouts?.find((quote) => quote.colony_id === colony.id)}
+        balanceBC={snapshot.view.empire.treasury.balance_bc}
         onBuy={onBuyConstruction}
         t={t}
       />
@@ -2533,7 +2560,7 @@ export function StrategicConstructionView({ snapshot, preview, draftOrders, colo
   )
 }
 
-function ConstructionEditor({ colony, preview, choices, shipDesigns, draftOrders, onOpenShipDesigner, onPlanOrder, onRemoveOrder, buyoutQuote, onBuy, t }: {
+function ConstructionEditor({ colony, preview, choices, shipDesigns, draftOrders, onOpenShipDesigner, onPlanOrder, onRemoveOrder, buyoutQuote, balanceBC, onBuy, t }: {
   colony: Colony
   preview?: PlanningPreviewSnapshot['preview']['projection']['colonies'][number]
   choices: ConstructionChoice[]
@@ -2543,6 +2570,7 @@ function ConstructionEditor({ colony, preview, choices, shipDesigns, draftOrders
   onPlanOrder: (order: DraftOrder) => void
   onRemoveOrder: (key: string) => void
   buyoutQuote?: ConstructionBuyoutQuote
+  balanceBC: number
   onBuy: (colonyID: number) => Promise<void>
   t: Translator
 }) {
@@ -2561,10 +2589,9 @@ function ConstructionEditor({ colony, preview, choices, shipDesigns, draftOrders
   })
   const [abortConfirmOpen, setAbortConfirmOpen] = useState(false)
   const [buying, setBuying] = useState(false)
-  const authoritativeBuyout = !drafted && items[0] && buyoutQuote && buyoutQuote.project_kind === items[0].project_kind && buyoutQuote.project_id === items[0].project_id ? buyoutQuote : undefined
   const buyCurrent = async () => {
-    if (!authoritativeBuyout || authoritativeBuyout.cost_bc <= 1e-9 || buying) return
-    if (!window.confirm(t('construction.buyConfirm', { project: humanizeToken(authoritativeBuyout.project_id), bc: authoritativeBuyout.cost_bc.toFixed(1) }))) return
+    if (!effectiveBuyout || effectiveBuyout.cost_bc <= 1e-9 || buying) return
+    if (!window.confirm(t('construction.buyConfirm', { project: humanizeToken(effectiveBuyout.project_id), bc: effectiveBuyout.cost_bc.toFixed(1) }))) return
     setBuying(true)
     try { await onBuy(colony.id) } finally { setBuying(false) }
   }
@@ -2647,6 +2674,9 @@ function ConstructionEditor({ colony, preview, choices, shipDesigns, draftOrders
   const currentProgressPP = currentProjected?.project.progress_pp ?? colony.construction?.progress_pp ?? 0
   const currentCostPP = currentProjected?.cost_pp
   const currentProgressPercent = currentCostPP && currentCostPP > 0 ? Math.max(0, Math.min(100, (currentProgressPP / currentCostPP) * 100)) : 0
+  const authoritativeBuyout = !drafted && currentItem && buyoutQuote && buyoutQuote.project_kind === currentItem.project_kind && buyoutQuote.project_id === currentItem.project_id ? buyoutQuote : undefined
+  const draftedBuyout = drafted ? projectedConstructionBuyoutQuote(colony.id, currentItem, currentCostPP, currentProgressPP, balanceBC) : undefined
+  const effectiveBuyout = draftedBuyout ?? authoritativeBuyout
 
   return (
     <div className="construction-workspace construction-workspace-classic">
@@ -2784,10 +2814,10 @@ function ConstructionEditor({ colony, preview, choices, shipDesigns, draftOrders
               <span>{currentCostPP ? `${currentProgressPP.toFixed(1)} / ${currentCostPP.toFixed(0)} PP · ${currentProgressPercent.toFixed(0)}%` : `${currentProgressPP.toFixed(1)} PP`}</span>
               <span>{currentProjected ? formatEta(t, currentProjected.eta_turns) : t('common.noEta')}</span>
             </div>
-            {authoritativeBuyout && (authoritativeBuyout.cost_bc <= 1e-9 ? <p className="construction-buyout-state">{t('construction.boughtAwaitingTurn')}</p> : (
+            {effectiveBuyout && (effectiveBuyout.cost_bc <= 1e-9 ? <p className="construction-buyout-state">{t('construction.boughtAwaitingTurn')}</p> : (
               <div className="construction-buyout-actions">
-                <button type="button" className="button-primary" disabled={!authoritativeBuyout.affordable || buying} onClick={() => void buyCurrent()}>{t('construction.buyFor', { bc: authoritativeBuyout.cost_bc.toFixed(1) })}</button>
-                {!authoritativeBuyout.affordable && <small>{t('construction.insufficientBC')}</small>}
+                <button type="button" className="button-primary" disabled={!effectiveBuyout.affordable || buying} onClick={() => void buyCurrent()}>{t('construction.buyFor', { bc: effectiveBuyout.cost_bc.toFixed(1) })}</button>
+                {!effectiveBuyout.affordable && <small>{t('construction.insufficientBC')}</small>}
               </div>
             ))}
           </section>

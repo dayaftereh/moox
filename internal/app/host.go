@@ -380,7 +380,17 @@ func (h *Host) SubmitImmediateCommand(gameID string, seatID protocol.SeatID, bas
 			if hosted.immediateResolver == nil {
 				return fmt.Errorf("immediate command resolver is not configured")
 			}
-			return hosted.session.ResolveConstructionBuyoutCommand(seatID, baseRevision, command, hosted.immediateResolver)
+			resolvedCommand, draftKey, err := hosted.constructionBuyoutCommandWithDraft(seatID, command)
+			if err != nil {
+				return err
+			}
+			if err := hosted.session.ResolveConstructionBuyoutCommand(seatID, baseRevision, resolvedCommand, hosted.immediateResolver); err != nil {
+				return err
+			}
+			if draftKey != "" {
+				hosted.removePlanningDraftOrder(seatID, draftKey)
+			}
+			return nil
 		}
 		if game.IsMilitaryDesignCommand(command.Kind) {
 			if hosted.immediateResolver == nil {
@@ -848,6 +858,65 @@ func clonePlanningDraft(draft PlanningDraft) PlanningDraft {
 		clone.Orders[i].Payload = append(json.RawMessage(nil), draft.Orders[i].Payload...)
 	}
 	return clone
+}
+
+func (g *hostedGame) constructionBuyoutCommandWithDraft(seatID protocol.SeatID, command protocol.Command) (protocol.Command, string, error) {
+	if command.Kind != game.CommandBuyConstruction {
+		return command, "", nil
+	}
+	var buy game.BuyConstructionPayload
+	if err := json.Unmarshal(command.Payload, &buy); err != nil || buy.ColonyID == 0 {
+		return command, "", nil
+	}
+	draft, ok := g.planningDrafts[seatID]
+	if !ok {
+		return command, "", nil
+	}
+	key := fmt.Sprintf("construction:%d", buy.ColonyID)
+	for _, order := range draft.Orders {
+		if order.Key != key {
+			continue
+		}
+		if order.Kind != game.CommandSetConstructionQueue {
+			return protocol.Command{}, "", fmt.Errorf("planning draft %q has unexpected kind %q", key, order.Kind)
+		}
+		var queue game.SetConstructionQueuePayload
+		if err := json.Unmarshal(order.Payload, &queue); err != nil {
+			return protocol.Command{}, "", fmt.Errorf("decode planning draft %q: %w", key, err)
+		}
+		if queue.ColonyID != buy.ColonyID || len(queue.Items) == 0 {
+			return protocol.Command{}, "", fmt.Errorf("planning draft %q has no buyable current construction", key)
+		}
+		planned, err := game.NewBuyPlannedConstructionCommand(command.Sequence, game.BuyPlannedConstructionPayload{ColonyID: buy.ColonyID, Items: queue.Items})
+		if err != nil {
+			return protocol.Command{}, "", err
+		}
+		return planned, key, nil
+	}
+	return command, "", nil
+}
+
+func (g *hostedGame) removePlanningDraftOrder(seatID protocol.SeatID, key string) {
+	draft, ok := g.planningDrafts[seatID]
+	if !ok {
+		return
+	}
+	orders := make([]PlanningDraftOrder, 0, len(draft.Orders))
+	for _, order := range draft.Orders {
+		if order.Key != key {
+			orders = append(orders, order)
+		}
+	}
+	if len(orders) == len(draft.Orders) {
+		return
+	}
+	if len(orders) == 0 {
+		delete(g.planningDrafts, seatID)
+		return
+	}
+	draft.Orders = orders
+	draft.DraftRevision++
+	g.planningDrafts[seatID] = draft
 }
 
 func containsSeat(seats []protocol.SeatID, seatID protocol.SeatID) bool {

@@ -194,8 +194,8 @@ async function main() {
   assert(Boolean(buildingChoice), 'No legal building choice available for buyout smoke')
   if (!colony?.id || !buildingChoice) throw new Error('Cannot continue construction buyout smoke without colony/building choice')
 
-  await fetchJSON(`${baseURL}/api/v1/games/${gameID}/turn-submissions`, {
-    method: 'POST',
+  await fetchJSON(`${baseURL}/api/v1/games/${gameID}/seats/1/planning-draft`, {
+    method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       schema_version: 1,
@@ -203,9 +203,9 @@ async function main() {
       seat_id: 1,
       turn: afterAdvance.view.turn,
       base_revision: afterAdvance.view.revision,
-      commands: [{
-        schema_version: 1,
-        sequence: 1,
+      draft_revision: 1,
+      orders: [{
+        key: `construction:${colony.id}`,
         kind: 'colony.set_construction_queue',
         payload: {
           colony_id: colony.id,
@@ -216,10 +216,9 @@ async function main() {
   })
   await sleep(250)
   const queued = await fetchJSON(snapshotURL)
-  const quote = queued.construction_buyouts?.find((item) => item.colony_id === colony.id)
-  assert(Boolean(quote), 'Server did not project an authoritative construction buyout quote')
-  assert((quote?.cost_bc ?? 0) > 0, `Buyout cost is not positive: ${quote?.cost_bc}`)
-  assert(quote?.affordable === true, 'Buyout is not affordable after +10,000 BC')
+  assert(queued.view.colonies.find((item) => item.id === colony.id)?.construction == null, 'Planning draft unexpectedly mutated authoritative construction before buyout')
+  assert(queued.planning_draft?.orders?.some((order) => order.key === `construction:${colony.id}`), 'Server did not retain drafted construction before same-turn buyout')
+  const costPP = buildingChoice.production_cost_pp ?? buildingChoice.cost_pp ?? 0
 
   await navigate(`${baseURL}/#/game/${gameID}/colonies/${colony.id}`)
   await evaluate(`window.confirm = () => true; true`)
@@ -239,7 +238,9 @@ async function main() {
   assert(!buyUI.overflow, 'Colony buyout UI causes horizontal overflow at 390px')
 
   const beforeBuy = queued.view.empire.treasury.balance_bc
-  const buyCost = quote?.cost_bc ?? 0
+  const buyCostMatch = buyUI.text.match(/([0-9]+(?:\.[0-9]+)?)\s*BC/)
+  const buyCost = Number(buyCostMatch?.[1] ?? 0)
+  assert(buyCost > 0, `Displayed draft buyout cost is not positive: ${buyUI.text}`)
   const clickedBuy = await evaluate(`(() => {
     const button = document.querySelector('.construction-buyout-actions button')
     if (!button || button.disabled) return false
@@ -249,11 +250,12 @@ async function main() {
   assert(clickedBuy, 'Normal buyout button was not clickable')
   await sleep(850)
   const bought = await fetchJSON(snapshotURL)
-  assert(Math.abs(bought.view.empire.treasury.balance_bc - (beforeBuy - buyCost)) < 1e-6, `Buyout treasury delta incorrect: ${beforeBuy} - ${buyCost} -> ${bought.view.empire.treasury.balance_bc}`)
+  assert(Math.abs(bought.view.empire.treasury.balance_bc - (beforeBuy - buyCost)) <= 0.06, `Buyout treasury delta differs from displayed 0.1-BC price: ${beforeBuy} - ${buyCost} -> ${bought.view.empire.treasury.balance_bc}`)
   const boughtProject = bought.view.colonies.find((item) => item.id === colony.id)?.construction
-  assert(Math.abs((boughtProject?.progress_pp ?? -1) - (quote?.production_cost_pp ?? 0)) < 1e-6, 'Buyout did not fully fund authoritative PP')
+  assert(Math.abs((boughtProject?.progress_pp ?? -1) - costPP) < 1e-6, 'Buyout did not fully fund authoritative PP')
   const boughtQuote = bought.construction_buyouts?.find((item) => item.colony_id === colony.id)
   assert((boughtQuote?.cost_bc ?? -1) === 0, `Bought project quote cost=${boughtQuote?.cost_bc}, want 0`)
+  assert(!bought.planning_draft?.orders?.some((order) => order.key === `construction:${colony.id}`), 'Construction planning draft survived same-turn buyout')
 
   await navigate(`${baseURL}/#/game/${gameID}/more`)
   const clickedFinish = await evaluate(`(() => {
@@ -282,7 +284,7 @@ async function main() {
   assert(!ordinary, 'Ordinary game-1 renders development credit/turn controls')
 
   if (failures.length) throw new Error('Reference/buyout browser smoke failed:\n- ' + failures.join('\n- '))
-  console.log('Reference/buyout browser smoke passed: More-only dev tools, +BC grant, +1/+5/N presence, normal server buyout with BC deduction, next-turn completion, 390px/desktop layout and ordinary-game isolation.')
+  console.log('Reference/buyout browser smoke passed: More-only dev tools, +BC grant, +1/+5/N presence, same-turn drafted construction buyout with BC deduction, next-turn completion, 390px/desktop layout and ordinary-game isolation.')
 }
 
 main().catch((error) => {

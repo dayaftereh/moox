@@ -1,7 +1,9 @@
 package app
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 	"testing"
 
@@ -382,5 +384,84 @@ func TestHostConstructionBuyoutUsesNormalImmediateAuthorityAndNextTurnCompletion
 	}
 	if !found {
 		t.Fatalf("bought holo_simulator did not complete on normal turn: %+v", completed.View.Colonies[0].Buildings)
+	}
+}
+
+func TestHostConstructionBuyoutAppliesSavedConstructionDraftBeforeBuyout(t *testing.T) {
+	host := loadNewGameHost(t)
+	const gameID = "reference-draft-buyout"
+	registerReferenceRunnerTestGame(t, host, gameID, game.ReferenceTriangleProfileAllTech)
+
+	before, err := host.PlayerSnapshot(gameID, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	grant, err := host.GrantReferenceBC(gameID, ReferenceGrantBCRequest{
+		SchemaVersion: SchemaVersion, SeatID: 1, BaseRevision: before.View.Revision, AmountBC: 10000,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	funded, err := host.PlayerSnapshot(gameID, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	colonyID := funded.View.Colonies[0].ID
+	queue, err := game.NewSetConstructionQueueCommand(1, game.SetConstructionQueuePayload{
+		ColonyID: colonyID,
+		Items:    []game.ConstructionQueueItem{{ProjectKind: core.ConstructionProjectBuilding, ProjectID: "holo_simulator"}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	saved, err := host.SavePlanningDraft(gameID, 1, PlanningDraft{
+		SchemaVersion: SchemaVersion, GameID: gameID, SeatID: 1, Turn: funded.View.Turn,
+		BaseRevision: funded.View.Revision, DraftRevision: 1,
+		Orders: []PlanningDraftOrder{{Key: fmt.Sprintf("construction:%d", colonyID), Kind: queue.Kind, Payload: append(json.RawMessage(nil), queue.Payload...)}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(saved.Draft.Orders) != 1 {
+		t.Fatalf("saved draft=%+v", saved.Draft)
+	}
+	drafted, err := host.PlayerSnapshot(gameID, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if drafted.View.Colonies[0].Construction != nil {
+		t.Fatalf("draft unexpectedly mutated authoritative construction: %+v", drafted.View.Colonies[0].Construction)
+	}
+	if drafted.PlanningDraft == nil || len(drafted.PlanningDraft.Orders) != 1 {
+		t.Fatalf("draft missing from snapshot: %+v", drafted.PlanningDraft)
+	}
+
+	expectedCost, err := game.ConstructionBuyoutCostBC(120, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	buy, err := game.NewBuyConstructionCommand(1, game.BuyConstructionPayload{ColonyID: colonyID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := host.SubmitImmediateCommand(gameID, 1, drafted.View.Revision, buy); err != nil {
+		t.Fatal(err)
+	}
+	bought, err := host.PlayerSnapshot(gameID, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := bought.View.Empire.Treasury.BalanceBC, grant.BalanceBC-expectedCost; math.Abs(got-want) > 1e-9 {
+		t.Fatalf("draft buyout treasury=%v want=%v", got, want)
+	}
+	if bought.View.Colonies[0].Construction == nil || bought.View.Colonies[0].Construction.ProjectID != "holo_simulator" || math.Abs(bought.View.Colonies[0].Construction.ProgressPP-120) > 1e-9 {
+		t.Fatalf("draft buyout construction=%+v", bought.View.Colonies[0].Construction)
+	}
+	if bought.PlanningDraft != nil {
+		for _, order := range bought.PlanningDraft.Orders {
+			if order.Key == fmt.Sprintf("construction:%d", colonyID) {
+				t.Fatalf("construction draft survived successful buyout: %+v", bought.PlanningDraft)
+			}
+		}
 	}
 }

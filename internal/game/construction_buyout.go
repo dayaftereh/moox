@@ -13,9 +13,15 @@ import (
 )
 
 const CommandBuyConstruction = "colony.buy_construction"
+const CommandBuyPlannedConstruction = "colony.buy_planned_construction"
 
 type BuyConstructionPayload struct {
 	ColonyID core.ID `json:"colony_id"`
+}
+
+type BuyPlannedConstructionPayload struct {
+	ColonyID core.ID                 `json:"colony_id"`
+	Items    []ConstructionQueueItem `json:"items"`
 }
 
 type ConstructionBuyoutQuote struct {
@@ -51,8 +57,21 @@ func NewBuyConstructionCommand(sequence uint32, payload BuyConstructionPayload) 
 	return protocol.NewCommand(sequence, CommandBuyConstruction, payload)
 }
 
+func NewBuyPlannedConstructionCommand(sequence uint32, payload BuyPlannedConstructionPayload) (protocol.Command, error) {
+	if payload.ColonyID == 0 {
+		return protocol.Command{}, fmt.Errorf("%s requires colony_id", CommandBuyPlannedConstruction)
+	}
+	if len(payload.Items) == 0 {
+		return protocol.Command{}, fmt.Errorf("%s requires at least one construction item", CommandBuyPlannedConstruction)
+	}
+	if err := validateSetConstructionQueuePayload(SetConstructionQueuePayload{ColonyID: payload.ColonyID, Items: payload.Items}); err != nil {
+		return protocol.Command{}, err
+	}
+	return protocol.NewCommand(sequence, CommandBuyPlannedConstruction, payload)
+}
+
 func IsConstructionBuyoutCommand(kind string) bool {
-	return kind == CommandBuyConstruction
+	return kind == CommandBuyConstruction || kind == CommandBuyPlannedConstruction
 }
 
 func decodeBuyConstruction(command protocol.Command) (BuyConstructionPayload, error) {
@@ -70,6 +89,20 @@ func decodeBuyConstruction(command protocol.Command) (BuyConstructionPayload, er
 	}
 	if payload.ColonyID == 0 {
 		return BuyConstructionPayload{}, fmt.Errorf("%s requires colony_id", CommandBuyConstruction)
+	}
+	return payload, nil
+}
+
+func decodeBuyPlannedConstruction(command protocol.Command) (BuyPlannedConstructionPayload, error) {
+	var payload BuyPlannedConstructionPayload
+	if err := decodeStrictCommandPayload(command, CommandBuyPlannedConstruction, &payload); err != nil {
+		return BuyPlannedConstructionPayload{}, err
+	}
+	if payload.ColonyID == 0 || len(payload.Items) == 0 {
+		return BuyPlannedConstructionPayload{}, fmt.Errorf("%s requires colony_id and at least one construction item", CommandBuyPlannedConstruction)
+	}
+	if err := validateSetConstructionQueuePayload(SetConstructionQueuePayload{ColonyID: payload.ColonyID, Items: payload.Items}); err != nil {
+		return BuyPlannedConstructionPayload{}, err
 	}
 	return payload, nil
 }
@@ -168,6 +201,29 @@ func (r *EconomyResolver) constructionBuyoutQuote(state *core.GameState, colony 
 func (r *EconomyResolver) ResolveConstructionBuyoutCommand(state *core.GameState, empireID core.ID, seatID protocol.SeatID, command protocol.Command) ([]DomainEvent, error) {
 	if r == nil || r.Rules == nil {
 		return nil, fmt.Errorf("construction buyout requires economy resolver")
+	}
+	if command.Kind == CommandBuyPlannedConstruction {
+		payload, err := decodeBuyPlannedConstruction(command)
+		if err != nil {
+			return nil, err
+		}
+		queueCommand, err := NewSetConstructionQueueCommand(command.Sequence, SetConstructionQueuePayload{ColonyID: payload.ColonyID, Items: payload.Items})
+		if err != nil {
+			return nil, err
+		}
+		queueEvent, err := r.setConstructionQueue(state, empireID, seatID, queueCommand)
+		if err != nil {
+			return nil, fmt.Errorf("apply planned construction before buyout: %w", err)
+		}
+		buyCommand, err := NewBuyConstructionCommand(command.Sequence, BuyConstructionPayload{ColonyID: payload.ColonyID})
+		if err != nil {
+			return nil, err
+		}
+		buyEvents, err := r.ResolveConstructionBuyoutCommand(state, empireID, seatID, buyCommand)
+		if err != nil {
+			return nil, err
+		}
+		return append([]DomainEvent{queueEvent}, buyEvents...), nil
 	}
 	if command.Kind != CommandBuyConstruction {
 		return nil, fmt.Errorf("unsupported construction buyout command %q", command.Kind)

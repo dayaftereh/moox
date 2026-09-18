@@ -301,3 +301,19 @@ The frozen Slice-17.0 Reference Harness is implemented end-to-end without introd
 The next step is Gate 4 QA/close only.
 
 Gate 4 must independently exercise the final acceptance matrix and close Slice 17.0. It must not implicitly open Slice 17.1.
+
+## Gate 3 live amendment - same-turn drafted construction buyout
+
+Live 7171 review exposed a UI/authority mismatch: a saved Planning Draft could already be rendered as the visible current construction while buyout remained hidden until the draft had first been submitted as a normal turn.
+
+The amendment removes that mismatch:
+
+- the visible drafted current project now receives the same original MOO2 buyout-price projection in the HMI;
+- clicking Buy on a saved construction draft sends the normal construction-buyout command;
+- the Host detects the trusted saved construction draft for that colony and atomically resolves an internal `colony.buy_planned_construction` command;
+- the normal construction-queue validator applies the saved queue on a cloned authoritative state before the ordinary BC buyout resolver runs;
+- if any validation or affordability check fails, no state is committed;
+- on success, the matching construction Draft order is removed;
+- the bought project remains at 100% PP and completes on the next normal turn exactly like an authoritative buyout.
+
+Regression coverage proves the same-planning-phase path, exact treasury deduction, draft removal and next-turn completion. The headless Chrome smoke now exercises the drafted path directly.
