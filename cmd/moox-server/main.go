@@ -25,6 +25,8 @@ import (
 const demoGameID = "demo"
 const standardReferenceGameID = "game-1"
 const triangleReferenceGameID = "game-triangle-2pc"
+const triangleMidTechReferenceGameID = "game-triangle-mid-tech"
+const triangleAllTechReferenceGameID = "game-triangle-all-tech"
 const defaultHTTPAddress = "127.0.0.1:7171"
 
 func main() {
@@ -35,7 +37,7 @@ func main() {
 		enableObserver        = flag.Bool("enable-observer", false, "enable privileged observer snapshot endpoint")
 		enablePersistence     = flag.Bool("enable-persistence", false, "enable privileged explicit live snapshot save/import/restore endpoints; no automatic disk autosave/reload")
 		demoFixture           = flag.Bool("demo-fixture", false, "development only: pre-register the legacy core.NewSmallFixture demo game")
-		referenceGames        = flag.Bool("reference-games", false, "development only: pre-register game-1 plus the durable 3-player 2pc triangle reference game")
+		referenceGames        = flag.Bool("reference-games", false, "development only: pre-register game-1 plus durable baseline/mid-tech/all-tech 3-player 2pc triangle reference games")
 		allowInsecureNonLocal = flag.Bool("insecure-allow-nonloopback", false, "UNSAFE: allow unauthenticated direct non-loopback binding")
 	)
 	flag.Parse()
@@ -47,7 +49,7 @@ func main() {
 		log.Fatal(err)
 	}
 	assets := optionalWebFS(*webDir)
-	handler, err := server.NewHandler(server.Config{Host: host, StaticFS: assets, ObserverEnabled: *enableObserver, PersistenceEnabled: *enablePersistence})
+	handler, err := server.NewHandler(server.Config{Host: host, StaticFS: assets, ObserverEnabled: *enableObserver, PersistenceEnabled: *enablePersistence, ReferenceControlsEnabled: *referenceGames})
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -135,10 +137,25 @@ func registerReferenceGames(host *app.Host, rules *game.EconomyRules) error {
 	}); err != nil {
 		return fmt.Errorf("register standard reference game: %w", err)
 	}
+	if err := registerTriangleReferenceGame(host, rules, triangleReferenceGameID, game.ReferenceTriangleScenarioID, game.ReferenceTriangleProfileBaseline); err != nil {
+		return err
+	}
+	if err := registerTriangleReferenceGame(host, rules, triangleMidTechReferenceGameID, game.ReferenceTriangleMidTechScenarioID, game.ReferenceTriangleProfileMidTech); err != nil {
+		return err
+	}
+	if err := registerTriangleReferenceGame(host, rules, triangleAllTechReferenceGameID, game.ReferenceTriangleAllTechScenarioID, game.ReferenceTriangleProfileAllTech); err != nil {
+		return err
+	}
+	return nil
+}
 
+func registerTriangleReferenceGame(host *app.Host, rules *game.EconomyRules, gameID, scenarioID string, profile game.ReferenceTriangleTechnologyProfile) error {
 	generated, err := rules.NewReferenceTriangleGame(game.ReferenceTriangleSeed)
 	if err != nil {
-		return fmt.Errorf("build triangle reference game: %w", err)
+		return fmt.Errorf("build triangle reference game %q: %w", gameID, err)
+	}
+	if err := rules.ApplyReferenceTriangleTechnologyProfile(generated.State, profile); err != nil {
+		return fmt.Errorf("apply triangle reference profile %q: %w", profile, err)
 	}
 	resolver, err := game.NewEconomyResolver(rules)
 	if err != nil {
@@ -152,12 +169,15 @@ func registerReferenceGames(host *app.Host, rules *game.EconomyRules) error {
 		}
 		seats[i] = session.Seat{ID: player.SeatID, EmpireID: player.EmpireID, Name: player.Name, Controller: controller}
 	}
-	gameSession, err := session.NewGameSession(triangleReferenceGameID, generated.State, seats)
+	gameSession, err := session.NewGameSession(gameID, generated.State, seats)
 	if err != nil {
-		return fmt.Errorf("create triangle reference session: %w", err)
+		return fmt.Errorf("create triangle reference session %q: %w", gameID, err)
 	}
-	if err := host.Register(app.Registration{Session: gameSession, Resolver: resolver, ImmediateResolver: resolver}); err != nil {
-		return fmt.Errorf("register triangle reference session: %w", err)
+	if err := host.Register(app.Registration{
+		Session: gameSession, Resolver: resolver, ImmediateResolver: resolver,
+		Reference: &app.ReferenceGameInfo{ScenarioID: scenarioID, ProfileID: string(profile), ControlSeatID: 1},
+	}); err != nil {
+		return fmt.Errorf("register triangle reference session %q: %w", gameID, err)
 	}
 	return nil
 }

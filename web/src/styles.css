@@ -5932,3 +5932,111 @@ button.galaxy-node-marker-player-fleet.is-open {
 @media (max-width: 340px) {
   .new-game-empire-roster-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+
+.reference-lab {
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--accent-soft), var(--surface));
+  box-shadow: var(--shadow);
+}
+
+.reference-lab__identity {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.reference-lab__identity strong,
+.reference-lab__identity small {
+  display: block;
+}
+
+.reference-lab__identity small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: .76rem;
+}
+
+.reference-lab__note,
+.reference-lab__state,
+.reference-lab__error {
+  margin: 8px 0 0;
+  font-size: .84rem;
+}
+
+.reference-lab__note,
+.reference-lab__state {
+  color: var(--muted-strong);
+}
+
+.reference-lab__error {
+  color: var(--danger);
+}
+
+.reference-lab__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+}
+
+.reference-lab__controls button,
+.reference-lab__turn-count input {
+  min-height: 40px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-strong);
+}
+
+.reference-lab__controls button {
+  padding: 8px 12px;
+}
+
+.reference-lab__controls button:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--surface-soft);
+}
+
+.reference-lab__turn-count {
+  display: grid;
+  gap: 4px;
+  min-width: 82px;
+  color: var(--muted);
+  font-size: .74rem;
+}
+
+.reference-lab__turn-count input {
+  width: 82px;
+  padding: 7px 9px;
+}
+
+@media (max-width: 520px) {
+  .reference-lab {
+    padding: 12px;
+  }
+
+  .reference-lab__identity {
+    display: grid;
+    gap: 6px;
+  }
+
+  .reference-lab__controls {
+    display: grid;
+    grid-template-columns: 1fr 86px;
+  }
+
+  .reference-lab__controls button:last-child:nth-child(4) {
+    grid-column: 1 / -1;
+  }
+
+  .reference-lab__turn-count,
+  .reference-lab__turn-count input {
+    width: 100%;
+    min-width: 0;
+  }
+}

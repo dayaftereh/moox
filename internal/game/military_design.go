@@ -391,13 +391,15 @@ func militaryConstructionDesign(state *core.GameState, empireID core.ID, designI
 	return design, nil
 }
 
-func completeMilitaryShip(state *core.GameState, colony *core.Colony, design *core.ShipDesign) (DomainEvent, error) {
-	if state == nil || colony == nil || design == nil {
-		return DomainEvent{}, fmt.Errorf("military Ship completion requires state, colony and design")
+func materializeMilitaryShip(state *core.GameState, empireID, systemID core.ID, design *core.ShipDesign) (core.Ship, core.StrategicFleet, error) {
+	if state == nil || design == nil {
+		return core.Ship{}, core.StrategicFleet{}, fmt.Errorf("military Ship materialization requires state and design")
 	}
-	system := systemForPlanetID(state, colony.PlanetID)
-	if system == nil {
-		return DomainEvent{}, fmt.Errorf("colony %d planet %d is not assigned to a star system", colony.ID, colony.PlanetID)
+	if design.EmpireID != empireID {
+		return core.Ship{}, core.StrategicFleet{}, fmt.Errorf("ship design %d is owned by empire %d, expected %d", design.ID, design.EmpireID, empireID)
+	}
+	if systemByID(state, systemID) == nil {
+		return core.Ship{}, core.StrategicFleet{}, fmt.Errorf("military Ship materialization references unknown system %d", systemID)
 	}
 	shipSpec := design.Spec
 	shipSpec.Weapons = append([]core.ShipWeaponMount(nil), design.Spec.Weapons...)
@@ -408,7 +410,7 @@ func completeMilitaryShip(state *core.GameState, colony *core.Colony, design *co
 	}
 	ship := core.Ship{
 		ID:                   state.NewID(),
-		EmpireID:             colony.EmpireID,
+		EmpireID:             empireID,
 		SourceDesignID:       design.ID,
 		SourceDesignRevision: design.Revision,
 		SourceVisualRevision: design.VisualRevision,
@@ -418,13 +420,28 @@ func completeMilitaryShip(state *core.GameState, colony *core.Colony, design *co
 	}
 	fleet := core.StrategicFleet{
 		ID:         state.NewID(),
-		EmpireID:   colony.EmpireID,
+		EmpireID:   empireID,
 		Role:       core.StrategicFleetRoleCombat,
-		AtSystemID: system.ID,
+		AtSystemID: systemID,
 		ShipIDs:    []core.ID{ship.ID},
 	}
 	state.Ships = append(state.Ships, ship)
 	state.StrategicFleets = append(state.StrategicFleets, fleet)
+	return ship, fleet, nil
+}
+
+func completeMilitaryShip(state *core.GameState, colony *core.Colony, design *core.ShipDesign) (DomainEvent, error) {
+	if state == nil || colony == nil || design == nil {
+		return DomainEvent{}, fmt.Errorf("military Ship completion requires state, colony and design")
+	}
+	system := systemForPlanetID(state, colony.PlanetID)
+	if system == nil {
+		return DomainEvent{}, fmt.Errorf("colony %d planet %d is not assigned to a star system", colony.ID, colony.PlanetID)
+	}
+	ship, fleet, err := materializeMilitaryShip(state, colony.EmpireID, system.ID, design)
+	if err != nil {
+		return DomainEvent{}, err
+	}
 	return NewDomainEvent("colony.military_ship_completed", 0, 0, MilitaryShipCompletedEvent{
 		ColonyID: colony.ID, EmpireID: colony.EmpireID, ShipDesignID: design.ID, ShipDesignRevision: design.Revision,
 		ShipID: ship.ID, FleetID: fleet.ID, SystemID: system.ID, HullID: ship.Spec.HullID, ProductionCostPP: ship.Spec.ProductionCostPP,

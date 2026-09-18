@@ -60,6 +60,7 @@ import { type TranslationKey, type TranslationVars, useI18n } from './i18n'
 import { type AppRoute, type GameSection, navigate, parseRoute } from './navigation'
 import { newGameAssetPath } from './newGameAssets'
 import { ShipBuilderView } from './ShipBuilderView'
+import { ReferenceLabPanel } from './ReferenceLabPanel'
 import {
   StrategicColoniesView,
   StrategicConstructionView,
@@ -1729,6 +1730,16 @@ function App() {
       immersive={activeSection === 'battle'}
     >
       {persistenceControls}
+
+      {snapshot && (
+        <ReferenceLabPanel
+          snapshot={snapshot}
+          seatID={seatID}
+          selectedColonyID={activeSection === 'colonies' ? route.entityID : undefined}
+          reloadSnapshot={() => loadSnapshot()}
+          t={t}
+        />
+      )}
 
       {colonyBaseDecision && (
         <div className="decision-dialog-backdrop colony-base-decision-backdrop" role="presentation">

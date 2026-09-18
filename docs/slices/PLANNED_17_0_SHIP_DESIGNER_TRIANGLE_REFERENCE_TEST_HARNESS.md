@@ -1,6 +1,6 @@
 # Planned Slice 17.0 - Ship Designer / Triangle Reference Test Harness
 
-Status: **active; Gates 1-2 complete / Gate 3 ready**.
+Status: **active; Gates 1-3 complete / Gate 4 ready**.
 
 ## Objective
 
@@ -91,13 +91,18 @@ Reference controls must not appear in ordinary games when the server is not star
 
 ## Gate 3 - implementation
 
-- [ ] Add reusable reference-game bootstrap helpers.
-- [ ] Add curated technology-profile reference scenarios.
-- [ ] Add normal-resolver turn advancement controls for reference games only.
-- [ ] Add construction-completion runner with hard iteration bound.
-- [ ] Add reusable combat-ready Ship snapshot fixtures.
-- [ ] Expose clear reference-game identity in HMI.
-- [ ] Add unit/server/browser regressions proving reference-only isolation.
+- [x] Add reusable reference-game bootstrap helpers.
+- [x] Add curated technology-profile reference scenarios.
+- [x] Add normal-resolver turn advancement controls for reference games only.
+- [x] Add construction-completion runner with hard iteration bound.
+- [x] Add reusable combat-ready Ship snapshot fixtures.
+- [x] Expose clear reference-game identity in HMI.
+- [x] Add unit/server/browser regressions proving reference-only isolation.
+
+## Gate 3 evidence
+
+- `docs/research/SLICE_17_0_GATE3_IMPLEMENTATION_2026-09-18.md`
+- Implemented durable Triangle profiles, trusted reference metadata, bounded normal-turn/construction controls, shared immutable Ship fixture materialization, dev-only HTTP security, persistence isolation, bilingual responsive HMI and unit/server/browser regressions.
 
 ## Gate 4 - QA + close
 

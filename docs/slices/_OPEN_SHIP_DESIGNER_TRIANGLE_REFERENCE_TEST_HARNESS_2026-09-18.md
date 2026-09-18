@@ -1,6 +1,6 @@
 # Open Slice 17.0 - Ship Designer / Triangle Reference Test Harness
 
-Status: **Gates 1-2 complete / Gate 3 ready**
+Status: **Gates 1-3 complete / Gate 4 ready**
 
 Opened: 2026-09-18
 Session: ses-20260918T152048-00240c450344
@@ -36,6 +36,10 @@ The Triangle reference game is a durable family, not a disposable fixture: keep 
 
 Frozen in `docs/research/SLICE_17_0_GATE2_REFERENCE_HARNESS_FREEZE_2026-09-18.md`: durable baseline/Mid-Tech/All-Tech Triangle family, exact technology profiles, same deterministic seed/topology, bounded normal-turn runner, built-Ship materialization, reference metadata/security, HTTP/HMI and persistence behavior.
 
+## Gate 3 complete
+
+Implemented and verified in `docs/research/SLICE_17_0_GATE3_IMPLEMENTATION_2026-09-18.md`. The durable Reference Harness now exists end-to-end through the ordinary authority paths.
+
 ## Guardrail
 
-Gate 3 implementation is ready but not started. Wait for explicit user release. Do not open Slice 17.1 or later children. No push.
+Gate 4 QA/close is ready but not started. Wait for explicit user release. Do not open Slice 17.1 or later children. No push.

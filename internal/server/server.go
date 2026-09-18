@@ -26,16 +26,18 @@ import (
 const maxJSONBodyBytes int64 = 1 << 20
 
 type Config struct {
-	Host               *app.Host
-	StaticFS           fs.FS
-	ObserverEnabled    bool
-	PersistenceEnabled bool
+	Host                     *app.Host
+	StaticFS                 fs.FS
+	ObserverEnabled          bool
+	PersistenceEnabled       bool
+	ReferenceControlsEnabled bool
 }
 
 type apiServer struct {
-	host               *app.Host
-	observerEnabled    bool
-	persistenceEnabled bool
+	host                     *app.Host
+	observerEnabled          bool
+	persistenceEnabled       bool
+	referenceControlsEnabled bool
 }
 
 type commandRequest struct {
@@ -59,7 +61,7 @@ func NewHandler(cfg Config) (http.Handler, error) {
 	if cfg.Host == nil {
 		return nil, fmt.Errorf("application host must not be nil")
 	}
-	server := &apiServer{host: cfg.Host, observerEnabled: cfg.ObserverEnabled, persistenceEnabled: cfg.PersistenceEnabled}
+	server := &apiServer{host: cfg.Host, observerEnabled: cfg.ObserverEnabled, persistenceEnabled: cfg.PersistenceEnabled, referenceControlsEnabled: cfg.ReferenceControlsEnabled}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", server.handleHealth)
 	mux.HandleFunc("GET /api/v1/new-game/difficulties", server.handleDifficultyCatalog)
@@ -80,6 +82,9 @@ func NewHandler(cfg Config) (http.Handler, error) {
 	mux.HandleFunc("POST /api/v1/games/{gameID}/immediate-commands", server.handleImmediateCommand)
 	mux.HandleFunc("POST /api/v1/games/{gameID}/battles/{battleID}/commands", server.handleBattleCommand)
 	mux.HandleFunc("GET /api/v1/games/{gameID}/stream", server.handleStream)
+	if cfg.ReferenceControlsEnabled {
+		mux.HandleFunc("POST /api/v1/games/{gameID}/reference/advance", server.handleReferenceAdvance)
+	}
 	if cfg.StaticFS != nil {
 		mux.Handle("GET /", spaHandler{fsys: cfg.StaticFS})
 	}
@@ -360,6 +365,14 @@ func writeHostError(w http.ResponseWriter, err error) {
 		writeAPIError(w, http.StatusNotFound, "not_found", err.Error())
 	case errors.Is(err, app.ErrSessionRejected):
 		writeAPIError(w, http.StatusConflict, "session_rejected", err.Error())
+	case errors.Is(err, app.ErrReferenceForbidden):
+		writeAPIError(w, http.StatusForbidden, "reference_control_forbidden", err.Error())
+	case errors.Is(err, app.ErrReferenceStaleRevision):
+		writeAPIError(w, http.StatusConflict, "stale_revision", err.Error())
+	case errors.Is(err, app.ErrReferenceNotReady):
+		writeAPIError(w, http.StatusConflict, "reference_not_ready", err.Error())
+	case errors.Is(err, app.ErrReferenceNoActiveConstruction):
+		writeAPIError(w, http.StatusConflict, "reference_no_active_construction", err.Error())
 	case errors.Is(err, app.ErrInvalidSave):
 		writeAPIError(w, http.StatusBadRequest, "invalid_save", err.Error())
 	case errors.Is(err, app.ErrRulesetMismatch):

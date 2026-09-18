@@ -146,6 +146,14 @@ export type SessionResult = {
   completed_revision: number
 }
 
+export type ReferenceGameInfo = {
+  scenario_id: string
+  profile_id: 'baseline' | 'mid_tech' | 'all_tech' | string
+  control_seat_id: number
+  max_turns_per_request: number
+  max_construction_turns: number
+}
+
 export type GameSummary = {
   schema_version: number
   game_id: string
@@ -154,6 +162,7 @@ export type GameSummary = {
   turn: number
   phase: string
   result?: SessionResult
+  reference?: ReferenceGameInfo
 }
 
 export type CreateGameResponse = {
@@ -758,6 +767,7 @@ export type PlayerSnapshot = {
   decision?: PlayerDecisionView
   battles: BattleView[]
   planning_draft?: PlanningDraft
+  reference?: ReferenceGameInfo
 }
 
 export type PlanningCommandPayload = Record<string, unknown>
@@ -1112,4 +1122,38 @@ export function replaceDraftOrder(orders: DraftOrder[], order: DraftOrder): Draf
 
 export function removeDraftOrder(orders: DraftOrder[], key: string): DraftOrder[] {
   return orders.filter((item) => item.key !== key)
+}
+
+
+export type ReferenceAdvanceMode = 'turns' | 'until_construction_complete'
+
+export type ReferenceAdvanceResult = {
+  schema_version: number
+  game_id: string
+  start_turn: number
+  end_turn: number
+  turns_advanced: number
+  stop_reason: 'requested_turns_reached' | 'construction_completed' | 'interactive_boundary' | 'construction_changed' | 'game_completed' | 'hard_limit_reached' | string
+  final_phase: string
+  game_revision: number
+  change_sequence: number
+}
+
+export async function advanceReference(
+  snapshot: PlayerSnapshot,
+  seatID: number,
+  request: { mode: ReferenceAdvanceMode; turns?: number; colony_id?: number },
+): Promise<ReferenceAdvanceResult> {
+  return requestJSON<ReferenceAdvanceResult>(`/api/v1/games/${encodeURIComponent(snapshot.view.game_id)}/reference/advance`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      schema_version: 1,
+      seat_id: seatID,
+      base_revision: snapshot.view.revision,
+      mode: request.mode,
+      ...(request.turns !== undefined ? { turns: request.turns } : {}),
+      ...(request.colony_id !== undefined ? { colony_id: request.colony_id } : {}),
+    }),
+  })
 }

@@ -3,6 +3,9 @@ package main
 import (
 	"path/filepath"
 	"testing"
+
+	"moox/internal/app"
+	"moox/internal/game"
 )
 
 func TestDefaultHTTPAddress(t *testing.T) {
@@ -50,20 +53,25 @@ func TestReferenceGamesRequireExplicitFlag(t *testing.T) {
 		t.Fatal(err)
 	}
 	games := host.ListGames()
-	if len(games) != 2 {
-		t.Fatalf("reference games=%+v, want exactly two", games)
+	if len(games) != 4 {
+		t.Fatalf("reference games=%+v, want exactly four", games)
 	}
 	seen := map[string]bool{}
-	for _, game := range games {
-		seen[game.GameID] = true
+	for _, summary := range games {
+		seen[summary.GameID] = true
 	}
-	if !seen[standardReferenceGameID] || !seen[triangleReferenceGameID] {
-		t.Fatalf("reference game IDs=%v, want %q and %q", seen, standardReferenceGameID, triangleReferenceGameID)
+	for _, gameID := range []string{standardReferenceGameID, triangleReferenceGameID, triangleMidTechReferenceGameID, triangleAllTechReferenceGameID} {
+		if !seen[gameID] {
+			t.Fatalf("reference game IDs=%v missing %q", seen, gameID)
+		}
 	}
 
 	standardHuman, err := host.PlayerSnapshot(standardReferenceGameID, 1)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if standardHuman.Reference != nil {
+		t.Fatalf("legacy standard reference unexpectedly has reference controls: %+v", standardHuman.Reference)
 	}
 	standardAI, err := host.PlayerSnapshot(standardReferenceGameID, 2)
 	if err != nil {
@@ -73,19 +81,41 @@ func TestReferenceGamesRequireExplicitFlag(t *testing.T) {
 		t.Fatalf("standard controllers human=%q ai=%q", standardHuman.View.Seat.Seat.Controller, standardAI.View.Seat.Seat.Controller)
 	}
 
-	triangleHuman, err := host.PlayerSnapshot(triangleReferenceGameID, 1)
-	if err != nil {
-		t.Fatal(err)
-	}
-	triangleAI1, err := host.PlayerSnapshot(triangleReferenceGameID, 2)
-	if err != nil {
-		t.Fatal(err)
-	}
-	triangleAI2, err := host.PlayerSnapshot(triangleReferenceGameID, 3)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if triangleHuman.View.Seat.Seat.Controller != "local_human" || triangleAI1.View.Seat.Seat.Controller != "builtin_ai" || triangleAI2.View.Seat.Seat.Controller != "builtin_ai" {
-		t.Fatalf("triangle controllers human=%q ai1=%q ai2=%q", triangleHuman.View.Seat.Seat.Controller, triangleAI1.View.Seat.Seat.Controller, triangleAI2.View.Seat.Seat.Controller)
+	for _, tc := range []struct {
+		gameID     string
+		scenarioID string
+		profileID  string
+		fields     int
+		techs      int
+	}{
+		{triangleReferenceGameID, game.ReferenceTriangleScenarioID, string(game.ReferenceTriangleProfileBaseline), 7, 19},
+		{triangleMidTechReferenceGameID, game.ReferenceTriangleMidTechScenarioID, string(game.ReferenceTriangleProfileMidTech), 36, 94},
+		{triangleAllTechReferenceGameID, game.ReferenceTriangleAllTechScenarioID, string(game.ReferenceTriangleProfileAllTech), 75, 202},
+	} {
+		human, err := host.PlayerSnapshot(tc.gameID, 1)
+		if err != nil {
+			t.Fatal(err)
+		}
+		ai1, err := host.PlayerSnapshot(tc.gameID, 2)
+		if err != nil {
+			t.Fatal(err)
+		}
+		ai2, err := host.PlayerSnapshot(tc.gameID, 3)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if human.View.Seat.Seat.Controller != "local_human" || ai1.View.Seat.Seat.Controller != "builtin_ai" || ai2.View.Seat.Seat.Controller != "builtin_ai" {
+			t.Fatalf("%s controllers human=%q ai1=%q ai2=%q", tc.gameID, human.View.Seat.Seat.Controller, ai1.View.Seat.Seat.Controller, ai2.View.Seat.Seat.Controller)
+		}
+		if human.Reference == nil || human.Reference.ScenarioID != tc.scenarioID || human.Reference.ProfileID != tc.profileID ||
+			human.Reference.ControlSeatID != 1 || human.Reference.MaxTurnsPerRequest != app.ReferenceMaxTurnsPerRequest ||
+			human.Reference.MaxConstructionTurns != app.ReferenceMaxConstructionTurns {
+			t.Fatalf("%s reference=%+v", tc.gameID, human.Reference)
+		}
+		if tc.profileID != string(game.ReferenceTriangleProfileBaseline) {
+			if len(human.View.Empire.KnownTechnologyFieldIDs) != tc.fields || len(human.View.Empire.KnownTechnologyIDs) != tc.techs {
+				t.Fatalf("%s fields=%d techs=%d", tc.gameID, len(human.View.Empire.KnownTechnologyFieldIDs), len(human.View.Empire.KnownTechnologyIDs))
+			}
+		}
 	}
 }

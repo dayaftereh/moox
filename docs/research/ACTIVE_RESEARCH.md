@@ -6,7 +6,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 
 - Branch: `main`.
 - Open slice marker: **`docs/slices/_OPEN_SHIP_DESIGNER_TRIANGLE_REFERENCE_TEST_HARNESS_2026-09-18.md`**.
-- Active implementation slice: **Slice 17.0 - Ship Designer / Triangle Reference Test Harness; Gates 1-2 complete / Gate 3 ready**.
+- Active implementation slice: **Slice 17.0 - Ship Designer / Triangle Reference Test Harness; Gates 1-3 complete / Gate 4 ready**.
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
@@ -14,7 +14,8 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-16 are closed/accepted at their intended baselines**. Slice 17 is the active 17.0-17.5 parent program; reserved Slice 18 and Slices 20-23 remain planned only.
-- Current objective: **await explicit release for Slice 17.0 Gate 3 implementation; do not open 17.1 or later children.**
+- Current objective: **await explicit release for Slice 17.0 Gate 4 QA/close; do not open 17.1 or later children.**
+- Slice-17.0 Gate-3 implementation: `docs/research/SLICE_17_0_GATE3_IMPLEMENTATION_2026-09-18.md` - durable Triangle profiles, normal turn/construction runner, trusted dev-only capability, immutable Ship fixture materialization, persistence isolation and responsive Reference Lab HMI implemented; broad Go/vet/web/browser QA passed; Gate 4 is next and not started.
 - Slice-17.0 Gate-2 freeze: `docs/research/SLICE_17_0_GATE2_REFERENCE_HARNESS_FREEZE_2026-09-18.md` - durable Triangle family, exact Mid-Tech/All-Tech profiles, bounded normal-turn controls, reference security/HTTP/HMI, fixture materialization and persistence behavior frozen; Gate 3 is ready but not started.
 - Slice-17.0 Gate-1 addendum: **Triangle is the durable reference-game family**. Baseline, Turn-1 Mid-Tech and Turn-1 All-Tech are now frozen; no parallel `game-designer-*` throwaway worlds.
 - Slice-15.1 closure evidence: `docs/research/SLICE_15_1_MOBILE_FIRST_UX_GATE4_2026-09-04.md`.

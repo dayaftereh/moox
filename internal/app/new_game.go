@@ -220,5 +220,6 @@ func (h *Host) gameSummary(gameID string) (GameSummary, error) {
 		Revision:       status.Revision,
 		Turn:           status.Turn,
 		Phase:          status.Phase,
+		Reference:      cloneReferenceInfo(hosted.reference),
 	}, nil
 }

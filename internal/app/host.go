@@ -23,13 +23,14 @@ var (
 )
 
 type GameSummary struct {
-	SchemaVersion  int             `json:"schema_version"`
-	GameID         string          `json:"game_id"`
-	ChangeSequence uint64          `json:"change_sequence"`
-	Revision       uint64          `json:"revision"`
-	Turn           uint64          `json:"turn"`
-	Phase          session.Phase   `json:"phase"`
-	Result         *session.Result `json:"result,omitempty"`
+	SchemaVersion  int                `json:"schema_version"`
+	GameID         string             `json:"game_id"`
+	ChangeSequence uint64             `json:"change_sequence"`
+	Revision       uint64             `json:"revision"`
+	Turn           uint64             `json:"turn"`
+	Phase          session.Phase      `json:"phase"`
+	Result         *session.Result    `json:"result,omitempty"`
+	Reference      *ReferenceGameInfo `json:"reference,omitempty"`
 }
 
 type PlayerSnapshot struct {
@@ -39,6 +40,7 @@ type PlayerSnapshot struct {
 	Decision       *session.PlayerDecisionView `json:"decision,omitempty"`
 	Battles        []battle.View               `json:"battles"`
 	PlanningDraft  *PlanningDraft              `json:"planning_draft,omitempty"`
+	Reference      *ReferenceGameInfo          `json:"reference,omitempty"`
 }
 
 type PlanningDraftOrder struct {
@@ -97,6 +99,7 @@ type Registration struct {
 	Session           *session.GameSession
 	Resolver          game.Resolver
 	ImmediateResolver *game.EconomyResolver
+	Reference         *ReferenceGameInfo
 }
 
 type Host struct {
@@ -118,6 +121,7 @@ type hostedGame struct {
 	nextSubscriberID  uint64
 	subscribers       map[uint64]chan Notification
 	planningDrafts    map[protocol.SeatID]PlanningDraft
+	reference         *ReferenceGameInfo
 }
 
 func NewHost() *Host {
@@ -150,6 +154,14 @@ func (h *Host) Register(reg Registration) error {
 	}
 	sort.Slice(seats, func(i, j int) bool { return seats[i] < seats[j] })
 
+	reference, err := normalizeReferenceInfo(reg.Reference)
+	if err != nil {
+		return err
+	}
+	if reference != nil && !containsSeat(seats, reference.ControlSeatID) {
+		return fmt.Errorf("reference control seat %d is not registered in game %q", reference.ControlSeatID, status.GameID)
+	}
+
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	if _, exists := h.games[status.GameID]; exists {
@@ -165,6 +177,7 @@ func (h *Host) Register(reg Registration) error {
 		nextSubscriberID:  1,
 		subscribers:       make(map[uint64]chan Notification),
 		planningDrafts:    make(map[protocol.SeatID]PlanningDraft),
+		reference:         reference,
 	}
 	return nil
 }
@@ -192,6 +205,7 @@ func (h *Host) ListGames() []GameSummary {
 			Turn:           status.Turn,
 			Phase:          status.Phase,
 			Result:         status.Result,
+			Reference:      cloneReferenceInfo(hosted.reference),
 		})
 		hosted.mu.Unlock()
 	}
@@ -234,7 +248,7 @@ func (h *Host) PlayerSnapshot(gameID string, seatID protocol.SeatID) (PlayerSnap
 			delete(hosted.planningDrafts, seatID)
 		}
 	}
-	return PlayerSnapshot{SchemaVersion: SchemaVersion, ChangeSequence: hosted.changeSequence, View: view, Decision: decision, Battles: battles, PlanningDraft: planningDraft}, nil
+	return PlayerSnapshot{SchemaVersion: SchemaVersion, ChangeSequence: hosted.changeSequence, View: view, Decision: decision, Battles: battles, PlanningDraft: planningDraft, Reference: cloneReferenceInfo(hosted.reference)}, nil
 }
 
 func (h *Host) PlanningPreview(gameID string, seatID protocol.SeatID, batch protocol.CommandBatch) (PlanningPreviewSnapshot, error) {

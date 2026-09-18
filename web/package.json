@@ -11,6 +11,7 @@
     "generate:galaxy-art": "node scripts/generate-galaxy-size-art.mjs",
     "check:new-game-selector": "node scripts/check-new-game-selector.mjs",
     "check:new-game-selector:browser": "node scripts/check-new-game-selector-browser.mjs",
+    "check:reference-lab:browser": "node scripts/check-reference-lab-browser.mjs",
     "generate:difficulty-art": "node scripts/generate-difficulty-art.mjs",
     "generate:galaxy-age-art": "node scripts/generate-galaxy-age-art.mjs",
     "check:race-assets": "node scripts/check-race-assets.mjs",
