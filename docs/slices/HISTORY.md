@@ -428,3 +428,12 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Reserved Slice 23 as **Full Advanced Starting Civilization Parity**, inheriting the permanent Slice-16.7 research and opening only after the relevant Slice-17/20/21/22 foundations mature.
 - Intended downstream order after Slice 16: **17 -> 20 -> 21 -> 22 -> 23**. Slices 18/19 remain intentionally unassigned.
 - Slice 16.7 remains open until its Gate-2 deferral/handoff and Slice-16 closure are completed; Advanced remains planned/locked.
+## 2026-09-18 - Slice 16 closed; Advanced handed to Slice 23
+
+- Closed Slice 16 after the implemented 16.1-16.6 New Game breadth and the 16.7 Advanced audit/deferral decision.
+- Advanced remains catalog-visible `planned`, browser-locked and backend-rejected; there is no fallback to Average.
+- Slice 16.7 Gate 1 preserved the original/runtime Advanced contract; Gate 2 proved architecture feasibility but identified unfinished Building/Planet/Pollution/Race/Ship fidelity that would make a current implementation partial or misleading.
+- Full Advanced implementation is reserved for Slice 23, downstream of Slice 17 ship breadth, Slice 20 Espionage, Slice 21 Colony/Buildings/Planet/Pollution and Slice 22 race completion/designer.
+- Final prepared/reserved order: **17 -> 20 -> 21 -> 22 -> 23**; 18/19 remain unassigned.
+- Closure evidence: `docs/research/SLICE_16_CLOSE_2026-09-18.md` and `docs/research/SLICE_16_7_GATE2_ADVANCED_DEFERRAL_HANDOFF_2026-09-18.md`.
+- No downstream slice was opened by this closure.

@@ -82,3 +82,18 @@ func TestNewGameAdvancedRemainsRejected(t *testing.T) {
 		t.Fatal("Advanced unexpectedly accepted by Gate 3")
 	}
 }
+func TestAdvancedCatalogDoesNotClaimUnresolvedFleetContract(t *testing.T) {
+	catalog := TechnologyLevelCatalog()
+	for _, profile := range catalog.Profiles {
+		if profile.ID != NewGameTechnologyAdvanced {
+			continue
+		}
+		for _, fact := range profile.Facts {
+			if fact == "Starting fleet fills Command Points" {
+				t.Fatal("planned Advanced catalog must not claim unresolved starting-fleet semantics")
+			}
+		}
+		return
+	}
+	t.Fatal("Advanced profile missing")
+}

@@ -1,8 +1,8 @@
 # Planned slice 16 - New Game and preset-race breadth
 
-Status: **program in progress; Slices 16.1-16.6 closed, Slice 16.7 Gate 2 active with full Advanced implementation reserved downstream for Slice 23**.
+Status: **closed / complete (2026-09-18); Slices 16.1-16.6 implemented, Slice 16.7 closed as audited/deferred handoff to Slice 23**.
 
-Position: **Slices 16.1 through 16.6 are closed; Slice 16.7 Gate 2 is active as the final Slice-16 step and is preparing a documented Advanced deferral/handoff.** The downstream planned order is 17 -> 20 -> 21 -> 22 -> 23.
+Position: **Slice 16 is closed.** Next prepared gameplay slice is Slice 17; downstream reserved order is 17 -> 20 -> 21 -> 22 -> 23. None is opened by this closure.
 
 > **Downstream breadth:** Slice 16 intentionally does not force full Building/Planet/Pollution, all 13 preset races, Custom Race Designer, or complete Advanced-start parity into this milestone. Slice 21 owns Colony/Building/Planet/Pollution fidelity; Slice 22 owns preset-race completion + Custom Race Designer; Slice 23 owns full Advanced Starting Civilization parity while inheriting Slice-16.7 research.
 
@@ -105,40 +105,42 @@ Defer:
 
 ## Parent Gate 1 - Original/settings audit
 
-- [ ] Re-check original New Game option tables and generator evidence.
-- [ ] Inventory which of 13 normalized races are runtime-compatible without new subsystem work.
-- [ ] Map size/age/tech/player-count options to generator rules/evidence.
-- [ ] Identify preset races blocked by missing trait/government/population mechanics.
-- [ ] Choose a bounded expansion set rather than enabling unsupported options optimistically.
-- [ ] Define seed/hash fixtures for each newly accepted setup.
-- [ ] Confirm the 16.1-16.7 work breakdown still matches current runtime dependencies.
-- [ ] Present Gate-2 breadth contract.
+- [x] Re-check original New Game option tables and generator evidence.
+- [x] Inventory which of 13 normalized races are runtime-compatible without new subsystem work.
+- [x] Map size/age/tech/player-count options to generator rules/evidence.
+- [x] Identify preset races blocked by missing trait/government/population mechanics.
+- [x] Choose a bounded expansion set rather than enabling unsupported options optimistically.
+- [x] Define seed/hash fixtures for each newly accepted setup.
+- [x] Confirm the 16.1-16.7 work breakdown still matches current runtime dependencies.
+- [x] Present Gate-2 breadth contract.
 
 ## Parent Gate 2 - Implementation decision
 
-- [ ] Freeze newly supported settings/races/player counts.
-- [ ] Freeze exact unsupported/deferred list.
-- [ ] Freeze deterministic fixture matrix and HMI exposure.
-- [ ] Freeze the common visual selector/art-manifest contract and representative art direction.
+- [x] Freeze newly supported settings/races/player counts.
+- [x] Freeze exact unsupported/deferred list.
+- [x] Freeze deterministic fixture matrix and HMI exposure.
+- [x] Freeze the common visual selector/art-manifest contract and representative art direction.
 
 ## Parent Gate 3 - Implementation
 
-- [ ] Complete 16.1-16.7 in dependency order or an explicitly justified equivalent order.
-- [ ] Expand validated New Game settings/race support.
-- [ ] Add required preset-race runtime modifiers only where evidence-backed.
-- [ ] Produce original runtime artwork for every visual option that is accepted into the final Slice-16 contract.
-- [ ] Extend server/HMI creation surfaces.
-- [ ] Add deterministic multi-seed/settings regressions.
+- [x] Complete 16.1-16.6 and resolve 16.7 by an explicit evidence-backed Advanced deferral/handoff to Slice 23.
+- [x] Expand validated New Game settings/race support.
+- [x] Add required preset-race runtime modifiers only where evidence-backed.
+- [x] Produce original runtime artwork for every visual option that is accepted into the final Slice-16 contract.
+- [x] Extend server/HMI creation surfaces.
+- [x] Add deterministic multi-seed/settings regressions.
 
 ## Parent Gate 4 - Follow-up QA + commit + close
 
-- [ ] Repeat each supported settings fixture exactly.
-- [ ] Verify AI and HMI can start/play newly accepted setups.
-- [ ] Verify all accepted races/options have non-placeholder imagery and usable text/accessibility fallbacks.
-- [ ] Desktop and real/mobile-width New Game walkthrough.
-- [ ] Run full tests/vet/web checks and `git diff --check`.
-- [ ] Update evidence/status/HISTORY and close Slice 16.
+- [x] Repeat each supported settings fixture exactly.
+- [x] Verify AI and HMI can start/play newly accepted setups.
+- [x] Verify all accepted races/options have non-placeholder imagery and usable text/accessibility fallbacks.
+- [x] Desktop and real/mobile-width New Game walkthrough.
+- [x] Run full tests/vet/web checks and `git diff --check`.
+- [x] Update evidence/status/HISTORY and close Slice 16.
 
 ## Parent exit criterion
 
-Slice 16 is complete when New Game supports the frozen broader settings/race/player matrix deterministically and presents those choices through one polished, image-led MOOX setup flow with original race portraits and visual setting cards, without enabling mechanics the authoritative runtime cannot yet support.
+Slice 16 is complete when New Game supports the frozen broader settings/race/player matrix deterministically and presents those choices through one polished, image-led MOOX setup flow without enabling mechanics the authoritative runtime cannot yet support.
+
+That criterion is satisfied. Advanced remains intentionally planned/locked and is now a Slice-23 deliverable. Closure evidence: docs/research/SLICE_16_CLOSE_2026-09-18.md.

@@ -38,11 +38,11 @@ When a planned slice actually starts:
 
 Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1 always requires a fresh repository checkup and original-evidence review at the time work begins.
 
-### Current active / prepared queue - 2026-09-17
+### Current active / prepared queue - 2026-09-18
 
 Active:
 
-- **Slice 16.7 - Gate 1 complete / Gate 2 next** - `_OPEN_ADVANCED_STARTING_TECH_PARITY_2026-09-18.md`; Advanced technology chooser foundation already exists, while Gate 1 proved the separate original territory/population/building bootstrap and recorded the HELP-versus-1.31 fleet conflict. Permanent evidence: `docs/research/SLICE_16_7_GATE1_ADVANCED_PARITY_AUDIT_2026-09-18.md`.
+- **None. Slice 16 is closed.** Slice 17 is prepared but must not open until explicitly released.
 
 Closed/parked Slice-15 state:
 
@@ -54,14 +54,13 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. PLANNED_16_NEW_GAME_PRESET_RACE_BREADTH.md - current parent Slice-16 program; Slices 16.1-16.6 are closed and Slice 16.7 Gate 2 is active while full Advanced implementation is being handed downstream.
-2. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - multi-hull/component/weapon design baseline for broader combat/design fidelity.
-3. PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md - dedicated authoritative Spy/intelligence mechanics; Slices 18/19 remain intentionally unassigned.
-4. PLANNED_21_COLONY_BUILDINGS_PLANET_EFFECTS_POLLUTION_FIDELITY.md - authoritative Colony/Building/Planet effects, including Pollution as a real Economy loop and the strategic foundation required by downstream race/Advanced work.
-5. PLANNED_22_PRESET_RACE_COMPLETION_CUSTOM_RACE_DESIGNER.md - mechanically complete preset races plus one server-authoritative Custom Race Designer after prerequisite gameplay systems mature.
-6. PLANNED_23_FULL_ADVANCED_STARTING_CIVILIZATION_PARITY.md - full Advanced starting-civilization parity using mature Slice-21 Building/Planet/Pollution and Slice-22 race systems plus inherited Slice-16.7 evidence.
+1. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - next prepared gameplay slice; not open.
+2. PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md - dedicated authoritative Spy/intelligence mechanics; Slices 18/19 remain intentionally unassigned.
+3. PLANNED_21_COLONY_BUILDINGS_PLANET_EFFECTS_POLLUTION_FIDELITY.md - authoritative Colony/Building/Planet effects including Pollution.
+4. PLANNED_22_PRESET_RACE_COMPLETION_CUSTOM_RACE_DESIGNER.md - preset-race completion plus Custom Race Designer.
+5. PLANNED_23_FULL_ADVANCED_STARTING_CIVILIZATION_PARITY.md - full Advanced parity inheriting Slice-16.7 evidence.
 
-Planned downstream order after Slice 16 closes: **17 -> 20 -> 21 -> 22 -> 23**. Reprioritization remains allowed before a later slice opens if its dependency audit still passes.
+Planned downstream order: **17 -> 20 -> 21 -> 22 -> 23**. No downstream slice is opened by Slice-16 closure.
 
 ### Binding Slice-16 decomposition
 
@@ -91,7 +90,7 @@ The following six specifications are the prepared Slice-16 work breakdown. They 
    `PLANNED_16_6_PLAYER_COMPOSITION_FINAL_NEW_GAME_INTEGRATION.md`  
    Visual opponent-count selector targeting MOOX-styled numerals 1-7, reusable opponent race portraits, cross-setting validation and launch-summary integration.
 
-7. **Slice 16.7 - Advanced starting technology parity and Slice-16 closure**
+7. **Slice 16.7 - closed as audited/deferred Advanced handoff** - Gate 1 audited complete Advanced parity; Gate 2 froze the planned/locked contract and handed implementation to Slice 23. Evidence: docs/research/SLICE_16_7_GATE2_ADVANCED_DEFERRAL_HANDOFF_2026-09-18.md.
    `PLANNED_16_7_ADVANCED_STARTING_TECH_PARITY.md`
    Full authoritative Advanced start parity across technology, empire/population/fleet/research bootstrap and accepted cross-setting interactions. This is the final 16.x slice.
 

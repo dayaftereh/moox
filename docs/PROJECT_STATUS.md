@@ -44,10 +44,10 @@ Slices 01-14 are closed. Slice 14 Live GameSession save/resume passed independen
    - 15.4 **prepared** - rich gameplay decisions / Encounter transitions / persistence UX.
    - 15.5 **prepared** - interactive 2D Tactical Combat: authoritative movement/legal targets plus mouse/touch battlefield on the Slice-07 combat baseline.
    - 15.6 **prepared** - full browser vertical slice / polish / complete-game QA.
-9. Slice 16 - **prepared** - New Game + preset-race breadth.
+9. Slice 16 - **closed** - broader deterministic New Game/preset-race baseline; full Advanced implementation explicitly deferred to Slice 23.
 10. Slice 17 - **prepared** - military ship design component/weapon breadth.
 
-Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. Slice 15.1 is closed with independent Gate-4 QA complete. The accepted shell is mobile-first, desktop-adaptive, bilingual DE/EN and remains available over the LLO Desktop NetBird interface for review. **Slice 15.2 is closed after independent Gate-4 QA. Slice 15.3 Gate 1 is the active objective.** Slice 16/17 remain independent breadth work after the browser-playability family. **Slice 20 Espionage/Intelligence is reserved/prepared as a dedicated mechanics slice; 15.2 only reserves its navigation area.**
+Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. The browser-playability Slice-15 family and New Game Slice-16 family are closed at their accepted baselines. The shell is mobile-first, desktop-adaptive, bilingual DE/EN and remains available over the LLO Desktop NetBird interface for review. **No implementation slice is currently open. Slice 17 is the next prepared gameplay breadth slice.** Slice 20 Espionage/Intelligence and Slices 21-23 remain reserved/planned downstream.
 
 Important recent checkpoints:
 
@@ -150,7 +150,7 @@ See `docs/research/ACTIVE_RESEARCH.md` for the explicit closed-milestone list an
 
 ## Active work
 
-Slice 16.6 **Player composition and final New Game integration** is closed. Public HTTP create/play acceptance covers all supported difficulty, galaxy-size/age, Pre-Warp/Average, Human/Klackon and 1-/2-opponent classes; three-player/two-AI turns advance through built-in AI resolution; the 480-tuple deterministic matrix and three-player persistence round trips remain green. The New Game HMI separates equal-height Player Race/Opponent Count selectors from a full-width Players & Empires roster with honest planned slots. Slice 16.7 Gate 2 is active; feasibility research shows full Advanced parity should be handed to reserved Slice 23 after Slice 21 Building/Planet/Pollution fidelity and Slice 22 race completion rather than pulling those systems into Slice 16.
+Slice 16 **New Game + preset-race breadth is closed**. Slices 16.1-16.6 deliver the supported deterministic New Game contract; Slice 16.7 completed the Advanced audit and an explicit deferral/handoff. Advanced remains catalog-visible planned/locked and backend-rejected, with full implementation reserved for Slice 23 after Slice 21 Building/Planet/Pollution and Slice 22 race completion. Closure evidence: docs/research/SLICE_16_CLOSE_2026-09-18.md.
 
 The Treasury Maintenance/deficit checkpoint is complete. Direct MOO2 1.31 evidence resolves all six Maintenance categories and the staged negative-Treasury liquidation boundary. Without changing Core schema 15 or ruleset schema 7, runtime now charges the complete currently-authoritative active-Freighter bucket (Food use plus Population-transfer reservations) with original aggregate whole-BC truncation and materializes surplus-Food income at the original whole-BC boundary. Full asset liquidation stays deferred until canonical Ship/Spy/Leader/treaty systems exist, and the full Go test/vet baseline is green.
 
@@ -203,12 +203,12 @@ The project now has a complete supported headless conquest lifecycle, so the rem
 
 ### Prepared / reserved roadmap
 
-1. **Slice 16 - New Game + preset-race breadth:** current program; 16.1-16.6 are closed and 16.7 is being closed with full Advanced implementation deferred after Gate-2 feasibility evidence.
-2. **Slice 17 - Military ship design component/weapon breadth:** expand the current minimal design/runtime for broader combat/design fidelity.
-3. **Slice 20 - Espionage / intelligence baseline:** authoritative Spies, Espionage/Sabotage, race/technology modifiers, safe projection and AI; Slices 18/19 remain intentionally unassigned.
-4. **Slice 21 - Colony / Buildings / Planet Effects / Pollution fidelity:** complete the strategic building/planet effect foundation and make Pollution a server-authoritative Economy loop.
-5. **Slice 22 - Preset race completion + Custom Race Designer:** finish race-dependent mechanics and expose presets/custom races through one authoritative trait system.
-6. **Slice 23 - Full Advanced Starting Civilization parity:** reuse the mature Building/Planet/Pollution/Race/Ship systems plus inherited Slice-16.7 research to implement Advanced without special-case approximations.
+1. **Slice 17 - Military ship design component/weapon breadth:** next prepared gameplay slice; not open.
+
+2. **Slice 20 - Espionage / intelligence baseline:** authoritative Spies, Espionage/Sabotage, race/technology modifiers, safe projection and AI; Slices 18/19 remain intentionally unassigned.
+3. **Slice 21 - Colony / Buildings / Planet Effects / Pollution fidelity:** complete the strategic building/planet effect foundation and make Pollution a server-authoritative Economy loop.
+4. **Slice 22 - Preset race completion + Custom Race Designer:** finish race-dependent mechanics and expose presets/custom races through one authoritative trait system.
+5. **Slice 23 - Full Advanced Starting Civilization parity:** reuse the mature Building/Planet/Pollution/Race/Ship systems plus inherited Slice-16.7 research to implement Advanced without special-case approximations.
 
 Intended downstream order after Slice 16: **17 -> 20 -> 21 -> 22 -> 23**. Every slice still requires a fresh Gate-1 dependency audit before opening.
 
