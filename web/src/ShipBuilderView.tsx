@@ -11,6 +11,7 @@ import {
 } from './api'
 import { ProceduralShipGlyph } from './components/ProceduralShipGlyph'
 import { GameIcon } from './components/GameIcon'
+import { ShipSystemInfoCard } from './components/ShipSystemInfoCard'
 import { Card, PageHeader } from './components/ui'
 import type { TranslationKey, TranslationVars } from './i18n'
 import { createRandomShipGenome, shipHullFootprint, type ShipVisualGenome } from './shipVisualGenome'
@@ -35,41 +36,6 @@ const hullTranslationKeys: Record<string, TranslationKey> = {
 
 function hullLabel(t: Translator, hullID: string): string {
   return t(hullTranslationKeys[hullID] ?? 'shipbuilder.hull.frigate')
-}
-
-const componentTranslationKeys: Record<string, TranslationKey> = {
-  electronic_computer: 'shipbuilder.component.electronicComputer',
-  optronic_computer: 'shipbuilder.component.optronicComputer',
-  positronic_computer: 'shipbuilder.component.positronicComputer',
-  cybertronic_computer: 'shipbuilder.component.cybertronicComputer',
-  moleculartronic_computer: 'shipbuilder.component.moleculartronicComputer',
-  class_i_shield: 'shipbuilder.component.classIShield',
-  class_iii_shield: 'shipbuilder.component.classIIIShield',
-  class_v_shield: 'shipbuilder.component.classVShield',
-  class_vii_shield: 'shipbuilder.component.classVIIShield',
-  class_x_shield: 'shipbuilder.component.classXShield',
-  nuclear_drive: 'shipbuilder.component.nuclearDrive',
-  fusion_drive: 'shipbuilder.component.fusionDrive',
-  ion_drive: 'shipbuilder.component.ionDrive',
-  anti_matter_drive: 'shipbuilder.component.antiMatterDrive',
-  hyper_drive: 'shipbuilder.component.hyperDrive',
-  interphased_drive: 'shipbuilder.component.interphasedDrive',
-  titanium_armor: 'shipbuilder.component.titaniumArmor',
-  tritanium_armor: 'shipbuilder.component.tritaniumArmor',
-  zortrium_armor: 'shipbuilder.component.zortriumArmor',
-  neutronium_armor: 'shipbuilder.component.neutroniumArmor',
-  adamantium_armor: 'shipbuilder.component.adamantiumArmor',
-  xentronium_armor: 'shipbuilder.component.xentroniumArmor',
-  standard_fuel_cells: 'shipbuilder.component.standardFuelCells',
-  deuterium_fuel_cells: 'shipbuilder.component.deuteriumFuelCells',
-  iridium_fuel_cells: 'shipbuilder.component.iridiumFuelCells',
-  urridium_fuel_cells: 'shipbuilder.component.urridiumFuelCells',
-  thorium_fuel_cells: 'shipbuilder.component.thoriumFuelCells',
-}
-
-function componentLabel(t: Translator, id: string): string {
-  const key = componentTranslationKeys[id]
-  return key ? t(key) : id.replaceAll('_', ' ')
 }
 
 function designVisual(design: ShipDesign): ShipVisualGenome {
@@ -358,117 +324,28 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
               <span className="shipdesigner-preview-overlay"><GameIcon name="generate" />{t('shipbuilder.clickToReroll')}</span>
             </button>
 
-            <div className="shipdesigner-system-card-grid">
-              <section className="shipdesigner-component-section shipdesigner-system-card shipdesigner-computer-card">
-                <div className="card-heading"><div><p className="eyebrow">{t('shipbuilder.computer')}</p><h3>{t('shipbuilder.computerChoices')}</h3></div></div>
-                <div className="shipdesigner-choice-list">
-                  {computers.map((choice) => {
-                    const cost = choice.effective_cost_by_hull_pp?.[hullSizeIndex] ?? 0
-                    const selected = computerID === choice.id
-                    return (
-                      <button
-                        type="button"
-                        key={choice.id}
-                        data-component-id={choice.id}
-                        className={"shipdesigner-choice-card" + (selected ? " selected" : "") + (!choice.available ? " locked" : "")}
-                        aria-pressed={selected}
-                        disabled={!choice.available}
-                        onClick={() => { setComputerID(choice.id); setSaveNotice('') }}
-                      >
-                        <span className="shipdesigner-choice-heading"><strong>{componentLabel(t, choice.id)}</strong>{selected && <span className="badge">{t('shipbuilder.selected')}</span>}</span>
-                        <span className="shipdesigner-choice-effect">{t('shipbuilder.computerEffect', { bonus: choice.beam_attack_bonus ?? 0 })}</span>
-                        <small>{t('shipbuilder.componentCostMini', { cost, level: choice.miniaturization_level })}</small>
-                      </button>
-                    )
-                  })}
-                </div>
+            {spec ? (
+              <ShipSystemInfoCard
+                designer={designer}
+                spec={spec}
+                currentHull={currentHull}
+                hullLabel={hullLabel(t, hullID)}
+                computerID={computerID}
+                shieldID={shieldID}
+                weaponMounts={weaponMounts}
+                laser={laser}
+                remainingSpace={remainingSpace}
+                onComputerChange={(id) => { setComputerID(id); setSaveNotice('') }}
+                onShieldChange={(id) => { setShieldID(id); setSaveNotice('') }}
+                onWeaponCountChange={changeWeaponMountCount}
+                onRemoveWeapon={removeWeaponMount}
+                t={t}
+              />
+            ) : (
+              <section className="shipdesigner-component-section shipdesigner-ship-info-card">
+                <p className="muted">{hullLock || t('shipbuilder.noAuthoritativePreview')}</p>
               </section>
-
-              <section className="shipdesigner-component-section shipdesigner-system-card shipdesigner-shield-card">
-                <div className="card-heading"><div><p className="eyebrow">{t('shipbuilder.shield')}</p><h3>{t('shipbuilder.shieldChoices')}</h3></div></div>
-                <div className="shipdesigner-choice-list">
-                  <button
-                    type="button"
-                    data-shield-id=""
-                    className={"shipdesigner-choice-card" + (!shieldID ? " selected" : "")}
-                    aria-pressed={!shieldID}
-                    onClick={() => { setShieldID(''); setSaveNotice('') }}
-                  >
-                    <span className="shipdesigner-choice-heading"><strong>{t('common.none')}</strong>{!shieldID && <span className="badge">{t('shipbuilder.selected')}</span>}</span>
-                    <span className="shipdesigner-choice-effect">{t('shipbuilder.noShieldEffect')}</span>
-                    <small>{t('shipbuilder.noShieldCost')}</small>
-                  </button>
-                  {shields.map((choice) => {
-                    const cost = choice.effective_cost_by_hull_pp?.[hullSizeIndex] ?? 0
-                    const space = choice.effective_space_by_hull?.[hullSizeIndex] ?? 0
-                    const selected = shieldID === choice.id
-                    return (
-                      <button
-                        type="button"
-                        key={choice.id}
-                        data-shield-id={choice.id}
-                        className={"shipdesigner-choice-card" + (selected ? " selected" : "") + (!choice.available ? " locked" : "")}
-                        aria-pressed={selected}
-                        disabled={!choice.available}
-                        onClick={() => { setShieldID(choice.id); setSaveNotice('') }}
-                      >
-                        <span className="shipdesigner-choice-heading"><strong>{componentLabel(t, choice.id)}</strong>{selected && <span className="badge">{t('shipbuilder.selected')}</span>}</span>
-                        <span className="shipdesigner-choice-effect">{t('shipbuilder.shieldEffect', { block: choice.shield_damage_block_per_hit ?? 0, capacity: choice.shield_capacity_per_hull_class ?? 0 })}</span>
-                        <small>{t('shipbuilder.shieldCostMini', { cost, space, level: choice.miniaturization_level })}</small>
-                      </button>
-                    )
-                  })}
-                </div>
-              </section>
-            </div>
-
-            <section className="shipdesigner-component-section shipdesigner-installed-section">
-              <div className="card-heading"><div><p className="eyebrow">{t('shipbuilder.installed')}</p><h3>{t('shipbuilder.installedSystemInfo')}</h3></div></div>
-              {spec ? (
-                <div className="shipdesigner-installed-info-grid">
-                  <article className="shipdesigner-info-card">
-                    <span>{t('shipbuilder.drive')}</span>
-                    <strong>{componentLabel(t, spec.warp_drive_id)}</strong>
-                    <p>{t('shipbuilder.driveEffect', { ftl: spec.ftl_speed, tactical: designer.automatic_systems.tactical_speed_bonus ?? 0 })}</p>
-                  </article>
-                  <article className="shipdesigner-info-card">
-                    <span>{t('shipbuilder.computer')}</span>
-                    <strong>{componentLabel(t, spec.computer_id)}</strong>
-                    <p>{t('shipbuilder.computerEffect', { bonus: selectedComputer?.beam_attack_bonus ?? 0 })}</p>
-                  </article>
-                  <article className="shipdesigner-info-card">
-                    <span>{t('shipbuilder.armor')}</span>
-                    <strong>{componentLabel(t, spec.armor_id)}</strong>
-                    <p>{t('shipbuilder.armorEffect', { multiplier: designer.automatic_systems.armor_durability_multiple ?? 1 })}</p>
-                  </article>
-                  <article className="shipdesigner-info-card">
-                    <span>{t('shipbuilder.shield')}</span>
-                    <strong>{spec.shield_id ? componentLabel(t, spec.shield_id) : t('common.none')}</strong>
-                    <p>{selectedShield ? t('shipbuilder.shieldEffect', { block: selectedShield.shield_damage_block_per_hit ?? 0, capacity: selectedShield.shield_capacity_per_hull_class ?? 0 }) : t('shipbuilder.noShieldEffect')}</p>
-                  </article>
-                  <article className="shipdesigner-info-card">
-                    <span>{t('shipbuilder.fuel')}</span>
-                    <strong>{componentLabel(t, spec.fuel_cell_id)}</strong>
-                    <p>{spec.fuel_range_parsecs >= 255 ? t('shipbuilder.fuelUnlimitedEffect') : t('shipbuilder.fuelEffect', { range: spec.fuel_range_parsecs })}</p>
-                  </article>
-                  {weaponMounts.map((mount) => (
-                    <article className="shipdesigner-info-card weapon" key={mount.slot}>
-                      <span>{t('shipbuilder.slot', { slot: mount.slot + 1 })}</span>
-                      <strong>{mount.count}× {t('shipbuilder.laserCannon')}</strong>
-                      {laser && <p>{t('shipbuilder.weaponEffect', { min: mount.count * laser.min_damage, max: mount.count * laser.max_damage, space: mount.count * laser.base_space, cost: mount.count * laser.base_cost_pp })}</p>}
-                      <div className="shipdesigner-weapon-quantity">
-                        <button type="button" className="button-ghost" aria-label={t('shipbuilder.decreaseQuantity')} onClick={() => changeWeaponMountCount(mount.slot, -1)}>-</button>
-                        <strong className="shipdesigner-weapon-count">{mount.count}</strong>
-                        <button type="button" className="button-ghost" aria-label={t('shipbuilder.increaseQuantity')} disabled={!laser || remainingSpace < laser.base_space} onClick={() => changeWeaponMountCount(mount.slot, 1)}>+</button>
-                        <button type="button" className="button-ghost shipdesigner-weapon-remove" onClick={() => removeWeaponMount(mount.slot)}>{t('shipbuilder.remove')}</button>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              ) : <p className="muted">{hullLock || t('shipbuilder.noAuthoritativePreview')}</p>}
-              <p className="muted shipdesigner-future-note">{t('shipbuilder.systemEffectScope')}</p>
-            </section>
-
+            )}
             <section className="shipdesigner-component-section shipdesigner-weapon-section">
               <div className="card-heading"><div><p className="eyebrow">{t('shipbuilder.available')}</p><h3>{t('shipbuilder.availableComponents')}</h3></div></div>
               {laser ? (
@@ -482,11 +359,6 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
           </Card>
 
           <Card className="shipdesigner-summary-card">
-            <div className="shipdesigner-summary-grid">
-              <div><span className="eyebrow">{t('shipbuilder.productionCost')}</span><strong>{spec ? `${spec.production_cost_pp} PP` : '—'}</strong></div>
-              <div><span className="eyebrow">{t('shipbuilder.commandPoints')}</span><strong>{currentHull ? `${currentHull.command_point_cost} CP` : '—'}</strong></div>
-              <div><span className="eyebrow">{t('shipbuilder.designSpace')}</span><strong>{spec ? `${spec.space_used} / ${spec.hull_space}` : `— / ${currentHull?.base_space ?? '—'}`}</strong></div>
-            </div>
             <div className="shipdesigner-save-row">
               <div>
                 {saveError && <p className="shipbuilder-save-state error">{saveError}</p>}

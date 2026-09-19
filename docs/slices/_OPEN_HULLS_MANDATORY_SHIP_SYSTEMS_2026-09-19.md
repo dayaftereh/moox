@@ -50,8 +50,9 @@ The frozen contract is implemented end-to-end across server authority, construct
 
 ## Gate 3 HMI information amendment
 
-User review requested effect-first Designer information before Gate 4. Computer and Shield are now separate non-dropdown cards, choices show their verified original effects plus current miniaturized cost/Space, and the complete installed-system/effect summary is placed under the Ship preview.
+User review first requested effect-first Designer information, then refined that UX again before Gate 4. The final Gate-3 layout is one Ship-information card directly under the preview. It shows Hull/PP/CP/Space plus Drive, Computer, Armor, Shield, Fuel and installed weapons; every mandatory system has a trailing `?` details action. Computer and Shield open rich popup/card selectors instead of dropdowns or permanently expanded choice grids.
 
-Evidence remains: docs/research/SLICE_17_1_GATE3_IMPLEMENTATION_2026-09-19.md.
+Primary implementation evidence: `docs/research/SLICE_17_1_GATE3_IMPLEMENTATION_2026-09-19.md`.
+Final HMI amendment evidence: `docs/research/SLICE_17_1_GATE3_SHIP_INFO_POPUP_AMENDMENT_2026-09-20.md`.
 
 Gate 4 is still next and has not started.

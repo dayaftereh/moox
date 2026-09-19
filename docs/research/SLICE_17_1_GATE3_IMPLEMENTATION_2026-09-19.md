@@ -290,3 +290,14 @@ Additional browser acceptance verifies no Computer/Shield dropdown remains, the 
 Post-amendment verification: focused Designer tests PASS; npm run build PASS; reference browser smoke PASS; go test ./... PASS; go vet ./... PASS; git diff --check PASS.
 
 Gate 4 remains not started.
+
+
+## Ship information / popup HMI amendment (2026-09-20)
+
+The previous always-expanded Computer/Shield card layout was superseded after further desktop review. The final Gate-3 Designer UX now uses one compact Ship-information card directly below the Ship preview. It contains Hull/PP/CP/Space plus Drive, Computer, Armor, Shield, Fuel and installed weapons. Every mandatory-system row shows its effect and has a dedicated `?` detail control. Computer and Shield rows open rich popup/card selectors; Drive, Armor and Fuel remain automatic and info-only.
+
+Computer popup cards show verified Beam Attack plus miniaturized PP/level. Shield popup cards show per-hit block, actual capacity for the current hull class, miniaturized PP/Space/level, and explicit no-Shield. Mobile uses a one-column bottom-sheet selector; desktop uses two-column popup cards. No mandatory-system dropdown is used.
+
+Evidence: `docs/research/SLICE_17_1_GATE3_SHIP_INFO_POPUP_AMENDMENT_2026-09-20.md`.
+
+Post-amendment verification: `npm run build` PASS; combined reference/buyout/ship-designer browser smoke PASS on fresh loopback 7192; `go test ./...` PASS; `go vet ./...` PASS; `git diff --check` PASS before staging. Gate 4 remains not started.

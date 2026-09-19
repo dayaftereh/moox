@@ -274,46 +274,62 @@ async function main() {
   const completedColony = completed.view.colonies.find((item) => item.id === colony.id)
   assert(completedColony?.buildings?.includes(buildingChoice.project_id), `Bought project ${buildingChoice.project_id} did not complete on next normal turn`)
 
-  // Slice 17.1 Ship Designer smoke: six hulls, selectable Computer/Shield, explicit no-Shield and All-Tech Doom Star save.
+  // Slice 17.1 Ship Designer smoke: one ship-info card, five help affordances, popup card selection, explicit no-Shield and All-Tech Doom Star save.
   await navigate(`${baseURL}/#/game/${gameID}/shipbuilder`)
   await sleep(250)
   await evaluate(`(() => { const button = document.querySelector('.shipdesigner-new'); if (button) button.click(); return true })()`)
   await sleep(150)
   let designerUI = await evaluate(`(() => {
-    const computerCard = document.querySelector('.shipdesigner-computer-card')
-    const shieldCard = document.querySelector('.shipdesigner-shield-card')
-    const computerChoices = [...document.querySelectorAll('.shipdesigner-computer-card .shipdesigner-choice-card')].map((button) => ({
-      id: button.getAttribute('data-component-id') || '',
-      disabled: button.disabled,
-      text: button.textContent || '',
-    }))
-    const shieldChoices = [...document.querySelectorAll('.shipdesigner-shield-card .shipdesigner-choice-card')].map((button) => ({
-      id: button.getAttribute('data-shield-id'),
-      disabled: button.disabled,
-      text: button.textContent || '',
+    const infoCard = document.querySelector('.shipdesigner-ship-info-card')
+    const rows = [...document.querySelectorAll('.shipdesigner-system-row')].map((row) => ({
+      system: row.getAttribute('data-system') || '',
+      text: row.textContent || '',
+      help: Boolean(row.querySelector('.shipdesigner-system-help')),
     }))
     return {
-      separateCards: Boolean(computerCard && shieldCard && computerCard !== shieldCard),
-      dropdowns: document.querySelectorAll('.shipdesigner-system-card select').length,
-      computerChoices,
-      shieldChoices,
-      installedText: document.querySelector('.shipdesigner-installed-section')?.textContent || '',
+      infoCard: Boolean(infoCard),
+      rows,
+      helpCount: document.querySelectorAll('.shipdesigner-system-help').length,
+      summaryCount: document.querySelectorAll('.shipdesigner-system-summary-grid > div').length,
+      dropdowns: document.querySelectorAll('.shipdesigner-ship-info-card select').length,
       hullText: document.querySelector('.shipdesigner-hull-current strong')?.textContent || '',
       overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
     }
   })()`)
-  assert(designerUI.separateCards, 'Computer and Shield are not rendered as separate cards')
-  assert(designerUI.dropdowns === 0, `Ship Designer still renders ${designerUI.dropdowns} mandatory-system dropdown(s)`)
-  assert(designerUI.computerChoices.some((choice) => choice.id === 'electronic_computer' && !choice.disabled && choice.text.includes('Strahl-Angriff +25')), 'Electronic Computer effect card missing')
-  assert(designerUI.computerChoices.some((choice) => choice.id === 'moleculartronic_computer' && !choice.disabled && choice.text.includes('Strahl-Angriff +125')), 'Moleculartronic Computer effect card missing')
-  assert(designerUI.shieldChoices.some((choice) => choice.id === '' && !choice.disabled && choice.text.includes('Kein Schildschutz')), 'Explicit no-Shield effect card missing')
-  assert(designerUI.shieldChoices.some((choice) => choice.id === 'class_x_shield' && !choice.disabled && choice.text.includes('Blockt 10 Schaden')), 'Class X Shield effect card missing')
-  assert(designerUI.installedText.includes('Eingebaute Systeme & Wirkung'), 'Installed-system information block missing')
-  assert(designerUI.installedText.includes('Strategische FTL'), 'Installed Drive effect is not visible')
-  assert(designerUI.installedText.includes('Panzerungs-Haltbarkeit'), 'Installed Armor effect is not visible')
-  assert(designerUI.installedText.includes('strategische Reichweite') || designerUI.installedText.includes('Strategische Reichweite'), 'Installed Fuel effect is not visible')
-  assert(!designerUI.overflow, 'Ship Designer system cards cause horizontal overflow at 390px')
+  assert(designerUI.infoCard, 'Ship information card is missing below the ship preview')
+  assert(designerUI.rows.length === 5, `Ship information has ${designerUI.rows.length} mandatory-system rows, want 5`)
+  assert(designerUI.helpCount === 5 && designerUI.rows.every((row) => row.help), `Ship information help affordances=${designerUI.helpCount}, want one for every system`)
+  assert(designerUI.summaryCount === 4, `Ship information summary stat count=${designerUI.summaryCount}, want 4`)
+  assert(designerUI.dropdowns === 0, `Ship information still renders ${designerUI.dropdowns} dropdown(s)`)
+  assert(designerUI.rows.some((row) => row.system === 'drive' && row.text.includes('Strategische FTL')), 'Drive effect is not visible in ship information')
+  assert(designerUI.rows.some((row) => row.system === 'computer' && row.text.includes('Strahl-Angriff')), 'Computer effect is not visible in ship information')
+  assert(designerUI.rows.some((row) => row.system === 'armor' && row.text.includes('Panzerungs-Haltbarkeit')), 'Armor effect is not visible in ship information')
+  assert(designerUI.rows.some((row) => row.system === 'shield' && row.text.includes('Blockt 10 Schaden')), 'Shield effect is not visible in ship information')
+  assert(designerUI.rows.some((row) => row.system === 'fuel' && row.text.includes('Unbegrenzte strategische Reichweite')), 'Fuel effect is not visible in ship information')
+  assert(!designerUI.overflow, 'Ship information card causes horizontal overflow at 390px')
 
+  const openedComputer = await evaluate(`(() => { const button = document.querySelector('[data-system="computer"] .shipdesigner-system-select-trigger'); if (!button) return false; button.click(); return true })()`)
+  assert(openedComputer, 'Computer row did not open selection popup')
+  await sleep(120)
+  const computerPopup = await evaluate(`(() => ({
+    open: Boolean(document.querySelector('.shipdesigner-system-dialog')),
+    choices: [...document.querySelectorAll('.shipdesigner-computer-dialog .shipdesigner-choice-card')].map((button) => ({ id: button.getAttribute('data-component-id') || '', disabled: button.disabled, text: button.textContent || '' })),
+    overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
+  }))()`)
+  assert(computerPopup.open, 'Computer selection popup is missing')
+  assert(computerPopup.choices.some((choice) => choice.id === 'electronic_computer' && !choice.disabled && choice.text.includes('Strahl-Angriff +25')), 'Electronic Computer popup card/effect missing')
+  assert(computerPopup.choices.some((choice) => choice.id === 'moleculartronic_computer' && !choice.disabled && choice.text.includes('Strahl-Angriff +125')), 'Moleculartronic Computer popup card/effect missing')
+  assert(!computerPopup.overflow, 'Computer selection popup causes horizontal overflow at 390px')
+  await evaluate(`(() => { document.querySelector('.shipdesigner-system-dialog-close')?.click(); return true })()`)
+  await sleep(100)
+
+  const openedFuelInfo = await evaluate(`(() => { const button = document.querySelector('[data-system="fuel"] .shipdesigner-system-help'); if (!button) return false; button.click(); return true })()`)
+  assert(openedFuelInfo, 'Fuel ? did not open detail popup')
+  await sleep(100)
+  const fuelInfoText = await evaluate(`document.querySelector('.shipdesigner-system-dialog')?.textContent || ''`)
+  assert(fuelInfoText.includes('Unbegrenzte strategische Reichweite'), 'Fuel detail popup does not explain the installed effect')
+  await evaluate(`(() => { document.querySelector('.shipdesigner-system-dialog-close')?.click(); return true })()`)
+  await sleep(100)
   for (let step = 0; step < 5; step++) {
     const advanced = await evaluate(`(() => {
       const buttons = [...document.querySelectorAll('.shipdesigner-hull-stepper button')]
@@ -331,13 +347,20 @@ async function main() {
   }))()`)
   assert(designerUI.hullText.includes('Doom'), `All-Tech hull stepper ended at ${designerUI.hullText}, want Doom Star`)
 
+  const openedComputerForEdit = await evaluate(`(() => { const button = document.querySelector('[data-system="computer"] .shipdesigner-system-select-trigger'); if (!button) return false; button.click(); return true })()`)
+  assert(openedComputerForEdit, 'Could not open Computer selector for Doom Star edit')
+  await sleep(100)
+  const selectedComputerForEdit = await evaluate(`(() => { const button = document.querySelector('.shipdesigner-computer-dialog [data-component-id="electronic_computer"]'); if (!button || button.disabled) return false; button.click(); return true })()`)
+  assert(selectedComputerForEdit, 'Could not select Electronic Computer from popup')
+  await sleep(100)
+  const openedShieldForEdit = await evaluate(`(() => { const button = document.querySelector('[data-system="shield"] .shipdesigner-system-select-trigger'); if (!button) return false; button.click(); return true })()`)
+  assert(openedShieldForEdit, 'Could not open Shield selector for Doom Star edit')
+  await sleep(100)
+  const selectedNoShield = await evaluate(`(() => { const button = document.querySelector('.shipdesigner-shield-dialog [data-shield-id=""]'); if (!button || button.disabled) return false; button.click(); return true })()`)
+  assert(selectedNoShield, 'Could not select explicit no-Shield from popup')
   const edited = await evaluate(`(() => {
-    const computer = document.querySelector('.shipdesigner-computer-card [data-component-id="electronic_computer"]')
-    const shield = document.querySelector('.shipdesigner-shield-card [data-shield-id=""]')
     const input = document.querySelector('#ship-design-name')
-    if (!computer || !shield || !input) return false
-    computer.click()
-    shield.click()
+    if (!input) return false
     const inputSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
     inputSetter?.call(input, 'G3 Doom Star')
     input.dispatchEvent(new Event('input', { bubbles: true }))
@@ -363,19 +386,24 @@ async function main() {
 
   await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false })
   await sleep(250)
+  const openedDesktopComputer = await evaluate(`(() => { const button = document.querySelector('[data-system="computer"] .shipdesigner-system-select-trigger'); if (!button) return false; button.click(); return true })()`)
+  assert(openedDesktopComputer, 'Desktop Computer selector did not open')
+  await sleep(100)
   const designerDesktop = await evaluate(`(() => {
-    const computer = document.querySelector('.shipdesigner-computer-card')?.getBoundingClientRect()
-    const shield = document.querySelector('.shipdesigner-shield-card')?.getBoundingClientRect()
+    const info = document.querySelector('.shipdesigner-ship-info-card')?.getBoundingClientRect()
+    const cards = [...document.querySelectorAll('.shipdesigner-computer-dialog .shipdesigner-choice-card')].slice(0, 2).map((card) => card.getBoundingClientRect())
     return {
-      twoColumns: Boolean(computer && shield && Math.abs(computer.top - shield.top) < 8 && computer.left < shield.left),
-      computerWidth: computer?.width || 0,
-      shieldWidth: shield?.width || 0,
+      infoWidth: info?.width || 0,
+      popupTwoColumns: cards.length === 2 && Math.abs(cards[0].top - cards[1].top) < 8 && cards[0].left < cards[1].left,
+      choiceWidth: cards[0]?.width || 0,
       overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
     }
   })()`)
-  assert(designerDesktop.twoColumns, 'Desktop Ship Designer does not render Computer and Shield as two side-by-side cards')
-  assert(designerDesktop.computerWidth > 250 && designerDesktop.shieldWidth > 250, `Desktop system card widths are too small: ${designerDesktop.computerWidth}/${designerDesktop.shieldWidth}`)
-  assert(!designerDesktop.overflow, 'Desktop Ship Designer system cards cause horizontal overflow')
+  assert(designerDesktop.infoWidth > 500, `Desktop ship information card width=${designerDesktop.infoWidth}, want >500`)
+  assert(designerDesktop.popupTwoColumns, 'Desktop Computer popup does not render choice cards in two columns')
+  assert(designerDesktop.choiceWidth > 250, `Desktop Computer popup choice width=${designerDesktop.choiceWidth}, want >250`)
+  assert(!designerDesktop.overflow, 'Desktop Ship Designer information/popup causes horizontal overflow')
+  await evaluate(`(() => { document.querySelector('.shipdesigner-system-dialog-close')?.click(); return true })()`)
   await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true })
   await sleep(150)
   await navigate(`${baseURL}/#/game/${gameID}/more`)
@@ -394,7 +422,7 @@ async function main() {
   assert(!ordinary, 'Ordinary game-1 renders development credit/turn controls')
 
   if (failures.length) throw new Error('Reference/buyout/ship-designer browser smoke failed:\n- ' + failures.join('\n- '))
-  console.log('Reference/buyout/ship-designer browser smoke passed: six-hull All-Tech Designer, separate effect-first Computer/Shield cards, explicit no-Shield save, mobile/desktop Designer layout, More-only dev tools, +BC grant, +1/+5/N presence, same-turn drafted construction buyout with BC deduction, next-turn completion, 390px/desktop layout and ordinary-game isolation.')
+  console.log('Reference/buyout/ship-designer browser smoke passed: six-hull All-Tech Designer, unified ship-information card, ? detail popups, Computer/Shield card selectors, explicit no-Shield save, mobile/desktop Designer layout, More-only dev tools, +BC grant, +1/+5/N presence, same-turn drafted construction buyout with BC deduction, next-turn completion, 390px/desktop layout and ordinary-game isolation.')
 }
 
 main().catch((error) => {

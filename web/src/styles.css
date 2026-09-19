@@ -6232,3 +6232,48 @@ button.galaxy-node-marker-player-fleet.is-open {
   .shipdesigner-system-card-grid,
   .shipdesigner-installed-info-grid { grid-template-columns: 1fr; }
 }
+
+
+/* Slice 17.1 Gate-3 ship information popup amendment. */
+.shipdesigner-ship-info-card { margin-top: 14px; }
+.shipdesigner-ship-info-heading { align-items: flex-start; gap: 12px; }
+.shipdesigner-ship-info-heading > .muted { max-width: 330px; margin: 0; text-align: right; font-size: .68rem; line-height: 1.35; }
+.shipdesigner-system-summary-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+.shipdesigner-system-summary-grid > div { display: grid; gap: 3px; min-width: 0; padding: 8px 10px; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); background: rgba(255,255,255,.025); }
+.shipdesigner-system-summary-grid span { color: var(--muted); font-size: .62rem; text-transform: uppercase; letter-spacing: .05em; }
+.shipdesigner-system-summary-grid strong { overflow-wrap: anywhere; font-size: .76rem; }
+.shipdesigner-system-list { display: grid; gap: 7px; margin-top: 10px; }
+.shipdesigner-system-row { display: grid; grid-template-columns: minmax(0, 1fr) 38px; align-items: stretch; gap: 7px; padding: 0; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); background: rgba(8,17,29,.7); overflow: hidden; }
+.shipdesigner-system-row.selectable { border-color: color-mix(in srgb, var(--accent) 38%, var(--border-soft)); }
+.shipdesigner-system-row-main { display: grid; gap: 3px; min-width: 0; padding: 9px 11px; }
+button.shipdesigner-system-row-main { width: 100%; border: 0; background: transparent; color: inherit; text-align: left; cursor: pointer; }
+button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:focus-visible { background: var(--accent-soft); outline: none; }
+.shipdesigner-system-row-main > span { color: var(--muted); font-size: .62rem; text-transform: uppercase; letter-spacing: .05em; }
+.shipdesigner-system-row-main > strong { overflow-wrap: anywhere; font-size: .8rem; }
+.shipdesigner-system-row-main > p { margin: 0; color: var(--muted-strong); font-size: .7rem; line-height: 1.35; }
+.shipdesigner-system-help { align-self: stretch; min-width: 38px; border: 0; border-left: 1px solid var(--border-soft); background: rgba(255,255,255,.03); color: var(--text); font-weight: 800; font-size: .95rem; cursor: pointer; }
+.shipdesigner-system-help:hover, .shipdesigner-system-help:focus-visible { background: var(--accent-soft); color: var(--accent); outline: none; }
+.shipdesigner-installed-weapons { display: grid; gap: 7px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-soft); }
+.shipdesigner-system-dialog-backdrop { position: fixed; inset: 0; z-index: 96; display: grid; place-items: center; padding: 18px; background: rgba(1,6,12,.78); backdrop-filter: blur(5px); }
+.shipdesigner-system-dialog { display: grid; gap: 14px; width: min(760px, 100%); max-height: min(84dvh, 760px); overflow: auto; padding: 16px; border: 1px solid var(--border-strong); border-radius: 16px; background: var(--panel-strong); box-shadow: var(--shadow-lg); }
+.shipdesigner-system-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.shipdesigner-system-dialog-header h3 { margin: 2px 0 0; font-size: 1.15rem; }
+.shipdesigner-system-dialog-close { display: grid; width: 38px; height: 38px; min-width: 38px; min-height: 38px; place-items: center; padding: 0; border-radius: 999px; }
+.shipdesigner-system-dialog-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.shipdesigner-system-dialog-detail { display: grid; gap: 9px; padding: 12px; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); background: rgba(8,17,29,.72); }
+.shipdesigner-system-dialog-detail > strong { font-size: 1rem; }
+.shipdesigner-system-dialog-detail > p, .shipdesigner-system-dialog-detail > small { margin: 0; line-height: 1.45; }
+.shipdesigner-system-dialog-detail > .badge { width: fit-content; }
+.shipdesigner-system-dialog-detail > .button-secondary { width: fit-content; margin-top: 2px; }
+.shipdesigner-system-dialog-scope { display: grid; gap: 5px; margin-top: 5px; padding-top: 10px; border-top: 1px solid var(--border-soft); }
+.shipdesigner-system-dialog-scope h4, .shipdesigner-system-dialog-scope p { margin: 0; }
+.shipdesigner-system-dialog-scope p { color: var(--muted); font-size: .72rem; }
+.shipdesigner-system-dialog-actions { display: flex; justify-content: flex-end; }
+@media (max-width: 700px) {
+  .shipdesigner-ship-info-heading { display: grid; }
+  .shipdesigner-ship-info-heading > .muted { max-width: none; text-align: left; }
+  .shipdesigner-system-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .shipdesigner-system-dialog-backdrop { place-items: end stretch; padding: 0; }
+  .shipdesigner-system-dialog { width: 100%; max-height: 86dvh; border-radius: 14px 14px 0 0; }
+  .shipdesigner-system-dialog-choice-grid { grid-template-columns: 1fr; }
+}
