@@ -1,6 +1,6 @@
 # Planned Slice 17.0 - Ship Designer / Triangle Reference Test Harness
 
-Status: **active; Gates 1-3 complete / Gate 4 ready**.
+Status: **closed; Gates 1-4 complete (2026-09-19)**.
 
 ## Objective
 
@@ -109,13 +109,19 @@ Reference controls must not appear in ordinary games when the server is not star
 
 ## Gate 4 - QA + close
 
-- [ ] Turn-1 Triangle All-Tech Designer Lab can open Doom Star/high-tech design QA without research grinding once downstream 17.x mechanics exist.
-- [ ] Construction Lab builds through normal production/turn resolution.
-- [ ] Combat Lab ships use the same immutable ShipDesignSpec as ordinary constructed ships.
-- [ ] Reference controls are unavailable in normal server mode.
-- [ ] Equal scenario seed/profile produces identical state.
-- [ ] Save/restore works for reference scenarios where persistence is enabled.
-- [ ] Full tests/vet/web/browser checks and `git diff --check` pass.
+- [x] Turn-1 Triangle All-Tech Designer Lab can open Doom Star/high-tech design QA without research grinding once downstream 17.x mechanics exist.
+- [x] Construction Lab builds through normal production/turn resolution.
+- [x] Combat Lab ships use the same immutable ShipDesignSpec as ordinary constructed ships.
+- [x] Reference controls are unavailable in normal server mode.
+- [x] Equal scenario seed/profile produces identical state.
+- [x] Save/restore works for reference scenarios where persistence is enabled.
+- [x] Full tests/vet/web/browser checks and `git diff --check` pass.
+
+## Gate 4 evidence
+
+- `docs/research/SLICE_17_0_GATE4_ACCEPTANCE_CLOSE_2026-09-19.md`
+- Final acceptance passed for deterministic All-Tech/Mid-Tech bootstrap, normal construction/turn authority, immutable Ship fixtures, dev-only isolation, persistence, full Go/vet/web/browser regression and same-turn drafted buyout.
+- Doom Star/high-tech component mechanics remain correctly downstream in Slice 17.1; 17.0 proves the Turn-1 All-Tech harness is ready for them without research grinding.
 
 ## Exit criterion
 

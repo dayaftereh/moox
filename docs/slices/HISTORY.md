@@ -458,3 +458,15 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - **17.5 Full Designer Integration:** unified browser/server designer, revisions, immutable built-Ship snapshots, Colony Construction, persistence, reference-lab QA and parent closeout.
 - Slice 17 remains the next roadmap program; **17.0 is the next child but is not open**. Slice 18 remains downstream and independent.
 - No gameplay code changed and no `_OPEN_` marker was created.
+
+
+## 2026-09-19 - Slice 17.0 Ship Designer / Triangle Reference Test Harness closed
+
+- Closed Slice 17.0 with Gates 1-4 complete after final deterministic/reference-security/persistence/construction/Ship-fixture/browser acceptance.
+- Durable Triangle reference family: baseline `game-triangle-2pc`, Turn-1 Mid-Tech `game-triangle-mid-tech`, and Turn-1 All-Tech `game-triangle-all-tech`.
+- Development Tools remain explicitly reference-only and provide +100/+1,000/+10,000 BC plus +1/+5/+N normal-turn advancement.
+- Normal gameplay construction buyout uses the original-style MOO2 BC curve and supports the currently visible saved Planning Draft in the same Planning phase; bought construction still completes on the next normal turn.
+- Reference combat fixtures materialize through the same validated immutable `ShipDesignSpec` snapshot path used by ordinary military construction.
+- Save/restore and trusted Reference metadata passed fresh HTTP acceptance; generic imports cannot mint Reference capability.
+- Gate-4 evidence: `docs/research/SLICE_17_0_GATE4_ACCEPTANCE_CLOSE_2026-09-19.md`.
+- Slice 17.1 - Hulls and Mandatory Ship Systems is next but remains unopened pending explicit release.

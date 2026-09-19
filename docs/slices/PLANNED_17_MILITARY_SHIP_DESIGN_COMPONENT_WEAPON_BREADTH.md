@@ -1,6 +1,6 @@
 # Planned Slice 17 - Military Ship Design Program
 
-Status: **active parent program; child 17.0 open at Gates 1-3 complete / Gate 4 ready**.
+Status: **active parent program; child 17.0 closed/accepted, child 17.1 next but not open**.
 
 Queue position: **current gameplay program after closed Slice 16**. Slice 18 is reserved downstream for Galaxy/Strategic Navigation fidelity and is not a prerequisite for Slice 17.
 
@@ -85,7 +85,7 @@ Before opening 17.0 Gate 1:
 
 ## Parent completion contract
 
-- [ ] 17.0 closed: durable Ship/Combat QA harness exists.
+- [x] 17.0 closed: durable Ship/Combat QA harness exists.
 - [ ] 17.1 closed: hulls + mandatory systems are fully supported to the frozen breadth.
 - [ ] 17.2 closed: Beam design breadth is complete to the frozen contract.
 - [ ] 17.3 closed: ordnance design breadth is complete to the frozen contract.
