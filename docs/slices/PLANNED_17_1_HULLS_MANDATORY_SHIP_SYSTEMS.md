@@ -1,6 +1,6 @@
 # Planned Slice 17.1 - Hulls and Mandatory Ship Systems
 
-Status: **planned; child of Slice 17; not open**.
+Status: **active; Gate 1 complete / Gate 2 next**.
 
 ## Objective
 
@@ -34,13 +34,18 @@ The six hulls are already normalized with base PP, base Space, strategic picture
 
 ## Gate 1 - original/system audit
 
-- [ ] Re-audit all six hull original size/space/cost/CP data.
-- [ ] Re-audit large-hull Colony buildability/infrastructure rules.
-- [ ] Re-audit Titan/Doom Star technology requirements.
-- [ ] Re-audit drive, computer, armor, shield and fuel catalogs with technology IDs.
-- [ ] Re-audit original mandatory-component cost/space and miniaturization behavior.
-- [ ] Re-audit derived strategic/tactical stats exposed by computers, drives, shields and armor.
-- [ ] Classify any tactical-only effects as downstream instead of faking them.
+- [x] Re-audit all six hull original size/space/cost/CP data.
+- [x] Re-audit large-hull Colony buildability/infrastructure rules.
+- [x] Re-audit Titan/Doom Star technology requirements.
+- [x] Re-audit drive, computer, armor, shield and fuel catalogs with technology IDs.
+- [x] Re-audit original mandatory-component cost/space and miniaturization behavior.
+- [x] Re-audit derived strategic/tactical stats exposed by computers, drives, shields and armor.
+- [x] Classify any tactical-only effects as downstream instead of faking them.
+
+## Gate 1 evidence
+
+- `docs/research/SLICE_17_1_GATE1_HULLS_MANDATORY_SYSTEMS_AUDIT_2026-09-19.md`
+- Frozen evidence boundary: six hull base values/CP, Cruiser+ Star-Base-or-better construction requirement, Titan/Doom Star tech locks, full mandatory-system identity/tech/base-table audit, original Automatics semantics, current strategic Drive/Fuel behavior, miniaturization evidence/gaps, and explicit Tactical downstream classification.
 
 ## Gate 2 - hull/system contract freeze
 

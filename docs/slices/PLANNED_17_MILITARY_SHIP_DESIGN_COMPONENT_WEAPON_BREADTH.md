@@ -1,6 +1,6 @@
 # Planned Slice 17 - Military Ship Design Program
 
-Status: **active parent program; child 17.0 closed/accepted, child 17.1 next but not open**.
+Status: **active parent program; child 17.0 closed/accepted, child 17.1 open; Gate 1 complete / Gate 2 next**.
 
 Queue position: **current gameplay program after closed Slice 16**. Slice 18 is reserved downstream for Galaxy/Strategic Navigation fidelity and is not a prerequisite for Slice 17.
 
