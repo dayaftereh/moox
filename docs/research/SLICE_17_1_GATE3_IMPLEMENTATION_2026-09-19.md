@@ -263,3 +263,30 @@ Slice 17.2+ remain unopened.
 The frozen 17.1 implementation contract is now present end-to-end across domain authority, construction/persistence snapshots, player projection, API types, HMI and deterministic browser/backend tests.
 
 Gate 4 QA/close is next but has not been started.
+
+
+## HMI information amendment
+
+User review of the desktop Designer identified that the first Gate-3 HMI exposed technically correct Computer/Shield selectors but did not explain what the systems actually do.
+
+The Gate-3 implementation was therefore refined before Gate 4:
+
+- Computer and Shield are now two independent visible cards rather than two dropdowns inside one mandatory-systems card.
+- Every Computer choice shows its verified original Beam Attack effect directly: Electronic +25, Optronic +50, Positronic +75, Cybertronic +100, Moleculartronic +125.
+- Every Shield choice shows its verified original per-hit damage block and capacity factor directly: Class I 1/5x, Class III 3/15x, Class V 5/25x, Class VII 7/35x, Class X 10/50x.
+- No-Shield is a first-class visible choice showing 0 PP / 0 Space and no Shield protection.
+- Actual miniaturized PP and Shield Space for the selected hull remain visible on every choice.
+- The authoritative Designer catalog now projects the effect values so the HMI does not infer them from component names.
+- The complete installed-system summary sits directly below the Ship preview and includes Drive, Computer, Armor, Shield, Fuel and installed weapons with their gameplay effects.
+- Automatic systems use human-readable names rather than raw IDs.
+- Drive shows strategic FTL and the verified original tactical speed contribution.
+- Armor shows the verified original durability multiplier.
+- Fuel shows strategic range or unlimited range.
+- A visible scope note distinguishes currently active strategic behavior from verified original tactical effects that broader MOOX Tactical support does not yet simulate.
+- Mobile keeps one-column cards; desktop renders Computer and Shield as two separate side-by-side cards.
+
+Additional browser acceptance verifies no Computer/Shield dropdown remains, the two cards are separate, effect text is visible, the installed-system block is present, 390 px has no overflow, 1280 px renders two readable side-by-side cards without overflow, and the smoke is repeatable against the same reference server.
+
+Post-amendment verification: focused Designer tests PASS; npm run build PASS; reference browser smoke PASS; go test ./... PASS; go vet ./... PASS; git diff --check PASS.
+
+Gate 4 remains not started.

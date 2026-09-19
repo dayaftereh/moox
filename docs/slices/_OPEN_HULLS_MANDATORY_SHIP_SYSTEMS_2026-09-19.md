@@ -46,3 +46,12 @@ The contract freezes six-hull availability/buildability, Computer/Shield selecti
 Evidence: `docs/research/SLICE_17_1_GATE3_IMPLEMENTATION_2026-09-19.md`.
 
 The frozen contract is implemented end-to-end across server authority, construction/persistence snapshots, player projection, API/HMI and deterministic backend/browser checks. Gate 4 QA/close is next but not started. Wait for explicit user release.
+
+
+## Gate 3 HMI information amendment
+
+User review requested effect-first Designer information before Gate 4. Computer and Shield are now separate non-dropdown cards, choices show their verified original effects plus current miniaturized cost/Space, and the complete installed-system/effect summary is placed under the Ship preview.
+
+Evidence remains: docs/research/SLICE_17_1_GATE3_IMPLEMENTATION_2026-09-19.md.
+
+Gate 4 is still next and has not started.

@@ -385,11 +385,16 @@ export type MilitaryDesignerComponentChoice = {
   miniaturization_level: number
   effective_cost_by_hull_pp?: number[]
   effective_space_by_hull?: number[]
+  beam_attack_bonus?: number
+  shield_damage_block_per_hit?: number
+  shield_capacity_per_hull_class?: number
 }
 export type MilitaryDesignerAutomaticSystems = {
   warp_drive_id?: string
   ftl_speed?: number
+  tactical_speed_bonus?: number
   armor_id?: string
+  armor_durability_multiple?: number
   fuel_cell_id?: string
   fuel_range_parsecs?: number
 }

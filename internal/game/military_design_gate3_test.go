@@ -86,11 +86,21 @@ func TestSlice171CatalogProfilesAndLateHullLocks(t *testing.T) {
 	if midCatalog.AutomaticSystems.WarpDriveID != "ion_drive" || midCatalog.AutomaticSystems.ArmorID != "tritanium_armor" || midCatalog.AutomaticSystems.FuelCellID != "iridium_fuel_cells" {
 		t.Fatalf("Mid-Tech automatic systems=%+v", midCatalog.AutomaticSystems)
 	}
+	if midCatalog.AutomaticSystems.TacticalSpeedBonus != 4 || midCatalog.AutomaticSystems.ArmorDurabilityMultiple != 2 {
+		t.Fatalf("Mid-Tech automatic effects=%+v", midCatalog.AutomaticSystems)
+	}
 	if len(midCatalog.Computers) != 5 || midCatalog.Computers[0].MiniaturizationLevel != 3 || !midCatalog.Computers[0].Available {
 		t.Fatalf("Mid-Tech computers=%+v", midCatalog.Computers)
 	}
+	if midCatalog.Computers[0].BeamAttackBonus != 25 || midCatalog.Computers[4].BeamAttackBonus != 125 {
+		t.Fatalf("Computer Beam Attack effects=%+v", midCatalog.Computers)
+	}
 	if len(midCatalog.Shields) != 5 || midCatalog.Shields[0].MiniaturizationLevel != 2 || !midCatalog.Shields[0].Available {
 		t.Fatalf("Mid-Tech shields=%+v", midCatalog.Shields)
+	}
+	if midCatalog.Shields[0].ShieldDamageBlockPerHit != 1 || midCatalog.Shields[0].ShieldCapacityPerHullClass != 5 ||
+		midCatalog.Shields[4].ShieldDamageBlockPerHit != 10 || midCatalog.Shields[4].ShieldCapacityPerHullClass != 50 {
+		t.Fatalf("Shield effects=%+v", midCatalog.Shields)
 	}
 
 	all := core.NewSmallFixture(0x171121)
@@ -104,6 +114,9 @@ func TestSlice171CatalogProfilesAndLateHullLocks(t *testing.T) {
 	}
 	if allCatalog.AutomaticSystems.WarpDriveID != "interphased_drive" || allCatalog.AutomaticSystems.ArmorID != "xentronium_armor" || allCatalog.AutomaticSystems.FuelCellID != "thorium_fuel_cells" {
 		t.Fatalf("All-Tech automatic systems=%+v", allCatalog.AutomaticSystems)
+	}
+	if allCatalog.AutomaticSystems.TacticalSpeedBonus != 10 || allCatalog.AutomaticSystems.ArmorDurabilityMultiple != 10 {
+		t.Fatalf("All-Tech automatic effects=%+v", allCatalog.AutomaticSystems)
 	}
 	doomFound := false
 	for _, variant := range allCatalog.Variants {

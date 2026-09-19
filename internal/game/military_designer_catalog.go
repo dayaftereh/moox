@@ -34,23 +34,28 @@ type MilitaryDesignerHullChoice struct {
 }
 
 type MilitaryDesignerComponentChoice struct {
-	ID                    string `json:"id"`
-	NameKey               string `json:"name_key,omitempty"`
-	TechnologyID          int    `json:"technology_id"`
-	TechnologyKnown       bool   `json:"technology_known"`
-	Available             bool   `json:"available"`
-	LockReason            string `json:"lock_reason,omitempty"`
-	MiniaturizationLevel  int    `json:"miniaturization_level"`
-	EffectiveCostByHullPP []int  `json:"effective_cost_by_hull_pp,omitempty"`
-	EffectiveSpaceByHull  []int  `json:"effective_space_by_hull,omitempty"`
+	ID                         string `json:"id"`
+	NameKey                    string `json:"name_key,omitempty"`
+	TechnologyID               int    `json:"technology_id"`
+	TechnologyKnown            bool   `json:"technology_known"`
+	Available                  bool   `json:"available"`
+	LockReason                 string `json:"lock_reason,omitempty"`
+	MiniaturizationLevel       int    `json:"miniaturization_level"`
+	EffectiveCostByHullPP      []int  `json:"effective_cost_by_hull_pp,omitempty"`
+	EffectiveSpaceByHull       []int  `json:"effective_space_by_hull,omitempty"`
+	BeamAttackBonus            int    `json:"beam_attack_bonus,omitempty"`
+	ShieldDamageBlockPerHit    int    `json:"shield_damage_block_per_hit,omitempty"`
+	ShieldCapacityPerHullClass int    `json:"shield_capacity_per_hull_class,omitempty"`
 }
 
 type MilitaryDesignerAutomaticSystems struct {
-	WarpDriveID      string `json:"warp_drive_id,omitempty"`
-	FTLSpeed         int    `json:"ftl_speed,omitempty"`
-	ArmorID          string `json:"armor_id,omitempty"`
-	FuelCellID       string `json:"fuel_cell_id,omitempty"`
-	FuelRangeParsecs int    `json:"fuel_range_parsecs,omitempty"`
+	WarpDriveID             string `json:"warp_drive_id,omitempty"`
+	FTLSpeed                int    `json:"ftl_speed,omitempty"`
+	TacticalSpeedBonus      int    `json:"tactical_speed_bonus,omitempty"`
+	ArmorID                 string `json:"armor_id,omitempty"`
+	ArmorDurabilityMultiple int    `json:"armor_durability_multiple,omitempty"`
+	FuelCellID              string `json:"fuel_cell_id,omitempty"`
+	FuelRangeParsecs        int    `json:"fuel_range_parsecs,omitempty"`
 }
 
 type MilitaryDesignerWeaponChoice struct {
@@ -132,9 +137,11 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 	if hasDrive {
 		catalog.AutomaticSystems.WarpDriveID = drive.ID
 		catalog.AutomaticSystems.FTLSpeed = drive.FTLSpeed
+		catalog.AutomaticSystems.TacticalSpeedBonus = shipDriveTacticalSpeedBonus(drive.ComponentIndex)
 	}
 	if hasArmor {
 		catalog.AutomaticSystems.ArmorID = armor.ID
+		catalog.AutomaticSystems.ArmorDurabilityMultiple = shipArmorDurabilityMultiple(armor.ComponentIndex)
 	}
 	if hasFuel {
 		catalog.AutomaticSystems.FuelCellID = fuel.ID
@@ -171,6 +178,7 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 			ID: computer.ID, NameKey: r.TechnologyNameKeyByID[computer.TechnologyID],
 			TechnologyID: computer.TechnologyID, TechnologyKnown: known, Available: known,
 			LockReason: lockReason, MiniaturizationLevel: level, EffectiveCostByHullPP: effective,
+			BeamAttackBonus: shipComputerBeamAttackBonus(computer.ComponentIndex),
 		})
 	}
 	for _, shield := range r.ShipShields {
@@ -200,6 +208,8 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 			TechnologyID: shield.TechnologyID, TechnologyKnown: known, Available: known,
 			LockReason: lockReason, MiniaturizationLevel: level,
 			EffectiveCostByHullPP: effectiveCost, EffectiveSpaceByHull: effectiveSpace,
+			ShieldDamageBlockPerHit:    shipShieldDamageBlock(shield.ComponentIndex),
+			ShieldCapacityPerHullClass: shipShieldCapacityPerHullClass(shield.ComponentIndex),
 		})
 	}
 
@@ -252,6 +262,73 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 		}
 	}
 	return catalog, nil
+}
+
+func shipComputerBeamAttackBonus(componentIndex int) int {
+	if componentIndex <= 0 {
+		return 0
+	}
+	return componentIndex * 25
+}
+
+func shipShieldDamageBlock(componentIndex int) int {
+	switch componentIndex {
+	case 1:
+		return 1
+	case 2:
+		return 3
+	case 3:
+		return 5
+	case 4:
+		return 7
+	case 5:
+		return 10
+	default:
+		return 0
+	}
+}
+
+func shipShieldCapacityPerHullClass(componentIndex int) int {
+	switch componentIndex {
+	case 1:
+		return 5
+	case 2:
+		return 15
+	case 3:
+		return 25
+	case 4:
+		return 35
+	case 5:
+		return 50
+	default:
+		return 0
+	}
+}
+
+func shipDriveTacticalSpeedBonus(componentIndex int) int {
+	if componentIndex <= 1 {
+		return 0
+	}
+	return (componentIndex - 1) * 2
+}
+
+func shipArmorDurabilityMultiple(componentIndex int) int {
+	switch componentIndex {
+	case 1:
+		return 1
+	case 2:
+		return 2
+	case 3:
+		return 4
+	case 4:
+		return 6
+	case 5:
+		return 8
+	case 6:
+		return 10
+	default:
+		return 0
+	}
 }
 
 func (r *EconomyRules) shipDesignerHullTechnology(hullID string) (int, string, error) {

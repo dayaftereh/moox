@@ -6141,3 +6141,94 @@ button.galaxy-node-marker-player-fleet.is-open {
     width: 100%;
   }
 }
+
+
+/* Slice 17.1 Gate-3 information amendment: effect-first mandatory-system cards. */
+.shipdesigner-system-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+.shipdesigner-system-card { min-width: 0; }
+.shipdesigner-choice-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+.shipdesigner-choice-card {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  min-width: 0;
+  padding: 10px;
+  text-align: left;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: rgba(8, 17, 29, .78);
+  color: inherit;
+}
+.shipdesigner-choice-card:not(:disabled) { cursor: pointer; }
+.shipdesigner-choice-card.selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.shipdesigner-choice-card.locked { opacity: .56; }
+.shipdesigner-choice-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.shipdesigner-choice-heading strong { overflow-wrap: anywhere; }
+.shipdesigner-choice-effect {
+  font-size: .76rem;
+  line-height: 1.35;
+}
+.shipdesigner-choice-card small {
+  color: var(--muted);
+  font-size: .65rem;
+  line-height: 1.35;
+}
+.shipdesigner-installed-section,
+.shipdesigner-weapon-section { margin-top: 12px; }
+.shipdesigner-installed-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.shipdesigner-info-card {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: rgba(8, 17, 29, .72);
+}
+.shipdesigner-info-card > span {
+  color: var(--muted);
+  font-size: .64rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.shipdesigner-info-card > strong {
+  font-size: .78rem;
+  overflow-wrap: anywhere;
+}
+.shipdesigner-info-card > p {
+  margin: 0;
+  font-size: .7rem;
+  line-height: 1.4;
+}
+.shipdesigner-info-card.weapon { border-color: var(--accent); }
+.shipdesigner-info-card .shipdesigner-weapon-quantity { margin-top: 3px; }
+
+@media (max-width: 820px) {
+  .shipdesigner-installed-info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 620px) {
+  .shipdesigner-system-card-grid,
+  .shipdesigner-installed-info-grid { grid-template-columns: 1fr; }
+}

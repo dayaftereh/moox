@@ -277,24 +277,42 @@ async function main() {
   // Slice 17.1 Ship Designer smoke: six hulls, selectable Computer/Shield, explicit no-Shield and All-Tech Doom Star save.
   await navigate(`${baseURL}/#/game/${gameID}/shipbuilder`)
   await sleep(250)
+  await evaluate(`(() => { const button = document.querySelector('.shipdesigner-new'); if (button) button.click(); return true })()`)
+  await sleep(150)
   let designerUI = await evaluate(`(() => {
-    const selectors = [...document.querySelectorAll('.shipdesigner-selector-grid select')]
-    const computer = selectors[0]
-    const shield = selectors[1]
+    const computerCard = document.querySelector('.shipdesigner-computer-card')
+    const shieldCard = document.querySelector('.shipdesigner-shield-card')
+    const computerChoices = [...document.querySelectorAll('.shipdesigner-computer-card .shipdesigner-choice-card')].map((button) => ({
+      id: button.getAttribute('data-component-id') || '',
+      disabled: button.disabled,
+      text: button.textContent || '',
+    }))
+    const shieldChoices = [...document.querySelectorAll('.shipdesigner-shield-card .shipdesigner-choice-card')].map((button) => ({
+      id: button.getAttribute('data-shield-id'),
+      disabled: button.disabled,
+      text: button.textContent || '',
+    }))
     return {
-      selectors: selectors.length,
-      computerOptions: computer ? [...computer.options].map((option) => ({ value: option.value, disabled: option.disabled })) : [],
-      shieldOptions: shield ? [...shield.options].map((option) => ({ value: option.value, disabled: option.disabled })) : [],
+      separateCards: Boolean(computerCard && shieldCard && computerCard !== shieldCard),
+      dropdowns: document.querySelectorAll('.shipdesigner-system-card select').length,
+      computerChoices,
+      shieldChoices,
+      installedText: document.querySelector('.shipdesigner-installed-section')?.textContent || '',
       hullText: document.querySelector('.shipdesigner-hull-current strong')?.textContent || '',
       overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
     }
   })()`)
-  assert(designerUI.selectors === 2, `Ship Designer mandatory selector count=${designerUI.selectors}, want 2`)
-  assert(designerUI.computerOptions.some((option) => option.value === 'electronic_computer' && !option.disabled), 'All-Tech Electronic Computer choice missing')
-  assert(designerUI.computerOptions.some((option) => option.value === 'moleculartronic_computer' && !option.disabled), 'All-Tech Moleculartronic Computer choice missing')
-  assert(designerUI.shieldOptions.some((option) => option.value === '' && !option.disabled), 'Explicit no-Shield choice missing')
-  assert(designerUI.shieldOptions.some((option) => option.value === 'class_x_shield' && !option.disabled), 'All-Tech Class X Shield choice missing')
-  assert(!designerUI.overflow, 'Ship Designer mandatory controls cause horizontal overflow at 390px')
+  assert(designerUI.separateCards, 'Computer and Shield are not rendered as separate cards')
+  assert(designerUI.dropdowns === 0, `Ship Designer still renders ${designerUI.dropdowns} mandatory-system dropdown(s)`)
+  assert(designerUI.computerChoices.some((choice) => choice.id === 'electronic_computer' && !choice.disabled && choice.text.includes('Strahl-Angriff +25')), 'Electronic Computer effect card missing')
+  assert(designerUI.computerChoices.some((choice) => choice.id === 'moleculartronic_computer' && !choice.disabled && choice.text.includes('Strahl-Angriff +125')), 'Moleculartronic Computer effect card missing')
+  assert(designerUI.shieldChoices.some((choice) => choice.id === '' && !choice.disabled && choice.text.includes('Kein Schildschutz')), 'Explicit no-Shield effect card missing')
+  assert(designerUI.shieldChoices.some((choice) => choice.id === 'class_x_shield' && !choice.disabled && choice.text.includes('Blockt 10 Schaden')), 'Class X Shield effect card missing')
+  assert(designerUI.installedText.includes('Eingebaute Systeme & Wirkung'), 'Installed-system information block missing')
+  assert(designerUI.installedText.includes('Strategische FTL'), 'Installed Drive effect is not visible')
+  assert(designerUI.installedText.includes('Panzerungs-Haltbarkeit'), 'Installed Armor effect is not visible')
+  assert(designerUI.installedText.includes('strategische Reichweite') || designerUI.installedText.includes('Strategische Reichweite'), 'Installed Fuel effect is not visible')
+  assert(!designerUI.overflow, 'Ship Designer system cards cause horizontal overflow at 390px')
 
   for (let step = 0; step < 5; step++) {
     const advanced = await evaluate(`(() => {
@@ -314,17 +332,13 @@ async function main() {
   assert(designerUI.hullText.includes('Doom'), `All-Tech hull stepper ended at ${designerUI.hullText}, want Doom Star`)
 
   const edited = await evaluate(`(() => {
-    const selectors = [...document.querySelectorAll('.shipdesigner-selector-grid select')]
-    const computer = selectors[0]
-    const shield = selectors[1]
+    const computer = document.querySelector('.shipdesigner-computer-card [data-component-id="electronic_computer"]')
+    const shield = document.querySelector('.shipdesigner-shield-card [data-shield-id=""]')
     const input = document.querySelector('#ship-design-name')
     if (!computer || !shield || !input) return false
-    const selectSetter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set
+    computer.click()
+    shield.click()
     const inputSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
-    selectSetter?.call(computer, 'electronic_computer')
-    computer.dispatchEvent(new Event('change', { bubbles: true }))
-    selectSetter?.call(shield, '')
-    shield.dispatchEvent(new Event('change', { bubbles: true }))
     inputSetter?.call(input, 'G3 Doom Star')
     input.dispatchEvent(new Event('input', { bubbles: true }))
     return true
@@ -347,6 +361,23 @@ async function main() {
   assert(!savedDoom?.spec?.shield_id, `Saved G3 shield=${savedDoom?.spec?.shield_id}, want none`)
   assert((savedDoom?.spec?.production_cost_pp ?? 0) > 0, 'Saved G3 Doom Star has no authoritative production cost')
 
+  await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false })
+  await sleep(250)
+  const designerDesktop = await evaluate(`(() => {
+    const computer = document.querySelector('.shipdesigner-computer-card')?.getBoundingClientRect()
+    const shield = document.querySelector('.shipdesigner-shield-card')?.getBoundingClientRect()
+    return {
+      twoColumns: Boolean(computer && shield && Math.abs(computer.top - shield.top) < 8 && computer.left < shield.left),
+      computerWidth: computer?.width || 0,
+      shieldWidth: shield?.width || 0,
+      overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
+    }
+  })()`)
+  assert(designerDesktop.twoColumns, 'Desktop Ship Designer does not render Computer and Shield as two side-by-side cards')
+  assert(designerDesktop.computerWidth > 250 && designerDesktop.shieldWidth > 250, `Desktop system card widths are too small: ${designerDesktop.computerWidth}/${designerDesktop.shieldWidth}`)
+  assert(!designerDesktop.overflow, 'Desktop Ship Designer system cards cause horizontal overflow')
+  await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true })
+  await sleep(150)
   await navigate(`${baseURL}/#/game/${gameID}/more`)
   await sleep(250)
   await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false })
@@ -363,7 +394,7 @@ async function main() {
   assert(!ordinary, 'Ordinary game-1 renders development credit/turn controls')
 
   if (failures.length) throw new Error('Reference/buyout/ship-designer browser smoke failed:\n- ' + failures.join('\n- '))
-  console.log('Reference/buyout/ship-designer browser smoke passed: six-hull All-Tech Designer, Computer/Shield selection and explicit no-Shield save, More-only dev tools, +BC grant, +1/+5/N presence, same-turn drafted construction buyout with BC deduction, next-turn completion, 390px/desktop layout and ordinary-game isolation.')
+  console.log('Reference/buyout/ship-designer browser smoke passed: six-hull All-Tech Designer, separate effect-first Computer/Shield cards, explicit no-Shield save, mobile/desktop Designer layout, More-only dev tools, +BC grant, +1/+5/N presence, same-turn drafted construction buyout with BC deduction, next-turn completion, 390px/desktop layout and ordinary-game isolation.')
 }
 
 main().catch((error) => {
