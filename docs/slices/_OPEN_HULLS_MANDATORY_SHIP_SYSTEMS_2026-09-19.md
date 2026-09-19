@@ -15,7 +15,7 @@ Re-audit and freeze evidence for the six original-valid military hulls and manda
 - Titan and Doom Star technology locks;
 - Warp Drive, Computer, Armor, Shield and Fuel Cell catalogs with technology IDs;
 - original mandatory-component cost/space behavior;
-- miniaturization evidence and current implementation gaps;
+- direct miniaturization evidence and current implementation gaps;
 - derived strategic/tactical stats attributable to these mandatory systems;
 - explicit downstream classification for tactical-only effects that 17.1 must not fake.
 
@@ -30,3 +30,7 @@ Slice 17.0 Reference/Test Harness is closed and remains the QA foundation for th
 Evidence: `docs/research/SLICE_17_1_GATE1_HULLS_MANDATORY_SYSTEMS_AUDIT_2026-09-19.md`.
 
 Gate 2 contract freeze is ready but not started. Wait for explicit user release. Do not open Slice 17.2 or later children.
+
+## Primary miniaturization addendum
+
+The hash-identical MOO2 1.31 executable was re-located at `C:\ASH\Installation\mastori2\Orion2.exe`. Gate-1 evidence now directly verifies miniaturization level traversal, Hyper-Advanced repeat contribution, exact cost factors, exact Shield Space factors and integer rounding. The former secondary-evidence warning is closed. Gate 2 remains not started.

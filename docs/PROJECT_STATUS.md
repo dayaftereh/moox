@@ -58,7 +58,7 @@ Important recent checkpoints:
 
 ## Original 1.31 reference inventory
 
-Historical private reference path used by earlier direct audits: `C:\ASH\Temp\mastori2`. **The path is not present on 2026-09-19; do not assume the original executable is currently available without re-locating/restoring it.**
+Current private MOO2 1.31 reference: `C:\ASH\Installation\mastori2\Orion2.exe`, SHA-256 `7AE2AC2E5904CA330009AF2827279D889906B0B9B7A8854C38EB707A56E955B5`. The former audit path `C:\ASH\Temp\mastori2` is historical only.
 
 The tracked inventory metadata reports:
 

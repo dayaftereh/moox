@@ -45,7 +45,7 @@ The six hulls are already normalized with base PP, base Space, strategic picture
 ## Gate 1 evidence
 
 - `docs/research/SLICE_17_1_GATE1_HULLS_MANDATORY_SYSTEMS_AUDIT_2026-09-19.md`
-- Frozen evidence boundary: six hull base values/CP, Cruiser+ Star-Base-or-better construction requirement, Titan/Doom Star tech locks, full mandatory-system identity/tech/base-table audit, original Automatics semantics, current strategic Drive/Fuel behavior, miniaturization evidence/gaps, and explicit Tactical downstream classification.
+- Frozen evidence boundary: six hull base values/CP, Cruiser+ Star-Base-or-better construction requirement, Titan/Doom Star tech locks, full mandatory-system identity/tech/base-table audit, original Automatics semantics, current strategic Drive/Fuel behavior, direct executable miniaturization level/factor/rounding evidence, and explicit Tactical downstream classification.
 
 ## Gate 2 - hull/system contract freeze
 

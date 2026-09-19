@@ -19,10 +19,10 @@ This audit distinguishes:
 1. **direct normalized original data** - committed ruleset values generated from the private MOO2 1.31 executable/data tables and carrying source provenance;
 2. **prior direct original-code audit** - reverse-engineering findings already preserved in repository research from the private 1.31 executable;
 3. **official manual corroboration** - original MicroProse manual text available publicly;
-4. **secondary technical corroboration** - community technical references used where the private executable is no longer present locally;
+4. **secondary technical corroboration** - community technical references retained as cross-checks where useful, but not used in place of the restored primary executable for miniaturization;
 5. **current MOOX runtime** - what the repository actually enforces today.
 
-The private executable used for the earlier direct audit is no longer present at the former `C:\ASH\Temp\mastori2\Orion2.exe` path on 2026-09-19. Therefore this Gate does **not** pretend to have newly disassembled any missing original routine. Exact gaps are carried into Gate 2 rather than guessed.
+The former `C:\ASH\Temp\mastori2\Orion2.exe` path is historical. The same hash-identified executable was re-located at `C:\ASH\Installation\mastori2\Orion2.exe` during this Gate, allowing the previously missing miniaturization routines to be freshly disassembled and closed as primary evidence.
 
 ## 1. Hull matrix
 
@@ -241,47 +241,130 @@ Therefore 17.1 must **not** regress strategic movement to historical per-Ship Dr
 
 ## 7. Miniaturization audit
 
-### What is directly safe now
+### Restored primary executable evidence
 
-The normalized unminiaturized tables are direct original data.
+The private reference executable is available at:
 
-For the mandatory families currently normalized:
+`C:\ASH\Installation\mastori2\Orion2.exe`
 
-- Drives: base PP/Space are zero, so pricing/space miniaturization has no direct effect on the current normalized mandatory row;
-- Armor: normalized base cost percent is zero and it consumes no optional Space;
-- Fuel Cell: no optional cost/space table;
-- Computer: PP cost is nonzero, so cost miniaturization matters;
-- Shield: PP and Space are nonzero, so both cost and space miniaturization matter.
+SHA-256:
 
-### Secondary technical formula evidence
+`7AE2AC2E5904CA330009AF2827279D889906B0B9B7A8854C38EB707A56E955B5`
 
-StrategyWiki and long-standing technical guides agree on the classic 5-step miniaturization factors:
+This is byte-identical to the MOO2 1.31 executable used by the earlier direct audits. A fresh LE-object disassembly was therefore performed for the missing miniaturization evidence. Temporary extracts/disassembly helpers were removed after the audit.
 
-| miniaturization level | production factor | shield/weapon Space factor | other Space factor |
-| ---: | ---: | ---: | ---: |
-| 1 | 0.75 | 0.80 | 0.80 |
-| 2 | 0.55 | ~0.65/0.66 | 0.70 |
-| 3 | 0.40 | 0.50 | 0.60 |
-| 4 | 0.30 | ~0.35/0.36 | 0.50 |
-| 5+ | 0.25 | 0.25 | 0.40 |
+Relevant object-1 routines/call sites:
 
-The technical references also state production rounds down but never to zero; shield/weapon Space uses nearest rounding around the half boundary, while “other” Space rounds upward.
+- `0x5E70A` - validates the player/technology and dispatches to the miniaturization-level calculation for an owned component technology;
+- `0x5D048` - walks the technology field successor chain and calculates miniaturization level;
+- `0x5B519` - applies production-cost miniaturization;
+- `0x5E60E` - applies Space miniaturization;
+- `Design_Template_Costs_` `0x5C087` calls the level helper and cost reducer for Shields and Computers;
+- `Design_Template_Space_Requirements_` `0x5C287` calls the level helper and Space reducer; the Shield path at `0x5C38D..0x5C39A` explicitly clears `EBX`, selecting Space class 0 below.
 
-### What Gate 1 does not falsely freeze
+### Exact miniaturization-level derivation
 
-The private executable is not currently available for a fresh direct re-disassembly of the miniaturization routine.
+The original routine starts from the installed technology's research field and follows that field's **NextID** chain, not its PreviousID chain. This was cross-checked directly against object-2 technology data: Electronic Computer technology 58 maps to field 28 and the word read by the routine at the successor-table location is 56, exactly normalized field 28's `next_id`.
 
-Therefore Gate 1 records the secondary factor evidence but does **not** silently declare the exact level-derivation and rounding implementation frozen.
+For each ordinary successor field below 75:
 
-Gate 2 must explicitly freeze:
+- player field state byte `player + 0xC4 + field_id` must equal `3`;
+- each consecutive completed successor adds one miniaturization level;
+- traversal stops at the first successor field that is not complete or at field 0.
 
-- how miniaturization level is derived from completed downstream fields in the relevant research chain;
-- whether Hyper-Advanced levels contribute and how they cap;
-- exact 0.65 versus 0.66 and 0.35 versus 0.36 representation;
-- integer rounding at every step;
-- golden test vectors for Computers and Shields.
+When the successor is a Hyper-Advanced field 75..82, the routine adds the repeat counter at:
 
-If direct executable evidence becomes available again before Gate 2 closes, it should supersede secondary ambiguity.
+`player + 0x21C + (field_id - 75)`
+
+and then stops.
+
+Therefore the exact effective level is:
+
+`consecutive completed later ordinary fields + Hyper-Advanced repeat count at the chain end`
+
+The reduction helpers saturate at level 5+, so additional Hyper-Advanced repeats beyond the saturation point do not reduce cost/Space further.
+
+### Exact production-cost reducer
+
+Object-1 `0x5B519` selects these integer percentages:
+
+| Mini level | Cost factor |
+| ---: | ---: |
+| 0 | 100% |
+| 1 | 75% |
+| 2 | 55% |
+| 3 | 40% |
+| 4 | 30% |
+| 5+ | 25% |
+
+For a positive base cost the original performs integer multiply then signed integer division by 100, which is floor/truncation for these positive values, and then forces a minimum result of 1. Zero base cost stays zero.
+
+Exact positive-cost rule:
+
+`mini_cost = max(1, floor(base_cost * percent / 100))`
+
+This reducer is directly used by the mandatory Shield cost path at `0x5C0D1..0x5C0DC` and the Computer cost path at `0x5C267..0x5C272`.
+
+### Exact Space reducer
+
+Object-1 `0x5E60E` contains two miniaturizing Space classes plus a no-reduction fallback. Factors are stored as per-thousand integers.
+
+| Mini level | Space class 0 | Space class 1 |
+| ---: | ---: | ---: |
+| 0 | 1000 / 1000 | 1000 / 1000 |
+| 1 | 800 / 1000 | 800 / 1000 |
+| 2 | 650 / 1000 | 700 / 1000 |
+| 3 | 500 / 1000 | 600 / 1000 |
+| 4 | 350 / 1000 | 500 / 1000 |
+| 5+ | 250 / 1000 | 400 / 1000 |
+
+The exact positive-Space calculation is:
+
+`mini_space = max(1, floor((base_space * factor + 500) / 1000))`
+
+Thus the original uses nearest-integer rounding with the half boundary rounded upward for positive values. It does **not** use a generic ceiling rule.
+
+The mandatory Shield path explicitly supplies Space class 0, so Shields use the 100/80/65/50/35/25-percent Space sequence. Computer has no optional Space table in the normalized mandatory-system schema. Current Drive Space is zero, so Drive Space miniaturization has no numerical effect on the normalized original row.
+
+### Direct golden vectors for Gate 2/3
+
+These vectors follow the executable exactly and are suitable for later regression tests.
+
+Electronic Computer on a Cruiser has base cost 50 PP:
+
+| Mini level | PP |
+| ---: | ---: |
+| 0 | 50 |
+| 1 | 37 |
+| 2 | 27 |
+| 3 | 20 |
+| 4 | 15 |
+| 5+ | 12 |
+
+Class I Shield on a Cruiser has base cost 10 PP and base Space 20:
+
+| Mini level | PP | Space |
+| ---: | ---: | ---: |
+| 0 | 10 | 20 |
+| 1 | 7 | 16 |
+| 2 | 5 | 13 |
+| 3 | 4 | 10 |
+| 4 | 3 | 7 |
+| 5+ | 2 | 5 |
+
+### Gate-1 conclusion on miniaturization
+
+The prior secondary evidence is now superseded where it was ambiguous. For the 17.1 mandatory-system surface, Gate 1 now has primary executable evidence for:
+
+- level derivation through successor fields;
+- Hyper-Advanced repeat contribution;
+- saturation at level 5+;
+- exact cost percentages;
+- exact Shield Space percentages;
+- exact integer rounding/minimum behavior;
+- direct Shield and Computer call-site application.
+
+Gate 2 therefore no longer needs to guess or choose between 0.65/0.66, 0.35/0.36, floor/ceil variants, or Hyper-Advanced handling. It only needs to freeze the implementation contract around these now-direct rules.
 
 ## 8. Derived strategic/tactical stats
 
@@ -422,11 +505,9 @@ Gate 2 should freeze all of the following explicitly:
    - five Fuel Cells;
 
 7. miniaturization:
-   - exact level derivation;
-   - factor representation;
-   - rounding;
-   - Hyper-Advanced handling;
-   - Computer and Shield golden vectors;
+   - freeze the directly verified successor-field/Hyper-Advanced level derivation;
+   - freeze exact cost and Space integer factors/rounding from object-1 routines;
+   - adopt the direct Computer and Shield golden vectors;
 
 8. derived stat representation:
    - which values are projected/derived in Designer;
@@ -447,6 +528,12 @@ The durable 17.0 labs naturally provide:
 Gate 2 should freeze exact representative Designer/Construction fixtures using these existing worlds rather than creating new throwaway scenarios.
 
 ## Source register
+
+### Primary executable re-audit (2026-09-19)
+
+- current private path: `C:\ASH\Installation\mastori2\Orion2.exe`;
+- SHA-256 `7AE2AC2E5904CA330009AF2827279D889906B0B9B7A8854C38EB707A56E955B5`;
+- LE object-1 miniaturization routines re-audited at `0x5D048`, `0x5B519`, `0x5E60E`, `0x5E70A`, with direct call-site checks in `Design_Template_Costs_` / `Design_Template_Space_Requirements_`.
 
 ### Repository/direct evidence
 
@@ -503,4 +590,4 @@ The major original-valid boundary is now clear:
 - only Computer cost and Shield cost/Space currently require mandatory-family miniaturization work;
 - broad Tactical effects remain downstream and must not be faked.
 
-The only material evidence limitation is the exact miniaturization routine/rounding, because the private executable is not currently available for fresh disassembly. Gate 2 must freeze that behavior explicitly from restored primary evidence or documented secondary golden vectors before implementation starts.
+The previously missing miniaturization evidence has now been closed from the restored, hash-identical private 1.31 executable. Gate 1 has no remaining material evidence gap for mandatory-system cost/Space miniaturization; Gate 2 may freeze the direct-original contract without relying on secondary rounding assumptions.
