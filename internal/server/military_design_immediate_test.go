@@ -61,7 +61,7 @@ func TestHTTPImmediateMilitaryDesignCreatesNamedLaserDesign(t *testing.T) {
 	if before.View.Phase != session.PhasePlanning || before.Decision == nil {
 		t.Fatalf("initial snapshot phase/decision=%q/%v", before.View.Phase, before.Decision != nil)
 	}
-	if len(before.Decision.Decisions.ShipDesigner.Variants) != 2 {
+	if len(before.Decision.Decisions.ShipDesigner.Variants) != 8 {
 		t.Fatalf("designer variants=%+v", before.Decision.Decisions.ShipDesigner.Variants)
 	}
 

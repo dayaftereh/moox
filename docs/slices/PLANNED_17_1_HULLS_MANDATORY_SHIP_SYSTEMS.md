@@ -1,6 +1,6 @@
 # Planned Slice 17.1 - Hulls and Mandatory Ship Systems
 
-Status: **active; Gates 1-2 complete / Gate 3 next**.
+Status: **active; Gates 1-3 complete / Gate 4 next**.
 
 ## Objective
 
@@ -63,13 +63,18 @@ The six hulls are already normalized with base PP, base Space, strategic picture
 
 ## Gate 3 - implementation
 
-- [ ] Expand server catalog and save validation for frozen hulls.
-- [ ] Expand mandatory-component selection/validation.
-- [ ] Implement/finalize cost/space/miniaturization foundation.
-- [ ] Preserve immutable snapshots in built Ships.
-- [ ] Wire Designer HMI controls for supported selections.
-- [ ] Wire Colony Construction legality for newly supported hulls.
-- [ ] Add deterministic reference-lab and construction fixtures.
+- [x] Expand server catalog and save validation for frozen hulls.
+- [x] Expand mandatory-component selection/validation.
+- [x] Implement/finalize cost/space/miniaturization foundation.
+- [x] Preserve immutable snapshots in built Ships.
+- [x] Wire Designer HMI controls for supported selections.
+- [x] Wire Colony Construction legality for newly supported hulls.
+- [x] Add deterministic reference-lab and construction fixtures.
+
+## Gate 3 evidence
+
+- `docs/research/SLICE_17_1_GATE3_IMPLEMENTATION_2026-09-19.md`
+- End-to-end implementation complete: six hulls, Computer/Shield selection, exact original miniaturization, dynamic saved-design projection, fixed queue-time construction snapshots, Cruiser+ orbital-dock authority, HMI controls and deterministic backend/browser acceptance.
 
 ## Gate 4 - QA + close
 

@@ -180,6 +180,7 @@ type ConstructionState struct {
 	ProgressPP         float64                 `json:"progress_pp"`
 	ShipDesignID       ID                      `json:"ship_design_id,omitempty"`
 	ShipDesignRevision uint32                  `json:"ship_design_revision,omitempty"`
+	MilitaryShipSpec   *ShipDesignSpec         `json:"military_ship_spec,omitempty"`
 }
 
 // ColonyEconomy stores domain-native continuous resource output. Values are
@@ -664,8 +665,18 @@ func (s *GameState) Validate() error {
 				if colony.Construction.ProjectID != "military_ship" || colony.Construction.ShipDesignID == 0 || colony.Construction.ShipDesignRevision == 0 {
 					return fmt.Errorf("colony[%d] military Ship construction requires project_id %q and positive design id/revision", i, "military_ship")
 				}
-			} else if colony.Construction.ShipDesignID != 0 || colony.Construction.ShipDesignRevision != 0 {
-				return fmt.Errorf("colony[%d] non-military construction cannot reference a ship design", i)
+				if colony.Construction.MilitaryShipSpec != nil {
+					if err := validateShipDesignSpec(*colony.Construction.MilitaryShipSpec, fmt.Sprintf("colony[%d] military construction snapshot", i)); err != nil {
+						return err
+					}
+				}
+			} else {
+				if colony.Construction.ShipDesignID != 0 || colony.Construction.ShipDesignRevision != 0 {
+					return fmt.Errorf("colony[%d] non-military construction cannot reference a ship design", i)
+				}
+				if colony.Construction.MilitaryShipSpec != nil {
+					return fmt.Errorf("colony[%d] non-military construction cannot carry a military Ship snapshot", i)
+				}
 			}
 			if colony.Construction.ProjectKind == ConstructionProjectHousing {
 				if colony.Construction.ProjectID != "housing" {

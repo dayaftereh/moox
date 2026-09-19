@@ -2,6 +2,7 @@ package game
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"moox/internal/core"
@@ -219,7 +220,7 @@ func TestMilitaryConstructionChoiceQueueCompletionAndSnapshot(t *testing.T) {
 	}
 }
 
-func TestMilitaryDesignRejectsUnsupportedHullAndPicture(t *testing.T) {
+func TestMilitaryDesignRejectsLockedHullAndInvalidPicture(t *testing.T) {
 	rules := loadColonyShipRules(t)
 	resolver, err := NewEconomyResolver(rules)
 	if err != nil {
@@ -229,11 +230,15 @@ func TestMilitaryDesignRejectsUnsupportedHullAndPicture(t *testing.T) {
 	empire := &state.Empires[0]
 	addBaselineMilitaryTechnologies(empire)
 
-	wrongHull, _ := NewSaveMilitaryDesignCommand(1, SaveMilitaryDesignPayload{Name: "Cruiser", HullID: "cruiser", StrategicPictureID: 16})
-	if _, err := resolver.saveMilitaryDesign(state, empire.ID, 1, wrongHull); err == nil {
-		t.Fatal("unsupported Cruiser design unexpectedly accepted")
+	cruiser, _ := NewSaveMilitaryDesignCommand(1, SaveMilitaryDesignPayload{Name: "Cruiser", HullID: "cruiser", StrategicPictureID: 16})
+	if _, err := resolver.saveMilitaryDesign(state, empire.ID, 1, cruiser); err != nil {
+		t.Fatalf("base Cruiser design rejected: %v", err)
 	}
-	wrongPicture, _ := NewSaveMilitaryDesignCommand(2, SaveMilitaryDesignPayload{Name: "Bad picture", HullID: "frigate", StrategicPictureID: 8})
+	lockedTitan, _ := NewSaveMilitaryDesignCommand(2, SaveMilitaryDesignPayload{Name: "Titan", HullID: "titan", StrategicPictureID: 32})
+	if _, err := resolver.saveMilitaryDesign(state, empire.ID, 1, lockedTitan); err == nil || !strings.Contains(err.Error(), MilitaryDesignReasonTechnologyRequired) {
+		t.Fatalf("locked Titan error=%v", err)
+	}
+	wrongPicture, _ := NewSaveMilitaryDesignCommand(3, SaveMilitaryDesignPayload{Name: "Bad picture", HullID: "frigate", StrategicPictureID: 8})
 	if _, err := resolver.saveMilitaryDesign(state, empire.ID, 1, wrongPicture); err == nil {
 		t.Fatal("Frigate design with non-Frigate picture unexpectedly accepted")
 	}

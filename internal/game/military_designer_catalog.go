@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	ShipDesignerLockTechnologyRequired = "technology_required"
+	ShipDesignerLockTechnologyRequired = MilitaryDesignReasonTechnologyRequired
 	ShipDesignerLockCurrentScope       = "current_design_scope"
-	ShipDesignerLockMandatorySystems   = "mandatory_systems_required"
+	ShipDesignerLockMandatorySystems   = MilitaryDesignReasonMandatorySystemsRequired
 )
 
 var shipDesignerHullTechnologyKeys = map[string]string{
@@ -31,6 +31,26 @@ type MilitaryDesignerHullChoice struct {
 	TechnologyKnown       bool   `json:"technology_known"`
 	SaveAvailable         bool   `json:"save_available"`
 	LockReason            string `json:"lock_reason,omitempty"`
+}
+
+type MilitaryDesignerComponentChoice struct {
+	ID                    string `json:"id"`
+	NameKey               string `json:"name_key,omitempty"`
+	TechnologyID          int    `json:"technology_id"`
+	TechnologyKnown       bool   `json:"technology_known"`
+	Available             bool   `json:"available"`
+	LockReason            string `json:"lock_reason,omitempty"`
+	MiniaturizationLevel  int    `json:"miniaturization_level"`
+	EffectiveCostByHullPP []int  `json:"effective_cost_by_hull_pp,omitempty"`
+	EffectiveSpaceByHull  []int  `json:"effective_space_by_hull,omitempty"`
+}
+
+type MilitaryDesignerAutomaticSystems struct {
+	WarpDriveID      string `json:"warp_drive_id,omitempty"`
+	FTLSpeed         int    `json:"ftl_speed,omitempty"`
+	ArmorID          string `json:"armor_id,omitempty"`
+	FuelCellID       string `json:"fuel_cell_id,omitempty"`
+	FuelRangeParsecs int    `json:"fuel_range_parsecs,omitempty"`
 }
 
 type MilitaryDesignerWeaponChoice struct {
@@ -56,11 +76,14 @@ type MilitaryDesignerVariant struct {
 }
 
 type MilitaryDesignerCatalog struct {
-	Hulls                     []MilitaryDesignerHullChoice   `json:"hulls"`
-	Weapons                   []MilitaryDesignerWeaponChoice `json:"weapons"`
-	Variants                  []MilitaryDesignerVariant      `json:"variants"`
-	ProductionCostNumerator   int                            `json:"production_cost_numerator"`
-	ProductionCostDenominator int                            `json:"production_cost_denominator"`
+	Hulls                     []MilitaryDesignerHullChoice      `json:"hulls"`
+	Computers                 []MilitaryDesignerComponentChoice `json:"computers"`
+	Shields                   []MilitaryDesignerComponentChoice `json:"shields"`
+	AutomaticSystems          MilitaryDesignerAutomaticSystems  `json:"automatic_systems"`
+	Weapons                   []MilitaryDesignerWeaponChoice    `json:"weapons"`
+	Variants                  []MilitaryDesignerVariant         `json:"variants"`
+	ProductionCostNumerator   int                               `json:"production_cost_numerator"`
+	ProductionCostDenominator int                               `json:"production_cost_denominator"`
 }
 
 func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDesignerCatalog, error) {
@@ -75,12 +98,9 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 			return MilitaryDesignerCatalog{}, err
 		}
 		technologyKnown := technologyID == 0 || empireKnowsTechnology(empire, technologyID)
-		saveAvailable := technologyKnown && hull.ID == SupportedMilitaryHullID
 		lockReason := ""
 		if !technologyKnown {
 			lockReason = ShipDesignerLockTechnologyRequired
-		} else if !saveAvailable {
-			lockReason = ShipDesignerLockCurrentScope
 		}
 		hulls = append(hulls, MilitaryDesignerHullChoice{
 			ID: hull.ID, SizeIndex: hull.SizeIndex, NameKey: hull.NameKey,
@@ -88,7 +108,7 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 			CommandPointCost:     hull.SizeIndex + 1,
 			StrategicPictureIDs:  append([]int(nil), hull.StrategicPictureIDs...),
 			RequiredTechnologyID: technologyID, RequiredTechnologyKey: technologyKey,
-			TechnologyKnown: technologyKnown, SaveAvailable: saveAvailable, LockReason: lockReason,
+			TechnologyKnown: technologyKnown, SaveAvailable: technologyKnown, LockReason: lockReason,
 		})
 	}
 	sort.Slice(hulls, func(i, j int) bool {
@@ -98,11 +118,91 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 		return hulls[i].ID < hulls[j].ID
 	})
 
-	catalog := MilitaryDesignerCatalog{Hulls: hulls, ProductionCostNumerator: 1, ProductionCostDenominator: 1}
+	catalog := MilitaryDesignerCatalog{
+		Hulls: hulls, ProductionCostNumerator: 1, ProductionCostDenominator: 1,
+	}
 	if modifier, ok := r.RaceModifiers[empire.RaceID]; ok && modifier.GovernmentTraitID == "government_feudal" {
 		catalog.ProductionCostNumerator = 2
 		catalog.ProductionCostDenominator = 3
 	}
+
+	drive, hasDrive := bestKnownShipDrive(r.ShipDrives, empire)
+	armor, hasArmor := bestKnownShipArmor(r.ShipArmors, empire)
+	fuel, hasFuel := bestKnownShipFuelCell(r.ShipFuelCells, empire)
+	if hasDrive {
+		catalog.AutomaticSystems.WarpDriveID = drive.ID
+		catalog.AutomaticSystems.FTLSpeed = drive.FTLSpeed
+	}
+	if hasArmor {
+		catalog.AutomaticSystems.ArmorID = armor.ID
+	}
+	if hasFuel {
+		catalog.AutomaticSystems.FuelCellID = fuel.ID
+		catalog.AutomaticSystems.FuelRangeParsecs = fuel.RangeParsecs
+	}
+	if !hasDrive || !hasArmor || !hasFuel {
+		for i := range catalog.Hulls {
+			if catalog.Hulls[i].SaveAvailable {
+				catalog.Hulls[i].SaveAvailable = false
+				catalog.Hulls[i].LockReason = ShipDesignerLockMandatorySystems
+			}
+		}
+	}
+
+	for _, computer := range r.ShipComputers {
+		known := empireKnowsTechnology(empire, computer.TechnologyID)
+		level := 0
+		if known {
+			var err error
+			level, err = r.shipComponentMiniaturizationLevel(empire, computer.TechnologyID)
+			if err != nil {
+				return MilitaryDesignerCatalog{}, err
+			}
+		}
+		effective := make([]int, len(computer.CostByHullPP))
+		for i, base := range computer.CostByHullPP {
+			effective[i] = miniaturizedComponentCost(base, level)
+		}
+		lockReason := ""
+		if !known {
+			lockReason = ShipDesignerLockTechnologyRequired
+		}
+		catalog.Computers = append(catalog.Computers, MilitaryDesignerComponentChoice{
+			ID: computer.ID, NameKey: r.TechnologyNameKeyByID[computer.TechnologyID],
+			TechnologyID: computer.TechnologyID, TechnologyKnown: known, Available: known,
+			LockReason: lockReason, MiniaturizationLevel: level, EffectiveCostByHullPP: effective,
+		})
+	}
+	for _, shield := range r.ShipShields {
+		known := empireKnowsTechnology(empire, shield.TechnologyID)
+		level := 0
+		if known {
+			var err error
+			level, err = r.shipComponentMiniaturizationLevel(empire, shield.TechnologyID)
+			if err != nil {
+				return MilitaryDesignerCatalog{}, err
+			}
+		}
+		effectiveCost := make([]int, len(shield.CostByHullPP))
+		effectiveSpace := make([]int, len(shield.SpaceByHull))
+		for i, base := range shield.CostByHullPP {
+			effectiveCost[i] = miniaturizedComponentCost(base, level)
+		}
+		for i, base := range shield.SpaceByHull {
+			effectiveSpace[i] = miniaturizedComponentSpace(base, level, 0)
+		}
+		lockReason := ""
+		if !known {
+			lockReason = ShipDesignerLockTechnologyRequired
+		}
+		catalog.Shields = append(catalog.Shields, MilitaryDesignerComponentChoice{
+			ID: shield.ID, NameKey: r.TechnologyNameKeyByID[shield.TechnologyID],
+			TechnologyID: shield.TechnologyID, TechnologyKnown: known, Available: known,
+			LockReason: lockReason, MiniaturizationLevel: level,
+			EffectiveCostByHullPP: effectiveCost, EffectiveSpaceByHull: effectiveSpace,
+		})
+	}
+
 	if r.TacticalCombat != nil {
 		weapon := r.TacticalCombat.Weapon
 		technologyKnown := empireKnowsTechnology(empire, weapon.TechnologyID)
@@ -118,37 +218,38 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 		})
 	}
 
-	frigate, ok := r.ShipHulls[SupportedMilitaryHullID]
-	if !ok || len(frigate.StrategicPictureIDs) == 0 {
-		return MilitaryDesignerCatalog{}, fmt.Errorf("supported military hull %q has no strategic picture", SupportedMilitaryHullID)
-	}
-	pictureID := frigate.StrategicPictureIDs[0]
-	baseSpec, err := r.clearedMilitaryDesignSpec(empire, SupportedMilitaryHullID, pictureID, nil)
-	if err != nil {
-		for i := range catalog.Hulls {
-			if catalog.Hulls[i].ID == SupportedMilitaryHullID {
-				catalog.Hulls[i].SaveAvailable = false
-				catalog.Hulls[i].LockReason = ShipDesignerLockMandatorySystems
-				break
-			}
+	for i := range catalog.Hulls {
+		hullChoice := &catalog.Hulls[i]
+		if !hullChoice.SaveAvailable {
+			continue
 		}
-		return catalog, nil
-	}
-	catalog.Variants = append(catalog.Variants, MilitaryDesignerVariant{
-		Key: "frigate:none", HullID: SupportedMilitaryHullID, Spec: baseSpec,
-		CommandPointCost: frigate.SizeIndex + 1,
-	})
-	if len(catalog.Weapons) != 0 && catalog.Weapons[0].Available {
-		mounts := []core.ShipWeaponMount{{Slot: 0, WeaponID: catalog.Weapons[0].ID, Count: 1}}
-		spec, err := r.clearedMilitaryDesignSpec(empire, SupportedMilitaryHullID, pictureID, mounts)
+		hull := r.ShipHulls[hullChoice.ID]
+		if len(hull.StrategicPictureIDs) == 0 {
+			hullChoice.SaveAvailable = false
+			hullChoice.LockReason = ShipDesignerLockMandatorySystems
+			continue
+		}
+		pictureID := hull.StrategicPictureIDs[0]
+		baseSpec, err := r.clearedMilitaryDesignSpec(empire, hull.ID, pictureID, nil)
 		if err != nil {
-			return MilitaryDesignerCatalog{}, fmt.Errorf("military designer weapon preview: %w", err)
+			hullChoice.SaveAvailable = false
+			hullChoice.LockReason = ShipDesignerLockMandatorySystems
+			continue
 		}
 		catalog.Variants = append(catalog.Variants, MilitaryDesignerVariant{
-			Key: "frigate:" + catalog.Weapons[0].ID, HullID: SupportedMilitaryHullID,
-			Weapons: append([]core.ShipWeaponMount(nil), mounts...), Spec: spec,
-			CommandPointCost: frigate.SizeIndex + 1,
+			Key: hull.ID + ":none", HullID: hull.ID, Spec: baseSpec, CommandPointCost: hull.SizeIndex + 1,
 		})
+		if len(catalog.Weapons) != 0 && catalog.Weapons[0].Available {
+			mounts := []core.ShipWeaponMount{{Slot: 0, WeaponID: catalog.Weapons[0].ID, Count: 1}}
+			spec, err := r.clearedMilitaryDesignSpec(empire, hull.ID, pictureID, mounts)
+			if err == nil {
+				catalog.Variants = append(catalog.Variants, MilitaryDesignerVariant{
+					Key: hull.ID + ":" + catalog.Weapons[0].ID, HullID: hull.ID,
+					Weapons: append([]core.ShipWeaponMount(nil), mounts...), Spec: spec,
+					CommandPointCost: hull.SizeIndex + 1,
+				})
+			}
+		}
 	}
 	return catalog, nil
 }

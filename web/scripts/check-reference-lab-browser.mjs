@@ -222,7 +222,11 @@ async function main() {
 
   await navigate(`${baseURL}/#/game/${gameID}/colonies/${colony.id}`)
   await evaluate(`window.confirm = () => true; true`)
-  await sleep(350)
+  for (let attempt = 0; attempt < 20; attempt++) {
+    const ready = await evaluate(`Boolean(document.querySelector('.construction-buyout-actions button'))`)
+    if (ready) break
+    await sleep(150)
+  }
   const buyUI = await evaluate(`(() => {
     const button = document.querySelector('.construction-buyout-actions button')
     return {
@@ -270,6 +274,81 @@ async function main() {
   const completedColony = completed.view.colonies.find((item) => item.id === colony.id)
   assert(completedColony?.buildings?.includes(buildingChoice.project_id), `Bought project ${buildingChoice.project_id} did not complete on next normal turn`)
 
+  // Slice 17.1 Ship Designer smoke: six hulls, selectable Computer/Shield, explicit no-Shield and All-Tech Doom Star save.
+  await navigate(`${baseURL}/#/game/${gameID}/shipbuilder`)
+  await sleep(250)
+  let designerUI = await evaluate(`(() => {
+    const selectors = [...document.querySelectorAll('.shipdesigner-selector-grid select')]
+    const computer = selectors[0]
+    const shield = selectors[1]
+    return {
+      selectors: selectors.length,
+      computerOptions: computer ? [...computer.options].map((option) => ({ value: option.value, disabled: option.disabled })) : [],
+      shieldOptions: shield ? [...shield.options].map((option) => ({ value: option.value, disabled: option.disabled })) : [],
+      hullText: document.querySelector('.shipdesigner-hull-current strong')?.textContent || '',
+      overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
+    }
+  })()`)
+  assert(designerUI.selectors === 2, `Ship Designer mandatory selector count=${designerUI.selectors}, want 2`)
+  assert(designerUI.computerOptions.some((option) => option.value === 'electronic_computer' && !option.disabled), 'All-Tech Electronic Computer choice missing')
+  assert(designerUI.computerOptions.some((option) => option.value === 'moleculartronic_computer' && !option.disabled), 'All-Tech Moleculartronic Computer choice missing')
+  assert(designerUI.shieldOptions.some((option) => option.value === '' && !option.disabled), 'Explicit no-Shield choice missing')
+  assert(designerUI.shieldOptions.some((option) => option.value === 'class_x_shield' && !option.disabled), 'All-Tech Class X Shield choice missing')
+  assert(!designerUI.overflow, 'Ship Designer mandatory controls cause horizontal overflow at 390px')
+
+  for (let step = 0; step < 5; step++) {
+    const advanced = await evaluate(`(() => {
+      const buttons = [...document.querySelectorAll('.shipdesigner-hull-stepper button')]
+      const button = buttons[buttons.length - 1]
+      if (!button || button.disabled) return false
+      button.click()
+      return true
+    })()`)
+    assert(advanced, `Could not advance Ship Designer hull at step ${step + 1}`)
+    await sleep(120)
+  }
+  designerUI = await evaluate(`(() => ({
+    hullText: document.querySelector('.shipdesigner-hull-current strong')?.textContent || '',
+    saveDisabled: document.querySelector('.shipdesigner-save-row .button-primary')?.disabled ?? true,
+  }))()`)
+  assert(designerUI.hullText.includes('Doom'), `All-Tech hull stepper ended at ${designerUI.hullText}, want Doom Star`)
+
+  const edited = await evaluate(`(() => {
+    const selectors = [...document.querySelectorAll('.shipdesigner-selector-grid select')]
+    const computer = selectors[0]
+    const shield = selectors[1]
+    const input = document.querySelector('#ship-design-name')
+    if (!computer || !shield || !input) return false
+    const selectSetter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value')?.set
+    const inputSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')?.set
+    selectSetter?.call(computer, 'electronic_computer')
+    computer.dispatchEvent(new Event('change', { bubbles: true }))
+    selectSetter?.call(shield, '')
+    shield.dispatchEvent(new Event('change', { bubbles: true }))
+    inputSetter?.call(input, 'G3 Doom Star')
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    return true
+  })()`)
+  assert(edited, 'Could not edit All-Tech Doom Star Computer/Shield/name controls')
+  await sleep(250)
+  const clickedSave = await evaluate(`(() => {
+    const button = document.querySelector('.shipdesigner-save-row .button-primary')
+    if (!button || button.disabled) return false
+    button.click()
+    return true
+  })()`)
+  assert(clickedSave, 'All-Tech Doom Star save button was not clickable')
+  await sleep(1200)
+  const afterDesignerSave = await fetchJSON(snapshotURL)
+  const savedDoom = afterDesignerSave.decision?.strategic?.ship_designs?.find((design) => design.name === 'G3 Doom Star')
+  assert(Boolean(savedDoom), 'All-Tech Doom Star design was not saved')
+  assert(savedDoom?.spec?.hull_id === 'doom_star', `Saved G3 hull=${savedDoom?.spec?.hull_id}`)
+  assert(savedDoom?.spec?.computer_id === 'electronic_computer', `Saved G3 computer=${savedDoom?.spec?.computer_id}`)
+  assert(!savedDoom?.spec?.shield_id, `Saved G3 shield=${savedDoom?.spec?.shield_id}, want none`)
+  assert((savedDoom?.spec?.production_cost_pp ?? 0) > 0, 'Saved G3 Doom Star has no authoritative production cost')
+
+  await navigate(`${baseURL}/#/game/${gameID}/more`)
+  await sleep(250)
   await send('Emulation.setDeviceMetricsOverride', { width: 1280, height: 900, deviceScaleFactor: 1, mobile: false })
   await sleep(250)
   const desktop = await evaluate(`(() => {
@@ -283,8 +362,8 @@ async function main() {
   const ordinary = await evaluate(`Boolean(document.querySelector('.reference-lab'))`)
   assert(!ordinary, 'Ordinary game-1 renders development credit/turn controls')
 
-  if (failures.length) throw new Error('Reference/buyout browser smoke failed:\n- ' + failures.join('\n- '))
-  console.log('Reference/buyout browser smoke passed: More-only dev tools, +BC grant, +1/+5/N presence, same-turn drafted construction buyout with BC deduction, next-turn completion, 390px/desktop layout and ordinary-game isolation.')
+  if (failures.length) throw new Error('Reference/buyout/ship-designer browser smoke failed:\n- ' + failures.join('\n- '))
+  console.log('Reference/buyout/ship-designer browser smoke passed: six-hull All-Tech Designer, Computer/Shield selection and explicit no-Shield save, More-only dev tools, +BC grant, +1/+5/N presence, same-turn drafted construction buyout with BC deduction, next-turn completion, 390px/desktop layout and ordinary-game isolation.')
 }
 
 main().catch((error) => {

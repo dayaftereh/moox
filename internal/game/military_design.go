@@ -21,6 +21,8 @@ type SaveMilitaryDesignPayload struct {
 	Name               string                 `json:"name"`
 	HullID             string                 `json:"hull_id"`
 	StrategicPictureID int                    `json:"strategic_picture_id"`
+	ComputerID         string                 `json:"computer_id,omitempty"`
+	ShieldID           *string                `json:"shield_id,omitempty"`
 	Weapons            []core.ShipWeaponMount `json:"weapons,omitempty"`
 }
 
@@ -129,7 +131,10 @@ func (r *EconomyResolver) saveMilitaryDesign(state *core.GameState, empireID cor
 		return DomainEvent{}, fmt.Errorf("seat %d references unknown empire %d", seatID, empireID)
 	}
 	name := strings.TrimSpace(payload.Name)
-	spec, err := r.Rules.clearedMilitaryDesignSpec(empire, payload.HullID, payload.StrategicPictureID, payload.Weapons)
+	spec, err := r.Rules.compileMilitaryDesignSpec(empire, payload.HullID, payload.StrategicPictureID, militaryDesignSelections{
+		ComputerID: payload.ComputerID,
+		ShieldID:   payload.ShieldID,
+	}, payload.Weapons)
 	if err != nil {
 		return DomainEvent{}, err
 	}
@@ -149,7 +154,7 @@ func (r *EconomyResolver) saveMilitaryDesign(state *core.GameState, empireID cor
 		for i := range state.Colonies {
 			construction := state.Colonies[i].Construction
 			if construction != nil && construction.ProjectKind == core.ConstructionProjectMilitaryShip && construction.ShipDesignID == current.ID {
-				return DomainEvent{}, fmt.Errorf("ship design %d cannot be revised while colony %d constructs revision %d", current.ID, state.Colonies[i].ID, construction.ShipDesignRevision)
+				return DomainEvent{}, militaryDesignError(MilitaryDesignReasonRevisionInUse, "ship design %d cannot be revised while colony %d constructs revision %d", current.ID, state.Colonies[i].ID, construction.ShipDesignRevision)
 			}
 		}
 		if current.Revision == ^uint32(0) {
@@ -168,103 +173,7 @@ func (r *EconomyResolver) saveMilitaryDesign(state *core.GameState, empireID cor
 }
 
 func (r *EconomyRules) clearedMilitaryDesignSpec(empire *core.Empire, hullID string, strategicPictureID int, weapons []core.ShipWeaponMount) (core.ShipDesignSpec, error) {
-	if empire == nil {
-		return core.ShipDesignSpec{}, fmt.Errorf("empire must not be nil")
-	}
-	if err := validateBaselineMilitaryWeapons(weapons); err != nil {
-		return core.ShipDesignSpec{}, err
-	}
-	if hullID != SupportedMilitaryHullID {
-		return core.ShipDesignSpec{}, fmt.Errorf("military design hull %q is not supported in the current slice; only %q is available", hullID, SupportedMilitaryHullID)
-	}
-	hull, ok := r.ShipHulls[hullID]
-	if !ok {
-		return core.ShipDesignSpec{}, fmt.Errorf("ruleset has no ship hull %q", hullID)
-	}
-	pictureOK := false
-	for _, pictureID := range hull.StrategicPictureIDs {
-		if pictureID == strategicPictureID {
-			pictureOK = true
-			break
-		}
-	}
-	if !pictureOK {
-		return core.ShipDesignSpec{}, fmt.Errorf("strategic picture %d is not legal for hull %q", strategicPictureID, hullID)
-	}
-	drive, ok := bestKnownShipDrive(r.ShipDrives, empire)
-	if !ok {
-		return core.ShipDesignSpec{}, fmt.Errorf("empire %d has no supported Warp Drive technology for military design", empire.ID)
-	}
-	computer, ok := bestKnownShipComputer(r.ShipComputers, empire)
-	if !ok {
-		return core.ShipDesignSpec{}, fmt.Errorf("empire %d has no supported Computer technology for military design", empire.ID)
-	}
-	armor, ok := bestKnownShipArmor(r.ShipArmors, empire)
-	if !ok {
-		return core.ShipDesignSpec{}, fmt.Errorf("empire %d has no supported Armor technology for military design", empire.ID)
-	}
-	fuel, ok := bestKnownShipFuelCell(r.ShipFuelCells, empire)
-	if !ok {
-		return core.ShipDesignSpec{}, fmt.Errorf("empire %d has no supported Fuel Cell technology for military design", empire.ID)
-	}
-	shield, hasShield := bestKnownShipShield(r.ShipShields, empire)
-
-	index := hull.SizeIndex
-	if index < 0 || index >= len(drive.CostByHullPP) || index >= len(computer.CostByHullPP) || index >= len(drive.SpaceByHull) {
-		return core.ShipDesignSpec{}, fmt.Errorf("ship hull %q size index %d has incomplete mandatory component tables", hull.ID, index)
-	}
-	baseCost := hull.BaseCostPP + drive.CostByHullPP[index] + computer.CostByHullPP[index] + (hull.BaseCostPP*armor.CostPercent)/100
-	spaceUsed := drive.SpaceByHull[index]
-	shieldID := ""
-	if hasShield {
-		if index >= len(shield.CostByHullPP) || index >= len(shield.SpaceByHull) {
-			return core.ShipDesignSpec{}, fmt.Errorf("ship shield %q has incomplete hull table", shield.ID)
-		}
-		baseCost += shield.CostByHullPP[index]
-		spaceUsed += shield.SpaceByHull[index]
-		shieldID = shield.ID
-	}
-	weaponSnapshot := append([]core.ShipWeaponMount(nil), weapons...)
-	if len(weaponSnapshot) > 0 {
-		if r.TacticalCombat == nil {
-			return core.ShipDesignSpec{}, fmt.Errorf("tactical combat rules are unavailable")
-		}
-		weapon := r.TacticalCombat.Weapon
-		if weapon.ID != "laser_cannon" || weapon.TechnologyID != 100 {
-			return core.ShipDesignSpec{}, fmt.Errorf("tactical rules do not define the supported Laser Cannon")
-		}
-		if !empireKnowsTechnology(empire, weapon.TechnologyID) {
-			return core.ShipDesignSpec{}, fmt.Errorf("empire %d has no Laser Cannon technology %d", empire.ID, weapon.TechnologyID)
-		}
-		for i, mount := range weaponSnapshot {
-			if mount.WeaponID != weapon.ID {
-				return core.ShipDesignSpec{}, fmt.Errorf("weapon[%d] %q is not the supported Laser Cannon", i, mount.WeaponID)
-			}
-			spaceUsed += weapon.BaseSpace * mount.Count
-			baseCost += weapon.BaseCostPP * mount.Count
-		}
-	}
-	if spaceUsed > hull.BaseSpace {
-		return core.ShipDesignSpec{}, fmt.Errorf("military design uses %d space but hull %q has only %d", spaceUsed, hull.ID, hull.BaseSpace)
-	}
-	productionCost := militaryShipProductionCostPP(empire, baseCost, r.RaceModifiers)
-	return core.ShipDesignSpec{
-		HullID:             hull.ID,
-		StrategicPictureID: strategicPictureID,
-		WarpDriveID:        drive.ID,
-		FTLSpeed:           drive.FTLSpeed,
-		ComputerID:         computer.ID,
-		ArmorID:            armor.ID,
-		ShieldID:           shieldID,
-		FuelCellID:         fuel.ID,
-		FuelRangeParsecs:   fuel.RangeParsecs,
-		HullBaseCostPP:     hull.BaseCostPP,
-		HullSpace:          hull.BaseSpace,
-		SpaceUsed:          spaceUsed,
-		BaseDesignCostPP:   baseCost,
-		ProductionCostPP:   productionCost,
-		Weapons:            weaponSnapshot,
-	}, nil
+	return r.compileMilitaryDesignSpec(empire, hullID, strategicPictureID, militaryDesignSelections{}, weapons)
 }
 
 func militaryShipProductionCostPP(empire *core.Empire, baseCostPP int, modifiers map[string]RaceEconomyModifiers) int {
@@ -366,14 +275,31 @@ func (r *EconomyResolver) queueMilitaryShip(state *core.GameState, empireID core
 	if design.EmpireID != empireID {
 		return DomainEvent{}, fmt.Errorf("seat %d cannot construct ship design %d owned by empire %d", seatID, design.ID, design.EmpireID)
 	}
+	empire := empireByID(state, empireID)
+	if empire == nil {
+		return DomainEvent{}, fmt.Errorf("seat %d references unknown empire %d", seatID, empireID)
+	}
+	buildable, err := r.Rules.colonyCanBuildMilitaryHull(colony, design.Spec.HullID)
+	if err != nil {
+		return DomainEvent{}, err
+	}
+	if !buildable {
+		return DomainEvent{}, militaryDesignError(MilitaryDesignReasonOrbitalDockRequired, "colony %d requires Star Base or better to construct hull %q", colony.ID, design.Spec.HullID)
+	}
+	effectiveSpec, err := r.Rules.effectiveMilitaryDesignSpec(empire, design.Spec)
+	if err != nil {
+		return DomainEvent{}, fmt.Errorf("ship design %d effective construction snapshot: %w", design.ID, err)
+	}
+	snapshot := cloneShipDesignSpec(effectiveSpec)
 	colony.Construction = &core.ConstructionState{
 		ProjectKind:        core.ConstructionProjectMilitaryShip,
 		ProjectID:          MilitaryShipProjectID,
 		ShipDesignID:       design.ID,
 		ShipDesignRevision: design.Revision,
+		MilitaryShipSpec:   &snapshot,
 	}
 	return NewDomainEvent("colony.military_ship_queued", seatID, command.Sequence, MilitaryShipQueuedEvent{
-		ColonyID: colony.ID, ShipDesignID: design.ID, ShipDesignRevision: design.Revision, ShipDesignName: design.Name, ProductionCostPP: design.Spec.ProductionCostPP,
+		ColonyID: colony.ID, ShipDesignID: design.ID, ShipDesignRevision: design.Revision, ShipDesignName: design.Name, ProductionCostPP: effectiveSpec.ProductionCostPP,
 	})
 }
 

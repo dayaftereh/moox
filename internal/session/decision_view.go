@@ -274,21 +274,27 @@ func buildStrategicView(state *core.GameState, empireID core.ID, rules *game.Eco
 			out.Outposts = append(out.Outposts, outpost)
 		}
 	}
-	for _, design := range state.ShipDesigns {
-		if design.EmpireID == empireID {
-			out.ShipDesigns = append(out.ShipDesigns, design)
-		}
-	}
-	for _, ship := range state.Ships {
-		if ship.EmpireID == empireID {
-			out.Ships = append(out.Ships, ship)
-		}
-	}
 	var perspectiveEmpire core.Empire
 	for _, empire := range state.Empires {
 		if empire.ID == empireID {
 			perspectiveEmpire = empire
 			break
+		}
+	}
+	for _, design := range state.ShipDesigns {
+		if design.EmpireID != empireID {
+			continue
+		}
+		if rules != nil && perspectiveEmpire.ID != 0 {
+			if projected, err := rules.ProjectMilitaryDesign(design, &perspectiveEmpire); err == nil {
+				design = projected
+			}
+		}
+		out.ShipDesigns = append(out.ShipDesigns, design)
+	}
+	for _, ship := range state.Ships {
+		if ship.EmpireID == empireID {
+			out.Ships = append(out.Ships, ship)
 		}
 	}
 	for _, fleet := range state.StrategicFleets {

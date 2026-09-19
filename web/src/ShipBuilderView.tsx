@@ -37,6 +37,24 @@ function hullLabel(t: Translator, hullID: string): string {
   return t(hullTranslationKeys[hullID] ?? 'shipbuilder.hull.frigate')
 }
 
+const componentTranslationKeys: Record<string, TranslationKey> = {
+  electronic_computer: 'shipbuilder.component.electronicComputer',
+  optronic_computer: 'shipbuilder.component.optronicComputer',
+  positronic_computer: 'shipbuilder.component.positronicComputer',
+  cybertronic_computer: 'shipbuilder.component.cybertronicComputer',
+  moleculartronic_computer: 'shipbuilder.component.moleculartronicComputer',
+  class_i_shield: 'shipbuilder.component.classIShield',
+  class_iii_shield: 'shipbuilder.component.classIIIShield',
+  class_v_shield: 'shipbuilder.component.classVShield',
+  class_vii_shield: 'shipbuilder.component.classVIIShield',
+  class_x_shield: 'shipbuilder.component.classXShield',
+}
+
+function componentLabel(t: Translator, id: string): string {
+  const key = componentTranslationKeys[id]
+  return key ? t(key) : id.replaceAll('_', ' ')
+}
+
 function designVisual(design: ShipDesign): ShipVisualGenome {
   return decodeShipVisualGenome(design.visual_genome)
     ?? createRandomShipGenome(`shipbuilder:catalog:${design.id}:${design.revision}`, design.spec.hull_id)
@@ -58,12 +76,18 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
   const designs = snapshot.decision?.strategic.ship_designs ?? []
   const designer = snapshot.decision?.decisions.ship_designer
   const hulls = designer?.hulls ?? []
+  const computers = designer?.computers ?? []
+  const shields = designer?.shields ?? []
   const firstAvailableHull = hulls.find((hull) => hull.save_available) ?? hulls[0]
+  const bestAvailableComputer = [...computers].reverse().find((choice) => choice.available)
+  const bestAvailableShield = [...shields].reverse().find((choice) => choice.available)
 
   const [selectedDesignID, setSelectedDesignID] = useState<number | null>(() => designs.find((design) => design.id === initialDesignID)?.id ?? designs[0]?.id ?? null)
   const selectedDesign = designs.find((design) => design.id === selectedDesignID)
   const [name, setName] = useState(() => selectedDesign?.name ?? '')
   const [hullID, setHullID] = useState(() => selectedDesign?.spec.hull_id ?? firstAvailableHull?.id ?? 'frigate')
+  const [computerID, setComputerID] = useState(() => selectedDesign?.spec.computer_id ?? bestAvailableComputer?.id ?? '')
+  const [shieldID, setShieldID] = useState(() => selectedDesign ? (selectedDesign.spec.shield_id ?? '') : (bestAvailableShield?.id ?? ''))
   const [weaponMounts, setWeaponMounts] = useState<ShipWeaponMount[]>(() => cloneWeaponMounts(selectedDesign?.spec.weapons))
   const [visualOverride, setVisualOverride] = useState<ShipVisualGenome | null>(() => selectedDesign ? designVisual(selectedDesign) : null)
   const [roll, setRoll] = useState(1)
@@ -75,6 +99,8 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
     if (!selectedDesign) return
     setName(selectedDesign.name)
     setHullID(selectedDesign.spec.hull_id)
+    setComputerID(selectedDesign.spec.computer_id)
+    setShieldID(selectedDesign.spec.shield_id ?? '')
     setWeaponMounts(cloneWeaponMounts(selectedDesign.spec.weapons))
     setVisualOverride(designVisual(selectedDesign))
     setSaveError('')
@@ -82,15 +108,30 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
 
   const currentHullIndex = Math.max(0, hulls.findIndex((hull) => hull.id === hullID))
   const currentHull = hulls[currentHullIndex]
+  const hullSizeIndex = currentHull?.size_index ?? 0
   const laser = designer?.weapons.find((weapon) => weapon.id === 'laser_cannon')
   const baseVariant = designer?.variants.find((variant) => variant.key === `${hullID}:none`)
+  const selectedComputer = computers.find((choice) => choice.id === computerID && choice.available)
+  const selectedShield = shieldID ? shields.find((choice) => choice.id === shieldID && choice.available) : undefined
+  const baseComputer = computers.find((choice) => choice.id === baseVariant?.spec.computer_id)
+  const baseShield = shields.find((choice) => choice.id === baseVariant?.spec.shield_id)
+  const componentCost = (choice: (typeof computers)[number] | undefined) => choice?.effective_cost_by_hull_pp?.[hullSizeIndex] ?? 0
+  const componentSpace = (choice: (typeof shields)[number] | undefined) => choice?.effective_space_by_hull?.[hullSizeIndex] ?? 0
+  const mandatoryBaseCost = baseVariant
+    ? baseVariant.spec.base_design_cost_pp - componentCost(baseComputer) - componentCost(baseShield) + componentCost(selectedComputer) + componentCost(selectedShield)
+    : 0
+  const mandatorySpace = baseVariant
+    ? baseVariant.spec.space_used - componentSpace(baseShield) + componentSpace(selectedShield)
+    : 0
   const totalWeaponCount = weaponMounts.reduce((sum, mount) => sum + mount.count, 0)
-  const previewBaseCost = baseVariant ? baseVariant.spec.base_design_cost_pp + (laser?.base_cost_pp ?? 0) * totalWeaponCount : 0
+  const previewBaseCost = mandatoryBaseCost + (laser?.base_cost_pp ?? 0) * totalWeaponCount
   const productionNumerator = designer?.production_cost_numerator ?? 1
   const productionDenominator = Math.max(1, designer?.production_cost_denominator ?? 1)
-  const spec = baseVariant ? {
+  const spec = baseVariant && selectedComputer ? {
     ...baseVariant.spec,
-    space_used: baseVariant.spec.space_used + (laser?.base_space ?? 0) * totalWeaponCount,
+    computer_id: selectedComputer.id,
+    shield_id: selectedShield?.id ?? '',
+    space_used: mandatorySpace + (laser?.base_space ?? 0) * totalWeaponCount,
     base_design_cost_pp: previewBaseCost,
     production_cost_pp: Math.ceil((previewBaseCost * productionNumerator) / productionDenominator),
     weapons: cloneWeaponMounts(weaponMounts),
@@ -107,6 +148,8 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
     setSelectedDesignID(design.id)
     setName(design.name)
     setHullID(design.spec.hull_id)
+    setComputerID(design.spec.computer_id)
+    setShieldID(design.spec.shield_id ?? '')
     setWeaponMounts(cloneWeaponMounts(design.spec.weapons))
     setVisualOverride(designVisual(design))
     setRoll((value) => value + 1)
@@ -118,6 +161,8 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
     setSelectedDesignID(null)
     setName('')
     setHullID(firstAvailableHull?.id ?? 'frigate')
+    setComputerID(bestAvailableComputer?.id ?? '')
+    setShieldID(bestAvailableShield?.id ?? '')
     setWeaponMounts([])
     setVisualOverride(null)
     setRoll((value) => value + 1)
@@ -146,7 +191,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
 
   function addLaserMount() {
     if (!laser?.available || !currentHull?.save_available || nextFreeWeaponSlot == null) return
-    if (!baseVariant || baseVariant.spec.space_used + laser.base_space * (totalWeaponCount + 1) > baseVariant.spec.hull_space) return
+    if (!baseVariant || mandatorySpace + laser.base_space * (totalWeaponCount + 1) > baseVariant.spec.hull_space) return
     setWeaponMounts((current) => [...current, { slot: nextFreeWeaponSlot, weapon_id: 'laser_cannon', count: 1 }].sort((a, b) => a.slot - b.slot))
     setSaveNotice('')
   }
@@ -158,7 +203,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
       if (!mount) return current
       if (delta > 0 && baseVariant) {
         const currentCount = current.reduce((sum, candidate) => sum + candidate.count, 0)
-        if (baseVariant.spec.space_used + laser.base_space * (currentCount + delta) > baseVariant.spec.hull_space) return current
+        if (mandatorySpace + laser.base_space * (currentCount + delta) > baseVariant.spec.hull_space) return current
       }
       const nextCount = mount.count + delta
       if (nextCount <= 0) return current.filter((candidate) => candidate.slot !== slot)
@@ -173,7 +218,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
   }
 
   const planningWritable = snapshot.view.phase === 'planning' && !snapshot.view.seat.submitted
-  const canSave = Boolean(currentHull?.save_available && spec && spec.space_used <= spec.hull_space && name.trim() && planningWritable && !saving)
+  const canSave = Boolean(currentHull?.save_available && selectedComputer?.available && (!shieldID || selectedShield?.available) && spec && spec.space_used <= spec.hull_space && name.trim() && planningWritable && !saving)
 
   async function saveDesign() {
     if (!canSave || !currentHull || !spec) return
@@ -187,7 +232,11 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
         ...(selectedDesignID ? { design_id: selectedDesignID } : {}),
         name: name.trim(),
         hull_id: currentHull.id,
-        strategic_picture_id: selectedDesign?.spec.strategic_picture_id ?? currentHull.strategic_picture_ids[0] ?? 0,
+        strategic_picture_id: selectedDesign?.spec.hull_id === currentHull.id
+          ? selectedDesign.spec.strategic_picture_id
+          : (currentHull.strategic_picture_ids[0] ?? 0),
+        computer_id: selectedComputer?.id ?? '',
+        shield_id: shieldID,
         ...(weaponMounts.length > 0 ? { weapons: cloneWeaponMounts(weaponMounts) } : {}),
       })
       gameplaySaved = true
@@ -207,6 +256,8 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
         setVisualOverride(designVisual(finalDesign))
         setName(finalDesign.name)
         setHullID(finalDesign.spec.hull_id)
+        setComputerID(finalDesign.spec.computer_id)
+        setShieldID(finalDesign.spec.shield_id ?? '')
         setWeaponMounts(cloneWeaponMounts(finalDesign.spec.weapons))
         setSaveNotice(t('shipbuilder.designSaved', { revision: finalDesign.revision, visualRevision: finalDesign.visual_revision ?? 0 }))
       } else {
@@ -291,6 +342,31 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
             </button>
 
             <div className="shipdesigner-component-columns">
+              <section className="shipdesigner-component-section shipdesigner-mandatory-selectors">
+                <div className="card-heading"><div><p className="eyebrow">{t('shipbuilder.installed')}</p><h3>{t('shipbuilder.mandatorySystems')}</h3></div></div>
+                <div className="shipdesigner-selector-grid">
+                  <label><span>{t('shipbuilder.computer')}</span>
+                    <select value={computerID} onChange={(event) => { setComputerID(event.target.value); setSaveNotice('') }}>
+                      {computers.map((choice) => {
+                        const cost = choice.effective_cost_by_hull_pp?.[hullSizeIndex] ?? 0
+                        return <option key={choice.id} value={choice.id} disabled={!choice.available}>{componentLabel(t, choice.id)} · {cost} PP · M{choice.miniaturization_level}</option>
+                      })}
+                    </select>
+                  </label>
+                  <label><span>{t('shipbuilder.shield')}</span>
+                    <select value={shieldID} onChange={(event) => { setShieldID(event.target.value); setSaveNotice('') }}>
+                      <option value="">{t('common.none')}</option>
+                      {shields.map((choice) => {
+                        const cost = choice.effective_cost_by_hull_pp?.[hullSizeIndex] ?? 0
+                        const space = choice.effective_space_by_hull?.[hullSizeIndex] ?? 0
+                        return <option key={choice.id} value={choice.id} disabled={!choice.available}>{componentLabel(t, choice.id)} · {cost} PP · {space} {t('shipbuilder.space')} · M{choice.miniaturization_level}</option>
+                      })}
+                    </select>
+                  </label>
+                </div>
+                <p className="muted shipdesigner-future-note">{t('shipbuilder.mandatorySystemsHint')}</p>
+              </section>
+
               <section className="shipdesigner-component-section">
                 <div className="card-heading"><div><p className="eyebrow">{t('shipbuilder.available')}</p><h3>{t('shipbuilder.availableComponents')}</h3></div></div>
                 {laser ? (
@@ -306,9 +382,9 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
                 {spec ? (
                   <div className="shipdesigner-installed-list">
                     <div className="shipdesigner-installed-row"><span>{t('shipbuilder.drive')}</span><strong>{spec.warp_drive_id}</strong></div>
-                    <div className="shipdesigner-installed-row"><span>{t('shipbuilder.computer')}</span><strong>{spec.computer_id}</strong></div>
+                    <div className="shipdesigner-installed-row"><span>{t('shipbuilder.computer')}</span><strong>{componentLabel(t, spec.computer_id)}</strong></div>
                     <div className="shipdesigner-installed-row"><span>{t('shipbuilder.armor')}</span><strong>{spec.armor_id}</strong></div>
-                    {spec.shield_id && <div className="shipdesigner-installed-row"><span>{t('shipbuilder.shield')}</span><strong>{spec.shield_id}</strong></div>}
+                    {spec.shield_id && <div className="shipdesigner-installed-row"><span>{t('shipbuilder.shield')}</span><strong>{componentLabel(t, spec.shield_id)}</strong></div>}
                     <div className="shipdesigner-installed-row"><span>{t('shipbuilder.fuel')}</span><strong>{spec.fuel_cell_id}</strong></div>
                     {weaponMounts.map((mount) => (
                       <div className="shipdesigner-installed-row weapon" key={mount.slot}>

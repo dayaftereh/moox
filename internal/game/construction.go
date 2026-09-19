@@ -396,7 +396,11 @@ func (r *EconomyResolver) completeConstructionProject(state *core.GameState, col
 		if err != nil {
 			return nil, fmt.Errorf("colony %d military Ship completion: %w", colony.ID, err)
 		}
-		completed, err := completeMilitaryShip(state, colony, design)
+		completionDesign := *design
+		if project.MilitaryShipSpec != nil {
+			completionDesign.Spec = cloneShipDesignSpec(*project.MilitaryShipSpec)
+		}
+		completed, err := completeMilitaryShip(state, colony, &completionDesign)
 		if err != nil {
 			return nil, err
 		}
@@ -477,6 +481,9 @@ func (r *EconomyResolver) constructionProjectCostPP(state *core.GameState, colon
 		}
 		if state == nil || colony == nil {
 			return 0, fmt.Errorf("military Ship construction requires authoritative colony state")
+		}
+		if project.MilitaryShipSpec != nil {
+			return float64(project.MilitaryShipSpec.ProductionCostPP), nil
 		}
 		design, err := militaryConstructionDesign(state, colony.EmpireID, project.ShipDesignID, project.ShipDesignRevision)
 		if err != nil {

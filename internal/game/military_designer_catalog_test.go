@@ -30,9 +30,9 @@ func TestMilitaryDesignerCatalogProjectsOrderedAuthoritativeBaseline(t *testing.
 	if !catalog.Hulls[0].SaveAvailable || catalog.Hulls[0].LockReason != "" {
 		t.Fatalf("Frigate availability=%+v", catalog.Hulls[0])
 	}
-	for i := 1; i <= 3; i++ {
-		if catalog.Hulls[i].SaveAvailable || catalog.Hulls[i].LockReason != ShipDesignerLockCurrentScope {
-			t.Fatalf("base hull lock[%d]=%+v", i, catalog.Hulls[i])
+	for i := 0; i <= 3; i++ {
+		if !catalog.Hulls[i].SaveAvailable || catalog.Hulls[i].LockReason != "" {
+			t.Fatalf("base hull availability[%d]=%+v", i, catalog.Hulls[i])
 		}
 	}
 	if catalog.Hulls[4].RequiredTechnologyKey != "titan_construction" || catalog.Hulls[4].RequiredTechnologyID != 186 || catalog.Hulls[4].TechnologyKnown || catalog.Hulls[4].LockReason != ShipDesignerLockTechnologyRequired {
@@ -50,8 +50,8 @@ func TestMilitaryDesignerCatalogProjectsOrderedAuthoritativeBaseline(t *testing.
 	if catalog.ProductionCostNumerator != 1 || catalog.ProductionCostDenominator != 1 {
 		t.Fatalf("production ratio=%d/%d want 1/1", catalog.ProductionCostNumerator, catalog.ProductionCostDenominator)
 	}
-	if len(catalog.Variants) != 2 {
-		t.Fatalf("variants=%+v want unarmed + Laser", catalog.Variants)
+	if len(catalog.Variants) != 8 {
+		t.Fatalf("variants=%+v want unarmed + Laser for four base hulls", catalog.Variants)
 	}
 	if catalog.Variants[0].Key != "frigate:none" || catalog.Variants[0].Spec.ProductionCostPP != 25 || catalog.Variants[0].Spec.HullSpace != 25 || catalog.Variants[0].Spec.SpaceUsed != 0 || catalog.Variants[0].CommandPointCost != 1 {
 		t.Fatalf("unarmed preview=%+v", catalog.Variants[0])
@@ -74,8 +74,8 @@ func TestMilitaryDesignerCatalogLocksUnknownLaserAndOmitsIllegalPreview(t *testi
 	if len(catalog.Weapons) != 1 || catalog.Weapons[0].TechnologyKnown || catalog.Weapons[0].Available || catalog.Weapons[0].LockReason != ShipDesignerLockTechnologyRequired {
 		t.Fatalf("locked Laser=%+v", catalog.Weapons)
 	}
-	if len(catalog.Variants) != 1 || catalog.Variants[0].Key != "frigate:none" {
-		t.Fatalf("variants=%+v want only unarmed", catalog.Variants)
+	if len(catalog.Variants) != 4 || catalog.Variants[0].Key != "frigate:none" || catalog.Variants[3].Key != "battleship:none" {
+		t.Fatalf("variants=%+v want four unarmed base-hull previews", catalog.Variants)
 	}
 }
 func TestMilitaryDesignerCatalogProjectsFeudalProductionRatio(t *testing.T) {

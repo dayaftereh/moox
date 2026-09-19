@@ -108,6 +108,44 @@ func constructionQueueItemMatchesChoice(item ConstructionQueueItem, choice Const
 		item.ShipDesignRevision == choice.ShipDesignRevision
 }
 
+func (r *EconomyResolver) compileConstructionQueueState(state *core.GameState, empireID core.ID, colony *core.Colony, item ConstructionQueueItem) (core.ConstructionState, error) {
+	project := constructionStateFromQueueItem(item)
+	if item.ProjectKind != core.ConstructionProjectMilitaryShip {
+		return project, nil
+	}
+	if state == nil || colony == nil {
+		return core.ConstructionState{}, fmt.Errorf("military Ship queue snapshot requires authoritative state and colony")
+	}
+	buildable, err := r.Rules.colonyCanBuildMilitaryHull(colony, func() string {
+		_, design := shipDesignByID(state, item.ShipDesignID)
+		if design == nil {
+			return ""
+		}
+		return design.Spec.HullID
+	}())
+	if err != nil {
+		return core.ConstructionState{}, err
+	}
+	if !buildable {
+		return core.ConstructionState{}, militaryDesignError(MilitaryDesignReasonOrbitalDockRequired, "colony %d requires Star Base or better for military design %d", colony.ID, item.ShipDesignID)
+	}
+	design, err := militaryConstructionDesign(state, empireID, item.ShipDesignID, item.ShipDesignRevision)
+	if err != nil {
+		return core.ConstructionState{}, err
+	}
+	empire := empireByID(state, empireID)
+	if empire == nil {
+		return core.ConstructionState{}, fmt.Errorf("unknown empire %d", empireID)
+	}
+	effectiveSpec, err := r.Rules.effectiveMilitaryDesignSpec(empire, design.Spec)
+	if err != nil {
+		return core.ConstructionState{}, fmt.Errorf("ship design %d effective queue snapshot: %w", design.ID, err)
+	}
+	snapshot := cloneShipDesignSpec(effectiveSpec)
+	project.MilitaryShipSpec = &snapshot
+	return project, nil
+}
+
 // AvailableConstructionQueueChoices returns the legal buildable catalog even
 // while a Colony already has an active construction project. It never mutates
 // the authoritative state.
@@ -179,13 +217,20 @@ func (r *EconomyResolver) setConstructionQueue(state *core.GameState, empireID c
 	if len(payload.Items) == 0 {
 		colony.ConstructionReservePP = stockPP
 	} else {
-		head := constructionStateFromQueueItem(payload.Items[0])
+		head, err := r.compileConstructionQueueState(state, empireID, colony, payload.Items[0])
+		if err != nil {
+			return DomainEvent{}, err
+		}
 		head.ProgressPP = stockPP
 		colony.Construction = &head
 		if len(payload.Items) > 1 {
 			colony.ConstructionQueue = make([]core.ConstructionState, 0, len(payload.Items)-1)
 			for _, item := range payload.Items[1:] {
-				colony.ConstructionQueue = append(colony.ConstructionQueue, constructionStateFromQueueItem(item))
+				queued, err := r.compileConstructionQueueState(state, empireID, colony, item)
+				if err != nil {
+					return DomainEvent{}, err
+				}
+				colony.ConstructionQueue = append(colony.ConstructionQueue, queued)
 			}
 		}
 	}

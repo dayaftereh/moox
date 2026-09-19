@@ -131,8 +131,19 @@ func (r *EconomyRules) AvailableConstructionChoices(state *core.GameState, empir
 		if design.EmpireID != empireID {
 			continue
 		}
+		buildable, err := r.colonyCanBuildMilitaryHull(colony, design.Spec.HullID)
+		if err != nil {
+			return nil, err
+		}
+		if !buildable {
+			continue
+		}
+		effectiveSpec, err := r.effectiveMilitaryDesignSpec(empire, design.Spec)
+		if err != nil {
+			continue
+		}
 		choices = append(choices, ConstructionChoice{
-			ProjectKind: core.ConstructionProjectMilitaryShip, ProjectID: MilitaryShipProjectID, ProductionCostPP: float64(design.Spec.ProductionCostPP),
+			ProjectKind: core.ConstructionProjectMilitaryShip, ProjectID: MilitaryShipProjectID, ProductionCostPP: float64(effectiveSpec.ProductionCostPP),
 			ShipDesignID: design.ID, ShipDesignRevision: design.Revision, ShipDesignName: design.Name,
 		})
 	}

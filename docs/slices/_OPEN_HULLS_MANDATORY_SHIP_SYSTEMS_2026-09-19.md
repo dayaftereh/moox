@@ -2,7 +2,7 @@
 
 Opened: 2026-09-19
 Parent: Slice 17 - Military Ship Design Component/Weapon Breadth
-Status: **Gates 1-2 complete / Gate 3 next**
+Status: **Gates 1-3 complete / Gate 4 next**
 
 ## Objective
 
@@ -21,7 +21,7 @@ Re-audit and freeze evidence for the six original-valid military hulls and manda
 
 ## Guardrail
 
-Gates 1-2 are complete. Do not implement Gate 3 until the user explicitly releases it. Do not open Slice 17.2 or later children.
+Gates 1-3 are complete. Do not start Gate 4 until the user explicitly releases it. Do not open Slice 17.2 or later children.
 
 Slice 17.0 Reference/Test Harness is closed and remains the QA foundation for this work.
 
@@ -29,7 +29,7 @@ Slice 17.0 Reference/Test Harness is closed and remains the QA foundation for th
 
 Evidence: `docs/research/SLICE_17_1_GATE1_HULLS_MANDATORY_SYSTEMS_AUDIT_2026-09-19.md`.
 
-Gate 2 contract freeze is complete. Gate 3 implementation is next but not started. Wait for explicit user release. Do not open Slice 17.2 or later children.
+Gate 2 contract freeze is complete.
 
 ## Primary miniaturization addendum
 
@@ -39,4 +39,10 @@ The hash-identical MOO2 1.31 executable was re-located at `C:\ASH\Installation\m
 
 Evidence: `docs/research/SLICE_17_1_GATE2_HULL_SYSTEM_CONTRACT_FREEZE_2026-09-19.md`.
 
-The contract freezes six-hull availability/buildability, Computer/Shield selection, automatic systems, exact original miniaturization, dynamic effective saved-design recompilation, fixed queue-time construction snapshots, CP/rejection semantics and durable Baseline/Mid/All-Tech fixtures. Gate 3 is ready but not started.
+The contract freezes six-hull availability/buildability, Computer/Shield selection, automatic systems, exact original miniaturization, dynamic effective saved-design recompilation, fixed queue-time construction snapshots, CP/rejection semantics and durable Baseline/Mid/All-Tech fixtures.
+
+## Gate 3 complete
+
+Evidence: `docs/research/SLICE_17_1_GATE3_IMPLEMENTATION_2026-09-19.md`.
+
+The frozen contract is implemented end-to-end across server authority, construction/persistence snapshots, player projection, API/HMI and deterministic backend/browser checks. Gate 4 QA/close is next but not started. Wait for explicit user release.

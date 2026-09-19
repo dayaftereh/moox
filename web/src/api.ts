@@ -375,6 +375,24 @@ export type MilitaryDesignerHullChoice = {
   save_available: boolean
   lock_reason?: 'technology_required' | 'current_design_scope' | string
 }
+export type MilitaryDesignerComponentChoice = {
+  id: string
+  name_key?: string
+  technology_id: number
+  technology_known: boolean
+  available: boolean
+  lock_reason?: string
+  miniaturization_level: number
+  effective_cost_by_hull_pp?: number[]
+  effective_space_by_hull?: number[]
+}
+export type MilitaryDesignerAutomaticSystems = {
+  warp_drive_id?: string
+  ftl_speed?: number
+  armor_id?: string
+  fuel_cell_id?: string
+  fuel_range_parsecs?: number
+}
 export type MilitaryDesignerWeaponChoice = {
   id: string
   name_key: string
@@ -389,8 +407,25 @@ export type MilitaryDesignerWeaponChoice = {
   max_damage: number
 }
 export type MilitaryDesignerVariant = { key: string; hull_id: string; weapons?: ShipWeaponMount[]; spec: ShipDesignSpec; command_point_cost: number }
-export type MilitaryDesignerCatalog = { hulls: MilitaryDesignerHullChoice[]; weapons: MilitaryDesignerWeaponChoice[]; variants: MilitaryDesignerVariant[]; production_cost_numerator: number; production_cost_denominator: number }
-export type SaveMilitaryDesignPayload = { design_id?: number; name: string; hull_id: string; strategic_picture_id: number; weapons?: ShipWeaponMount[] }
+export type MilitaryDesignerCatalog = {
+  hulls: MilitaryDesignerHullChoice[]
+  computers: MilitaryDesignerComponentChoice[]
+  shields: MilitaryDesignerComponentChoice[]
+  automatic_systems: MilitaryDesignerAutomaticSystems
+  weapons: MilitaryDesignerWeaponChoice[]
+  variants: MilitaryDesignerVariant[]
+  production_cost_numerator: number
+  production_cost_denominator: number
+}
+export type SaveMilitaryDesignPayload = {
+  design_id?: number
+  name: string
+  hull_id: string
+  strategic_picture_id: number
+  computer_id?: string
+  shield_id?: string | null
+  weapons?: ShipWeaponMount[]
+}
 export type Ship = { id: number; empire_id: number; source_design_id: number; source_design_revision: number; source_visual_revision?: number; name: string; spec: ShipDesignSpec; visual_genome?: ShipVisualGenomeWire }
 export type StrategicFleet = {
   id: number

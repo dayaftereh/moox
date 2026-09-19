@@ -131,7 +131,7 @@ func TestPlayerDecisionViewIsPlayerSafeDeepCopyAndDeterministic(t *testing.T) {
 	if len(view.Decisions.ShipDesigner.Weapons) != 1 || view.Decisions.ShipDesigner.Weapons[0].ID != "laser_cannon" || !view.Decisions.ShipDesigner.Weapons[0].Available {
 		t.Fatalf("decision Ship Designer weapons=%+v", view.Decisions.ShipDesigner.Weapons)
 	}
-	if len(view.Decisions.ShipDesigner.Variants) != 2 || view.Decisions.ShipDesigner.Variants[1].Spec.ProductionCostPP <= view.Decisions.ShipDesigner.Variants[0].Spec.ProductionCostPP {
+	if len(view.Decisions.ShipDesigner.Variants) != 8 || view.Decisions.ShipDesigner.Variants[1].Spec.ProductionCostPP <= view.Decisions.ShipDesigner.Variants[0].Spec.ProductionCostPP {
 		t.Fatalf("decision Ship Designer variants=%+v", view.Decisions.ShipDesigner.Variants)
 	}
 
