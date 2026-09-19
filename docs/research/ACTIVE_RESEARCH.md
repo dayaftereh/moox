@@ -6,7 +6,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 
 - Branch: `main`.
 - Open slice marker: **`docs/slices/_OPEN_HULLS_MANDATORY_SHIP_SYSTEMS_2026-09-19.md`**.
-- Active implementation slice: **Slice 17.1 - Hulls and Mandatory Ship Systems; Gate 1 complete / Gate 2 next.**
+- Active implementation slice: **Slice 17.1 - Hulls and Mandatory Ship Systems; Gates 1-2 complete / Gate 3 next.**
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
@@ -14,9 +14,10 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-16 are closed/accepted at their intended baselines**. Slice 17 is the active 17.0-17.5 parent program; reserved Slice 18 and Slices 20-23 remain planned only.
-- Current objective: **await explicit release for Slice 17.1 Gate 2 contract freeze; do not open Gate 2 or Slice 17.2+ implicitly.**
-- Slice-17.1 Gate-1 audit: `docs/research/SLICE_17_1_GATE1_HULLS_MANDATORY_SYSTEMS_AUDIT_2026-09-19.md` - six hulls/CP, Cruiser+ orbital-dock legality, Titan/Doom tech locks, mandatory-system tables, Automatics semantics and Tactical downstream boundary re-audited; restored hash-identical 1.31 executable now also directly verifies miniaturization level/Hyper-Advanced handling, exact cost/Shield-Space factors and rounding; Gate 2 next but not started.
-- Slice-17.0 Gate-4 close: `docs/research/SLICE_17_0_GATE4_ACCEPTANCE_CLOSE_2026-09-19.md` - final deterministic/reference-security/persistence/construction/Ship-fixture/browser acceptance passed; 17.0 closed; 17.1 is now open with Gate 1 complete / Gate 2 next.
+- Current objective: **await explicit release for Slice 17.1 Gate 3 implementation; do not start Gate 3 or open Slice 17.2+ implicitly.**
+- Slice-17.1 Gate-2 freeze: `docs/research/SLICE_17_1_GATE2_HULL_SYSTEM_CONTRACT_FREEZE_2026-09-19.md` - all six hulls, Cruiser+ station authority, category-specific mandatory selection, primary miniaturization, dynamic effective saved-design projection, queue-time compiled snapshots, CP/rejection tokens and Baseline/Mid/All-Tech fixtures frozen; Gate 3 next but not started.
+- Slice-17.1 Gate-1 audit: `docs/research/SLICE_17_1_GATE1_HULLS_MANDATORY_SYSTEMS_AUDIT_2026-09-19.md` - six hulls/CP, Cruiser+ orbital-dock legality, Titan/Doom tech locks, mandatory-system tables, Automatics semantics and Tactical downstream boundary re-audited; restored hash-identical 1.31 executable now also directly verifies miniaturization level/Hyper-Advanced handling, exact cost/Shield-Space factors and rounding; Gate 2 is now frozen/complete.
+- Slice-17.0 Gate-4 close: `docs/research/SLICE_17_0_GATE4_ACCEPTANCE_CLOSE_2026-09-19.md` - final deterministic/reference-security/persistence/construction/Ship-fixture/browser acceptance passed; 17.0 closed; 17.1 is now open with Gates 1-2 complete / Gate 3 next.
 - Slice-17.0 Gate-3 buyout/dev-BC amendment: `docs/research/SLICE_17_0_GATE3_BUYOUT_DEV_BC_AMENDMENT_2026-09-18.md` - original MOO2 BC construction buyout implemented as normal gameplay authority; Reference-only +100/+1,000/+10,000 BC and +1/+5/+N controls live under Development Tools; broad Go/vet/web/browser workflow passed; accepted in Slice-17.0 Gate 4.
 - Slice-17.0 Gate-3 live fix: visible saved construction drafts are now buyable in the same Planning phase; server atomically applies the trusted draft + normal BC buyout, removes the draft order, and keeps next-turn completion semantics; live 7171/browser regression PASS; accepted in Slice-17.0 Gate 4.
 - Slice-17.0 Gate-3 implementation: `docs/research/SLICE_17_0_GATE3_IMPLEMENTATION_2026-09-18.md` - durable Triangle profiles, normal turn/construction runner, trusted dev-only capability, immutable Ship fixture materialization, persistence isolation and responsive Reference Lab HMI implemented; broad Go/vet/web/browser QA passed; Gate 4 subsequently passed and closed Slice 17.0.

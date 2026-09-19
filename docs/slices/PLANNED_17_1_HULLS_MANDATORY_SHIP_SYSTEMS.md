@@ -1,6 +1,6 @@
 # Planned Slice 17.1 - Hulls and Mandatory Ship Systems
 
-Status: **active; Gate 1 complete / Gate 2 next**.
+Status: **active; Gates 1-2 complete / Gate 3 next**.
 
 ## Objective
 
@@ -49,12 +49,17 @@ The six hulls are already normalized with base PP, base Space, strategic picture
 
 ## Gate 2 - hull/system contract freeze
 
-- [ ] Freeze supported hull matrix and buildability.
-- [ ] Freeze selectable mandatory component matrix.
-- [ ] Freeze technology locks and stable rejection reasons.
-- [ ] Freeze cost/space/miniaturization formulas.
-- [ ] Freeze CP and derived ShipDesignSpec values.
-- [ ] Freeze Designer Lab fixtures covering early/mid/high-tech.
+- [x] Freeze supported hull matrix and buildability.
+- [x] Freeze selectable mandatory component matrix.
+- [x] Freeze technology locks and stable rejection reasons.
+- [x] Freeze cost/space/miniaturization formulas.
+- [x] Freeze CP and derived ShipDesignSpec values.
+- [x] Freeze Designer Lab fixtures covering early/mid/high-tech.
+
+## Gate 2 evidence
+
+- `docs/research/SLICE_17_1_GATE2_HULL_SYSTEM_CONTRACT_FREEZE_2026-09-19.md`
+- Frozen contract: six-hull save/build matrix, Cruiser+ orbital-dock construction authority, automatic Drive/Fuel and save-time Armor semantics, selectable Computer/Shield semantics including explicit no-Shield, direct-original miniaturization, current-tech effective saved-design projection, queue-time construction snapshots, CP derivation, stable reason tokens, and Baseline/Mid/All-Tech acceptance vectors.
 
 ## Gate 3 - implementation
 
