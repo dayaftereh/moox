@@ -121,6 +121,12 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
   } : undefined
   const nextFreeWeaponSlot = Array.from({ length: 8 }, (_, slot) => slot).find((slot) => !weaponMounts.some((mount) => mount.slot === slot))
   const remainingSpace = spec ? spec.hull_space - spec.space_used : 0
+  const unusedSpaceSpeedBonus = spec && currentHull
+    ? Math.ceil(((designer?.max_unused_space_combat_speed_bonus ?? 0) * Math.max(0, remainingSpace)) / Math.max(1, spec.hull_space))
+    : 0
+  const combatSpeed = currentHull ? currentHull.base_combat_speed + (designer?.automatic_systems.tactical_speed_bonus ?? 0) + unusedSpaceSpeedBonus : 0
+  const beamDefense = combatSpeed * (designer?.beam_defense_per_combat_speed ?? 0)
+  const missileEvasion = designer?.base_missile_evasion ?? 0
   const canAddLaser = Boolean(laser?.available && currentHull?.save_available && nextFreeWeaponSlot != null && remainingSpace >= (laser?.base_space ?? 0))
   const candidate = useMemo(() => {
     if (visualOverride && String(visualOverride.hullId) === hullID) return visualOverride
@@ -329,12 +335,13 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
                 designer={designer}
                 spec={spec}
                 currentHull={currentHull}
-                hullLabel={hullLabel(t, hullID)}
                 computerID={computerID}
                 shieldID={shieldID}
                 weaponMounts={weaponMounts}
                 laser={laser}
                 remainingSpace={remainingSpace}
+                beamDefense={beamDefense}
+                missileEvasion={missileEvasion}
                 onComputerChange={(id) => { setComputerID(id); setSaveNotice('') }}
                 onShieldChange={(id) => { setShieldID(id); setSaveNotice('') }}
                 onWeaponCountChange={changeWeaponMountCount}
@@ -347,7 +354,13 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
               </section>
             )}
             <section className="shipdesigner-component-section shipdesigner-weapon-section">
-              <div className="card-heading"><div><p className="eyebrow">{t('shipbuilder.available')}</p><h3>{t('shipbuilder.availableComponents')}</h3></div></div>
+              <div className="card-heading shipdesigner-weapon-heading">
+                <div><p className="eyebrow">{t('shipbuilder.available')}</p><h3>{t('shipbuilder.availableComponents')}</h3></div>
+                <div className="shipdesigner-space-available">
+                  <span>{t('shipbuilder.spaceAvailable')}</span>
+                  <strong>{remainingSpace} {t('shipbuilder.space')}</strong>
+                </div>
+              </div>
               {laser ? (
                 <div className={"shipdesigner-component-row" + (laser.available ? "" : " locked")}>
                   <div><strong>{t('shipbuilder.laserCannon')}</strong><small>{laser.base_space} {t('shipbuilder.space')} · {laser.base_cost_pp} PP · {t('shipbuilder.baseDamageRange', { min: laser.min_damage, max: laser.max_damage })}</small></div>
@@ -360,10 +373,16 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
 
           <Card className="shipdesigner-summary-card">
             <div className="shipdesigner-save-row">
-              <div>
+              <div className="shipdesigner-save-details">
+                <div className="shipdesigner-design-cost">
+                  <span>{t('shipbuilder.productionCost')}</span>
+                  <strong>{spec ? `${spec.production_cost_pp} PP` : '—'}</strong>
+                </div>
+                <div className="shipdesigner-save-messages">
                 {saveError && <p className="shipbuilder-save-state error">{saveError}</p>}
                 {!saveError && saveNotice && <p className="shipbuilder-save-state">{saveNotice}</p>}
                 {!planningWritable && <p className="muted">{t('shipbuilder.savePlanningOnly')}</p>}
+                </div>
               </div>
               <button type="button" className="button-primary" disabled={!canSave} onClick={() => void saveDesign()}><GameIcon name="check" />{saving ? t('shipbuilder.saving') : t('shipbuilder.saveDesign')}</button>
             </div>

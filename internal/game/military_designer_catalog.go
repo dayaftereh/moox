@@ -25,6 +25,7 @@ type MilitaryDesignerHullChoice struct {
 	BaseCostPP            int    `json:"base_cost_pp"`
 	BaseSpace             int    `json:"base_space"`
 	CommandPointCost      int    `json:"command_point_cost"`
+	BaseCombatSpeed       int    `json:"base_combat_speed"`
 	StrategicPictureIDs   []int  `json:"strategic_picture_ids"`
 	RequiredTechnologyID  int    `json:"required_technology_id,omitempty"`
 	RequiredTechnologyKey string `json:"required_technology_key,omitempty"`
@@ -83,14 +84,17 @@ type MilitaryDesignerVariant struct {
 }
 
 type MilitaryDesignerCatalog struct {
-	Hulls                     []MilitaryDesignerHullChoice      `json:"hulls"`
-	Computers                 []MilitaryDesignerComponentChoice `json:"computers"`
-	Shields                   []MilitaryDesignerComponentChoice `json:"shields"`
-	AutomaticSystems          MilitaryDesignerAutomaticSystems  `json:"automatic_systems"`
-	Weapons                   []MilitaryDesignerWeaponChoice    `json:"weapons"`
-	Variants                  []MilitaryDesignerVariant         `json:"variants"`
-	ProductionCostNumerator   int                               `json:"production_cost_numerator"`
-	ProductionCostDenominator int                               `json:"production_cost_denominator"`
+	Hulls                          []MilitaryDesignerHullChoice      `json:"hulls"`
+	Computers                      []MilitaryDesignerComponentChoice `json:"computers"`
+	Shields                        []MilitaryDesignerComponentChoice `json:"shields"`
+	AutomaticSystems               MilitaryDesignerAutomaticSystems  `json:"automatic_systems"`
+	Weapons                        []MilitaryDesignerWeaponChoice    `json:"weapons"`
+	Variants                       []MilitaryDesignerVariant         `json:"variants"`
+	ProductionCostNumerator        int                               `json:"production_cost_numerator"`
+	ProductionCostDenominator      int                               `json:"production_cost_denominator"`
+	MaxUnusedSpaceCombatSpeedBonus int                               `json:"max_unused_space_combat_speed_bonus"`
+	BeamDefensePerCombatSpeed      int                               `json:"beam_defense_per_combat_speed"`
+	BaseMissileEvasion             int                               `json:"base_missile_evasion"`
 }
 
 func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDesignerCatalog, error) {
@@ -113,6 +117,7 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 			ID: hull.ID, SizeIndex: hull.SizeIndex, NameKey: hull.NameKey,
 			BaseCostPP: hull.BaseCostPP, BaseSpace: hull.BaseSpace,
 			CommandPointCost:     hull.SizeIndex + 1,
+			BaseCombatSpeed:      shipHullBaseCombatSpeed(hull.SizeIndex),
 			StrategicPictureIDs:  append([]int(nil), hull.StrategicPictureIDs...),
 			RequiredTechnologyID: technologyID, RequiredTechnologyKey: technologyKey,
 			TechnologyKnown: technologyKnown, SaveAvailable: technologyKnown, LockReason: lockReason,
@@ -126,7 +131,7 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 	})
 
 	catalog := MilitaryDesignerCatalog{
-		Hulls: hulls, ProductionCostNumerator: 1, ProductionCostDenominator: 1,
+		Hulls: hulls, ProductionCostNumerator: 1, ProductionCostDenominator: 1, MaxUnusedSpaceCombatSpeedBonus: 10, BeamDefensePerCombatSpeed: 5, BaseMissileEvasion: 0,
 	}
 	if modifier, ok := r.RaceModifiers[empire.RaceID]; ok && modifier.GovernmentTraitID == "government_feudal" {
 		catalog.ProductionCostNumerator = 2
@@ -306,6 +311,25 @@ func shipShieldCapacityPerHullClass(componentIndex int) int {
 		return 35
 	case 5:
 		return 50
+	default:
+		return 0
+	}
+}
+
+func shipHullBaseCombatSpeed(sizeIndex int) int {
+	switch sizeIndex {
+	case 0:
+		return 10
+	case 1:
+		return 8
+	case 2:
+		return 6
+	case 3:
+		return 5
+	case 4:
+		return 4
+	case 5:
+		return 3
 	default:
 		return 0
 	}

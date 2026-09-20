@@ -294,10 +294,20 @@ Gate 4 remains not started.
 
 ## Ship information / popup HMI amendment (2026-09-20)
 
-The previous always-expanded Computer/Shield card layout was superseded after further desktop review. The final Gate-3 Designer UX now uses one compact Ship-information card directly below the Ship preview. It contains Hull/PP/CP/Space plus Drive, Computer, Armor, Shield, Fuel and installed weapons. Every mandatory-system row shows its effect and has a dedicated `?` detail control. Computer and Shield rows open rich popup/card selectors; Drive, Armor and Fuel remain automatic and info-only.
+The previous always-expanded Computer/Shield card layout was superseded after further desktop review. The Gate-3 Designer uses one compact Ship-information card directly below the Ship preview with Drive, Computer, Armor, Shield, Fuel and installed weapons. Every mandatory-system row has a dedicated `?` detail control. Computer and Shield rows open rich popup/card selectors; Drive, Armor and Fuel remain automatic and info-only. A later original-layout amendment moves redundant Hull/CP/Cost/Space summary values out of this card and adds derived Beam Defense / Missile Evasion ratings.
 
 Computer popup cards show verified Beam Attack plus miniaturized PP/level. Shield popup cards show per-hit block, actual capacity for the current hull class, miniaturized PP/Space/level, and explicit no-Shield. Mobile uses a one-column bottom-sheet selector; desktop uses two-column popup cards. No mandatory-system dropdown is used.
 
 Evidence: `docs/research/SLICE_17_1_GATE3_SHIP_INFO_POPUP_AMENDMENT_2026-09-20.md`.
 
 Post-amendment verification: `npm run build` PASS; combined reference/buyout/ship-designer browser smoke PASS on fresh loopback 7192; `go test ./...` PASS; `go vet ./...` PASS; `git diff --check` PASS before staging. Gate 4 remains not started.
+
+## Original summary/layout HMI amendment (2026-09-20)
+
+Further review against a supplied original MOO2 Ship Designer screenshot refined information placement without opening Gate 4. Redundant Hull class and Command Points were removed from Ship Information; production cost moved beside Save Design; remaining Space Available moved beside weapon/component installation; verified original Beam Defense and Missile Evasion design ratings were added below the mandatory systems.
+
+The Designer catalog now projects original combat-display constants and per-hull base combat speed. The UI derives combat speed from hull base speed + known-drive tactical bonus + ceil(10 * unusedSpace / hullSpace), then Beam Defense as combatSpeed * 5. Current supported design scope projects Missile Evasion 0% because ECM/inertial/crew/racial evasion modifiers are not yet part of Slice 17.1.
+
+Evidence: `docs/research/SLICE_17_1_GATE3_ORIGINAL_SUMMARY_LAYOUT_AMENDMENT_2026-09-20.md`.
+
+This is a design-display amendment only. Slice-15.5 Tactical simulation remains unchanged. Gate 4 remains not started.

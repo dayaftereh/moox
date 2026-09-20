@@ -291,6 +291,10 @@ async function main() {
       rows,
       helpCount: document.querySelectorAll('.shipdesigner-system-help').length,
       summaryCount: document.querySelectorAll('.shipdesigner-system-summary-grid > div').length,
+      combatRatingsText: document.querySelector('.shipdesigner-combat-ratings')?.textContent || '',
+      spaceAvailableText: document.querySelector('.shipdesigner-space-available')?.textContent || '',
+      saveCostText: document.querySelector('.shipdesigner-design-cost')?.textContent || '',
+      infoCardText: infoCard?.textContent || '',
       dropdowns: document.querySelectorAll('.shipdesigner-ship-info-card select').length,
       hullText: document.querySelector('.shipdesigner-hull-current strong')?.textContent || '',
       previewHeight: document.querySelector('.shipdesigner-preview')?.getBoundingClientRect().height || 0,
@@ -301,7 +305,24 @@ async function main() {
   assert(designerUI.infoCard, 'Ship information card is missing below the ship preview')
   assert(designerUI.rows.length === 5, `Ship information has ${designerUI.rows.length} mandatory-system rows, want 5`)
   assert(designerUI.helpCount === 5 && designerUI.rows.every((row) => row.help), `Ship information help affordances=${designerUI.helpCount}, want one for every system`)
-  assert(designerUI.summaryCount === 4, `Ship information summary stat count=${designerUI.summaryCount}, want 4`)
+  assert(designerUI.summaryCount === 0, `Ship information still renders ${designerUI.summaryCount} redundant summary stat(s)`)
+  assert(designerUI.combatRatingsText.includes('Strahlenabwehr') && designerUI.combatRatingsText.includes('Raketen-Ausweichen'), 'Ship information is missing Beam Defense / Missile Evasion ratings')
+  assert(designerUI.combatRatingsText.replace(/\s+/g, '').includes('Strahlenabwehr+'), 'Beam Defense rating is missing a numeric value: ' + designerUI.combatRatingsText)
+  assert(designerUI.combatRatingsText.includes('0%'), `Current-scope Missile Evasion is not rendered as 0%: ${designerUI.combatRatingsText}`)
+  const designerSnapshot = await fetchJSON(snapshotURL)
+  const designerCatalog = designerSnapshot.decision?.decisions?.ship_designer
+  const frigateHull = designerCatalog?.hulls?.find((hull) => hull.id === 'frigate')
+  const freeSpaceMatch = designerUI.spaceAvailableText.match(/(\d+)\s+Space/)
+  const displayedFreeSpace = Number(freeSpaceMatch?.[1] ?? NaN)
+  const expectedBeamDefense = frigateHull && Number.isFinite(displayedFreeSpace)
+    ? (frigateHull.base_combat_speed + (designerCatalog?.automatic_systems?.tactical_speed_bonus ?? 0) + Math.ceil(((designerCatalog?.max_unused_space_combat_speed_bonus ?? 0) * displayedFreeSpace) / Math.max(1, frigateHull.base_space))) * (designerCatalog?.beam_defense_per_combat_speed ?? 0)
+    : NaN
+  assert(Number.isFinite(expectedBeamDefense), 'Could not derive original Beam Defense expectation from Designer catalog')
+  assert(designerUI.combatRatingsText.replace(/\s+/g, '').includes(`Strahlenabwehr+${expectedBeamDefense}`), `Beam Defense does not match projected original formula: ${designerUI.combatRatingsText}, want +${expectedBeamDefense}`)
+  assert(designerUI.combatRatingsText.replace(/\s+/g, '').includes(`Raketen-Ausweichen${designerCatalog?.base_missile_evasion ?? NaN}%`), `Missile Evasion does not match projected current-scope base: ${designerUI.combatRatingsText}`)
+  assert(designerUI.spaceAvailableText.includes('Freier Platz') && designerUI.spaceAvailableText.includes('Space'), 'Available Space is not located with the weapon/component area')
+  assert(designerUI.saveCostText.includes('Produktionskosten') && designerUI.saveCostText.includes('PP'), 'Design production cost is not located beside Save design')
+  assert(!designerUI.infoCardText.includes('Produktionskosten') && !designerUI.infoCardText.includes('Command Points') && !designerUI.infoCardText.includes('Designplatz'), 'Ship information still duplicates cost/CP/design-space summary values')
   assert(designerUI.dropdowns === 0, `Ship information still renders ${designerUI.dropdowns} dropdown(s)`)
   assert(!designerUI.rows.some((row) => row.text.includes('Strategische FTL') || row.text.includes('Strahl-Angriff') || row.text.includes('Panzerungs-Haltbarkeit') || row.text.includes('Blockt 10 Schaden') || row.text.includes('Unbegrenzte strategische Reichweite')), 'Compact ship information still exposes verbose effect copy instead of delegating it to ? details')
   assert(!designerUI.rows.some((row) => /\bM\d+\b/.test(row.text) || row.text.includes('Miniaturisierung')), 'Compact ship information exposes technical miniaturization notation')
@@ -467,7 +488,7 @@ async function main() {
   assert(!ordinary, 'Ordinary game-1 renders development credit/turn controls')
 
   if (failures.length) throw new Error('Reference/buyout/ship-designer browser smoke failed:\n- ' + failures.join('\n- '))
-  console.log('Reference/buyout/ship-designer browser smoke passed: six-hull All-Tech Designer, compact ship-information rows, ? detail popups and player-facing miniaturization reductions, Computer/Shield card selectors, explicit no-Shield save, mobile/desktop Designer layout, More-only dev tools, +BC grant, +1/+5/N presence, same-turn drafted construction buyout with BC deduction, next-turn completion, 390px/desktop layout and ordinary-game isolation.')
+  console.log('Reference/buyout/ship-designer browser smoke passed: six-hull All-Tech Designer, compact ship-information rows, Beam Defense/Missile Evasion ratings, weapon-area Space Available and save-area production cost, ? detail popups and player-facing miniaturization reductions, Computer/Shield card selectors, explicit no-Shield save, mobile/desktop Designer layout, More-only dev tools, +BC grant, +1/+5/N presence, same-turn drafted construction buyout with BC deduction, next-turn completion, 390px/desktop layout and ordinary-game isolation.')
 }
 
 main().catch((error) => {

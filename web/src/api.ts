@@ -368,6 +368,7 @@ export type MilitaryDesignerHullChoice = {
   base_cost_pp: number
   base_space: number
   command_point_cost: number
+  base_combat_speed: number
   strategic_picture_ids: number[]
   required_technology_id?: number
   required_technology_key?: string
@@ -423,6 +424,9 @@ export type MilitaryDesignerCatalog = {
   variants: MilitaryDesignerVariant[]
   production_cost_numerator: number
   production_cost_denominator: number
+  max_unused_space_combat_speed_bonus: number
+  beam_defense_per_combat_speed: number
+  base_missile_evasion: number
 }
 export type SaveMilitaryDesignPayload = {
   design_id?: number

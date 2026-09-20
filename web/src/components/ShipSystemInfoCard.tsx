@@ -17,12 +17,13 @@ type Props = {
   designer: MilitaryDesignerCatalog
   spec: ShipDesignSpec
   currentHull?: MilitaryDesignerHullChoice
-  hullLabel: string
   computerID: string
   shieldID: string
   weaponMounts: ShipWeaponMount[]
   laser?: MilitaryDesignerWeaponChoice
   remainingSpace: number
+  beamDefense: number
+  missileEvasion: number
   onComputerChange: (id: string) => void
   onShieldChange: (id: string) => void
   onWeaponCountChange: (slot: number, delta: number) => void
@@ -81,12 +82,13 @@ export function ShipSystemInfoCard({
   designer,
   spec,
   currentHull,
-  hullLabel,
   computerID,
   shieldID,
   weaponMounts,
   laser,
   remainingSpace,
+  beamDefense,
+  missileEvasion,
   onComputerChange,
   onShieldChange,
   onWeaponCountChange,
@@ -138,13 +140,6 @@ export function ShipSystemInfoCard({
           </div>
         </div>
 
-        <div className="shipdesigner-system-summary-grid">
-          <div><span>{t('shipbuilder.hullSize')}</span><strong>{hullLabel}</strong></div>
-          <div><span>{t('shipbuilder.productionCost')}</span><strong>{spec.production_cost_pp} PP</strong></div>
-          <div><span>{t('shipbuilder.commandPoints')}</span><strong>{currentHull ? `${currentHull.command_point_cost} CP` : '—'}</strong></div>
-          <div><span>{t('shipbuilder.designSpace')}</span><strong>{spec.space_used} / {spec.hull_space}</strong></div>
-        </div>
-
         <div className="shipdesigner-system-list">
           <article className="shipdesigner-system-row" data-system="drive">
             <div className="shipdesigner-system-row-main">
@@ -185,6 +180,11 @@ export function ShipSystemInfoCard({
             </div>
             <button type="button" className="shipdesigner-system-help" onClick={() => setDialog({ system: 'fuel', mode: 'info' })} aria-label={t('shipbuilder.systemDetails', { system: t('shipbuilder.fuel') })}>?</button>
           </article>
+        </div>
+
+        <div className="shipdesigner-combat-ratings" aria-label={t('shipbuilder.combatRatings')}>
+          <div><span>{t('shipbuilder.beamDefense')}</span><strong>+{beamDefense}</strong></div>
+          <div><span>{t('shipbuilder.missileEvasion')}</span><strong>{missileEvasion}%</strong></div>
         </div>
 
         {weaponMounts.length > 0 && (

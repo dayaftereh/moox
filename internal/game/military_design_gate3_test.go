@@ -89,6 +89,15 @@ func TestSlice171CatalogProfilesAndLateHullLocks(t *testing.T) {
 	if midCatalog.AutomaticSystems.TacticalSpeedBonus != 4 || midCatalog.AutomaticSystems.ArmorDurabilityMultiple != 2 {
 		t.Fatalf("Mid-Tech automatic effects=%+v", midCatalog.AutomaticSystems)
 	}
+	if midCatalog.MaxUnusedSpaceCombatSpeedBonus != 10 || midCatalog.BeamDefensePerCombatSpeed != 5 || midCatalog.BaseMissileEvasion != 0 {
+		t.Fatalf("Designer combat display constants=%d/%d/%d want=10/5/0", midCatalog.MaxUnusedSpaceCombatSpeedBonus, midCatalog.BeamDefensePerCombatSpeed, midCatalog.BaseMissileEvasion)
+	}
+	wantBaseCombatSpeeds := []int{10, 8, 6, 5, 4, 3}
+	for index, want := range wantBaseCombatSpeeds {
+		if got := midCatalog.Hulls[index].BaseCombatSpeed; got != want {
+			t.Fatalf("Designer hull %s base combat speed=%d want=%d", midCatalog.Hulls[index].ID, got, want)
+		}
+	}
 	if len(midCatalog.Computers) != 5 || midCatalog.Computers[0].MiniaturizationLevel != 3 || !midCatalog.Computers[0].Available {
 		t.Fatalf("Mid-Tech computers=%+v", midCatalog.Computers)
 	}

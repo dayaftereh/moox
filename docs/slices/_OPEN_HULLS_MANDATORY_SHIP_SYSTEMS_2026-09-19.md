@@ -50,7 +50,7 @@ The frozen contract is implemented end-to-end across server authority, construct
 
 ## Gate 3 HMI information amendment
 
-User review first requested effect-first Designer information, then refined that UX again before Gate 4. The final Gate-3 layout is one Ship-information card directly under the preview. It shows Hull/PP/CP/Space plus Drive, Computer, Armor, Shield, Fuel and installed weapons; every mandatory system has a trailing `?` details action. Computer and Shield open rich popup/card selectors instead of dropdowns or permanently expanded choice grids.
+User review first requested effect-first Designer information, then refined that UX again before Gate 4. The Gate-3 layout keeps one Ship-information card directly under the preview with Drive, Computer, Armor, Shield, Fuel and installed weapons; every mandatory system has a trailing `?` details action. Computer and Shield open rich popup/card selectors instead of dropdowns or permanently expanded choice grids. The latest original-layout amendment removes duplicated Hull/CP/Cost/Space summary values from this card, moves Space Available to the weapon area and Cost to Save Design, and adds Beam Defense / Missile Evasion ratings.
 
 Primary implementation evidence: `docs/research/SLICE_17_1_GATE3_IMPLEMENTATION_2026-09-19.md`.
 Final HMI amendment evidence: `docs/research/SLICE_17_1_GATE3_SHIP_INFO_POPUP_AMENDMENT_2026-09-20.md`.
@@ -70,5 +70,13 @@ Gate 4 is still next and has not started.
 User review reduced the Ship preview and hull-selection footprint after the system-information card was compacted. The preview now uses explicit bounded heights instead of only `min-height`, the hull stepper is denser on desktop, and mobile retains 44px touch targets. Browser acceptance now guards the rendered preview/hull-selector heights.
 
 Evidence: `docs/research/SLICE_17_1_GATE3_COMPACT_SHIP_PREVIEW_AMENDMENT_2026-09-20.md`.
+
+Gate 4 is still next and has not started.
+
+## Gate 3 original summary/layout amendment
+
+Original Ship Designer review moved total Cost to the Save action, Space Available to weapon/component installation, removed duplicated Hull/CP summary values, and added verified Beam Defense / Missile Evasion design ratings. The Designer catalog now projects the original combat-display constants and hull base speeds; Tactical simulation scope is unchanged.
+
+Evidence: `docs/research/SLICE_17_1_GATE3_ORIGINAL_SUMMARY_LAYOUT_AMENDMENT_2026-09-20.md`.
 
 Gate 4 is still next and has not started.
