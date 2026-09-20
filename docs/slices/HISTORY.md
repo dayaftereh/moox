@@ -510,3 +510,17 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Froze Baseline/Mid/All-Tech acceptance vectors and explicit Tactical support/defer metadata.
 - Contract: docs/research/SLICE_17_2_GATE2_BEAM_CONTRACT_FREEZE_2026-09-20.md.
 - Gate 3 is next and has not started.
+
+## 2026-09-21 - Slice 17.2 Gate 3 Beam implementation complete
+
+- Implemented the frozen 13-Beam catalog and executable modifier compatibility matrix in authoritative rules data.
+- Extended ShipWeaponMount with canonical Standard/Heavy/Point Defense plus sorted special ModifierIDs and deep-clone persistence semantics.
+- Added shared server-authoritative Beam legality, refinement, Space/PP quote and design-preview paths.
+- Implemented the selector-first Weapon HMI: choose Beam, configure mount/modifiers/quantity, preview, then Install; installed rows remain compact with inline +/- quantity controls.
+- Fixed the original special Antaran Field-74 self-loop so Particle Beam / Death Ray miniaturization terminates at M0 instead of hanging All-Tech snapshots.
+- Preserved configured Beam snapshots through Save, construction/built Ship and BattleSession projection.
+- BattleSession now carries mount/modifier/damage/innate/support metadata losslessly while non-baseline Beam firing/effects remain explicitly deferred; Standard unmodified Laser remains the canonical firing baseline.
+- Updated reference-lab browser coverage for the 13-row selector, Standard/Heavy/Point Defense choices, special-modifier controls and Install flow.
+- Full Go tests, vet, web build, diff check, All-Tech snapshot HTTP check and fresh 7201 browser smoke pass.
+- Evidence: docs/research/SLICE_17_2_GATE3_IMPLEMENTATION_2026-09-21.md.
+- Gate 4 is next and has not started.

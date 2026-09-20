@@ -29,6 +29,32 @@ func TestTacticalCombatRulesLoadCanonicalBaseline(t *testing.T) {
 	if file.Weapon.ID != "laser_cannon" || file.Weapon.TechnologyID != 100 || file.Weapon.BaseSpace != 10 || file.Weapon.BaseCostPP != 5 || file.Weapon.MinDamage != 1 || file.Weapon.MaxDamage != 4 {
 		t.Fatalf("laser rule=%+v", file.Weapon)
 	}
+	if got := file.BeamWeapons(); len(got) != 13 {
+		t.Fatalf("Beam weapon count=%d want=13", len(got))
+	}
+	if got := file.Beam.SpaceMiniaturizationFactors; !reflect.DeepEqual(got, []int{100, 80, 70, 60, 50, 40}) {
+		t.Fatalf("Beam Space miniaturization=%v", got)
+	}
+	if got := file.Beam.CostMiniaturizationFactors; !reflect.DeepEqual(got, []int{100, 75, 55, 40, 30, 25}) {
+		t.Fatalf("Beam Cost miniaturization=%v", got)
+	}
+	phasor, ok := file.WeaponByID("phasor")
+	if !ok || phasor.TechnologyID != 127 || phasor.TechnologyFieldID != 52 || phasor.BaseSpace != 10 || phasor.BaseCostPP != 10 || phasor.MinDamage != 5 || phasor.MaxDamage != 20 || phasor.AllowedModifierMask != 0xD6 {
+		t.Fatalf("phasor rule=%+v ok=%v", phasor, ok)
+	}
+	deathRay, ok := file.WeaponByID("death_ray")
+	if !ok || deathRay.AllowedModifierMask != 0x02 {
+		t.Fatalf("death ray executable modifier mask=%#x ok=%v want=0x02", deathRay.AllowedModifierMask, ok)
+	}
+	if len(file.BeamModifiers) != 8 {
+		t.Fatalf("Beam modifier count=%d want=8", len(file.BeamModifiers))
+	}
+	if file.BeamModifiers[0].ID != "heavy" || file.BeamModifiers[0].Bit != 0x02 || file.BeamModifiers[0].SpacePercentDelta != 100 {
+		t.Fatalf("heavy modifier=%+v", file.BeamModifiers[0])
+	}
+	if file.BeamModifiers[7].ID != "enveloping" || file.BeamModifiers[7].RequiredMiniLevel != 2 || file.BeamModifiers[7].Bit != 0x100 {
+		t.Fatalf("enveloping modifier=%+v", file.BeamModifiers[7])
+	}
 	if file.Frigate.HullID != "frigate" || file.Frigate.ArmorHits != 4 || file.Frigate.Structure != 4 {
 		t.Fatalf("frigate rule=%+v", file.Frigate)
 	}

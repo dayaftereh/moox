@@ -21,6 +21,7 @@ import (
 
 	"moox/internal/app"
 	"moox/internal/protocol"
+	"moox/internal/session"
 )
 
 const maxJSONBodyBytes int64 = 1 << 20
@@ -73,6 +74,7 @@ func NewHandler(cfg Config) (http.Handler, error) {
 	mux.HandleFunc("POST /api/v1/games", server.handleCreateGame)
 	mux.HandleFunc("GET /api/v1/games/{gameID}/seats/{seatID}/snapshot", server.handlePlayerSnapshot)
 	mux.HandleFunc("POST /api/v1/games/{gameID}/seats/{seatID}/planning-preview", server.handlePlanningPreview)
+	mux.HandleFunc("POST /api/v1/games/{gameID}/seats/{seatID}/military-design-preview", server.handleMilitaryDesignPreview)
 	mux.HandleFunc("PUT /api/v1/games/{gameID}/seats/{seatID}/planning-draft", server.handlePlanningDraft)
 	mux.HandleFunc("GET /api/v1/games/{gameID}/observer/snapshot", server.handleObserverSnapshot)
 	mux.HandleFunc("GET /api/v1/games/{gameID}/live-snapshot", server.handleLiveSnapshotExport)
@@ -141,6 +143,27 @@ func (s *apiServer) handlePlanningPreview(w http.ResponseWriter, r *http.Request
 	writeJSON(w, http.StatusOK, preview)
 }
 
+func (s *apiServer) handleMilitaryDesignPreview(w http.ResponseWriter, r *http.Request) {
+	if !validateMutationRequest(w, r) {
+		return
+	}
+	seatID, err := parseSeatID(r.PathValue("seatID"))
+	if err != nil {
+		writeAPIError(w, http.StatusBadRequest, "bad_request", err.Error())
+		return
+	}
+	var request session.MilitaryDesignPreviewRequest
+	if err := decodeJSON(w, r, &request); err != nil {
+		writeAPIError(w, http.StatusBadRequest, "bad_request", err.Error())
+		return
+	}
+	preview, err := s.host.MilitaryDesignPreview(r.PathValue("gameID"), seatID, request)
+	if err != nil {
+		writeHostError(w, err)
+		return
+	}
+	writeJSON(w, http.StatusOK, preview)
+}
 func (s *apiServer) handlePlanningDraft(w http.ResponseWriter, r *http.Request) {
 	if !validateMutationRequest(w, r) {
 		return

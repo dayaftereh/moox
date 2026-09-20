@@ -6,7 +6,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 
 - Branch: `main`.
 - Open slice marker: **`docs/slices/_OPEN_BEAM_WEAPONS_MOUNT_MODIFIERS_2026-09-20.md`**.
-- Active implementation slice: **Slice 17.2 - Beam Weapons and Beam Mount Modifiers; Gates 1-2 complete / Gate 3 next.**
+- Active implementation slice: **Slice 17.2 - Beam Weapons and Beam Mount Modifiers; Gates 1-3 complete / Gate 4 next.**
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
@@ -14,8 +14,10 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-16 are closed/accepted at their intended baselines**. Slice 17 is the active 17.0-17.5 parent program; reserved Slice 18 and Slices 20-23 remain planned only.
-- Current objective: **await explicit Gate-3 release for Slice 17.2 implementation; implement only the frozen Gate-2 contract when released.**
-- Slice-17.2 Gate-2 contract freeze: docs/research/SLICE_17_2_GATE2_BEAM_CONTRACT_FREEZE_2026-09-20.md - 13-Beam catalog, explicit mount/modifier snapshot schema, exact Space/PP arithmetic, stable rejection reasons, server-authoritative preview, Weapon Selector filters/configuration dialog, reference vectors and Tactical support/defer boundary frozen; Gate 3 next, not started.
+- Current objective: **await explicit Gate-4 release for Slice 17.2 QA/close; do not open Slice 17.3+ automatically.**
+- Slice-17.2 Gate-3 implementation: docs/research/SLICE_17_2_GATE3_IMPLEMENTATION_2026-09-21.md - 13-Beam catalog, canonical mount/modifier snapshots, server-authoritative quotes/previews, selector-first HMI, Field-74 terminal cycle guard, immutable built-Ship snapshots and lossless BattleSession metadata complete; non-baseline Tactical firing remains explicitly deferred; Gate 4 next, not started.
+- Slice-17.2 Gate-2 HMI add-flow amendment: docs/research/SLICE_17_2_GATE2_HMI_ADD_FLOW_AMENDMENT_2026-09-20.md - configure selected weapon mount/modifiers/quantity inside the selector before Install; installed rows keep compact +/- controls.
+- Slice-17.2 Gate-2 contract freeze: docs/research/SLICE_17_2_GATE2_BEAM_CONTRACT_FREEZE_2026-09-20.md - 13-Beam catalog, explicit mount/modifier snapshot schema, exact Space/PP arithmetic, stable rejection reasons, server-authoritative preview, Weapon Selector filters/configuration dialog, reference vectors and Tactical support/defer boundary frozen; Gate 3 implemented under the frozen contract.
 - Slice-17.2 Gate-1 audit: docs/research/SLICE_17_2_GATE1_BEAM_WEAPONS_AUDIT_2026-09-20.md - primary executable/HELP evidence closes 13 Beam identities, tech/damage/Space/Cost, Beam Space class-1 miniaturization, exact modifier masks, eight original weapon rows, modifier snapshot schema gap, reference-lab vectors and Tactical support/defer boundaries; Gate 2 next, not started.
 - Slice-17.2 Gate-1 open: `docs/slices/_OPEN_BEAM_WEAPONS_MOUNT_MODIFIERS_2026-09-20.md` - audit all original-evidenced Beam identities, technology/damage/Space/Cost/range/miniaturization, slot/count semantics, modifier compatibility and Tactical support/defer boundaries; compact selection-dialog UX direction recorded, but no broad Beam implementation before Gate 2 freeze.
 - Slice-17.1 Gate-4 close: `docs/research/SLICE_17_1_GATE4_ACCEPTANCE_CLOSE_2026-09-20.md` - hull/buildability, mandatory-system legality, late-game reference access, immutable revision snapshots, construction/persistence and full Go/vet/web/browser/diff acceptance passed; Slice 17.1 closed.

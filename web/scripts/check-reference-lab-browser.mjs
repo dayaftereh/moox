@@ -387,13 +387,81 @@ async function main() {
   })()`)
   assert(availableAddControl.text.trim() === '+' && availableAddControl.aria === 'Einbauen', `Available weapon action is not compact + control: ${JSON.stringify(availableAddControl)}`)
   assert(availableAddControl.width <= 44 && availableAddControl.height <= 44, `Available weapon + control is too large: ${JSON.stringify(availableAddControl)}`)
-  const addWeapon = async () => {
-    const added = await evaluate(`(() => { const button = document.querySelector('.shipdesigner-weapon-section .shipdesigner-component-row .button-secondary'); if (!button || button.disabled) return false; button.click(); return true })()`)
-    if (added) await sleep(100)
-    return added
+  const addWeapon = async ({ heavy = false } = {}) => {
+    const opened = await evaluate(`(() => {
+      const button = document.querySelector('.shipdesigner-add-weapon')
+      if (!button || button.disabled) return false
+      button.click()
+      return true
+    })()`)
+    if (!opened) return { opened: false, installed: false }
+    for (let attempt = 0; attempt < 30; attempt++) {
+      if (await evaluate(`Boolean(document.querySelector('.shipdesigner-weapon-selector'))`)) break
+      await sleep(50)
+    }
+    const selector = await evaluate(`(() => {
+      const dialog = document.querySelector('.shipdesigner-weapon-selector')
+      const rows = [...document.querySelectorAll('.shipdesigner-weapon-selector-row')]
+      const toolbar = document.querySelector('.shipdesigner-weapon-selector-toolbar')
+      return {
+        present: Boolean(dialog),
+        rows: rows.length,
+        text: dialog?.textContent || '',
+        hasSearch: Boolean(toolbar?.querySelector('input')),
+        selectCount: toolbar?.querySelectorAll('select').length || 0,
+        overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
+      }
+    })()`)
+    const selected = await evaluate(`(() => {
+      const row = [...document.querySelectorAll('.shipdesigner-weapon-selector-row')].find((item) => item.textContent?.includes('Laserkanone'))
+      if (!row) return false
+      row.click()
+      return true
+    })()`)
+    if (!selected) return { opened, selected, installed: false, ...selector }
+    await sleep(120)
+    const config = await evaluate(`(() => {
+      const panel = document.querySelector('.shipdesigner-weapon-config')
+      return {
+        text: panel?.textContent || '',
+        mountValues: [...(panel?.querySelectorAll('input[type="radio"]') || [])].map((input) => ({ value: input.value, disabled: input.disabled })),
+        modifierValues: [...(panel?.querySelectorAll('input[type="checkbox"]') || [])].map((input) => ({ value: input.value, disabled: input.disabled })),
+      }
+    })()`)
+    let heavySelected = false
+    if (heavy) {
+      heavySelected = await evaluate(`(() => {
+        const input = document.querySelector('.shipdesigner-weapon-config input[type="radio"][value="heavy"]')
+        if (!input || input.disabled) return false
+        input.click()
+        return input.checked
+      })()`)
+      await sleep(120)
+    }
+    for (let attempt = 0; attempt < 40; attempt++) {
+      const installed = await evaluate(`(() => {
+        const button = [...document.querySelectorAll('.shipdesigner-weapon-selector-actions button')].find((item) => item.textContent?.includes('Einbauen'))
+        if (!button || button.disabled) return false
+        button.click()
+        return true
+      })()`)
+      if (installed) {
+        await sleep(220)
+        return { opened, selected, installed: true, heavySelected, ...selector, config }
+      }
+      await sleep(75)
+    }
+    return { opened, selected, installed: false, heavySelected, ...selector, config }
   }
-  assert(await addWeapon(), 'Could not add first weapon for installed-panel stability check')
-  assert(await addWeapon(), 'Could not add second weapon for installed-panel stability check')
+  const firstWeaponAdd = await addWeapon()
+  assert(firstWeaponAdd.installed, `Could not install first standard Laser through selector: ${JSON.stringify(firstWeaponAdd)}`)
+  assert(firstWeaponAdd.rows === 13, `Weapon selector row count=${firstWeaponAdd.rows}, want 13`)
+  assert(firstWeaponAdd.hasSearch && firstWeaponAdd.selectCount >= 3, `Weapon selector search/filter controls missing: ${JSON.stringify(firstWeaponAdd)}`)
+  assert(!firstWeaponAdd.overflow, 'Weapon selector causes horizontal overflow at 390px')
+  assert(firstWeaponAdd.config?.text.includes('Standard') && firstWeaponAdd.config?.text.includes('Schwer') && firstWeaponAdd.config?.text.includes('Punktverteidigung'), `Weapon mount choices are incomplete: ${JSON.stringify(firstWeaponAdd.config)}`)
+  assert(firstWeaponAdd.config?.text.includes('Spezialmodifikationen') && firstWeaponAdd.config?.text.includes('Autofeuer'), `Weapon special-modifier choices are incomplete: ${JSON.stringify(firstWeaponAdd.config)}`)
+  const secondWeaponAdd = await addWeapon({ heavy: true })
+  assert(secondWeaponAdd.installed && secondWeaponAdd.heavySelected, `Could not install second Heavy Laser through selector: ${JSON.stringify(secondWeaponAdd)}`)
   const installedPanelAfterWeapons = await evaluate(`(() => {
     const panel = document.querySelector('.shipdesigner-installed-weapons')
     const scroll = document.querySelector('.shipdesigner-installed-weapons-scroll')
@@ -414,6 +482,7 @@ async function main() {
   assert(installedPanelAfterWeapons.cards === 2 && !installedPanelAfterWeapons.empty, `Installed weapon cards/empty state are wrong after adding: ${JSON.stringify(installedPanelAfterWeapons)}`)
   assert(installedPanelAfterWeapons.slotLabels === 0, `Installed weapon cards still render slot-number labels: ${JSON.stringify(installedPanelAfterWeapons)}`)
   assert(installedPanelAfterWeapons.cardTexts.every((text) => text.includes('Laserkanone') && !/Slot\s*\d/i.test(text) && !text.includes('Entfernen')), `Installed weapon cards are not compact player-facing rows: ${JSON.stringify(installedPanelAfterWeapons.cardTexts)}`)
+  assert(installedPanelAfterWeapons.cardTexts.some((text) => text.includes('Schwer')), 'Heavy mount summary is missing from installed weapon rows: ' + JSON.stringify(installedPanelAfterWeapons.cardTexts))
   assert(installedPanelAfterWeapons.maxCardHeight <= 60, `Installed weapon card height=${installedPanelAfterWeapons.maxCardHeight}, want <=60px at 390px`)
   assert(installedPanelAfterWeapons.removeControls.length === 2 && installedPanelAfterWeapons.removeControls.every((control) => control.text.trim() === '' && control.aria === 'Entfernen'), `Installed weapon remove controls are not icon-only/accessibly labelled: ${JSON.stringify(installedPanelAfterWeapons.removeControls)}`)
   assert(installedPanelAfterWeapons.overflowY === 'auto' && installedPanelAfterWeapons.scrollHeight >= installedPanelAfterWeapons.clientHeight, `Installed weapons scroll area is not stable/scroll-capable: ${JSON.stringify(installedPanelAfterWeapons)}`)

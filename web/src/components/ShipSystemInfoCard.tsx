@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
+  type MilitaryDesignWeaponRowPreview,
   type MilitaryDesignerCatalog,
   type MilitaryDesignerHullChoice,
   type MilitaryDesignerWeaponChoice,
@@ -8,6 +9,7 @@ import {
 } from '../api'
 import { GameIcon } from './GameIcon'
 import type { TranslationKey, TranslationVars } from '../i18n'
+import { modifierLabel, mountLabel, weaponLabel } from '../weaponDisplay'
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
 type ShipSystemKind = 'drive' | 'computer' | 'armor' | 'shield' | 'fuel' | 'beamDefense' | 'missileEvasion'
@@ -20,7 +22,8 @@ type Props = {
   computerID: string
   shieldID: string
   weaponMounts: ShipWeaponMount[]
-  laser?: MilitaryDesignerWeaponChoice
+  weapons: MilitaryDesignerWeaponChoice[]
+  weaponPreviews?: MilitaryDesignWeaponRowPreview[]
   remainingSpace: number
   combatSpeed: number
   unusedSpaceSpeedBonus: number
@@ -87,7 +90,8 @@ export function ShipSystemInfoCard({
   computerID,
   shieldID,
   weaponMounts,
-  laser,
+  weapons,
+  weaponPreviews,
   remainingSpace,
   combatSpeed,
   unusedSpaceSpeedBonus,
@@ -202,23 +206,27 @@ export function ShipSystemInfoCard({
           <div className="shipdesigner-installed-weapons-scroll">
             {weaponMounts.length > 0 ? (
               <div className="shipdesigner-installed-info-grid">
-                {weaponMounts.map((mount) => (
-                  <article className="shipdesigner-info-card weapon" key={mount.slot}>
-                    <strong>{t('shipbuilder.laserCannon')}</strong>
-                    {laser && <p>{t('shipbuilder.weaponEffect', {
-                      min: mount.count * laser.min_damage,
-                      max: mount.count * laser.max_damage,
-                      space: mount.count * laser.base_space,
-                      cost: mount.count * laser.base_cost_pp,
-                    })}</p>}
-                    <div className="shipdesigner-weapon-quantity">
-                      <button type="button" className="button-ghost" aria-label={t('shipbuilder.decreaseQuantity')} onClick={() => onWeaponCountChange(mount.slot, -1)}>−</button>
-                      <strong className="shipdesigner-weapon-count">{mount.count}</strong>
-                      <button type="button" className="button-ghost" aria-label={t('shipbuilder.increaseQuantity')} disabled={!laser || remainingSpace < laser.base_space} onClick={() => onWeaponCountChange(mount.slot, 1)}>+</button>
-                      <button type="button" className="button-ghost shipdesigner-weapon-remove" aria-label={t('shipbuilder.remove')} title={t('shipbuilder.remove')} onClick={() => onRemoveWeapon(mount.slot)}><GameIcon name="close" /></button>
-                    </div>
-                  </article>
-                ))}
+                {weaponMounts.map((mount) => {
+                  const weapon = weapons.find((choice) => choice.id === mount.weapon_id)
+                  const row = weaponPreviews?.find((candidate) => candidate.slot === mount.slot)
+                  const configuration = [
+                    mountLabel(t, mount.mount_type),
+                    ...(mount.modifier_ids ?? []).map((modifierID) => modifierLabel(t, modifierID)),
+                  ].join(' / ')
+                  const unitSpace = row?.unit_space ?? weapon?.effective_standard_space ?? 1
+                  return (
+                    <article className="shipdesigner-info-card weapon" key={mount.slot}>
+                      <strong>{weapon ? weaponLabel(t, weapon) : mount.weapon_id}</strong>
+                      <p>{configuration}{row ? ` / ${row.row_space} ${t('shipbuilder.space')} / ${row.row_cost_pp} PP` : ''}</p>
+                      <div className="shipdesigner-weapon-quantity">
+                        <button type="button" className="button-ghost" aria-label={t('shipbuilder.decreaseQuantity')} onClick={() => onWeaponCountChange(mount.slot, -1)}>-</button>
+                        <strong className="shipdesigner-weapon-count">{mount.count}</strong>
+                        <button type="button" className="button-ghost" aria-label={t('shipbuilder.increaseQuantity')} disabled={remainingSpace < unitSpace} onClick={() => onWeaponCountChange(mount.slot, 1)}>+</button>
+                        <button type="button" className="button-ghost shipdesigner-weapon-remove" aria-label={t('shipbuilder.remove')} title={t('shipbuilder.remove')} onClick={() => onRemoveWeapon(mount.slot)}><GameIcon name="close" /></button>
+                      </div>
+                    </article>
+                  )
+                })}
               </div>
             ) : (
               <div className="shipdesigner-installed-weapons-empty">{t('shipbuilder.noInstalledWeapons')}</div>

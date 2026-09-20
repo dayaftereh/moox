@@ -7,6 +7,14 @@ import (
 	"moox/internal/core"
 )
 
+func designerWeaponChoiceByID(items []MilitaryDesignerWeaponChoice, id string) (MilitaryDesignerWeaponChoice, bool) {
+	for _, item := range items {
+		if item.ID == id {
+			return item, true
+		}
+	}
+	return MilitaryDesignerWeaponChoice{}, false
+}
 func TestMilitaryDesignerCatalogProjectsOrderedAuthoritativeBaseline(t *testing.T) {
 	rules := loadColonyShipRules(t)
 	empire := core.NewSmallFixture(1815).Empires[0]
@@ -41,11 +49,18 @@ func TestMilitaryDesignerCatalogProjectsOrderedAuthoritativeBaseline(t *testing.
 	if catalog.Hulls[5].RequiredTechnologyKey != "doom_star_construction" || catalog.Hulls[5].RequiredTechnologyID != 55 || catalog.Hulls[5].TechnologyKnown || catalog.Hulls[5].LockReason != ShipDesignerLockTechnologyRequired {
 		t.Fatalf("Doom Star lock=%+v", catalog.Hulls[5])
 	}
-	if len(catalog.Weapons) != 1 || catalog.Weapons[0].ID != "laser_cannon" || catalog.Weapons[0].TechnologyID != 100 || !catalog.Weapons[0].Available {
-		t.Fatalf("weapon choices=%+v", catalog.Weapons)
+	if len(catalog.Weapons) != 13 {
+		t.Fatalf("weapon choices=%d want 13", len(catalog.Weapons))
 	}
-	if catalog.Weapons[0].MinDamage != 1 || catalog.Weapons[0].MaxDamage != 4 {
-		t.Fatalf("Laser damage range=%d..%d want 1..4", catalog.Weapons[0].MinDamage, catalog.Weapons[0].MaxDamage)
+	laserChoice, ok := designerWeaponChoiceByID(catalog.Weapons, "laser_cannon")
+	if !ok || laserChoice.TechnologyID != 100 || !laserChoice.Available {
+		t.Fatalf("Laser choice=%+v ok=%v", laserChoice, ok)
+	}
+	if laserChoice.MinDamage != 1 || laserChoice.MaxDamage != 4 || laserChoice.EffectiveStandardSpace != 10 || laserChoice.EffectiveStandardCostPP != 5 {
+		t.Fatalf("Laser choice=%+v", laserChoice)
+	}
+	if len(laserChoice.MountChoices) != 3 || len(laserChoice.ModifierChoices) != 4 {
+		t.Fatalf("Laser mount/modifier choices=%+v / %+v", laserChoice.MountChoices, laserChoice.ModifierChoices)
 	}
 	if catalog.ProductionCostNumerator != 1 || catalog.ProductionCostDenominator != 1 {
 		t.Fatalf("production ratio=%d/%d want 1/1", catalog.ProductionCostNumerator, catalog.ProductionCostDenominator)
@@ -57,7 +72,7 @@ func TestMilitaryDesignerCatalogProjectsOrderedAuthoritativeBaseline(t *testing.
 		t.Fatalf("unarmed preview=%+v", catalog.Variants[0])
 	}
 	laser := catalog.Variants[1]
-	if laser.Key != "frigate:laser_cannon" || laser.Spec.ProductionCostPP != 30 || laser.Spec.SpaceUsed != 10 || laser.CommandPointCost != 1 || !reflect.DeepEqual(laser.Weapons, []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1}}) {
+	if laser.Key != "frigate:laser_cannon" || laser.Spec.ProductionCostPP != 30 || laser.Spec.SpaceUsed != 10 || laser.CommandPointCost != 1 || !reflect.DeepEqual(laser.Weapons, []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1, MountType: core.ShipWeaponMountStandard}}) {
 		t.Fatalf("Laser preview=%+v", laser)
 	}
 }
@@ -71,8 +86,12 @@ func TestMilitaryDesignerCatalogLocksUnknownLaserAndOmitsIllegalPreview(t *testi
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(catalog.Weapons) != 1 || catalog.Weapons[0].TechnologyKnown || catalog.Weapons[0].Available || catalog.Weapons[0].LockReason != ShipDesignerLockTechnologyRequired {
-		t.Fatalf("locked Laser=%+v", catalog.Weapons)
+	if len(catalog.Weapons) != 13 {
+		t.Fatalf("locked Beam catalog size=%d want 13", len(catalog.Weapons))
+	}
+	laserChoice, ok := designerWeaponChoiceByID(catalog.Weapons, "laser_cannon")
+	if !ok || laserChoice.TechnologyKnown || laserChoice.Available || laserChoice.LockReason != ShipDesignerLockTechnologyRequired {
+		t.Fatalf("locked Laser=%+v ok=%v", laserChoice, ok)
 	}
 	if len(catalog.Variants) != 4 || catalog.Variants[0].Key != "frigate:none" || catalog.Variants[3].Key != "battleship:none" {
 		t.Fatalf("variants=%+v want four unarmed base-hull previews", catalog.Variants)

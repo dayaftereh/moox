@@ -324,7 +324,7 @@ func buildStrategicView(state *core.GameState, empireID core.ID, rules *game.Eco
 							continue
 						}
 						shipView := ship
-						shipView.Spec.Weapons = append([]core.ShipWeaponMount(nil), ship.Spec.Weapons...)
+						shipView.Spec.Weapons = core.CloneShipWeaponMounts(ship.Spec.Weapons)
 						contact.Ships = append(contact.Ships, shipView)
 						break
 					}

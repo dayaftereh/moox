@@ -45,8 +45,13 @@ func (r *EconomyRules) shipComponentMiniaturizationLevel(empire *core.Empire, te
 		return 0, fmt.Errorf("technology %d has no research field", technologyID)
 	}
 	level := 0
+	seenFields := map[int]struct{}{fieldID: {}}
 	nextID := r.TechnologyFieldNextID[fieldID]
 	for nextID != 0 {
+		if _, repeated := seenFields[nextID]; repeated {
+			break
+		}
+		seenFields[nextID] = struct{}{}
 		if nextID >= 75 && nextID <= 82 {
 			completed, _ := hyperAdvancedCompletedLevels(empire, nextID)
 			level += completed
@@ -195,7 +200,7 @@ func (r *EconomyRules) selectedShipShield(empire *core.Empire, id *string) (*rul
 }
 
 func cloneShipDesignSpec(spec core.ShipDesignSpec) core.ShipDesignSpec {
-	spec.Weapons = append([]core.ShipWeaponMount(nil), spec.Weapons...)
+	spec.Weapons = core.CloneShipWeaponMounts(spec.Weapons)
 	return spec
 }
 
@@ -203,7 +208,8 @@ func (r *EconomyRules) compileMilitaryDesignSpec(empire *core.Empire, hullID str
 	if r == nil || empire == nil {
 		return core.ShipDesignSpec{}, fmt.Errorf("military design requires rules and empire")
 	}
-	if err := validateBaselineMilitaryWeapons(weapons); err != nil {
+	weaponSnapshot, err := canonicalWeaponMounts(weapons)
+	if err != nil {
 		return core.ShipDesignSpec{}, err
 	}
 	hull, ok := r.ShipHulls[hullID]
@@ -274,24 +280,17 @@ func (r *EconomyRules) compileMilitaryDesignSpec(empire *core.Empire, hullID str
 		shieldID = shield.ID
 	}
 
-	weaponSnapshot := append([]core.ShipWeaponMount(nil), weapons...)
 	if len(weaponSnapshot) > 0 {
 		if r.TacticalCombat == nil {
 			return core.ShipDesignSpec{}, fmt.Errorf("tactical combat rules are unavailable")
 		}
-		weapon := r.TacticalCombat.Weapon
-		if weapon.ID != "laser_cannon" || weapon.TechnologyID != 100 {
-			return core.ShipDesignSpec{}, fmt.Errorf("tactical rules do not define the supported Laser Cannon")
-		}
-		if !empireKnowsTechnology(empire, weapon.TechnologyID) {
-			return core.ShipDesignSpec{}, militaryDesignError(MilitaryDesignReasonTechnologyRequired, "empire %d has no Laser Cannon technology %d", empire.ID, weapon.TechnologyID)
-		}
-		for i, mount := range weaponSnapshot {
-			if mount.WeaponID != weapon.ID {
-				return core.ShipDesignSpec{}, fmt.Errorf("weapon[%d] %q is not the supported Laser Cannon", i, mount.WeaponID)
+		for _, mount := range weaponSnapshot {
+			quote, err := r.quoteBeamWeapon(empire, mount)
+			if err != nil {
+				return core.ShipDesignSpec{}, err
 			}
-			spaceUsed += weapon.BaseSpace * mount.Count
-			baseCost += weapon.BaseCostPP * mount.Count
+			spaceUsed += quote.RowSpace
+			baseCost += quote.RowCostPP
 		}
 	}
 	if spaceUsed > hull.BaseSpace {

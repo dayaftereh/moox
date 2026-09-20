@@ -5,10 +5,61 @@ import "fmt"
 // ShipWeaponMount is the persisted authoritative weapon identity carried by a
 // design and by every built Ship snapshot. Slice 07 deliberately supports only
 // the structural slot/id/count subset; weapon modifiers remain future work.
+type ShipWeaponMountType string
+
+const (
+	ShipWeaponMountStandard     ShipWeaponMountType = "standard"
+	ShipWeaponMountHeavy        ShipWeaponMountType = "heavy"
+	ShipWeaponMountPointDefense ShipWeaponMountType = "point_defense"
+)
+
+type ShipWeaponModifierID string
+
+const (
+	ShipWeaponModifierArmorPiercing      ShipWeaponModifierID = "armor_piercing"
+	ShipWeaponModifierContinuous         ShipWeaponModifierID = "continuous"
+	ShipWeaponModifierNoRangeDissipation ShipWeaponModifierID = "no_range_dissipation"
+	ShipWeaponModifierShieldPiercing     ShipWeaponModifierID = "shield_piercing"
+	ShipWeaponModifierAutofire           ShipWeaponModifierID = "autofire"
+	ShipWeaponModifierEnveloping         ShipWeaponModifierID = "enveloping"
+)
+
 type ShipWeaponMount struct {
-	Slot     int    `json:"slot"`
-	WeaponID string `json:"weapon_id"`
-	Count    int    `json:"count"`
+	Slot        int                    `json:"slot"`
+	WeaponID    string                 `json:"weapon_id"`
+	Count       int                    `json:"count"`
+	MountType   ShipWeaponMountType    `json:"mount_type,omitempty"`
+	ModifierIDs []ShipWeaponModifierID `json:"modifier_ids,omitempty"`
+}
+
+func shipWeaponModifierRank(id ShipWeaponModifierID) int {
+	switch id {
+	case ShipWeaponModifierArmorPiercing:
+		return 0
+	case ShipWeaponModifierContinuous:
+		return 1
+	case ShipWeaponModifierNoRangeDissipation:
+		return 2
+	case ShipWeaponModifierShieldPiercing:
+		return 3
+	case ShipWeaponModifierAutofire:
+		return 4
+	case ShipWeaponModifierEnveloping:
+		return 5
+	default:
+		return -1
+	}
+}
+func CloneShipWeaponMounts(in []ShipWeaponMount) []ShipWeaponMount {
+	if len(in) == 0 {
+		return nil
+	}
+	out := make([]ShipWeaponMount, len(in))
+	for i := range in {
+		out[i] = in[i]
+		out[i].ModifierIDs = append([]ShipWeaponModifierID(nil), in[i].ModifierIDs...)
+	}
+	return out
 }
 
 // ShipDesignSpec is the authoritative supported design snapshot.
@@ -77,6 +128,22 @@ func validateShipDesignSpec(spec ShipDesignSpec, label string) error {
 		}
 		if mount.WeaponID == "" || mount.Count <= 0 {
 			return fmt.Errorf("%s weapon[%d] requires weapon_id and positive count", label, i)
+		}
+		switch mount.MountType {
+		case "", ShipWeaponMountStandard, ShipWeaponMountHeavy, ShipWeaponMountPointDefense:
+		default:
+			return fmt.Errorf("%s weapon[%d] has invalid mount_type %q", label, i, mount.MountType)
+		}
+		previousModifierRank := -1
+		for modifierIndex, modifierID := range mount.ModifierIDs {
+			rank := shipWeaponModifierRank(modifierID)
+			if rank < 0 {
+				return fmt.Errorf("%s weapon[%d] modifier[%d] %q is unknown", label, i, modifierIndex, modifierID)
+			}
+			if rank <= previousModifierRank {
+				return fmt.Errorf("%s weapon[%d] modifiers must be unique and canonical", label, i)
+			}
+			previousModifierRank = rank
 		}
 		previousSlot = mount.Slot
 	}

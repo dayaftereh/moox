@@ -326,7 +326,21 @@ export type PlanetPotential = {
 }
 export type Outpost = { id: number; empire_id: number; body_id?: number; planet_id?: number }
 
-export type ShipWeaponMount = { slot: number; weapon_id: string; count: number }
+export type ShipWeaponMountType = 'standard' | 'heavy' | 'point_defense'
+export type ShipWeaponModifierID =
+  | 'armor_piercing'
+  | 'continuous'
+  | 'no_range_dissipation'
+  | 'shield_piercing'
+  | 'autofire'
+  | 'enveloping'
+export type ShipWeaponMount = {
+  slot: number
+  weapon_id: string
+  count: number
+  mount_type?: ShipWeaponMountType
+  modifier_ids?: ShipWeaponModifierID[]
+}
 export type ShipVisualGenomeWire = {
   version: 4
   hull_id: string
@@ -401,11 +415,28 @@ export type MilitaryDesignerAutomaticSystems = {
   fuel_cell_id?: string
   fuel_range_parsecs?: number
 }
+export type MilitaryDesignerWeaponMountChoice = {
+  id: ShipWeaponMountType
+  available: boolean
+  lock_reason?: string
+  space_percent_delta: number
+  cost_percent_delta: number
+}
+export type MilitaryDesignerWeaponModifierChoice = {
+  id: ShipWeaponModifierID
+  required_mini_level: number
+  available: boolean
+  lock_reason?: string
+  space_percent_delta: number
+  cost_percent_delta: number
+}
 export type MilitaryDesignerWeaponChoice = {
   id: string
   name_key: string
   kind: string
+  original_index: number
   technology_id: number
+  technology_field_id: number
   technology_known: boolean
   available: boolean
   lock_reason?: string
@@ -413,6 +444,16 @@ export type MilitaryDesignerWeaponChoice = {
   base_cost_pp: number
   min_damage: number
   max_damage: number
+  miniaturization_level: number
+  cost_reduction_percent: number
+  space_reduction_percent: number
+  effective_standard_space: number
+  effective_standard_cost_pp: number
+  allowed_modifier_mask: number
+  mount_choices: MilitaryDesignerWeaponMountChoice[]
+  modifier_choices: MilitaryDesignerWeaponModifierChoice[]
+  innate_effect_ids?: string[]
+  tactical_support: string
 }
 export type MilitaryDesignerVariant = { key: string; hull_id: string; weapons?: ShipWeaponMount[]; spec: ShipDesignSpec; command_point_cost: number }
 export type MilitaryDesignerCatalog = {
@@ -436,6 +477,47 @@ export type SaveMilitaryDesignPayload = {
   computer_id?: string
   shield_id?: string | null
   weapons?: ShipWeaponMount[]
+}
+export type MilitaryDesignDraft = {
+  hull_id: string
+  strategic_picture_id: number
+  computer_id?: string
+  shield_id?: string | null
+  weapons?: ShipWeaponMount[]
+}
+export type MilitaryDesignWeaponRowPreview = {
+  slot: number
+  weapon_id: string
+  count: number
+  mount_type: ShipWeaponMountType
+  modifier_ids?: ShipWeaponModifierID[]
+  miniaturization_level: number
+  unit_space: number
+  unit_cost_pp: number
+  row_space: number
+  row_cost_pp: number
+}
+export type MilitaryDesignDraftProjection = {
+  save_available: boolean
+  rejection_reason?: string
+  rejection_message?: string
+  hull_space: number
+  space_used: number
+  remaining_space: number
+  base_design_cost_pp: number
+  production_cost_pp: number
+  weapons?: MilitaryDesignWeaponRowPreview[]
+  spec?: ShipDesignSpec
+}
+export type MilitaryDesignPreviewSnapshot = {
+  schema_version: number
+  change_sequence: number
+  preview: {
+    game_id: string
+    turn: number
+    base_revision: number
+    projection: MilitaryDesignDraftProjection
+  }
 }
 export type Ship = { id: number; empire_id: number; source_design_id: number; source_design_revision: number; source_visual_revision?: number; name: string; spec: ShipDesignSpec; visual_genome?: ShipVisualGenomeWire }
 export type StrategicFleet = {
@@ -1087,6 +1169,13 @@ export async function submitConstructionBuyout(snapshot: PlayerSnapshot, seatID:
   })
 }
 
+export async function previewMilitaryDesign(snapshot: PlayerSnapshot, seatID: number, draft: MilitaryDesignDraft): Promise<MilitaryDesignPreviewSnapshot> {
+  return requestJSON<MilitaryDesignPreviewSnapshot>(`/api/v1/games/${encodeURIComponent(snapshot.view.game_id)}/seats/${seatID}/military-design-preview`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ base_revision: snapshot.view.revision, draft }),
+  })
+}
 export async function submitMilitaryDesign(snapshot: PlayerSnapshot, seatID: number, payload: SaveMilitaryDesignPayload): Promise<Receipt> {
   return requestJSON<Receipt>(`/api/v1/games/${encodeURIComponent(snapshot.view.game_id)}/immediate-commands`, {
     method: 'POST',

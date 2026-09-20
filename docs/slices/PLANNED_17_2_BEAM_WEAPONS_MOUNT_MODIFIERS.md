@@ -1,6 +1,6 @@
 # Planned Slice 17.2 - Beam Weapons and Beam Mount Modifiers
 
-Status: **active; Gates 1-2 complete / Gate 3 next (2026-09-20)**.
+Status: **active; Gates 1-3 complete / Gate 4 next (2026-09-21)**.
 
 ## Objective
 
@@ -44,15 +44,18 @@ Gate-1 evidence: docs/research/SLICE_17_2_GATE1_BEAM_WEAPONS_AUDIT_2026-09-20.md
 - [x] Freeze 17.0 Designer/Combat Lab fixtures.
 
 Gate-2 contract: docs/research/SLICE_17_2_GATE2_BEAM_CONTRACT_FREEZE_2026-09-20.md.
+Gate-2 HMI add-flow amendment: docs/research/SLICE_17_2_GATE2_HMI_ADD_FLOW_AMENDMENT_2026-09-20.md.
 
 ## Gate 3 - implementation
 
-- [ ] Expand Beam catalog/rules.
-- [ ] Expand save/design validation and weapon mounts.
-- [ ] Implement selected modifier metadata and bounded tactical consumers.
-- [ ] Update Designer HMI for multiple Beam slots/counts/modifiers.
-- [ ] Preserve construction/persistence/snapshot semantics.
-- [ ] Add deterministic Tactical/Designer Lab regressions.
+- [x] Expand Beam catalog/rules.
+- [x] Expand save/design validation and weapon mounts.
+- [x] Implement selected modifier metadata and bounded tactical consumers.
+- [x] Update Designer HMI for multiple Beam slots/counts/modifiers.
+- [x] Preserve construction/persistence/snapshot semantics.
+- [x] Add deterministic Tactical/Designer Lab regressions.
+
+Gate-3 implementation: docs/research/SLICE_17_2_GATE3_IMPLEMENTATION_2026-09-21.md.
 
 ## Gate 4 - QA + close
 

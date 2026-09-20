@@ -2,7 +2,7 @@
 
 Opened: 2026-09-20
 Parent: Slice 17 - Military Ship Design Component/Weapon Breadth
-Status: **Gates 1-2 complete / Gate 3 next**
+Status: **Gates 1-3 complete / Gate 4 next**
 
 ## Objective
 
@@ -62,11 +62,22 @@ Evidence: docs/research/SLICE_17_2_GATE1_BEAM_WEAPONS_AUDIT_2026-09-20.md.
 
 Gate 1 froze the evidence inputs, not the implementation contract: 13 original Beam identities, exact base tech/damage/Space/Cost, Beam miniaturization class, per-Beam executable modifier masks, original eight-row weapon-array semantics, the current ShipWeaponMount modifier-snapshot gap, Slice-17.0 reference vectors and explicit Tactical support/defer boundaries.
 
-Gate 2 is complete. Gate 3 is next but has not started.
+Gate 2 is complete. Gate 3 is complete. Gate 4 is next and has not started.
 ## Gate 2 complete
 
 Contract: docs/research/SLICE_17_2_GATE2_BEAM_CONTRACT_FREEZE_2026-09-20.md.
 
 Gate 2 freezes the 13-Beam catalog, canonical standard/heavy/point-defense mount type, explicit sorted special-modifier IDs, exact legality/refinement/rejection reasons, original mount->special->miniaturization->count Space/PP arithmetic, server-authoritative draft preview boundary, compact Weapon Selector/configuration dialog contract, reference-lab matrices and Tactical support/defer boundary.
 
-Gate 3 is next but has not started.
+Gate 3 is complete. Gate 4 is next and has not started.
+
+## Gate 3 HMI add-flow amendment
+
+Initial weapon selection and Standard/Heavy/Point Defense + special-modifier configuration now happen inside the Weapon Selector before pressing Install. Installed rows retain compact +/- quantity controls. Evidence: docs/research/SLICE_17_2_GATE2_HMI_ADD_FLOW_AMENDMENT_2026-09-20.md.
+
+
+## Gate 3 complete
+
+Implementation: docs/research/SLICE_17_2_GATE3_IMPLEMENTATION_2026-09-21.md.
+
+All 13 frozen Beams now flow through authoritative Designer selection/preview/save, immutable construction/built-Ship snapshots and lossless BattleSession metadata. The amended selector-first HMI is implemented. The Field-74 Antaran self-loop is handled terminally at M0. Non-baseline Tactical effects remain explicitly deferred; only the unmodified Standard Laser receives firing behavior. Gate 4 is next and has not started.

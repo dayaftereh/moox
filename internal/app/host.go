@@ -72,6 +72,12 @@ type PlanningPreviewSnapshot struct {
 	Preview        session.PlanningPreview `json:"preview"`
 }
 
+type MilitaryDesignPreviewSnapshot struct {
+	SchemaVersion  int                           `json:"schema_version"`
+	ChangeSequence uint64                        `json:"change_sequence"`
+	Preview        session.MilitaryDesignPreview `json:"preview"`
+}
+
 type ObserverSnapshot struct {
 	SchemaVersion  int                  `json:"schema_version"`
 	ChangeSequence uint64               `json:"change_sequence"`
@@ -284,6 +290,28 @@ func (h *Host) PlanningPreview(gameID string, seatID protocol.SeatID, batch prot
 	return PlanningPreviewSnapshot{SchemaVersion: SchemaVersion, ChangeSequence: hosted.changeSequence, Preview: preview}, nil
 }
 
+func (h *Host) MilitaryDesignPreview(gameID string, seatID protocol.SeatID, request session.MilitaryDesignPreviewRequest) (MilitaryDesignPreviewSnapshot, error) {
+	hosted, err := h.lookup(gameID)
+	if err != nil {
+		return MilitaryDesignPreviewSnapshot{}, err
+	}
+	hosted.mu.Lock()
+	defer hosted.mu.Unlock()
+	if !containsSeat(hosted.seats, seatID) {
+		return MilitaryDesignPreviewSnapshot{}, fmt.Errorf("%w: seat %d", ErrNotFound, seatID)
+	}
+	if hosted.immediateResolver == nil {
+		return MilitaryDesignPreviewSnapshot{}, fmt.Errorf("military design preview is unavailable without an economy resolver")
+	}
+	preview, err := hosted.session.MilitaryDesignPreview(seatID, request, hosted.immediateResolver)
+	if err != nil {
+		if errors.Is(err, session.ErrMilitaryDesignPreviewRejected) {
+			return MilitaryDesignPreviewSnapshot{}, fmt.Errorf("%w: %v", ErrSessionRejected, err)
+		}
+		return MilitaryDesignPreviewSnapshot{}, err
+	}
+	return MilitaryDesignPreviewSnapshot{SchemaVersion: SchemaVersion, ChangeSequence: hosted.changeSequence, Preview: preview}, nil
+}
 func (h *Host) SavePlanningDraft(gameID string, seatID protocol.SeatID, draft PlanningDraft) (PlanningDraftSnapshot, error) {
 	hosted, err := h.lookup(gameID)
 	if err != nil {

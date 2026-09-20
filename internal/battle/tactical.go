@@ -41,11 +41,15 @@ type TacticalRulesSnapshot struct {
 }
 
 type TacticalWeaponSpec struct {
-	Slot      int    `json:"slot"`
-	WeaponID  string `json:"weapon_id"`
-	Count     int    `json:"count"`
-	MinDamage int    `json:"min_damage"`
-	MaxDamage int    `json:"max_damage"`
+	Slot            int                         `json:"slot"`
+	WeaponID        string                      `json:"weapon_id"`
+	Count           int                         `json:"count"`
+	MountType       core.ShipWeaponMountType    `json:"mount_type,omitempty"`
+	ModifierIDs     []core.ShipWeaponModifierID `json:"modifier_ids,omitempty"`
+	MinDamage       int                         `json:"min_damage"`
+	MaxDamage       int                         `json:"max_damage"`
+	InnateEffectIDs []string                    `json:"innate_effect_ids,omitempty"`
+	TacticalSupport string                      `json:"tactical_support,omitempty"`
 }
 
 type TacticalShipSpec struct {
@@ -125,12 +129,16 @@ type TacticalMoveOption struct {
 }
 
 type TacticalWeaponView struct {
-	Slot      int    `json:"slot"`
-	WeaponID  string `json:"weapon_id"`
-	Count     int    `json:"count"`
-	MinDamage int    `json:"min_damage"`
-	MaxDamage int    `json:"max_damage"`
-	Ready     bool   `json:"ready"`
+	Slot            int                         `json:"slot"`
+	WeaponID        string                      `json:"weapon_id"`
+	Count           int                         `json:"count"`
+	MountType       core.ShipWeaponMountType    `json:"mount_type,omitempty"`
+	ModifierIDs     []core.ShipWeaponModifierID `json:"modifier_ids,omitempty"`
+	MinDamage       int                         `json:"min_damage"`
+	MaxDamage       int                         `json:"max_damage"`
+	InnateEffectIDs []string                    `json:"innate_effect_ids,omitempty"`
+	TacticalSupport string                      `json:"tactical_support,omitempty"`
+	Ready           bool                        `json:"ready"`
 }
 
 type TacticalShipView struct {
@@ -330,6 +338,69 @@ func validateTacticalSpec(spec Spec) error {
 	return nil
 }
 
+func canonicalTacticalWeaponMountType(value core.ShipWeaponMountType) core.ShipWeaponMountType {
+	if value == "" {
+		return core.ShipWeaponMountStandard
+	}
+	return value
+}
+
+func tacticalWeaponModifierRank(id core.ShipWeaponModifierID) int {
+	switch id {
+	case core.ShipWeaponModifierArmorPiercing:
+		return 0
+	case core.ShipWeaponModifierContinuous:
+		return 1
+	case core.ShipWeaponModifierNoRangeDissipation:
+		return 2
+	case core.ShipWeaponModifierShieldPiercing:
+		return 3
+	case core.ShipWeaponModifierAutofire:
+		return 4
+	case core.ShipWeaponModifierEnveloping:
+		return 5
+	default:
+		return -1
+	}
+}
+
+func validateTacticalWeaponSnapshot(w TacticalWeaponSpec) error {
+	if w.WeaponID == "" || w.Count <= 0 || w.MinDamage <= 0 || w.MaxDamage < w.MinDamage {
+		return fmt.Errorf("invalid tactical weapon snapshot %q", w.WeaponID)
+	}
+	switch canonicalTacticalWeaponMountType(w.MountType) {
+	case core.ShipWeaponMountStandard, core.ShipWeaponMountHeavy, core.ShipWeaponMountPointDefense:
+	default:
+		return fmt.Errorf("tactical weapon %q has invalid mount type %q", w.WeaponID, w.MountType)
+	}
+	previousRank := -1
+	for _, id := range w.ModifierIDs {
+		rank := tacticalWeaponModifierRank(id)
+		if rank < 0 || rank <= previousRank {
+			return fmt.Errorf("tactical weapon %q has invalid/noncanonical modifier %q", w.WeaponID, id)
+		}
+		previousRank = rank
+	}
+	switch w.TacticalSupport {
+	case "", "baseline", "metadata_only":
+	default:
+		return fmt.Errorf("tactical weapon %q has invalid support mode %q", w.WeaponID, w.TacticalSupport)
+	}
+	if w.TacticalSupport == "" && w.WeaponID != "laser_cannon" {
+		return fmt.Errorf("tactical weapon %q is missing support metadata", w.WeaponID)
+	}
+	return nil
+}
+
+func baselineTacticalFireSupported(w TacticalWeaponSpec) bool {
+	return w.WeaponID == "laser_cannon" &&
+		w.Count > 0 &&
+		canonicalTacticalWeaponMountType(w.MountType) == core.ShipWeaponMountStandard &&
+		len(w.ModifierIDs) == 0 &&
+		w.MinDamage == 1 &&
+		w.MaxDamage == 4 &&
+		(w.TacticalSupport == "" || w.TacticalSupport == "baseline")
+}
 func validateBaselineCombatant(s TacticalShipSpec) error {
 	if s.HullID != "frigate" || s.ComputerID != "electronic_computer" || s.ArmorID != "titanium_armor" || s.ArmorMax != 4 || s.StructureMax != 4 {
 		return fmt.Errorf("tactical ship %d is outside the Slice 15.5 Frigate/Electronic/Titanium baseline", s.ShipID)
@@ -362,8 +433,8 @@ func validateBaselineCombatant(s TacticalShipSpec) error {
 		if w.Slot < 0 || w.Slot > 7 || (i > 0 && w.Slot <= previousSlot) {
 			return fmt.Errorf("tactical ship %d weapon slots must be unique, ascending and within 0..7", s.ShipID)
 		}
-		if w.WeaponID != "laser_cannon" || w.Count <= 0 || w.MinDamage != 1 || w.MaxDamage != 4 {
-			return fmt.Errorf("tactical ship %d weapon slot %d is outside the supported Laser baseline", s.ShipID, w.Slot)
+		if err := validateTacticalWeaponSnapshot(w); err != nil {
+			return fmt.Errorf("tactical ship %d weapon slot %d: %w", s.ShipID, w.Slot, err)
 		}
 		previousSlot = w.Slot
 	}
@@ -407,7 +478,7 @@ func newTacticalRuntime(spec TacticalSpec) (tacticalRuntime, error) {
 	for i, ship := range spec.Ships {
 		state := TacticalShipState{ShipID: ship.ShipID, X: ship.X, Y: ship.Y, Facing: ship.Facing, MovementCurrent: ship.CurrentCombatSpeed, MovementMax: ship.CurrentCombatSpeed, ArmorCurrent: ship.ArmorMax, Weapons: make([]TacticalWeaponState, len(ship.Weapons))}
 		for j, weapon := range ship.Weapons {
-			state.Weapons[j] = TacticalWeaponState{Slot: weapon.Slot, Ready: true}
+			state.Weapons[j] = TacticalWeaponState{Slot: weapon.Slot, Ready: baselineTacticalFireSupported(weapon)}
 		}
 		r.state.Ships[i] = state
 	}
@@ -769,7 +840,7 @@ func tacticalShipViews(spec TacticalSpec, r *tacticalRuntime) []TacticalShipView
 			if weapon := weaponState(state, weaponSpec.Slot); weapon != nil {
 				ready = weapon.Ready
 			}
-			view.Weapons = append(view.Weapons, TacticalWeaponView{Slot: weaponSpec.Slot, WeaponID: weaponSpec.WeaponID, Count: weaponSpec.Count, MinDamage: weaponSpec.MinDamage, MaxDamage: weaponSpec.MaxDamage, Ready: ready})
+			view.Weapons = append(view.Weapons, TacticalWeaponView{Slot: weaponSpec.Slot, WeaponID: weaponSpec.WeaponID, Count: weaponSpec.Count, MountType: weaponSpec.MountType, ModifierIDs: append([]core.ShipWeaponModifierID(nil), weaponSpec.ModifierIDs...), MinDamage: weaponSpec.MinDamage, MaxDamage: weaponSpec.MaxDamage, InnateEffectIDs: append([]string(nil), weaponSpec.InnateEffectIDs...), TacticalSupport: weaponSpec.TacticalSupport, Ready: ready})
 		}
 		out = append(out, view)
 	}
@@ -785,7 +856,7 @@ func legalFireActions(spec TacticalSpec, r *tacticalRuntime) []TacticalFireActio
 	out := make([]TacticalFireAction, 0, len(activeSpec.Weapons))
 	for _, weaponSpec := range activeSpec.Weapons {
 		ready := weaponState(activeState, weaponSpec.Slot)
-		if ready == nil || !ready.Ready || weaponSpec.WeaponID != "laser_cannon" {
+		if ready == nil || !ready.Ready || !baselineTacticalFireSupported(weaponSpec) {
 			continue
 		}
 		action := TacticalFireAction{ShipID: activeSpec.ShipID, WeaponSlot: weaponSpec.Slot, WeaponID: weaponSpec.WeaponID}
@@ -838,8 +909,8 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	if !ready.Ready {
 		return nil, fmt.Errorf("ship %d weapon slot %d is not ready", active.ShipID, payload.WeaponSlot)
 	}
-	if weapon.WeaponID != "laser_cannon" || weapon.Count <= 0 || weapon.MinDamage != 1 || weapon.MaxDamage != 4 {
-		return nil, fmt.Errorf("weapon slot %d is outside the supported Laser baseline", payload.WeaponSlot)
+	if !baselineTacticalFireSupported(*weapon) {
+		return nil, fmt.Errorf("weapon slot %d is outside the supported standard-Laser firing baseline", payload.WeaponSlot)
 	}
 
 	activePosition := r.shipState(active.ShipID)
@@ -1243,7 +1314,12 @@ func cloneTacticalSpec(spec TacticalSpec) TacticalSpec {
 	out.Ships = make([]TacticalShipSpec, len(spec.Ships))
 	for i := range spec.Ships {
 		out.Ships[i] = spec.Ships[i]
-		out.Ships[i].Weapons = append([]TacticalWeaponSpec(nil), spec.Ships[i].Weapons...)
+		out.Ships[i].Weapons = make([]TacticalWeaponSpec, len(spec.Ships[i].Weapons))
+		for j := range spec.Ships[i].Weapons {
+			out.Ships[i].Weapons[j] = spec.Ships[i].Weapons[j]
+			out.Ships[i].Weapons[j].ModifierIDs = append([]core.ShipWeaponModifierID(nil), spec.Ships[i].Weapons[j].ModifierIDs...)
+			out.Ships[i].Weapons[j].InnateEffectIDs = append([]string(nil), spec.Ships[i].Weapons[j].InnateEffectIDs...)
+		}
 		if spec.Ships[i].VisualGenome != nil {
 			genome := core.CloneShipVisualGenome(*spec.Ships[i].VisualGenome)
 			out.Ships[i].VisualGenome = &genome

@@ -397,6 +397,8 @@ If all eight rows are occupied, Add is disabled with a stable reason.
 
 Insufficient Space is determined by server preview rather than a TypeScript multiplication.
 
+
+> HMI amendment (2026-09-20): initial weapon mount/modifier configuration now occurs inside the Weapon Selector before installation. See `docs/research/SLICE_17_2_GATE2_HMI_ADD_FLOW_AMENDMENT_2026-09-20.md`. This supersedes only the earlier immediate-standard-add interaction; all rules/data contracts below remain unchanged.
 ## 9. Installed-weapon configuration dialog
 
 The existing compact installed-weapon list remains fixed-height/scrollable.

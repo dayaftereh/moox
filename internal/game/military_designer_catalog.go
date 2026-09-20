@@ -61,18 +61,47 @@ type MilitaryDesignerAutomaticSystems struct {
 	FuelRangeParsecs        int    `json:"fuel_range_parsecs,omitempty"`
 }
 
+type MilitaryDesignerWeaponMountChoice struct {
+	ID                string `json:"id"`
+	Available         bool   `json:"available"`
+	LockReason        string `json:"lock_reason,omitempty"`
+	SpacePercentDelta int    `json:"space_percent_delta"`
+	CostPercentDelta  int    `json:"cost_percent_delta"`
+}
+
+type MilitaryDesignerWeaponModifierChoice struct {
+	ID                string `json:"id"`
+	RequiredMiniLevel int    `json:"required_mini_level"`
+	Available         bool   `json:"available"`
+	LockReason        string `json:"lock_reason,omitempty"`
+	SpacePercentDelta int    `json:"space_percent_delta"`
+	CostPercentDelta  int    `json:"cost_percent_delta"`
+}
+
 type MilitaryDesignerWeaponChoice struct {
-	ID              string `json:"id"`
-	NameKey         string `json:"name_key"`
-	Kind            string `json:"kind"`
-	TechnologyID    int    `json:"technology_id"`
-	TechnologyKnown bool   `json:"technology_known"`
-	Available       bool   `json:"available"`
-	LockReason      string `json:"lock_reason,omitempty"`
-	BaseSpace       int    `json:"base_space"`
-	BaseCostPP      int    `json:"base_cost_pp"`
-	MinDamage       int    `json:"min_damage"`
-	MaxDamage       int    `json:"max_damage"`
+	ID                      string                                 `json:"id"`
+	NameKey                 string                                 `json:"name_key"`
+	Kind                    string                                 `json:"kind"`
+	OriginalIndex           int                                    `json:"original_index"`
+	TechnologyID            int                                    `json:"technology_id"`
+	TechnologyFieldID       int                                    `json:"technology_field_id"`
+	TechnologyKnown         bool                                   `json:"technology_known"`
+	Available               bool                                   `json:"available"`
+	LockReason              string                                 `json:"lock_reason,omitempty"`
+	BaseSpace               int                                    `json:"base_space"`
+	BaseCostPP              int                                    `json:"base_cost_pp"`
+	MinDamage               int                                    `json:"min_damage"`
+	MaxDamage               int                                    `json:"max_damage"`
+	MiniaturizationLevel    int                                    `json:"miniaturization_level"`
+	CostReductionPercent    int                                    `json:"cost_reduction_percent"`
+	SpaceReductionPercent   int                                    `json:"space_reduction_percent"`
+	EffectiveStandardSpace  int                                    `json:"effective_standard_space"`
+	EffectiveStandardCostPP int                                    `json:"effective_standard_cost_pp"`
+	AllowedModifierMask     int                                    `json:"allowed_modifier_mask"`
+	MountChoices            []MilitaryDesignerWeaponMountChoice    `json:"mount_choices"`
+	ModifierChoices         []MilitaryDesignerWeaponModifierChoice `json:"modifier_choices"`
+	InnateEffectIDs         []string                               `json:"innate_effect_ids,omitempty"`
+	TacticalSupport         string                                 `json:"tactical_support"`
 }
 
 type MilitaryDesignerVariant struct {
@@ -225,18 +254,74 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 	}
 
 	if r.TacticalCombat != nil {
-		weapon := r.TacticalCombat.Weapon
-		technologyKnown := empireKnowsTechnology(empire, weapon.TechnologyID)
-		lockReason := ""
-		if !technologyKnown {
-			lockReason = ShipDesignerLockTechnologyRequired
+		for _, weapon := range r.TacticalCombat.BeamWeapons() {
+			technologyKnown := empireKnowsTechnology(empire, weapon.TechnologyID)
+			level := 0
+			if technologyKnown {
+				var err error
+				level, err = r.shipComponentMiniaturizationLevel(empire, weapon.TechnologyID)
+				if err != nil {
+					return MilitaryDesignerCatalog{}, err
+				}
+			}
+			lockReason := ""
+			if !technologyKnown {
+				lockReason = ShipDesignerLockTechnologyRequired
+			}
+			mountChoices := []MilitaryDesignerWeaponMountChoice{{
+				ID: string(core.ShipWeaponMountStandard), Available: technologyKnown,
+				LockReason: lockReason,
+			}}
+			for _, modifier := range r.TacticalCombat.BeamModifiers {
+				if modifier.Kind != "mount" || weapon.AllowedModifierMask&modifier.Bit == 0 {
+					continue
+				}
+				mountID := ""
+				switch modifier.ID {
+				case "heavy":
+					mountID = string(core.ShipWeaponMountHeavy)
+				case "point_defense":
+					mountID = string(core.ShipWeaponMountPointDefense)
+				default:
+					continue
+				}
+				mountChoices = append(mountChoices, MilitaryDesignerWeaponMountChoice{
+					ID: mountID, Available: technologyKnown, LockReason: lockReason,
+					SpacePercentDelta: modifier.SpacePercentDelta, CostPercentDelta: modifier.CostPercentDelta,
+				})
+			}
+			modifierChoices := make([]MilitaryDesignerWeaponModifierChoice, 0, 6)
+			for _, modifier := range r.TacticalCombat.BeamModifiers {
+				if modifier.Kind != "special" || weapon.AllowedModifierMask&modifier.Bit == 0 {
+					continue
+				}
+				available := technologyKnown && level >= modifier.RequiredMiniLevel
+				modifierLock := ""
+				if !technologyKnown {
+					modifierLock = ShipDesignerLockTechnologyRequired
+				} else if level < modifier.RequiredMiniLevel {
+					modifierLock = MilitaryDesignReasonWeaponModifierRefinementRequired
+				}
+				modifierChoices = append(modifierChoices, MilitaryDesignerWeaponModifierChoice{
+					ID: modifier.ID, RequiredMiniLevel: modifier.RequiredMiniLevel, Available: available, LockReason: modifierLock,
+					SpacePercentDelta: modifier.SpacePercentDelta, CostPercentDelta: modifier.CostPercentDelta,
+				})
+			}
+			catalog.Weapons = append(catalog.Weapons, MilitaryDesignerWeaponChoice{
+				ID: weapon.ID, NameKey: r.TechnologyNameKeyByID[weapon.TechnologyID], Kind: weapon.Kind,
+				OriginalIndex: weapon.OriginalIndex, TechnologyID: weapon.TechnologyID, TechnologyFieldID: weapon.TechnologyFieldID,
+				TechnologyKnown: technologyKnown, Available: technologyKnown, LockReason: lockReason,
+				BaseSpace: weapon.BaseSpace, BaseCostPP: weapon.BaseCostPP, MinDamage: weapon.MinDamage, MaxDamage: weapon.MaxDamage,
+				MiniaturizationLevel:    level,
+				CostReductionPercent:    100 - miniaturizationCostPercent(level),
+				SpaceReductionPercent:   100 - miniaturizationSpacePerThousand(level, 1)/10,
+				EffectiveStandardSpace:  miniaturizedComponentSpace(weapon.BaseSpace, level, 1),
+				EffectiveStandardCostPP: miniaturizedComponentCost(weapon.BaseCostPP, level),
+				AllowedModifierMask:     weapon.AllowedModifierMask,
+				MountChoices:            mountChoices, ModifierChoices: modifierChoices,
+				InnateEffectIDs: append([]string(nil), weapon.InnateEffectIDs...), TacticalSupport: weapon.TacticalSupport,
+			})
 		}
-		catalog.Weapons = append(catalog.Weapons, MilitaryDesignerWeaponChoice{
-			ID: weapon.ID, NameKey: r.TechnologyNameKeyByID[weapon.TechnologyID], Kind: weapon.Kind,
-			TechnologyID: weapon.TechnologyID, TechnologyKnown: technologyKnown, Available: technologyKnown,
-			LockReason: lockReason, BaseSpace: weapon.BaseSpace, BaseCostPP: weapon.BaseCostPP,
-			MinDamage: weapon.MinDamage, MaxDamage: weapon.MaxDamage,
-		})
 	}
 
 	for i := range catalog.Hulls {
@@ -260,13 +345,21 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 		catalog.Variants = append(catalog.Variants, MilitaryDesignerVariant{
 			Key: hull.ID + ":none", HullID: hull.ID, Spec: baseSpec, CommandPointCost: hull.SizeIndex + 1,
 		})
-		if len(catalog.Weapons) != 0 && catalog.Weapons[0].Available {
-			mounts := []core.ShipWeaponMount{{Slot: 0, WeaponID: catalog.Weapons[0].ID, Count: 1}}
+		laserIndex := -1
+		for weaponIndex := range catalog.Weapons {
+			if catalog.Weapons[weaponIndex].ID == "laser_cannon" && catalog.Weapons[weaponIndex].Available {
+				laserIndex = weaponIndex
+				break
+			}
+		}
+		if laserIndex >= 0 {
+			weapon := catalog.Weapons[laserIndex]
+			mounts := []core.ShipWeaponMount{{Slot: 0, WeaponID: weapon.ID, Count: 1, MountType: core.ShipWeaponMountStandard}}
 			spec, err := r.clearedMilitaryDesignSpec(empire, hull.ID, pictureID, mounts)
 			if err == nil {
 				catalog.Variants = append(catalog.Variants, MilitaryDesignerVariant{
-					Key: hull.ID + ":" + catalog.Weapons[0].ID, HullID: hull.ID,
-					Weapons: append([]core.ShipWeaponMount(nil), mounts...), Spec: spec,
+					Key: hull.ID + ":" + weapon.ID, HullID: hull.ID,
+					Weapons: core.CloneShipWeaponMounts(mounts), Spec: spec,
 					CommandPointCost: hull.SizeIndex + 1,
 				})
 			}

@@ -6305,3 +6305,256 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   .shipdesigner-system-dialog { width: 100%; max-height: 86dvh; border-radius: 14px 14px 0 0; }
   .shipdesigner-system-dialog-choice-grid { grid-template-columns: 1fr; }
 }
+
+
+/* Slice 17.2 Gate-3 Beam selector: compact main Designer, scroll-contained selector/configuration. */
+.shipdesigner-weapon-selector {
+  width: min(1080px, calc(100vw - 32px));
+  max-width: 1080px;
+  max-height: min(820px, calc(100dvh - 32px));
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  overflow: hidden;
+}
+.shipdesigner-weapon-selector .shipdesigner-system-dialog-header {
+  margin-bottom: 0;
+}
+.shipdesigner-weapon-selector-toolbar {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.5fr) repeat(3, minmax(120px, .8fr)) auto;
+  gap: 8px;
+  align-items: end;
+  padding: 10px 0 12px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.shipdesigner-weapon-selector-toolbar label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.shipdesigner-weapon-selector-toolbar label > span {
+  color: var(--muted);
+  font-size: .62rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.shipdesigner-weapon-selector-toolbar input,
+.shipdesigner-weapon-selector-toolbar select {
+  width: 100%;
+  min-width: 0;
+}
+.shipdesigner-sort-direction {
+  min-width: 42px;
+  min-height: 42px;
+  padding: 4px 8px;
+  font-size: 1rem;
+}
+.shipdesigner-weapon-selector-body {
+  display: grid;
+  grid-template-columns: minmax(360px, 1.12fr) minmax(320px, .88fr);
+  min-height: 0;
+  overflow: hidden;
+}
+.shipdesigner-weapon-selector-list {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 10px 10px 10px 0;
+  display: grid;
+  align-content: start;
+  gap: 6px;
+}
+.shipdesigner-weapon-selector-row {
+  width: 100%;
+  min-height: 52px;
+  display: grid;
+  grid-template-columns: minmax(140px, 1fr) minmax(64px, .45fr) minmax(76px, .5fr) minmax(62px, .42fr);
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,.025);
+  color: var(--text);
+  text-align: left;
+}
+.shipdesigner-weapon-selector-row:hover:not(:disabled),
+.shipdesigner-weapon-selector-row.selected {
+  border-color: var(--accent);
+  background: rgba(255,255,255,.06);
+}
+.shipdesigner-weapon-selector-row.locked {
+  opacity: .58;
+}
+.shipdesigner-weapon-selector-name {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+.shipdesigner-weapon-selector-name strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.shipdesigner-weapon-selector-name small {
+  color: var(--muted);
+  font-size: .62rem;
+}
+.shipdesigner-weapon-config {
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 12px 0 12px 14px;
+  border-left: 1px solid var(--border-soft);
+}
+.shipdesigner-weapon-config-empty {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: var(--muted);
+  text-align: center;
+}
+.shipdesigner-weapon-config-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+.shipdesigner-weapon-config-title h4 {
+  margin: 2px 0 0;
+}
+.shipdesigner-weapon-config-group {
+  min-width: 0;
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+}
+.shipdesigner-weapon-config-group legend {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: .66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.shipdesigner-weapon-option-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+.shipdesigner-weapon-option {
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  padding: 8px 9px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,.025);
+}
+.shipdesigner-weapon-option:has(input:checked) {
+  border-color: var(--accent);
+  background: rgba(255,255,255,.065);
+}
+.shipdesigner-weapon-option.locked {
+  opacity: .55;
+}
+.shipdesigner-weapon-option span {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  font-size: .74rem;
+}
+.shipdesigner-weapon-option small {
+  color: var(--muted);
+  font-size: .61rem;
+}
+.shipdesigner-weapon-config-bottom {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: end;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-soft);
+}
+.shipdesigner-weapon-config-quantity {
+  display: grid;
+  gap: 5px;
+}
+.shipdesigner-weapon-config-quantity > span {
+  color: var(--muted);
+  font-size: .66rem;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.shipdesigner-weapon-preview {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+  min-width: 0;
+  text-align: right;
+}
+.shipdesigner-weapon-selector-actions {
+  margin-top: 12px;
+}
+.shipdesigner-open-weapon-selector small {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+}
+.shipdesigner-weapon-selector .error {
+  color: var(--danger, #ff8f8f);
+}
+
+@media (max-width: 700px) {
+  .shipdesigner-weapon-selector {
+    width: min(100vw - 12px, 680px);
+    max-height: calc(100dvh - 12px);
+    grid-template-rows: auto auto minmax(0, 1fr);
+  }
+  .shipdesigner-weapon-selector-toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .shipdesigner-sort-direction {
+    width: 44px;
+  }
+  .shipdesigner-weapon-selector-body {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(150px, .82fr) minmax(260px, 1.18fr);
+  }
+  .shipdesigner-weapon-selector-list {
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .shipdesigner-weapon-selector-row {
+    grid-template-columns: minmax(120px, 1fr) 54px 66px 54px;
+    min-height: 50px;
+    padding: 7px 8px;
+    gap: 6px;
+    font-size: .72rem;
+  }
+  .shipdesigner-weapon-config {
+    padding: 10px 0 4px;
+    border-left: 0;
+  }
+  .shipdesigner-weapon-option-grid {
+    grid-template-columns: 1fr;
+  }
+  .shipdesigner-weapon-config-bottom {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+  .shipdesigner-weapon-preview {
+    justify-items: start;
+    text-align: left;
+  }
+  .shipdesigner-weapon-selector-actions {
+    position: sticky;
+    bottom: 0;
+    padding-top: 8px;
+    background: var(--panel, rgba(10,16,24,.96));
+  }
+}

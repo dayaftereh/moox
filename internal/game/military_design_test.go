@@ -265,7 +265,7 @@ func TestSaveMilitaryDesignSupportsOneStandardLaser(t *testing.T) {
 		t.Fatal(err)
 	}
 	design := state.ShipDesigns[len(state.ShipDesigns)-1]
-	if !reflect.DeepEqual(design.Spec.Weapons, []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1}}) {
+	if !reflect.DeepEqual(design.Spec.Weapons, []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1, MountType: core.ShipWeaponMountStandard}}) {
 		t.Fatalf("weapons=%+v", design.Spec.Weapons)
 	}
 	if design.Spec.SpaceUsed != 10 || design.Spec.BaseDesignCostPP != 30 || design.Spec.ProductionCostPP != 30 {
@@ -306,8 +306,8 @@ func TestSaveMilitaryDesignSupportsGroupedAndSplitLaserMounts(t *testing.T) {
 		name    string
 		weapons []core.ShipWeaponMount
 	}{
-		{name: "grouped", weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 2}}},
-		{name: "split", weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1}, {Slot: 1, WeaponID: "laser_cannon", Count: 1}}},
+		{name: "grouped", weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 2, MountType: core.ShipWeaponMountStandard}}},
+		{name: "split", weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1, MountType: core.ShipWeaponMountStandard}, {Slot: 1, WeaponID: "laser_cannon", Count: 1, MountType: core.ShipWeaponMountStandard}}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -350,7 +350,7 @@ func TestSaveMilitaryDesignRejectsInvalidWeaponMountContract(t *testing.T) {
 		{Name: "high slot", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 8, WeaponID: "laser_cannon", Count: 1}}},
 		{Name: "zero count", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 0}}},
 		{Name: "duplicate slot", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1}, {Slot: 0, WeaponID: "laser_cannon", Count: 1}}},
-		{Name: "descending slots", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 1, WeaponID: "laser_cannon", Count: 1}, {Slot: 0, WeaponID: "laser_cannon", Count: 1}}},
+
 		{Name: "too many mounts", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1}, {Slot: 1, WeaponID: "laser_cannon", Count: 1}, {Slot: 2, WeaponID: "laser_cannon", Count: 1}, {Slot: 3, WeaponID: "laser_cannon", Count: 1}, {Slot: 4, WeaponID: "laser_cannon", Count: 1}, {Slot: 5, WeaponID: "laser_cannon", Count: 1}, {Slot: 6, WeaponID: "laser_cannon", Count: 1}, {Slot: 7, WeaponID: "laser_cannon", Count: 1}, {Slot: 8, WeaponID: "laser_cannon", Count: 1}}},
 	}
 	for _, payload := range cases {
@@ -424,10 +424,59 @@ func TestBuiltMilitaryShipKeepsWeaponSnapshotAcrossDesignRevision(t *testing.T) 
 	if len(state.ShipDesigns[0].Spec.Weapons) != 0 {
 		t.Fatalf("updated design remains armed: %+v", state.ShipDesigns[0].Spec.Weapons)
 	}
-	if !reflect.DeepEqual(state.Ships[0].Spec.Weapons, []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1}}) || state.Ships[0].SourceDesignRevision != 1 {
+	if !reflect.DeepEqual(state.Ships[0].Spec.Weapons, []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1, MountType: core.ShipWeaponMountStandard}}) || state.Ships[0].SourceDesignRevision != 1 {
 		t.Fatalf("built Ship weapon snapshot changed: %+v", state.Ships[0])
 	}
 	if err := state.Validate(); err != nil {
 		t.Fatalf("revised design/built Ship state invalid: %v", err)
+	}
+}
+
+func TestSlice172BuiltMilitaryShipKeepsConfiguredBeamSnapshot(t *testing.T) {
+	rules := loadColonyShipRules(t)
+	resolver, err := NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := core.NewSmallFixture(0x17220)
+	if err := rules.ApplyReferenceTriangleTechnologyProfile(state, ReferenceTriangleProfileAllTech); err != nil {
+		t.Fatal(err)
+	}
+	empire := &state.Empires[0]
+	noShield := ""
+	wantWeapons := []core.ShipWeaponMount{{
+		Slot: 0, WeaponID: "phasor", Count: 2, MountType: core.ShipWeaponMountHeavy,
+		ModifierIDs: []core.ShipWeaponModifierID{
+			core.ShipWeaponModifierShieldPiercing,
+			core.ShipWeaponModifierAutofire,
+		},
+	}}
+	command, err := NewSaveMilitaryDesignCommand(1, SaveMilitaryDesignPayload{
+		Name: "Configured Phasor", HullID: "destroyer", StrategicPictureID: 8,
+		ShieldID: &noShield, Weapons: wantWeapons,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.saveMilitaryDesign(state, empire.ID, 1, command); err != nil {
+		t.Fatal(err)
+	}
+	if len(state.ShipDesigns) != 1 || !reflect.DeepEqual(state.ShipDesigns[0].Spec.Weapons, wantWeapons) {
+		t.Fatalf("saved configured Beam snapshot=%+v want=%+v", state.ShipDesigns, wantWeapons)
+	}
+	if _, err := completeMilitaryShip(state, &state.Colonies[0], &state.ShipDesigns[0]); err != nil {
+		t.Fatal(err)
+	}
+	expectedBuilt := core.CloneShipWeaponMounts(wantWeapons)
+	if len(state.Ships) != 1 || !reflect.DeepEqual(state.Ships[0].Spec.Weapons, expectedBuilt) {
+		t.Fatalf("built configured Beam snapshot=%+v want=%+v", state.Ships, wantWeapons)
+	}
+	state.ShipDesigns[0].Spec.Weapons[0].Count = 7
+	state.ShipDesigns[0].Spec.Weapons[0].ModifierIDs[0] = core.ShipWeaponModifierContinuous
+	if !reflect.DeepEqual(state.Ships[0].Spec.Weapons, expectedBuilt) {
+		t.Fatalf("built configured Beam snapshot aliased revised design: %+v", state.Ships[0].Spec.Weapons)
+	}
+	if err := state.Validate(); err != nil {
+		t.Fatalf("configured Beam built-Ship state invalid: %v", err)
 	}
 }

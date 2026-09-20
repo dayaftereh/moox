@@ -163,8 +163,25 @@ func baselineCombatantUnsupportedReason(ship core.Ship, rules *ruleset.TacticalC
 		if weapon.Slot < 0 || weapon.Slot > 7 || (i > 0 && weapon.Slot <= previousSlot) {
 			return "tactical combatant weapon slots must be unique, ascending and within 0..7"
 		}
-		if weapon.WeaponID != rules.Weapon.ID || weapon.Count <= 0 {
-			return "tactical combatant supports only positive-count standard Laser mounts"
+		canonical, err := canonicalWeaponMount(weapon)
+		if err != nil {
+			return fmt.Sprintf("tactical combatant weapon slot %d is invalid: %v", weapon.Slot, err)
+		}
+		if canonical.Count <= 0 {
+			return "tactical combatant weapon count must be positive"
+		}
+		weaponRule, ok := rules.WeaponByID(canonical.WeaponID)
+		if !ok {
+			return fmt.Sprintf("tactical combatant Beam %q is unsupported", canonical.WeaponID)
+		}
+		if mountBit := beamMountBit(canonical.MountType); mountBit != 0 && weaponRule.AllowedModifierMask&mountBit == 0 {
+			return fmt.Sprintf("tactical combatant Beam %q does not allow mount %q", canonical.WeaponID, canonical.MountType)
+		}
+		for _, modifierID := range canonical.ModifierIDs {
+			modifier, ok := beamModifierByID(rules.BeamModifiers, modifierID)
+			if !ok || modifier.Kind != "special" || weaponRule.AllowedModifierMask&modifier.Bit == 0 {
+				return fmt.Sprintf("tactical combatant Beam %q does not allow modifier %q", canonical.WeaponID, modifierID)
+			}
 		}
 		previousSlot = weapon.Slot
 	}
@@ -199,9 +216,14 @@ func baselineTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing, 
 		out.VisualGenome = &genome
 	}
 	for _, mount := range ship.Spec.Weapons {
+		canonical, _ := canonicalWeaponMount(mount)
+		weaponRule, _ := rules.WeaponByID(canonical.WeaponID)
 		out.Weapons = append(out.Weapons, battle.TacticalWeaponSpec{
-			Slot: mount.Slot, WeaponID: mount.WeaponID, Count: mount.Count,
-			MinDamage: rules.Weapon.MinDamage, MaxDamage: rules.Weapon.MaxDamage,
+			Slot: canonical.Slot, WeaponID: canonical.WeaponID, Count: canonical.Count,
+			MountType: canonical.MountType, ModifierIDs: append([]core.ShipWeaponModifierID(nil), canonical.ModifierIDs...),
+			MinDamage: weaponRule.MinDamage, MaxDamage: weaponRule.MaxDamage,
+			InnateEffectIDs: append([]string(nil), weaponRule.InnateEffectIDs...),
+			TacticalSupport: weaponRule.TacticalSupport,
 		})
 	}
 	return out

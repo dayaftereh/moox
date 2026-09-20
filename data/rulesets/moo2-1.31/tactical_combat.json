@@ -1,50 +1,365 @@
 {
-  "schema_version": 1,
-  "ruleset": "moo2-1.31",
-  "initiative": {
-    "beam_offense_divisor": 10
-  },
-  "rng": {
-    "multiplier": 1103515245,
-    "increment": 12345
-  },
-  "beam": {
-    "base_hit_threshold": 40,
-    "max_hit_threshold": 95,
-    "effective_roll_cap": 100,
-    "to_hit_range_modifiers": [0, 0, -10, -20, -30, -40, -55, -70, -85],
-    "damage_range_modifiers": [0, 0, -10, -20, -30, -40, -50, -60, -65]
-  },
-  "weapon": {
-    "id": "laser_cannon",
-    "technology_id": 100,
-    "kind": "beam",
-    "base_space": 10,
-    "base_cost_pp": 5,
-    "min_damage": 1,
-    "max_damage": 4
-  },
-  "frigate": {
-    "hull_id": "frigate",
-    "armor_id": "titanium_armor",
-    "fuel_cell_id": "standard_fuel_cells",
-    "armor_hits": 4,
-    "structure": 4
-  },
-  "drives": [
-    {
-      "drive_id": "nuclear_drive",
-      "min_speed": 10,
-      "max_speed": 20
-    },
-    {
-      "drive_id": "fusion_drive",
-      "min_speed": 12,
-      "max_speed": 22
-    }
-  ],
-  "computer": {
-    "computer_id": "electronic_computer",
-    "beam_offense": 25
-  }
+    "schema_version":  1,
+    "ruleset":  "moo2-1.31",
+    "initiative":  {
+                       "beam_offense_divisor":  10
+                   },
+    "rng":  {
+                "multiplier":  1103515245,
+                "increment":  12345
+            },
+    "beam":  {
+                 "base_hit_threshold":  40,
+                 "max_hit_threshold":  95,
+                 "effective_roll_cap":  100,
+                 "to_hit_range_modifiers":  [
+                                                0,
+                                                0,
+                                                -10,
+                                                -20,
+                                                -30,
+                                                -40,
+                                                -55,
+                                                -70,
+                                                -85
+                                            ],
+                 "damage_range_modifiers":  [
+                                                0,
+                                                0,
+                                                -10,
+                                                -20,
+                                                -30,
+                                                -40,
+                                                -50,
+                                                -60,
+                                                -65
+                                            ],
+                 "space_miniaturization_factors":  [
+                                                       100,
+                                                       80,
+                                                       70,
+                                                       60,
+                                                       50,
+                                                       40
+                                                   ],
+                 "cost_miniaturization_factors":  [
+                                                      100,
+                                                      75,
+                                                      55,
+                                                      40,
+                                                      30,
+                                                      25
+                                                  ]
+             },
+    "weapon":  {
+                   "id":  "laser_cannon",
+                   "technology_id":  100,
+                   "kind":  "beam",
+                   "base_space":  10,
+                   "base_cost_pp":  5,
+                   "min_damage":  1,
+                   "max_damage":  4
+               },
+    "frigate":  {
+                    "hull_id":  "frigate",
+                    "armor_id":  "titanium_armor",
+                    "fuel_cell_id":  "standard_fuel_cells",
+                    "armor_hits":  4,
+                    "structure":  4
+                },
+    "drives":  [
+                   {
+                       "drive_id":  "nuclear_drive",
+                       "min_speed":  10,
+                       "max_speed":  20
+                   },
+                   {
+                       "drive_id":  "fusion_drive",
+                       "min_speed":  12,
+                       "max_speed":  22
+                   }
+               ],
+    "computer":  {
+                     "computer_id":  "electronic_computer",
+                     "beam_offense":  25
+                 },
+    "weapons":  [
+                    {
+                        "id":  "mass_driver",
+                        "original_index":  1,
+                        "technology_id":  104,
+                        "technology_field_id":  7,
+                        "kind":  "beam",
+                        "base_space":  10,
+                        "base_cost_pp":  7,
+                        "min_damage":  6,
+                        "max_damage":  6,
+                        "allowed_modifier_mask":  142,
+                        "innate_effect_ids":  [
+                                                  "no_range_dissipation"
+                                              ],
+                        "tactical_support":  "metadata_only"
+                    },
+                    {
+                        "id":  "gauss_cannon",
+                        "original_index":  2,
+                        "technology_id":  78,
+                        "technology_field_id":  64,
+                        "kind":  "beam",
+                        "base_space":  10,
+                        "base_cost_pp":  10,
+                        "min_damage":  18,
+                        "max_damage":  18,
+                        "allowed_modifier_mask":  138,
+                        "innate_effect_ids":  [
+                                                  "no_range_dissipation"
+                                              ],
+                        "tactical_support":  "metadata_only"
+                    },
+                    {
+                        "id":  "laser_cannon",
+                        "original_index":  3,
+                        "technology_id":  100,
+                        "technology_field_id":  57,
+                        "kind":  "beam",
+                        "base_space":  10,
+                        "base_cost_pp":  5,
+                        "min_damage":  1,
+                        "max_damage":  4,
+                        "allowed_modifier_mask":  190,
+                        "innate_effect_ids":  [
+
+                                              ],
+                        "tactical_support":  "baseline"
+                    },
+                    {
+                        "id":  "particle_beam",
+                        "original_index":  4,
+                        "technology_id":  123,
+                        "technology_field_id":  74,
+                        "kind":  "beam",
+                        "base_space":  15,
+                        "base_cost_pp":  35,
+                        "min_damage":  10,
+                        "max_damage":  30,
+                        "allowed_modifier_mask":  22,
+                        "innate_effect_ids":  [
+                                                  "natural_shield_piercing"
+                                              ],
+                        "tactical_support":  "metadata_only"
+                    },
+                    {
+                        "id":  "fusion_beam",
+                        "original_index":  5,
+                        "technology_id":  70,
+                        "technology_field_id":  31,
+                        "kind":  "beam",
+                        "base_space":  10,
+                        "base_cost_pp":  6,
+                        "min_damage":  2,
+                        "max_damage":  6,
+                        "allowed_modifier_mask":  278,
+                        "innate_effect_ids":  [
+
+                                              ],
+                        "tactical_support":  "metadata_only"
+                    },
+                    {
+                        "id":  "ion_pulse_cannon",
+                        "original_index":  6,
+                        "technology_id":  97,
+                        "technology_field_id":  41,
+                        "kind":  "beam",
+                        "base_space":  30,
+                        "base_cost_pp":  15,
+                        "min_damage":  2,
+                        "max_damage":  10,
+                        "allowed_modifier_mask":  144,
+                        "innate_effect_ids":  [
+                                                  "armor_structure_bypass",
+                                                  "monster_antaran_immunity_exception"
+                                              ],
+                        "tactical_support":  "metadata_only"
+                    },
+                    {
+                        "id":  "graviton_beam",
+                        "original_index":  7,
+                        "technology_id":  79,
+                        "technology_field_id":  16,
+                        "kind":  "beam",
+                        "base_space":  15,
+                        "base_cost_pp":  12,
+                        "min_damage":  3,
+                        "max_damage":  15,
+                        "allowed_modifier_mask":  18,
+                        "innate_effect_ids":  [
+                                                  "extra_structure_damage"
+                                              ],
+                        "tactical_support":  "metadata_only"
+                    },
+                    {
+                        "id":  "neutron_blaster",
+                        "original_index":  8,
+                        "technology_id":  115,
+                        "technology_field_id":  54,
+                        "kind":  "beam",
+                        "base_space":  10,
+                        "base_cost_pp":  8,
+                        "min_damage":  3,
+                        "max_damage":  12,
+                        "allowed_modifier_mask":  18,
+                        "innate_effect_ids":  [
+                                                  "marine_kill"
+                                              ],
+                        "tactical_support":  "metadata_only"
+                    },
+                    {
+                        "id":  "phasor",
+                        "original_index":  9,
+                        "technology_id":  127,
+                        "technology_field_id":  52,
+                        "kind":  "beam",
+                        "base_space":  10,
+                        "base_cost_pp":  10,
+                        "min_damage":  5,
+                        "max_damage":  20,
+                        "allowed_modifier_mask":  214,
+                        "innate_effect_ids":  [
+
+                                              ],
+                        "tactical_support":  "metadata_only"
+                    },
+                    {
+                        "id":  "disrupter_cannon",
+                        "original_index":  10,
+                        "technology_id":  54,
+                        "technology_field_id":  51,
+                        "kind":  "beam",
+                        "base_space":  20,
+                        "base_cost_pp":  25,
+                        "min_damage":  40,
+                        "max_damage":  40,
+                        "allowed_modifier_mask":  130,
+                        "innate_effect_ids":  [
+                                                  "no_range_dissipation"
+                                              ],
+                        "tactical_support":  "metadata_only"
+                    },
+                    {
+                        "id":  "death_ray",
+                        "original_index":  11,
+                        "technology_id":  47,
+                        "technology_field_id":  74,
+                        "kind":  "beam",
+                        "base_space":  30,
+                        "base_cost_pp":  75,
+                        "min_damage":  50,
+                        "max_damage":  100,
+                        "allowed_modifier_mask":  2,
+                        "innate_effect_ids":  [
+                                                  "marine_kill"
+                                              ],
+                        "tactical_support":  "metadata_only"
+                    },
+                    {
+                        "id":  "plasma_cannon",
+                        "original_index":  12,
+                        "technology_id":  137,
+                        "technology_field_id":  59,
+                        "kind":  "beam",
+                        "base_space":  25,
+                        "base_cost_pp":  15,
+                        "min_damage":  6,
+                        "max_damage":  30,
+                        "allowed_modifier_mask":  18,
+                        "innate_effect_ids":  [
+                                                  "all_four_shields",
+                                                  "double_range_penalty"
+                                              ],
+                        "tactical_support":  "metadata_only"
+                    },
+                    {
+                        "id":  "mauler_device",
+                        "original_index":  27,
+                        "technology_id":  105,
+                        "technology_field_id":  39,
+                        "kind":  "beam",
+                        "base_space":  50,
+                        "base_cost_pp":  75,
+                        "min_damage":  100,
+                        "max_damage":  100,
+                        "allowed_modifier_mask":  2,
+                        "innate_effect_ids":  [
+                                                  "always_hit",
+                                                  "double_range_dissipation"
+                                              ],
+                        "tactical_support":  "metadata_only"
+                    }
+                ],
+    "beam_modifiers":  [
+                           {
+                               "id":  "heavy",
+                               "bit":  2,
+                               "kind":  "mount",
+                               "required_mini_level":  0,
+                               "space_percent_delta":  100,
+                               "cost_percent_delta":  100
+                           },
+                           {
+                               "id":  "point_defense",
+                               "bit":  4,
+                               "kind":  "mount",
+                               "required_mini_level":  0,
+                               "space_percent_delta":  -50,
+                               "cost_percent_delta":  -50
+                           },
+                           {
+                               "id":  "armor_piercing",
+                               "bit":  8,
+                               "kind":  "special",
+                               "required_mini_level":  1,
+                               "space_percent_delta":  50,
+                               "cost_percent_delta":  50
+                           },
+                           {
+                               "id":  "continuous",
+                               "bit":  16,
+                               "kind":  "special",
+                               "required_mini_level":  1,
+                               "space_percent_delta":  50,
+                               "cost_percent_delta":  50
+                           },
+                           {
+                               "id":  "no_range_dissipation",
+                               "bit":  32,
+                               "kind":  "special",
+                               "required_mini_level":  1,
+                               "space_percent_delta":  25,
+                               "cost_percent_delta":  25
+                           },
+                           {
+                               "id":  "shield_piercing",
+                               "bit":  64,
+                               "kind":  "special",
+                               "required_mini_level":  1,
+                               "space_percent_delta":  50,
+                               "cost_percent_delta":  50
+                           },
+                           {
+                               "id":  "autofire",
+                               "bit":  128,
+                               "kind":  "special",
+                               "required_mini_level":  2,
+                               "space_percent_delta":  50,
+                               "cost_percent_delta":  50
+                           },
+                           {
+                               "id":  "enveloping",
+                               "bit":  256,
+                               "kind":  "special",
+                               "required_mini_level":  2,
+                               "space_percent_delta":  100,
+                               "cost_percent_delta":  100
+                           }
+                       ]
 }

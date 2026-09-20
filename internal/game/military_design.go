@@ -70,26 +70,8 @@ func validateSaveMilitaryDesignPayload(payload SaveMilitaryDesignPayload) error 
 }
 
 func validateBaselineMilitaryWeapons(weapons []core.ShipWeaponMount) error {
-	if len(weapons) > 8 {
-		return fmt.Errorf("military design supports at most 8 weapon mounts")
-	}
-	previousSlot := -1
-	for i, mount := range weapons {
-		if mount.Slot < 0 || mount.Slot > 7 {
-			return fmt.Errorf("weapon[%d] slot %d is outside 0..7", i, mount.Slot)
-		}
-		if i > 0 && mount.Slot <= previousSlot {
-			return fmt.Errorf("weapon mounts must be strictly ascending by slot")
-		}
-		if mount.WeaponID != "laser_cannon" {
-			return fmt.Errorf("weapon[%d] %q is not supported in the current slice", i, mount.WeaponID)
-		}
-		if mount.Count <= 0 {
-			return fmt.Errorf("weapon[%d] count must be positive", i)
-		}
-		previousSlot = mount.Slot
-	}
-	return nil
+	_, err := canonicalWeaponMounts(weapons)
+	return err
 }
 
 func shipDesignByID(state *core.GameState, id core.ID) (int, *core.ShipDesign) {
@@ -328,7 +310,7 @@ func materializeMilitaryShip(state *core.GameState, empireID, systemID core.ID, 
 		return core.Ship{}, core.StrategicFleet{}, fmt.Errorf("military Ship materialization references unknown system %d", systemID)
 	}
 	shipSpec := design.Spec
-	shipSpec.Weapons = append([]core.ShipWeaponMount(nil), design.Spec.Weapons...)
+	shipSpec.Weapons = core.CloneShipWeaponMounts(design.Spec.Weapons)
 	var visual *core.ShipVisualGenome
 	if design.VisualGenome != nil {
 		clone := core.CloneShipVisualGenome(*design.VisualGenome)
