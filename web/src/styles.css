@@ -6256,9 +6256,10 @@ button.galaxy-node-marker-player-fleet.is-open {
 .shipdesigner-ship-info-heading { align-items: flex-start; gap: 12px; }
 .shipdesigner-ship-info-heading > .muted { max-width: 330px; margin: 0; text-align: right; font-size: .68rem; line-height: 1.35; }
 .shipdesigner-combat-ratings { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 8px; }
-.shipdesigner-combat-ratings > div { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; min-width: 0; padding: 7px 9px; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); background: rgba(255,255,255,.025); }
-.shipdesigner-combat-ratings span { color: var(--muted); font-size: .62rem; text-transform: uppercase; letter-spacing: .05em; }
-.shipdesigner-combat-ratings strong { flex: 0 0 auto; font-size: .86rem; color: var(--text); }
+.shipdesigner-combat-rating { display: grid; grid-template-columns: minmax(0, 1fr) 32px; min-width: 0; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); background: rgba(255,255,255,.025); overflow: hidden; }
+.shipdesigner-combat-rating-main { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; min-width: 0; padding: 7px 9px; }
+.shipdesigner-combat-rating-main span { color: var(--muted); font-size: .62rem; text-transform: uppercase; letter-spacing: .05em; }
+.shipdesigner-combat-rating-main strong { flex: 0 0 auto; font-size: .86rem; color: var(--text); }
 .shipdesigner-system-list { display: grid; gap: 5px; margin-top: 8px; }
 .shipdesigner-system-row { display: grid; grid-template-columns: minmax(0, 1fr) 32px; align-items: stretch; gap: 0; padding: 0; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); background: rgba(8,17,29,.7); overflow: hidden; }
 .shipdesigner-system-row.selectable { border-color: color-mix(in srgb, var(--accent) 38%, var(--border-soft)); }
@@ -6270,7 +6271,12 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 .shipdesigner-system-row-main > p { margin: 0; color: var(--muted-strong); font-size: .7rem; line-height: 1.35; }
 .shipdesigner-system-help { align-self: stretch; min-width: 32px; border: 0; border-left: 1px solid var(--border-soft); background: rgba(255,255,255,.03); color: var(--text); font-weight: 800; font-size: .9rem; cursor: pointer; }
 .shipdesigner-system-help:hover, .shipdesigner-system-help:focus-visible { background: var(--accent-soft); color: var(--accent); outline: none; }
-.shipdesigner-installed-weapons { display: grid; gap: 7px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-soft); }
+.shipdesigner-installed-weapons { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 7px; height: 164px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-soft); }
+.shipdesigner-installed-weapons > .eyebrow { margin: 0; }
+.shipdesigner-installed-weapons-scroll { min-height: 0; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-gutter: stable; padding-right: 2px; }
+.shipdesigner-installed-weapons .shipdesigner-installed-info-grid { margin-top: 0; }
+.shipdesigner-installed-weapons-empty { display: grid; min-height: 100%; place-items: center; padding: 14px; border: 1px dashed var(--border-soft); border-radius: var(--radius-sm); color: var(--muted); text-align: center; font-size: .75rem; }
+.shipdesigner-system-formula { padding: 9px 10px; border: 1px solid var(--border-soft); border-radius: var(--radius-sm); background: rgba(255,255,255,.035); font-variant-numeric: tabular-nums; }
 .shipdesigner-system-dialog-backdrop { position: fixed; inset: 0; z-index: 96; display: grid; place-items: center; padding: 18px; background: rgba(1,6,12,.78); backdrop-filter: blur(5px); }
 .shipdesigner-system-dialog { display: grid; gap: 14px; width: min(760px, 100%); max-height: min(84dvh, 760px); overflow: auto; padding: 16px; border: 1px solid var(--border-strong); border-radius: 16px; background: var(--panel-strong); box-shadow: var(--shadow-lg); }
 .shipdesigner-system-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
@@ -6287,6 +6293,8 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 .shipdesigner-system-dialog-scope p { color: var(--muted); font-size: .72rem; }
 .shipdesigner-system-dialog-actions { display: flex; justify-content: flex-end; }
 @media (max-width: 700px) {
+  .shipdesigner-combat-ratings { grid-template-columns: 1fr; }
+  .shipdesigner-installed-weapons { height: 172px; }
   .shipdesigner-ship-info-heading { display: grid; }
   .shipdesigner-ship-info-heading > .muted { max-width: none; text-align: left; }
   .shipdesigner-system-dialog-backdrop { place-items: end stretch; padding: 0; }

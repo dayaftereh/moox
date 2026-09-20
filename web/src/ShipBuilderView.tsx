@@ -340,6 +340,8 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
                 weaponMounts={weaponMounts}
                 laser={laser}
                 remainingSpace={remainingSpace}
+                combatSpeed={combatSpeed}
+                unusedSpaceSpeedBonus={unusedSpaceSpeedBonus}
                 beamDefense={beamDefense}
                 missileEvasion={missileEvasion}
                 onComputerChange={(id) => { setComputerID(id); setSaveNotice('') }}

@@ -311,3 +311,13 @@ The Designer catalog now projects original combat-display constants and per-hull
 Evidence: `docs/research/SLICE_17_1_GATE3_ORIGINAL_SUMMARY_LAYOUT_AMENDMENT_2026-09-20.md`.
 
 This is a design-display amendment only. Slice-15.5 Tactical simulation remains unchanged. Gate 4 remains not started.
+
+## Combat-rating help / stable weapons-panel follow-up (2026-09-20)
+
+User review added trailing `?` help to Beam Defense and Missile Evasion. Beam Defense help exposes the current hull-base + drive + unused-Space combat-speed calculation and final x5 defense factor. Missile Evasion help explains the current 0% Slice-17.1 calculation and the original modifier categories that remain outside the present Designer/Tactical scope.
+
+The Installed Weapons section is now permanently reserved even for an empty design. It has an explicit empty state and a fixed-height internal scroll area, preventing the Ship Designer layout from jumping when weapon slots are added or removed.
+
+Evidence and acceptance details: `docs/research/SLICE_17_1_GATE3_ORIGINAL_SUMMARY_LAYOUT_AMENDMENT_2026-09-20.md`.
+
+Gate 4 remains not started.

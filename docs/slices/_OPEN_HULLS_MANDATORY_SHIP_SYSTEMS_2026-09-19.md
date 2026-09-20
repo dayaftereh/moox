@@ -80,3 +80,11 @@ Original Ship Designer review moved total Cost to the Save action, Space Availab
 Evidence: `docs/research/SLICE_17_1_GATE3_ORIGINAL_SUMMARY_LAYOUT_AMENDMENT_2026-09-20.md`.
 
 Gate 4 is still next and has not started.
+
+## Gate 3 combat-rating help / stable weapons panel
+
+Beam Defense and Missile Evasion now have `?` detail dialogs with meaning/current calculation. Installed Weapons is always visible with an empty state and fixed-height scroll area so weapon changes do not shift the rest of the Designer.
+
+Evidence: `docs/research/SLICE_17_1_GATE3_ORIGINAL_SUMMARY_LAYOUT_AMENDMENT_2026-09-20.md`.
+
+Gate 4 is still next and has not started.

@@ -290,6 +290,11 @@ async function main() {
       infoCard: Boolean(infoCard),
       rows,
       helpCount: document.querySelectorAll('.shipdesigner-system-help').length,
+      ratingHelpCount: document.querySelectorAll('.shipdesigner-combat-rating .shipdesigner-system-help').length,
+      installedWeaponsPresent: Boolean(document.querySelector('.shipdesigner-installed-weapons')),
+      installedWeaponsEmptyText: document.querySelector('.shipdesigner-installed-weapons-empty')?.textContent || '',
+      installedWeaponsHeight: document.querySelector('.shipdesigner-installed-weapons')?.getBoundingClientRect().height || 0,
+      installedWeaponsOverflowY: getComputedStyle(document.querySelector('.shipdesigner-installed-weapons-scroll')).overflowY,
       summaryCount: document.querySelectorAll('.shipdesigner-system-summary-grid > div').length,
       combatRatingsText: document.querySelector('.shipdesigner-combat-ratings')?.textContent || '',
       spaceAvailableText: document.querySelector('.shipdesigner-space-available')?.textContent || '',
@@ -304,7 +309,12 @@ async function main() {
   })()`)
   assert(designerUI.infoCard, 'Ship information card is missing below the ship preview')
   assert(designerUI.rows.length === 5, `Ship information has ${designerUI.rows.length} mandatory-system rows, want 5`)
-  assert(designerUI.helpCount === 5 && designerUI.rows.every((row) => row.help), `Ship information help affordances=${designerUI.helpCount}, want one for every system`)
+  assert(designerUI.helpCount === 7 && designerUI.rows.every((row) => row.help), `Ship information help affordances=${designerUI.helpCount}, want 5 system + 2 combat-rating help buttons`)
+  assert(designerUI.ratingHelpCount === 2, `Combat rating help affordances=${designerUI.ratingHelpCount}, want 2`)
+  assert(designerUI.installedWeaponsPresent, 'Installed weapons panel is missing when no weapon is installed')
+  assert(designerUI.installedWeaponsEmptyText.includes('Noch keine Waffen eingebaut'), `Installed weapons empty state is missing: ${designerUI.installedWeaponsEmptyText}`)
+  assert(designerUI.installedWeaponsHeight >= 160, `Installed weapons reserved height=${designerUI.installedWeaponsHeight}, want stable reserved panel height`)
+  assert(designerUI.installedWeaponsOverflowY === 'auto', `Installed weapons panel overflow-y=${designerUI.installedWeaponsOverflowY}, want auto`)
   assert(designerUI.summaryCount === 0, `Ship information still renders ${designerUI.summaryCount} redundant summary stat(s)`)
   assert(designerUI.combatRatingsText.includes('Strahlenabwehr') && designerUI.combatRatingsText.includes('Raketen-Ausweichen'), 'Ship information is missing Beam Defense / Missile Evasion ratings')
   assert(designerUI.combatRatingsText.replace(/\s+/g, '').includes('Strahlenabwehr+'), 'Beam Defense rating is missing a numeric value: ' + designerUI.combatRatingsText)
@@ -330,6 +340,22 @@ async function main() {
   assert(designerUI.hullSelectorHeight <= 52, `Mobile Ship Designer hull selector height=${designerUI.hullSelectorHeight}, want <=52`)
   assert(!designerUI.overflow, 'Ship information card causes horizontal overflow at 390px')
 
+  const openedBeamDefense = await evaluate(`(() => { const button = document.querySelector('[data-rating="beam-defense"] .shipdesigner-system-help'); if (!button) return false; button.click(); return true })()`)
+  assert(openedBeamDefense, 'Beam Defense ? did not open detail popup')
+  await sleep(100)
+  const beamDefenseHelp = await evaluate(`document.querySelector('.shipdesigner-system-dialog')?.textContent || ''`)
+  assert(beamDefenseHelp.includes('Strahlenabwehr') && beamDefenseHelp.includes('Aktuelle Berechnung:') && beamDefenseHelp.includes('Kampfgeschwindigkeit'), `Beam Defense help is missing meaning/formula: ${beamDefenseHelp}`)
+  await evaluate(`(() => { document.querySelector('.shipdesigner-system-dialog-close')?.click(); return true })()`)
+  await sleep(80)
+
+  const openedMissileEvasion = await evaluate(`(() => { const button = document.querySelector('[data-rating="missile-evasion"] .shipdesigner-system-help'); if (!button) return false; button.click(); return true })()`)
+  assert(openedMissileEvasion, 'Missile Evasion ? did not open detail popup')
+  await sleep(100)
+  const missileEvasionHelp = await evaluate(`document.querySelector('.shipdesigner-system-dialog')?.textContent || ''`)
+  assert(missileEvasionHelp.includes('Raketen-Ausweichen') && missileEvasionHelp.includes('Aktuelle Slice-17.1-Berechnung') && missileEvasionHelp.includes('ECM'), `Missile Evasion help is missing meaning/current calculation/scope: ${missileEvasionHelp}`)
+  await evaluate(`(() => { document.querySelector('.shipdesigner-system-dialog-close')?.click(); return true })()`)
+  await sleep(80)
+
   const openedComputer = await evaluate(`(() => { const button = document.querySelector('[data-system="computer"] .shipdesigner-system-select-trigger'); if (!button) return false; button.click(); return true })()`)
   assert(openedComputer, 'Computer row did not open selection popup')
   await sleep(120)
@@ -353,6 +379,30 @@ async function main() {
   assert(fuelInfoText.includes('Unbegrenzte strategische Reichweite'), 'Fuel detail popup does not explain the installed effect')
   await evaluate(`(() => { document.querySelector('.shipdesigner-system-dialog-close')?.click(); return true })()`)
   await sleep(100)
+  const initialInstalledPanelHeight = await evaluate(`document.querySelector('.shipdesigner-installed-weapons')?.getBoundingClientRect().height || 0`)
+  const addWeapon = async () => {
+    const added = await evaluate(`(() => { const button = document.querySelector('.shipdesigner-weapon-section .shipdesigner-component-row .button-secondary'); if (!button || button.disabled) return false; button.click(); return true })()`)
+    if (added) await sleep(100)
+    return added
+  }
+  assert(await addWeapon(), 'Could not add first weapon for installed-panel stability check')
+  assert(await addWeapon(), 'Could not add second weapon for installed-panel stability check')
+  const installedPanelAfterWeapons = await evaluate(`(() => {
+    const panel = document.querySelector('.shipdesigner-installed-weapons')
+    const scroll = document.querySelector('.shipdesigner-installed-weapons-scroll')
+    return {
+      height: panel?.getBoundingClientRect().height || 0,
+      cards: document.querySelectorAll('.shipdesigner-installed-info-grid .shipdesigner-info-card.weapon').length,
+      empty: Boolean(document.querySelector('.shipdesigner-installed-weapons-empty')),
+      scrollHeight: scroll?.scrollHeight || 0,
+      clientHeight: scroll?.clientHeight || 0,
+      overflowY: scroll ? getComputedStyle(scroll).overflowY : '',
+    }
+  })()`)
+  assert(Math.abs(installedPanelAfterWeapons.height - initialInstalledPanelHeight) <= 1, `Installed weapons panel shifted height ${initialInstalledPanelHeight} -> ${installedPanelAfterWeapons.height}`)
+  assert(installedPanelAfterWeapons.cards === 2 && !installedPanelAfterWeapons.empty, `Installed weapon cards/empty state are wrong after adding: ${JSON.stringify(installedPanelAfterWeapons)}`)
+  assert(installedPanelAfterWeapons.overflowY === 'auto' && installedPanelAfterWeapons.scrollHeight >= installedPanelAfterWeapons.clientHeight, `Installed weapons scroll area is not stable/scroll-capable: ${JSON.stringify(installedPanelAfterWeapons)}`)
+
   const measureShipVisualSize = () => evaluate(`(() => {
     const ship = document.querySelector('.shipdesigner-preview-ship')
     if (!ship) return null
@@ -488,7 +538,7 @@ async function main() {
   assert(!ordinary, 'Ordinary game-1 renders development credit/turn controls')
 
   if (failures.length) throw new Error('Reference/buyout/ship-designer browser smoke failed:\n- ' + failures.join('\n- '))
-  console.log('Reference/buyout/ship-designer browser smoke passed: six-hull All-Tech Designer, compact ship-information rows, Beam Defense/Missile Evasion ratings, weapon-area Space Available and save-area production cost, ? detail popups and player-facing miniaturization reductions, Computer/Shield card selectors, explicit no-Shield save, mobile/desktop Designer layout, More-only dev tools, +BC grant, +1/+5/N presence, same-turn drafted construction buyout with BC deduction, next-turn completion, 390px/desktop layout and ordinary-game isolation.')
+  console.log('Reference/buyout/ship-designer browser smoke passed: six-hull All-Tech Designer, compact ship-information rows, Beam Defense/Missile Evasion ratings + help formulas, stable scrollable installed-weapons panel, weapon-area Space Available and save-area production cost, ? detail popups and player-facing miniaturization reductions, Computer/Shield card selectors, explicit no-Shield save, mobile/desktop Designer layout, More-only dev tools, +BC grant, +1/+5/N presence, same-turn drafted construction buyout with BC deduction, next-turn completion, 390px/desktop layout and ordinary-game isolation.')
 }
 
 main().catch((error) => {

@@ -10,7 +10,7 @@ import { GameIcon } from './GameIcon'
 import type { TranslationKey, TranslationVars } from '../i18n'
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
-type ShipSystemKind = 'drive' | 'computer' | 'armor' | 'shield' | 'fuel'
+type ShipSystemKind = 'drive' | 'computer' | 'armor' | 'shield' | 'fuel' | 'beamDefense' | 'missileEvasion'
 type DialogState = { system: ShipSystemKind; mode: 'info' | 'select' } | null
 
 type Props = {
@@ -22,6 +22,8 @@ type Props = {
   weaponMounts: ShipWeaponMount[]
   laser?: MilitaryDesignerWeaponChoice
   remainingSpace: number
+  combatSpeed: number
+  unusedSpaceSpeedBonus: number
   beamDefense: number
   missileEvasion: number
   onComputerChange: (id: string) => void
@@ -87,6 +89,8 @@ export function ShipSystemInfoCard({
   weaponMounts,
   laser,
   remainingSpace,
+  combatSpeed,
+  unusedSpaceSpeedBonus,
   beamDefense,
   missileEvasion,
   onComputerChange,
@@ -183,35 +187,45 @@ export function ShipSystemInfoCard({
         </div>
 
         <div className="shipdesigner-combat-ratings" aria-label={t('shipbuilder.combatRatings')}>
-          <div><span>{t('shipbuilder.beamDefense')}</span><strong>+{beamDefense}</strong></div>
-          <div><span>{t('shipbuilder.missileEvasion')}</span><strong>{missileEvasion}%</strong></div>
+          <div className="shipdesigner-combat-rating" data-rating="beam-defense">
+            <div className="shipdesigner-combat-rating-main"><span>{t('shipbuilder.beamDefense')}</span><strong>+{beamDefense}</strong></div>
+            <button type="button" className="shipdesigner-system-help" onClick={() => setDialog({ system: 'beamDefense', mode: 'info' })} aria-label={t('shipbuilder.systemDetails', { system: t('shipbuilder.beamDefense') })}>?</button>
+          </div>
+          <div className="shipdesigner-combat-rating" data-rating="missile-evasion">
+            <div className="shipdesigner-combat-rating-main"><span>{t('shipbuilder.missileEvasion')}</span><strong>{missileEvasion}%</strong></div>
+            <button type="button" className="shipdesigner-system-help" onClick={() => setDialog({ system: 'missileEvasion', mode: 'info' })} aria-label={t('shipbuilder.systemDetails', { system: t('shipbuilder.missileEvasion') })}>?</button>
+          </div>
         </div>
 
-        {weaponMounts.length > 0 && (
-          <div className="shipdesigner-installed-weapons">
-            <p className="eyebrow">{t('shipbuilder.installedComponents')}</p>
-            <div className="shipdesigner-installed-info-grid">
-              {weaponMounts.map((mount) => (
-                <article className="shipdesigner-info-card weapon" key={mount.slot}>
-                  <span>{t('shipbuilder.slot', { slot: mount.slot + 1 })}</span>
-                  <strong>{mount.count}× {t('shipbuilder.laserCannon')}</strong>
-                  {laser && <p>{t('shipbuilder.weaponEffect', {
-                    min: mount.count * laser.min_damage,
-                    max: mount.count * laser.max_damage,
-                    space: mount.count * laser.base_space,
-                    cost: mount.count * laser.base_cost_pp,
-                  })}</p>}
-                  <div className="shipdesigner-weapon-quantity">
-                    <button type="button" className="button-ghost" aria-label={t('shipbuilder.decreaseQuantity')} onClick={() => onWeaponCountChange(mount.slot, -1)}>-</button>
-                    <strong className="shipdesigner-weapon-count">{mount.count}</strong>
-                    <button type="button" className="button-ghost" aria-label={t('shipbuilder.increaseQuantity')} disabled={!laser || remainingSpace < laser.base_space} onClick={() => onWeaponCountChange(mount.slot, 1)}>+</button>
-                    <button type="button" className="button-ghost shipdesigner-weapon-remove" onClick={() => onRemoveWeapon(mount.slot)}>{t('shipbuilder.remove')}</button>
-                  </div>
-                </article>
-              ))}
-            </div>
+        <div className="shipdesigner-installed-weapons">
+          <p className="eyebrow">{t('shipbuilder.installedWeapons')}</p>
+          <div className="shipdesigner-installed-weapons-scroll">
+            {weaponMounts.length > 0 ? (
+              <div className="shipdesigner-installed-info-grid">
+                {weaponMounts.map((mount) => (
+                  <article className="shipdesigner-info-card weapon" key={mount.slot}>
+                    <span>{t('shipbuilder.slot', { slot: mount.slot + 1 })}</span>
+                    <strong>{mount.count}× {t('shipbuilder.laserCannon')}</strong>
+                    {laser && <p>{t('shipbuilder.weaponEffect', {
+                      min: mount.count * laser.min_damage,
+                      max: mount.count * laser.max_damage,
+                      space: mount.count * laser.base_space,
+                      cost: mount.count * laser.base_cost_pp,
+                    })}</p>}
+                    <div className="shipdesigner-weapon-quantity">
+                      <button type="button" className="button-ghost" aria-label={t('shipbuilder.decreaseQuantity')} onClick={() => onWeaponCountChange(mount.slot, -1)}>−</button>
+                      <strong className="shipdesigner-weapon-count">{mount.count}</strong>
+                      <button type="button" className="button-ghost" aria-label={t('shipbuilder.increaseQuantity')} disabled={!laser || remainingSpace < laser.base_space} onClick={() => onWeaponCountChange(mount.slot, 1)}>+</button>
+                      <button type="button" className="button-ghost shipdesigner-weapon-remove" onClick={() => onRemoveWeapon(mount.slot)}>{t('shipbuilder.remove')}</button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="shipdesigner-installed-weapons-empty">{t('shipbuilder.noInstalledWeapons')}</div>
+            )}
           </div>
-        )}
+        </div>
 
         <p className="muted shipdesigner-future-note">{t('shipbuilder.systemEffectScope')}</p>
       </section>
@@ -228,6 +242,8 @@ export function ShipSystemInfoCard({
                   {dialog.system === 'armor' && t('shipbuilder.armor')}
                   {dialog.system === 'shield' && t('shipbuilder.shield')}
                   {dialog.system === 'fuel' && t('shipbuilder.fuel')}
+                  {dialog.system === 'beamDefense' && t('shipbuilder.beamDefense')}
+                  {dialog.system === 'missileEvasion' && t('shipbuilder.missileEvasion')}
                 </h3>
               </div>
               <button type="button" className="button-ghost shipdesigner-system-dialog-close" onClick={closeDialog} aria-label={t('common.close')}><GameIcon name="close" /></button>
@@ -351,6 +367,29 @@ export function ShipSystemInfoCard({
                     <strong>{componentLabel(t, spec.fuel_cell_id)}</strong>
                     <p>{spec.fuel_range_parsecs >= 255 ? t('shipbuilder.fuelUnlimitedEffect') : t('shipbuilder.fuelEffect', { range: spec.fuel_range_parsecs })}</p>
                     <span className="badge">{t('shipbuilder.automaticSystem')}</span>
+                  </>
+                )}
+
+                {dialog.system === 'beamDefense' && (
+                  <>
+                    <strong>{t('shipbuilder.beamDefense')} +{beamDefense}</strong>
+                    <p>{t('shipbuilder.beamDefenseMeaning')}</p>
+                    <p className="shipdesigner-system-formula">{t('shipbuilder.beamDefenseFormula', {
+                      base: currentHull?.base_combat_speed ?? 0,
+                      drive: designer.automatic_systems.tactical_speed_bonus ?? 0,
+                      space: unusedSpaceSpeedBonus,
+                      speed: combatSpeed,
+                      factor: designer.beam_defense_per_combat_speed ?? 0,
+                      result: beamDefense,
+                    })}</p>
+                  </>
+                )}
+                {dialog.system === 'missileEvasion' && (
+                  <>
+                    <strong>{t('shipbuilder.missileEvasion')} {missileEvasion}%</strong>
+                    <p>{t('shipbuilder.missileEvasionMeaning')}</p>
+                    <p className="shipdesigner-system-formula">{t('shipbuilder.missileEvasionFormulaCurrent', { base: designer.base_missile_evasion ?? 0, result: missileEvasion })}</p>
+                    <small>{t('shipbuilder.missileEvasionOriginalModifiers')}</small>
                   </>
                 )}
 

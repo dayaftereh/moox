@@ -81,3 +81,59 @@ Mobile and desktop browser QA must verify:
 - no horizontal overflow at 390px;
 - existing Computer/Shield popup selectors, explicit no-Shield save and hull-size progression remain intact;
 - Gate 4 remains closed and Slice 17.2+ remain unopened.
+
+
+## Combat-rating help and stable installed-weapons follow-up
+
+A further HMI review requested two usability refinements before Gate 4.
+
+### Beam Defense / Missile Evasion help
+
+Both derived combat ratings now have the same trailing `?` affordance as the five mandatory systems.
+
+Beam Defense help explains both meaning and the current exact calculation. For the displayed design it breaks the value into:
+
+- hull base combat speed;
+- installed drive combat-speed bonus;
+- unused-Space combat-speed bonus;
+- resulting combat speed;
+- Beam Defense factor of 5;
+- final Beam Defense value.
+
+This keeps the formula inspectable from the value itself instead of forcing the player to infer why the rating changed after adding equipment.
+
+Missile Evasion help explains that the value is the ship's defense against incoming missiles and torpedoes. For the current Slice-17.1 scope the displayed calculation remains the projected base `0%` plus zero supported evasion modifiers. The help also makes the scope boundary explicit: original MOO2 can further modify missile evasion through ECM/inertial systems, race/crew/leader effects and attacking scanner/ECCM context, but those modifiers are not yet part of the current Designer/tactical implementation.
+
+No Tactical simulation behavior is added by these help dialogs.
+
+### Stable installed-weapons panel
+
+The installed-weapons section is now always present, including when the design has no weapons.
+
+Empty state:
+
+- heading: Installed weapons / Eingebaute Waffen;
+- message: no weapons installed yet.
+
+The panel reserves a fixed vertical footprint instead of appearing only after the first weapon is added. Its content area uses internal vertical scrolling, so adding weapon slots no longer pushes all content below the Ship Information card down the page.
+
+Current reserved heights:
+
+- desktop/tablet: 164 px;
+- mobile <=700 px: 172 px.
+
+The heading stays fixed while the weapon-card area scrolls. Existing responsive weapon-card columns still collapse down to one column on small screens.
+
+### Browser acceptance
+
+The reference browser smoke now additionally verifies at 390 px:
+
+- exactly two combat-rating help controls exist;
+- Beam Defense `?` opens a detail dialog containing meaning plus the current formula;
+- Missile Evasion `?` opens a detail dialog containing meaning, current Slice-17.1 calculation and original-modifier scope;
+- the Installed Weapons panel exists before any weapon is installed;
+- its empty-state text is visible;
+- its reserved height is present and `overflow-y: auto` is active;
+- after adding two weapons the empty state disappears, two weapon cards are present and the panel height changes by no more than one pixel;
+- the internal weapon content remains scroll-capable;
+- the existing mobile overflow, hull progression and system-popup checks remain active.
