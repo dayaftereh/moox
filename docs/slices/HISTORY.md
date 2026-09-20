@@ -498,3 +498,15 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Baseline/Mid/All-Tech reference vectors are recorded for later deterministic Gate-3 acceptance.
 - Evidence: docs/research/SLICE_17_2_GATE1_BEAM_WEAPONS_AUDIT_2026-09-20.md.
 - Gate 2 is next and has not started.
+
+## 2026-09-20 - Slice 17.2 Gate 2 Beam contract frozen
+
+- Froze exactly 13 Beam identities and the Gate-1 original data matrix.
+- Froze weapon snapshots as Slot + WeaponID + Count + canonical MountType + sorted ModifierIDs; legacy missing values normalize to standard/no modifiers.
+- Froze original arithmetic order: mount factor, additive special-modifier factor, Beam miniaturization, then physical count.
+- Froze stable modifier refinement/rejection semantics and executable compatibility masks.
+- Froze server-authoritative Designer draft preview; TypeScript may search/filter/sort but may not own Beam legality/Space/PP formulas.
+- Froze the compact Weapon Selector and installed-weapon configuration interaction model, including search, availability, modifier-support and Technology/Name/Damage/Space/PP sorting. Numeric Range filtering remains deliberately unfrozen because Gate 1 did not close a generic numeric range field.
+- Froze Baseline/Mid/All-Tech acceptance vectors and explicit Tactical support/defer metadata.
+- Contract: docs/research/SLICE_17_2_GATE2_BEAM_CONTRACT_FREEZE_2026-09-20.md.
+- Gate 3 is next and has not started.

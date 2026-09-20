@@ -2,7 +2,7 @@
 
 Opened: 2026-09-20
 Parent: Slice 17 - Military Ship Design Component/Weapon Breadth
-Status: **Gate 1 complete / Gate 2 next**
+Status: **Gates 1-2 complete / Gate 3 next**
 
 ## Objective
 
@@ -62,4 +62,11 @@ Evidence: docs/research/SLICE_17_2_GATE1_BEAM_WEAPONS_AUDIT_2026-09-20.md.
 
 Gate 1 froze the evidence inputs, not the implementation contract: 13 original Beam identities, exact base tech/damage/Space/Cost, Beam miniaturization class, per-Beam executable modifier masks, original eight-row weapon-array semantics, the current ShipWeaponMount modifier-snapshot gap, Slice-17.0 reference vectors and explicit Tactical support/defer boundaries.
 
-Gate 2 is next but has not started.
+Gate 2 is complete. Gate 3 is next but has not started.
+## Gate 2 complete
+
+Contract: docs/research/SLICE_17_2_GATE2_BEAM_CONTRACT_FREEZE_2026-09-20.md.
+
+Gate 2 freezes the 13-Beam catalog, canonical standard/heavy/point-defense mount type, explicit sorted special-modifier IDs, exact legality/refinement/rejection reasons, original mount->special->miniaturization->count Space/PP arithmetic, server-authoritative draft preview boundary, compact Weapon Selector/configuration dialog contract, reference-lab matrices and Tactical support/defer boundary.
+
+Gate 3 is next but has not started.

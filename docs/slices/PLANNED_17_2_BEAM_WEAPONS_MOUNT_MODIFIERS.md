@@ -1,6 +1,6 @@
 # Planned Slice 17.2 - Beam Weapons and Beam Mount Modifiers
 
-Status: **active; Gate 1 complete / Gate 2 next (2026-09-20)**.
+Status: **active; Gates 1-2 complete / Gate 3 next (2026-09-20)**.
 
 ## Objective
 
@@ -36,12 +36,14 @@ Gate-1 evidence: docs/research/SLICE_17_2_GATE1_BEAM_WEAPONS_AUDIT_2026-09-20.md
 
 ## Gate 2 - Beam contract freeze
 
-- [ ] Freeze supported Beam matrix.
-- [ ] Freeze slot/count model.
-- [ ] Freeze modifier compatibility/rejection reasons.
-- [ ] Freeze cost/space/miniaturization rules.
-- [ ] Freeze ShipDesignSpec snapshot shape.
-- [ ] Freeze 17.0 Designer/Combat Lab fixtures.
+- [x] Freeze supported Beam matrix.
+- [x] Freeze slot/count model.
+- [x] Freeze modifier compatibility/rejection reasons.
+- [x] Freeze cost/space/miniaturization rules.
+- [x] Freeze ShipDesignSpec snapshot shape.
+- [x] Freeze 17.0 Designer/Combat Lab fixtures.
+
+Gate-2 contract: docs/research/SLICE_17_2_GATE2_BEAM_CONTRACT_FREEZE_2026-09-20.md.
 
 ## Gate 3 - implementation
 
