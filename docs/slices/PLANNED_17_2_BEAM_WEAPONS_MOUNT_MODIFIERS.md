@@ -1,6 +1,6 @@
 # Planned Slice 17.2 - Beam Weapons and Beam Mount Modifiers
 
-Status: **planned; child of Slice 17; not open**.
+Status: **active; Gate 1 audit open (2026-09-20)**.
 
 ## Objective
 

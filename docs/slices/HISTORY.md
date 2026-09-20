@@ -480,3 +480,11 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Construction/persistence, full Go/vet/web build, 390px/desktop browser acceptance and `git diff --check` passed on the final Gate-3 HMI baseline `d9bab26`.
 - Gate-4 evidence: `docs/research/SLICE_17_1_GATE4_ACCEPTANCE_CLOSE_2026-09-20.md`.
 - Beam, ordnance and special-system breadth remains owned by Slices 17.2-17.4.
+
+## 2026-09-20 - Slice 17.2 Beam Weapons and Beam Mount Modifiers opened
+
+- Opened Slice 17.2 Gate 1 after accepted closure of Slice 17.1.
+- Gate 1 audits the complete supported Beam identity/data surface, technology locks, damage/range, Space/Cost/miniaturization, slot/count semantics, original modifier compatibility and Tactical support/defer boundaries before implementation.
+- The user-approved HMI direction is recorded: keep the main Designer compact, use a dedicated searchable/filterable weapon-selection dialog/sheet, and use installed weapon rows as the later modifier/configuration entry point.
+- Special Systems keep the same high-level dialog grammar later but remain owned by Slice 17.4; they are not pulled into 17.2.
+- Open marker: `docs/slices/_OPEN_BEAM_WEAPONS_MOUNT_MODIFIERS_2026-09-20.md`.
