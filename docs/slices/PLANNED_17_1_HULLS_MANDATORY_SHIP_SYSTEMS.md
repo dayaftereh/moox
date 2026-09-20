@@ -76,6 +76,7 @@ The six hulls are already normalized with base PP, base Space, strategic picture
 - `docs/research/SLICE_17_1_GATE3_IMPLEMENTATION_2026-09-19.md`
 - End-to-end implementation complete: six hulls, Computer/Shield selection, exact original miniaturization, dynamic saved-design projection, fixed queue-time construction snapshots, Cruiser+ orbital-dock authority, HMI controls and deterministic backend/browser acceptance.
 - Gate-3 HMI amendment: effect-first Computer/Shield cards replace dropdowns; direct original effect values and a complete installed-system summary are shown below the Ship preview, with mobile/desktop browser acceptance.
+- Gate-3 compact preview amendment: Ship preview and hull selector are deliberately smaller/bounded while preserving mobile touch targets and the complete system-information surface below.
 
 ## Gate 4 - QA + close
 

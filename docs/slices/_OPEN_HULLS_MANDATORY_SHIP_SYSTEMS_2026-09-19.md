@@ -64,3 +64,11 @@ User review compacted the always-visible Ship information rows to category + ins
 Evidence: docs/research/SLICE_17_1_GATE3_COMPACT_SHIP_INFO_AMENDMENT_2026-09-20.md.
 
 Gate 4 is still next and has not started.
+
+## Gate 3 compact Ship preview amendment
+
+User review reduced the Ship preview and hull-selection footprint after the system-information card was compacted. The preview now uses explicit bounded heights instead of only `min-height`, the hull stepper is denser on desktop, and mobile retains 44px touch targets. Browser acceptance now guards the rendered preview/hull-selector heights.
+
+Evidence: `docs/research/SLICE_17_1_GATE3_COMPACT_SHIP_PREVIEW_AMENDMENT_2026-09-20.md`.
+
+Gate 4 is still next and has not started.

@@ -3840,22 +3840,22 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   color: var(--text);
 }
 .shipdesigner-name-row input:focus { border-color: var(--accent); outline: none; }
-.shipdesigner-hull-section { margin-top: 14px; }
+.shipdesigner-hull-section { margin-top: 10px; }
 .shipdesigner-hull-stepper {
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 48px;
-  gap: 8px;
+  grid-template-columns: 42px minmax(0, 1fr) 42px;
+  gap: 6px;
   align-items: stretch;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 .shipdesigner-arrow {
-  min-width: 44px;
-  min-height: 60px;
+  min-width: 40px;
+  min-height: 48px;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-sm);
   background: rgba(7, 15, 26, .82);
   color: var(--text);
-  font-size: 2rem;
+  font-size: 1.55rem;
   line-height: 1;
 }
 .shipdesigner-arrow:hover:not(:disabled),
@@ -3864,18 +3864,18 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 .shipdesigner-hull-current {
   display: flex;
   min-width: 0;
-  min-height: 60px;
+  min-height: 48px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  padding: 7px 10px;
+  gap: 2px;
+  padding: 5px 8px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: linear-gradient(180deg, rgba(13, 29, 47, .94), rgba(5, 12, 21, .94));
   text-align: center;
 }
-.shipdesigner-hull-current strong { font-size: 1rem; }
+.shipdesigner-hull-current strong { font-size: .92rem; }
 .shipdesigner-hull-current small { color: var(--muted-strong); }
 .shipdesigner-hull-current.locked strong { text-decoration: line-through; text-decoration-thickness: 1px; }
 .shipdesigner-hull-current.locked { opacity: .68; }
@@ -3883,9 +3883,12 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   position: relative;
   display: grid;
   width: 100%;
-  min-height: 260px;
+  height: 184px;
+  min-height: 184px;
+  max-height: 184px;
   place-items: center;
-  margin-top: 12px;
+  margin-top: 8px;
+  padding: 0;
   overflow: hidden;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius);
@@ -3895,7 +3898,7 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 }
 .shipdesigner-preview:hover,
 .shipdesigner-preview:focus-visible { border-color: var(--accent); background: radial-gradient(circle at 50% 48%, rgba(68, 145, 223, .24), transparent 46%), linear-gradient(180deg, rgba(7, 16, 28, .88), rgba(3, 8, 15, .97)); outline: none; }
-.shipdesigner-preview-ship { width: min(96%, 650px); height: 220px; }
+.shipdesigner-preview-ship { width: min(90%, 520px); height: 148px; }
 .shipdesigner-preview-overlay {
   position: absolute;
   right: 10px;
@@ -3990,8 +3993,8 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .shipdesigner-design-list,
   .shipdesigner-component-columns,
   .shipdesigner-summary-grid { grid-template-columns: 1fr; }
-  .shipdesigner-preview { min-height: 210px; }
-  .shipdesigner-preview-ship { height: 180px; }
+  .shipdesigner-preview { height: 168px; min-height: 168px; max-height: 168px; }
+  .shipdesigner-preview-ship { height: 136px; }
   .shipdesigner-component-row > button { min-height: 44px; }
   .shipdesigner-installed-row.weapon { grid-template-columns: 72px minmax(0, 1fr); }
   .shipdesigner-weapon-quantity { grid-column: 1 / -1; justify-content: flex-end; }
@@ -4002,10 +4005,12 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 
 @media (max-width: 360px) {
   .shipdesigner-hull-stepper { grid-template-columns: 44px minmax(0, 1fr) 44px; gap: 4px; }
+  .shipdesigner-arrow { min-width: 44px; min-height: 44px; }
+  .shipdesigner-hull-current { min-height: 44px; }
   .shipdesigner-design-item { grid-template-columns: 62px minmax(0, 1fr); }
   .shipdesigner-design-thumb { width: 56px; height: 44px; }
-  .shipdesigner-preview { min-height: 190px; }
-  .shipdesigner-preview-ship { height: 160px; }
+  .shipdesigner-preview { height: 150px; min-height: 150px; max-height: 150px; }
+  .shipdesigner-preview-ship { height: 120px; }
   .shipdesigner-component-section { padding: 8px; }
   .shipdesigner-installed-row { grid-template-columns: 72px minmax(0, 1fr) auto; gap: 5px; }
 }

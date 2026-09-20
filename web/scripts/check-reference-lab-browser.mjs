@@ -293,6 +293,8 @@ async function main() {
       summaryCount: document.querySelectorAll('.shipdesigner-system-summary-grid > div').length,
       dropdowns: document.querySelectorAll('.shipdesigner-ship-info-card select').length,
       hullText: document.querySelector('.shipdesigner-hull-current strong')?.textContent || '',
+      previewHeight: document.querySelector('.shipdesigner-preview')?.getBoundingClientRect().height || 0,
+      hullSelectorHeight: document.querySelector('.shipdesigner-hull-current')?.getBoundingClientRect().height || 0,
       overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
     }
   })()`)
@@ -303,6 +305,8 @@ async function main() {
   assert(designerUI.dropdowns === 0, `Ship information still renders ${designerUI.dropdowns} dropdown(s)`)
   assert(!designerUI.rows.some((row) => row.text.includes('Strategische FTL') || row.text.includes('Strahl-Angriff') || row.text.includes('Panzerungs-Haltbarkeit') || row.text.includes('Blockt 10 Schaden') || row.text.includes('Unbegrenzte strategische Reichweite')), 'Compact ship information still exposes verbose effect copy instead of delegating it to ? details')
   assert(!designerUI.rows.some((row) => /\bM\d+\b/.test(row.text) || row.text.includes('Miniaturisierung')), 'Compact ship information exposes technical miniaturization notation')
+  assert(designerUI.previewHeight <= 185, `Mobile Ship Designer preview height=${designerUI.previewHeight}, want <=185`)
+  assert(designerUI.hullSelectorHeight <= 52, `Mobile Ship Designer hull selector height=${designerUI.hullSelectorHeight}, want <=52`)
   assert(!designerUI.overflow, 'Ship information card causes horizontal overflow at 390px')
 
   const openedComputer = await evaluate(`(() => { const button = document.querySelector('[data-system="computer"] .shipdesigner-system-select-trigger'); if (!button) return false; button.click(); return true })()`)
@@ -394,12 +398,16 @@ async function main() {
       infoWidth: info?.width || 0,
       popupTwoColumns: cards.length === 2 && Math.abs(cards[0].top - cards[1].top) < 8 && cards[0].left < cards[1].left,
       choiceWidth: cards[0]?.width || 0,
+      previewHeight: document.querySelector('.shipdesigner-preview')?.getBoundingClientRect().height || 0,
+      hullSelectorHeight: document.querySelector('.shipdesigner-hull-current')?.getBoundingClientRect().height || 0,
       overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
     }
   })()`)
   assert(designerDesktop.infoWidth > 500, `Desktop ship information card width=${designerDesktop.infoWidth}, want >500`)
   assert(designerDesktop.popupTwoColumns, 'Desktop Computer popup does not render choice cards in two columns')
   assert(designerDesktop.choiceWidth > 250, `Desktop Computer popup choice width=${designerDesktop.choiceWidth}, want >250`)
+  assert(designerDesktop.previewHeight <= 205, `Desktop Ship Designer preview height=${designerDesktop.previewHeight}, want <=205`)
+  assert(designerDesktop.hullSelectorHeight <= 52, `Desktop Ship Designer hull selector height=${designerDesktop.hullSelectorHeight}, want <=52`)
   assert(!designerDesktop.overflow, 'Desktop Ship Designer information/popup causes horizontal overflow')
   await evaluate(`(() => { document.querySelector('.shipdesigner-system-dialog-close')?.click(); return true })()`)
   await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: true })
