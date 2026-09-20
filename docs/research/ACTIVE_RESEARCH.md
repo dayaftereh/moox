@@ -6,7 +6,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 
 - Branch: `main`.
 - Open slice marker: **`docs/slices/_OPEN_BEAM_WEAPONS_MOUNT_MODIFIERS_2026-09-20.md`**.
-- Active implementation slice: **Slice 17.2 - Beam Weapons and Beam Mount Modifiers; Gate 1 audit active.**
+- Active implementation slice: **Slice 17.2 - Beam Weapons and Beam Mount Modifiers; Gate 1 complete / Gate 2 next.**
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
@@ -14,7 +14,8 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-16 are closed/accepted at their intended baselines**. Slice 17 is the active 17.0-17.5 parent program; reserved Slice 18 and Slices 20-23 remain planned only.
-- Current objective: **complete Slice 17.2 Gate 1 Beam audit and evidence matrix before freezing or implementing broad Beam/modifier rules.**
+- Current objective: **await explicit Gate-2 release for Slice 17.2 contract freeze; do not implement broad Beam/modifier rules before that freeze.**
+- Slice-17.2 Gate-1 audit: docs/research/SLICE_17_2_GATE1_BEAM_WEAPONS_AUDIT_2026-09-20.md - primary executable/HELP evidence closes 13 Beam identities, tech/damage/Space/Cost, Beam Space class-1 miniaturization, exact modifier masks, eight original weapon rows, modifier snapshot schema gap, reference-lab vectors and Tactical support/defer boundaries; Gate 2 next, not started.
 - Slice-17.2 Gate-1 open: `docs/slices/_OPEN_BEAM_WEAPONS_MOUNT_MODIFIERS_2026-09-20.md` - audit all original-evidenced Beam identities, technology/damage/Space/Cost/range/miniaturization, slot/count semantics, modifier compatibility and Tactical support/defer boundaries; compact selection-dialog UX direction recorded, but no broad Beam implementation before Gate 2 freeze.
 - Slice-17.1 Gate-4 close: `docs/research/SLICE_17_1_GATE4_ACCEPTANCE_CLOSE_2026-09-20.md` - hull/buildability, mandatory-system legality, late-game reference access, immutable revision snapshots, construction/persistence and full Go/vet/web/browser/diff acceptance passed; Slice 17.1 closed.
 - Slice-17.1 Gate-3 compact Ship preview amendment: `docs/research/SLICE_17_1_GATE3_COMPACT_SHIP_PREVIEW_AMENDMENT_2026-09-20.md` - Ship preview and hull selector footprint reduced/bounded on desktop/mobile; browser smoke now asserts real rendered max heights; full web/browser QA passed; superseded by the accepted Gate-4 close.

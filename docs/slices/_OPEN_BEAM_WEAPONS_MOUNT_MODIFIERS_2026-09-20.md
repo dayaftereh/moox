@@ -2,7 +2,7 @@
 
 Opened: 2026-09-20
 Parent: Slice 17 - Military Ship Design Component/Weapon Breadth
-Status: **Gate 1 active**
+Status: **Gate 1 complete / Gate 2 next**
 
 ## Objective
 
@@ -38,7 +38,7 @@ This records the UX direction only. Gate 1 must not invent Beam identities/modif
 
 Slice 17.1 is closed/accepted and remains the foundation.
 
-Gate 1 is evidence/audit work. Do not implement the complete Beam matrix or modifier behavior until Gate 2 freezes the supported contract.
+Gate 1 is complete. Do not implement the complete Beam matrix or modifier behavior until Gate 2 is explicitly started and freezes the supported contract.
 
 Do not open Slice 17.3 or later children while Slice 17.2 is open unless explicitly requested.
 
@@ -55,3 +55,11 @@ Gate 1 may close only when the repository contains a durable evidence document t
 - modifier compatibility matrix;
 - current Tactical consumers versus deferred behavior;
 - reference-lab vectors needed for Gate 2/3.
+
+## Gate 1 complete
+
+Evidence: docs/research/SLICE_17_2_GATE1_BEAM_WEAPONS_AUDIT_2026-09-20.md.
+
+Gate 1 froze the evidence inputs, not the implementation contract: 13 original Beam identities, exact base tech/damage/Space/Cost, Beam miniaturization class, per-Beam executable modifier masks, original eight-row weapon-array semantics, the current ShipWeaponMount modifier-snapshot gap, Slice-17.0 reference vectors and explicit Tactical support/defer boundaries.
+
+Gate 2 is next but has not started.

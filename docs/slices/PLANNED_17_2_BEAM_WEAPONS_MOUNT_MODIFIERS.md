@@ -1,6 +1,6 @@
 # Planned Slice 17.2 - Beam Weapons and Beam Mount Modifiers
 
-Status: **active; Gate 1 audit open (2026-09-20)**.
+Status: **active; Gate 1 complete / Gate 2 next (2026-09-20)**.
 
 ## Objective
 
@@ -25,12 +25,14 @@ Gate 1 must decide the exact supported modifier subset rather than assuming ever
 
 ## Gate 1 - Beam audit
 
-- [ ] Inventory normalized Beam weapons and missing original data.
-- [ ] Re-audit technology, damage, Space, Cost, range and miniaturization.
-- [ ] Re-audit modifier availability/compatibility per Beam.
-- [ ] Re-audit weapon slot/count limits and original design-array semantics.
-- [ ] Map supported Beam metadata onto current ShipWeaponMount without lossy hacks.
-- [ ] Identify tactical consumers already implemented versus deferred.
+- [x] Inventory normalized Beam weapons and missing original data.
+- [x] Re-audit technology, damage, Space, Cost, range and miniaturization.
+- [x] Re-audit modifier availability/compatibility per Beam.
+- [x] Re-audit weapon slot/count limits and original design-array semantics.
+- [x] Map supported Beam metadata onto current ShipWeaponMount without lossy hacks.
+- [x] Identify tactical consumers already implemented versus deferred.
+
+Gate-1 evidence: docs/research/SLICE_17_2_GATE1_BEAM_WEAPONS_AUDIT_2026-09-20.md.
 
 ## Gate 2 - Beam contract freeze
 

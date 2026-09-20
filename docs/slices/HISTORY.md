@@ -488,3 +488,13 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - The user-approved HMI direction is recorded: keep the main Designer compact, use a dedicated searchable/filterable weapon-selection dialog/sheet, and use installed weapon rows as the later modifier/configuration entry point.
 - Special Systems keep the same high-level dialog grammar later but remain owned by Slice 17.4; they are not pulled into 17.2.
 - Open marker: `docs/slices/_OPEN_BEAM_WEAPONS_MOUNT_MODIFIERS_2026-09-20.md`.
+
+## 2026-09-20 - Slice 17.2 Gate 1 Beam audit complete
+
+- Primary executable symbols/data close the 46-record original weapon table and 13 Beam rows.
+- Gate 1 freezes evidence for technology, base damage/Space/PP, Beam miniaturization class 1 and per-Beam executable modifier compatibility.
+- Original eight-row weapon-array semantics are re-confirmed; current MOOX ShipWeaponMount {Slot, WeaponID, Count} is lossless for unmodified Beams but requires an explicit modifier snapshot extension in Gate 2.
+- Current Tactical remains canonical Laser-only; every modifier and innate special Beam effect now has an explicit support/defer boundary.
+- Baseline/Mid/All-Tech reference vectors are recorded for later deterministic Gate-3 acceptance.
+- Evidence: docs/research/SLICE_17_2_GATE1_BEAM_WEAPONS_AUDIT_2026-09-20.md.
+- Gate 2 is next and has not started.
