@@ -383,6 +383,8 @@ export type MilitaryDesignerComponentChoice = {
   available: boolean
   lock_reason?: string
   miniaturization_level: number
+  cost_reduction_percent?: number
+  space_reduction_percent?: number
   effective_cost_by_hull_pp?: number[]
   effective_space_by_hull?: number[]
   beam_attack_bonus?: number

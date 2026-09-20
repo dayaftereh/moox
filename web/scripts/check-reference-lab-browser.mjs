@@ -274,7 +274,7 @@ async function main() {
   const completedColony = completed.view.colonies.find((item) => item.id === colony.id)
   assert(completedColony?.buildings?.includes(buildingChoice.project_id), `Bought project ${buildingChoice.project_id} did not complete on next normal turn`)
 
-  // Slice 17.1 Ship Designer smoke: one ship-info card, five help affordances, popup card selection, explicit no-Shield and All-Tech Doom Star save.
+  // Slice 17.1 Ship Designer smoke: compact ship-info rows, five ? details, effect-centric popup selection, explicit no-Shield and All-Tech Doom Star save.
   await navigate(`${baseURL}/#/game/${gameID}/shipbuilder`)
   await sleep(250)
   await evaluate(`(() => { const button = document.querySelector('.shipdesigner-new'); if (button) button.click(); return true })()`)
@@ -301,11 +301,8 @@ async function main() {
   assert(designerUI.helpCount === 5 && designerUI.rows.every((row) => row.help), `Ship information help affordances=${designerUI.helpCount}, want one for every system`)
   assert(designerUI.summaryCount === 4, `Ship information summary stat count=${designerUI.summaryCount}, want 4`)
   assert(designerUI.dropdowns === 0, `Ship information still renders ${designerUI.dropdowns} dropdown(s)`)
-  assert(designerUI.rows.some((row) => row.system === 'drive' && row.text.includes('Strategische FTL')), 'Drive effect is not visible in ship information')
-  assert(designerUI.rows.some((row) => row.system === 'computer' && row.text.includes('Strahl-Angriff')), 'Computer effect is not visible in ship information')
-  assert(designerUI.rows.some((row) => row.system === 'armor' && row.text.includes('Panzerungs-Haltbarkeit')), 'Armor effect is not visible in ship information')
-  assert(designerUI.rows.some((row) => row.system === 'shield' && row.text.includes('Blockt 10 Schaden')), 'Shield effect is not visible in ship information')
-  assert(designerUI.rows.some((row) => row.system === 'fuel' && row.text.includes('Unbegrenzte strategische Reichweite')), 'Fuel effect is not visible in ship information')
+  assert(!designerUI.rows.some((row) => row.text.includes('Strategische FTL') || row.text.includes('Strahl-Angriff') || row.text.includes('Panzerungs-Haltbarkeit') || row.text.includes('Blockt 10 Schaden') || row.text.includes('Unbegrenzte strategische Reichweite')), 'Compact ship information still exposes verbose effect copy instead of delegating it to ? details')
+  assert(!designerUI.rows.some((row) => /\bM\d+\b/.test(row.text) || row.text.includes('Miniaturisierung')), 'Compact ship information exposes technical miniaturization notation')
   assert(!designerUI.overflow, 'Ship information card causes horizontal overflow at 390px')
 
   const openedComputer = await evaluate(`(() => { const button = document.querySelector('[data-system="computer"] .shipdesigner-system-select-trigger'); if (!button) return false; button.click(); return true })()`)
@@ -317,7 +314,8 @@ async function main() {
     overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
   }))()`)
   assert(computerPopup.open, 'Computer selection popup is missing')
-  assert(computerPopup.choices.some((choice) => choice.id === 'electronic_computer' && !choice.disabled && choice.text.includes('Strahl-Angriff +25')), 'Electronic Computer popup card/effect missing')
+  assert(computerPopup.choices.some((choice) => choice.id === 'electronic_computer' && !choice.disabled && choice.text.includes('Strahl-Angriff +25') && choice.text.includes('-75 % Baukosten')), 'Electronic Computer popup card/effect/player-facing reduction missing')
+  assert(!computerPopup.choices.some((choice) => /\bM\d+\b/.test(choice.text) || choice.text.includes('Miniaturisierung')), 'Computer popup still exposes technical M-level miniaturization notation')
   assert(computerPopup.choices.some((choice) => choice.id === 'moleculartronic_computer' && !choice.disabled && choice.text.includes('Strahl-Angriff +125')), 'Moleculartronic Computer popup card/effect missing')
   assert(!computerPopup.overflow, 'Computer selection popup causes horizontal overflow at 390px')
   await evaluate(`(() => { document.querySelector('.shipdesigner-system-dialog-close')?.click(); return true })()`)
@@ -422,7 +420,7 @@ async function main() {
   assert(!ordinary, 'Ordinary game-1 renders development credit/turn controls')
 
   if (failures.length) throw new Error('Reference/buyout/ship-designer browser smoke failed:\n- ' + failures.join('\n- '))
-  console.log('Reference/buyout/ship-designer browser smoke passed: six-hull All-Tech Designer, unified ship-information card, ? detail popups, Computer/Shield card selectors, explicit no-Shield save, mobile/desktop Designer layout, More-only dev tools, +BC grant, +1/+5/N presence, same-turn drafted construction buyout with BC deduction, next-turn completion, 390px/desktop layout and ordinary-game isolation.')
+  console.log('Reference/buyout/ship-designer browser smoke passed: six-hull All-Tech Designer, compact ship-information rows, ? detail popups and player-facing miniaturization reductions, Computer/Shield card selectors, explicit no-Shield save, mobile/desktop Designer layout, More-only dev tools, +BC grant, +1/+5/N presence, same-turn drafted construction buyout with BC deduction, next-turn completion, 390px/desktop layout and ordinary-game isolation.')
 }
 
 main().catch((error) => {

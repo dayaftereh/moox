@@ -41,6 +41,8 @@ type MilitaryDesignerComponentChoice struct {
 	Available                  bool   `json:"available"`
 	LockReason                 string `json:"lock_reason,omitempty"`
 	MiniaturizationLevel       int    `json:"miniaturization_level"`
+	CostReductionPercent       int    `json:"cost_reduction_percent,omitempty"`
+	SpaceReductionPercent      int    `json:"space_reduction_percent,omitempty"`
 	EffectiveCostByHullPP      []int  `json:"effective_cost_by_hull_pp,omitempty"`
 	EffectiveSpaceByHull       []int  `json:"effective_space_by_hull,omitempty"`
 	BeamAttackBonus            int    `json:"beam_attack_bonus,omitempty"`
@@ -177,8 +179,10 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 		catalog.Computers = append(catalog.Computers, MilitaryDesignerComponentChoice{
 			ID: computer.ID, NameKey: r.TechnologyNameKeyByID[computer.TechnologyID],
 			TechnologyID: computer.TechnologyID, TechnologyKnown: known, Available: known,
-			LockReason: lockReason, MiniaturizationLevel: level, EffectiveCostByHullPP: effective,
-			BeamAttackBonus: shipComputerBeamAttackBonus(computer.ComponentIndex),
+			LockReason: lockReason, MiniaturizationLevel: level,
+			CostReductionPercent:  100 - miniaturizationCostPercent(level),
+			EffectiveCostByHullPP: effective,
+			BeamAttackBonus:       shipComputerBeamAttackBonus(computer.ComponentIndex),
 		})
 	}
 	for _, shield := range r.ShipShields {
@@ -207,6 +211,8 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 			ID: shield.ID, NameKey: r.TechnologyNameKeyByID[shield.TechnologyID],
 			TechnologyID: shield.TechnologyID, TechnologyKnown: known, Available: known,
 			LockReason: lockReason, MiniaturizationLevel: level,
+			CostReductionPercent:  100 - miniaturizationCostPercent(level),
+			SpaceReductionPercent: 100 - miniaturizationSpacePerThousand(level, 0)/10,
 			EffectiveCostByHullPP: effectiveCost, EffectiveSpaceByHull: effectiveSpace,
 			ShieldDamageBlockPerHit:    shipShieldDamageBlock(shield.ComponentIndex),
 			ShieldCapacityPerHullClass: shipShieldCapacityPerHullClass(shield.ComponentIndex),

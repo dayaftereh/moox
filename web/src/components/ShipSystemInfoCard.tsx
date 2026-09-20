@@ -65,6 +65,18 @@ function componentLabel(t: Translator, id: string): string {
   return key ? t(key) : id.replaceAll('_', ' ')
 }
 
+function componentCostText(t: Translator, cost: number, reduction: number): string {
+  return reduction > 0
+    ? t('shipbuilder.componentCostReduction', { cost, reduction })
+    : t('shipbuilder.componentCostBase', { cost })
+}
+
+function shieldCostText(t: Translator, cost: number, space: number, costReduction: number, spaceReduction: number): string {
+  return costReduction > 0 || spaceReduction > 0
+    ? t('shipbuilder.shieldCostReduction', { cost, space, costReduction, spaceReduction })
+    : t('shipbuilder.shieldCostBase', { cost, space })
+}
+
 export function ShipSystemInfoCard({
   designer,
   spec,
@@ -124,7 +136,6 @@ export function ShipSystemInfoCard({
             <p className="eyebrow">{t('shipbuilder.installed')}</p>
             <h3>{t('shipbuilder.shipInfoTitle')}</h3>
           </div>
-          <span className="muted">{t('shipbuilder.shipInfoHint')}</span>
         </div>
 
         <div className="shipdesigner-system-summary-grid">
@@ -139,16 +150,14 @@ export function ShipSystemInfoCard({
             <div className="shipdesigner-system-row-main">
               <span>{t('shipbuilder.drive')}</span>
               <strong>{componentLabel(t, spec.warp_drive_id)}</strong>
-              <p>{t('shipbuilder.driveEffect', { ftl: spec.ftl_speed, tactical: designer.automatic_systems.tactical_speed_bonus ?? 0 })}</p>
             </div>
             <button type="button" className="shipdesigner-system-help" onClick={() => setDialog({ system: 'drive', mode: 'info' })} aria-label={t('shipbuilder.systemDetails', { system: t('shipbuilder.drive') })}>?</button>
           </article>
 
           <article className="shipdesigner-system-row selectable" data-system="computer">
             <button type="button" className="shipdesigner-system-row-main shipdesigner-system-select-trigger" onClick={() => setDialog({ system: 'computer', mode: 'select' })}>
-              <span>{t('shipbuilder.computer')} · {t('shipbuilder.change')}</span>
+              <span>{t('shipbuilder.computer')}</span>
               <strong>{componentLabel(t, spec.computer_id)}</strong>
-              <p>{t('shipbuilder.computerEffect', { bonus: selectedComputer?.beam_attack_bonus ?? 0 })}</p>
             </button>
             <button type="button" className="shipdesigner-system-help" onClick={() => setDialog({ system: 'computer', mode: 'info' })} aria-label={t('shipbuilder.systemDetails', { system: t('shipbuilder.computer') })}>?</button>
           </article>
@@ -157,23 +166,14 @@ export function ShipSystemInfoCard({
             <div className="shipdesigner-system-row-main">
               <span>{t('shipbuilder.armor')}</span>
               <strong>{componentLabel(t, spec.armor_id)}</strong>
-              <p>{t('shipbuilder.armorEffect', { multiplier: designer.automatic_systems.armor_durability_multiple ?? 1 })}</p>
             </div>
             <button type="button" className="shipdesigner-system-help" onClick={() => setDialog({ system: 'armor', mode: 'info' })} aria-label={t('shipbuilder.systemDetails', { system: t('shipbuilder.armor') })}>?</button>
           </article>
 
           <article className="shipdesigner-system-row selectable" data-system="shield">
             <button type="button" className="shipdesigner-system-row-main shipdesigner-system-select-trigger" onClick={() => setDialog({ system: 'shield', mode: 'select' })}>
-              <span>{t('shipbuilder.shield')} · {t('shipbuilder.change')}</span>
+              <span>{t('shipbuilder.shield')}</span>
               <strong>{spec.shield_id ? componentLabel(t, spec.shield_id) : t('common.none')}</strong>
-              <p>{selectedShield
-                ? t('shipbuilder.shieldEffectCurrent', {
-                    block: selectedShield.shield_damage_block_per_hit ?? 0,
-                    capacity: selectedShieldCapacity,
-                    perClass: selectedShield.shield_capacity_per_hull_class ?? 0,
-                    hullClass,
-                  })
-                : t('shipbuilder.noShieldEffect')}</p>
             </button>
             <button type="button" className="shipdesigner-system-help" onClick={() => setDialog({ system: 'shield', mode: 'info' })} aria-label={t('shipbuilder.systemDetails', { system: t('shipbuilder.shield') })}>?</button>
           </article>
@@ -182,7 +182,6 @@ export function ShipSystemInfoCard({
             <div className="shipdesigner-system-row-main">
               <span>{t('shipbuilder.fuel')}</span>
               <strong>{componentLabel(t, spec.fuel_cell_id)}</strong>
-              <p>{spec.fuel_range_parsecs >= 255 ? t('shipbuilder.fuelUnlimitedEffect') : t('shipbuilder.fuelEffect', { range: spec.fuel_range_parsecs })}</p>
             </div>
             <button type="button" className="shipdesigner-system-help" onClick={() => setDialog({ system: 'fuel', mode: 'info' })} aria-label={t('shipbuilder.systemDetails', { system: t('shipbuilder.fuel') })}>?</button>
           </article>
@@ -253,7 +252,7 @@ export function ShipSystemInfoCard({
                       >
                         <span className="shipdesigner-choice-heading"><strong>{componentLabel(t, choice.id)}</strong>{selected && <span className="badge">{t('shipbuilder.selected')}</span>}</span>
                         <span className="shipdesigner-choice-effect">{t('shipbuilder.computerEffect', { bonus: choice.beam_attack_bonus ?? 0 })}</span>
-                        <small>{t('shipbuilder.componentCostMini', { cost, level: choice.miniaturization_level })}</small>
+                        <small>{componentCostText(t, cost, choice.cost_reduction_percent ?? 0)}</small>
                       </button>
                     )
                   })}
@@ -298,7 +297,7 @@ export function ShipSystemInfoCard({
                           perClass: choice.shield_capacity_per_hull_class ?? 0,
                           hullClass,
                         })}</span>
-                        <small>{t('shipbuilder.shieldCostMini', { cost, space, level: choice.miniaturization_level })}</small>
+                        <small>{shieldCostText(t, cost, space, choice.cost_reduction_percent ?? 0, choice.space_reduction_percent ?? 0)}</small>
                       </button>
                     )
                   })}
@@ -319,7 +318,7 @@ export function ShipSystemInfoCard({
                   <>
                     <strong>{componentLabel(t, spec.computer_id)}</strong>
                     <p>{t('shipbuilder.computerEffect', { bonus: selectedComputer?.beam_attack_bonus ?? 0 })}</p>
-                    <small>{t('shipbuilder.componentCostMini', { cost: selectedComputerCost, level: selectedComputer?.miniaturization_level ?? 0 })}</small>
+                    <small>{componentCostText(t, selectedComputerCost, selectedComputer?.cost_reduction_percent ?? 0)}</small>
                     <button type="button" className="button-secondary" onClick={() => setDialog({ system: 'computer', mode: 'select' })}>{t('shipbuilder.change')}</button>
                   </>
                 )}
@@ -342,7 +341,7 @@ export function ShipSystemInfoCard({
                         })
                       : t('shipbuilder.noShieldEffect')}</p>
                     <small>{selectedShield
-                      ? t('shipbuilder.shieldCostMini', { cost: selectedShieldCost, space: selectedShieldSpace, level: selectedShield.miniaturization_level })
+                      ? shieldCostText(t, selectedShieldCost, selectedShieldSpace, selectedShield.cost_reduction_percent ?? 0, selectedShield.space_reduction_percent ?? 0)
                       : t('shipbuilder.noShieldCost')}</small>
                     <button type="button" className="button-secondary" onClick={() => setDialog({ system: 'shield', mode: 'select' })}>{t('shipbuilder.change')}</button>
                   </>

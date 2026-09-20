@@ -95,12 +95,18 @@ func TestSlice171CatalogProfilesAndLateHullLocks(t *testing.T) {
 	if midCatalog.Computers[0].BeamAttackBonus != 25 || midCatalog.Computers[4].BeamAttackBonus != 125 {
 		t.Fatalf("Computer Beam Attack effects=%+v", midCatalog.Computers)
 	}
+	if midCatalog.Computers[0].CostReductionPercent != 60 {
+		t.Fatalf("Mid-Tech Electronic Computer cost reduction=%d want=60", midCatalog.Computers[0].CostReductionPercent)
+	}
 	if len(midCatalog.Shields) != 5 || midCatalog.Shields[0].MiniaturizationLevel != 2 || !midCatalog.Shields[0].Available {
 		t.Fatalf("Mid-Tech shields=%+v", midCatalog.Shields)
 	}
 	if midCatalog.Shields[0].ShieldDamageBlockPerHit != 1 || midCatalog.Shields[0].ShieldCapacityPerHullClass != 5 ||
 		midCatalog.Shields[4].ShieldDamageBlockPerHit != 10 || midCatalog.Shields[4].ShieldCapacityPerHullClass != 50 {
 		t.Fatalf("Shield effects=%+v", midCatalog.Shields)
+	}
+	if midCatalog.Shields[0].CostReductionPercent != 45 || midCatalog.Shields[0].SpaceReductionPercent != 35 {
+		t.Fatalf("Mid-Tech Class I Shield reductions=%d/%d want=45/35", midCatalog.Shields[0].CostReductionPercent, midCatalog.Shields[0].SpaceReductionPercent)
 	}
 
 	all := core.NewSmallFixture(0x171121)
@@ -117,6 +123,9 @@ func TestSlice171CatalogProfilesAndLateHullLocks(t *testing.T) {
 	}
 	if allCatalog.AutomaticSystems.TacticalSpeedBonus != 10 || allCatalog.AutomaticSystems.ArmorDurabilityMultiple != 10 {
 		t.Fatalf("All-Tech automatic effects=%+v", allCatalog.AutomaticSystems)
+	}
+	if allCatalog.Computers[0].CostReductionPercent != 75 || allCatalog.Shields[0].CostReductionPercent != 75 || allCatalog.Shields[0].SpaceReductionPercent != 75 {
+		t.Fatalf("All-Tech saturated reductions computer=%d shield=%d/%d want=75/75/75", allCatalog.Computers[0].CostReductionPercent, allCatalog.Shields[0].CostReductionPercent, allCatalog.Shields[0].SpaceReductionPercent)
 	}
 	doomFound := false
 	for _, variant := range allCatalog.Variants {

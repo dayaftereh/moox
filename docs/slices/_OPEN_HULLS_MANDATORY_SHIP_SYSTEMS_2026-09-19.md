@@ -56,3 +56,11 @@ Primary implementation evidence: `docs/research/SLICE_17_1_GATE3_IMPLEMENTATION_
 Final HMI amendment evidence: `docs/research/SLICE_17_1_GATE3_SHIP_INFO_POPUP_AMENDMENT_2026-09-20.md`.
 
 Gate 4 is still next and has not started.
+
+## Gate 3 compact information amendment
+
+User review compacted the always-visible Ship information rows to category + installed component + question-mark details, removed verbose effect copy from the summary, and replaced player-visible M0/M1/... miniaturization notation with concrete server-projected cost/Space reduction percentages.
+
+Evidence: docs/research/SLICE_17_1_GATE3_COMPACT_SHIP_INFO_AMENDMENT_2026-09-20.md.
+
+Gate 4 is still next and has not started.

@@ -61,10 +61,7 @@ func (r *EconomyRules) shipComponentMiniaturizationLevel(empire *core.Empire, te
 	return level, nil
 }
 
-func miniaturizedComponentCost(base, level int) int {
-	if base <= 0 {
-		return 0
-	}
+func miniaturizationCostPercent(level int) int {
 	factors := [...]int{100, 75, 55, 40, 30, 25}
 	if level < 0 {
 		level = 0
@@ -72,17 +69,10 @@ func miniaturizedComponentCost(base, level int) int {
 	if level >= len(factors) {
 		level = len(factors) - 1
 	}
-	value := (base * factors[level]) / 100
-	if value < 1 {
-		return 1
-	}
-	return value
+	return factors[level]
 }
 
-func miniaturizedComponentSpace(base, level, class int) int {
-	if base <= 0 {
-		return 0
-	}
+func miniaturizationSpacePerThousand(level, class int) int {
 	class0 := [...]int{1000, 800, 650, 500, 350, 250}
 	class1 := [...]int{1000, 800, 700, 600, 500, 400}
 	factors := class0[:]
@@ -95,7 +85,25 @@ func miniaturizedComponentSpace(base, level, class int) int {
 	if level >= len(factors) {
 		level = len(factors) - 1
 	}
-	value := (base*factors[level] + 500) / 1000
+	return factors[level]
+}
+
+func miniaturizedComponentCost(base, level int) int {
+	if base <= 0 {
+		return 0
+	}
+	value := (base * miniaturizationCostPercent(level)) / 100
+	if value < 1 {
+		return 1
+	}
+	return value
+}
+
+func miniaturizedComponentSpace(base, level, class int) int {
+	if base <= 0 {
+		return 0
+	}
+	value := (base*miniaturizationSpacePerThousand(level, class) + 500) / 1000
 	if value < 1 {
 		return 1
 	}
