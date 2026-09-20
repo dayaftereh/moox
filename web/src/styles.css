@@ -3898,7 +3898,7 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 }
 .shipdesigner-preview:hover,
 .shipdesigner-preview:focus-visible { border-color: var(--accent); background: radial-gradient(circle at 50% 48%, rgba(68, 145, 223, .24), transparent 46%), linear-gradient(180deg, rgba(7, 16, 28, .88), rgba(3, 8, 15, .97)); outline: none; }
-.shipdesigner-preview-ship { width: min(90%, 520px); height: 148px; }
+.procedural-ship-glyph.shipdesigner-preview-ship { width: min(90%, 520px); height: 148px; }
 .shipdesigner-preview-overlay {
   position: absolute;
   right: 10px;
@@ -3994,7 +3994,7 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .shipdesigner-component-columns,
   .shipdesigner-summary-grid { grid-template-columns: 1fr; }
   .shipdesigner-preview { height: 168px; min-height: 168px; max-height: 168px; }
-  .shipdesigner-preview-ship { height: 136px; }
+  .procedural-ship-glyph.shipdesigner-preview-ship { height: 136px; }
   .shipdesigner-component-row > button { min-height: 44px; }
   .shipdesigner-installed-row.weapon { grid-template-columns: 72px minmax(0, 1fr); }
   .shipdesigner-weapon-quantity { grid-column: 1 / -1; justify-content: flex-end; }
@@ -4010,7 +4010,7 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
   .shipdesigner-design-item { grid-template-columns: 62px minmax(0, 1fr); }
   .shipdesigner-design-thumb { width: 56px; height: 44px; }
   .shipdesigner-preview { height: 150px; min-height: 150px; max-height: 150px; }
-  .shipdesigner-preview-ship { height: 120px; }
+  .procedural-ship-glyph.shipdesigner-preview-ship { height: 120px; }
   .shipdesigner-component-section { padding: 8px; }
   .shipdesigner-installed-row { grid-template-columns: 72px minmax(0, 1fr) auto; gap: 5px; }
 }

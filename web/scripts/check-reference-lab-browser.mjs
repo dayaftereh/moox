@@ -348,6 +348,23 @@ async function main() {
     saveDisabled: document.querySelector('.shipdesigner-save-row .button-primary')?.disabled ?? true,
   }))()`)
   assert(designerUI.hullText.includes('Doom'), `All-Tech hull stepper ended at ${designerUI.hullText}, want Doom Star`)
+  const doomPreview = await evaluate(`(() => {
+    const preview = document.querySelector('.shipdesigner-preview')?.getBoundingClientRect()
+    const ship = document.querySelector('.shipdesigner-preview-ship')?.getBoundingClientRect()
+    if (!preview || !ship) return null
+    return {
+      previewWidth: preview.width,
+      previewHeight: preview.height,
+      shipWidth: ship.width,
+      shipHeight: ship.height,
+      centeredX: Math.abs((ship.left + ship.width / 2) - (preview.left + preview.width / 2)),
+      centeredY: Math.abs((ship.top + ship.height / 2) - (preview.top + preview.height / 2)),
+      contained: ship.left >= preview.left - 1 && ship.right <= preview.right + 1 && ship.top >= preview.top - 1 && ship.bottom <= preview.bottom + 1,
+    }
+  })()`)
+  assert(Boolean(doomPreview), 'Doom Star preview geometry is unavailable')
+  assert(doomPreview.contained, `Mobile Doom Star SVG escapes preview bounds: ship=${doomPreview.shipWidth}x${doomPreview.shipHeight}, preview=${doomPreview.previewWidth}x${doomPreview.previewHeight}`)
+  assert(doomPreview.centeredX <= 2 && doomPreview.centeredY <= 2, `Mobile Doom Star SVG is not centered: dx=${doomPreview.centeredX}, dy=${doomPreview.centeredY}`)
 
   const openedComputerForEdit = await evaluate(`(() => { const button = document.querySelector('[data-system="computer"] .shipdesigner-system-select-trigger'); if (!button) return false; button.click(); return true })()`)
   assert(openedComputerForEdit, 'Could not open Computer selector for Doom Star edit')

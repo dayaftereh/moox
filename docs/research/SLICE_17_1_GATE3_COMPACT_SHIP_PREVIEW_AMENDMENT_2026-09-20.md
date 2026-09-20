@@ -100,3 +100,22 @@ No server/domain/gameplay rule changed.
 
 Gate 4 remains not started.
 Slice 17.2+ remain closed.
+
+
+## Mobile SVG containment regression fix
+
+A follow-up mobile review exposed that Titan and especially Doom Star could be clipped after the compact-preview change.
+
+Root cause:
+
+- the global rule `.procedural-ship-glyph:not(.tactical-ship-vector)` has higher CSS specificity than the original `.shipdesigner-preview-ship` sizing rule;
+- therefore the intended fixed preview SVG height was ignored and the SVG fell back to `width: 100%; height: auto`;
+- the larger Titan/Doom Star intrinsic canvas then exceeded the compact mobile preview and was clipped by the preview container's `overflow: hidden`.
+
+Fix:
+
+- the Ship Designer preview sizing rules now use `.procedural-ship-glyph.shipdesigner-preview-ship`, matching/exceeding the global SVG selector specificity;
+- desktop, <=620px and <=360px preview SVG heights now apply deterministically;
+- the browser smoke now advances to Doom Star at 390px and verifies that the actual SVG bounding box is fully contained and centered in the preview, rather than checking only the preview container height.
+
+Fresh reference verification used port 7196 and passed the complete mobile/desktop Ship Designer smoke.
