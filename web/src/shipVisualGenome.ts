@@ -125,6 +125,17 @@ export function shipHullFootprint(hullId: VisualHullID): number {
   if (token.includes('scout')) return .4
   return .5
 }
+export function shipHullDesignerFootprint(hullId: VisualHullID): number {
+  const token = String(hullId).toLowerCase().replace(/[\s-]+/g, '_')
+  if (token.includes('doom')) return 1
+  if (token.includes('titan')) return .78
+  if (token.includes('battleship')) return .66
+  if (token.includes('cruiser')) return .58
+  if (token.includes('destroyer')) return .46
+  if (token.includes('frigate')) return .34
+  if (token.includes('scout')) return .28
+  return .34
+}
 
 function profileFor(hullId: VisualHullID): HullProfile {
   const token = String(hullId).toLowerCase().replace(/[\s-]+/g, '_')

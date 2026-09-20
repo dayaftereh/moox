@@ -14,7 +14,7 @@ import { GameIcon } from './components/GameIcon'
 import { ShipSystemInfoCard } from './components/ShipSystemInfoCard'
 import { Card, PageHeader } from './components/ui'
 import type { TranslationKey, TranslationVars } from './i18n'
-import { createRandomShipGenome, shipHullFootprint, type ShipVisualGenome } from './shipVisualGenome'
+import { createRandomShipGenome, shipHullDesignerFootprint, shipHullFootprint, type ShipVisualGenome } from './shipVisualGenome'
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
 
@@ -320,7 +320,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
             </div>
 
             <button type="button" className="shipdesigner-preview" onClick={rerollVisual} title={t('shipbuilder.clickToReroll')}>
-              <ProceduralShipGlyph seed={candidate.seed} hullId={hullID} genome={candidate} footprint={shipHullFootprint(hullID)} className="shipdesigner-preview-ship" label={name.trim() || hullLabel(t, hullID)} />
+              <ProceduralShipGlyph seed={candidate.seed} hullId={hullID} genome={candidate} footprint={shipHullDesignerFootprint(hullID)} className="shipdesigner-preview-ship" label={name.trim() || hullLabel(t, hullID)} normalizeVisualFootprint />
               <span className="shipdesigner-preview-overlay"><GameIcon name="generate" />{t('shipbuilder.clickToReroll')}</span>
             </button>
 

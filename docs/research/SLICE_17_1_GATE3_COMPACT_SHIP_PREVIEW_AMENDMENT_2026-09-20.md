@@ -119,3 +119,26 @@ Fix:
 - the browser smoke now advances to Doom Star at 390px and verifies that the actual SVG bounding box is fully contained and centered in the preview, rather than checking only the preview container height.
 
 Fresh reference verification used port 7196 and passed the complete mobile/desktop Ship Designer smoke.
+
+
+## Hull-size progression follow-up
+
+A second mobile review confirmed that containment alone was not sufficient: after the clipping fix the SVG frame still grew by hull class, but procedural silhouette variance could make a Titan appear as large as or larger than a Doom Star.
+
+The Ship Designer preview now separates two concerns:
+
+- procedural morphology remains free to vary per reroll;
+- perceived hull-class size follows a dedicated Designer ladder.
+
+For the Designer preview only, the procedural silhouette is normalized around its generated visible bounds before the hull-class footprint is applied. A stronger preview-only progression is then used from Frigate through Doom Star, while other ship render contexts keep their existing scale contract.
+
+At the 390px deterministic All-Tech reference sequence, the measured visible maximum silhouette extent is approximately:
+
+- Frigate: 37px;
+- Destroyer: 56px;
+- Cruiser: 71px;
+- Battleship: 81px;
+- Titan: 88px;
+- Doom Star: 97px.
+
+The browser smoke now measures the rendered path/circle/ellipse union for every hull while stepping through the Designer and requires every successive hull to be visibly larger. The existing Doom Star containment and centering guard remains active.

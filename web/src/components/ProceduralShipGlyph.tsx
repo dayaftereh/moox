@@ -15,6 +15,7 @@ type ProceduralShipGlyphProps = {
   width?: number
   height?: number
   tightViewBox?: boolean
+  normalizeVisualFootprint?: boolean
 }
 
 type Cutout = {
@@ -204,7 +205,52 @@ function tightShipViewBox(genome: ShipVisualGenome, geometry: ShipGeometry, canv
   return `${minX.toFixed(2)} ${minY.toFixed(2)} ${(maxX - minX).toFixed(2)} ${(maxY - minY).toFixed(2)}`
 }
 
-export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className = '', label, genome, footprint = 1, x, y, width, height, tightViewBox = false }: ProceduralShipGlyphProps) {
+function shipVisualBounds(geometry: ShipGeometry): { minX: number; minY: number; maxX: number; maxY: number } {
+  let minX = Number.POSITIVE_INFINITY
+  let minY = Number.POSITIVE_INFINITY
+  let maxX = Number.NEGATIVE_INFINITY
+  let maxY = Number.NEGATIVE_INFINITY
+  const includePoint = (x: number, y: number) => {
+    minX = Math.min(minX, x)
+    minY = Math.min(minY, y)
+    maxX = Math.max(maxX, x)
+    maxY = Math.max(maxY, y)
+  }
+  const includePath = (path: string) => {
+    const values = path.match(/-?\d+(?:\.\d+)?/g)?.map(Number) ?? []
+    for (let index = 0; index + 1 < values.length; index += 2) includePoint(values[index], values[index + 1])
+  }
+
+  includePath(geometry.hullPath)
+  for (const path of geometry.primitivePaths) includePath(path)
+  for (const engineY of geometry.engineYs) {
+    includePoint(geometry.engineTrailX, engineY - 2.1)
+    includePoint(geometry.engineX + 2.1, engineY + 2.1)
+  }
+  for (const [hardpointX, hardpointY] of geometry.hardpoints) {
+    includePoint(hardpointX - 1.6, hardpointY - 1.6)
+    includePoint(hardpointX + 1.6, hardpointY + 1.6)
+  }
+
+  if (!Number.isFinite(minX) || !Number.isFinite(minY) || !Number.isFinite(maxX) || !Number.isFinite(maxY)) return { minX: 0, minY: 0, maxX: 1, maxY: 1 }
+  return { minX, minY, maxX, maxY }
+}
+
+function normalizedShipTransform(geometry: ShipGeometry, canvas: { width: number; height: number }): string {
+  const bounds = shipVisualBounds(geometry)
+  const width = Math.max(1, bounds.maxX - bounds.minX)
+  const height = Math.max(1, bounds.maxY - bounds.minY)
+  const sourceMax = Math.max(width, height)
+  const targetMax = Math.min(canvas.width, canvas.height) * .9
+  const scale = targetMax / sourceMax
+  const centerX = bounds.minX + width / 2
+  const centerY = bounds.minY + height / 2
+  const tx = canvas.width / 2 - centerX * scale
+  const ty = canvas.height / 2 - centerY * scale
+  return `matrix(${scale.toFixed(5)} 0 0 ${scale.toFixed(5)} ${tx.toFixed(3)} ${ty.toFixed(3)})`
+}
+
+export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className = '', label, genome, footprint = 1, x, y, width, height, tightViewBox = false, normalizeVisualFootprint = false }: ProceduralShipGlyphProps) {
   const resolvedGenome = genome ?? createShipGenome(seed, hullId ?? 'generic')
   const canvas = {
     width: Math.ceil(Math.max(180, resolvedGenome.length * 1.65)),
@@ -216,6 +262,7 @@ export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className =
     : `0 0 ${canvas.width} ${canvas.height}`
   const classes = `procedural-ship-glyph${className ? ` ${className}` : ''}`
   const maskID = `ship-mask-${hashSeed(`${resolvedGenome.seed}|${geometry.profileKey}|v4`).toString(16)}`
+  const normalizedTransform = normalizeVisualFootprint ? normalizedShipTransform(geometry, canvas) : undefined
 
   return (
     <svg
@@ -262,7 +309,7 @@ export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className =
         </mask>
       </defs>
 
-      <g className="procedural-ship-engines">
+      <g className="procedural-ship-engines" transform={normalizedTransform}>
         {geometry.engineYs.map((y, index) => (
           <g key={`engine-${index}`}>
             <path d={`M ${geometry.engineX.toFixed(1)} ${y.toFixed(1)} L ${geometry.engineTrailX.toFixed(1)} ${y.toFixed(1)}`} />
@@ -271,7 +318,7 @@ export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className =
         ))}
       </g>
 
-      <g mask={`url(#${maskID})`}>
+      <g mask={`url(#${maskID})`} transform={normalizedTransform}>
         <g className="procedural-ship-primitives">
           {geometry.primitivePaths.map((path, index) => <path d={path} key={`primitive-${index}`} />)}
         </g>
@@ -286,7 +333,7 @@ export function ProceduralShipGlyph({ seed, hullId, weaponCount = 0, className =
       </g>
 
       {geometry.cutouts.length > 0 && (
-        <g className="procedural-ship-cutouts">
+        <g className="procedural-ship-cutouts" transform={normalizedTransform}>
           {geometry.cutouts.map((cutout, index) => (
             <ellipse
               key={`cutout-${index}`}

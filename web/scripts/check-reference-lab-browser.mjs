@@ -332,6 +332,21 @@ async function main() {
   assert(fuelInfoText.includes('Unbegrenzte strategische Reichweite'), 'Fuel detail popup does not explain the installed effect')
   await evaluate(`(() => { document.querySelector('.shipdesigner-system-dialog-close')?.click(); return true })()`)
   await sleep(100)
+  const measureShipVisualSize = () => evaluate(`(() => {
+    const ship = document.querySelector('.shipdesigner-preview-ship')
+    if (!ship) return null
+    const rects = [...ship.querySelectorAll('path, circle, ellipse')].map((node) => node.getBoundingClientRect()).filter((rect) => rect.width > 0 && rect.height > 0)
+    if (!rects.length) return null
+    const left = Math.min(...rects.map((rect) => rect.left))
+    const right = Math.max(...rects.map((rect) => rect.right))
+    const top = Math.min(...rects.map((rect) => rect.top))
+    const bottom = Math.max(...rects.map((rect) => rect.bottom))
+    return {
+      hull: document.querySelector('.shipdesigner-hull-current strong')?.textContent || '',
+      maxSize: Math.max(right - left, bottom - top),
+    }
+  })()`)
+  const hullVisualSizes = [await measureShipVisualSize()]
   for (let step = 0; step < 5; step++) {
     const advanced = await evaluate(`(() => {
       const buttons = [...document.querySelectorAll('.shipdesigner-hull-stepper button')]
@@ -342,6 +357,13 @@ async function main() {
     })()`)
     assert(advanced, `Could not advance Ship Designer hull at step ${step + 1}`)
     await sleep(120)
+    hullVisualSizes.push(await measureShipVisualSize())
+  }
+  assert(hullVisualSizes.length === 6 && hullVisualSizes.every(Boolean), 'Could not measure all six Ship Designer hull visuals')
+  for (let index = 1; index < hullVisualSizes.length; index++) {
+    const previous = hullVisualSizes[index - 1]
+    const current = hullVisualSizes[index]
+    assert(current.maxSize > previous.maxSize + 2, `Ship visual size did not grow ${previous.hull}=${previous.maxSize.toFixed(1)} -> ${current.hull}=${current.maxSize.toFixed(1)}`)
   }
   designerUI = await evaluate(`(() => ({
     hullText: document.querySelector('.shipdesigner-hull-current strong')?.textContent || '',
