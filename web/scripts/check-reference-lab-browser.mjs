@@ -380,6 +380,13 @@ async function main() {
   await evaluate(`(() => { document.querySelector('.shipdesigner-system-dialog-close')?.click(); return true })()`)
   await sleep(100)
   const initialInstalledPanelHeight = await evaluate(`document.querySelector('.shipdesigner-installed-weapons')?.getBoundingClientRect().height || 0`)
+  const availableAddControl = await evaluate(`(() => {
+    const button = document.querySelector('.shipdesigner-add-weapon')
+    const rect = button?.getBoundingClientRect()
+    return { text: button?.textContent || '', aria: button?.getAttribute('aria-label') || '', width: rect?.width || 0, height: rect?.height || 0 }
+  })()`)
+  assert(availableAddControl.text.trim() === '+' && availableAddControl.aria === 'Einbauen', `Available weapon action is not compact + control: ${JSON.stringify(availableAddControl)}`)
+  assert(availableAddControl.width <= 44 && availableAddControl.height <= 44, `Available weapon + control is too large: ${JSON.stringify(availableAddControl)}`)
   const addWeapon = async () => {
     const added = await evaluate(`(() => { const button = document.querySelector('.shipdesigner-weapon-section .shipdesigner-component-row .button-secondary'); if (!button || button.disabled) return false; button.click(); return true })()`)
     if (added) await sleep(100)
@@ -397,10 +404,18 @@ async function main() {
       scrollHeight: scroll?.scrollHeight || 0,
       clientHeight: scroll?.clientHeight || 0,
       overflowY: scroll ? getComputedStyle(scroll).overflowY : '',
+      slotLabels: document.querySelectorAll('.shipdesigner-info-card.weapon > span').length,
+      cardTexts: [...document.querySelectorAll('.shipdesigner-info-card.weapon')].map((card) => card.textContent || ''),
+      maxCardHeight: Math.max(0, ...[...document.querySelectorAll('.shipdesigner-info-card.weapon')].map((card) => card.getBoundingClientRect().height)),
+      removeControls: [...document.querySelectorAll('.shipdesigner-weapon-remove')].map((button) => ({ text: button.textContent || '', aria: button.getAttribute('aria-label') || '' })),
     }
   })()`)
   assert(Math.abs(installedPanelAfterWeapons.height - initialInstalledPanelHeight) <= 1, `Installed weapons panel shifted height ${initialInstalledPanelHeight} -> ${installedPanelAfterWeapons.height}`)
   assert(installedPanelAfterWeapons.cards === 2 && !installedPanelAfterWeapons.empty, `Installed weapon cards/empty state are wrong after adding: ${JSON.stringify(installedPanelAfterWeapons)}`)
+  assert(installedPanelAfterWeapons.slotLabels === 0, `Installed weapon cards still render slot-number labels: ${JSON.stringify(installedPanelAfterWeapons)}`)
+  assert(installedPanelAfterWeapons.cardTexts.every((text) => text.includes('Laserkanone') && !/Slot\s*\d/i.test(text) && !text.includes('Entfernen')), `Installed weapon cards are not compact player-facing rows: ${JSON.stringify(installedPanelAfterWeapons.cardTexts)}`)
+  assert(installedPanelAfterWeapons.maxCardHeight <= 60, `Installed weapon card height=${installedPanelAfterWeapons.maxCardHeight}, want <=60px at 390px`)
+  assert(installedPanelAfterWeapons.removeControls.length === 2 && installedPanelAfterWeapons.removeControls.every((control) => control.text.trim() === '' && control.aria === 'Entfernen'), `Installed weapon remove controls are not icon-only/accessibly labelled: ${JSON.stringify(installedPanelAfterWeapons.removeControls)}`)
   assert(installedPanelAfterWeapons.overflowY === 'auto' && installedPanelAfterWeapons.scrollHeight >= installedPanelAfterWeapons.clientHeight, `Installed weapons scroll area is not stable/scroll-capable: ${JSON.stringify(installedPanelAfterWeapons)}`)
 
   const measureShipVisualSize = () => evaluate(`(() => {
@@ -538,7 +553,7 @@ async function main() {
   assert(!ordinary, 'Ordinary game-1 renders development credit/turn controls')
 
   if (failures.length) throw new Error('Reference/buyout/ship-designer browser smoke failed:\n- ' + failures.join('\n- '))
-  console.log('Reference/buyout/ship-designer browser smoke passed: six-hull All-Tech Designer, compact ship-information rows, Beam Defense/Missile Evasion ratings + help formulas, stable scrollable installed-weapons panel, weapon-area Space Available and save-area production cost, ? detail popups and player-facing miniaturization reductions, Computer/Shield card selectors, explicit no-Shield save, mobile/desktop Designer layout, More-only dev tools, +BC grant, +1/+5/N presence, same-turn drafted construction buyout with BC deduction, next-turn completion, 390px/desktop layout and ordinary-game isolation.')
+  console.log('Reference/buyout/ship-designer browser smoke passed: six-hull All-Tech Designer, compact ship-information rows, Beam Defense/Missile Evasion ratings + help formulas, compact stable scrollable installed-weapons rows + icon controls, weapon-area Space Available and save-area production cost, ? detail popups and player-facing miniaturization reductions, Computer/Shield card selectors, explicit no-Shield save, mobile/desktop Designer layout, More-only dev tools, +BC grant, +1/+5/N presence, same-turn drafted construction buyout with BC deduction, next-turn completion, 390px/desktop layout and ordinary-game isolation.')
 }
 
 main().catch((error) => {

@@ -321,3 +321,11 @@ The Installed Weapons section is now permanently reserved even for an empty desi
 Evidence and acceptance details: `docs/research/SLICE_17_1_GATE3_ORIGINAL_SUMMARY_LAYOUT_AMENDMENT_2026-09-20.md`.
 
 Gate 4 remains not started.
+
+## Compact installed-weapon controls follow-up (2026-09-20)
+
+Installed weapon cards were reduced to compact rows: slot-number labels were removed, Remove is now an icon-only accessible control, and the Available weapon action is a symbol-only `+` button with a 44x44 touch target. The fixed-height internal weapon scroller remains unchanged and intentionally leaves room for later weapon-modification interactions.
+
+Evidence: `docs/research/SLICE_17_1_GATE3_ORIGINAL_SUMMARY_LAYOUT_AMENDMENT_2026-09-20.md`.
+
+Gate 4 remains not started.

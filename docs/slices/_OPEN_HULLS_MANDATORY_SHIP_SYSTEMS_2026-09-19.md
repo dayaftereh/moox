@@ -88,3 +88,11 @@ Beam Defense and Missile Evasion now have `?` detail dialogs with meaning/curren
 Evidence: `docs/research/SLICE_17_1_GATE3_ORIGINAL_SUMMARY_LAYOUT_AMENDMENT_2026-09-20.md`.
 
 Gate 4 is still next and has not started.
+
+## Gate 3 compact installed-weapon controls
+
+Installed weapons now use compact rows without slot labels, icon-only Remove controls and a symbol-only `+` action in Available. The stable fixed-height weapon scroller remains in place; weapon modifiers are still future scope.
+
+Evidence: `docs/research/SLICE_17_1_GATE3_ORIGINAL_SUMMARY_LAYOUT_AMENDMENT_2026-09-20.md`.
+
+Gate 4 is still next and has not started.

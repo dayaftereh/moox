@@ -137,3 +137,21 @@ The reference browser smoke now additionally verifies at 390 px:
 - after adding two weapons the empty state disappears, two weapon cards are present and the panel height changes by no more than one pixel;
 - the internal weapon content remains scroll-capable;
 - the existing mobile overflow, hull progression and system-popup checks remain active.
+
+
+## Compact installed-weapon controls follow-up
+
+The installed-weapon rows were compacted further after mobile review.
+
+Changes:
+
+- slot-number labels such as `Slot 1`, `Slot 2`, etc. are no longer shown;
+- each installed weapon keeps only the weapon name, compact current damage/Space/PP information and quantity controls;
+- remove is now an icon-only control with an accessible `Remove / Entfernen` label instead of a full text button;
+- the Available weapon list uses a compact `+` control instead of a full `Install / Einbauen` text button;
+- the `+` control keeps a 44x44 px touch target even though only the symbol is visible;
+- installed weapon cards use a compact two-column internal layout: name/stats on the left and `- count + remove` controls on the right;
+- the fixed-height, internally scrollable Installed Weapons panel is preserved;
+- no weapon-modification UI is implemented yet. The compact weapon row is intentionally left as the future interaction surface for modification toggles/icons.
+
+The mobile browser acceptance now verifies that installed weapon cards contain no slot labels or visible Remove text, use icon-only accessible remove controls, stay at or below 60 px height at 390 px, and that the Available add action is a symbol-only accessible `+` control.

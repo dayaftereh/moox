@@ -366,7 +366,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
               {laser ? (
                 <div className={"shipdesigner-component-row" + (laser.available ? "" : " locked")}>
                   <div><strong>{t('shipbuilder.laserCannon')}</strong><small>{laser.base_space} {t('shipbuilder.space')} · {laser.base_cost_pp} PP · {t('shipbuilder.baseDamageRange', { min: laser.min_damage, max: laser.max_damage })}</small></div>
-                  <button type="button" className="button-secondary" disabled={!canAddLaser} onClick={addLaserMount}>{laser.available ? t('shipbuilder.add') : t('shipbuilder.locked')}</button>
+                  <button type="button" className="button-secondary shipdesigner-add-weapon" aria-label={t('shipbuilder.add')} title={t('shipbuilder.add')} disabled={!canAddLaser} onClick={addLaserMount}><span aria-hidden="true">+</span></button>
                 </div>
               ) : <p className="muted">{t('shipbuilder.noAvailableComponents')}</p>}
               <p className="muted shipdesigner-future-note">{t('shipbuilder.futureMounts')}</p>
