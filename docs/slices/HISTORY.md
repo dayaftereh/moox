@@ -470,3 +470,13 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Save/restore and trusted Reference metadata passed fresh HTTP acceptance; generic imports cannot mint Reference capability.
 - Gate-4 evidence: `docs/research/SLICE_17_0_GATE4_ACCEPTANCE_CLOSE_2026-09-19.md`.
 - Slice 17.1 - Hulls and Mandatory Ship Systems is next but remains unopened pending explicit release.
+
+## 2026-09-20 - Slice 17.1 Hulls and Mandatory Ship Systems closed
+
+- Closed Slice 17.1 with Gates 1-4 complete after explicit Gate-4 acceptance.
+- Six hulls from Frigate through Doom Star, hull technology/buildability gates, mandatory Drive/Computer/Armor/Shield/Fuel semantics and original-evidenced miniaturization are accepted through one authoritative design/construction pipeline.
+- Late-game configurations are testable through durable 17.0 reference labs without research grinding.
+- Saved-design effective projection, queue-time snapshots and already-built/reference Ship snapshots remain immutable across later design revisions.
+- Construction/persistence, full Go/vet/web build, 390px/desktop browser acceptance and `git diff --check` passed on the final Gate-3 HMI baseline `d9bab26`.
+- Gate-4 evidence: `docs/research/SLICE_17_1_GATE4_ACCEPTANCE_CLOSE_2026-09-20.md`.
+- Beam, ordnance and special-system breadth remains owned by Slices 17.2-17.4.

@@ -1,6 +1,6 @@
 # Planned Slice 17.1 - Hulls and Mandatory Ship Systems
 
-Status: **active; Gates 1-3 complete / Gate 4 next**.
+Status: **closed; Gates 1-4 complete (2026-09-20)**.
 
 ## Objective
 
@@ -80,12 +80,14 @@ The six hulls are already normalized with base PP, base Space, strategic picture
 
 ## Gate 4 - QA + close
 
-- [ ] Every frozen hull can be designed only when buildable/unlocked.
-- [ ] Every frozen mandatory component obeys technology/space/cost rules.
-- [ ] Doom Star and other late-game configurations are testable through 17.0 without research grinding.
-- [ ] Revision never mutates already-built Ships.
-- [ ] Construction and persistence round trips pass.
-- [ ] Full tests/vet/web/browser checks and `git diff --check` pass.
+- [x] Every frozen hull can be designed only when buildable/unlocked.
+- [x] Every frozen mandatory component obeys technology/space/cost rules.
+- [x] Doom Star and other late-game configurations are testable through 17.0 without research grinding.
+- [x] Revision never mutates already-built Ships.
+- [x] Construction and persistence round trips pass.
+- [x] Full tests/vet/web/browser checks and `git diff --check` pass.
+
+Acceptance evidence: docs/research/SLICE_17_1_GATE4_ACCEPTANCE_CLOSE_2026-09-20.md.
 
 ## Exit criterion
 
