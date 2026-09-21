@@ -292,6 +292,8 @@ async function main() {
       helpCount: document.querySelectorAll('.shipdesigner-system-help').length,
       ratingHelpCount: document.querySelectorAll('.shipdesigner-combat-rating .shipdesigner-system-help').length,
       installedWeaponsPresent: Boolean(document.querySelector('.shipdesigner-installed-weapons')),
+      availableWeaponSectionPresent: Boolean(document.querySelector('.shipdesigner-weapon-section')),
+      emptyAddTarget: Boolean(document.querySelector('.shipdesigner-installed-weapons-add-target')),
       installedWeaponsEmptyText: document.querySelector('.shipdesigner-installed-weapons-empty')?.textContent || '',
       installedWeaponsHeight: document.querySelector('.shipdesigner-installed-weapons')?.getBoundingClientRect().height || 0,
       installedWeaponsOverflowY: getComputedStyle(document.querySelector('.shipdesigner-installed-weapons-scroll')).overflowY,
@@ -312,8 +314,10 @@ async function main() {
   assert(designerUI.helpCount === 7 && designerUI.rows.every((row) => row.help), `Ship information help affordances=${designerUI.helpCount}, want 5 system + 2 combat-rating help buttons`)
   assert(designerUI.ratingHelpCount === 2, `Combat rating help affordances=${designerUI.ratingHelpCount}, want 2`)
   assert(designerUI.installedWeaponsPresent, 'Installed weapons panel is missing when no weapon is installed')
+  assert(!designerUI.availableWeaponSectionPresent, 'Separate available-weapons card should be removed from the main Designer')
+  assert(designerUI.emptyAddTarget, 'Empty installed-weapons surface is not an Add-weapon target')
   assert(designerUI.installedWeaponsEmptyText.includes('Noch keine Waffen eingebaut'), `Installed weapons empty state is missing: ${designerUI.installedWeaponsEmptyText}`)
-  assert(designerUI.installedWeaponsHeight >= 160, `Installed weapons reserved height=${designerUI.installedWeaponsHeight}, want stable reserved panel height`)
+  assert(designerUI.installedWeaponsHeight >= 145 && designerUI.installedWeaponsHeight <= 155, `Installed weapons reserved height=${designerUI.installedWeaponsHeight}, want compact stable 150px panel`)
   assert(designerUI.installedWeaponsOverflowY === 'auto', `Installed weapons panel overflow-y=${designerUI.installedWeaponsOverflowY}, want auto`)
   assert(designerUI.summaryCount === 0, `Ship information still renders ${designerUI.summaryCount} redundant summary stat(s)`)
   assert(designerUI.combatRatingsText.includes('Strahlenabwehr') && designerUI.combatRatingsText.includes('Raketen-Ausweichen'), 'Ship information is missing Beam Defense / Missile Evasion ratings')
@@ -379,6 +383,32 @@ async function main() {
   assert(fuelInfoText.includes('Unbegrenzte strategische Reichweite'), 'Fuel detail popup does not explain the installed effect')
   await evaluate(`(() => { document.querySelector('.shipdesigner-system-dialog-close')?.click(); return true })()`)
   await sleep(100)
+  const emptyTargetOpened = await evaluate(`(() => {
+    const target = document.querySelector('.shipdesigner-installed-weapons-add-target')
+    if (!target || target.disabled) return false
+    target.click()
+    return true
+  })()`)
+  assert(emptyTargetOpened, 'Empty installed-weapons surface did not open the weapon selector')
+  await sleep(100)
+  const emptyTargetSelectorState = await evaluate(`(() => {
+    const dialog = document.querySelector('.shipdesigner-weapon-selector')
+    const toolbar = document.querySelector('.shipdesigner-weapon-selector-toolbar')
+    const toggle = document.querySelector('.shipdesigner-filter-toggle')
+    const list = document.querySelector('.shipdesigner-weapon-selector-list')
+    const config = document.querySelector('.shipdesigner-weapon-config')
+    return {
+      present: Boolean(dialog),
+      filtersHidden: !toolbar,
+      toggleExpanded: toggle?.getAttribute('aria-expanded') || '',
+      listHeight: list?.getBoundingClientRect().height || 0,
+      configDisplay: config ? getComputedStyle(config).display : '',
+    }
+  })()`)
+  assert(emptyTargetSelectorState.present && emptyTargetSelectorState.filtersHidden && emptyTargetSelectorState.toggleExpanded === 'false', `Weapon selector filters are not collapsed initially: ${JSON.stringify(emptyTargetSelectorState)}`)
+  assert(emptyTargetSelectorState.listHeight >= 500 && emptyTargetSelectorState.configDisplay === 'none', `Pre-selection mobile selector does not prioritize the weapon list: ${JSON.stringify(emptyTargetSelectorState)}`)
+  await evaluate(`(() => { document.querySelector('.shipdesigner-system-dialog-close')?.click(); return true })()`)
+  await sleep(100)
   const initialInstalledPanelHeight = await evaluate(`document.querySelector('.shipdesigner-installed-weapons')?.getBoundingClientRect().height || 0`)
   const availableAddControl = await evaluate(`(() => {
     const button = document.querySelector('.shipdesigner-add-weapon')
@@ -403,15 +433,41 @@ async function main() {
       const dialog = document.querySelector('.shipdesigner-weapon-selector')
       const rows = [...document.querySelectorAll('.shipdesigner-weapon-selector-row')]
       const toolbar = document.querySelector('.shipdesigner-weapon-selector-toolbar')
+      const toggle = document.querySelector('.shipdesigner-filter-toggle')
+      const list = document.querySelector('.shipdesigner-weapon-selector-list')
+      const config = document.querySelector('.shipdesigner-weapon-config')
       return {
         present: Boolean(dialog),
         rows: rows.length,
         text: dialog?.textContent || '',
-        hasSearch: Boolean(toolbar?.querySelector('input')),
+        filtersInitiallyHidden: !toolbar,
+        filterToggleExpanded: toggle?.getAttribute('aria-expanded') || '',
+        listHeight: list?.getBoundingClientRect().height || 0,
+        configDisplay: config ? getComputedStyle(config).display : '',
         selectCount: toolbar?.querySelectorAll('select').length || 0,
         overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
       }
     })()`)
+    const filterToggleOpened = await evaluate(`(() => {
+      const toggle = document.querySelector('.shipdesigner-filter-toggle')
+      if (!toggle) return false
+      toggle.click()
+      return true
+    })()`)
+    await sleep(50)
+    const filterControls = await evaluate(`(() => {
+      const toolbar = document.querySelector('.shipdesigner-weapon-selector-toolbar')
+      return {
+        toggled: true,
+        hasSearch: Boolean(toolbar?.querySelector('input')),
+        selectCount: toolbar?.querySelectorAll('select').length || 0,
+      }
+    })()`)
+    if (!filterToggleOpened) filterControls.toggled = false
+    await evaluate(`(() => { const toggle = document.querySelector('.shipdesigner-filter-toggle'); if (toggle?.getAttribute('aria-expanded') === 'true') toggle.click(); return true })()`)
+    await sleep(50)
+    await evaluate(`(() => { const toggle = document.querySelector('.shipdesigner-filter-toggle'); if (toggle?.getAttribute('aria-expanded') === 'true') toggle.click(); return true })()`)
+    await sleep(50)
     const selected = await evaluate(`(() => {
       const row = [...document.querySelectorAll('.shipdesigner-weapon-selector-row')].find((item) => item.textContent?.includes('Laserkanone'))
       if (!row) return false
@@ -426,6 +482,13 @@ async function main() {
         text: panel?.textContent || '',
         mountValues: [...(panel?.querySelectorAll('input[type="radio"]') || [])].map((input) => ({ value: input.value, disabled: input.disabled })),
         modifierValues: [...(panel?.querySelectorAll('input[type="checkbox"]') || [])].map((input) => ({ value: input.value, disabled: input.disabled })),
+        installVisible: (() => {
+          const button = document.querySelector('.shipdesigner-weapon-selector-actions .button-primary')
+          const rect = button?.getBoundingClientRect()
+          return Boolean(button && rect && rect.top >= 0 && rect.bottom <= window.innerHeight + 1)
+        })(),
+        viewportHeight: window.innerHeight,
+        configHeight: panel?.getBoundingClientRect().height || 0,
       }
     })()`)
     let heavySelected = false
@@ -447,16 +510,19 @@ async function main() {
       })()`)
       if (installed) {
         await sleep(220)
-        return { opened, selected, installed: true, heavySelected, ...selector, config }
+        return { opened, selected, installed: true, heavySelected, ...selector, filterControls, config }
       }
       await sleep(75)
     }
-    return { opened, selected, installed: false, heavySelected, ...selector, config }
+    return { opened, selected, installed: false, heavySelected, ...selector, filterControls, config }
   }
   const firstWeaponAdd = await addWeapon()
   assert(firstWeaponAdd.installed, `Could not install first standard Laser through selector: ${JSON.stringify(firstWeaponAdd)}`)
   assert(firstWeaponAdd.rows === 13, `Weapon selector row count=${firstWeaponAdd.rows}, want 13`)
-  assert(firstWeaponAdd.hasSearch && firstWeaponAdd.selectCount >= 3, `Weapon selector search/filter controls missing: ${JSON.stringify(firstWeaponAdd)}`)
+  assert(firstWeaponAdd.filtersInitiallyHidden && firstWeaponAdd.filterToggleExpanded === 'false', `Weapon selector filters are not collapsed by default: ${JSON.stringify(firstWeaponAdd)}`)
+  assert(firstWeaponAdd.filterControls?.hasSearch && firstWeaponAdd.filterControls?.selectCount >= 3, `Collapsed filter panel does not expose search/select controls when opened: ${JSON.stringify(firstWeaponAdd)}`)
+  assert(firstWeaponAdd.listHeight >= 500 && firstWeaponAdd.configDisplay === 'none', `Pre-selection mobile layout does not prioritize the weapon list: ${JSON.stringify(firstWeaponAdd)}`)
+  assert(firstWeaponAdd.config?.installVisible, `Install action is not visible without scrolling on 390x844 mobile: ${JSON.stringify(firstWeaponAdd.config)}`)
   assert(!firstWeaponAdd.overflow, 'Weapon selector causes horizontal overflow at 390px')
   assert(firstWeaponAdd.config?.text.includes('Standard') && firstWeaponAdd.config?.text.includes('Schwer') && firstWeaponAdd.config?.text.includes('Punktverteidigung'), `Weapon mount choices are incomplete: ${JSON.stringify(firstWeaponAdd.config)}`)
   assert(firstWeaponAdd.config?.text.includes('Spezialmodifikationen') && firstWeaponAdd.config?.text.includes('Autofeuer'), `Weapon special-modifier choices are incomplete: ${JSON.stringify(firstWeaponAdd.config)}`)

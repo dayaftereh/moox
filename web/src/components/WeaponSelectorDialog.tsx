@@ -109,6 +109,7 @@ export function WeaponSelectorDialog({
   const [preview, setPreview] = useState<MilitaryDesignDraftProjection | null>(null)
   const [previewing, setPreviewing] = useState(false)
   const [previewError, setPreviewError] = useState('')
+  const [filtersOpen, setFiltersOpen] = useState(false)
 
   const selectedWeapon = weapons.find((weapon) => weapon.id === selectedWeaponID)
   const normalizedSearch = search.trim().toLocaleLowerCase()
@@ -256,16 +257,25 @@ export function WeaponSelectorDialog({
 
   return (
     <div className="shipdesigner-system-dialog-backdrop shipdesigner-weapon-selector-backdrop" role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
-      <section className="shipdesigner-system-dialog shipdesigner-weapon-selector" role="dialog" aria-modal="true" aria-labelledby="shipdesigner-weapon-selector-title">
+      <section className={"shipdesigner-system-dialog shipdesigner-weapon-selector" + (filtersOpen ? " filters-open" : "")} role="dialog" aria-modal="true" aria-labelledby="shipdesigner-weapon-selector-title">
         <header className="shipdesigner-system-dialog-header">
           <div>
             <p className="eyebrow">{t('shipbuilder.weapons')}</p>
             <h3 id="shipdesigner-weapon-selector-title">{t('shipbuilder.weaponSelectorTitle')}</h3>
             <p className="muted">{t('shipbuilder.weaponSelectorHint')}</p>
           </div>
-          <button type="button" className="button-ghost shipdesigner-system-dialog-close" onClick={onClose} aria-label={t('common.close')}><GameIcon name="close" /></button>
+          <div className="shipdesigner-weapon-selector-header-actions">
+            <button
+              type="button"
+              className="button-ghost shipdesigner-filter-toggle"
+              aria-expanded={filtersOpen}
+              onClick={() => setFiltersOpen((current) => !current)}
+            >{t('shipbuilder.filters')}</button>
+            <button type="button" className="button-ghost shipdesigner-system-dialog-close" onClick={onClose} aria-label={t('common.close')}><GameIcon name="close" /></button>
+          </div>
         </header>
 
+        {filtersOpen && (
         <div className="shipdesigner-weapon-selector-toolbar">
           <label className="shipdesigner-weapon-search">
             <span>{t('shipbuilder.searchWeapons')}</span>
@@ -296,11 +306,12 @@ export function WeaponSelectorDialog({
             </select>
           </label>
           <button type="button" className="button-ghost shipdesigner-sort-direction" onClick={() => setSortDirection((current) => current === 'asc' ? 'desc' : 'asc')} aria-label={sortDirection === 'asc' ? 'Ascending' : 'Descending'}>
-            {sortDirection === 'asc' ? '↑' : '↓'}
+            {sortDirection === 'asc' ? '\u2191' : '\u2193'}
           </button>
         </div>
 
-        <div className="shipdesigner-weapon-selector-body">
+        )}
+        <div className={"shipdesigner-weapon-selector-body" + (selectedWeapon ? " has-selection" : "")}>
           <div className="shipdesigner-weapon-selector-list" role="listbox" aria-label={t('shipbuilder.weaponSelectorTitle')}>
             {filteredWeapons.map((weapon) => {
               const selected = weapon.id === selectedWeaponID
@@ -328,6 +339,7 @@ export function WeaponSelectorDialog({
           <aside className="shipdesigner-weapon-config">
             {selectedWeapon ? (
               <>
+                <div className="shipdesigner-weapon-config-scroll">
                 <div className="shipdesigner-weapon-config-title">
                   <div>
                     <p className="eyebrow">{t('shipbuilder.weaponSelectorTitle')}</p>
@@ -395,6 +407,7 @@ export function WeaponSelectorDialog({
                   </div>
                 </div>
 
+                </div>
                 <footer className="shipdesigner-system-dialog-actions shipdesigner-weapon-selector-actions">
                   <button type="button" className="button-ghost" onClick={onClose}>{t('common.close')}</button>
                   <button type="button" className="button-primary" disabled={!canInstall} onClick={install}><span aria-hidden="true">+</span>{t('shipbuilder.install')}</button>

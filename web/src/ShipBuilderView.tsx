@@ -391,6 +391,9 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
                 missileEvasion={missileEvasion}
                 onComputerChange={(id) => { setComputerID(id); setSaveNotice('') }}
                 onShieldChange={(id) => { setShieldID(id); setSaveNotice('') }}
+                canAddWeapon={canOpenWeaponSelector}
+                weaponError={designPreviewError}
+                onAddWeapon={() => setWeaponSelectorOpen(true)}
                 onWeaponCountChange={changeWeaponMountCount}
                 onRemoveWeapon={removeWeaponMount}
                 t={t}
@@ -400,30 +403,6 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
                 <p className="muted">{hullLock || t('shipbuilder.noAuthoritativePreview')}</p>
               </section>
             )}
-            <section className="shipdesigner-component-section shipdesigner-weapon-section">
-              <div className="card-heading shipdesigner-weapon-heading">
-                <div><p className="eyebrow">{t('shipbuilder.available')}</p><h3>{t('shipbuilder.weapons')}</h3></div>
-                <div className="shipdesigner-space-available">
-                  <span>{t('shipbuilder.spaceAvailable')}</span>
-                  <strong>{remainingSpace} {t('shipbuilder.space')}</strong>
-                </div>
-              </div>
-              <div className="shipdesigner-component-row shipdesigner-open-weapon-selector">
-                <div>
-                  <strong>{t('shipbuilder.weaponSelectorTitle')}</strong>
-                  <small>{designer.weapons.filter((weapon) => weapon.available).length} / {designer.weapons.length} {t('shipbuilder.filterAvailable')}</small>
-                </div>
-                <button
-                  type="button"
-                  className="button-secondary shipdesigner-add-weapon"
-                  aria-label={t('shipbuilder.add')}
-                  title={t('shipbuilder.add')}
-                  disabled={!canOpenWeaponSelector}
-                  onClick={() => setWeaponSelectorOpen(true)}
-                ><span aria-hidden="true">+</span></button>
-              </div>
-              {designPreviewError && <p className="shipbuilder-save-state error">{designPreviewError}</p>}
-            </section>
           </Card>
 
           <Card className="shipdesigner-summary-card">

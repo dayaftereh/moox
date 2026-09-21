@@ -56,6 +56,7 @@ Gate-2 HMI add-flow amendment: docs/research/SLICE_17_2_GATE2_HMI_ADD_FLOW_AMEND
 - [x] Add deterministic Tactical/Designer Lab regressions.
 
 Gate-3 implementation: docs/research/SLICE_17_2_GATE3_IMPLEMENTATION_2026-09-21.md.
+Gate-3 mobile HMI amendment: docs/research/SLICE_17_2_GATE3_MOBILE_WEAPON_SELECTOR_AMENDMENT_2026-09-21.md.
 
 ## Gate 4 - QA + close
 

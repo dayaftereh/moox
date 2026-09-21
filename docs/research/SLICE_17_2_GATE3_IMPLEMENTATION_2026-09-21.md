@@ -266,3 +266,5 @@ The final browser smoke ran against a freshly restarted review server built from
 - [x] Add deterministic Tactical/Designer Lab regressions.
 
 **Gate 3 result: PASS. Gate 4 is next and has not started.**
+
+Mobile HMI follow-up: `docs/research/SLICE_17_2_GATE3_MOBILE_WEAPON_SELECTOR_AMENDMENT_2026-09-21.md`.

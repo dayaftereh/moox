@@ -524,3 +524,15 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Full Go tests, vet, web build, diff check, All-Tech snapshot HTTP check and fresh 7201 browser smoke pass.
 - Evidence: docs/research/SLICE_17_2_GATE3_IMPLEMENTATION_2026-09-21.md.
 - Gate 4 is next and has not started.
+
+
+## 2026-09-21 - Slice 17.2 Gate 3 mobile weapon-selector amendment
+
+- Removed the redundant Available Weapons card from the main Designer.
+- Moved Space Available and the Add action into Installed Weapons; the empty Installed Weapons surface is now itself clickable.
+- Collapsed Weapon Selector filters by default behind a compact Filter toggle.
+- Reworked <=700px selector layout so pre-selection prioritizes the Beam list and post-selection keeps compact mount/modifier configuration plus an always-visible Install footer.
+- 390x844 browser regression verifies collapsed filters, about 780px pre-selection list height and visible Install action without scrolling.
+- Full Go tests/vet, web build and reference-lab browser smoke pass.
+- Evidence: docs/research/SLICE_17_2_GATE3_MOBILE_WEAPON_SELECTOR_AMENDMENT_2026-09-21.md.
+- Gate 4 remains next and has not started.

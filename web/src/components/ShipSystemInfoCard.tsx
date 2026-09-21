@@ -31,6 +31,9 @@ type Props = {
   missileEvasion: number
   onComputerChange: (id: string) => void
   onShieldChange: (id: string) => void
+  canAddWeapon: boolean
+  weaponError?: string
+  onAddWeapon: () => void
   onWeaponCountChange: (slot: number, delta: number) => void
   onRemoveWeapon: (slot: number) => void
   t: Translator
@@ -99,6 +102,9 @@ export function ShipSystemInfoCard({
   missileEvasion,
   onComputerChange,
   onShieldChange,
+  canAddWeapon,
+  weaponError,
+  onAddWeapon,
   onWeaponCountChange,
   onRemoveWeapon,
   t,
@@ -202,7 +208,23 @@ export function ShipSystemInfoCard({
         </div>
 
         <div className="shipdesigner-installed-weapons">
-          <p className="eyebrow">{t('shipbuilder.installedWeapons')}</p>
+          <div className="shipdesigner-installed-weapons-heading">
+            <p className="eyebrow">{t('shipbuilder.installedWeapons')}</p>
+            <div className="shipdesigner-installed-weapons-actions">
+              <div className="shipdesigner-space-available">
+                <span>{t('shipbuilder.spaceAvailable')}</span>
+                <strong>{remainingSpace} {t('shipbuilder.space')}</strong>
+              </div>
+              <button
+                type="button"
+                className="button-secondary shipdesigner-add-weapon shipdesigner-installed-add"
+                aria-label={t('shipbuilder.add')}
+                title={t('shipbuilder.weaponSelectorTitle')}
+                disabled={!canAddWeapon}
+                onClick={onAddWeapon}
+              ><span aria-hidden="true">+</span></button>
+            </div>
+          </div>
           <div className="shipdesigner-installed-weapons-scroll">
             {weaponMounts.length > 0 ? (
               <div className="shipdesigner-installed-info-grid">
@@ -217,7 +239,7 @@ export function ShipSystemInfoCard({
                   return (
                     <article className="shipdesigner-info-card weapon" key={mount.slot}>
                       <strong>{weapon ? weaponLabel(t, weapon) : mount.weapon_id}</strong>
-                      <p>{configuration}{row ? ` / ${row.row_space} ${t('shipbuilder.space')} / ${row.row_cost_pp} PP` : ''}</p>
+                      <p>{configuration}{row ? ' / ' + row.row_space + ' ' + t('shipbuilder.space') + ' / ' + row.row_cost_pp + ' PP' : ''}</p>
                       <div className="shipdesigner-weapon-quantity">
                         <button type="button" className="button-ghost" aria-label={t('shipbuilder.decreaseQuantity')} onClick={() => onWeaponCountChange(mount.slot, -1)}>-</button>
                         <strong className="shipdesigner-weapon-count">{mount.count}</strong>
@@ -228,10 +250,17 @@ export function ShipSystemInfoCard({
                   )
                 })}
               </div>
+            ) : canAddWeapon ? (
+              <button type="button" className="shipdesigner-installed-weapons-empty shipdesigner-installed-weapons-add-target" onClick={onAddWeapon}>
+                <span className="shipdesigner-empty-add-icon" aria-hidden="true">+</span>
+                <span>{t('shipbuilder.noInstalledWeapons')}</span>
+                <strong>{t('shipbuilder.weaponSelectorTitle')}</strong>
+              </button>
             ) : (
               <div className="shipdesigner-installed-weapons-empty">{t('shipbuilder.noInstalledWeapons')}</div>
             )}
           </div>
+          {weaponError && <p className="shipbuilder-save-state error shipdesigner-installed-weapons-error">{weaponError}</p>}
         </div>
 
         <p className="muted shipdesigner-future-note">{t('shipbuilder.systemEffectScope')}</p>

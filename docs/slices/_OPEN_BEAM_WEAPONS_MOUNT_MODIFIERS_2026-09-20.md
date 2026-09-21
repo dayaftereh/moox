@@ -81,3 +81,10 @@ Initial weapon selection and Standard/Heavy/Point Defense + special-modifier con
 Implementation: docs/research/SLICE_17_2_GATE3_IMPLEMENTATION_2026-09-21.md.
 
 All 13 frozen Beams now flow through authoritative Designer selection/preview/save, immutable construction/built-Ship snapshots and lossless BattleSession metadata. The amended selector-first HMI is implemented. The Field-74 Antaran self-loop is handled terminally at M0. Non-baseline Tactical effects remain explicitly deferred; only the unmodified Standard Laser receives firing behavior. Gate 4 is next and has not started.
+
+
+## Gate 3 mobile HMI amendment
+
+Follow-up evidence: docs/research/SLICE_17_2_GATE3_MOBILE_WEAPON_SELECTOR_AMENDMENT_2026-09-21.md.
+
+The redundant Available Weapons card is removed from the main Designer, Installed Weapons now owns the Add entry point and Space Available display, filters default collapsed, and the mobile selector keeps the weapon list/configuration primary with Install visible at 390x844. Gate 4 remains next and has not started.
