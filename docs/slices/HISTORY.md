@@ -558,3 +558,11 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - The Weapon Selector in 17.5 must distinguish raw **Basisschaden/base damage** from the correctly calculated configured/effective result and obtain preview effects from the same server-owned rules used by Tactical combat.
 - The previous **17.5 Full Ship Designer Integration and Acceptance** plan was renumbered to **17.6** and now depends on 17.5 closure.
 - This roadmap change does not open 17.5: Slice 17.2 remains the sole open Slice-17 child until its Gate-4 review closes.
+
+## 2026-09-23 - Slice 17.5 broadened to own Tactical combatant admission
+
+- Live review exposed the preserved Slice-15.5 Tactical admission guard requiring Frigate/Electronic/Titanium/no-Shield/Standard-Fuel equipment.
+- Audit confirmed the guard protects real hard-coded Frigate durability and Electronic Beam-Offense assumptions, so simply deleting it would silently mis-simulate richer Slice-17.1 ships.
+- Slice 17.5 now explicitly owns replacement of that baseline-only path with verified Frigate-through-Doom-Star hull durability, Armor, Computer, Shield and Drive Tactical behavior; Fuel Cells are admission-neutral unless direct evidence assigns a Tactical effect.
+- Only after this broad Tactical combatant prerequisite is frozen/implemented does 17.5 accept Heavy, Point Defense and supported Beam-modifier Tactical effects plus Weapon Selector effective-stat parity.
+- Slice 17.2 remains the sole open child; this is a downstream plan refinement only.

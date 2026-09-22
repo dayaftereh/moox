@@ -38,6 +38,7 @@ Slice 17 is executed in dependency order as:
    - design-side ship specials, Fighter/Bomber-related systems and special-derived ship stats;
    - exact tactical effects may remain downstream where their combat subsystem is not yet implemented.
 6. **17.5 - Tactical Weapon Effects / Beam Modifiers**
+   - replace the old Slice-15.5 Frigate/Electronic/Titanium/no-Shield/Standard-Fuel Tactical fixture boundary with verified 17.1 hull/mandatory-system combatant breadth;
    - real Tactical consumers for the supported 17.2 Beam mount/modifier matrix;
    - Standard / Heavy / Point Defense damage, range, hit and related frozen combat semantics;
    - supported Beam modifier effects and deterministic Combat-Lab coverage;
@@ -95,7 +96,7 @@ Before opening 17.0 Gate 1:
 - [ ] 17.2 closed: Beam design breadth is complete to the frozen contract.
 - [ ] 17.3 closed: ordnance design breadth is complete to the frozen contract.
 - [ ] 17.4 closed: supported specials/fighter design breadth is complete.
-- [ ] 17.5 closed: supported Beam Tactical mount/modifier effects are implemented and the Weapon Selector preview uses the same frozen effect rules.
+- [ ] 17.5 closed: accepted 17.1 hull/mandatory systems have verified Tactical combatant behavior, supported Beam Tactical mount/modifier effects are implemented, and the Weapon Selector preview uses the same frozen effect rules.
 - [ ] 17.6 closed: unified designer/construction/persistence/browser acceptance passes.
 - [ ] Every remaining deferred tactical effect has an explicit downstream owner and is not represented as already working.
 - [ ] Final full Go/vet/web/browser/persistence/reference-game QA passes.

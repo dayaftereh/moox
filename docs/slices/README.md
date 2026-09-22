@@ -84,7 +84,7 @@ Slice 17 is a parent program. These child specifications are recovery-safe miles
    Specials/fighter breadth with explicit per-feature strategic/tactical support classification.
 6. **Slice 17.5 - Tactical Weapon Effects / Beam Modifiers**
    `PLANNED_17_5_TACTICAL_WEAPON_EFFECTS_BEAM_MODIFIERS.md`
-   Real Tactical behavior for supported Beam mounts/modifiers plus server-owned Weapon Selector base/configured damage and effect preview.
+   Replaces the old baseline-only Tactical combatant fixture with verified 17.1 hull/mandatory-system breadth, then implements supported Beam mounts/modifiers plus server-owned Weapon Selector base/configured damage and effect preview.
 7. **Slice 17.6 - Full Ship Designer Integration and Acceptance**
    `PLANNED_17_6_FULL_SHIP_DESIGNER_INTEGRATION_ACCEPTANCE.md`
    Unified Designer, construction, revisions, persistence, reference labs and final browser/program QA.
