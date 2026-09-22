@@ -68,7 +68,7 @@ Gate-3 weapon-slot/edit HMI amendment: docs/research/SLICE_17_2_GATE3_WEAPON_SLO
 - [x] Construction/persistence/browser QA passes.
 - [x] Full tests/vet and `git diff --check` pass.
 
-Gate-4 review evidence: docs/research/SLICE_17_2_GATE4_WEAPON_SELECTOR_REVIEW_2026-09-22.md.
+Gate-4 review evidence: docs/research/SLICE_17_2_GATE4_WEAPON_SELECTOR_REVIEW_2026-09-22.md. The review also moves quantity +/- exclusively to installed weapon cards while selector add/edit keeps count authority intact.
 
 Automated Gate-4 QA is green. Keep the slice open until the user completes the canonical port-7171 visual review of the final Weapon Selector polish.
 

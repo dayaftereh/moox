@@ -493,6 +493,7 @@ async function main() {
         }),
         baseDamageText: panel?.querySelector('.shipdesigner-weapon-damage')?.textContent || '',
         weaponTotals: panel?.querySelector('.shipdesigner-weapon-preview strong')?.textContent || '',
+        quantityControls: panel?.querySelectorAll('.shipdesigner-weapon-config-quantity, .shipdesigner-weapon-quantity').length || 0,
         installVisible: (() => {
           const button = document.querySelector('.shipdesigner-weapon-selector-actions .button-primary')
           const rect = button?.getBoundingClientRect()
@@ -554,6 +555,7 @@ async function main() {
   assert(firstWeaponAdd.config?.visibleFormGlyphs === 0, `Weapon option cards still expose radio/checkbox glyphs: ${JSON.stringify(firstWeaponAdd.config)}`)
   assert(!firstWeaponAdd.config?.helpOverlapsLabel, `Weapon option help overlaps its label on 390px: ${JSON.stringify(firstWeaponAdd.config)}`)
   assert(firstWeaponAdd.config?.baseDamageText.includes('Basisschaden'), `Weapon damage is not clearly labelled as base damage: ${JSON.stringify(firstWeaponAdd.config)}`)
+  assert(firstWeaponAdd.config?.quantityControls === 0, `Weapon Selector still exposes quantity +/- controls: ${JSON.stringify(firstWeaponAdd.config)}`)
   const secondWeaponAdd = await addWeapon({ heavy: true })
   assert(secondWeaponAdd.installed && secondWeaponAdd.heavySelected, `Could not install second Heavy Laser through selector: ${JSON.stringify(secondWeaponAdd)}`)
   assert(secondWeaponAdd.standardTotals && secondWeaponAdd.heavyState?.totals && secondWeaponAdd.standardTotals !== secondWeaponAdd.heavyState.totals, `Heavy mount did not update authoritative Space/PP preview: ${JSON.stringify(secondWeaponAdd)}`)
@@ -573,6 +575,10 @@ async function main() {
       cardTexts: [...document.querySelectorAll('.shipdesigner-weapon-slot-card')].map((card) => card.textContent || ''),
       maxCardHeight: Math.max(0, ...[...document.querySelectorAll('.shipdesigner-weapon-slot-card')].map((card) => card.getBoundingClientRect().height)),
       editControls: [...document.querySelectorAll('.shipdesigner-weapon-edit')].map((button) => ({ text: button.textContent || '', aria: button.getAttribute('aria-label') || '' })),
+      quantityControls: [...document.querySelectorAll('.shipdesigner-weapon-slot-card .shipdesigner-weapon-quantity')].map((control) => ({
+        count: control.querySelector('.shipdesigner-weapon-count')?.textContent || '',
+        buttons: [...control.querySelectorAll('button')].map((button) => ({ text: button.textContent || '', aria: button.getAttribute('aria-label') || '', disabled: button.disabled })),
+      })),
       removeControls: document.querySelectorAll('.shipdesigner-weapon-remove').length,
     }
   })()`)
@@ -583,7 +589,20 @@ async function main() {
   assert(installedPanelAfterWeapons.cardTexts.every((text) => !text.includes('Schwer') && !text.includes('Standard')), `Installed slot cards should keep configuration details in Edit dialog: ${JSON.stringify(installedPanelAfterWeapons.cardTexts)}`)
   assert(installedPanelAfterWeapons.maxCardHeight >= 47 && installedPanelAfterWeapons.maxCardHeight <= 49, `Installed weapon card height=${installedPanelAfterWeapons.maxCardHeight}, want fixed 48px at 390px`)
   assert(installedPanelAfterWeapons.editControls.length === 2 && installedPanelAfterWeapons.editControls.every((control) => control.text.trim() === '' && control.aria === 'Waffe bearbeiten'), `Installed weapon Edit controls are not icon-only/accessibly labelled: ${JSON.stringify(installedPanelAfterWeapons.editControls)}`)
+  assert(installedPanelAfterWeapons.quantityControls.length === 2 && installedPanelAfterWeapons.quantityControls.every((control) => control.count.trim() === '1' && control.buttons.length === 2), `Installed weapon cards do not own +/- quantity controls: ${JSON.stringify(installedPanelAfterWeapons.quantityControls)}`)
   assert(installedPanelAfterWeapons.removeControls === 0, `Dedicated remove controls should not duplicate the - quantity behavior: ${JSON.stringify(installedPanelAfterWeapons)}`)
+
+  const installedQuantityRaised = await evaluate(`(() => {
+    const first = document.querySelector('.shipdesigner-weapon-slot-card .shipdesigner-weapon-quantity')
+    const plus = [...(first?.querySelectorAll('button') || [])].find((button) => button.textContent?.trim() === '+')
+    if (!plus || plus.disabled) return false
+    plus.click()
+    return true
+  })()`)
+  assert(installedQuantityRaised, 'Installed weapon + quantity control was not usable')
+  await sleep(180)
+  const installedQuantityAfterRaise = await evaluate(`document.querySelector('.shipdesigner-weapon-slot-card .shipdesigner-weapon-count')?.textContent || ''`)
+  assert(installedQuantityAfterRaise.trim() === '2', `Installed weapon quantity did not change 1 -> 2 on the ship card: ${installedQuantityAfterRaise}`)
   assert(installedPanelAfterWeapons.overflowY === 'auto' && installedPanelAfterWeapons.scrollHeight >= installedPanelAfterWeapons.clientHeight, `Installed weapons scroll area is not stable/scroll-capable: ${JSON.stringify(installedPanelAfterWeapons)}`)
 
   const editOpened = await evaluate(`(() => {
@@ -598,12 +617,12 @@ async function main() {
     const dialog = document.querySelector('.shipdesigner-weapon-selector')
     const selected = document.querySelector('.shipdesigner-weapon-selector-row[aria-selected="true"]')
     const standard = document.querySelector('.shipdesigner-weapon-config [data-weapon-mount="standard"]')
-    const count = document.querySelector('.shipdesigner-weapon-config .shipdesigner-weapon-count')?.textContent || ''
     const apply = document.querySelector('.shipdesigner-weapon-selector-actions .button-primary')
     const totals = document.querySelector('.shipdesigner-weapon-preview strong')?.textContent || ''
-    return { text: dialog?.textContent || '', selected: selected?.textContent || '', standard: standard?.getAttribute('aria-pressed') === 'true', count, apply: apply?.textContent || '', totals }
+    const quantityControls = document.querySelectorAll('.shipdesigner-weapon-config-quantity, .shipdesigner-weapon-config .shipdesigner-weapon-quantity').length
+    return { text: dialog?.textContent || '', selected: selected?.textContent || '', standard: standard?.getAttribute('aria-pressed') === 'true', quantityControls, apply: apply?.textContent || '', totals }
   })()`)
-  assert(editInitial.text.includes('Waffe bearbeiten') && editInitial.selected.includes('Laserkanone') && editInitial.standard && editInitial.count.trim() === '1' && editInitial.apply.includes('Übernehmen'), `Edit dialog was not prefilled from installed slot: ${JSON.stringify(editInitial)}`)
+  assert(editInitial.text.includes('Waffe bearbeiten') && editInitial.selected.includes('Laserkanone') && editInitial.standard && editInitial.quantityControls === 0 && editInitial.apply.includes('Übernehmen'), `Edit dialog was not prefilled without selector quantity controls: ${JSON.stringify(editInitial)}`)
 
   const mountHelpOpened = await evaluate(`(() => {
     const option = document.querySelector('.shipdesigner-weapon-config [data-weapon-mount="point_defense"]')?.closest('.shipdesigner-weapon-option')
@@ -683,8 +702,10 @@ async function main() {
     cards: document.querySelectorAll('.shipdesigner-weapon-slot-card').length,
     addCards: document.querySelectorAll('.shipdesigner-weapon-slot-add').length,
     dialogOpen: Boolean(document.querySelector('.shipdesigner-weapon-selector')),
+    firstCount: document.querySelector('.shipdesigner-weapon-slot-card .shipdesigner-weapon-count')?.textContent || '',
   }))()`)
   assert(editedSlotState.cards === 2 && editedSlotState.addCards === 1 && !editedSlotState.dialogOpen, `Editing duplicated/removed a slot instead of replacing it: ${JSON.stringify(editedSlotState)}`)
+  assert(editedSlotState.firstCount.trim() === '2', `Editing mount/modifiers changed installed weapon quantity instead of preserving ship-card count=2: ${JSON.stringify(editedSlotState)}`)
 
   const reopenEdited = await evaluate(`(() => {
     const button = document.querySelector('.shipdesigner-weapon-slot-card .shipdesigner-weapon-edit')

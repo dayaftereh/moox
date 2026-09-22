@@ -127,7 +127,7 @@ export function WeaponSelectorDialog({
   const [selectedWeaponID, setSelectedWeaponID] = useState<string>(() => editingMount?.weapon_id ?? '')
   const [mountType, setMountType] = useState<ShipWeaponMountType>(() => editingMount?.mount_type ?? 'standard')
   const [modifierIDs, setModifierIDs] = useState<ShipWeaponModifierID[]>(() => editingMount?.modifier_ids ? [...editingMount.modifier_ids] : [])
-  const [quantity, setQuantity] = useState(() => editingMount?.count ?? 1)
+  const quantity = editingMount?.count ?? 1
   const [preview, setPreview] = useState<MilitaryDesignDraftProjection | null>(null)
   const [previewing, setPreviewing] = useState(false)
   const [previewError, setPreviewError] = useState('')
@@ -460,14 +460,6 @@ export function WeaponSelectorDialog({
                 </fieldset>
 
                 <div className="shipdesigner-weapon-config-bottom">
-                  <label className="shipdesigner-weapon-config-quantity">
-                    <span>{t('shipbuilder.quantity')}</span>
-                    <div className="shipdesigner-weapon-quantity">
-                      <button type="button" className="button-ghost" disabled={quantity <= 1} onClick={() => setQuantity((value) => Math.max(1, value - 1))}>-</button>
-                      <strong className="shipdesigner-weapon-count">{quantity}</strong>
-                      <button type="button" className="button-ghost" onClick={() => setQuantity((value) => value + 1)}>+</button>
-                    </div>
-                  </label>
                   <div className="shipdesigner-weapon-preview">
                     {previewing && <small>{t('shipbuilder.previewing')}</small>}
                     {!previewing && candidatePreview && (
