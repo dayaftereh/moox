@@ -480,8 +480,19 @@ async function main() {
       const panel = document.querySelector('.shipdesigner-weapon-config')
       return {
         text: panel?.textContent || '',
-        mountValues: [...(panel?.querySelectorAll('input[type="radio"]') || [])].map((input) => ({ value: input.value, disabled: input.disabled })),
-        modifierValues: [...(panel?.querySelectorAll('input[type="checkbox"]') || [])].map((input) => ({ value: input.value, disabled: input.disabled })),
+        mountValues: [...(panel?.querySelectorAll('[data-weapon-mount]') || [])].map((button) => ({ value: button.dataset.weaponMount, disabled: button.disabled, selected: button.getAttribute('aria-pressed') === 'true' })),
+        modifierValues: [...(panel?.querySelectorAll('[data-weapon-modifier]') || [])].map((button) => ({ value: button.dataset.weaponModifier, disabled: button.disabled, selected: button.getAttribute('aria-pressed') === 'true' })),
+        visibleFormGlyphs: panel?.querySelectorAll('.shipdesigner-weapon-option input[type="radio"], .shipdesigner-weapon-option input[type="checkbox"]').length || 0,
+        helpOverlapsLabel: [...(panel?.querySelectorAll('.shipdesigner-weapon-option') || [])].some((option) => {
+          const help = option.querySelector('.shipdesigner-weapon-option-help')
+          const label = option.querySelector('.shipdesigner-weapon-option-choice > span')
+          if (!help || !label) return false
+          const helpRect = help.getBoundingClientRect()
+          const labelRect = label.getBoundingClientRect()
+          return labelRect.right > helpRect.left - 2 && labelRect.left < helpRect.right && labelRect.bottom > helpRect.top && labelRect.top < helpRect.bottom
+        }),
+        baseDamageText: panel?.querySelector('.shipdesigner-weapon-damage')?.textContent || '',
+        weaponTotals: panel?.querySelector('.shipdesigner-weapon-preview strong')?.textContent || '',
         installVisible: (() => {
           const button = document.querySelector('.shipdesigner-weapon-selector-actions .button-primary')
           const rect = button?.getBoundingClientRect()
@@ -492,14 +503,28 @@ async function main() {
       }
     })()`)
     let heavySelected = false
+    let heavyState = null
+    const standardTotals = config.weaponTotals
     if (heavy) {
-      heavySelected = await evaluate(`(() => {
-        const input = document.querySelector('.shipdesigner-weapon-config input[type="radio"][value="heavy"]')
-        if (!input || input.disabled) return false
-        input.click()
-        return input.checked
+      const heavyClicked = await evaluate(`(() => {
+        const button = document.querySelector('.shipdesigner-weapon-config [data-weapon-mount="heavy"]')
+        if (!button || button.disabled) return false
+        button.click()
+        return true
       })()`)
-      await sleep(120)
+      await sleep(160)
+      heavyState = await evaluate(`(() => {
+        const button = document.querySelector('.shipdesigner-weapon-config [data-weapon-mount="heavy"]')
+        const card = button?.closest('.shipdesigner-weapon-option')
+        return {
+          clicked: ${heavyClicked},
+          pressed: button?.getAttribute('aria-pressed') === 'true',
+          selectedCard: Boolean(card?.classList.contains('selected')),
+          totals: document.querySelector('.shipdesigner-weapon-preview strong')?.textContent || '',
+          baseDamage: document.querySelector('.shipdesigner-weapon-damage')?.textContent || '',
+        }
+      })()`)
+      heavySelected = Boolean(heavyState?.clicked && heavyState?.pressed && heavyState?.selectedCard)
     }
     for (let attempt = 0; attempt < 40; attempt++) {
       const installed = await evaluate(`(() => {
@@ -510,11 +535,11 @@ async function main() {
       })()`)
       if (installed) {
         await sleep(220)
-        return { opened, selected, installed: true, heavySelected, ...selector, filterControls, config }
+        return { opened, selected, installed: true, heavySelected, heavyState, standardTotals, ...selector, filterControls, config }
       }
       await sleep(75)
     }
-    return { opened, selected, installed: false, heavySelected, ...selector, filterControls, config }
+    return { opened, selected, installed: false, heavySelected, heavyState, standardTotals, ...selector, filterControls, config }
   }
   const firstWeaponAdd = await addWeapon()
   assert(firstWeaponAdd.installed, `Could not install first standard Laser through selector: ${JSON.stringify(firstWeaponAdd)}`)
@@ -526,8 +551,13 @@ async function main() {
   assert(!firstWeaponAdd.overflow, 'Weapon selector causes horizontal overflow at 390px')
   assert(firstWeaponAdd.config?.text.includes('Standard') && firstWeaponAdd.config?.text.includes('Schwer') && firstWeaponAdd.config?.text.includes('Punktverteidigung'), `Weapon mount choices are incomplete: ${JSON.stringify(firstWeaponAdd.config)}`)
   assert(firstWeaponAdd.config?.text.includes('Spezialmodifikationen') && firstWeaponAdd.config?.text.includes('Autofeuer'), `Weapon special-modifier choices are incomplete: ${JSON.stringify(firstWeaponAdd.config)}`)
+  assert(firstWeaponAdd.config?.visibleFormGlyphs === 0, `Weapon option cards still expose radio/checkbox glyphs: ${JSON.stringify(firstWeaponAdd.config)}`)
+  assert(!firstWeaponAdd.config?.helpOverlapsLabel, `Weapon option help overlaps its label on 390px: ${JSON.stringify(firstWeaponAdd.config)}`)
+  assert(firstWeaponAdd.config?.baseDamageText.includes('Basisschaden'), `Weapon damage is not clearly labelled as base damage: ${JSON.stringify(firstWeaponAdd.config)}`)
   const secondWeaponAdd = await addWeapon({ heavy: true })
   assert(secondWeaponAdd.installed && secondWeaponAdd.heavySelected, `Could not install second Heavy Laser through selector: ${JSON.stringify(secondWeaponAdd)}`)
+  assert(secondWeaponAdd.standardTotals && secondWeaponAdd.heavyState?.totals && secondWeaponAdd.standardTotals !== secondWeaponAdd.heavyState.totals, `Heavy mount did not update authoritative Space/PP preview: ${JSON.stringify(secondWeaponAdd)}`)
+  assert(secondWeaponAdd.heavyState?.baseDamage.includes('Basisschaden'), `Heavy mount obscured base-damage semantics: ${JSON.stringify(secondWeaponAdd.heavyState)}`)
   const installedPanelAfterWeapons = await evaluate(`(() => {
     const panel = document.querySelector('.shipdesigner-installed-weapons')
     const scroll = document.querySelector('.shipdesigner-installed-weapons-scroll')
@@ -567,15 +597,16 @@ async function main() {
   const editInitial = await evaluate(`(() => {
     const dialog = document.querySelector('.shipdesigner-weapon-selector')
     const selected = document.querySelector('.shipdesigner-weapon-selector-row[aria-selected="true"]')
-    const standard = document.querySelector('.shipdesigner-weapon-config input[type="radio"][value="standard"]')
+    const standard = document.querySelector('.shipdesigner-weapon-config [data-weapon-mount="standard"]')
     const count = document.querySelector('.shipdesigner-weapon-config .shipdesigner-weapon-count')?.textContent || ''
     const apply = document.querySelector('.shipdesigner-weapon-selector-actions .button-primary')
-    return { text: dialog?.textContent || '', selected: selected?.textContent || '', standard: Boolean(standard?.checked), count, apply: apply?.textContent || '' }
+    const totals = document.querySelector('.shipdesigner-weapon-preview strong')?.textContent || ''
+    return { text: dialog?.textContent || '', selected: selected?.textContent || '', standard: standard?.getAttribute('aria-pressed') === 'true', count, apply: apply?.textContent || '', totals }
   })()`)
   assert(editInitial.text.includes('Waffe bearbeiten') && editInitial.selected.includes('Laserkanone') && editInitial.standard && editInitial.count.trim() === '1' && editInitial.apply.includes('Übernehmen'), `Edit dialog was not prefilled from installed slot: ${JSON.stringify(editInitial)}`)
 
   const mountHelpOpened = await evaluate(`(() => {
-    const option = [...document.querySelectorAll('.shipdesigner-weapon-option')].find((node) => node.querySelector('input[value="point_defense"]'))
+    const option = document.querySelector('.shipdesigner-weapon-config [data-weapon-mount="point_defense"]')?.closest('.shipdesigner-weapon-option')
     const help = option?.querySelector('.shipdesigner-weapon-option-help')
     if (!help) return false
     help.click()
@@ -598,17 +629,43 @@ async function main() {
   const modifierHelpText = await evaluate(`document.querySelector('.shipdesigner-weapon-inline-help')?.textContent || ''`)
   assert(modifierHelpText.includes('Autofeuer') && modifierHelpText.includes('noch nicht simuliert'), `Autofire help is missing scope explanation: ${modifierHelpText}`)
 
-  const editConfigured = await evaluate(`(() => {
-    const pd = document.querySelector('.shipdesigner-weapon-config input[type="radio"][value="point_defense"]')
-    const autofireOption = [...document.querySelectorAll('.shipdesigner-weapon-option')].find((node) => node.textContent?.includes('Autofeuer'))
-    const autofire = autofireOption?.querySelector('input[type="checkbox"]')
-    if (!pd || pd.disabled || !autofire || autofire.disabled) return false
+  const pointDefenseClicked = await evaluate(`(() => {
+    const pd = document.querySelector('.shipdesigner-weapon-config [data-weapon-mount="point_defense"]')
+    if (!pd || pd.disabled) return false
     pd.click()
-    if (!autofire.checked) autofire.click()
-    return pd.checked && autofire.checked
+    return true
   })()`)
-  assert(editConfigured, 'Could not configure Point Defense + Autofire while editing slot')
-  await sleep(180)
+  assert(pointDefenseClicked, 'Could not select Point Defense while editing slot')
+  await sleep(160)
+  const pointDefenseState = await evaluate(`(() => {
+    const pd = document.querySelector('.shipdesigner-weapon-config [data-weapon-mount="point_defense"]')
+    const card = pd?.closest('.shipdesigner-weapon-option')
+    return {
+      pressed: pd?.getAttribute('aria-pressed') === 'true',
+      selectedCard: Boolean(card?.classList.contains('selected')),
+      totals: document.querySelector('.shipdesigner-weapon-preview strong')?.textContent || '',
+    }
+  })()`)
+  assert(pointDefenseState.pressed && pointDefenseState.selectedCard, `Point Defense card did not carry selected state: ${JSON.stringify(pointDefenseState)}`)
+  assert(editInitial.totals && pointDefenseState.totals && editInitial.totals !== pointDefenseState.totals, `Point Defense did not update authoritative Space/PP preview: ${JSON.stringify({ before: editInitial.totals, after: pointDefenseState.totals })}`)
+
+  const autofireClicked = await evaluate(`(() => {
+    const autofire = document.querySelector('.shipdesigner-weapon-config [data-weapon-modifier="autofire"]')
+    if (!autofire || autofire.disabled) return false
+    if (autofire.getAttribute('aria-pressed') !== 'true') autofire.click()
+    return true
+  })()`)
+  assert(autofireClicked, 'Could not select Autofire while editing slot')
+  await sleep(160)
+  const editConfigured = await evaluate(`(() => {
+    const pd = document.querySelector('.shipdesigner-weapon-config [data-weapon-mount="point_defense"]')
+    const autofire = document.querySelector('.shipdesigner-weapon-config [data-weapon-modifier="autofire"]')
+    return {
+      pd: pd?.getAttribute('aria-pressed') === 'true' && Boolean(pd?.closest('.shipdesigner-weapon-option')?.classList.contains('selected')),
+      autofire: autofire?.getAttribute('aria-pressed') === 'true' && Boolean(autofire?.closest('.shipdesigner-weapon-option')?.classList.contains('selected')),
+    }
+  })()`)
+  assert(editConfigured.pd && editConfigured.autofire, `Could not configure Point Defense + Autofire while editing slot: ${JSON.stringify(editConfigured)}`)
   let editApplied = false
   for (let attempt = 0; attempt < 40; attempt++) {
     editApplied = await evaluate(`(() => {
@@ -638,10 +695,12 @@ async function main() {
   assert(reopenEdited, 'Could not reopen edited weapon slot')
   await sleep(120)
   const editPersisted = await evaluate(`(() => {
-    const pd = document.querySelector('.shipdesigner-weapon-config input[type="radio"][value="point_defense"]')
-    const autofireOption = [...document.querySelectorAll('.shipdesigner-weapon-option')].find((node) => node.textContent?.includes('Autofeuer'))
-    const autofire = autofireOption?.querySelector('input[type="checkbox"]')
-    return { pd: Boolean(pd?.checked), autofire: Boolean(autofire?.checked) }
+    const pd = document.querySelector('.shipdesigner-weapon-config [data-weapon-mount="point_defense"]')
+    const autofire = document.querySelector('.shipdesigner-weapon-config [data-weapon-modifier="autofire"]')
+    return {
+      pd: pd?.getAttribute('aria-pressed') === 'true' && Boolean(pd?.closest('.shipdesigner-weapon-option')?.classList.contains('selected')),
+      autofire: autofire?.getAttribute('aria-pressed') === 'true' && Boolean(autofire?.closest('.shipdesigner-weapon-option')?.classList.contains('selected')),
+    }
   })()`)
   assert(editPersisted.pd && editPersisted.autofire, `Edited mount/modifier state did not persist in the slot: ${JSON.stringify(editPersisted)}`)
   await evaluate(`(() => { document.querySelector('.shipdesigner-system-dialog-close')?.click(); return true })()`)

@@ -30,7 +30,7 @@ The deterministic runtime now provides its **first complete supported headless m
 See `docs/PROJECT_STATUS.md` for the complete current-state snapshot and `docs/research/ACTIVE_RESEARCH.md` for the live handoff and next queued objective.
 
 Development slices follow `docs/slices/README.md`. Before starting a new slice, check `docs/slices/_OPEN_*.md`; an `_OPEN_` marker means interrupted/incomplete work must be resumed before the next objective.
-**Slice state:** Slices **01-14 and 15.1-15.2 are closed**. Slice 15 is the browser-playability parent epic. **Slice 15.3 is open at Gate 1 (art/asset audit and direction exploration).** Slices 15.4-15.6 and 16-17 remain prepared; **Slice 20 Espionage/Intelligence is now reserved/prepared** by product decision.
+**Slice state:** Slices **01-14, the accepted browser-playability baseline through 15.6, Slice 16 and Slices 17.0-17.1 are closed/accepted at their intended baselines**; the richer-art 15.3 follow-up remains parked. **Slice 17.2 - Beam Weapons and Beam Mount Modifiers is active in Gate 4 review**, with exactly one `_OPEN_` marker; later 17.x children remain closed. Slice 20 Espionage/Intelligence remains reserved/prepared.
 
 The Slice-15 browser roadmap now has six parts: **15.1 shell/navigation/i18n -> 15.2 strategic gameplay HMI -> 15.3 visual identity/assets -> 15.4 rich decisions/persistence UX -> 15.5 interactive 2D Tactical Combat -> 15.6 final browser vertical slice/QA**. Tactical Combat is deliberately its own gameplay slice because the current Slice-07 baseline supports deterministic fixed-position Laser combat but not player-controlled tactical movement/turning.
 

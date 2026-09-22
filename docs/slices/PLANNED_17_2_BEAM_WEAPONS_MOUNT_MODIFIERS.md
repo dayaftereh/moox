@@ -1,6 +1,6 @@
 # Planned Slice 17.2 - Beam Weapons and Beam Mount Modifiers
 
-Status: **active; Gates 1-3 complete / Gate 4 next (2026-09-21)**.
+Status: **active; Gate 4 review in progress - automated QA passed / manual visual review pending (2026-09-22)**.
 
 ## Objective
 
@@ -61,12 +61,16 @@ Gate-3 weapon-slot/edit HMI amendment: docs/research/SLICE_17_2_GATE3_WEAPON_SLO
 
 ## Gate 4 - QA + close
 
-- [ ] Legal/illegal Beam combinations match the frozen matrix.
-- [ ] Space/Cost and technology locks are exact for tested fixtures.
-- [ ] Existing canonical Laser tactical fixture remains green.
-- [ ] New supported Beam snapshots reach BattleSession without translation hacks.
-- [ ] Construction/persistence/browser QA passes.
-- [ ] Full tests/vet and `git diff --check` pass.
+- [x] Legal/illegal Beam combinations match the frozen matrix.
+- [x] Space/Cost and technology locks are exact for tested fixtures.
+- [x] Existing canonical Laser tactical fixture remains green.
+- [x] New supported Beam snapshots reach BattleSession without translation hacks.
+- [x] Construction/persistence/browser QA passes.
+- [x] Full tests/vet and `git diff --check` pass.
+
+Gate-4 review evidence: docs/research/SLICE_17_2_GATE4_WEAPON_SELECTOR_REVIEW_2026-09-22.md.
+
+Automated Gate-4 QA is green. Keep the slice open until the user completes the canonical port-7171 visual review of the final Weapon Selector polish.
 
 ## Exit criterion
 

@@ -2,7 +2,7 @@
 
 Opened: 2026-09-20
 Parent: Slice 17 - Military Ship Design Component/Weapon Breadth
-Status: **Gates 1-3 complete / Gate 4 next**
+Status: **Gate 4 review active - automated QA passed / manual visual review pending**
 
 ## Objective
 
@@ -62,14 +62,14 @@ Evidence: docs/research/SLICE_17_2_GATE1_BEAM_WEAPONS_AUDIT_2026-09-20.md.
 
 Gate 1 froze the evidence inputs, not the implementation contract: 13 original Beam identities, exact base tech/damage/Space/Cost, Beam miniaturization class, per-Beam executable modifier masks, original eight-row weapon-array semantics, the current ShipWeaponMount modifier-snapshot gap, Slice-17.0 reference vectors and explicit Tactical support/defer boundaries.
 
-Gate 2 is complete. Gate 3 is complete. Gate 4 is next and has not started.
+Gate 2 is complete. Gate 3 is complete. Gate 4 is active; automated QA passed and manual canonical-7171 visual review is pending.
 ## Gate 2 complete
 
 Contract: docs/research/SLICE_17_2_GATE2_BEAM_CONTRACT_FREEZE_2026-09-20.md.
 
 Gate 2 freezes the 13-Beam catalog, canonical standard/heavy/point-defense mount type, explicit sorted special-modifier IDs, exact legality/refinement/rejection reasons, original mount->special->miniaturization->count Space/PP arithmetic, server-authoritative draft preview boundary, compact Weapon Selector/configuration dialog contract, reference-lab matrices and Tactical support/defer boundary.
 
-Gate 3 is complete. Gate 4 is next and has not started.
+Gate 3 is complete. Gate 4 is active; automated QA passed and manual canonical-7171 visual review is pending.
 
 ## Gate 3 HMI add-flow amendment
 
@@ -80,14 +80,14 @@ Initial weapon selection and Standard/Heavy/Point Defense + special-modifier con
 
 Implementation: docs/research/SLICE_17_2_GATE3_IMPLEMENTATION_2026-09-21.md.
 
-All 13 frozen Beams now flow through authoritative Designer selection/preview/save, immutable construction/built-Ship snapshots and lossless BattleSession metadata. The amended selector-first HMI is implemented. The Field-74 Antaran self-loop is handled terminally at M0. Non-baseline Tactical effects remain explicitly deferred; only the unmodified Standard Laser receives firing behavior. Gate 4 is next and has not started.
+All 13 frozen Beams now flow through authoritative Designer selection/preview/save, immutable construction/built-Ship snapshots and lossless BattleSession metadata. The amended selector-first HMI is implemented. The Field-74 Antaran self-loop is handled terminally at M0. Non-baseline Tactical effects remain explicitly deferred; only the unmodified Standard Laser receives firing behavior. Gate 4 review is active; automated QA passed and manual canonical-7171 visual review is pending.
 
 
 ## Gate 3 mobile HMI amendment
 
 Follow-up evidence: docs/research/SLICE_17_2_GATE3_MOBILE_WEAPON_SELECTOR_AMENDMENT_2026-09-21.md.
 
-The redundant Available Weapons card is removed from the main Designer, Installed Weapons now owns the Add entry point and Space Available display, filters default collapsed, and the mobile selector keeps the weapon list/configuration primary with Install visible at 390x844. Gate 4 remains next and has not started.
+The redundant Available Weapons card is removed from the main Designer, Installed Weapons now owns the Add entry point and Space Available display, filters default collapsed, and the mobile selector keeps the weapon list/configuration primary with Install visible at 390x844. Gate 4 review is active; automated QA passed and manual canonical-7171 visual review is pending.
 
 
 ## Gate 3 weapon-slot/edit HMI amendment
@@ -96,4 +96,10 @@ Follow-up evidence: docs/research/SLICE_17_2_GATE3_WEAPON_SLOT_EDIT_AMENDMENT_20
 
 Installed weapons now use fixed-height slot cards with inline quantity controls and an Edit pencil. Edit reuses the authoritative Weapon Selector, preloads the existing slot and replaces that slot rather than duplicating it. Mount/modifier choices expose compact `?` help with frozen Space/PP/refinement information and explicit Tactical defer scope. The blank installed-weapons area remains an Add target when no weapon is installed. Full Web/browser/Go QA passes.
 
-Gate 4 remains next and has not started.
+Gate 4 review is active; automated QA passed and manual canonical-7171 visual review is pending.
+
+## Gate 4 Weapon Selector review
+
+Evidence: docs/research/SLICE_17_2_GATE4_WEAPON_SELECTOR_REVIEW_2026-09-22.md.
+
+Automated Gate-4 QA passes after the mobile selector polish: selected mount/modifier cards no longer duplicate their state with visible radio/checkbox glyphs, help controls have reserved non-overlapping space, damage is explicitly labelled Basisschaden/Base damage, and Heavy plus Point Defense both prove live authoritative Space/PP preview changes. Keep this marker until the user completes the canonical-7171 visual review.

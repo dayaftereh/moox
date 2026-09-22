@@ -372,33 +372,38 @@ export function WeaponSelectorDialog({
                     <p className="eyebrow">{t('shipbuilder.weaponSelectorTitle')}</p>
                     <h4>{weaponLabel(t, selectedWeapon)}</h4>
                   </div>
-                  <span className="badge">{damageLabel(selectedWeapon)}</span>
+                  <span className="shipdesigner-weapon-damage">
+                    <small>{t('shipbuilder.baseDamage')}</small>
+                    <strong>{damageLabel(selectedWeapon)}</strong>
+                  </span>
                 </div>
 
                 <fieldset className="shipdesigner-weapon-config-group">
                   <legend>{t('shipbuilder.mountType')}</legend>
                   <div className="shipdesigner-weapon-option-grid">
-                    {selectedWeapon.mount_choices.map((choice) => (
-                      <div className={"shipdesigner-weapon-option" + (choice.available ? "" : " locked")} key={choice.id}>
-                        <label className="shipdesigner-weapon-option-choice">
-                          <input
-                            type="radio"
-                            name="beam-mount"
-                            value={choice.id}
-                            checked={mountType === choice.id}
+                    {selectedWeapon.mount_choices.map((choice) => {
+                      const selected = mountType === choice.id
+                      return (
+                        <div className={"shipdesigner-weapon-option" + (selected ? " selected" : "") + (choice.available ? "" : " locked")} key={choice.id}>
+                          <button
+                            type="button"
+                            className="shipdesigner-weapon-option-choice"
+                            data-weapon-mount={choice.id}
+                            aria-pressed={selected}
                             disabled={!choice.available}
-                            onChange={() => setMountType(choice.id)}
-                          />
-                          <span>{t(mountTranslationKeys[choice.id])}</span>
-                        </label>
-                        <button
-                          type="button"
-                          className="shipdesigner-weapon-option-help"
-                          aria-label={t('shipbuilder.weaponOptionDetails', { option: t(mountTranslationKeys[choice.id]) })}
-                          onClick={() => setHelpTopic((current) => current?.kind === 'mount' && current.id === choice.id ? null : { kind: 'mount', id: choice.id })}
-                        >?</button>
-                      </div>
-                    ))}
+                            onClick={() => setMountType(choice.id)}
+                          >
+                            <span>{t(mountTranslationKeys[choice.id])}</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="shipdesigner-weapon-option-help"
+                            aria-label={t('shipbuilder.weaponOptionDetails', { option: t(mountTranslationKeys[choice.id]) })}
+                            onClick={() => setHelpTopic((current) => current?.kind === 'mount' && current.id === choice.id ? null : { kind: 'mount', id: choice.id })}
+                          >?</button>
+                        </div>
+                      )
+                    })}
                   </div>
                   {activeMountHelp && (
                     <div className="shipdesigner-weapon-inline-help">
@@ -415,28 +420,32 @@ export function WeaponSelectorDialog({
                 <fieldset className="shipdesigner-weapon-config-group">
                   <legend>{t('shipbuilder.specialModifiers')}</legend>
                   <div className="shipdesigner-weapon-option-grid">
-                    {selectedWeapon.modifier_choices.length > 0 ? selectedWeapon.modifier_choices.map((choice) => (
-                      <div className={"shipdesigner-weapon-option" + (choice.available ? "" : " locked")} key={choice.id}>
-                        <label className="shipdesigner-weapon-option-choice">
-                          <input
-                            type="checkbox"
-                            checked={modifierIDs.includes(choice.id)}
+                    {selectedWeapon.modifier_choices.length > 0 ? selectedWeapon.modifier_choices.map((choice) => {
+                      const selected = modifierIDs.includes(choice.id)
+                      return (
+                        <div className={"shipdesigner-weapon-option" + (selected ? " selected" : "") + (choice.available ? "" : " locked")} key={choice.id}>
+                          <button
+                            type="button"
+                            className="shipdesigner-weapon-option-choice"
+                            data-weapon-modifier={choice.id}
+                            aria-pressed={selected}
                             disabled={!choice.available}
-                            onChange={() => toggleModifier(choice.id)}
-                          />
-                          <span>
-                            {t(modifierTranslationKeys[choice.id])}
-                            {!choice.available && <small>{t('shipbuilder.refinementRequired', { level: choice.required_mini_level })}</small>}
-                          </span>
-                        </label>
-                        <button
-                          type="button"
-                          className="shipdesigner-weapon-option-help"
-                          aria-label={t('shipbuilder.weaponOptionDetails', { option: t(modifierTranslationKeys[choice.id]) })}
-                          onClick={() => setHelpTopic((current) => current?.kind === 'modifier' && current.id === choice.id ? null : { kind: 'modifier', id: choice.id })}
-                        >?</button>
-                      </div>
-                    )) : <p className="muted">{t('common.none')}</p>}
+                            onClick={() => toggleModifier(choice.id)}
+                          >
+                            <span>
+                              {t(modifierTranslationKeys[choice.id])}
+                              {!choice.available && <small>{t('shipbuilder.refinementRequired', { level: choice.required_mini_level })}</small>}
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            className="shipdesigner-weapon-option-help"
+                            aria-label={t('shipbuilder.weaponOptionDetails', { option: t(modifierTranslationKeys[choice.id]) })}
+                            onClick={() => setHelpTopic((current) => current?.kind === 'modifier' && current.id === choice.id ? null : { kind: 'modifier', id: choice.id })}
+                          >?</button>
+                        </div>
+                      )
+                    }) : <p className="muted">{t('common.none')}</p>}
                   </div>
                   {activeModifierHelp && (
                     <div className="shipdesigner-weapon-inline-help">

@@ -6,7 +6,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 
 - Branch: `main`.
 - Open slice marker: **`docs/slices/_OPEN_BEAM_WEAPONS_MOUNT_MODIFIERS_2026-09-20.md`**.
-- Active implementation slice: **Slice 17.2 - Beam Weapons and Beam Mount Modifiers; Gates 1-3 complete / Gate 4 next.**
+- Active implementation slice: **Slice 17.2 - Beam Weapons and Beam Mount Modifiers; Gate 4 review active, automated QA passed / manual visual review pending.**
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
@@ -14,9 +14,10 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-16 are closed/accepted at their intended baselines**. Slice 17 is the active 17.0-17.5 parent program; reserved Slice 18 and Slices 20-23 remain planned only.
-- Current objective: **await explicit Gate-4 release for Slice 17.2 QA/close; do not open Slice 17.3+ automatically.**
-- Slice-17.2 Gate-3 implementation: docs/research/SLICE_17_2_GATE3_IMPLEMENTATION_2026-09-21.md - 13-Beam catalog, canonical mount/modifier snapshots, server-authoritative quotes/previews, selector-first HMI, Field-74 terminal cycle guard, immutable built-Ship snapshots and lossless BattleSession metadata complete; non-baseline Tactical firing remains explicitly deferred; Gate 4 next, not started.
-- Slice-17.2 Gate-3 weapon-slot/edit HMI amendment: docs/research/SLICE_17_2_GATE3_WEAPON_SLOT_EDIT_AMENDMENT_2026-09-22.md - fixed-height installed slots, edit-in-place through the authoritative selector, mount/modifier ? help and recovered mobile blank-area Add behavior complete; full web/browser/Go QA passes; Gate 4 next, not started.
+- Current objective: **review the Slice 17.2 Gate-4 Weapon Selector polish on canonical port 7171; automated QA is green, then close only after explicit visual acceptance. Do not open Slice 17.3+ automatically.**
+- Slice-17.2 Gate-4 Weapon Selector review: docs/research/SLICE_17_2_GATE4_WEAPON_SELECTOR_REVIEW_2026-09-22.md - card-only selected state, non-overlapping help controls, explicit Basisschaden label and authoritative Heavy/Point-Defense Space/PP live-preview regressions pass at 390 px; manual canonical-7171 visual review pending before close.
+- Slice-17.2 Gate-3 implementation: docs/research/SLICE_17_2_GATE3_IMPLEMENTATION_2026-09-21.md - 13-Beam catalog, canonical mount/modifier snapshots, server-authoritative quotes/previews, selector-first HMI, Field-74 terminal cycle guard, immutable built-Ship snapshots and lossless BattleSession metadata complete; non-baseline Tactical firing remains explicitly deferred; Gate 4 review is now active.
+- Slice-17.2 Gate-3 weapon-slot/edit HMI amendment: docs/research/SLICE_17_2_GATE3_WEAPON_SLOT_EDIT_AMENDMENT_2026-09-22.md - fixed-height installed slots, edit-in-place through the authoritative selector, mount/modifier ? help and recovered mobile blank-area Add behavior complete; full web/browser/Go QA passes; superseded as current review focus by the Gate-4 selector polish above.
 - Slice-17.2 Gate-3 mobile HMI amendment: docs/research/SLICE_17_2_GATE3_MOBILE_WEAPON_SELECTOR_AMENDMENT_2026-09-21.md - redundant Available Weapons card removed; Installed Weapons owns Add + Space Available; filters collapsed by default; 390x844 selector prioritizes list/modifiers and keeps Install visible without scrolling.
 - Slice-17.2 Gate-2 HMI add-flow amendment: docs/research/SLICE_17_2_GATE2_HMI_ADD_FLOW_AMENDMENT_2026-09-20.md - configure selected weapon mount/modifiers/quantity inside the selector before Install; installed rows keep compact +/- controls.
 - Slice-17.2 Gate-2 contract freeze: docs/research/SLICE_17_2_GATE2_BEAM_CONTRACT_FREEZE_2026-09-20.md - 13-Beam catalog, explicit mount/modifier snapshot schema, exact Space/PP arithmetic, stable rejection reasons, server-authoritative preview, Weapon Selector filters/configuration dialog, reference vectors and Tactical support/defer boundary frozen; Gate 3 implemented under the frozen contract.
