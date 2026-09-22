@@ -27,6 +27,7 @@ type Props = {
   computerID: string
   shieldID: string
   nextFreeSlot?: number
+  editingMount?: ShipWeaponMount
   onInstall: (mount: ShipWeaponMount, preview: MilitaryDesignDraftProjection) => void
   onClose: () => void
   t: Translator
@@ -63,6 +64,26 @@ const modifierTranslationKeys: Record<ShipWeaponModifierID, TranslationKey> = {
   enveloping: 'shipbuilder.modifier.enveloping',
 }
 
+const mountHelpTranslationKeys: Record<ShipWeaponMountType, TranslationKey> = {
+  standard: 'shipbuilder.mount.standardHelp',
+  heavy: 'shipbuilder.mount.heavyHelp',
+  point_defense: 'shipbuilder.mount.pointDefenseHelp',
+}
+
+const modifierHelpTranslationKeys: Record<ShipWeaponModifierID, TranslationKey> = {
+  armor_piercing: 'shipbuilder.modifier.armorPiercingHelp',
+  continuous: 'shipbuilder.modifier.continuousHelp',
+  no_range_dissipation: 'shipbuilder.modifier.noRangeDissipationHelp',
+  shield_piercing: 'shipbuilder.modifier.shieldPiercingHelp',
+  autofire: 'shipbuilder.modifier.autofireHelp',
+  enveloping: 'shipbuilder.modifier.envelopingHelp',
+}
+
+function percentDeltaLabel(value: number): string {
+  if (value === 0) return '0%'
+  return (value > 0 ? '+' : '') + value + '%'
+}
+
 function weaponLabel(t: Translator, weapon: MilitaryDesignerWeaponChoice): string {
   const key = weaponTranslationKeys[weapon.id]
   return key ? t(key) : weapon.id.replaceAll('_', ' ')
@@ -93,6 +114,7 @@ export function WeaponSelectorDialog({
   computerID,
   shieldID,
   nextFreeSlot,
+  editingMount,
   onInstall,
   onClose,
   t,
@@ -102,16 +124,20 @@ export function WeaponSelectorDialog({
   const [modifierFilter, setModifierFilter] = useState<ModifierFilter>('all')
   const [sortKey, setSortKey] = useState<SortKey>('technology')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
-  const [selectedWeaponID, setSelectedWeaponID] = useState<string>('')
-  const [mountType, setMountType] = useState<ShipWeaponMountType>('standard')
-  const [modifierIDs, setModifierIDs] = useState<ShipWeaponModifierID[]>([])
-  const [quantity, setQuantity] = useState(1)
+  const [selectedWeaponID, setSelectedWeaponID] = useState<string>(() => editingMount?.weapon_id ?? '')
+  const [mountType, setMountType] = useState<ShipWeaponMountType>(() => editingMount?.mount_type ?? 'standard')
+  const [modifierIDs, setModifierIDs] = useState<ShipWeaponModifierID[]>(() => editingMount?.modifier_ids ? [...editingMount.modifier_ids] : [])
+  const [quantity, setQuantity] = useState(() => editingMount?.count ?? 1)
   const [preview, setPreview] = useState<MilitaryDesignDraftProjection | null>(null)
   const [previewing, setPreviewing] = useState(false)
   const [previewError, setPreviewError] = useState('')
   const [filtersOpen, setFiltersOpen] = useState(false)
+  const [helpTopic, setHelpTopic] = useState<{ kind: 'mount' | 'modifier'; id: string } | null>(null)
 
   const selectedWeapon = weapons.find((weapon) => weapon.id === selectedWeaponID)
+  const targetSlot = editingMount?.slot ?? nextFreeSlot
+  const activeMountHelp = helpTopic?.kind === 'mount' ? selectedWeapon?.mount_choices.find((choice) => choice.id === helpTopic.id) : undefined
+  const activeModifierHelp = helpTopic?.kind === 'modifier' ? selectedWeapon?.modifier_choices.find((choice) => choice.id === helpTopic.id) : undefined
   const normalizedSearch = search.trim().toLocaleLowerCase()
 
   const filteredWeapons = useMemo(() => {
@@ -153,15 +179,15 @@ export function WeaponSelectorDialog({
   }, [weapons, normalizedSearch, availability, modifierFilter, sortKey, sortDirection, t])
 
   const candidateMount = useMemo<ShipWeaponMount | null>(() => {
-    if (!selectedWeapon || nextFreeSlot == null) return null
+    if (!selectedWeapon || targetSlot == null) return null
     return {
-      slot: nextFreeSlot,
+      slot: targetSlot,
       weapon_id: selectedWeapon.id,
       count: quantity,
       mount_type: mountType,
       ...(modifierIDs.length > 0 ? { modifier_ids: [...modifierIDs] } : {}),
     }
-  }, [selectedWeapon, nextFreeSlot, quantity, mountType, modifierIDs])
+  }, [selectedWeapon, targetSlot, quantity, mountType, modifierIDs])
 
   useEffect(() => {
     if (!candidateMount || !selectedWeapon?.available) {
@@ -173,7 +199,7 @@ export function WeaponSelectorDialog({
     let cancelled = false
     setPreviewing(true)
     setPreviewError('')
-    const draftWeapons = [...cloneMounts(existingMounts), candidateMount].sort((a, b) => a.slot - b.slot)
+    const draftWeapons = [...cloneMounts(existingMounts.filter((mount) => mount.slot !== targetSlot)), candidateMount].sort((a, b) => a.slot - b.slot)
     void previewMilitaryDesign(snapshot, snapshot.view.seat.seat.id, {
       hull_id: hullID,
       strategic_picture_id: strategicPictureID,
@@ -207,10 +233,11 @@ export function WeaponSelectorDialog({
   ])
 
   function selectWeapon(id: string) {
+    if (id === selectedWeaponID) return
     setSelectedWeaponID(id)
     setMountType('standard')
     setModifierIDs([])
-    setQuantity(1)
+    setHelpTopic(null)
     setPreview(null)
     setPreviewError('')
   }
@@ -233,7 +260,7 @@ export function WeaponSelectorDialog({
   const canInstall = Boolean(
     selectedWeapon?.available
     && candidateMount
-    && nextFreeSlot != null
+    && targetSlot != null
     && preview?.save_available
     && candidatePreview
     && !previewing,
@@ -261,7 +288,7 @@ export function WeaponSelectorDialog({
         <header className="shipdesigner-system-dialog-header">
           <div>
             <p className="eyebrow">{t('shipbuilder.weapons')}</p>
-            <h3 id="shipdesigner-weapon-selector-title">{t('shipbuilder.weaponSelectorTitle')}</h3>
+            <h3 id="shipdesigner-weapon-selector-title">{editingMount ? t('shipbuilder.editWeapon') : t('shipbuilder.weaponSelectorTitle')}</h3>
             <p className="muted">{t('shipbuilder.weaponSelectorHint')}</p>
           </div>
           <div className="shipdesigner-weapon-selector-header-actions">
@@ -348,43 +375,79 @@ export function WeaponSelectorDialog({
                   <span className="badge">{damageLabel(selectedWeapon)}</span>
                 </div>
 
-                <fieldset className="shipdesigner-weapon-config-group" disabled={!selectedWeapon.available}>
+                <fieldset className="shipdesigner-weapon-config-group">
                   <legend>{t('shipbuilder.mountType')}</legend>
                   <div className="shipdesigner-weapon-option-grid">
                     {selectedWeapon.mount_choices.map((choice) => (
-                      <label className={`shipdesigner-weapon-option${choice.available ? '' : ' locked'}`} key={choice.id}>
-                        <input
-                          type="radio"
-                          name="beam-mount"
-                          value={choice.id}
-                          checked={mountType === choice.id}
-                          disabled={!choice.available}
-                          onChange={() => setMountType(choice.id)}
-                        />
-                        <span>{t(mountTranslationKeys[choice.id])}</span>
-                      </label>
+                      <div className={"shipdesigner-weapon-option" + (choice.available ? "" : " locked")} key={choice.id}>
+                        <label className="shipdesigner-weapon-option-choice">
+                          <input
+                            type="radio"
+                            name="beam-mount"
+                            value={choice.id}
+                            checked={mountType === choice.id}
+                            disabled={!choice.available}
+                            onChange={() => setMountType(choice.id)}
+                          />
+                          <span>{t(mountTranslationKeys[choice.id])}</span>
+                        </label>
+                        <button
+                          type="button"
+                          className="shipdesigner-weapon-option-help"
+                          aria-label={t('shipbuilder.weaponOptionDetails', { option: t(mountTranslationKeys[choice.id]) })}
+                          onClick={() => setHelpTopic((current) => current?.kind === 'mount' && current.id === choice.id ? null : { kind: 'mount', id: choice.id })}
+                        >?</button>
+                      </div>
                     ))}
                   </div>
+                  {activeMountHelp && (
+                    <div className="shipdesigner-weapon-inline-help">
+                      <div className="shipdesigner-weapon-inline-help-heading">
+                        <strong>{t(mountTranslationKeys[activeMountHelp.id])}</strong>
+                        <button type="button" className="button-ghost" onClick={() => setHelpTopic(null)} aria-label={t('common.close')}><GameIcon name="close" /></button>
+                      </div>
+                      <p>{t(mountHelpTranslationKeys[activeMountHelp.id])}</p>
+                      <small>{t('shipbuilder.weaponOptionCosts', { space: percentDeltaLabel(activeMountHelp.space_percent_delta), cost: percentDeltaLabel(activeMountHelp.cost_percent_delta) })}</small>
+                    </div>
+                  )}
                 </fieldset>
 
-                <fieldset className="shipdesigner-weapon-config-group" disabled={!selectedWeapon.available}>
+                <fieldset className="shipdesigner-weapon-config-group">
                   <legend>{t('shipbuilder.specialModifiers')}</legend>
                   <div className="shipdesigner-weapon-option-grid">
                     {selectedWeapon.modifier_choices.length > 0 ? selectedWeapon.modifier_choices.map((choice) => (
-                      <label className={`shipdesigner-weapon-option${choice.available ? '' : ' locked'}`} key={choice.id}>
-                        <input
-                          type="checkbox"
-                          checked={modifierIDs.includes(choice.id)}
-                          disabled={!choice.available}
-                          onChange={() => toggleModifier(choice.id)}
-                        />
-                        <span>
-                          {t(modifierTranslationKeys[choice.id])}
-                          {!choice.available && <small>{t('shipbuilder.refinementRequired', { level: choice.required_mini_level })}</small>}
-                        </span>
-                      </label>
+                      <div className={"shipdesigner-weapon-option" + (choice.available ? "" : " locked")} key={choice.id}>
+                        <label className="shipdesigner-weapon-option-choice">
+                          <input
+                            type="checkbox"
+                            checked={modifierIDs.includes(choice.id)}
+                            disabled={!choice.available}
+                            onChange={() => toggleModifier(choice.id)}
+                          />
+                          <span>
+                            {t(modifierTranslationKeys[choice.id])}
+                            {!choice.available && <small>{t('shipbuilder.refinementRequired', { level: choice.required_mini_level })}</small>}
+                          </span>
+                        </label>
+                        <button
+                          type="button"
+                          className="shipdesigner-weapon-option-help"
+                          aria-label={t('shipbuilder.weaponOptionDetails', { option: t(modifierTranslationKeys[choice.id]) })}
+                          onClick={() => setHelpTopic((current) => current?.kind === 'modifier' && current.id === choice.id ? null : { kind: 'modifier', id: choice.id })}
+                        >?</button>
+                      </div>
                     )) : <p className="muted">{t('common.none')}</p>}
                   </div>
+                  {activeModifierHelp && (
+                    <div className="shipdesigner-weapon-inline-help">
+                      <div className="shipdesigner-weapon-inline-help-heading">
+                        <strong>{t(modifierTranslationKeys[activeModifierHelp.id])}</strong>
+                        <button type="button" className="button-ghost" onClick={() => setHelpTopic(null)} aria-label={t('common.close')}><GameIcon name="close" /></button>
+                      </div>
+                      <p>{t(modifierHelpTranslationKeys[activeModifierHelp.id])}</p>
+                      <small>{t('shipbuilder.weaponOptionCosts', { space: percentDeltaLabel(activeModifierHelp.space_percent_delta), cost: percentDeltaLabel(activeModifierHelp.cost_percent_delta) })}{activeModifierHelp.required_mini_level > 0 ? ' / ' + t('shipbuilder.refinementRequired', { level: activeModifierHelp.required_mini_level }) : ''}</small>
+                    </div>
+                  )}
                 </fieldset>
 
                 <div className="shipdesigner-weapon-config-bottom">
@@ -410,7 +473,7 @@ export function WeaponSelectorDialog({
                 </div>
                 <footer className="shipdesigner-system-dialog-actions shipdesigner-weapon-selector-actions">
                   <button type="button" className="button-ghost" onClick={onClose}>{t('common.close')}</button>
-                  <button type="button" className="button-primary" disabled={!canInstall} onClick={install}><span aria-hidden="true">+</span>{t('shipbuilder.install')}</button>
+                  <button type="button" className="button-primary" disabled={!canInstall} onClick={install}>{editingMount ? <GameIcon name="edit" /> : <span aria-hidden="true">+</span>}{editingMount ? t('shipbuilder.applyChanges') : t('shipbuilder.install')}</button>
                 </footer>
               </>
             ) : (

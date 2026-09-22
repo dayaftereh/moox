@@ -293,8 +293,8 @@ async function main() {
       ratingHelpCount: document.querySelectorAll('.shipdesigner-combat-rating .shipdesigner-system-help').length,
       installedWeaponsPresent: Boolean(document.querySelector('.shipdesigner-installed-weapons')),
       availableWeaponSectionPresent: Boolean(document.querySelector('.shipdesigner-weapon-section')),
-      emptyAddTarget: Boolean(document.querySelector('.shipdesigner-installed-weapons-add-target')),
-      installedWeaponsEmptyText: document.querySelector('.shipdesigner-installed-weapons-empty')?.textContent || '',
+      emptyAddTarget: Boolean(document.querySelector('.shipdesigner-installed-weapons-scroll.add-target')),
+      initialAddCardText: document.querySelector('.shipdesigner-weapon-slot-add')?.textContent || '',
       installedWeaponsHeight: document.querySelector('.shipdesigner-installed-weapons')?.getBoundingClientRect().height || 0,
       installedWeaponsOverflowY: getComputedStyle(document.querySelector('.shipdesigner-installed-weapons-scroll')).overflowY,
       summaryCount: document.querySelectorAll('.shipdesigner-system-summary-grid > div').length,
@@ -316,7 +316,7 @@ async function main() {
   assert(designerUI.installedWeaponsPresent, 'Installed weapons panel is missing when no weapon is installed')
   assert(!designerUI.availableWeaponSectionPresent, 'Separate available-weapons card should be removed from the main Designer')
   assert(designerUI.emptyAddTarget, 'Empty installed-weapons surface is not an Add-weapon target')
-  assert(designerUI.installedWeaponsEmptyText.includes('Noch keine Waffen eingebaut'), `Installed weapons empty state is missing: ${designerUI.installedWeaponsEmptyText}`)
+  assert(designerUI.initialAddCardText.includes('Waffe hinzuf'), `Initial weapon add slot is missing: ${designerUI.initialAddCardText}`)
   assert(designerUI.installedWeaponsHeight >= 145 && designerUI.installedWeaponsHeight <= 155, `Installed weapons reserved height=${designerUI.installedWeaponsHeight}, want compact stable 150px panel`)
   assert(designerUI.installedWeaponsOverflowY === 'auto', `Installed weapons panel overflow-y=${designerUI.installedWeaponsOverflowY}, want auto`)
   assert(designerUI.summaryCount === 0, `Ship information still renders ${designerUI.summaryCount} redundant summary stat(s)`)
@@ -384,7 +384,7 @@ async function main() {
   await evaluate(`(() => { document.querySelector('.shipdesigner-system-dialog-close')?.click(); return true })()`)
   await sleep(100)
   const emptyTargetOpened = await evaluate(`(() => {
-    const target = document.querySelector('.shipdesigner-installed-weapons-add-target')
+    const target = document.querySelector('.shipdesigner-installed-weapons-scroll.add-target')
     if (!target || target.disabled) return false
     target.click()
     return true
@@ -411,15 +411,15 @@ async function main() {
   await sleep(100)
   const initialInstalledPanelHeight = await evaluate(`document.querySelector('.shipdesigner-installed-weapons')?.getBoundingClientRect().height || 0`)
   const availableAddControl = await evaluate(`(() => {
-    const button = document.querySelector('.shipdesigner-add-weapon')
+    const button = document.querySelector('.shipdesigner-weapon-slot-add')
     const rect = button?.getBoundingClientRect()
     return { text: button?.textContent || '', aria: button?.getAttribute('aria-label') || '', width: rect?.width || 0, height: rect?.height || 0 }
   })()`)
-  assert(availableAddControl.text.trim() === '+' && availableAddControl.aria === 'Einbauen', `Available weapon action is not compact + control: ${JSON.stringify(availableAddControl)}`)
-  assert(availableAddControl.width <= 44 && availableAddControl.height <= 44, `Available weapon + control is too large: ${JSON.stringify(availableAddControl)}`)
+  assert(availableAddControl.text.includes('+') && availableAddControl.text.includes('Waffe hinzuf') && availableAddControl.aria.includes('Waffe hinzuf'), `Weapon add slot control is not labelled correctly: ${JSON.stringify(availableAddControl)}`)
+  assert(availableAddControl.height >= 47 && availableAddControl.height <= 53, `Weapon add slot height is not fixed/compact: ${JSON.stringify(availableAddControl)}`)
   const addWeapon = async ({ heavy = false } = {}) => {
     const opened = await evaluate(`(() => {
-      const button = document.querySelector('.shipdesigner-add-weapon')
+      const button = document.querySelector('.shipdesigner-weapon-slot-add')
       if (!button || button.disabled) return false
       button.click()
       return true
@@ -533,25 +533,119 @@ async function main() {
     const scroll = document.querySelector('.shipdesigner-installed-weapons-scroll')
     return {
       height: panel?.getBoundingClientRect().height || 0,
-      cards: document.querySelectorAll('.shipdesigner-installed-info-grid .shipdesigner-info-card.weapon').length,
+      cards: document.querySelectorAll('.shipdesigner-weapon-slot-card').length,
+      addCards: document.querySelectorAll('.shipdesigner-weapon-slot-add').length,
       empty: Boolean(document.querySelector('.shipdesigner-installed-weapons-empty')),
       scrollHeight: scroll?.scrollHeight || 0,
       clientHeight: scroll?.clientHeight || 0,
       overflowY: scroll ? getComputedStyle(scroll).overflowY : '',
-      slotLabels: document.querySelectorAll('.shipdesigner-info-card.weapon > span').length,
-      cardTexts: [...document.querySelectorAll('.shipdesigner-info-card.weapon')].map((card) => card.textContent || ''),
-      maxCardHeight: Math.max(0, ...[...document.querySelectorAll('.shipdesigner-info-card.weapon')].map((card) => card.getBoundingClientRect().height)),
-      removeControls: [...document.querySelectorAll('.shipdesigner-weapon-remove')].map((button) => ({ text: button.textContent || '', aria: button.getAttribute('aria-label') || '' })),
+      slotLabels: document.querySelectorAll('.shipdesigner-weapon-slot-card > span').length,
+      cardTexts: [...document.querySelectorAll('.shipdesigner-weapon-slot-card')].map((card) => card.textContent || ''),
+      maxCardHeight: Math.max(0, ...[...document.querySelectorAll('.shipdesigner-weapon-slot-card')].map((card) => card.getBoundingClientRect().height)),
+      editControls: [...document.querySelectorAll('.shipdesigner-weapon-edit')].map((button) => ({ text: button.textContent || '', aria: button.getAttribute('aria-label') || '' })),
+      removeControls: document.querySelectorAll('.shipdesigner-weapon-remove').length,
     }
   })()`)
   assert(Math.abs(installedPanelAfterWeapons.height - initialInstalledPanelHeight) <= 1, `Installed weapons panel shifted height ${initialInstalledPanelHeight} -> ${installedPanelAfterWeapons.height}`)
-  assert(installedPanelAfterWeapons.cards === 2 && !installedPanelAfterWeapons.empty, `Installed weapon cards/empty state are wrong after adding: ${JSON.stringify(installedPanelAfterWeapons)}`)
+  assert(installedPanelAfterWeapons.cards === 2 && installedPanelAfterWeapons.addCards === 1 && !installedPanelAfterWeapons.empty, `Installed weapon slots/add slot are wrong after adding: ${JSON.stringify(installedPanelAfterWeapons)}`)
   assert(installedPanelAfterWeapons.slotLabels === 0, `Installed weapon cards still render slot-number labels: ${JSON.stringify(installedPanelAfterWeapons)}`)
   assert(installedPanelAfterWeapons.cardTexts.every((text) => text.includes('Laserkanone') && !/Slot\s*\d/i.test(text) && !text.includes('Entfernen')), `Installed weapon cards are not compact player-facing rows: ${JSON.stringify(installedPanelAfterWeapons.cardTexts)}`)
-  assert(installedPanelAfterWeapons.cardTexts.some((text) => text.includes('Schwer')), 'Heavy mount summary is missing from installed weapon rows: ' + JSON.stringify(installedPanelAfterWeapons.cardTexts))
-  assert(installedPanelAfterWeapons.maxCardHeight <= 60, `Installed weapon card height=${installedPanelAfterWeapons.maxCardHeight}, want <=60px at 390px`)
-  assert(installedPanelAfterWeapons.removeControls.length === 2 && installedPanelAfterWeapons.removeControls.every((control) => control.text.trim() === '' && control.aria === 'Entfernen'), `Installed weapon remove controls are not icon-only/accessibly labelled: ${JSON.stringify(installedPanelAfterWeapons.removeControls)}`)
+  assert(installedPanelAfterWeapons.cardTexts.every((text) => !text.includes('Schwer') && !text.includes('Standard')), `Installed slot cards should keep configuration details in Edit dialog: ${JSON.stringify(installedPanelAfterWeapons.cardTexts)}`)
+  assert(installedPanelAfterWeapons.maxCardHeight >= 47 && installedPanelAfterWeapons.maxCardHeight <= 49, `Installed weapon card height=${installedPanelAfterWeapons.maxCardHeight}, want fixed 48px at 390px`)
+  assert(installedPanelAfterWeapons.editControls.length === 2 && installedPanelAfterWeapons.editControls.every((control) => control.text.trim() === '' && control.aria === 'Waffe bearbeiten'), `Installed weapon Edit controls are not icon-only/accessibly labelled: ${JSON.stringify(installedPanelAfterWeapons.editControls)}`)
+  assert(installedPanelAfterWeapons.removeControls === 0, `Dedicated remove controls should not duplicate the - quantity behavior: ${JSON.stringify(installedPanelAfterWeapons)}`)
   assert(installedPanelAfterWeapons.overflowY === 'auto' && installedPanelAfterWeapons.scrollHeight >= installedPanelAfterWeapons.clientHeight, `Installed weapons scroll area is not stable/scroll-capable: ${JSON.stringify(installedPanelAfterWeapons)}`)
+
+  const editOpened = await evaluate(`(() => {
+    const button = document.querySelector('.shipdesigner-weapon-slot-card .shipdesigner-weapon-edit')
+    if (!button) return false
+    button.click()
+    return true
+  })()`)
+  assert(editOpened, 'Installed weapon Edit control did not open selector')
+  await sleep(120)
+  const editInitial = await evaluate(`(() => {
+    const dialog = document.querySelector('.shipdesigner-weapon-selector')
+    const selected = document.querySelector('.shipdesigner-weapon-selector-row[aria-selected="true"]')
+    const standard = document.querySelector('.shipdesigner-weapon-config input[type="radio"][value="standard"]')
+    const count = document.querySelector('.shipdesigner-weapon-config .shipdesigner-weapon-count')?.textContent || ''
+    const apply = document.querySelector('.shipdesigner-weapon-selector-actions .button-primary')
+    return { text: dialog?.textContent || '', selected: selected?.textContent || '', standard: Boolean(standard?.checked), count, apply: apply?.textContent || '' }
+  })()`)
+  assert(editInitial.text.includes('Waffe bearbeiten') && editInitial.selected.includes('Laserkanone') && editInitial.standard && editInitial.count.trim() === '1' && editInitial.apply.includes('Übernehmen'), `Edit dialog was not prefilled from installed slot: ${JSON.stringify(editInitial)}`)
+
+  const mountHelpOpened = await evaluate(`(() => {
+    const option = [...document.querySelectorAll('.shipdesigner-weapon-option')].find((node) => node.querySelector('input[value="point_defense"]'))
+    const help = option?.querySelector('.shipdesigner-weapon-option-help')
+    if (!help) return false
+    help.click()
+    return true
+  })()`)
+  assert(mountHelpOpened, 'Point Defense ? help did not open')
+  await sleep(60)
+  const mountHelpText = await evaluate(`document.querySelector('.shipdesigner-weapon-inline-help')?.textContent || ''`)
+  assert(mountHelpText.includes('Punktverteidigung') && mountHelpText.includes('-50'), `Point Defense help is missing meaning/cost effect: ${mountHelpText}`)
+
+  const modifierHelpOpened = await evaluate(`(() => {
+    const option = [...document.querySelectorAll('.shipdesigner-weapon-option')].find((node) => node.textContent?.includes('Autofeuer'))
+    const help = option?.querySelector('.shipdesigner-weapon-option-help')
+    if (!help) return false
+    help.click()
+    return true
+  })()`)
+  assert(modifierHelpOpened, 'Autofire ? help did not open')
+  await sleep(60)
+  const modifierHelpText = await evaluate(`document.querySelector('.shipdesigner-weapon-inline-help')?.textContent || ''`)
+  assert(modifierHelpText.includes('Autofeuer') && modifierHelpText.includes('noch nicht simuliert'), `Autofire help is missing scope explanation: ${modifierHelpText}`)
+
+  const editConfigured = await evaluate(`(() => {
+    const pd = document.querySelector('.shipdesigner-weapon-config input[type="radio"][value="point_defense"]')
+    const autofireOption = [...document.querySelectorAll('.shipdesigner-weapon-option')].find((node) => node.textContent?.includes('Autofeuer'))
+    const autofire = autofireOption?.querySelector('input[type="checkbox"]')
+    if (!pd || pd.disabled || !autofire || autofire.disabled) return false
+    pd.click()
+    if (!autofire.checked) autofire.click()
+    return pd.checked && autofire.checked
+  })()`)
+  assert(editConfigured, 'Could not configure Point Defense + Autofire while editing slot')
+  await sleep(180)
+  let editApplied = false
+  for (let attempt = 0; attempt < 40; attempt++) {
+    editApplied = await evaluate(`(() => {
+      const button = document.querySelector('.shipdesigner-weapon-selector-actions .button-primary')
+      if (!button || button.disabled || !button.textContent?.includes('Übernehmen')) return false
+      button.click()
+      return true
+    })()`)
+    if (editApplied) break
+    await sleep(75)
+  }
+  assert(editApplied, 'Edited weapon slot could not be applied')
+  await sleep(220)
+  const editedSlotState = await evaluate(`(() => ({
+    cards: document.querySelectorAll('.shipdesigner-weapon-slot-card').length,
+    addCards: document.querySelectorAll('.shipdesigner-weapon-slot-add').length,
+    dialogOpen: Boolean(document.querySelector('.shipdesigner-weapon-selector')),
+  }))()`)
+  assert(editedSlotState.cards === 2 && editedSlotState.addCards === 1 && !editedSlotState.dialogOpen, `Editing duplicated/removed a slot instead of replacing it: ${JSON.stringify(editedSlotState)}`)
+
+  const reopenEdited = await evaluate(`(() => {
+    const button = document.querySelector('.shipdesigner-weapon-slot-card .shipdesigner-weapon-edit')
+    if (!button) return false
+    button.click()
+    return true
+  })()`)
+  assert(reopenEdited, 'Could not reopen edited weapon slot')
+  await sleep(120)
+  const editPersisted = await evaluate(`(() => {
+    const pd = document.querySelector('.shipdesigner-weapon-config input[type="radio"][value="point_defense"]')
+    const autofireOption = [...document.querySelectorAll('.shipdesigner-weapon-option')].find((node) => node.textContent?.includes('Autofeuer'))
+    const autofire = autofireOption?.querySelector('input[type="checkbox"]')
+    return { pd: Boolean(pd?.checked), autofire: Boolean(autofire?.checked) }
+  })()`)
+  assert(editPersisted.pd && editPersisted.autofire, `Edited mount/modifier state did not persist in the slot: ${JSON.stringify(editPersisted)}`)
+  await evaluate(`(() => { document.querySelector('.shipdesigner-system-dialog-close')?.click(); return true })()`)
+  await sleep(80)
 
   const measureShipVisualSize = () => evaluate(`(() => {
     const ship = document.querySelector('.shipdesigner-preview-ship')

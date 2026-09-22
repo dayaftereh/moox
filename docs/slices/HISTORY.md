@@ -536,3 +536,16 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Full Go tests/vet, web build and reference-lab browser smoke pass.
 - Evidence: docs/research/SLICE_17_2_GATE3_MOBILE_WEAPON_SELECTOR_AMENDMENT_2026-09-21.md.
 - Gate 4 remains next and has not started.
+
+
+## 2026-09-22 - Slice 17.2 Gate 3 weapon-slot/edit HMI amendment
+
+- Recovered and completed the stalled weapon-slot/edit Designer WIP.
+- Installed Beam rows are fixed-height slot cards: weapon name, inline `- quantity +`, icon-only Edit.
+- A fixed-size Add slot remains available; when no weapon is installed the blank installed-weapons area is also clickable to add.
+- Edit reopens the existing authoritative Weapon Selector with weapon/mount/modifiers/quantity prefilled and replaces the original slot instead of adding another.
+- Added `?` help for Standard / Heavy / Point Defense and supported special modifiers, including Space/PP/refinement information and explicit deferred Tactical-effect scope.
+- Mobile 390px regression verifies fixed 48px cards, stable panel height, edit-in-place persistence, Point Defense + Autofire editing, help content and no duplicate Remove control.
+- Full `go test ./...`, `go vet ./...`, Web build and reference-lab browser regression pass.
+- Evidence: `docs/research/SLICE_17_2_GATE3_WEAPON_SLOT_EDIT_AMENDMENT_2026-09-22.md`.
+- Gate 4 remains next and has not started.

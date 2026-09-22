@@ -85,6 +85,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
   const [designPreview, setDesignPreview] = useState<MilitaryDesignDraftProjection | null>(null)
   const [designPreviewError, setDesignPreviewError] = useState('')
   const [weaponSelectorOpen, setWeaponSelectorOpen] = useState(false)
+  const [weaponEditorSlot, setWeaponEditorSlot] = useState<number | null>(null)
   const planningWritable = snapshot.view.phase === 'planning' && !snapshot.view.seat.submitted
 
   useEffect(() => {
@@ -106,6 +107,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
     ? selectedDesign.spec.strategic_picture_id
     : (currentHull?.strategic_picture_ids[0] ?? 0)
   const nextFreeWeaponSlot = Array.from({ length: 8 }, (_, slot) => slot).find((slot) => !weaponMounts.some((mount) => mount.slot === slot))
+  const editingWeaponMount = weaponEditorSlot == null ? undefined : weaponMounts.find((mount) => mount.slot === weaponEditorSlot)
   const spec = planningWritable ? designPreview?.spec : selectedDesign?.spec
   const remainingSpace = designPreview?.remaining_space ?? (spec ? spec.hull_space - spec.space_used : 0)
   const unusedSpaceSpeedBonus = spec && currentHull
@@ -220,13 +222,32 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
       return undefined
     }
   }
+  function openAddWeapon() {
+    setWeaponEditorSlot(null)
+    setWeaponSelectorOpen(true)
+  }
+
+  function openEditWeapon(slot: number) {
+    setWeaponEditorSlot(slot)
+    setWeaponSelectorOpen(true)
+  }
+
+  function closeWeaponSelector() {
+    setWeaponSelectorOpen(false)
+    setWeaponEditorSlot(null)
+  }
+
   function installWeaponMount(mount: ShipWeaponMount, preview: MilitaryDesignDraftProjection) {
-    setWeaponMounts((current) => [...cloneWeaponMounts(current), { ...mount, modifier_ids: mount.modifier_ids ? [...mount.modifier_ids] : undefined }].sort((a, b) => a.slot - b.slot))
+    setWeaponMounts((current) => [
+      ...cloneWeaponMounts(current).filter((candidate) => candidate.slot !== mount.slot),
+      { ...mount, modifier_ids: mount.modifier_ids ? [...mount.modifier_ids] : undefined },
+    ].sort((a, b) => a.slot - b.slot))
     setDesignPreview(preview)
     setDesignPreviewError('')
-    setWeaponSelectorOpen(false)
+    closeWeaponSelector()
     setSaveNotice('')
   }
+
   function changeWeaponMountCount(slot: number, delta: number) {
     if (delta === 0) return
     const mount = weaponMounts.find((candidate) => candidate.slot === slot)
@@ -247,12 +268,6 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
       setSaveNotice('')
     })
   }
-  function removeWeaponMount(slot: number) {
-    setWeaponMounts((current) => current.filter((mount) => mount.slot !== slot))
-    setDesignPreviewError('')
-    setSaveNotice('')
-  }
-
   const canSave = Boolean(currentHull?.save_available && selectedComputer?.available && (!shieldID || selectedShield?.available) && spec && designPreview?.save_available && name.trim() && planningWritable && !saving)
 
   async function saveDesign() {
@@ -393,9 +408,9 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
                 onShieldChange={(id) => { setShieldID(id); setSaveNotice('') }}
                 canAddWeapon={canOpenWeaponSelector}
                 weaponError={designPreviewError}
-                onAddWeapon={() => setWeaponSelectorOpen(true)}
+                onAddWeapon={openAddWeapon}
+                onEditWeapon={openEditWeapon}
                 onWeaponCountChange={changeWeaponMountCount}
-                onRemoveWeapon={removeWeaponMount}
                 t={t}
               />
             ) : (
@@ -432,9 +447,10 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
           strategicPictureID={strategicPictureID}
           computerID={selectedComputer.id}
           shieldID={shieldID}
-          nextFreeSlot={nextFreeWeaponSlot}
+          nextFreeSlot={editingWeaponMount?.slot ?? nextFreeWeaponSlot}
+          editingMount={editingWeaponMount}
           onInstall={installWeaponMount}
-          onClose={() => setWeaponSelectorOpen(false)}
+          onClose={closeWeaponSelector}
           t={t}
         />
       )}

@@ -88,3 +88,12 @@ All 13 frozen Beams now flow through authoritative Designer selection/preview/sa
 Follow-up evidence: docs/research/SLICE_17_2_GATE3_MOBILE_WEAPON_SELECTOR_AMENDMENT_2026-09-21.md.
 
 The redundant Available Weapons card is removed from the main Designer, Installed Weapons now owns the Add entry point and Space Available display, filters default collapsed, and the mobile selector keeps the weapon list/configuration primary with Install visible at 390x844. Gate 4 remains next and has not started.
+
+
+## Gate 3 weapon-slot/edit HMI amendment
+
+Follow-up evidence: docs/research/SLICE_17_2_GATE3_WEAPON_SLOT_EDIT_AMENDMENT_2026-09-22.md.
+
+Installed weapons now use fixed-height slot cards with inline quantity controls and an Edit pencil. Edit reuses the authoritative Weapon Selector, preloads the existing slot and replaces that slot rather than duplicating it. Mount/modifier choices expose compact `?` help with frozen Space/PP/refinement information and explicit Tactical defer scope. The blank installed-weapons area remains an Add target when no weapon is installed. Full Web/browser/Go QA passes.
+
+Gate 4 remains next and has not started.

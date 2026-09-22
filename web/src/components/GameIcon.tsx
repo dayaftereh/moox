@@ -12,6 +12,7 @@ export type GameIconName =
   | 'more'
   | 'home'
   | 'close'
+  | 'edit'
   | 'credits'
   | 'food'
   | 'freighter'
@@ -121,6 +122,10 @@ const icons: Record<GameIconName, ReactNode> = {
   </>,
   close: <>
     <path d="m6 6 12 12M18 6 6 18" />
+  </>,
+  edit: <>
+    <path d="M5 16.5V19h2.5L18.2 8.3l-2.5-2.5L5 16.5Z" />
+    <path d="m14.2 7.3 2.5 2.5" />
   </>,
   credits: <>
     <path d="m12 3.4 7.2 4.2v8.8L12 20.6l-7.2-4.2V7.6L12 3.4Z" />
