@@ -54,7 +54,7 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - active parent program; child order 17.0 -> 17.1 -> 17.2 -> 17.3 -> 17.4 -> 17.5; 17.0-17.1 are closed/accepted and 17.2 is open in Gate 4 manual review after green automated QA.
+1. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - active parent program; child order 17.0 -> 17.1 -> 17.2 -> 17.3 -> 17.4 -> 17.5 -> 17.6; 17.0-17.1 are closed/accepted, 17.2 is open in Gate 4 manual review after green automated QA, and 17.3-17.6 remain planned/not open.
 2. PLANNED_18_GALAXY_GENERATION_STRATEGIC_NAVIGATION_FIDELITY.md - reserved Galaxy Generation / Strategic Navigation fidelity pass; planned, not open.
 3. PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md - dedicated authoritative Spy/intelligence mechanics; Slice 19 remains intentionally unassigned.
 4. PLANNED_21_COLONY_BUILDINGS_PLANET_EFFECTS_POLLUTION_FIDELITY.md - authoritative Colony/Building/Planet effects including Pollution.
@@ -82,8 +82,11 @@ Slice 17 is a parent program. These child specifications are recovery-safe miles
 5. **Slice 17.4 - Ship Specials and Fighter Systems**
    `PLANNED_17_4_SHIP_SPECIALS_FIGHTER_SYSTEMS.md`
    Specials/fighter breadth with explicit per-feature strategic/tactical support classification.
-6. **Slice 17.5 - Full Ship Designer Integration and Acceptance**
-   `PLANNED_17_5_FULL_SHIP_DESIGNER_INTEGRATION_ACCEPTANCE.md`
+6. **Slice 17.5 - Tactical Weapon Effects / Beam Modifiers**
+   `PLANNED_17_5_TACTICAL_WEAPON_EFFECTS_BEAM_MODIFIERS.md`
+   Real Tactical behavior for supported Beam mounts/modifiers plus server-owned Weapon Selector base/configured damage and effect preview.
+7. **Slice 17.6 - Full Ship Designer Integration and Acceptance**
+   `PLANNED_17_6_FULL_SHIP_DESIGNER_INTEGRATION_ACCEPTANCE.md`
    Unified Designer, construction, revisions, persistence, reference labs and final browser/program QA.
 
 The parent program file remains `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md`. Slice 18 remains downstream and independent of Slice-17 completion.

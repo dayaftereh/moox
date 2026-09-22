@@ -1,20 +1,21 @@
-# Planned Slice 17.5 - Full Ship Designer Integration and Acceptance
+# Planned Slice 17.6 - Full Ship Designer Integration and Acceptance
 
 Status: **planned; child of Slice 17; not open**.
 
 ## Objective
 
-Integrate the completed 17.1-17.4 design breadth into one polished server-authoritative Ship Designer and close the entire Slice-17 program with end-to-end reference-lab, construction, persistence and combat-handoff acceptance.
+Integrate the completed 17.1-17.5 design breadth into one polished server-authoritative Ship Designer and close the entire Slice-17 program with end-to-end reference-lab, construction, persistence and combat-handoff acceptance.
 
 ## Inputs
 
-17.5 opens only after:
+17.6 opens only after:
 
 - 17.0 Reference/Test Harness is closed;
 - 17.1 Hulls/Mandatory Systems is closed;
 - 17.2 Beam Weapons is closed;
 - 17.3 Ordnance is closed;
 - 17.4 Specials/Fighters is closed;
+- 17.5 Tactical Weapon Effects / Beam Modifiers is closed;
 - every deferred tactical feature has an explicit downstream owner.
 
 ## Integration scope
@@ -36,7 +37,7 @@ Integrate the completed 17.1-17.4 design breadth into one polished server-author
 
 ## Gate 1 - integration audit
 
-- [ ] Reconcile all 17.1-17.4 catalogs into one legal-design model.
+- [ ] Reconcile the 17.1-17.4 design catalogs plus the 17.5 Tactical Beam effect/preview contract into one coherent legal-design model.
 - [ ] Audit duplicate/conflicting cost/space/miniaturization paths.
 - [ ] Audit revision and construction queue behavior when a design changes after queueing or after build.
 - [ ] Audit all server rejection reasons and HMI projections.

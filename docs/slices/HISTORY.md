@@ -549,3 +549,12 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Full `go test ./...`, `go vet ./...`, Web build and reference-lab browser regression pass.
 - Evidence: `docs/research/SLICE_17_2_GATE3_WEAPON_SLOT_EDIT_AMENDMENT_2026-09-22.md`.
 - Gate 4 remains next and has not started.
+
+## 2026-09-22 - Slice 17.5 Tactical Beam Effects inserted; integration moved to 17.6
+
+- Product review identified that Slice 17.2 correctly owns Beam design legality/snapshots but intentionally defers real Heavy, Point Defense and supported Beam-modifier Tactical effects.
+- Inserted **17.5 Tactical Weapon Effects / Beam Modifiers** as the explicit owner for those deferred Beam combat consumers.
+- 17.5 must use direct/frozen original evidence for Standard/Heavy/Point Defense and supported modifiers; no guessed damage/range/hit behavior is allowed.
+- The Weapon Selector in 17.5 must distinguish raw **Basisschaden/base damage** from the correctly calculated configured/effective result and obtain preview effects from the same server-owned rules used by Tactical combat.
+- The previous **17.5 Full Ship Designer Integration and Acceptance** plan was renumbered to **17.6** and now depends on 17.5 closure.
+- This roadmap change does not open 17.5: Slice 17.2 remains the sole open Slice-17 child until its Gate-4 review closes.

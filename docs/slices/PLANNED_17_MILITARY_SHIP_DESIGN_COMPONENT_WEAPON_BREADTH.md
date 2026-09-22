@@ -1,6 +1,6 @@
 # Planned Slice 17 - Military Ship Design Program
 
-Status: **active parent program; children 17.0-17.1 closed/accepted; child 17.2 open; Gates 1-3 complete / Gate 4 next**.
+Status: **active parent program; children 17.0-17.1 closed/accepted; child 17.2 open in Gate 4 review; children 17.3-17.6 planned/not open**.
 
 Queue position: **current gameplay program after closed Slice 16**. Slice 18 is reserved downstream for Galaxy/Strategic Navigation fidelity and is not a prerequisite for Slice 17.
 
@@ -37,7 +37,12 @@ Slice 17 is executed in dependency order as:
 5. **17.4 - Ship Specials and Fighter Systems**
    - design-side ship specials, Fighter/Bomber-related systems and special-derived ship stats;
    - exact tactical effects may remain downstream where their combat subsystem is not yet implemented.
-6. **17.5 - Full Ship Designer Integration and Acceptance**
+6. **17.5 - Tactical Weapon Effects / Beam Modifiers**
+   - real Tactical consumers for the supported 17.2 Beam mount/modifier matrix;
+   - Standard / Heavy / Point Defense damage, range, hit and related frozen combat semantics;
+   - supported Beam modifier effects and deterministic Combat-Lab coverage;
+   - Weapon Selector base-versus-configured damage/effect preview from the same server-owned Tactical rules.
+7. **17.6 - Full Ship Designer Integration and Acceptance**
    - unified catalog/UI;
    - design revision and immutable built-Ship snapshots;
    - Colony Construction handoff;
@@ -90,10 +95,11 @@ Before opening 17.0 Gate 1:
 - [ ] 17.2 closed: Beam design breadth is complete to the frozen contract.
 - [ ] 17.3 closed: ordnance design breadth is complete to the frozen contract.
 - [ ] 17.4 closed: supported specials/fighter design breadth is complete.
-- [ ] 17.5 closed: unified designer/construction/persistence/browser acceptance passes.
-- [ ] Every deferred tactical effect has an explicit downstream owner and is not represented as already working.
+- [ ] 17.5 closed: supported Beam Tactical mount/modifier effects are implemented and the Weapon Selector preview uses the same frozen effect rules.
+- [ ] 17.6 closed: unified designer/construction/persistence/browser acceptance passes.
+- [ ] Every remaining deferred tactical effect has an explicit downstream owner and is not represented as already working.
 - [ ] Final full Go/vet/web/browser/persistence/reference-game QA passes.
 
 ## Exit criterion
 
-Slice 17 is complete when a player can construct and persist a broad, technology-gated military ship design across the frozen hull/component/weapon/special matrix, build that exact immutable design through normal Colony Construction, inspect/test it through durable reference scenarios, and hand the resulting authoritative ship snapshot to later Tactical/Triangle systems without special-case fixture-only design data.
+Slice 17 is complete when a player can construct and persist a broad, technology-gated military ship design across the frozen hull/component/weapon/special matrix, build that exact immutable design through normal Colony Construction, exercise the supported Beam mount/modifier effects through authoritative Tactical rules with a matching Weapon Selector preview, inspect/test it through durable reference scenarios, and hand the resulting immutable ship snapshot to remaining Tactical/Triangle systems without special-case fixture-only design data.
