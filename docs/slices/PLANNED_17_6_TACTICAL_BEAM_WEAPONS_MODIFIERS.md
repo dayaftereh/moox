@@ -4,7 +4,7 @@ Status: **planned; child of Slice 17; not open**.
 
 ## Objective
 
-Turn the authoritative Beam weapon, mount and modifier snapshots created by Slice 17.2 into complete supported server-authoritative Tactical Beam combat on top of the 17.5 foundation.
+Turn the authoritative Beam weapon, mount, modifier and firing-arc snapshots created by Slice 17.2 plus follow-up 17.2A into complete supported server-authoritative Tactical Beam combat on top of the 17.5 foundation.
 
 17.6 owns Beam hit resolution, range, damage, mount behavior, supported Beam modifiers, Weapon Selector effective-stat parity and Beam-specific event-driven presentation. It extends the accepted Laser vertical slice to the full frozen Beam matrix without moving authority into React.
 
@@ -13,6 +13,7 @@ Turn the authoritative Beam weapon, mount and modifier snapshots created by Slic
 17.6 opens only after:
 
 - 17.2 Beam Weapons and Beam Mount Modifiers is closed;
+- 17.2A Beam Weapon Firing Arcs is closed;
 - 17.5 Tactical Combat Foundation / Ship Combatant Breadth is closed;
 - the immutable built-Ship/BattleSession Beam snapshot remains lossless and authoritative.
 
@@ -21,9 +22,10 @@ Turn the authoritative Beam weapon, mount and modifier snapshots created by Slic
 17.6 owns:
 
 - all supported Beam identities frozen by 17.2;
+- all supported Beam firing-arc identities/cost/persistence metadata frozen by 17.2A;
 - Standard, Heavy and Point Defense Beam mount semantics;
 - supported Beam modifiers such as Autofire, Armor Piercing, Continuous, No Range Dissipation, Shield Piercing and Enveloping where allowed by the frozen compatibility matrix;
-- server-authoritative Beam hit rolls, range, damage and effect ordering;
+- server-authoritative Beam hit rolls, range, damage, firing-arc target legality and effect ordering;
 - Beam readiness/shot consumption;
 - Beam-side Point Defense targeting/interceptor semantics;
 - Weapon Selector base-versus-configured/effective damage and affected-stat preview;

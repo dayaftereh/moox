@@ -1,6 +1,6 @@
 # Planned Slice 17 - Military Ship Design + Tactical Combat Program
 
-Status: **active parent program; children 17.0-17.2 closed/accepted; child 17.3 active in Gate 2 contract freeze; children 17.4-17.9 planned/not open**.
+Status: **active parent program; children 17.0-17.2 closed/accepted; child 17.3 active in Gate 2 contract freeze; follow-up 17.2A plus children 17.4-17.9 planned/not open**.
 
 Queue position: **current gameplay program after closed Slice 16**. Slice 18 is reserved downstream for Galaxy/Strategic Navigation fidelity and is not a prerequisite for Slice 17.
 
@@ -34,31 +34,36 @@ Slice 17 is executed in dependency order as:
    - design-side ordnance representation, ammunition/counts and legal mounting;
    - authoritative snapshots and costs;
    - downstream Tactical projectile/interception/impact owner: 17.7.
-5. **17.4 - Ship Specials and Fighter Systems**
+5. **17.2A - Beam Weapon Firing Arcs**
+   - bounded follow-up to the accepted 17.2 Beam design breadth;
+   - original Beam firing-arc identities/defaults/Space/PP and Selector support;
+   - immutable arc snapshots handed to downstream Tactical Beam owner 17.6;
+   - opens only after 17.3 closes, without reopening 17.2.
+6. **17.4 - Ship Specials and Fighter Systems**
    - design-side ship specials, Fighter/Bomber/Interceptor systems and derived ship stats;
    - explicit support classification for every accepted special;
    - downstream fighter/combat-special Tactical owner: 17.8.
-6. **17.5 - Tactical Combat Foundation / Ship Combatant Breadth**
+7. **17.5 - Tactical Combat Foundation / Ship Combatant Breadth**
    - replace the old Slice-15.5 Frigate/Electronic/Titanium/no-Shield/Standard-Fuel fixture boundary;
    - verified Frigate-through-Doom-Star hull/mandatory-system Tactical values;
    - generic server-owned weapon/action/RNG/damage/event foundation;
    - broad Tactical UI/action/event plumbing without weapon-family-specific formulas.
-7. **17.6 - Tactical Beam Weapons & Beam Modifiers**
+8. **17.6 - Tactical Beam Weapons & Beam Modifiers**
    - complete supported Beam hit/range/damage/readiness combat;
    - Heavy / Point Defense and supported Beam modifiers;
    - Weapon Selector base-versus-configured/effective preview from the same server rules;
    - authoritative Beam/impact/shield/damage presentation.
-8. **17.7 - Tactical Missiles / Torpedoes / Bombs**
+9. **17.7 - Tactical Missiles / Torpedoes / Bombs**
    - authoritative ordnance launch/ammo/readiness;
    - projectile lifecycle, interception, impact and damage;
    - Beam Point Defense integration;
    - projectile/interception/explosion presentation and verified bomb combat context.
-9. **17.8 - Tactical Fighters / Bombers / Combat Specials**
+10. **17.8 - Tactical Fighters / Bombers / Combat Specials**
    - Fighter/Bomber/Interceptor combat actors and carrier readiness;
    - verified combat-special consumers;
    - cross-family defensive/offensive interactions;
    - event-driven fighter/special presentation.
-10. **17.9 - Full Ship Designer + Tactical Integration and Acceptance**
+11. **17.9 - Full Ship Designer + Tactical Integration and Acceptance**
    - unified Designer/Construction/Fleet/Encounter/Tactical flow;
    - immutable design/built-Ship identity through combat;
    - persistence/reconnect/replay;
@@ -90,7 +95,7 @@ The program starts from substantial already-implemented infrastructure:
 - No debug-only technology or free-build rule may leak into normal New Game/API behavior.
 - Built Ship snapshots remain immutable when a design slot is later revised.
 - Design legality is server-owned; HMI consumes catalogs and rejection reasons.
-- Slices 17.1-17.4 define authoritative installed-ship data; Slices 17.5-17.8 consume those exact snapshots in Tactical without translation hacks.
+- Design-side children through 17.4, including the post-17.3 follow-up 17.2A, define authoritative installed-ship data; Slices 17.5-17.8 consume those exact snapshots in Tactical without translation hacks.
 - Tactical hit, RNG, damage, projectile and fighter rules are server-owned. React submits intent and presents authoritative state/events.
 - Unsupported weapon-family actions must be explicit and local to that action; an otherwise legal encounter must not be rejected merely because another family is not implemented yet.
 - Animation is presentation-only and never controls command legality, RNG, damage or BattleSession progression.
@@ -113,6 +118,7 @@ Before opening 17.0 Gate 1:
 - [x] 17.1 closed: hulls + mandatory systems are fully supported to the frozen design breadth.
 - [x] 17.2 closed: Beam design breadth is complete to the frozen contract.
 - [ ] 17.3 closed: ordnance design breadth is complete to the frozen contract.
+- [ ] 17.2A closed: supported Beam firing arcs are original-evidenced, server-authoritative and persisted before 17.4 opens.
 - [ ] 17.4 closed: supported specials/fighter design breadth is complete.
 - [ ] 17.5 closed: broad Tactical combatant admission/shared combat foundation replaces the old fixture-only path.
 - [ ] 17.6 closed: supported Beam weapons/mounts/modifiers resolve authoritatively and Selector preview matches Tactical rules.

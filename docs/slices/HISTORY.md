@@ -603,3 +603,10 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Direct original re-audit froze ordnance Firing Arc to 360 degrees: Missile and Bomb add paths write arc byte `0x10`, and `Weapon_Arc_String_` maps `0x10` to `360`.
 - Direct `Weapon_Space_` / `Weapon_Cost_` evidence froze the design quote order: Missile rack base first, additive modifier stages, no Beam-only arc surcharge for ordnance, class-1 miniaturization, then Count.
 - Added `docs/research/SLICE_17_3_GATE2_ORDNANCE_CONTRACT_FREEZE_2026-09-23.md` as the working freeze. Matrix, Standard-only mount semantics, Missile rack sizes, modifier identity/legality and 17.7 boundary are frozen; fixed Torpedo/Bomb Ammo and final snapshot/API field representation remain open before Gate 2 can close.
+
+## 2026-09-23 - Beam firing-arc follow-up 17.2A inserted after 17.3
+
+- Product review identified an accepted-Slice-17.2 design gap: original Beam weapons have a real firing-arc dimension, including a 360-degree option with an original Space/PP surcharge, but the closed 17.2 MOOX snapshot does not yet persist Beam firing arc.
+- Slice 17.2 remains closed/accepted. A bounded follow-up **17.2A - Beam Weapon Firing Arcs** is planned instead of reopening it.
+- Binding local child order is now **17.3 -> 17.2A -> 17.4**. 17.2A opens only after 17.3 closes and no second `_OPEN_` marker is created now.
+- 17.2A owns design-side Beam arc audit/contract/Selector/Space-PP/persistence/handoff. Tactical firing-direction enforcement remains owned by 17.6, which now depends on 17.2A arc snapshots.

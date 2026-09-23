@@ -48,7 +48,7 @@ Slices 17.0, 17.1 and 17.2 are closed/accepted and remain the foundation.
 
 Gate 1 completed as evidence/audit work. Do not implement the broad ordnance matrix, ammo/upgrades or new Tactical projectile mechanics before Gate 2 freezes the supported contract.
 
-Do not open Slice 17.4 or later children while Slice 17.3 is open unless explicitly requested.
+Do not open planned follow-up Slice 17.2A, Slice 17.4 or later children while Slice 17.3 is open unless explicitly requested. On accepted 17.3 close, 17.2A is the next child before 17.4.
 
 ## Gate 1 completion target
 

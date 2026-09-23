@@ -16,6 +16,7 @@ Integrate the completed Slice-17 design and Tactical breadth into one polished s
 - 17.1 Hulls/Mandatory Systems is closed;
 - 17.2 Beam design/mount metadata is closed;
 - 17.3 Ordnance design breadth is closed;
+- 17.2A Beam Weapon Firing Arcs is closed;
 - 17.4 Specials/Fighter design breadth is closed;
 - 17.5 Tactical Combat Foundation / Ship Combatant Breadth is closed;
 - 17.6 Tactical Beam Weapons & Beam Modifiers is closed;
@@ -44,7 +45,7 @@ The final integrated product must preserve:
 
 ## Gate 1 - integration audit
 
-- [ ] Reconcile the 17.1-17.4 design catalogs with the 17.5-17.8 Tactical contracts into one coherent legal-design/combat-support model.
+- [ ] Reconcile the design catalogs through 17.4, including follow-up 17.2A Beam firing arcs, with the 17.5-17.8 Tactical contracts into one coherent legal-design/combat-support model.
 - [ ] Audit every supported design component for its exact Tactical support status and owner.
 - [ ] Audit Selector effective-stat previews against the corresponding Tactical rules.
 - [ ] Audit design revision -> construction -> built Ship -> Fleet -> BattleSession snapshot identity.
