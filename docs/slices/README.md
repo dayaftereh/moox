@@ -54,7 +54,7 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - active parent program; child order 17.0 -> 17.1 -> 17.2 -> 17.3 -> 17.4 -> 17.5 -> 17.6 -> 17.7 -> 17.8 -> 17.9; 17.0-17.2 are closed/accepted and 17.3-17.9 remain planned/not open.
+1. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - active parent program; child order 17.0 -> 17.1 -> 17.2 -> 17.3 -> 17.4 -> 17.5 -> 17.6 -> 17.7 -> 17.8 -> 17.9; 17.0-17.2 are closed/accepted, 17.3 is open in Gate 1, and 17.4-17.9 remain planned/not open.
 2. PLANNED_18_GALAXY_GENERATION_STRATEGIC_NAVIGATION_FIDELITY.md - reserved Galaxy Generation / Strategic Navigation fidelity pass; planned, not open.
 3. PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md - dedicated authoritative Spy/intelligence mechanics; Slice 19 remains intentionally unassigned.
 4. PLANNED_21_COLONY_BUILDINGS_PLANET_EFFECTS_POLLUTION_FIDELITY.md - authoritative Colony/Building/Planet effects including Pollution.
@@ -78,7 +78,7 @@ Slice 17 is a parent program. These child specifications are recovery-safe miles
    **Closed/accepted 2026-09-23.** Beam breadth, mount slots/counts, applicable modifiers, cost/space/unlocks and explicit Tactical handoff to 17.6.
 4. **Slice 17.3 - Missiles, Torpedoes and Bomb Ordnance**
    `PLANNED_17_3_MISSILES_TORPEDOES_BOMBS_ORDNANCE.md`
-   Authoritative ordnance design snapshots while complete projectile combat remains downstream where necessary.
+   **Open Gate 1.** Authoritative missile/torpedo/bomb design audit and snapshots; complete projectile/interception/impact combat remains explicitly owned by 17.7.
 5. **Slice 17.4 - Ship Specials and Fighter Systems**
    `PLANNED_17_4_SHIP_SPECIALS_FIGHTER_SYSTEMS.md`
    Specials/fighter breadth with explicit per-feature strategic/tactical support classification.

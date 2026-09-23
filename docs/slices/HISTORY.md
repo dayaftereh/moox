@@ -588,3 +588,11 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Broad Tactical combatant admission remains owned by planned Slice 17.5; complete Beam hit/range/damage, Heavy/Point Defense Tactical semantics, modifier consumers, configured/effective Selector stats and Beam VFX remain owned by planned Slice 17.6.
 - Gate-4 close evidence: `docs/research/SLICE_17_2_GATE4_ACCEPTANCE_CLOSE_2026-09-23.md`.
 - Removed the Slice-17.2 `_OPEN_` marker. Slice 17.3 is next but remains unopened until the follow-up open commit.
+
+## 2026-09-23 - Slice 17.3 Missiles, Torpedoes and Bomb Ordnance opened
+
+- Opened Slice 17.3 Gate 1 immediately after the accepted closure of Slice 17.2.
+- Gate 1 audits supported missile, torpedo and bomb identities, technology/damage/Space/Cost/miniaturization, mount/count/ammunition representation, legal ordnance upgrades/modifiers and immutable snapshot/handoff fields before implementation.
+- The accepted Slice-17.2 compact weapon-selection grammar may be reused, but ordnance-specific ammo/salvo/guidance controls are not invented before Gate 2 freezes the contract.
+- Complete projectile flight, interception, Point Defense engagement, ECM/evasion, impact/explosion and verified bomb combat behavior remain explicitly owned by planned Slice 17.7.
+- Open marker: `docs/slices/_OPEN_MISSILES_TORPEDOES_BOMBS_ORDNANCE_2026-09-23.md`.
