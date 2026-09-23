@@ -596,3 +596,10 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - The accepted Slice-17.2 compact weapon-selection grammar may be reused, but ordnance-specific ammo/salvo/guidance controls are not invented before Gate 2 freezes the contract.
 - Complete projectile flight, interception, Point Defense engagement, ECM/evasion, impact/explosion and verified bomb combat behavior remain explicitly owned by planned Slice 17.7.
 - Open marker: `docs/slices/_OPEN_MISSILES_TORPEDOES_BOMBS_ORDNANCE_2026-09-23.md`.
+
+## 2026-09-23 - Slice 17.3 Gate 2 ordnance contract freeze started
+
+- Started Gate 2 from the accepted Gate-1 audit; no production implementation was started.
+- Direct original re-audit froze ordnance Firing Arc to 360 degrees: Missile and Bomb add paths write arc byte `0x10`, and `Weapon_Arc_String_` maps `0x10` to `360`.
+- Direct `Weapon_Space_` / `Weapon_Cost_` evidence froze the design quote order: Missile rack base first, additive modifier stages, no Beam-only arc surcharge for ordnance, class-1 miniaturization, then Count.
+- Added `docs/research/SLICE_17_3_GATE2_ORDNANCE_CONTRACT_FREEZE_2026-09-23.md` as the working freeze. Matrix, Standard-only mount semantics, Missile rack sizes, modifier identity/legality and 17.7 boundary are frozen; fixed Torpedo/Bomb Ammo and final snapshot/API field representation remain open before Gate 2 can close.

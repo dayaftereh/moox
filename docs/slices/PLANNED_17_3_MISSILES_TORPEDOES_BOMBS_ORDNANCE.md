@@ -1,6 +1,6 @@
 # Planned Slice 17.3 - Missiles, Torpedoes and Bomb Ordnance
 
-Status: **active; Gate 1 complete; Gate 2 contract freeze ready / not started**.
+Status: **active; Gate 1 complete; Gate 2 contract freeze in progress**.
 
 ## Objective
 
@@ -44,6 +44,8 @@ Gate 1 may pull in only bounded tactical consumers required to validate the desi
 Gate-1 evidence: `docs/research/SLICE_17_3_GATE1_ORDNANCE_AUDIT_2026-09-23.md`.
 
 ## Gate 2 - ordnance contract freeze
+
+Gate-2 working contract: `docs/research/SLICE_17_3_GATE2_ORDNANCE_CONTRACT_FREEZE_2026-09-23.md`.
 
 - [ ] Freeze supported missile/torpedo/bomb matrix.
 - [ ] Freeze mount/count/ammunition representation.

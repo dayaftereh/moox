@@ -2,7 +2,7 @@
 
 Opened: 2026-09-23
 Parent: Slice 17 - Military Ship Design + Tactical Combat Program
-Status: **Gate 1 complete; Gate 2 ready / not started**
+Status: **Gate 2 active - contract freeze in progress**
 
 ## Objective
 
@@ -65,4 +65,27 @@ Gate 1 may close only when the repository contains durable evidence resolving:
 - current Tactical consumers versus explicit Slice-17.7 deferrals;
 - reference-lab vectors needed for Gate 2/3.
 
-Gate 1 result: **complete**. Durable evidence: `docs/research/SLICE_17_3_GATE1_ORDNANCE_AUDIT_2026-09-23.md`. Gate 2 is ready but has not started.
+Gate 1 result: **complete**. Durable evidence: `docs/research/SLICE_17_3_GATE1_ORDNANCE_AUDIT_2026-09-23.md`.
+
+## Gate 2 active scope
+
+Working contract: `docs/research/SLICE_17_3_GATE2_ORDNANCE_CONTRACT_FREEZE_2026-09-23.md`.
+
+Already frozen in Gate 2:
+
+- exact 13-row supported ordnance matrix;
+- ordnance Standard-only mount semantics;
+- fixed 360-degree Firing Arc behavior with no new arc selector;
+- selectable Missile Ammo/Rack sizes `2/5/10/15/20`;
+- ordnance modifier IDs/order/legality/refinement/design deltas;
+- Missile rack -> modifiers -> miniaturization -> Count quote order;
+- Slice-17.7 Tactical ownership and Slice-17.0 reference vectors.
+
+Still open before Gate 2 close:
+
+- fixed Torpedo/Bomb Ammo representation;
+- fixed-360 persist-vs-derived snapshot/API representation;
+- final machine-readable ordnance rejection reasons;
+- exact `ShipWeaponMount` / `TacticalWeaponSpec` field shapes.
+
+Do not begin Gate 3 implementation until those representation/API items are frozen and Gate 2 is explicitly complete.
