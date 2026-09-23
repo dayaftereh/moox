@@ -1,10 +1,10 @@
 # Slice 17.2 Gate 4 - Weapon Selector review block
 
 Date: 2026-09-22
-Status: **automated QA passed; manual visual review pending before Slice 17.2 close**
+Status: **accepted by user on 2026-09-23; superseded by Gate-4 close evidence**
 
 Parent slice: `docs/slices/PLANNED_17_2_BEAM_WEAPONS_MOUNT_MODIFIERS.md`
-Open marker: `docs/slices/_OPEN_BEAM_WEAPONS_MOUNT_MODIFIERS_2026-09-20.md`
+Former open marker: `docs/slices/_OPEN_BEAM_WEAPONS_MOUNT_MODIFIERS_2026-09-20.md` (removed at accepted close)
 
 ## Review trigger
 
@@ -59,4 +59,4 @@ Passed:
 
 ## Close boundary
 
-Keep Slice 17.2 open for user visual review on the canonical port-7171 server. Do not open Slice 17.3 automatically. After visual acceptance, Gate 4 may perform the final closeout commit/evidence update and remove the Slice-17.2 `_OPEN_` marker.
+The user explicitly accepted the final visual review on 2026-09-23. Gate-4 close evidence is recorded in `docs/research/SLICE_17_2_GATE4_ACCEPTANCE_CLOSE_2026-09-23.md`; the Slice-17.2 `_OPEN_` marker is removed at closure.

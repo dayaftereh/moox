@@ -579,3 +579,12 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Design-side ownership remains 17.2 Beams, 17.3 Ordnance and 17.4 Specials/Fighters; their complete Tactical consumers are now explicitly 17.6, 17.7 and 17.8 respectively.
 - The old Slice-15.5 combatant gate is still not deleted early: 17.5 must first replace its protected Frigate/Electronic/Titanium assumptions with verified broad rules.
 - Slice 17.2 remains the sole open child. No 17.5-17.9 marker was opened and the canonical 7171 runtime was not changed by this documentation-only roadmap migration.
+
+## 2026-09-23 - Slice 17.2 Beam Weapons and Beam Mount Modifiers closed
+
+- Closed Slice 17.2 with Gates 1-4 complete after explicit user acceptance of the final Weapon Selector / Ship Designer review.
+- Accepted scope includes the frozen 13-Beam design catalog, mount/modifier legality, server-authoritative Space/PP previews, installed-card quantity controls, compact mobile/desktop selector HMI and lossless immutable construction/BattleSession Beam snapshots.
+- Final Gate-4 automated QA had already passed browser smoke, 390px coverage, web build, full Go tests, vet and diff checks; no gameplay/web code changed after that accepted baseline.
+- Broad Tactical combatant admission remains owned by planned Slice 17.5; complete Beam hit/range/damage, Heavy/Point Defense Tactical semantics, modifier consumers, configured/effective Selector stats and Beam VFX remain owned by planned Slice 17.6.
+- Gate-4 close evidence: `docs/research/SLICE_17_2_GATE4_ACCEPTANCE_CLOSE_2026-09-23.md`.
+- Removed the Slice-17.2 `_OPEN_` marker. Slice 17.3 is next but remains unopened until the follow-up open commit.

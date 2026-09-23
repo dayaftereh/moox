@@ -1,6 +1,6 @@
 # Planned Slice 17.2 - Beam Weapons and Beam Mount Modifiers
 
-Status: **active; Gate 4 review in progress - automated QA passed / manual visual review pending (2026-09-22)**.
+Status: **closed/accepted; Gates 1-4 complete (2026-09-23)**.
 
 ## Objective
 
@@ -70,8 +70,8 @@ Gate-3 weapon-slot/edit HMI amendment: docs/research/SLICE_17_2_GATE3_WEAPON_SLO
 
 Gate-4 review evidence: docs/research/SLICE_17_2_GATE4_WEAPON_SELECTOR_REVIEW_2026-09-22.md. The review also moves quantity +/- exclusively to installed weapon cards while selector add/edit keeps count authority intact.
 
-Automated Gate-4 QA is green. Keep the slice open until the user completes the canonical port-7171 visual review of the final Weapon Selector polish.
+Gate-4 close evidence: docs/research/SLICE_17_2_GATE4_ACCEPTANCE_CLOSE_2026-09-23.md. Automated QA is green and the user explicitly accepted the final Weapon Selector / Ship Designer review on 2026-09-23.
 
 ## Exit criterion
 
-Supported Beam weapons can be selected, modified, costed, saved, built and delivered as authoritative immutable ship snapshots, with explicit tactical support/defer status for every frozen Beam feature and planned Slice 17.6 recorded as the complete Tactical Beam owner.
+Accepted: supported Beam weapons can be selected, modified, costed, saved, built and delivered as authoritative immutable ship snapshots, with explicit tactical support/defer status for every frozen Beam feature and planned Slice 17.6 recorded as the complete Tactical Beam owner.
