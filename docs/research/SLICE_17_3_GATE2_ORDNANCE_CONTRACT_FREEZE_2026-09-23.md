@@ -2,7 +2,7 @@
 
 Date: 2026-09-23
 
-Status: **active; contract freeze in progress / not complete**
+Status: **complete; Gate 3 implementation ready / not started**
 
 Parent: `docs/slices/PLANNED_17_3_MISSILES_TORPEDOES_BOMBS_ORDNANCE.md`
 
@@ -86,9 +86,9 @@ HMI consequence:
 
 - no Firing Arc selector is introduced by 17.3;
 - no browser-owned arc value exists;
-- Gate 3 must either persist a canonical fixed-360 metadata value or derive it deterministically from the ordnance contract, but there is no user-editable alternative in 17.3.
+- Gate 3 persists the canonical fixed-360 metadata value in the authoritative weapon snapshot; there is no user-editable alternative in 17.3.
 
-The persist-vs-derived representation is still being finalized before Gate 2 close; the gameplay value itself is frozen.
+The exact persistent field is frozen as `FiringArcID core.ShipWeaponFiringArcID`, with canonical ordnance value `"360"`. This deliberately creates the generic snapshot field that planned Slice 17.2A will later reuse for selectable Beam arcs; existing Beam rows remain empty until 17.2A.
 
 ## 6. Ammo / rack contract
 
@@ -116,20 +116,30 @@ The original rack value used by Space/PP is:
 
 Missile Ammo/Rack is design state and must survive save -> revision -> construction -> built Ship -> BattleSession metadata unchanged.
 
-### 6.2 Torpedo / Bomb fixed values - pending representation close
+### 6.2 Torpedo / Bomb fixed values - frozen
 
-Gate-1 evidence shows:
+Direct original evidence closes the representation:
 
-- Torpedo weapon rows carry original auxiliary/family value 2 and their runtime model is not a selectable Missile rack;
-- `Add_Bomb_Weapon_To_Design_` writes fixed design Ammo byte 10;
+- the original 8-byte installed-weapon row always has a distinct Ammo byte at `+7`;
+- `Add_Missile_Weapon_To_Design_` writes its Ammo argument directly to that byte;
+- original torpedo-class add paths use the shared missile/torpedo writer with fixed Ammo `2` and `Weapon_Needs_Racks_` does not classify Torpedoes as selectable-rack weapons;
+- `Add_Bomb_Weapon_To_Design_` writes fixed Ammo byte `10`;
 - Bomb rows carry no normal weapon modifiers.
 
-Before Gate 2 closes, the contract must make one explicit representation choice:
+MOOX therefore persists fixed ordnance Ammo values instead of deriving them only at Tactical time:
 
-1. persist fixed Torpedo/Bomb Ammo values in the generic Ammo field, or
-2. persist Ammo only for selectable Missile racks and derive fixed Torpedo/Bomb values from immutable weapon metadata.
+- Missile: selectable persisted value in `{2,5,10,15,20}`; original/default selection is `5`;
+- Torpedo: persisted canonical Ammo `2`, not user-selectable;
+- Bomb/Bio: persisted canonical Ammo `10`, not user-selectable;
+- Beam during Slice 17.3: Ammo remains `0`/omitted.
 
-No Gate-3 implementation starts until this representation choice is frozen.
+Canonical input behavior:
+
+- Missile Ammo `0`/omitted -> reject `weapon_ammo_required`;
+- Missile Ammo outside the legal set -> reject `weapon_ammo_invalid`;
+- Torpedo Ammo `0`/omitted or `2` -> normalize/store `2`; any other non-zero value -> `weapon_ammo_not_allowed`;
+- Bomb/Bio Ammo `0`/omitted or `10` -> normalize/store `10`; any other non-zero value -> `weapon_ammo_not_allowed`;
+- Beam Ammo must remain `0`/omitted in 17.3; any non-zero value -> `weapon_ammo_not_allowed`.
 
 ## 7. Modifier identity and canonical order - frozen
 
@@ -237,7 +247,7 @@ PP:
 
 Gate 3 must implement one server-owned quote function used by catalog preview, save validation and construction snapshots. No browser-local parallel formula is authoritative.
 
-## 11. Stable rejection-reason set - initial freeze
+## 11. Stable rejection-reason set - frozen
 
 Reuse existing generic reasons where applicable:
 
@@ -253,40 +263,93 @@ Reuse existing generic reasons where applicable:
 - `weapon_modifier_duplicate`
 - existing global `space_exceeded`
 
-Ordnance-specific reasons to freeze before Gate 2 close:
+Ordnance-specific reasons are frozen as:
 
 - `weapon_ammo_required`
 - `weapon_ammo_invalid`
 - `weapon_ammo_not_allowed`
+- `weapon_firing_arc_not_allowed`
+
+Validation/rejection order is frozen so the same malformed row fails consistently in preview and save validation:
+
+1. canonical slot/count/generic mount syntax;
+2. weapon identity and technology ownership;
+3. family-specific mount legality;
+4. Ammo requirement/value/canonicalization;
+5. FiringArcID canonicalization/legality;
+6. modifier identity, duplicate check, family/weapon legality and refinement;
+7. quote calculation and global `space_exceeded`.
+
+Firing-arc canonicalization in 17.3:
+
+- Missile/Torpedo/Bomb/Bio empty arc or `"360"` -> canonical/store `"360"`;
+- any other ordnance arc -> `weapon_firing_arc_not_allowed`;
+- Beam empty arc remains accepted for backward-compatible 17.2 snapshots;
+- any non-empty Beam arc in 17.3 -> `weapon_firing_arc_not_allowed` until 17.2A owns Beam arc selection.
 
 Translated UI text is downstream from these machine-readable reasons.
 
-## 12. Immutable snapshot / handoff contract - active freeze
+## 12. Immutable snapshot / handoff contract - frozen
 
 Conceptual target:
 
 ```text
+ShipWeaponFiringArcID string
+
+const ShipWeaponFiringArc360 ShipWeaponFiringArcID = "360"
+
 ShipWeaponMount {
-    Slot
-    WeaponID
-    Count
-    MountType
-    ModifierIDs
-    Ammo
+    Slot        int
+    WeaponID    string
+    Count       int
+    MountType   ShipWeaponMountType
+    ModifierIDs []ShipWeaponModifierID
+    Ammo        int
+    FiringArcID ShipWeaponFiringArcID
 }
 ```
 
-Frozen semantics already:
+Frozen semantics:
 
 - Ammo is not Count;
-- Missile selectable Ammo/Rack is immutable saved design state;
+- selectable Missile Ammo/Rack and fixed Torpedo/Bomb Ammo are immutable saved design state;
+- `FiringArcID` is immutable saved design state and equals `"360"` for every 17.3 ordnance row;
 - ordnance MountType is Standard;
 - ModifierIDs are canonical sorted/unique;
 - constructed/built Ship snapshots do not re-read later research or later design rows;
 - BattleSession receives the same frozen ordnance configuration metadata;
 - live remaining ammo, projectile positions, target locks, interception results and readiness counters are not design snapshot fields.
 
-Before Gate 2 closes, fixed Torpedo/Bomb Ammo representation and fixed-360 persist-vs-derived representation must be resolved.
+Gate-3 Core field shape is frozen as:
+
+- `Ammo int` with JSON field `ammo`;
+- `FiringArcID ShipWeaponFiringArcID` with JSON field `firing_arc_id`.
+
+Gate-3 `battle.TacticalWeaponSpec` mirrors both fields exactly:
+
+- `Ammo int` with JSON field `ammo`;
+- `FiringArcID core.ShipWeaponFiringArcID` with JSON field `firing_arc_id`.
+
+No live remaining-ammo counter is added to `ShipWeaponMount`; Slice 17.7 may add BattleSession runtime counters separately.
+
+## 12A. Catalog / preview API contract - frozen
+
+The existing API shape is extended rather than replaced with a parallel ordnance DTO.
+
+`MilitaryDesignDraft.Weapons` continues to transport `[]core.ShipWeaponMount`.
+
+`MilitaryDesignerWeaponChoice` gains server-owned ordnance configuration metadata:
+
+- `AmmoChoices []int` / JSON `ammo_choices` - `{2,5,10,15,20}` only for Missile rows;
+- `DefaultAmmo int` / JSON `default_ammo` - Missile `5`, Torpedo `2`, Bomb/Bio `10`;
+- `FixedFiringArcID core.ShipWeaponFiringArcID` / JSON `fixed_firing_arc_id` - `"360"` for every 17.3 ordnance row.
+
+`MilitaryDesignWeaponRowPreview` mirrors the canonical row state:
+
+- `Ammo int` with JSON field `ammo`;
+- `FiringArcID core.ShipWeaponFiringArcID` with JSON field `firing_arc_id`.
+
+The quote path must return the canonicalized `ShipWeaponMount`, exactly as the accepted Beam quote path already does. React renders `AmmoChoices` when non-empty and never invents fixed Torpedo/Bomb Ammo or the 360-degree arc locally.
 
 ## 13. Tactical support boundary - frozen
 
@@ -352,9 +415,13 @@ Use the existing Slice-17.0 labs:
 - [x] Space/PP quote order and miniaturization reuse frozen.
 - [x] Slice-17.7 Tactical boundary frozen.
 - [x] Reference-lab vectors frozen.
-- [ ] Freeze fixed Torpedo/Bomb Ammo representation in snapshots/API.
-- [ ] Freeze fixed-360 persist-vs-derived representation.
-- [ ] Finalize machine-readable ordnance rejection reasons.
-- [ ] Finalize exact ShipWeaponMount / TacticalWeaponSpec field shapes.
+- [x] Freeze fixed Torpedo/Bomb Ammo representation in snapshots/API.
+- [x] Freeze fixed-360 persist-vs-derived representation.
+- [x] Finalize machine-readable ordnance rejection reasons.
+- [x] Finalize exact ShipWeaponMount / TacticalWeaponSpec field shapes.
 
-Gate 2 remains **active** until the final four representation/API items are closed.
+## 16. Gate result
+
+**Slice 17.3 Gate 2 is complete. Gate 3 is ready / not started.**
+
+Gate 3 may now implement the frozen contract, but it must not alter the identity matrix, Ammo/arc canonicalization, modifier legality, quote order, snapshot/API field shapes, rejection reasons or Slice-17.7 Tactical ownership without a new evidence-backed amendment.

@@ -610,3 +610,12 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Slice 17.2 remains closed/accepted. A bounded follow-up **17.2A - Beam Weapon Firing Arcs** is planned instead of reopening it.
 - Binding local child order is now **17.3 -> 17.2A -> 17.4**. 17.2A opens only after 17.3 closes and no second `_OPEN_` marker is created now.
 - 17.2A owns design-side Beam arc audit/contract/Selector/Space-PP/persistence/handoff. Tactical firing-direction enforcement remains owned by 17.6, which now depends on 17.2A arc snapshots.
+
+## 2026-09-23 - Slice 17.3 Gate 2 ordnance contract freeze complete
+
+- Closed the final representation questions without starting production implementation.
+- Canonical ordnance snapshots persist Ammo and FiringArcID: Missile selectable `{2,5,10,15,20}` with default 5; Torpedo fixed 2; Bomb/Bio fixed 10; every 17.3 ordnance row stores firing arc `360`.
+- The generic `ShipWeaponMount` / `TacticalWeaponSpec` contract is frozen to add `Ammo` and typed `FiringArcID`; existing Beam snapshots remain empty for both new dimensions until planned 17.2A owns Beam arcs.
+- Designer catalog/preview must expose server-owned Ammo choices/defaults/fixed arc; React must not derive these values locally.
+- Stable ordnance reasons now include `weapon_ammo_required`, `weapon_ammo_invalid`, `weapon_ammo_not_allowed` and `weapon_firing_arc_not_allowed` in a frozen validation order.
+- Gate 3 is ready but not started; complete projectile/interception/impact/bomb runtime behavior remains owned by Slice 17.7.

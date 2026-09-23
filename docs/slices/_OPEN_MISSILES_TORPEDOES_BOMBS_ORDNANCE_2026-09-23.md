@@ -2,7 +2,7 @@
 
 Opened: 2026-09-23
 Parent: Slice 17 - Military Ship Design + Tactical Combat Program
-Status: **Gate 2 active - contract freeze in progress**
+Status: **Gate 2 complete - Gate 3 ready / not started**
 
 ## Objective
 
@@ -67,7 +67,7 @@ Gate 1 may close only when the repository contains durable evidence resolving:
 
 Gate 1 result: **complete**. Durable evidence: `docs/research/SLICE_17_3_GATE1_ORDNANCE_AUDIT_2026-09-23.md`.
 
-## Gate 2 active scope
+## Gate 2 completed scope
 
 Working contract: `docs/research/SLICE_17_3_GATE2_ORDNANCE_CONTRACT_FREEZE_2026-09-23.md`.
 
@@ -81,11 +81,15 @@ Already frozen in Gate 2:
 - Missile rack -> modifiers -> miniaturization -> Count quote order;
 - Slice-17.7 Tactical ownership and Slice-17.0 reference vectors.
 
-Still open before Gate 2 close:
+Gate 2 result: **complete**.
 
-- fixed Torpedo/Bomb Ammo representation;
-- fixed-360 persist-vs-derived snapshot/API representation;
-- final machine-readable ordnance rejection reasons;
-- exact `ShipWeaponMount` / `TacticalWeaponSpec` field shapes.
+Final frozen representation/API decisions:
 
-Do not begin Gate 3 implementation until those representation/API items are frozen and Gate 2 is explicitly complete.
+- canonical snapshots persist Ammo for all ordnance: selectable Missile rack, fixed Torpedo `2`, fixed Bomb/Bio `10`;
+- canonical snapshots persist `FiringArcID = "360"` for all 17.3 ordnance;
+- `ShipWeaponMount` and `TacticalWeaponSpec` both carry Ammo + FiringArcID;
+- catalog/preview fields expose server-owned Ammo choices/defaults/fixed arc;
+- stable Ammo/arc rejection reasons and validation order are frozen;
+- Beam Ammo/arc behavior remains unchanged until planned 17.2A.
+
+Gate 3 may now implement only this frozen contract. It is not started by this Gate-2 closeout.

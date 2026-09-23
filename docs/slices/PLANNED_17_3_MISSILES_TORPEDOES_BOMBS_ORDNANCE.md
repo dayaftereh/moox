@@ -1,6 +1,6 @@
 # Planned Slice 17.3 - Missiles, Torpedoes and Bomb Ordnance
 
-Status: **active; Gate 1 complete; Gate 2 contract freeze in progress**.
+Status: **active; Gates 1-2 complete; Gate 3 implementation ready / not started**.
 
 ## Objective
 
@@ -47,12 +47,12 @@ Gate-1 evidence: `docs/research/SLICE_17_3_GATE1_ORDNANCE_AUDIT_2026-09-23.md`.
 
 Gate-2 working contract: `docs/research/SLICE_17_3_GATE2_ORDNANCE_CONTRACT_FREEZE_2026-09-23.md`.
 
-- [ ] Freeze supported missile/torpedo/bomb matrix.
-- [ ] Freeze mount/count/ammunition representation.
-- [ ] Freeze legal modifiers and stable rejection reasons.
-- [ ] Freeze cost/space/miniaturization formulas.
-- [ ] Freeze persistence and immutable built-Ship snapshot semantics.
-- [ ] Freeze Tactical handoff fields and explicit deferred behavior with Slice 17.7 as the downstream ordnance owner.
+- [x] Freeze supported missile/torpedo/bomb matrix.
+- [x] Freeze mount/count/ammunition representation.
+- [x] Freeze legal modifiers and stable rejection reasons.
+- [x] Freeze cost/space/miniaturization formulas.
+- [x] Freeze persistence and immutable built-Ship snapshot semantics.
+- [x] Freeze Tactical handoff fields and explicit deferred behavior with Slice 17.7 as the downstream ordnance owner.
 
 ## Gate 3 - implementation
 
