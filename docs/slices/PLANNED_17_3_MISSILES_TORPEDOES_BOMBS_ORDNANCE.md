@@ -1,6 +1,6 @@
 # Planned Slice 17.3 - Missiles, Torpedoes and Bomb Ordnance
 
-Status: **active; Gate 1 ordnance audit in progress (opened 2026-09-23)**.
+Status: **active; Gate 1 complete; Gate 2 contract freeze ready / not started**.
 
 ## Objective
 
@@ -34,12 +34,14 @@ Gate 1 may pull in only bounded tactical consumers required to validate the desi
 
 ## Gate 1 - ordnance audit
 
-- [ ] Inventory normalized missile/torpedo/bomb applications and missing data.
-- [ ] Re-audit technology, Space, Cost, damage, ammo/count and miniaturization.
-- [ ] Re-audit legal ordnance modifiers and compatibility restrictions.
-- [ ] Re-audit current ShipWeaponMount/Core shape for ordnance representation.
-- [ ] Separate design-time metadata from later tactical runtime state.
-- [ ] Define representative 17.0 labs: missile cruiser, torpedo ship, bomber/bomb carrier where applicable.
+- [x] Inventory normalized missile/torpedo/bomb applications and missing data.
+- [x] Re-audit technology, Space, Cost, damage, ammo/count and miniaturization.
+- [x] Re-audit legal ordnance modifiers and compatibility restrictions.
+- [x] Re-audit current ShipWeaponMount/Core shape for ordnance representation.
+- [x] Separate design-time metadata from later tactical runtime state.
+- [x] Define representative 17.0 labs: missile cruiser, torpedo ship, bomber/bomb carrier where applicable.
+
+Gate-1 evidence: `docs/research/SLICE_17_3_GATE1_ORDNANCE_AUDIT_2026-09-23.md`.
 
 ## Gate 2 - ordnance contract freeze
 

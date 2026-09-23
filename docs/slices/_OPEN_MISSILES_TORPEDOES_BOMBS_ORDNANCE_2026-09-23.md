@@ -2,13 +2,13 @@
 
 Opened: 2026-09-23
 Parent: Slice 17 - Military Ship Design + Tactical Combat Program
-Status: **Gate 1 active**
+Status: **Gate 1 complete; Gate 2 ready / not started**
 
 ## Objective
 
 Expand the accepted Slice-17.2 Ship Designer from Beam-only weapon breadth into an original-evidenced ordnance design catalog covering supported missiles, torpedoes and bombs with authoritative technology, damage, Space, Cost, miniaturization, mount/count, ammunition and legal upgrade/modifier rules.
 
-## Gate 1 active scope
+## Gate 1 completed scope
 
 - inventory normalized missile, torpedo and bomb identities required by the supported design catalog;
 - map each supported ordnance row to technology unlock, base damage, Space, Cost and any range/speed/guidance metadata required by the design contract;
@@ -46,7 +46,7 @@ Gate 1 may inspect current Tactical consumers and handoff fields, but it must no
 
 Slices 17.0, 17.1 and 17.2 are closed/accepted and remain the foundation.
 
-Gate 1 is evidence/audit work. Do not implement the broad ordnance matrix, ammo/upgrades or new Tactical projectile mechanics before Gate 2 freezes the supported contract.
+Gate 1 completed as evidence/audit work. Do not implement the broad ordnance matrix, ammo/upgrades or new Tactical projectile mechanics before Gate 2 freezes the supported contract.
 
 Do not open Slice 17.4 or later children while Slice 17.3 is open unless explicitly requested.
 
@@ -64,3 +64,5 @@ Gate 1 may close only when the repository contains durable evidence resolving:
 - immutable ShipDesignSpec/BattleSession handoff fields;
 - current Tactical consumers versus explicit Slice-17.7 deferrals;
 - reference-lab vectors needed for Gate 2/3.
+
+Gate 1 result: **complete**. Durable evidence: `docs/research/SLICE_17_3_GATE1_ORDNANCE_AUDIT_2026-09-23.md`. Gate 2 is ready but has not started.
