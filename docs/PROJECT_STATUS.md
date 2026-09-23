@@ -203,7 +203,7 @@ The project now has a complete supported headless conquest lifecycle, so the rem
 
 ### Prepared / reserved roadmap
 
-1. **Slice 17 - Military Ship Design parent program:** active parent program, decomposed into 17.0 Reference/Test Harness, 17.1 Hulls/mandatory systems, 17.2 Beam design/mount metadata, 17.3 Ordnance, 17.4 Specials/Fighters, 17.5 Tactical Weapon Effects / Beam Modifiers and 17.6 Full Designer Integration; 17.0-17.1 are closed/accepted; 17.2 is open in Gate 4 visual review; 17.3-17.6 remain planned/not open.
+1. **Slice 17 - Military Ship Design + Tactical Combat parent program:** active parent program, decomposed into 17.0 Reference/Test Harness, 17.1 Hulls/mandatory systems, 17.2 Beam design/mount metadata, 17.3 Ordnance design, 17.4 Specials/Fighters design, 17.5 Tactical Combat Foundation, 17.6 Tactical Beams/Modifiers, 17.7 Tactical Ordnance, 17.8 Tactical Fighters/Combat Specials and 17.9 Full Ship Designer + Tactical Integration; 17.0-17.1 are closed/accepted; 17.2 is open in Gate 4 visual review; 17.3-17.9 remain planned/not open.
 2. **Slice 18 - Galaxy Generation / Strategic Navigation Fidelity:** reserved correction of galaxy scale/density, homeworld reachability, black-hole placement and authoritative strategic route blocking; planned, not open.
 3. **Slice 20 - Espionage / intelligence baseline:** authoritative Spies, Espionage/Sabotage, race/technology modifiers, safe projection and AI; Slice 19 remains intentionally unassigned.
 4. **Slice 21 - Colony / Buildings / Planet Effects / Pollution fidelity:** complete the strategic building/planet effect foundation and make Pollution a server-authoritative Economy loop.

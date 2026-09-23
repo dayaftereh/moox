@@ -566,3 +566,16 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Slice 17.5 now explicitly owns replacement of that baseline-only path with verified Frigate-through-Doom-Star hull durability, Armor, Computer, Shield and Drive Tactical behavior; Fuel Cells are admission-neutral unless direct evidence assigns a Tactical effect.
 - Only after this broad Tactical combatant prerequisite is frozen/implemented does 17.5 accept Heavy, Point Defense and supported Beam-modifier Tactical effects plus Weapon Selector effective-stat parity.
 - Slice 17.2 remains the sole open child; this is a downstream plan refinement only.
+
+## 2026-09-23 - Slice 17 Tactical roadmap split into 17.5-17.9
+
+- Product review concluded that the combined 17.5 plan had become too broad: it mixed broad Tactical combatant admission, shared combat authority, complete Beam effects, Weapon Selector effective stats and presentation while missiles/torpedoes/bombs and fighter/special consumers still required equally large Tactical work.
+- The prior 2026-09-22/23 combined 17.5/17.6 roadmap is therefore superseded by five recovery-safe children:
+  - **17.5 Tactical Combat Foundation / Ship Combatant Breadth** - broad Frigate-through-Doom-Star admission, mandatory-system Tactical values and generic server-owned weapon/action/RNG/damage/event/UI plumbing;
+  - **17.6 Tactical Beam Weapons & Beam Modifiers** - Beam hit/range/damage, Heavy/Point Defense, supported modifiers, Selector effective-stat parity and Beam presentation;
+  - **17.7 Tactical Missiles / Torpedoes / Bombs** - ammo/launch/projectiles, Point Defense interception, impact/damage and ordnance presentation;
+  - **17.8 Tactical Fighters / Bombers / Combat Specials** - fighter/carrier combat actors plus accepted Tactical special consumers;
+  - **17.9 Full Ship Designer + Tactical Integration and Acceptance** - end-to-end Designer -> Construction -> Fleet -> Encounter -> Tactical -> strategic reconciliation and persistence/replay closeout.
+- Design-side ownership remains 17.2 Beams, 17.3 Ordnance and 17.4 Specials/Fighters; their complete Tactical consumers are now explicitly 17.6, 17.7 and 17.8 respectively.
+- The old Slice-15.5 combatant gate is still not deleted early: 17.5 must first replace its protected Frigate/Electronic/Titanium assumptions with verified broad rules.
+- Slice 17.2 remains the sole open child. No 17.5-17.9 marker was opened and the canonical 7171 runtime was not changed by this documentation-only roadmap migration.

@@ -54,7 +54,7 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - active parent program; child order 17.0 -> 17.1 -> 17.2 -> 17.3 -> 17.4 -> 17.5 -> 17.6; 17.0-17.1 are closed/accepted, 17.2 is open in Gate 4 manual review after green automated QA, and 17.3-17.6 remain planned/not open.
+1. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - active parent program; child order 17.0 -> 17.1 -> 17.2 -> 17.3 -> 17.4 -> 17.5 -> 17.6 -> 17.7 -> 17.8 -> 17.9; 17.0-17.1 are closed/accepted, 17.2 is open in Gate 4 manual review after green automated QA, and 17.3-17.9 remain planned/not open.
 2. PLANNED_18_GALAXY_GENERATION_STRATEGIC_NAVIGATION_FIDELITY.md - reserved Galaxy Generation / Strategic Navigation fidelity pass; planned, not open.
 3. PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md - dedicated authoritative Spy/intelligence mechanics; Slice 19 remains intentionally unassigned.
 4. PLANNED_21_COLONY_BUILDINGS_PLANET_EFFECTS_POLLUTION_FIDELITY.md - authoritative Colony/Building/Planet effects including Pollution.
@@ -82,12 +82,21 @@ Slice 17 is a parent program. These child specifications are recovery-safe miles
 5. **Slice 17.4 - Ship Specials and Fighter Systems**
    `PLANNED_17_4_SHIP_SPECIALS_FIGHTER_SYSTEMS.md`
    Specials/fighter breadth with explicit per-feature strategic/tactical support classification.
-6. **Slice 17.5 - Tactical Weapon Effects / Beam Modifiers**
-   `PLANNED_17_5_TACTICAL_WEAPON_EFFECTS_BEAM_MODIFIERS.md`
-   Replaces the old baseline-only Tactical combatant fixture with verified 17.1 hull/mandatory-system breadth, then implements supported Beam mounts/modifiers plus server-owned Weapon Selector base/configured damage and effect preview.
-7. **Slice 17.6 - Full Ship Designer Integration and Acceptance**
-   `PLANNED_17_6_FULL_SHIP_DESIGNER_INTEGRATION_ACCEPTANCE.md`
-   Unified Designer, construction, revisions, persistence, reference labs and final browser/program QA.
+6. **Slice 17.5 - Tactical Combat Foundation / Ship Combatant Breadth**
+   `PLANNED_17_5_TACTICAL_COMBAT_FOUNDATION_SHIP_COMBATANT_BREADTH.md`
+   Replaces the old baseline-only Tactical fixture with verified broad hull/mandatory-system admission plus generic server-owned action/RNG/damage/event/UI plumbing.
+7. **Slice 17.6 - Tactical Beam Weapons & Beam Modifiers**
+   `PLANNED_17_6_TACTICAL_BEAM_WEAPONS_MODIFIERS.md`
+   Full supported Beam hit/range/damage, Heavy/Point Defense/modifiers, Selector effective-stat parity and Beam presentation.
+8. **Slice 17.7 - Tactical Missiles / Torpedoes / Bombs**
+   `PLANNED_17_7_TACTICAL_ORDNANCE_MISSILES_TORPEDOES_BOMBS.md`
+   Ordnance launch/ammo/projectiles, interception, impact/damage, Point Defense integration and ordnance presentation.
+9. **Slice 17.8 - Tactical Fighters / Bombers / Combat Specials**
+   `PLANNED_17_8_TACTICAL_FIGHTERS_BOMBERS_COMBAT_SPECIALS.md`
+   Fighter/Bomber/Interceptor combat plus supported Tactical special consumers and event-driven presentation.
+10. **Slice 17.9 - Full Ship Designer + Tactical Integration and Acceptance**
+   `PLANNED_17_9_FULL_SHIP_DESIGNER_TACTICAL_INTEGRATION_ACCEPTANCE.md`
+   Unified Designer -> Construction -> Fleet -> Encounter -> Tactical -> strategic reconciliation, persistence/replay and final browser/program QA.
 
 The parent program file remains `PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md`. Slice 18 remains downstream and independent of Slice-17 completion.
 
@@ -125,7 +134,7 @@ The following six specifications are the prepared Slice-16 work breakdown. They 
 
 This decomposition is **binding product direction**, not permission to skip the four-gate protocol. Exact original/runtime settings, modifiers, race compatibility and player-count limits still require Gate-1 evidence before gameplay support is enabled.
 
-Milestone after Slice 15.6: **achieved 2026-09-14** - a human can start, save/resume, play the accepted interactive Tactical battle path and finish the supported Human-vs-built-in-AI match from the browser through one coherent MOOX visual/interaction language. Re-audit after the prepared Slice 20 Espionage baseline before numbering additional Tactical weapon/special/planetary breadth, deeper Diplomacy/Leaders/post-baseline Espionage and alternative-victory depth.
+Milestone after Slice 15.6: **achieved 2026-09-14** - a human can start, save/resume, play the accepted interactive Tactical battle path and finish the supported Human-vs-built-in-AI match from the browser through one coherent MOOX visual/interaction language. The 2026-09-23 Slice-17 product decision supersedes the earlier plan to postpone additional Tactical weapon/special breadth until after Slice 20: Tactical foundation/Beam/ordnance/fighter-special breadth is now explicitly decomposed into Slices 17.5-17.8, with 17.9 final integration. Deeper Diplomacy/Leaders/post-baseline Espionage and alternative-victory depth remain later roadmap work.
 
 The queue order is the current recommendation, not a hard dependency lock. Reprioritization is allowed before a later slice is opened if the dependency check still passes.
 

@@ -4,7 +4,7 @@ Status: **planned; child of Slice 17; not open**.
 
 ## Objective
 
-Add the supported ship-special and fighter-system design breadth needed for meaningful late-game designs while keeping unimplemented tactical mechanics explicitly downstream.
+Add the supported ship-special and fighter-system design breadth needed for meaningful late-game designs while keeping unimplemented Tactical fighter/combat-special consumers explicitly owned by planned Slice 17.8.
 
 ## Scope candidates
 
@@ -30,7 +30,7 @@ Every accepted special must be labeled as one of:
 
 1. **design + strategic effect complete**;
 2. **design + already-supported tactical effect complete**;
-3. **design representation complete, tactical consumer explicitly deferred**;
+3. **design representation complete, Tactical consumer explicitly deferred to Slice 17.8**;
 4. **not yet supported/locked**.
 
 No special may appear as fully supported without a real owner for its gameplay effect.
@@ -42,7 +42,7 @@ No special may appear as fully supported without a real owner for its gameplay e
 - [ ] Re-audit stacking/exclusivity/quantity limits.
 - [ ] Identify strategic derived-stat effects implementable now.
 - [ ] Identify existing Tactical consumers versus missing combat subsystems.
-- [ ] Re-audit fighter/bomber carrier representation and downstream combat dependencies.
+- [ ] Re-audit fighter/bomber carrier representation and the exact combat dependencies handed to Slice 17.8.
 - [ ] Define high-tech/Doom-Star reference fixtures in 17.0.
 
 ## Gate 2 - specials contract freeze
@@ -52,7 +52,7 @@ No special may appear as fully supported without a real owner for its gameplay e
 - [ ] Freeze compatibility, stacking, quantity and rejection rules.
 - [ ] Freeze cost/space/miniaturization.
 - [ ] Freeze ShipDesignSpec snapshot representation.
-- [ ] Freeze downstream Tactical ownership for deferred consumers.
+- [ ] Freeze Slice-17.8 Tactical ownership for every deferred fighter/combat-special consumer.
 
 ## Gate 3 - implementation
 
@@ -74,4 +74,4 @@ No special may appear as fully supported without a real owner for its gameplay e
 
 ## Exit criterion
 
-Supported specials and fighter/carrier systems are authoritative design objects with explicit, testable gameplay ownership, enabling meaningful advanced ship designs without disguising later Tactical work as already complete.
+Supported specials and fighter/carrier systems are authoritative design objects with explicit, testable gameplay ownership; every accepted deferred combat consumer is handed unchanged to planned Slice 17.8 rather than being disguised as already complete.

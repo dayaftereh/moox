@@ -21,7 +21,7 @@ Add authoritative design-side ordnance breadth without prematurely pulling the c
 
 ## Scope guard
 
-17.3 answers **what ordnance is installed on the ship**. Later Tactical/Triangle work may own:
+17.3 answers **what ordnance is installed on the ship**. Planned Slice 17.7 owns the complete Tactical ordnance consumer, including:
 
 - projectile flight;
 - missile interception;
@@ -30,7 +30,7 @@ Add authoritative design-side ordnance breadth without prematurely pulling the c
 - impact/explosion timing;
 - complete bomb-vs-planet combat resolution.
 
-Gate 1 may pull in only bounded tactical consumers required to validate the design data honestly.
+Gate 1 may pull in only bounded tactical consumers required to validate the design data honestly; complete projectile/interception/impact behavior remains explicitly owned by 17.7.
 
 ## Gate 1 - ordnance audit
 
@@ -48,7 +48,7 @@ Gate 1 may pull in only bounded tactical consumers required to validate the desi
 - [ ] Freeze legal modifiers and stable rejection reasons.
 - [ ] Freeze cost/space/miniaturization formulas.
 - [ ] Freeze persistence and immutable built-Ship snapshot semantics.
-- [ ] Freeze Tactical/Triangle handoff fields and explicit deferred behavior.
+- [ ] Freeze Tactical handoff fields and explicit deferred behavior with Slice 17.7 as the downstream ordnance owner.
 
 ## Gate 3 - implementation
 
@@ -70,4 +70,4 @@ Gate 1 may pull in only bounded tactical consumers required to validate the desi
 
 ## Exit criterion
 
-Supported missiles, torpedoes and bombs are first-class authoritative design components that can be selected, saved, built and handed to later combat systems without pretending their full tactical projectile behavior is already implemented.
+Supported missiles, torpedoes and bombs are first-class authoritative design components that can be selected, saved, built and handed unchanged to planned Slice 17.7 without pretending their full tactical projectile behavior is already implemented in 17.3.

@@ -103,3 +103,5 @@ Gate 4 review is active; automated QA passed and manual canonical-7171 visual re
 Evidence: docs/research/SLICE_17_2_GATE4_WEAPON_SELECTOR_REVIEW_2026-09-22.md.
 
 Automated Gate-4 QA passes after the mobile selector polish: selected mount/modifier cards no longer duplicate their state with visible radio/checkbox glyphs, help controls have reserved non-overlapping space, damage is explicitly labelled Basisschaden/Base damage, and Heavy plus Point Defense both prove live authoritative Space/PP preview changes. Quantity +/- is now owned only by installed weapon cards: new installs enter as count 1, Edit preserves the existing count, and the browser regression proves 1 -> 2 on-card then mount/modifier editing keeps 2. Keep this marker until the user completes the canonical-7171 visual review.
+
+Roadmap handoff (2026-09-23): this Gate-4 scope does not expand. Broad Tactical combatant admission is now owned by planned Slice 17.5, while complete Beam hit/damage/Heavy/Point-Defense/modifier behavior and Weapon Selector effective-stat parity are owned by planned Slice 17.6.

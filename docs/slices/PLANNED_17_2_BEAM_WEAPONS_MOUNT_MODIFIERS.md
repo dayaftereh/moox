@@ -4,7 +4,7 @@ Status: **active; Gate 4 review in progress - automated QA passed / manual visua
 
 ## Objective
 
-Expand the current single standard Laser mount into an original-evidenced Beam-weapon design system that later Tactical combat can consume.
+Expand the current single standard Laser mount into an original-evidenced Beam-weapon design system that the planned Slice 17.6 Tactical Beam consumer can execute without redesigning or translating the saved snapshot.
 
 ## Scope candidates
 
@@ -21,7 +21,7 @@ Gate 1 must decide the exact supported modifier subset rather than assuming ever
 
 ## Scope guard
 
-17.2 owns Beam **design legality and authoritative snapshots**. It only extends Tactical runtime behavior where the required implementation is bounded and explicitly frozen. Full broad Tactical combat remains downstream.
+17.2 owns Beam **design legality and authoritative snapshots**. It only extends Tactical runtime behavior where the required implementation is bounded and explicitly frozen. The broad Tactical combatant foundation is owned by planned Slice 17.5; complete Beam hit/damage/mount/modifier behavior is owned by planned Slice 17.6.
 
 ## Gate 1 - Beam audit
 
@@ -74,4 +74,4 @@ Automated Gate-4 QA is green. Keep the slice open until the user completes the c
 
 ## Exit criterion
 
-Supported Beam weapons can be selected, modified, costed, saved, built and delivered as authoritative immutable ship snapshots, with explicit tactical support/defer status for every frozen Beam feature.
+Supported Beam weapons can be selected, modified, costed, saved, built and delivered as authoritative immutable ship snapshots, with explicit tactical support/defer status for every frozen Beam feature and planned Slice 17.6 recorded as the complete Tactical Beam owner.
