@@ -439,6 +439,7 @@ async function main() {
       return {
         present: Boolean(dialog),
         rows: rows.length,
+        weaponTexts: rows.map((row) => row.textContent || ''),
         text: dialog?.textContent || '',
         filtersInitiallyHidden: !toolbar,
         filterToggleExpanded: toggle?.getAttribute('aria-expanded') || '',
@@ -544,7 +545,8 @@ async function main() {
   }
   const firstWeaponAdd = await addWeapon()
   assert(firstWeaponAdd.installed, `Could not install first standard Laser through selector: ${JSON.stringify(firstWeaponAdd)}`)
-  assert(firstWeaponAdd.rows === 13, `Weapon selector row count=${firstWeaponAdd.rows}, want 13`)
+  assert(firstWeaponAdd.rows === 26, `Weapon selector row count=${firstWeaponAdd.rows}, want 26`)
+  assert(firstWeaponAdd.weaponTexts?.some((text) => text.includes('Nuklearrakete')), `Weapon selector does not expose Slice-17.3 Nuclear Missile row: ${JSON.stringify(firstWeaponAdd.weaponTexts)}`)
   assert(firstWeaponAdd.filtersInitiallyHidden && firstWeaponAdd.filterToggleExpanded === 'false', `Weapon selector filters are not collapsed by default: ${JSON.stringify(firstWeaponAdd)}`)
   assert(firstWeaponAdd.filterControls?.hasSearch && firstWeaponAdd.filterControls?.selectCount >= 3, `Collapsed filter panel does not expose search/select controls when opened: ${JSON.stringify(firstWeaponAdd)}`)
   assert(firstWeaponAdd.listHeight >= 500 && firstWeaponAdd.configDisplay === 'none', `Pre-selection mobile layout does not prioritize the weapon list: ${JSON.stringify(firstWeaponAdd)}`)
