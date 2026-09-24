@@ -1,6 +1,7 @@
 package game
 
 import (
+	"reflect"
 	"strings"
 	"testing"
 
@@ -214,5 +215,28 @@ func TestSlice173WeaponValidationReasonOrdering(t *testing.T) {
 	})
 	if err == nil || !strings.Contains(err.Error(), MilitaryDesignReasonWeaponSlotDuplicate) {
 		t.Fatalf("duplicate-slot generic validation error=%v", err)
+	}
+}
+
+func TestSlice173AllTechCatalogExposesHighTechOrdnance(t *testing.T) {
+	rules := loadColonyShipRules(t)
+	state := core.NewSmallFixture(0x17341)
+	if err := rules.ApplyReferenceTriangleTechnologyProfile(state, ReferenceTriangleProfileAllTech); err != nil {
+		t.Fatal(err)
+	}
+	catalog, err := rules.MilitaryDesignerCatalog(&state.Empires[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	zeon, ok := designerWeaponChoiceByID(catalog.Weapons, "zeon_missile")
+	if !ok || !zeon.Available || zeon.Kind != "missile" || zeon.DefaultAmmo != 5 || zeon.FixedFiringArcID != core.ShipWeaponFiringArc360 {
+		t.Fatalf("All-Tech Zeon Missile choice=%+v ok=%v", zeon, ok)
+	}
+	if !reflect.DeepEqual(zeon.AmmoChoices, []int{2, 5, 10, 15, 20}) {
+		t.Fatalf("All-Tech Zeon Missile ammo choices=%v", zeon.AmmoChoices)
+	}
+	plasma, ok := designerWeaponChoiceByID(catalog.Weapons, "plasma_torpedoes")
+	if !ok || !plasma.Available || plasma.Kind != "torpedo" || plasma.DefaultAmmo != 2 || plasma.FixedFiringArcID != core.ShipWeaponFiringArc360 {
+		t.Fatalf("All-Tech Plasma Torpedo choice=%+v ok=%v", plasma, ok)
 	}
 }

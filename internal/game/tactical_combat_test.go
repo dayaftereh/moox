@@ -336,3 +336,81 @@ func TestSlice172TacticalMetadataPreservesConfiguredBeamSnapshotWithoutEnablingD
 		t.Fatalf("BattleSession weapon snapshot clone aliased modifiers: %+v", freshPhasor)
 	}
 }
+
+func TestSlice173TacticalMetadataPreservesOrdnanceSnapshotWithoutEnablingDeferredFire(t *testing.T) {
+	attacker := tacticalMetadataShip(101, 1, "fusion_drive", true)
+	attacker.Spec.Weapons = []core.ShipWeaponMount{{
+		Slot: 0, WeaponID: "nuclear_missile", Count: 2, MountType: core.ShipWeaponMountStandard,
+		Ammo: 5, FiringArcID: core.ShipWeaponFiringArc360,
+	}}
+	defender := tacticalMetadataShip(201, 2, "nuclear_drive", false)
+	state := &core.GameState{Ships: []core.Ship{attacker, defender}}
+	encounter := Encounter{
+		SystemID:     7,
+		Attacker:     EncounterSide{EmpireID: 1, SeatID: 1, CombatFleetIDs: []core.ID{11}, ShipIDs: []core.ID{101}},
+		Defender:     EncounterSide{EmpireID: 2, SeatID: 2, CombatFleetIDs: []core.ID{22}, ShipIDs: []core.ID{201}},
+		Participants: []protocol.SeatID{1, 2},
+	}
+	tactical, reason, err := tacticalMetadataForEncounter(state, encounter, tacticalMetadataRules(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reason != "" || tactical == nil {
+		t.Fatalf("ordnance tactical metadata unsupported: tactical=%+v reason=%q", tactical, reason)
+	}
+	var projected *battle.TacticalShipSpec
+	for i := range tactical.Ships {
+		if tactical.Ships[i].ShipID == attacker.ID {
+			projected = &tactical.Ships[i]
+			break
+		}
+	}
+	if projected == nil || len(projected.Weapons) != 1 {
+		t.Fatalf("projected ordnance weapons=%+v", projected)
+	}
+	weapon := projected.Weapons[0]
+	if weapon.WeaponID != "nuclear_missile" || weapon.Ammo != 5 || weapon.FiringArcID != core.ShipWeaponFiringArc360 || weapon.TacticalSupport != "metadata_only" {
+		t.Fatalf("projected ordnance metadata=%+v", weapon)
+	}
+
+	session, err := battle.NewSession(battle.Spec{
+		ID: 17341, GameID: "slice-17-3", StrategicTurn: 1, SystemID: encounter.SystemID,
+		Attacker: battle.Side{
+			EmpireID: encounter.Attacker.EmpireID, SeatID: encounter.Attacker.SeatID,
+			CombatFleetIDs: append([]core.ID(nil), encounter.Attacker.CombatFleetIDs...),
+			ShipIDs:        append([]core.ID(nil), encounter.Attacker.ShipIDs...),
+		},
+		Defender: battle.Side{
+			EmpireID: encounter.Defender.EmpireID, SeatID: encounter.Defender.SeatID,
+			CombatFleetIDs: append([]core.ID(nil), encounter.Defender.CombatFleetIDs...),
+			ShipIDs:        append([]core.ID(nil), encounter.Defender.ShipIDs...),
+		},
+		Participants: append([]protocol.SeatID(nil), encounter.Participants...),
+		Seed:         17341, Tactical: tactical,
+	})
+	if err != nil {
+		t.Fatalf("BattleSession rejected ordnance metadata: %v", err)
+	}
+	if err := session.Start(); err != nil {
+		t.Fatalf("BattleSession start rejected ordnance metadata: %v", err)
+	}
+	view := session.View()
+	if view.Tactical == nil {
+		t.Fatal("BattleSession tactical view missing")
+	}
+	var viewWeapon *battle.TacticalWeaponView
+	for i := range view.Tactical.Ships {
+		if view.Tactical.Ships[i].ShipID == attacker.ID && len(view.Tactical.Ships[i].Weapons) == 1 {
+			viewWeapon = &view.Tactical.Ships[i].Weapons[0]
+			break
+		}
+	}
+	if viewWeapon == nil || viewWeapon.WeaponID != "nuclear_missile" || viewWeapon.Ammo != 5 || viewWeapon.FiringArcID != core.ShipWeaponFiringArc360 || viewWeapon.TacticalSupport != "metadata_only" || viewWeapon.Ready {
+		t.Fatalf("BattleSession ordnance view=%+v", viewWeapon)
+	}
+	for _, action := range view.Tactical.LegalFireActions {
+		if action.WeaponID == "nuclear_missile" || action.WeaponSlot == 0 {
+			t.Fatalf("deferred ordnance unexpectedly received fire action: %+v", action)
+		}
+	}
+}

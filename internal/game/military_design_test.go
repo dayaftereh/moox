@@ -480,3 +480,65 @@ func TestSlice172BuiltMilitaryShipKeepsConfiguredBeamSnapshot(t *testing.T) {
 		t.Fatalf("configured Beam built-Ship state invalid: %v", err)
 	}
 }
+
+func TestSlice173BuiltMilitaryShipKeepsOrdnanceSnapshotAcrossDesignRevision(t *testing.T) {
+	rules := loadColonyShipRules(t)
+	resolver, err := NewEconomyResolver(rules)
+	if err != nil {
+		t.Fatal(err)
+	}
+	state := core.NewSmallFixture(0x17340)
+	if err := rules.ApplyReferenceTriangleTechnologyProfile(state, ReferenceTriangleProfileAllTech); err != nil {
+		t.Fatal(err)
+	}
+	empire := &state.Empires[0]
+	noShield := ""
+	command, err := NewSaveMilitaryDesignCommand(1, SaveMilitaryDesignPayload{
+		Name: "Missile snapshot", HullID: "destroyer", StrategicPictureID: 8,
+		ShieldID: &noShield,
+		Weapons: []core.ShipWeaponMount{{
+			Slot: 0, WeaponID: "nuclear_missile", Count: 2, Ammo: 5,
+		}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.saveMilitaryDesign(state, empire.ID, 1, command); err != nil {
+		t.Fatal(err)
+	}
+	if len(state.ShipDesigns) != 1 {
+		t.Fatalf("saved ordnance design count=%d", len(state.ShipDesigns))
+	}
+	designID := state.ShipDesigns[0].ID
+	wantWeapons := []core.ShipWeaponMount{{
+		Slot: 0, WeaponID: "nuclear_missile", Count: 2, MountType: core.ShipWeaponMountStandard,
+		Ammo: 5, FiringArcID: core.ShipWeaponFiringArc360,
+	}}
+	if !reflect.DeepEqual(state.ShipDesigns[0].Spec.Weapons, wantWeapons) {
+		t.Fatalf("saved ordnance snapshot=%+v want=%+v", state.ShipDesigns[0].Spec.Weapons, wantWeapons)
+	}
+	if _, err := completeMilitaryShip(state, &state.Colonies[0], &state.ShipDesigns[0]); err != nil {
+		t.Fatal(err)
+	}
+	if len(state.Ships) != 1 || !reflect.DeepEqual(state.Ships[0].Spec.Weapons, wantWeapons) {
+		t.Fatalf("built ordnance snapshot=%+v want=%+v", state.Ships, wantWeapons)
+	}
+	update, err := NewSaveMilitaryDesignCommand(2, SaveMilitaryDesignPayload{
+		DesignID: designID, Name: "Unarmed revision", HullID: "destroyer", StrategicPictureID: 8, ShieldID: &noShield,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := resolver.saveMilitaryDesign(state, empire.ID, 1, update); err != nil {
+		t.Fatal(err)
+	}
+	if state.ShipDesigns[0].Revision != 2 || len(state.ShipDesigns[0].Spec.Weapons) != 0 {
+		t.Fatalf("revised design=%+v", state.ShipDesigns[0])
+	}
+	if state.Ships[0].SourceDesignRevision != 1 || !reflect.DeepEqual(state.Ships[0].Spec.Weapons, wantWeapons) {
+		t.Fatalf("built ordnance snapshot changed after design revision: %+v", state.Ships[0])
+	}
+	if err := state.Validate(); err != nil {
+		t.Fatalf("ordnance revision/built-Ship state invalid: %v", err)
+	}
+}
