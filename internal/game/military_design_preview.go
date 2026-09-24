@@ -20,6 +20,8 @@ type MilitaryDesignWeaponRowPreview struct {
 	Count                int                         `json:"count"`
 	MountType            core.ShipWeaponMountType    `json:"mount_type"`
 	ModifierIDs          []core.ShipWeaponModifierID `json:"modifier_ids,omitempty"`
+	Ammo                 int                         `json:"ammo,omitempty"`
+	FiringArcID          core.ShipWeaponFiringArcID  `json:"firing_arc_id,omitempty"`
 	MiniaturizationLevel int                         `json:"miniaturization_level"`
 	UnitSpace            int                         `json:"unit_space"`
 	UnitCostPP           int                         `json:"unit_cost_pp"`
@@ -66,7 +68,11 @@ func militaryDesignReasonFromError(err error) string {
 		MilitaryDesignReasonWeaponModifierUnknown,
 		MilitaryDesignReasonWeaponModifierNotAllowed,
 		MilitaryDesignReasonWeaponModifierRefinementRequired,
-		MilitaryDesignReasonWeaponModifierDuplicate:
+		MilitaryDesignReasonWeaponModifierDuplicate,
+		MilitaryDesignReasonWeaponAmmoRequired,
+		MilitaryDesignReasonWeaponAmmoInvalid,
+		MilitaryDesignReasonWeaponAmmoNotAllowed,
+		MilitaryDesignReasonWeaponFiringArcNotAllowed:
 		return reason
 	default:
 		return ""
@@ -105,8 +111,8 @@ func (r *EconomyRules) PreviewMilitaryDesign(empire *core.Empire, draft Military
 	rows := make([]MilitaryDesignWeaponRowPreview, 0, len(mounts))
 	weaponSpace := 0
 	weaponCost := 0
-	for _, mount := range mounts {
-		quote, quoteErr := r.quoteBeamWeapon(empire, mount)
+	for i, mount := range mounts {
+		quote, quoteErr := r.quoteWeapon(empire, mount)
 		if quoteErr != nil {
 			preview := rejectedMilitaryDesignPreview(quoteErr)
 			preview.HullSpace = baseSpec.HullSpace
@@ -117,11 +123,13 @@ func (r *EconomyRules) PreviewMilitaryDesign(empire *core.Empire, draft Military
 			preview.Weapons = rows
 			return preview
 		}
+		mounts[i] = quote.Mount
 		weaponSpace += quote.RowSpace
 		weaponCost += quote.RowCostPP
 		rows = append(rows, MilitaryDesignWeaponRowPreview{
 			Slot: quote.Mount.Slot, WeaponID: quote.Mount.WeaponID, Count: quote.Mount.Count,
 			MountType: quote.Mount.MountType, ModifierIDs: append([]core.ShipWeaponModifierID(nil), quote.Mount.ModifierIDs...),
+			Ammo: quote.Mount.Ammo, FiringArcID: quote.Mount.FiringArcID,
 			MiniaturizationLevel: quote.MiniaturizationLevel,
 			UnitSpace:            quote.UnitSpace, UnitCostPP: quote.UnitCostPP,
 			RowSpace: quote.RowSpace, RowCostPP: quote.RowCostPP,

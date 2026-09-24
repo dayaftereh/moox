@@ -100,6 +100,9 @@ type MilitaryDesignerWeaponChoice struct {
 	AllowedModifierMask     int                                    `json:"allowed_modifier_mask"`
 	MountChoices            []MilitaryDesignerWeaponMountChoice    `json:"mount_choices"`
 	ModifierChoices         []MilitaryDesignerWeaponModifierChoice `json:"modifier_choices"`
+	AmmoChoices             []int                                  `json:"ammo_choices,omitempty"`
+	DefaultAmmo             int                                    `json:"default_ammo,omitempty"`
+	FixedFiringArcID        core.ShipWeaponFiringArcID             `json:"fixed_firing_arc_id,omitempty"`
 	InnateEffectIDs         []string                               `json:"innate_effect_ids,omitempty"`
 	TacticalSupport         string                                 `json:"tactical_support"`
 }
@@ -254,7 +257,7 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 	}
 
 	if r.TacticalCombat != nil {
-		for _, weapon := range r.TacticalCombat.BeamWeapons() {
+		for _, weapon := range r.TacticalCombat.AllWeapons() {
 			technologyKnown := empireKnowsTechnology(empire, weapon.TechnologyID)
 			level := 0
 			if technologyKnown {
@@ -268,30 +271,38 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 			if !technologyKnown {
 				lockReason = ShipDesignerLockTechnologyRequired
 			}
+
 			mountChoices := []MilitaryDesignerWeaponMountChoice{{
 				ID: string(core.ShipWeaponMountStandard), Available: technologyKnown,
 				LockReason: lockReason,
 			}}
-			for _, modifier := range r.TacticalCombat.BeamModifiers {
-				if modifier.Kind != "mount" || weapon.AllowedModifierMask&modifier.Bit == 0 {
-					continue
+			if weapon.Kind == "beam" {
+				for _, modifier := range r.TacticalCombat.BeamModifiers {
+					if modifier.Kind != "mount" || weapon.AllowedModifierMask&modifier.Bit == 0 {
+						continue
+					}
+					mountID := ""
+					switch modifier.ID {
+					case "heavy":
+						mountID = string(core.ShipWeaponMountHeavy)
+					case "point_defense":
+						mountID = string(core.ShipWeaponMountPointDefense)
+					default:
+						continue
+					}
+					mountChoices = append(mountChoices, MilitaryDesignerWeaponMountChoice{
+						ID: mountID, Available: technologyKnown, LockReason: lockReason,
+						SpacePercentDelta: modifier.SpacePercentDelta, CostPercentDelta: modifier.CostPercentDelta,
+					})
 				}
-				mountID := ""
-				switch modifier.ID {
-				case "heavy":
-					mountID = string(core.ShipWeaponMountHeavy)
-				case "point_defense":
-					mountID = string(core.ShipWeaponMountPointDefense)
-				default:
-					continue
-				}
-				mountChoices = append(mountChoices, MilitaryDesignerWeaponMountChoice{
-					ID: mountID, Available: technologyKnown, LockReason: lockReason,
-					SpacePercentDelta: modifier.SpacePercentDelta, CostPercentDelta: modifier.CostPercentDelta,
-				})
+			}
+
+			modifierSource := r.TacticalCombat.BeamModifiers
+			if weapon.Kind != "beam" {
+				modifierSource = r.TacticalCombat.WeaponModifiers()
 			}
 			modifierChoices := make([]MilitaryDesignerWeaponModifierChoice, 0, 6)
-			for _, modifier := range r.TacticalCombat.BeamModifiers {
+			for _, modifier := range modifierSource {
 				if modifier.Kind != "special" || weapon.AllowedModifierMask&modifier.Bit == 0 {
 					continue
 				}
@@ -307,6 +318,43 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 					SpacePercentDelta: modifier.SpacePercentDelta, CostPercentDelta: modifier.CostPercentDelta,
 				})
 			}
+
+			var ammoChoices []int
+			defaultAmmo := 0
+			fixedArc := core.ShipWeaponFiringArcID("")
+			defaultMount := core.ShipWeaponMount{
+				Slot: 0, WeaponID: weapon.ID, Count: 1, MountType: core.ShipWeaponMountStandard,
+			}
+			if weapon.Kind != "beam" {
+				fixedArc = core.ShipWeaponFiringArc360
+				defaultMount.FiringArcID = fixedArc
+				switch weapon.Kind {
+				case "missile":
+					ammoChoices = []int{2, 5, 10, 15, 20}
+					defaultAmmo = 5
+				case "torpedo":
+					defaultAmmo = 2
+				case "bomb":
+					defaultAmmo = 10
+				}
+				defaultMount.Ammo = defaultAmmo
+			}
+
+			effectiveSpace := miniaturizedComponentSpace(weapon.BaseSpace, level, 1)
+			effectiveCost := miniaturizedComponentCost(weapon.BaseCostPP, level)
+			if technologyKnown {
+				quote, err := r.quoteWeapon(empire, defaultMount)
+				if err != nil {
+					return MilitaryDesignerCatalog{}, err
+				}
+				effectiveSpace = quote.UnitSpace
+				effectiveCost = quote.UnitCostPP
+			} else if weapon.Kind == "missile" {
+				rackBase, _ := ordnanceRackBase(defaultAmmo)
+				effectiveSpace = miniaturizedComponentSpace(weapon.BaseSpace+rackBase, level, 1)
+				effectiveCost = miniaturizedComponentCost(weapon.BaseCostPP+rackBase, level)
+			}
+
 			catalog.Weapons = append(catalog.Weapons, MilitaryDesignerWeaponChoice{
 				ID: weapon.ID, NameKey: r.TechnologyNameKeyByID[weapon.TechnologyID], Kind: weapon.Kind,
 				OriginalIndex: weapon.OriginalIndex, TechnologyID: weapon.TechnologyID, TechnologyFieldID: weapon.TechnologyFieldID,
@@ -315,11 +363,15 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 				MiniaturizationLevel:    level,
 				CostReductionPercent:    100 - miniaturizationCostPercent(level),
 				SpaceReductionPercent:   100 - miniaturizationSpacePerThousand(level, 1)/10,
-				EffectiveStandardSpace:  miniaturizedComponentSpace(weapon.BaseSpace, level, 1),
-				EffectiveStandardCostPP: miniaturizedComponentCost(weapon.BaseCostPP, level),
+				EffectiveStandardSpace:  effectiveSpace,
+				EffectiveStandardCostPP: effectiveCost,
 				AllowedModifierMask:     weapon.AllowedModifierMask,
-				MountChoices:            mountChoices, ModifierChoices: modifierChoices,
-				InnateEffectIDs: append([]string(nil), weapon.InnateEffectIDs...), TacticalSupport: weapon.TacticalSupport,
+				MountChoices:            mountChoices,
+				ModifierChoices:         modifierChoices,
+				AmmoChoices:             ammoChoices,
+				DefaultAmmo:             defaultAmmo,
+				FixedFiringArcID:        fixedArc,
+				InnateEffectIDs:         append([]string(nil), weapon.InnateEffectIDs...), TacticalSupport: weapon.TacticalSupport,
 			})
 		}
 	}

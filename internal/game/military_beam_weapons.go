@@ -19,6 +19,10 @@ const (
 	MilitaryDesignReasonWeaponModifierNotAllowed         = "weapon_modifier_not_allowed"
 	MilitaryDesignReasonWeaponModifierRefinementRequired = "weapon_modifier_refinement_required"
 	MilitaryDesignReasonWeaponModifierDuplicate          = "weapon_modifier_duplicate"
+	MilitaryDesignReasonWeaponAmmoRequired               = "weapon_ammo_required"
+	MilitaryDesignReasonWeaponAmmoInvalid                = "weapon_ammo_invalid"
+	MilitaryDesignReasonWeaponAmmoNotAllowed             = "weapon_ammo_not_allowed"
+	MilitaryDesignReasonWeaponFiringArcNotAllowed        = "weapon_firing_arc_not_allowed"
 )
 
 type militaryBeamWeaponQuote struct {
@@ -78,6 +82,18 @@ func canonicalWeaponModifierIDs(ids []core.ShipWeaponModifierID) ([]core.ShipWea
 			return 4
 		case core.ShipWeaponModifierEnveloping:
 			return 5
+		case core.ShipWeaponModifierMIRV:
+			return 6
+		case core.ShipWeaponModifierECCM:
+			return 7
+		case core.ShipWeaponModifierArmored:
+			return 8
+		case core.ShipWeaponModifierFast:
+			return 9
+		case core.ShipWeaponModifierEmissionsGuidance:
+			return 10
+		case core.ShipWeaponModifierOverloaded:
+			return 11
 		default:
 			return -1
 		}
@@ -103,11 +119,6 @@ func canonicalWeaponMount(mount core.ShipWeaponMount) (core.ShipWeaponMount, err
 	default:
 		return core.ShipWeaponMount{}, militaryDesignError(MilitaryDesignReasonWeaponMountNotAllowed, "unknown weapon mount type %q", mount.MountType)
 	}
-	ids, err := canonicalWeaponModifierIDs(mount.ModifierIDs)
-	if err != nil {
-		return core.ShipWeaponMount{}, err
-	}
-	mount.ModifierIDs = ids
 	return mount, nil
 }
 
@@ -119,9 +130,6 @@ func canonicalWeaponMounts(mounts []core.ShipWeaponMount) ([]core.ShipWeaponMoun
 	for i := range out {
 		if out[i].Slot < 0 || out[i].Slot > 7 {
 			return nil, militaryDesignError(MilitaryDesignReasonWeaponSlotOutOfRange, "weapon slot %d is outside 0..7", out[i].Slot)
-		}
-		if !isFrozenBeamWeaponID(out[i].WeaponID) {
-			return nil, militaryDesignError(MilitaryDesignReasonWeaponUnknown, "unknown Beam weapon %q", out[i].WeaponID)
 		}
 		if out[i].Count <= 0 {
 			return nil, militaryDesignError(MilitaryDesignReasonWeaponCountInvalid, "weapon count must be positive")
@@ -136,6 +144,11 @@ func canonicalWeaponMounts(mounts []core.ShipWeaponMount) ([]core.ShipWeaponMoun
 	for i := 1; i < len(out); i++ {
 		if out[i].Slot == out[i-1].Slot {
 			return nil, militaryDesignError(MilitaryDesignReasonWeaponSlotDuplicate, "duplicate weapon slot %d", out[i].Slot)
+		}
+	}
+	for i := range out {
+		if !isFrozenBeamWeaponID(out[i].WeaponID) && !isFrozenOrdnanceWeaponID(out[i].WeaponID) {
+			return nil, militaryDesignError(MilitaryDesignReasonWeaponUnknown, "unknown supported weapon %q", out[i].WeaponID)
 		}
 	}
 	return out, nil
@@ -193,15 +206,26 @@ func (r *EconomyRules) quoteBeamWeapon(empire *core.Empire, input core.ShipWeapo
 	if !empireKnowsTechnology(empire, weapon.TechnologyID) {
 		return militaryBeamWeaponQuote{}, militaryDesignError(MilitaryDesignReasonWeaponTechnologyRequired, "empire %d has no technology %d for %q", empire.ID, weapon.TechnologyID, weapon.ID)
 	}
+	mask := beamMountBit(mount.MountType)
+	if mask != 0 && weapon.AllowedModifierMask&mask == 0 {
+		return militaryBeamWeaponQuote{}, militaryDesignError(MilitaryDesignReasonWeaponMountNotAllowed, "%q does not allow mount %q", weapon.ID, mount.MountType)
+	}
+	if mount.Ammo != 0 {
+		return militaryBeamWeaponQuote{}, militaryDesignError(MilitaryDesignReasonWeaponAmmoNotAllowed, "Beam weapon %q does not use ordnance ammo/rack state", weapon.ID)
+	}
+	if mount.FiringArcID != "" {
+		return militaryBeamWeaponQuote{}, militaryDesignError(MilitaryDesignReasonWeaponFiringArcNotAllowed, "Beam weapon %q firing arcs are deferred to Slice 17.2A", weapon.ID)
+	}
+	ids, err := canonicalWeaponModifierIDs(mount.ModifierIDs)
+	if err != nil {
+		return militaryBeamWeaponQuote{}, err
+	}
+	mount.ModifierIDs = ids
 	level, err := r.shipComponentMiniaturizationLevel(empire, weapon.TechnologyID)
 	if err != nil {
 		return militaryBeamWeaponQuote{}, err
 	}
 
-	mask := beamMountBit(mount.MountType)
-	if mask != 0 && weapon.AllowedModifierMask&mask == 0 {
-		return militaryBeamWeaponQuote{}, militaryDesignError(MilitaryDesignReasonWeaponMountNotAllowed, "%q does not allow mount %q", weapon.ID, mount.MountType)
-	}
 	specialDeltaSpace := 0
 	specialDeltaCost := 0
 	for _, modifierID := range mount.ModifierIDs {

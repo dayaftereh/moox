@@ -22,6 +22,18 @@ const (
 	ShipWeaponModifierShieldPiercing     ShipWeaponModifierID = "shield_piercing"
 	ShipWeaponModifierAutofire           ShipWeaponModifierID = "autofire"
 	ShipWeaponModifierEnveloping         ShipWeaponModifierID = "enveloping"
+	ShipWeaponModifierMIRV               ShipWeaponModifierID = "mirv"
+	ShipWeaponModifierECCM               ShipWeaponModifierID = "eccm"
+	ShipWeaponModifierArmored            ShipWeaponModifierID = "armored"
+	ShipWeaponModifierFast               ShipWeaponModifierID = "fast"
+	ShipWeaponModifierEmissionsGuidance  ShipWeaponModifierID = "emissions_guidance"
+	ShipWeaponModifierOverloaded         ShipWeaponModifierID = "overloaded"
+)
+
+type ShipWeaponFiringArcID string
+
+const (
+	ShipWeaponFiringArc360 ShipWeaponFiringArcID = "360"
 )
 
 type ShipWeaponMount struct {
@@ -30,6 +42,8 @@ type ShipWeaponMount struct {
 	Count       int                    `json:"count"`
 	MountType   ShipWeaponMountType    `json:"mount_type,omitempty"`
 	ModifierIDs []ShipWeaponModifierID `json:"modifier_ids,omitempty"`
+	Ammo        int                    `json:"ammo,omitempty"`
+	FiringArcID ShipWeaponFiringArcID  `json:"firing_arc_id,omitempty"`
 }
 
 func shipWeaponModifierRank(id ShipWeaponModifierID) int {
@@ -46,6 +60,18 @@ func shipWeaponModifierRank(id ShipWeaponModifierID) int {
 		return 4
 	case ShipWeaponModifierEnveloping:
 		return 5
+	case ShipWeaponModifierMIRV:
+		return 6
+	case ShipWeaponModifierECCM:
+		return 7
+	case ShipWeaponModifierArmored:
+		return 8
+	case ShipWeaponModifierFast:
+		return 9
+	case ShipWeaponModifierEmissionsGuidance:
+		return 10
+	case ShipWeaponModifierOverloaded:
+		return 11
 	default:
 		return -1
 	}

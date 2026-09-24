@@ -49,8 +49,8 @@ func TestMilitaryDesignerCatalogProjectsOrderedAuthoritativeBaseline(t *testing.
 	if catalog.Hulls[5].RequiredTechnologyKey != "doom_star_construction" || catalog.Hulls[5].RequiredTechnologyID != 55 || catalog.Hulls[5].TechnologyKnown || catalog.Hulls[5].LockReason != ShipDesignerLockTechnologyRequired {
 		t.Fatalf("Doom Star lock=%+v", catalog.Hulls[5])
 	}
-	if len(catalog.Weapons) != 13 {
-		t.Fatalf("weapon choices=%d want 13", len(catalog.Weapons))
+	if len(catalog.Weapons) != 26 {
+		t.Fatalf("weapon choices=%d want 26", len(catalog.Weapons))
 	}
 	laserChoice, ok := designerWeaponChoiceByID(catalog.Weapons, "laser_cannon")
 	if !ok || laserChoice.TechnologyID != 100 || !laserChoice.Available {
@@ -61,6 +61,24 @@ func TestMilitaryDesignerCatalogProjectsOrderedAuthoritativeBaseline(t *testing.
 	}
 	if len(laserChoice.MountChoices) != 3 || len(laserChoice.ModifierChoices) != 4 {
 		t.Fatalf("Laser mount/modifier choices=%+v / %+v", laserChoice.MountChoices, laserChoice.ModifierChoices)
+	}
+	missileChoice, ok := designerWeaponChoiceByID(catalog.Weapons, "nuclear_missile")
+	if !ok || missileChoice.Kind != "missile" || missileChoice.Available || missileChoice.DefaultAmmo != 5 || missileChoice.FixedFiringArcID != core.ShipWeaponFiringArc360 {
+		t.Fatalf("Nuclear Missile catalog choice=%+v ok=%v", missileChoice, ok)
+	}
+	if !reflect.DeepEqual(missileChoice.AmmoChoices, []int{2, 5, 10, 15, 20}) || len(missileChoice.MountChoices) != 1 || len(missileChoice.ModifierChoices) != 5 {
+		t.Fatalf("Nuclear Missile config choices=%+v mounts=%+v modifiers=%+v", missileChoice.AmmoChoices, missileChoice.MountChoices, missileChoice.ModifierChoices)
+	}
+	if missileChoice.EffectiveStandardSpace != 20 || missileChoice.EffectiveStandardCostPP != 20 || missileChoice.TacticalSupport != "metadata_only" {
+		t.Fatalf("Nuclear Missile default quote metadata=%+v", missileChoice)
+	}
+	torpedoChoice, ok := designerWeaponChoiceByID(catalog.Weapons, "anti_matter_torpedoes")
+	if !ok || torpedoChoice.DefaultAmmo != 2 || torpedoChoice.FixedFiringArcID != core.ShipWeaponFiringArc360 || len(torpedoChoice.AmmoChoices) != 0 {
+		t.Fatalf("Anti-Matter Torpedo catalog choice=%+v ok=%v", torpedoChoice, ok)
+	}
+	bombChoice, ok := designerWeaponChoiceByID(catalog.Weapons, "nuclear_bomb")
+	if !ok || bombChoice.DefaultAmmo != 10 || bombChoice.FixedFiringArcID != core.ShipWeaponFiringArc360 || len(bombChoice.ModifierChoices) != 0 {
+		t.Fatalf("Nuclear Bomb catalog choice=%+v ok=%v", bombChoice, ok)
 	}
 	if catalog.ProductionCostNumerator != 1 || catalog.ProductionCostDenominator != 1 {
 		t.Fatalf("production ratio=%d/%d want 1/1", catalog.ProductionCostNumerator, catalog.ProductionCostDenominator)
@@ -86,8 +104,8 @@ func TestMilitaryDesignerCatalogLocksUnknownLaserAndOmitsIllegalPreview(t *testi
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(catalog.Weapons) != 13 {
-		t.Fatalf("locked Beam catalog size=%d want 13", len(catalog.Weapons))
+	if len(catalog.Weapons) != 26 {
+		t.Fatalf("locked weapon catalog size=%d want 26", len(catalog.Weapons))
 	}
 	laserChoice, ok := designerWeaponChoiceByID(catalog.Weapons, "laser_cannon")
 	if !ok || laserChoice.TechnologyKnown || laserChoice.Available || laserChoice.LockReason != ShipDesignerLockTechnologyRequired {

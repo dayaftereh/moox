@@ -9,17 +9,18 @@ import (
 const TacticalCombatSchemaVersion = 1
 
 type TacticalCombatFile struct {
-	SchemaVersion int                        `json:"schema_version"`
-	Ruleset       string                     `json:"ruleset"`
-	Initiative    TacticalInitiativeRules    `json:"initiative"`
-	RNG           TacticalRNGRules           `json:"rng"`
-	Beam          TacticalBeamRules          `json:"beam"`
-	Weapon        TacticalWeaponRule         `json:"weapon"`
-	Weapons       []TacticalWeaponRule       `json:"weapons,omitempty"`
-	BeamModifiers []TacticalBeamModifierRule `json:"beam_modifiers,omitempty"`
-	Frigate       TacticalFrigateRule        `json:"frigate"`
-	Drives        []TacticalDriveSpeedRule   `json:"drives"`
-	Computer      TacticalComputerRule       `json:"computer"`
+	SchemaVersion     int                        `json:"schema_version"`
+	Ruleset           string                     `json:"ruleset"`
+	Initiative        TacticalInitiativeRules    `json:"initiative"`
+	RNG               TacticalRNGRules           `json:"rng"`
+	Beam              TacticalBeamRules          `json:"beam"`
+	Weapon            TacticalWeaponRule         `json:"weapon"`
+	Weapons           []TacticalWeaponRule       `json:"weapons,omitempty"`
+	BeamModifiers     []TacticalBeamModifierRule `json:"beam_modifiers,omitempty"`
+	OrdnanceModifiers []TacticalBeamModifierRule `json:"ordnance_modifiers,omitempty"`
+	Frigate           TacticalFrigateRule        `json:"frigate"`
+	Drives            []TacticalDriveSpeedRule   `json:"drives"`
+	Computer          TacticalComputerRule       `json:"computer"`
 }
 
 type TacticalInitiativeRules struct {
@@ -96,7 +97,7 @@ func LoadTacticalCombat(path string) (*TacticalCombatFile, error) {
 	return &file, nil
 }
 
-func (f *TacticalCombatFile) BeamWeapons() []TacticalWeaponRule {
+func (f *TacticalCombatFile) AllWeapons() []TacticalWeaponRule {
 	if f == nil {
 		return nil
 	}
@@ -109,13 +110,46 @@ func (f *TacticalCombatFile) BeamWeapons() []TacticalWeaponRule {
 	return []TacticalWeaponRule{f.Weapon}
 }
 
+func (f *TacticalCombatFile) BeamWeapons() []TacticalWeaponRule {
+	all := f.AllWeapons()
+	out := make([]TacticalWeaponRule, 0, len(all))
+	for _, weapon := range all {
+		if weapon.Kind == "beam" {
+			out = append(out, weapon)
+		}
+	}
+	return out
+}
+
+func (f *TacticalCombatFile) OrdnanceWeapons() []TacticalWeaponRule {
+	all := f.AllWeapons()
+	out := make([]TacticalWeaponRule, 0, len(all))
+	for _, weapon := range all {
+		switch weapon.Kind {
+		case "missile", "torpedo", "bomb":
+			out = append(out, weapon)
+		}
+	}
+	return out
+}
+
 func (f *TacticalCombatFile) WeaponByID(id string) (TacticalWeaponRule, bool) {
-	for _, weapon := range f.BeamWeapons() {
+	for _, weapon := range f.AllWeapons() {
 		if weapon.ID == id {
 			return weapon, true
 		}
 	}
 	return TacticalWeaponRule{}, false
+}
+
+func (f *TacticalCombatFile) WeaponModifiers() []TacticalBeamModifierRule {
+	if f == nil {
+		return nil
+	}
+	out := make([]TacticalBeamModifierRule, 0, len(f.BeamModifiers)+len(f.OrdnanceModifiers))
+	out = append(out, f.BeamModifiers...)
+	out = append(out, f.OrdnanceModifiers...)
+	return out
 }
 func (f *TacticalCombatFile) Validate() error {
 	if f == nil {
@@ -142,17 +176,29 @@ func (f *TacticalCombatFile) Validate() error {
 	if f.Weapon.ID == "" || f.Weapon.TechnologyID <= 0 || f.Weapon.Kind != "beam" || f.Weapon.BaseSpace <= 0 || f.Weapon.BaseCostPP <= 0 || f.Weapon.MinDamage <= 0 || f.Weapon.MaxDamage < f.Weapon.MinDamage {
 		return fmt.Errorf("invalid tactical weapon rule")
 	}
-	weapons := f.BeamWeapons()
-	if len(weapons) == 0 {
+	weapons := f.AllWeapons()
+	if len(f.BeamWeapons()) == 0 {
 		return fmt.Errorf("at least one Beam weapon rule is required")
 	}
 	seenWeapons := make(map[string]struct{}, len(weapons))
 	for i, weapon := range weapons {
-		if weapon.ID == "" || weapon.TechnologyID <= 0 || weapon.Kind != "beam" || weapon.BaseSpace <= 0 || weapon.BaseCostPP <= 0 || weapon.MinDamage <= 0 || weapon.MaxDamage < weapon.MinDamage {
-			return fmt.Errorf("invalid Beam weapon[%d]", i)
+		if weapon.ID == "" || weapon.TechnologyID <= 0 || weapon.MinDamage <= 0 || weapon.MaxDamage < weapon.MinDamage {
+			return fmt.Errorf("invalid tactical weapon[%d]", i)
+		}
+		switch weapon.Kind {
+		case "beam", "torpedo", "bomb":
+			if weapon.BaseSpace <= 0 || weapon.BaseCostPP <= 0 {
+				return fmt.Errorf("invalid %s weapon[%d] base Space/Cost", weapon.Kind, i)
+			}
+		case "missile":
+			if weapon.BaseSpace < 0 || weapon.BaseCostPP < 0 {
+				return fmt.Errorf("invalid Missile weapon[%d] base Space/Cost", i)
+			}
+		default:
+			return fmt.Errorf("invalid tactical weapon[%d] kind %q", i, weapon.Kind)
 		}
 		if _, ok := seenWeapons[weapon.ID]; ok {
-			return fmt.Errorf("duplicate Beam weapon %q", weapon.ID)
+			return fmt.Errorf("duplicate tactical weapon %q", weapon.ID)
 		}
 		seenWeapons[weapon.ID] = struct{}{}
 	}
@@ -164,15 +210,15 @@ func (f *TacticalCombatFile) Validate() error {
 	}
 	seenModifierBits := map[int]struct{}{}
 	seenModifierIDs := map[string]struct{}{}
-	for i, modifier := range f.BeamModifiers {
+	for i, modifier := range f.WeaponModifiers() {
 		if modifier.ID == "" || (modifier.Kind != "mount" && modifier.Kind != "special") || modifier.Bit <= 0 || modifier.RequiredMiniLevel < 0 {
-			return fmt.Errorf("invalid Beam modifier[%d]", i)
+			return fmt.Errorf("invalid weapon modifier[%d]", i)
 		}
 		if _, ok := seenModifierIDs[modifier.ID]; ok {
-			return fmt.Errorf("duplicate Beam modifier id %q", modifier.ID)
+			return fmt.Errorf("duplicate weapon modifier id %q", modifier.ID)
 		}
 		if _, ok := seenModifierBits[modifier.Bit]; ok {
-			return fmt.Errorf("duplicate Beam modifier bit 0x%X", modifier.Bit)
+			return fmt.Errorf("duplicate weapon modifier bit 0x%X", modifier.Bit)
 		}
 		seenModifierIDs[modifier.ID] = struct{}{}
 		seenModifierBits[modifier.Bit] = struct{}{}

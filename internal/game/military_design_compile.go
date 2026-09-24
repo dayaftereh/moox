@@ -284,11 +284,12 @@ func (r *EconomyRules) compileMilitaryDesignSpec(empire *core.Empire, hullID str
 		if r.TacticalCombat == nil {
 			return core.ShipDesignSpec{}, fmt.Errorf("tactical combat rules are unavailable")
 		}
-		for _, mount := range weaponSnapshot {
-			quote, err := r.quoteBeamWeapon(empire, mount)
+		for i, mount := range weaponSnapshot {
+			quote, err := r.quoteWeapon(empire, mount)
 			if err != nil {
 				return core.ShipDesignSpec{}, err
 			}
+			weaponSnapshot[i] = quote.Mount
 			spaceUsed += quote.RowSpace
 			baseCost += quote.RowCostPP
 		}

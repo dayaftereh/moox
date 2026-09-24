@@ -345,7 +345,7 @@ func TestSaveMilitaryDesignSupportsGroupedAndSplitLaserMounts(t *testing.T) {
 
 func TestSaveMilitaryDesignRejectsInvalidWeaponMountContract(t *testing.T) {
 	cases := []SaveMilitaryDesignPayload{
-		{Name: "wrong id", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "nuclear_missile", Count: 1}}},
+		{Name: "wrong id", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "unknown_weapon", Count: 1}}},
 		{Name: "negative slot", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: -1, WeaponID: "laser_cannon", Count: 1}}},
 		{Name: "high slot", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 8, WeaponID: "laser_cannon", Count: 1}}},
 		{Name: "zero count", HullID: SupportedMilitaryHullID, Weapons: []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 0}}},

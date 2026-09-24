@@ -46,6 +46,8 @@ type TacticalWeaponSpec struct {
 	Count           int                         `json:"count"`
 	MountType       core.ShipWeaponMountType    `json:"mount_type,omitempty"`
 	ModifierIDs     []core.ShipWeaponModifierID `json:"modifier_ids,omitempty"`
+	Ammo            int                         `json:"ammo,omitempty"`
+	FiringArcID     core.ShipWeaponFiringArcID  `json:"firing_arc_id,omitempty"`
 	MinDamage       int                         `json:"min_damage"`
 	MaxDamage       int                         `json:"max_damage"`
 	InnateEffectIDs []string                    `json:"innate_effect_ids,omitempty"`
@@ -134,6 +136,8 @@ type TacticalWeaponView struct {
 	Count           int                         `json:"count"`
 	MountType       core.ShipWeaponMountType    `json:"mount_type,omitempty"`
 	ModifierIDs     []core.ShipWeaponModifierID `json:"modifier_ids,omitempty"`
+	Ammo            int                         `json:"ammo,omitempty"`
+	FiringArcID     core.ShipWeaponFiringArcID  `json:"firing_arc_id,omitempty"`
 	MinDamage       int                         `json:"min_damage"`
 	MaxDamage       int                         `json:"max_damage"`
 	InnateEffectIDs []string                    `json:"innate_effect_ids,omitempty"`
@@ -840,7 +844,7 @@ func tacticalShipViews(spec TacticalSpec, r *tacticalRuntime) []TacticalShipView
 			if weapon := weaponState(state, weaponSpec.Slot); weapon != nil {
 				ready = weapon.Ready
 			}
-			view.Weapons = append(view.Weapons, TacticalWeaponView{Slot: weaponSpec.Slot, WeaponID: weaponSpec.WeaponID, Count: weaponSpec.Count, MountType: weaponSpec.MountType, ModifierIDs: append([]core.ShipWeaponModifierID(nil), weaponSpec.ModifierIDs...), MinDamage: weaponSpec.MinDamage, MaxDamage: weaponSpec.MaxDamage, InnateEffectIDs: append([]string(nil), weaponSpec.InnateEffectIDs...), TacticalSupport: weaponSpec.TacticalSupport, Ready: ready})
+			view.Weapons = append(view.Weapons, TacticalWeaponView{Slot: weaponSpec.Slot, WeaponID: weaponSpec.WeaponID, Count: weaponSpec.Count, MountType: weaponSpec.MountType, ModifierIDs: append([]core.ShipWeaponModifierID(nil), weaponSpec.ModifierIDs...), Ammo: weaponSpec.Ammo, FiringArcID: weaponSpec.FiringArcID, MinDamage: weaponSpec.MinDamage, MaxDamage: weaponSpec.MaxDamage, InnateEffectIDs: append([]string(nil), weaponSpec.InnateEffectIDs...), TacticalSupport: weaponSpec.TacticalSupport, Ready: ready})
 		}
 		out = append(out, view)
 	}

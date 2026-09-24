@@ -17,6 +17,19 @@ const weaponTranslationKeys: Record<string, TranslationKey> = {
   death_ray: 'shipbuilder.weapon.deathRay',
   plasma_cannon: 'shipbuilder.weapon.plasmaCannon',
   mauler_device: 'shipbuilder.weapon.maulerDevice',
+  nuclear_missile: 'shipbuilder.weapon.nuclearMissile',
+  merculite_missile: 'shipbuilder.weapon.merculiteMissile',
+  pulson_missile: 'shipbuilder.weapon.pulsonMissile',
+  zeon_missile: 'shipbuilder.weapon.zeonMissile',
+  anti_matter_torpedoes: 'shipbuilder.weapon.antiMatterTorpedoes',
+  proton_torpedoes: 'shipbuilder.weapon.protonTorpedoes',
+  plasma_torpedoes: 'shipbuilder.weapon.plasmaTorpedoes',
+  nuclear_bomb: 'shipbuilder.weapon.nuclearBomb',
+  fusion_bomb: 'shipbuilder.weapon.fusionBomb',
+  anti_matter_bomb: 'shipbuilder.weapon.antiMatterBomb',
+  neutronium_bomb: 'shipbuilder.weapon.neutroniumBomb',
+  death_spores: 'shipbuilder.weapon.deathSpores',
+  bio_terminator: 'shipbuilder.weapon.bioTerminator',
 }
 
 export const mountTranslationKeys: Record<ShipWeaponMountType, TranslationKey> = {
@@ -32,6 +45,12 @@ export const modifierTranslationKeys: Record<ShipWeaponModifierID, TranslationKe
   shield_piercing: 'shipbuilder.modifier.shieldPiercing',
   autofire: 'shipbuilder.modifier.autofire',
   enveloping: 'shipbuilder.modifier.enveloping',
+  mirv: 'shipbuilder.modifier.mirv',
+  eccm: 'shipbuilder.modifier.eccm',
+  armored: 'shipbuilder.modifier.armored',
+  fast: 'shipbuilder.modifier.fast',
+  emissions_guidance: 'shipbuilder.modifier.emissionsGuidance',
+  overloaded: 'shipbuilder.modifier.overloaded',
 }
 
 export function weaponLabel(t: Translator, weapon: Pick<MilitaryDesignerWeaponChoice, 'id'>): string {

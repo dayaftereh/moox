@@ -54,7 +54,7 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - active parent program; child order 17.0 -> 17.1 -> 17.2 -> 17.3 -> 17.2A -> 17.4 -> 17.5 -> 17.6 -> 17.7 -> 17.8 -> 17.9; 17.0-17.2 are closed/accepted, 17.3 has Gates 1-2 complete and Gate 3 ready/not started, and 17.2A plus 17.4-17.9 remain planned/not open.
+1. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - active parent program; child order 17.0 -> 17.1 -> 17.2 -> 17.3 -> 17.2A -> 17.4 -> 17.5 -> 17.6 -> 17.7 -> 17.8 -> 17.9; 17.0-17.2 are closed/accepted, 17.3 has Gates 1-2 complete and Gate 3 implementation/review active, and 17.2A plus 17.4-17.9 remain planned/not open.
 2. PLANNED_18_GALAXY_GENERATION_STRATEGIC_NAVIGATION_FIDELITY.md - reserved Galaxy Generation / Strategic Navigation fidelity pass; planned, not open.
 3. PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md - dedicated authoritative Spy/intelligence mechanics; Slice 19 remains intentionally unassigned.
 4. PLANNED_21_COLONY_BUILDINGS_PLANET_EFFECTS_POLLUTION_FIDELITY.md - authoritative Colony/Building/Planet effects including Pollution.
@@ -78,7 +78,7 @@ Slice 17 is a parent program. These child specifications are recovery-safe miles
    **Closed/accepted 2026-09-23.** Beam breadth, mount slots/counts, applicable modifiers, cost/space/unlocks and explicit Tactical handoff to 17.6.
 4. **Slice 17.3 - Missiles, Torpedoes and Bomb Ordnance**
    `PLANNED_17_3_MISSILES_TORPEDOES_BOMBS_ORDNANCE.md`
-   **Gates 1-2 complete; Gate 3 ready/not started.** Authoritative missile/torpedo/bomb design contract is frozen; complete projectile/interception/impact combat remains explicitly owned by 17.7.
+   **Gates 1-2 complete; Gate 3 implementation/review active.** Authoritative missile/torpedo/bomb design implementation is available for review; complete projectile/interception/impact combat remains explicitly owned by 17.7.
 5. **Slice 17.2A - Beam Weapon Firing Arcs**
    `PLANNED_17_2A_BEAM_WEAPON_FIRING_ARCS.md`
    **Planned/not open.** Opens only after 17.3 closes; adds original Beam firing-arc selection/cost/persistence without reopening accepted Slice 17.2, with Tactical arc enforcement owned by 17.6.

@@ -174,6 +174,13 @@ func baselineCombatantUnsupportedReason(ship core.Ship, rules *ruleset.TacticalC
 		if !ok {
 			return fmt.Sprintf("tactical combatant Beam %q is unsupported", canonical.WeaponID)
 		}
+		if weaponRule.Kind != "beam" {
+			if weaponRule.TacticalSupport != "metadata_only" {
+				return fmt.Sprintf("tactical combatant ordnance %q has unsupported tactical mode %q", canonical.WeaponID, weaponRule.TacticalSupport)
+			}
+			previousSlot = weapon.Slot
+			continue
+		}
 		if mountBit := beamMountBit(canonical.MountType); mountBit != 0 && weaponRule.AllowedModifierMask&mountBit == 0 {
 			return fmt.Sprintf("tactical combatant Beam %q does not allow mount %q", canonical.WeaponID, canonical.MountType)
 		}
@@ -221,6 +228,7 @@ func baselineTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing, 
 		out.Weapons = append(out.Weapons, battle.TacticalWeaponSpec{
 			Slot: canonical.Slot, WeaponID: canonical.WeaponID, Count: canonical.Count,
 			MountType: canonical.MountType, ModifierIDs: append([]core.ShipWeaponModifierID(nil), canonical.ModifierIDs...),
+			Ammo: canonical.Ammo, FiringArcID: canonical.FiringArcID,
 			MinDamage: weaponRule.MinDamage, MaxDamage: weaponRule.MaxDamage,
 			InnateEffectIDs: append([]string(nil), weaponRule.InnateEffectIDs...),
 			TacticalSupport: weaponRule.TacticalSupport,

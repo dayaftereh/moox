@@ -2,7 +2,7 @@
 
 Opened: 2026-09-23
 Parent: Slice 17 - Military Ship Design + Tactical Combat Program
-Status: **Gate 2 complete - Gate 3 ready / not started**
+Status: **Gate 2 complete - Gate 3 implementation/review active**
 
 ## Objective
 
@@ -92,4 +92,4 @@ Final frozen representation/API decisions:
 - stable Ammo/arc rejection reasons and validation order are frozen;
 - Beam Ammo/arc behavior remains unchanged until planned 17.2A.
 
-Gate 3 may now implement only this frozen contract. It is not started by this Gate-2 closeout.
+Gate 3 implementation now follows this frozen contract and is available for manual review on the canonical 7171 reference server. Gate 3 is not yet closed; acceptance/browser review and final closeout remain.

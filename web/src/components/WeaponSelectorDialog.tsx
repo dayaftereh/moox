@@ -47,6 +47,19 @@ const weaponTranslationKeys: Record<string, TranslationKey> = {
   death_ray: 'shipbuilder.weapon.deathRay',
   plasma_cannon: 'shipbuilder.weapon.plasmaCannon',
   mauler_device: 'shipbuilder.weapon.maulerDevice',
+  nuclear_missile: 'shipbuilder.weapon.nuclearMissile',
+  merculite_missile: 'shipbuilder.weapon.merculiteMissile',
+  pulson_missile: 'shipbuilder.weapon.pulsonMissile',
+  zeon_missile: 'shipbuilder.weapon.zeonMissile',
+  anti_matter_torpedoes: 'shipbuilder.weapon.antiMatterTorpedoes',
+  proton_torpedoes: 'shipbuilder.weapon.protonTorpedoes',
+  plasma_torpedoes: 'shipbuilder.weapon.plasmaTorpedoes',
+  nuclear_bomb: 'shipbuilder.weapon.nuclearBomb',
+  fusion_bomb: 'shipbuilder.weapon.fusionBomb',
+  anti_matter_bomb: 'shipbuilder.weapon.antiMatterBomb',
+  neutronium_bomb: 'shipbuilder.weapon.neutroniumBomb',
+  death_spores: 'shipbuilder.weapon.deathSpores',
+  bio_terminator: 'shipbuilder.weapon.bioTerminator',
 }
 
 const mountTranslationKeys: Record<ShipWeaponMountType, TranslationKey> = {
@@ -62,6 +75,12 @@ const modifierTranslationKeys: Record<ShipWeaponModifierID, TranslationKey> = {
   shield_piercing: 'shipbuilder.modifier.shieldPiercing',
   autofire: 'shipbuilder.modifier.autofire',
   enveloping: 'shipbuilder.modifier.enveloping',
+  mirv: 'shipbuilder.modifier.mirv',
+  eccm: 'shipbuilder.modifier.eccm',
+  armored: 'shipbuilder.modifier.armored',
+  fast: 'shipbuilder.modifier.fast',
+  emissions_guidance: 'shipbuilder.modifier.emissionsGuidance',
+  overloaded: 'shipbuilder.modifier.overloaded',
 }
 
 const mountHelpTranslationKeys: Record<ShipWeaponMountType, TranslationKey> = {
@@ -77,6 +96,12 @@ const modifierHelpTranslationKeys: Record<ShipWeaponModifierID, TranslationKey> 
   shield_piercing: 'shipbuilder.modifier.shieldPiercingHelp',
   autofire: 'shipbuilder.modifier.autofireHelp',
   enveloping: 'shipbuilder.modifier.envelopingHelp',
+  mirv: 'shipbuilder.modifier.mirvHelp',
+  eccm: 'shipbuilder.modifier.eccmHelp',
+  armored: 'shipbuilder.modifier.armoredHelp',
+  fast: 'shipbuilder.modifier.fastHelp',
+  emissions_guidance: 'shipbuilder.modifier.emissionsGuidanceHelp',
+  overloaded: 'shipbuilder.modifier.overloadedHelp',
 }
 
 function percentDeltaLabel(value: number): string {
@@ -127,6 +152,7 @@ export function WeaponSelectorDialog({
   const [selectedWeaponID, setSelectedWeaponID] = useState<string>(() => editingMount?.weapon_id ?? '')
   const [mountType, setMountType] = useState<ShipWeaponMountType>(() => editingMount?.mount_type ?? 'standard')
   const [modifierIDs, setModifierIDs] = useState<ShipWeaponModifierID[]>(() => editingMount?.modifier_ids ? [...editingMount.modifier_ids] : [])
+  const [ammo, setAmmo] = useState<number | undefined>(() => editingMount?.ammo)
   const quantity = editingMount?.count ?? 1
   const [preview, setPreview] = useState<MilitaryDesignDraftProjection | null>(null)
   const [previewing, setPreviewing] = useState(false)
@@ -186,8 +212,10 @@ export function WeaponSelectorDialog({
       count: quantity,
       mount_type: mountType,
       ...(modifierIDs.length > 0 ? { modifier_ids: [...modifierIDs] } : {}),
+      ...(ammo != null && ammo > 0 ? { ammo } : {}),
+      ...(selectedWeapon.fixed_firing_arc_id ? { firing_arc_id: selectedWeapon.fixed_firing_arc_id } : {}),
     }
-  }, [selectedWeapon, targetSlot, quantity, mountType, modifierIDs])
+  }, [selectedWeapon, targetSlot, quantity, mountType, modifierIDs, ammo])
 
   useEffect(() => {
     if (!candidateMount || !selectedWeapon?.available) {
@@ -223,6 +251,8 @@ export function WeaponSelectorDialog({
     candidateMount?.count,
     candidateMount?.mount_type,
     candidateMount?.modifier_ids?.join('|'),
+    candidateMount?.ammo,
+    candidateMount?.firing_arc_id,
     selectedWeapon?.available,
     existingMounts,
     hullID,
@@ -234,9 +264,11 @@ export function WeaponSelectorDialog({
 
   function selectWeapon(id: string) {
     if (id === selectedWeaponID) return
+    const nextWeapon = weapons.find((weapon) => weapon.id === id)
     setSelectedWeaponID(id)
     setMountType('standard')
     setModifierIDs([])
+    setAmmo(nextWeapon?.default_ammo)
     setHelpTopic(null)
     setPreview(null)
     setPreviewError('')
@@ -274,12 +306,15 @@ export function WeaponSelectorDialog({
       count: candidatePreview.count,
       mount_type: candidatePreview.mount_type,
       ...(candidatePreview.modifier_ids?.length ? { modifier_ids: [...candidatePreview.modifier_ids] } : {}),
+      ...(candidatePreview.ammo ? { ammo: candidatePreview.ammo } : {}),
+      ...(candidatePreview.firing_arc_id ? { firing_arc_id: candidatePreview.firing_arc_id } : {}),
     }, preview)
   }
 
   const modifierFilterOptions: ModifierFilter[] = [
     'all', 'heavy', 'point_defense',
     'armor_piercing', 'continuous', 'no_range_dissipation', 'shield_piercing', 'autofire', 'enveloping',
+    'mirv', 'eccm', 'armored', 'fast', 'emissions_guidance', 'overloaded',
   ]
 
   return (
@@ -416,6 +451,36 @@ export function WeaponSelectorDialog({
                     </div>
                   )}
                 </fieldset>
+
+                {selectedWeapon.default_ammo ? (
+                  <fieldset className="shipdesigner-weapon-config-group">
+                    <legend>{t('shipbuilder.ammoRack')}</legend>
+                    {selectedWeapon.ammo_choices?.length ? (
+                      <div className="shipdesigner-weapon-option-grid">
+                        {selectedWeapon.ammo_choices.map((choice) => {
+                          const selected = ammo === choice
+                          return (
+                            <div className={"shipdesigner-weapon-option" + (selected ? " selected" : "") + (selectedWeapon.available ? "" : " locked")} key={choice}>
+                              <button
+                                type="button"
+                                className="shipdesigner-weapon-option-choice"
+                                data-weapon-ammo={choice}
+                                aria-pressed={selected}
+                                disabled={!selectedWeapon.available}
+                                onClick={() => setAmmo(choice)}
+                              >
+                                <span>{choice}</span>
+                              </button>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    ) : (
+                      <p className="muted">{t('shipbuilder.fixedAmmo')}: <strong>{selectedWeapon.default_ammo}</strong></p>
+                    )}
+                    {selectedWeapon.fixed_firing_arc_id && <small className="muted">{t('shipbuilder.fixedArc360')}</small>}
+                  </fieldset>
+                ) : null}
 
                 <fieldset className="shipdesigner-weapon-config-group">
                   <legend>{t('shipbuilder.specialModifiers')}</legend>

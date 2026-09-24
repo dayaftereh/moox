@@ -334,12 +334,21 @@ export type ShipWeaponModifierID =
   | 'shield_piercing'
   | 'autofire'
   | 'enveloping'
+  | 'mirv'
+  | 'eccm'
+  | 'armored'
+  | 'fast'
+  | 'emissions_guidance'
+  | 'overloaded'
+export type ShipWeaponFiringArcID = '360'
 export type ShipWeaponMount = {
   slot: number
   weapon_id: string
   count: number
   mount_type?: ShipWeaponMountType
   modifier_ids?: ShipWeaponModifierID[]
+  ammo?: number
+  firing_arc_id?: ShipWeaponFiringArcID
 }
 export type ShipVisualGenomeWire = {
   version: 4
@@ -452,6 +461,9 @@ export type MilitaryDesignerWeaponChoice = {
   allowed_modifier_mask: number
   mount_choices: MilitaryDesignerWeaponMountChoice[]
   modifier_choices: MilitaryDesignerWeaponModifierChoice[]
+  ammo_choices?: number[]
+  default_ammo?: number
+  fixed_firing_arc_id?: ShipWeaponFiringArcID
   innate_effect_ids?: string[]
   tactical_support: string
 }
@@ -491,6 +503,8 @@ export type MilitaryDesignWeaponRowPreview = {
   count: number
   mount_type: ShipWeaponMountType
   modifier_ids?: ShipWeaponModifierID[]
+  ammo?: number
+  firing_arc_id?: ShipWeaponFiringArcID
   miniaturization_level: number
   unit_space: number
   unit_cost_pp: number

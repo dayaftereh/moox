@@ -1,6 +1,6 @@
 # Planned Slice 17.3 - Missiles, Torpedoes and Bomb Ordnance
 
-Status: **active; Gates 1-2 complete; Gate 3 implementation ready / not started**.
+Status: **active; Gates 1-2 complete; Gate 3 implementation/review active**.
 
 ## Objective
 
