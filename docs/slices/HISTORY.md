@@ -619,3 +619,10 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Designer catalog/preview must expose server-owned Ammo choices/defaults/fixed arc; React must not derive these values locally.
 - Stable ordnance reasons now include `weapon_ammo_required`, `weapon_ammo_invalid`, `weapon_ammo_not_allowed` and `weapon_firing_arc_not_allowed` in a frozen validation order.
 - Gate 3 is ready but not started; complete projectile/interception/impact/bomb runtime behavior remains owned by Slice 17.7.
+
+## 2026-09-24 - Slice 17.3 Gate 4 accepted and closed
+
+- User manually accepted the 7171 Ship Designer ordnance implementation and requested Gate 4.
+- Gate-4 regressions prove All-Tech high-tech ordnance availability, exact built-Ship Ammo/360 snapshot retention across design revision, and metadata-only BattleSession handoff without fake fire actions.
+- Full Go tests, go vet, web build, git diff check and fresh 7171 Reference-Lab browser smoke pass.
+- Slice 17.3 is closed with Gates 1-4 complete; no Slice-17 child is opened by this closeout. Planned 17.2A Beam Weapon Firing Arcs is next before 17.4; Tactical ordnance remains owned by 17.7.

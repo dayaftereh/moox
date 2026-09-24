@@ -1,6 +1,6 @@
 # Planned Slice 17.3 - Missiles, Torpedoes and Bomb Ordnance
 
-Status: **active; Gates 1-2 complete; Gate 3 implementation/review active**.
+Status: **closed/accepted; Gates 1-4 complete (2026-09-24)**.
 
 ## Objective
 
@@ -56,21 +56,21 @@ Gate-2 working contract: `docs/research/SLICE_17_3_GATE2_ORDNANCE_CONTRACT_FREEZ
 
 ## Gate 3 - implementation
 
-- [ ] Normalize/complete ordnance data required by the frozen matrix.
-- [ ] Expand designer catalog and save validation.
-- [ ] Extend ShipDesignSpec weapon snapshots without fake tactical state.
-- [ ] Extend Designer HMI for ordnance selection/counts/modifiers.
-- [ ] Preserve Colony Construction/persistence/revision behavior.
-- [ ] Add reference-lab construction and combat-handoff fixtures.
+- [x] Normalize/complete ordnance data required by the frozen matrix.
+- [x] Expand designer catalog and save validation.
+- [x] Extend ShipDesignSpec weapon snapshots without fake tactical state.
+- [x] Extend Designer HMI for ordnance selection/counts/modifiers.
+- [x] Preserve Colony Construction/persistence/revision behavior.
+- [x] Add reference-lab construction and combat-handoff fixtures.
 
 ## Gate 4 - QA + close
 
-- [ ] Legal/illegal ordnance combinations match the frozen contract.
-- [ ] Space/Cost/technology/ammo snapshots are deterministic.
-- [ ] High-tech ordnance can be tested immediately through 17.0.
-- [ ] Built Ships preserve exact ordnance snapshots after design revision.
-- [ ] Tactical consumers either use the frozen metadata or report unsupported behavior explicitly.
-- [ ] Full tests/vet/web/browser/persistence checks and `git diff --check` pass.
+- [x] Legal/illegal ordnance combinations match the frozen contract.
+- [x] Space/Cost/technology/ammo snapshots are deterministic.
+- [x] High-tech ordnance can be tested immediately through 17.0.
+- [x] Built Ships preserve exact ordnance snapshots after design revision.
+- [x] Tactical consumers either use the frozen metadata or report unsupported behavior explicitly.
+- [x] Full tests/vet/web/browser/persistence checks and `git diff --check` pass.
 
 ## Exit criterion
 
