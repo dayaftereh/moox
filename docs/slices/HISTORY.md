@@ -626,3 +626,9 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Gate-4 regressions prove All-Tech high-tech ordnance availability, exact built-Ship Ammo/360 snapshot retention across design revision, and metadata-only BattleSession handoff without fake fire actions.
 - Full Go tests, go vet, web build, git diff check and fresh 7171 Reference-Lab browser smoke pass.
 - Slice 17.3 is closed with Gates 1-4 complete; no Slice-17 child is opened by this closeout. Planned 17.2A Beam Weapon Firing Arcs is next before 17.4; Tactical ordnance remains owned by 17.7.
+
+## 2026-09-25 - Slice 17.2A Beam Weapon Firing Arcs opened
+
+- Slice 17.3 is closed/accepted; dependency order now advances to bounded follow-up 17.2A without reopening accepted Slice 17.2.
+- Gate 1 is an original-evidence audit of the complete Beam firing-arc matrix, default, legality and exact design quote arithmetic.
+- No Beam arc implementation is allowed before Gate 2 freezes the contract; Tactical direction enforcement remains owned by 17.6.

@@ -1,6 +1,6 @@
 # Planned Slice 17.2A - Beam Weapon Firing Arcs
 
-Status: **planned follow-up to closed Slice 17.2; opens only after Slice 17.3 closes; not open**.
+Status: **active; Gate 1 original firing-arc audit in progress**.
 
 ## Objective
 

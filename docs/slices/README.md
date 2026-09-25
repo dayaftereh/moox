@@ -54,7 +54,7 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - active parent program; child order 17.0 -> 17.1 -> 17.2 -> 17.3 -> 17.2A -> 17.4 -> 17.5 -> 17.6 -> 17.7 -> 17.8 -> 17.9; 17.0-17.3 are closed/accepted, 17.2A is the next planned child, and 17.4-17.9 remain planned/not open.
+1. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - active parent program; child order 17.0 -> 17.1 -> 17.2 -> 17.3 -> 17.2A -> 17.4 -> 17.5 -> 17.6 -> 17.7 -> 17.8 -> 17.9; 17.0-17.3 are closed/accepted, 17.2A is open in Gate 1 original audit, and 17.4-17.9 remain planned/not open.
 2. PLANNED_18_GALAXY_GENERATION_STRATEGIC_NAVIGATION_FIDELITY.md - reserved Galaxy Generation / Strategic Navigation fidelity pass; planned, not open.
 3. PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md - dedicated authoritative Spy/intelligence mechanics; Slice 19 remains intentionally unassigned.
 4. PLANNED_21_COLONY_BUILDINGS_PLANET_EFFECTS_POLLUTION_FIDELITY.md - authoritative Colony/Building/Planet effects including Pollution.
@@ -81,7 +81,7 @@ Slice 17 is a parent program. These child specifications are recovery-safe miles
    **Closed/accepted; Gates 1-4 complete (2026-09-24).** Authoritative missile/torpedo/bomb design breadth is complete to the frozen contract; complete projectile/interception/impact combat remains explicitly owned by 17.7.
 5. **Slice 17.2A - Beam Weapon Firing Arcs**
    `PLANNED_17_2A_BEAM_WEAPON_FIRING_ARCS.md`
-   **Planned/not open.** Opens only after 17.3 closes; adds original Beam firing-arc selection/cost/persistence without reopening accepted Slice 17.2, with Tactical arc enforcement owned by 17.6.
+   **Open; Gate 1 original audit active.** Adds original Beam firing-arc selection/cost/persistence without reopening accepted Slice 17.2, with Tactical arc enforcement owned by 17.6.
 6. **Slice 17.4 - Ship Specials and Fighter Systems**
    `PLANNED_17_4_SHIP_SPECIALS_FIGHTER_SYSTEMS.md`
    Specials/fighter breadth with explicit per-feature strategic/tactical support classification.
