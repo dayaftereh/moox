@@ -2,7 +2,7 @@
 
 Date opened: 2026-09-25
 
-Status: **Gate 1 complete - Gate 2 contract freeze ready / not started**
+Status: **Gates 1-2 complete - Gate 3 implementation ready / not started**
 
 Plan: `docs/slices/PLANNED_17_2A_BEAM_WEAPON_FIRING_ARCS.md`
 
@@ -23,7 +23,7 @@ Gate 1 must establish durable original evidence for:
 
 - Slice 17.2 remains closed/accepted and is not reopened.
 - Slice 17.3 remains closed/accepted.
-- Do not implement Beam arc support before Gate 2 freezes the contract.
+- Gate 3 must implement only the frozen Gate-2 Beam arc contract; do not add Slice-17.6 Tactical directional enforcement.
 - Do not open Slice 17.4 or later children while 17.2A is open.
 - Tactical firing-direction/target-geometry enforcement remains owned by Slice 17.6.
 - Missile/Torpedo/Bomb arc policy remains owned by closed Slice 17.3.
@@ -32,4 +32,4 @@ Gate 1 must establish durable original evidence for:
 
 Gate 1 is complete. Durable evidence: `docs/research/SLICE_17_2A_GATE1_BEAM_FIRING_ARC_AUDIT_2026-09-25.md`.
 
-Gate 2 contract freeze is ready but not started. No Beam arc implementation is authorized until Gate 2 freezes canonical IDs/labels/default/surcharges/quote integration/persistence/HMI and the Slice-17.6 Tactical deferral.
+Gate 2 contract freeze is complete. Gate 3 implementation may now implement only the frozen IDs/labels/default/surcharges/quote integration/persistence/HMI contract; Slice-17.6 retains Tactical directional enforcement.

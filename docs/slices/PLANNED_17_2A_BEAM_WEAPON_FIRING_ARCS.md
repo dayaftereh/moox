@@ -1,6 +1,6 @@
 # Planned Slice 17.2A - Beam Weapon Firing Arcs
 
-Status: **active; Gate 1 complete; Gate 2 contract freeze ready / not started**.
+Status: **active; Gates 1-2 complete; Gate 3 implementation ready / not started**.
 
 ## Objective
 
@@ -69,14 +69,16 @@ Evidence: `docs/research/SLICE_17_2A_GATE1_BEAM_FIRING_ARC_AUDIT_2026-09-25.md`.
 
 ## Gate 2 - Beam firing-arc contract freeze
 
-- [ ] Freeze canonical arc IDs/order/labels.
-- [ ] Freeze default arc.
-- [ ] Freeze per-arc Space/PP deltas.
-- [ ] Freeze compatibility and stable rejection reasons.
-- [ ] Freeze exact server quote ordering with Standard/Heavy/Point Defense, modifiers and miniaturization.
-- [ ] Freeze the persistent `ShipWeaponMount` arc field and immutable BattleSession handoff field.
-- [ ] Freeze the downstream Slice-17.6 Tactical support/defer metadata.
-- [ ] Freeze reference-lab and browser expected vectors.
+- [x] Freeze canonical arc IDs/order/labels.
+- [x] Freeze default arc.
+- [x] Freeze per-arc Space/PP deltas.
+- [x] Freeze compatibility and stable rejection reasons.
+- [x] Freeze exact server quote ordering with Standard/Heavy/Point Defense, modifiers and miniaturization.
+- [x] Freeze the persistent ShipWeaponMount arc field and immutable BattleSession handoff field.
+- [x] Freeze the downstream Slice-17.6 Tactical support/defer metadata.
+- [x] Freeze reference-lab and browser expected vectors.
+
+Evidence: docs/research/SLICE_17_2A_GATE2_BEAM_FIRING_ARC_CONTRACT_2026-09-25.md.
 
 ## Gate 3 - implementation
 
@@ -103,3 +105,4 @@ Evidence: `docs/research/SLICE_17_2A_GATE1_BEAM_FIRING_ARC_AUDIT_2026-09-25.md`.
 Slice 17.2A closes when supported Beam firing arcs are original-evidenced, server-authoritative, selectable, costed, persisted and handed off losslessly, with Tactical direction enforcement explicitly owned by Slice 17.6.
 
 On accepted close, the next child is **Slice 17.4 - Ship Specials and Fighter Systems**.
+
