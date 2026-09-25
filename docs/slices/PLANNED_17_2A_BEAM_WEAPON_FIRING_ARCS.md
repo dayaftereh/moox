@@ -1,6 +1,6 @@
 # Planned Slice 17.2A - Beam Weapon Firing Arcs
 
-Status: **active; Gate 1 original firing-arc audit in progress**.
+Status: **active; Gate 1 complete; Gate 2 contract freeze ready / not started**.
 
 ## Objective
 
@@ -57,13 +57,15 @@ Gate 1 must re-audit the complete original arc matrix before implementation. Do 
 
 ## Gate 1 - original firing-arc audit
 
-- [ ] Enumerate every original Beam firing-arc bit/value and player-facing label.
-- [ ] Prove the original default Beam arc used by normal add/design flows.
-- [ ] Re-audit `Weapon_Arc_String_`, `Bonus_For_Weapon_Arcs_`, `Get_Weapon_Arc_` and Beam add/edit paths.
-- [ ] Freeze which arcs are legal for which Beam rows/mounts, if compatibility restrictions exist.
-- [ ] Freeze exact Space/PP bonus arithmetic and ordering relative to mount/modifier/miniaturization.
-- [ ] Audit the current MOOX Core/Ruleset/API/Weapon Selector/BattleSession gaps.
-- [ ] Define Baseline/Mid/All-Tech reference vectors including at least one 360-degree Beam row.
+- [x] Enumerate every original Beam firing-arc bit/value and player-facing label.
+- [x] Prove the original default Beam arc used by normal add/design flows.
+- [x] Re-audit `Weapon_Arc_String_`, `Bonus_For_Weapon_Arcs_`, `Get_Weapon_Arc_` and Beam add/edit paths.
+- [x] Freeze which arcs are legal for which Beam rows/mounts, if compatibility restrictions exist.
+- [x] Freeze exact Space/PP bonus arithmetic and ordering relative to mount/modifier/miniaturization.
+- [x] Audit the current MOOX Core/Ruleset/API/Weapon Selector/BattleSession gaps.
+- [x] Define Baseline/Mid/All-Tech reference vectors including at least one 360-degree Beam row.
+
+Evidence: `docs/research/SLICE_17_2A_GATE1_BEAM_FIRING_ARC_AUDIT_2026-09-25.md`.
 
 ## Gate 2 - Beam firing-arc contract freeze
 
