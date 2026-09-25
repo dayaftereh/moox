@@ -4,11 +4,12 @@ import {
   type MilitaryDesignDraftProjection,
   type MilitaryDesignerWeaponChoice,
   type PlayerSnapshot,
+  type ShipWeaponFiringArcID,
   type ShipWeaponModifierID,
   type ShipWeaponMount,
   type ShipWeaponMountType,
 } from '../api'
-import type { TranslationKey, TranslationVars } from '../i18n'
+import { useI18n, type TranslationKey, type TranslationVars } from '../i18n'
 import { GameIcon } from './GameIcon'
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
@@ -144,6 +145,7 @@ export function WeaponSelectorDialog({
   onClose,
   t,
 }: Props) {
+  const { locale } = useI18n()
   const [search, setSearch] = useState('')
   const [availability, setAvailability] = useState<AvailabilityFilter>('all')
   const [modifierFilter, setModifierFilter] = useState<ModifierFilter>('all')
@@ -153,6 +155,7 @@ export function WeaponSelectorDialog({
   const [mountType, setMountType] = useState<ShipWeaponMountType>(() => editingMount?.mount_type ?? 'standard')
   const [modifierIDs, setModifierIDs] = useState<ShipWeaponModifierID[]>(() => editingMount?.modifier_ids ? [...editingMount.modifier_ids] : [])
   const [ammo, setAmmo] = useState<number | undefined>(() => editingMount?.ammo)
+  const [firingArcID, setFiringArcID] = useState<ShipWeaponFiringArcID | undefined>(() => editingMount?.firing_arc_id)
   const quantity = editingMount?.count ?? 1
   const [preview, setPreview] = useState<MilitaryDesignDraftProjection | null>(null)
   const [previewing, setPreviewing] = useState(false)
@@ -206,6 +209,7 @@ export function WeaponSelectorDialog({
 
   const candidateMount = useMemo<ShipWeaponMount | null>(() => {
     if (!selectedWeapon || targetSlot == null) return null
+    const arcID = selectedWeapon.fixed_firing_arc_id ?? firingArcID ?? selectedWeapon.default_firing_arc_id
     return {
       slot: targetSlot,
       weapon_id: selectedWeapon.id,
@@ -213,9 +217,9 @@ export function WeaponSelectorDialog({
       mount_type: mountType,
       ...(modifierIDs.length > 0 ? { modifier_ids: [...modifierIDs] } : {}),
       ...(ammo != null && ammo > 0 ? { ammo } : {}),
-      ...(selectedWeapon.fixed_firing_arc_id ? { firing_arc_id: selectedWeapon.fixed_firing_arc_id } : {}),
+      ...(arcID ? { firing_arc_id: arcID } : {}),
     }
-  }, [selectedWeapon, targetSlot, quantity, mountType, modifierIDs, ammo])
+  }, [selectedWeapon, targetSlot, quantity, mountType, modifierIDs, ammo, firingArcID])
 
   useEffect(() => {
     if (!candidateMount || !selectedWeapon?.available) {
@@ -270,6 +274,7 @@ export function WeaponSelectorDialog({
     setModifierIDs([])
     setAmmo(nextWeapon?.default_ammo)
     setHelpTopic(null)
+    setFiringArcID(nextWeapon?.fixed_firing_arc_id ?? nextWeapon?.default_firing_arc_id)
     setPreview(null)
     setPreviewError('')
   }
@@ -452,7 +457,30 @@ export function WeaponSelectorDialog({
                   )}
                 </fieldset>
 
-                {selectedWeapon.default_ammo ? (
+                {selectedWeapon.firing_arc_choices?.length ? (
+                  <fieldset className="shipdesigner-weapon-config-group">
+                    <legend>{t('shipbuilder.firingArc')}</legend>
+                    <div className="shipdesigner-weapon-option-grid">
+                      {selectedWeapon.firing_arc_choices.map((choice) => {
+                        const selected = (firingArcID ?? selectedWeapon.default_firing_arc_id) === choice.id
+                        const label = locale === 'de' ? choice.label_de : choice.label_en
+                        return (
+                          <div className={"shipdesigner-weapon-option" + (selected ? " selected" : "")} key={choice.id}>
+                            <button
+                              type="button"
+                              className="shipdesigner-weapon-option-choice"
+                              data-weapon-firing-arc={choice.id}
+                              aria-pressed={selected}
+                              onClick={() => setFiringArcID(choice.id)}
+                            >
+                              <span>{label}<small>{t('shipbuilder.weaponOptionCosts', { space: percentDeltaLabel(choice.space_cost_percent), cost: percentDeltaLabel(choice.production_cost_percent) })}</small></span>
+                            </button>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </fieldset>
+                ) : null}                {selectedWeapon.default_ammo ? (
                   <fieldset className="shipdesigner-weapon-config-group">
                     <legend>{t('shipbuilder.ammoRack')}</legend>
                     {selectedWeapon.ammo_choices?.length ? (

@@ -72,6 +72,7 @@ func militaryDesignReasonFromError(err error) string {
 		MilitaryDesignReasonWeaponAmmoRequired,
 		MilitaryDesignReasonWeaponAmmoInvalid,
 		MilitaryDesignReasonWeaponAmmoNotAllowed,
+		MilitaryDesignReasonWeaponFiringArcUnknown,
 		MilitaryDesignReasonWeaponFiringArcNotAllowed:
 		return reason
 	default:

@@ -2,7 +2,7 @@
 
 Date opened: 2026-09-25
 
-Status: **Gates 1-2 complete - Gate 3 implementation ready / not started**
+Status: **Gates 1-3 complete - Gate 4 acceptance ready / not started**
 
 Plan: `docs/slices/PLANNED_17_2A_BEAM_WEAPON_FIRING_ARCS.md`
 
@@ -32,4 +32,4 @@ Gate 1 must establish durable original evidence for:
 
 Gate 1 is complete. Durable evidence: `docs/research/SLICE_17_2A_GATE1_BEAM_FIRING_ARC_AUDIT_2026-09-25.md`.
 
-Gate 2 contract freeze is complete. Gate 3 implementation may now implement only the frozen IDs/labels/default/surcharges/quote integration/persistence/HMI contract; Slice-17.6 retains Tactical directional enforcement.
+Gate 2 contract freeze is complete. Gate 3 implementation is complete with durable evidence at docs/research/SLICE_17_2A_GATE3_BEAM_FIRING_ARC_IMPLEMENTATION_2026-09-25.md. Gate 4 acceptance is ready / not started; Slice 17.6 retains Tactical directional enforcement.

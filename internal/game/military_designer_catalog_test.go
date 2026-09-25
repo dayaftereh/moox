@@ -62,6 +62,13 @@ func TestMilitaryDesignerCatalogProjectsOrderedAuthoritativeBaseline(t *testing.
 	if len(laserChoice.MountChoices) != 3 || len(laserChoice.ModifierChoices) != 4 {
 		t.Fatalf("Laser mount/modifier choices=%+v / %+v", laserChoice.MountChoices, laserChoice.ModifierChoices)
 	}
+	if laserChoice.DefaultFiringArcID != core.ShipWeaponFiringArcForward || len(laserChoice.FiringArcChoices) != 5 {
+		t.Fatalf("Laser firing arcs=%+v default=%q", laserChoice.FiringArcChoices, laserChoice.DefaultFiringArcID)
+	}
+	if laserChoice.FiringArcChoices[1].ID != core.ShipWeaponFiringArcForwardExtended || laserChoice.FiringArcChoices[1].SpaceCostPercent != 25 ||
+		laserChoice.FiringArcChoices[4].ID != core.ShipWeaponFiringArc360 || laserChoice.FiringArcChoices[4].ProductionCostPercent != 50 {
+		t.Fatalf("Laser firing arc metadata=%+v", laserChoice.FiringArcChoices)
+	}
 	missileChoice, ok := designerWeaponChoiceByID(catalog.Weapons, "nuclear_missile")
 	if !ok || missileChoice.Kind != "missile" || missileChoice.Available || missileChoice.DefaultAmmo != 5 || missileChoice.FixedFiringArcID != core.ShipWeaponFiringArc360 {
 		t.Fatalf("Nuclear Missile catalog choice=%+v ok=%v", missileChoice, ok)
@@ -90,7 +97,7 @@ func TestMilitaryDesignerCatalogProjectsOrderedAuthoritativeBaseline(t *testing.
 		t.Fatalf("unarmed preview=%+v", catalog.Variants[0])
 	}
 	laser := catalog.Variants[1]
-	if laser.Key != "frigate:laser_cannon" || laser.Spec.ProductionCostPP != 30 || laser.Spec.SpaceUsed != 10 || laser.CommandPointCost != 1 || !reflect.DeepEqual(laser.Weapons, []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1, MountType: core.ShipWeaponMountStandard}}) {
+	if laser.Key != "frigate:laser_cannon" || laser.Spec.ProductionCostPP != 30 || laser.Spec.SpaceUsed != 10 || laser.CommandPointCost != 1 || !reflect.DeepEqual(laser.Weapons, []core.ShipWeaponMount{{Slot: 0, WeaponID: "laser_cannon", Count: 1, MountType: core.ShipWeaponMountStandard, FiringArcID: core.ShipWeaponFiringArcForward}}) {
 		t.Fatalf("Laser preview=%+v", laser)
 	}
 }

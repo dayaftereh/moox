@@ -626,6 +626,15 @@ async function main() {
   })()`)
   assert(editInitial.text.includes('Waffe bearbeiten') && editInitial.selected.includes('Laserkanone') && editInitial.standard && editInitial.quantityControls === 0 && editInitial.apply.includes('Übernehmen'), `Edit dialog was not prefilled without selector quantity controls: ${JSON.stringify(editInitial)}`)
 
+  const initialArcState = await evaluate(`(() => {
+    const buttons = [...document.querySelectorAll("[data-weapon-firing-arc]")]
+    return {
+      ids: buttons.map((button) => button.dataset.weaponFiringArc),
+      selected: buttons.find((button) => button.getAttribute("aria-pressed") === "true")?.dataset.weaponFiringArc || "",
+    }
+  })()`)
+  assert(JSON.stringify(initialArcState.ids) === JSON.stringify(["forward", "forward_extended", "back_extended", "rear", "360"]), "Beam firing-arc choices/order are wrong: " + JSON.stringify(initialArcState))
+  assert(initialArcState.selected === "forward", "New Beam default firing arc is not Forward: " + JSON.stringify(initialArcState))
   const mountHelpOpened = await evaluate(`(() => {
     const option = document.querySelector('.shipdesigner-weapon-config [data-weapon-mount="point_defense"]')?.closest('.shipdesigner-weapon-option')
     const help = option?.querySelector('.shipdesigner-weapon-option-help')
@@ -678,6 +687,24 @@ async function main() {
   })()`)
   assert(autofireClicked, 'Could not select Autofire while editing slot')
   await sleep(160)
+  const totalsBeforeArc = await evaluate(`document.querySelector(".shipdesigner-weapon-preview strong")?.textContent || ""`)
+  const arc360Clicked = await evaluate(`(() => {
+    const arc = document.querySelector('.shipdesigner-weapon-config [data-weapon-firing-arc="360"]')
+    if (!arc || arc.disabled) return false
+    if (arc.getAttribute("aria-pressed") !== "true") arc.click()
+    return true
+  })()`)
+  assert(arc360Clicked, "Could not select 360 Beam firing arc while editing slot")
+  await sleep(160)
+  const arc360State = await evaluate(`(() => {
+    const arc = document.querySelector('.shipdesigner-weapon-config [data-weapon-firing-arc="360"]')
+    return {
+      pressed: arc?.getAttribute("aria-pressed") === "true",
+      totals: document.querySelector(".shipdesigner-weapon-preview strong")?.textContent || "",
+    }
+  })()`)
+  assert(arc360State.pressed, "360 Beam firing arc did not carry selected state: " + JSON.stringify(arc360State))
+  assert(totalsBeforeArc && arc360State.totals && totalsBeforeArc !== arc360State.totals, "360 Beam firing arc did not update authoritative Space/PP preview: " + JSON.stringify({ before: totalsBeforeArc, after: arc360State.totals }))
   const editConfigured = await evaluate(`(() => {
     const pd = document.querySelector('.shipdesigner-weapon-config [data-weapon-mount="point_defense"]')
     const autofire = document.querySelector('.shipdesigner-weapon-config [data-weapon-modifier="autofire"]')
@@ -726,6 +753,8 @@ async function main() {
     }
   })()`)
   assert(editPersisted.pd && editPersisted.autofire, `Edited mount/modifier state did not persist in the slot: ${JSON.stringify(editPersisted)}`)
+  const persistedArc = await evaluate(`document.querySelector('.shipdesigner-weapon-config [data-weapon-firing-arc][aria-pressed="true"]')?.dataset.weaponFiringArc || ""`)
+  assert(persistedArc === "360", "Edited Beam firing arc did not persist as 360: " + persistedArc)
   await evaluate(`(() => { document.querySelector('.shipdesigner-system-dialog-close')?.click(); return true })()`)
   await sleep(80)
 

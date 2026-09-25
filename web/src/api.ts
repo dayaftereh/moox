@@ -340,7 +340,7 @@ export type ShipWeaponModifierID =
   | 'fast'
   | 'emissions_guidance'
   | 'overloaded'
-export type ShipWeaponFiringArcID = '360'
+export type ShipWeaponFiringArcID = 'forward' | 'forward_extended' | 'back_extended' | 'rear' | '360'
 export type ShipWeaponMount = {
   slot: number
   weapon_id: string
@@ -439,6 +439,13 @@ export type MilitaryDesignerWeaponModifierChoice = {
   space_percent_delta: number
   cost_percent_delta: number
 }
+export type MilitaryDesignerWeaponFiringArcChoice = {
+  id: ShipWeaponFiringArcID
+  label_en: string
+  label_de: string
+  space_cost_percent: number
+  production_cost_percent: number
+}
 export type MilitaryDesignerWeaponChoice = {
   id: string
   name_key: string
@@ -464,6 +471,8 @@ export type MilitaryDesignerWeaponChoice = {
   ammo_choices?: number[]
   default_ammo?: number
   fixed_firing_arc_id?: ShipWeaponFiringArcID
+  firing_arc_choices?: MilitaryDesignerWeaponFiringArcChoice[]
+  default_firing_arc_id?: ShipWeaponFiringArcID
   innate_effect_ids?: string[]
   tactical_support: string
 }

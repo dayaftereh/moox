@@ -34,6 +34,9 @@ func TestSlice172BeamQuoteMountsAndRefinement(t *testing.T) {
 			if quote.UnitSpace != tc.wantSpace || quote.UnitCostPP != tc.wantCost || quote.RowSpace != tc.wantSpace || quote.RowCostPP != tc.wantCost {
 				t.Fatalf("quote=%+v want space/cost=%d/%d", quote, tc.wantSpace, tc.wantCost)
 			}
+			if quote.Mount.FiringArcID != core.ShipWeaponFiringArcForward {
+				t.Fatalf("default arc=%q want=%q", quote.Mount.FiringArcID, core.ShipWeaponFiringArcForward)
+			}
 		})
 	}
 
@@ -43,6 +46,60 @@ func TestSlice172BeamQuoteMountsAndRefinement(t *testing.T) {
 	})
 	if err == nil || !strings.Contains(err.Error(), MilitaryDesignReasonWeaponModifierRefinementRequired) {
 		t.Fatalf("M0 armor piercing error=%v", err)
+	}
+}
+
+func TestSlice172ABeamQuoteFiringArcMatrix(t *testing.T) {
+	rules := loadColonyShipRules(t)
+	state := core.NewSmallFixture(0x1720A)
+	empire := &state.Empires[0]
+	addBaselineMilitaryTechnologies(empire)
+	addColonyShipTestTechnology(empire, 100)
+	for _, tc := range []struct {
+		arc       core.ShipWeaponFiringArcID
+		wantSpace int
+		wantCost  int
+	}{
+		{core.ShipWeaponFiringArcForward, 10, 5},
+		{core.ShipWeaponFiringArcForwardExtended, 12, 6},
+		{core.ShipWeaponFiringArcBackExtended, 12, 6},
+		{core.ShipWeaponFiringArcRear, 10, 5},
+		{core.ShipWeaponFiringArc360, 15, 7},
+	} {
+		quote, err := rules.quoteBeamWeapon(empire, core.ShipWeaponMount{
+			Slot: 0, WeaponID: "laser_cannon", Count: 1, FiringArcID: tc.arc,
+		})
+		if err != nil {
+			t.Fatalf("arc %q: %v", tc.arc, err)
+		}
+		if quote.Mount.FiringArcID != tc.arc || quote.UnitSpace != tc.wantSpace || quote.UnitCostPP != tc.wantCost {
+			t.Fatalf("arc %q quote=%+v want=%d/%d", tc.arc, quote, tc.wantSpace, tc.wantCost)
+		}
+	}
+	_, err := rules.quoteBeamWeapon(empire, core.ShipWeaponMount{
+		Slot: 0, WeaponID: "laser_cannon", Count: 1, FiringArcID: core.ShipWeaponFiringArcID("sideways"),
+	})
+	if err == nil || !strings.Contains(err.Error(), MilitaryDesignReasonWeaponFiringArcUnknown) {
+		t.Fatalf("unknown arc error=%v", err)
+	}
+}
+func TestSlice172AMidTechNeutron360ReferenceVector(t *testing.T) {
+	rules := loadColonyShipRules(t)
+	state := core.NewSmallFixture(0x1720B)
+	if err := rules.ApplyReferenceTriangleTechnologyProfile(state, ReferenceTriangleProfileMidTech); err != nil {
+		t.Fatal(err)
+	}
+	empire := &state.Empires[0]
+	quote, err := rules.quoteBeamWeapon(empire, core.ShipWeaponMount{
+		Slot: 0, WeaponID: "neutron_blaster", Count: 1, MountType: core.ShipWeaponMountStandard,
+		FiringArcID: core.ShipWeaponFiringArc360,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if quote.MiniaturizationLevel != 1 || quote.Mount.FiringArcID != core.ShipWeaponFiringArc360 ||
+		quote.UnitSpace != 12 || quote.UnitCostPP != 9 || quote.RowSpace != 12 || quote.RowCostPP != 9 {
+		t.Fatalf("mid-tech Neutron Blaster 360 quote=%+v", quote)
 	}
 }
 
@@ -82,6 +139,7 @@ func TestSlice172BeamQuoteAllTechModifierArithmeticAndCanonicalization(t *testin
 
 	quote, err := rules.quoteBeamWeapon(empire, core.ShipWeaponMount{
 		Slot: 3, WeaponID: "phasor", Count: 3, MountType: core.ShipWeaponMountPointDefense,
+		FiringArcID: core.ShipWeaponFiringArc360,
 		ModifierIDs: []core.ShipWeaponModifierID{
 			core.ShipWeaponModifierAutofire,
 			core.ShipWeaponModifierShieldPiercing,
@@ -103,9 +161,9 @@ func TestSlice172BeamQuoteAllTechModifierArithmeticAndCanonicalization(t *testin
 	if quote.ModifierMask != 0xC4 {
 		t.Fatalf("modifier mask=%#x want=0xC4", quote.ModifierMask)
 	}
-	// Phasor base 10/10; PD -> 5/5; Shield Piercing + Autofire => +100% -> 10/10;
-	// All-Tech gives Phasor mini level 4: Beam Space 50%% and cost 30%% -> unit 5/3, then count 3.
-	if quote.MiniaturizationLevel != 4 || quote.UnitSpace != 5 || quote.UnitCostPP != 3 || quote.RowSpace != 15 || quote.RowCostPP != 9 {
+	// Phasor base 10/10; PD -> 5/5; Shield Piercing + Autofire + 360 => +150% -> 12/12;
+	// All-Tech gives Phasor mini level 4: Beam Space 50%% and cost 30%% -> unit 6/3, then count 3.
+	if quote.MiniaturizationLevel != 4 || quote.UnitSpace != 6 || quote.UnitCostPP != 3 || quote.RowSpace != 18 || quote.RowCostPP != 9 {
 		t.Fatalf("all-tech phasor quote=%+v", quote)
 	}
 }

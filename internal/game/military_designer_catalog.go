@@ -78,33 +78,53 @@ type MilitaryDesignerWeaponModifierChoice struct {
 	CostPercentDelta  int    `json:"cost_percent_delta"`
 }
 
+type MilitaryDesignerWeaponFiringArcChoice struct {
+	ID                    core.ShipWeaponFiringArcID `json:"id"`
+	LabelEN               string                     `json:"label_en"`
+	LabelDE               string                     `json:"label_de"`
+	SpaceCostPercent      int                        `json:"space_cost_percent"`
+	ProductionCostPercent int                        `json:"production_cost_percent"`
+}
+
 type MilitaryDesignerWeaponChoice struct {
-	ID                      string                                 `json:"id"`
-	NameKey                 string                                 `json:"name_key"`
-	Kind                    string                                 `json:"kind"`
-	OriginalIndex           int                                    `json:"original_index"`
-	TechnologyID            int                                    `json:"technology_id"`
-	TechnologyFieldID       int                                    `json:"technology_field_id"`
-	TechnologyKnown         bool                                   `json:"technology_known"`
-	Available               bool                                   `json:"available"`
-	LockReason              string                                 `json:"lock_reason,omitempty"`
-	BaseSpace               int                                    `json:"base_space"`
-	BaseCostPP              int                                    `json:"base_cost_pp"`
-	MinDamage               int                                    `json:"min_damage"`
-	MaxDamage               int                                    `json:"max_damage"`
-	MiniaturizationLevel    int                                    `json:"miniaturization_level"`
-	CostReductionPercent    int                                    `json:"cost_reduction_percent"`
-	SpaceReductionPercent   int                                    `json:"space_reduction_percent"`
-	EffectiveStandardSpace  int                                    `json:"effective_standard_space"`
-	EffectiveStandardCostPP int                                    `json:"effective_standard_cost_pp"`
-	AllowedModifierMask     int                                    `json:"allowed_modifier_mask"`
-	MountChoices            []MilitaryDesignerWeaponMountChoice    `json:"mount_choices"`
-	ModifierChoices         []MilitaryDesignerWeaponModifierChoice `json:"modifier_choices"`
-	AmmoChoices             []int                                  `json:"ammo_choices,omitempty"`
-	DefaultAmmo             int                                    `json:"default_ammo,omitempty"`
-	FixedFiringArcID        core.ShipWeaponFiringArcID             `json:"fixed_firing_arc_id,omitempty"`
-	InnateEffectIDs         []string                               `json:"innate_effect_ids,omitempty"`
-	TacticalSupport         string                                 `json:"tactical_support"`
+	ID                      string                                  `json:"id"`
+	NameKey                 string                                  `json:"name_key"`
+	Kind                    string                                  `json:"kind"`
+	OriginalIndex           int                                     `json:"original_index"`
+	TechnologyID            int                                     `json:"technology_id"`
+	TechnologyFieldID       int                                     `json:"technology_field_id"`
+	TechnologyKnown         bool                                    `json:"technology_known"`
+	Available               bool                                    `json:"available"`
+	LockReason              string                                  `json:"lock_reason,omitempty"`
+	BaseSpace               int                                     `json:"base_space"`
+	BaseCostPP              int                                     `json:"base_cost_pp"`
+	MinDamage               int                                     `json:"min_damage"`
+	MaxDamage               int                                     `json:"max_damage"`
+	MiniaturizationLevel    int                                     `json:"miniaturization_level"`
+	CostReductionPercent    int                                     `json:"cost_reduction_percent"`
+	SpaceReductionPercent   int                                     `json:"space_reduction_percent"`
+	EffectiveStandardSpace  int                                     `json:"effective_standard_space"`
+	EffectiveStandardCostPP int                                     `json:"effective_standard_cost_pp"`
+	AllowedModifierMask     int                                     `json:"allowed_modifier_mask"`
+	MountChoices            []MilitaryDesignerWeaponMountChoice     `json:"mount_choices"`
+	ModifierChoices         []MilitaryDesignerWeaponModifierChoice  `json:"modifier_choices"`
+	AmmoChoices             []int                                   `json:"ammo_choices,omitempty"`
+	DefaultAmmo             int                                     `json:"default_ammo,omitempty"`
+	FiringArcChoices        []MilitaryDesignerWeaponFiringArcChoice `json:"firing_arc_choices,omitempty"`
+	DefaultFiringArcID      core.ShipWeaponFiringArcID              `json:"default_firing_arc_id,omitempty"`
+	FixedFiringArcID        core.ShipWeaponFiringArcID              `json:"fixed_firing_arc_id,omitempty"`
+	InnateEffectIDs         []string                                `json:"innate_effect_ids,omitempty"`
+	TacticalSupport         string                                  `json:"tactical_support"`
+}
+
+func beamFiringArcChoices() []MilitaryDesignerWeaponFiringArcChoice {
+	return []MilitaryDesignerWeaponFiringArcChoice{
+		{ID: core.ShipWeaponFiringArcForward, LabelEN: "Forward", LabelDE: "Vorne"},
+		{ID: core.ShipWeaponFiringArcForwardExtended, LabelEN: "Forward Extended", LabelDE: "Vorne erweitert", SpaceCostPercent: 25, ProductionCostPercent: 25},
+		{ID: core.ShipWeaponFiringArcBackExtended, LabelEN: "Back Extended", LabelDE: "Hinten erweitert", SpaceCostPercent: 25, ProductionCostPercent: 25},
+		{ID: core.ShipWeaponFiringArcRear, LabelEN: "Rear", LabelDE: "Hinten"},
+		{ID: core.ShipWeaponFiringArc360, LabelEN: "360", LabelDE: "360", SpaceCostPercent: 50, ProductionCostPercent: 50},
+	}
 }
 
 type MilitaryDesignerVariant struct {
@@ -322,10 +342,16 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 			var ammoChoices []int
 			defaultAmmo := 0
 			fixedArc := core.ShipWeaponFiringArcID("")
+			var firingArcChoices []MilitaryDesignerWeaponFiringArcChoice
+			defaultFiringArc := core.ShipWeaponFiringArcID("")
 			defaultMount := core.ShipWeaponMount{
 				Slot: 0, WeaponID: weapon.ID, Count: 1, MountType: core.ShipWeaponMountStandard,
 			}
-			if weapon.Kind != "beam" {
+			if weapon.Kind == "beam" {
+				firingArcChoices = beamFiringArcChoices()
+				defaultFiringArc = core.ShipWeaponFiringArcForward
+				defaultMount.FiringArcID = defaultFiringArc
+			} else {
 				fixedArc = core.ShipWeaponFiringArc360
 				defaultMount.FiringArcID = fixedArc
 				switch weapon.Kind {
@@ -370,6 +396,8 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 				ModifierChoices:         modifierChoices,
 				AmmoChoices:             ammoChoices,
 				DefaultAmmo:             defaultAmmo,
+				FiringArcChoices:        firingArcChoices,
+				DefaultFiringArcID:      defaultFiringArc,
 				FixedFiringArcID:        fixedArc,
 				InnateEffectIDs:         append([]string(nil), weapon.InnateEffectIDs...), TacticalSupport: weapon.TacticalSupport,
 			})
@@ -411,7 +439,7 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 			if err == nil {
 				catalog.Variants = append(catalog.Variants, MilitaryDesignerVariant{
 					Key: hull.ID + ":" + weapon.ID, HullID: hull.ID,
-					Weapons: core.CloneShipWeaponMounts(mounts), Spec: spec,
+					Weapons: core.CloneShipWeaponMounts(spec.Weapons), Spec: spec,
 					CommandPointCost: hull.SizeIndex + 1,
 				})
 			}

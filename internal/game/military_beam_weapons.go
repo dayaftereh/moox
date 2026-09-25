@@ -22,6 +22,7 @@ const (
 	MilitaryDesignReasonWeaponAmmoRequired               = "weapon_ammo_required"
 	MilitaryDesignReasonWeaponAmmoInvalid                = "weapon_ammo_invalid"
 	MilitaryDesignReasonWeaponAmmoNotAllowed             = "weapon_ammo_not_allowed"
+	MilitaryDesignReasonWeaponFiringArcUnknown           = "weapon_firing_arc_unknown"
 	MilitaryDesignReasonWeaponFiringArcNotAllowed        = "weapon_firing_arc_not_allowed"
 )
 
@@ -176,6 +177,22 @@ func beamMountPercent(mountType core.ShipWeaponMountType) int {
 	}
 }
 
+func canonicalBeamFiringArc(id core.ShipWeaponFiringArcID) (core.ShipWeaponFiringArcID, int, error) {
+	if id == "" {
+		id = core.ShipWeaponFiringArcForward
+	}
+	switch id {
+	case core.ShipWeaponFiringArcForward, core.ShipWeaponFiringArcRear:
+		return id, 0, nil
+	case core.ShipWeaponFiringArcForwardExtended, core.ShipWeaponFiringArcBackExtended:
+		return id, 25, nil
+	case core.ShipWeaponFiringArc360:
+		return id, 50, nil
+	default:
+		return "", 0, militaryDesignError(MilitaryDesignReasonWeaponFiringArcUnknown, "unknown Beam firing arc %q", id)
+	}
+}
+
 func beamModifierByID(items []ruleset.TacticalBeamModifierRule, id core.ShipWeaponModifierID) (ruleset.TacticalBeamModifierRule, bool) {
 	for _, item := range items {
 		if item.ID == string(id) {
@@ -213,9 +230,11 @@ func (r *EconomyRules) quoteBeamWeapon(empire *core.Empire, input core.ShipWeapo
 	if mount.Ammo != 0 {
 		return militaryBeamWeaponQuote{}, militaryDesignError(MilitaryDesignReasonWeaponAmmoNotAllowed, "Beam weapon %q does not use ordnance ammo/rack state", weapon.ID)
 	}
-	if mount.FiringArcID != "" {
-		return militaryBeamWeaponQuote{}, militaryDesignError(MilitaryDesignReasonWeaponFiringArcNotAllowed, "Beam weapon %q firing arcs are deferred to Slice 17.2A", weapon.ID)
+	arcID, arcBonus, err := canonicalBeamFiringArc(mount.FiringArcID)
+	if err != nil {
+		return militaryBeamWeaponQuote{}, err
 	}
+	mount.FiringArcID = arcID
 	ids, err := canonicalWeaponModifierIDs(mount.ModifierIDs)
 	if err != nil {
 		return militaryBeamWeaponQuote{}, err
@@ -247,8 +266,8 @@ func (r *EconomyRules) quoteBeamWeapon(empire *core.Empire, input core.ShipWeapo
 	mountPercent := beamMountPercent(mount.MountType)
 	afterMountSpace := (weapon.BaseSpace * mountPercent) / 100
 	afterMountCost := (weapon.BaseCostPP * mountPercent) / 100
-	afterSpecialSpace := (afterMountSpace * (100 + specialDeltaSpace)) / 100
-	afterSpecialCost := (afterMountCost * (100 + specialDeltaCost)) / 100
+	afterSpecialSpace := (afterMountSpace * (100 + specialDeltaSpace + arcBonus)) / 100
+	afterSpecialCost := (afterMountCost * (100 + specialDeltaCost + arcBonus)) / 100
 	unitSpace := miniaturizedComponentSpace(afterSpecialSpace, level, 1)
 	unitCost := miniaturizedComponentCost(afterSpecialCost, level)
 

@@ -1,6 +1,6 @@
 # Planned Slice 17.2A - Beam Weapon Firing Arcs
 
-Status: **active; Gates 1-2 complete; Gate 3 implementation ready / not started**.
+Status: **active; Gates 1-3 complete; Gate 4 acceptance ready / not started**.
 
 ## Objective
 
@@ -82,14 +82,16 @@ Evidence: docs/research/SLICE_17_2A_GATE2_BEAM_FIRING_ARC_CONTRACT_2026-09-25.md
 
 ## Gate 3 - implementation
 
-- [ ] Normalize the frozen Beam firing-arc catalog/rules.
-- [ ] Extend authoritative Beam quote/validation with firing arcs.
-- [ ] Persist arc metadata through save/revision/construction/built Ship/BattleSession.
-- [ ] Add a compact Weapon Selector arc control consistent with the accepted 17.2 HMI.
-- [ ] Make base/configured Space/PP previews update from the server-owned rule path.
-- [ ] Preserve Count, MountType and ModifierIDs when editing only the arc.
-- [ ] Add Go/ruleset/API/persistence/browser regressions across representative Beam rows and mobile widths.
-- [ ] Keep Tactical arc enforcement explicitly deferred to 17.6 until its combat contract is implemented.
+- [x] Normalize the frozen Beam firing-arc catalog/rules.
+- [x] Extend authoritative Beam quote/validation with firing arcs.
+- [x] Persist arc metadata through save/revision/construction/built Ship/BattleSession.
+- [x] Add a compact Weapon Selector arc control consistent with the accepted 17.2 HMI.
+- [x] Make base/configured Space/PP previews update from the server-owned rule path.
+- [x] Preserve Count, MountType and ModifierIDs when editing only the arc.
+- [x] Add Go/ruleset/API/persistence/browser regressions across representative Beam rows and mobile widths.
+- [x] Keep Tactical arc enforcement explicitly deferred to 17.6 until its combat contract is implemented.
+
+Evidence: docs/research/SLICE_17_2A_GATE3_BEAM_FIRING_ARC_IMPLEMENTATION_2026-09-25.md.
 
 ## Gate 4 - acceptance
 

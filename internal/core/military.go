@@ -33,7 +33,11 @@ const (
 type ShipWeaponFiringArcID string
 
 const (
-	ShipWeaponFiringArc360 ShipWeaponFiringArcID = "360"
+	ShipWeaponFiringArcForward         ShipWeaponFiringArcID = "forward"
+	ShipWeaponFiringArcForwardExtended ShipWeaponFiringArcID = "forward_extended"
+	ShipWeaponFiringArcBackExtended    ShipWeaponFiringArcID = "back_extended"
+	ShipWeaponFiringArcRear            ShipWeaponFiringArcID = "rear"
+	ShipWeaponFiringArc360             ShipWeaponFiringArcID = "360"
 )
 
 type ShipWeaponMount struct {
