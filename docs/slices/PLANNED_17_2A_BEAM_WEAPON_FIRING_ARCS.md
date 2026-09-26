@@ -1,6 +1,6 @@
 # Planned Slice 17.2A - Beam Weapon Firing Arcs
 
-Status: **active; Gates 1-3 complete; Gate 4 acceptance ready / not started**.
+Status: **closed/accepted; Gates 1-4 complete (2026-09-26)**.
 
 ## Objective
 
@@ -95,12 +95,14 @@ Evidence: docs/research/SLICE_17_2A_GATE3_BEAM_FIRING_ARC_IMPLEMENTATION_2026-09
 
 ## Gate 4 - acceptance
 
-- [ ] Original-supported Beam arcs can be selected without reopening 17.2.
-- [ ] 360-degree Beam configuration applies the verified original design surcharge.
-- [ ] Save -> reload -> revise -> build -> BattleSession preserves the chosen arc exactly.
-- [ ] Weapon Selector remains compact/non-overlapping on desktop and mobile.
-- [ ] No browser-local pricing/legality formula diverges from server authority.
-- [ ] Tactical support status is honest until Slice 17.6 consumes the arc metadata.
+- [x] Original-supported Beam arcs can be selected without reopening 17.2.
+- [x] 360-degree Beam configuration applies the verified original design surcharge.
+- [x] Save -> reload -> revise -> build -> BattleSession preserves the chosen arc exactly.
+- [x] Weapon Selector remains compact/non-overlapping on desktop and mobile.
+- [x] No browser-local pricing/legality formula diverges from server authority.
+- [x] Tactical support status is honest until Slice 17.6 consumes the arc metadata.
+
+Evidence: docs/research/SLICE_17_2A_GATE4_ACCEPTANCE_CLOSE_2026-09-26.md.
 
 ## Exit criterion
 
