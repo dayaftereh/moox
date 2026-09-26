@@ -7277,8 +7277,8 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 .shipdesigner-firing-compass-coverage {
   inset: 13px;
   background: transparent;
-  -webkit-mask: radial-gradient(circle, transparent 0 61%, #000 62% 89%, transparent 90%);
-  mask: radial-gradient(circle, transparent 0 61%, #000 62% 89%, transparent 90%);
+  -webkit-mask: radial-gradient(circle, transparent 0 66%, #000 67% 89%, transparent 90%);
+  mask: radial-gradient(circle, transparent 0 66%, #000 67% 89%, transparent 90%);
   filter: drop-shadow(0 0 6px rgba(76, 184, 255, .45));
   transition: background .18s ease, filter .18s ease;
 }
@@ -7353,9 +7353,9 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   line-height: 1;
 }
 .shipdesigner-firing-compass-button.north { top: 0; left: 50%; transform: translate(-50%, -2%); }
-.shipdesigner-firing-compass-button.east { right: 0; top: 50%; transform: translate(2%, -50%); }
+.shipdesigner-firing-compass-button.east { right: 0; top: 42%; transform: translate(2%, -50%); }
 .shipdesigner-firing-compass-button.south { bottom: 0; left: 50%; transform: translate(-50%, 2%); }
-.shipdesigner-firing-compass-button.west { left: 0; top: 50%; transform: translate(-2%, -50%); }
+.shipdesigner-firing-compass-button.west { left: 0; top: 58%; transform: translate(-2%, -50%); }
 
 .shipdesigner-firing-compass-button:not(:disabled):hover,
 .shipdesigner-firing-compass-center:not(:disabled):hover {
@@ -7404,8 +7404,8 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 .procedural-ship-glyph.shipdesigner-firing-compass-ship {
   position: relative;
   top: -4px;
-  width: 74%;
-  height: 74%;
+  width: 68%;
+  height: 68%;
   transform: rotate(-90deg);
   transform-origin: 50% 50%;
   filter: drop-shadow(0 3px 5px rgba(0,0,0,.55)) drop-shadow(0 0 7px rgba(83, 179, 245, .14));
@@ -7481,6 +7481,15 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
     width: 108px;
     height: 108px;
   }
+
+  .procedural-ship-glyph.shipdesigner-firing-compass-ship {
+    top: -2px;
+    width: 58%;
+    height: 58%;
+  }
+
+  .shipdesigner-firing-compass-button.east { top: 40%; }
+  .shipdesigner-firing-compass-button.west { top: 60%; }
 }
 
 .shipdesigner-firing-compass-button.decorative {
