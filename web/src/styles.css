@@ -7227,3 +7227,265 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
     font-size: .61rem;
   }
 }
+
+/* Slice 17.2A review refinement: radial firing-arc compass shared by Beam and fixed-360 ordnance. */
+.shipdesigner-firing-arc-group {
+  overflow: visible;
+}
+
+.shipdesigner-firing-compass {
+  --arc-glow: rgba(79, 180, 255, .92);
+  --arc-glow-soft: rgba(79, 180, 255, .24);
+  position: relative;
+  width: min(100%, 278px);
+  aspect-ratio: 1;
+  margin: 2px auto 18px;
+  isolation: isolate;
+}
+
+.shipdesigner-firing-compass-face {
+  position: absolute;
+  inset: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(112, 189, 255, .36);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(2, 13, 26, .98) 0 31%, rgba(4, 22, 42, .9) 32% 54%, rgba(4, 15, 29, .96) 55% 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.035),
+    inset 0 0 32px rgba(24, 112, 185, .11),
+    0 0 28px rgba(21, 91, 151, .12);
+}
+
+.shipdesigner-firing-compass-grid,
+.shipdesigner-firing-compass-coverage,
+.shipdesigner-firing-compass-radar-ring {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.shipdesigner-firing-compass-grid {
+  inset: 7px;
+  background:
+    repeating-conic-gradient(from 0deg, rgba(113, 192, 255, .20) 0 1deg, transparent 1deg 30deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 80%, #000 81% 88%, transparent 89%);
+  mask: radial-gradient(circle, transparent 0 80%, #000 81% 88%, transparent 89%);
+  opacity: .7;
+}
+
+.shipdesigner-firing-compass-coverage {
+  inset: 13px;
+  background: transparent;
+  -webkit-mask: radial-gradient(circle, transparent 0 47%, #000 48% 89%, transparent 90%);
+  mask: radial-gradient(circle, transparent 0 47%, #000 48% 89%, transparent 90%);
+  filter: drop-shadow(0 0 6px rgba(76, 184, 255, .45));
+  transition: background .18s ease, filter .18s ease;
+}
+
+.shipdesigner-firing-compass.arc-forward .shipdesigner-firing-compass-coverage {
+  background: conic-gradient(from -60deg, var(--arc-glow) 0 120deg, rgba(42, 86, 122, .12) 120deg 360deg);
+}
+.shipdesigner-firing-compass.arc-forward_extended .shipdesigner-firing-compass-coverage {
+  background: conic-gradient(from -120deg, var(--arc-glow) 0 240deg, rgba(42, 86, 122, .12) 240deg 360deg);
+}
+.shipdesigner-firing-compass.arc-rear .shipdesigner-firing-compass-coverage {
+  background: conic-gradient(from 120deg, var(--arc-glow) 0 120deg, rgba(42, 86, 122, .12) 120deg 360deg);
+}
+.shipdesigner-firing-compass.arc-back_extended .shipdesigner-firing-compass-coverage {
+  background: conic-gradient(from 60deg, var(--arc-glow) 0 240deg, rgba(42, 86, 122, .12) 240deg 360deg);
+}
+.shipdesigner-firing-compass.arc-360 .shipdesigner-firing-compass-coverage {
+  background: conic-gradient(var(--arc-glow) 0 360deg);
+  filter: drop-shadow(0 0 9px rgba(76, 184, 255, .58));
+}
+
+.shipdesigner-firing-compass-radar-ring {
+  border: 1px dashed rgba(117, 191, 248, .24);
+}
+.shipdesigner-firing-compass-radar-ring.ring-one { inset: 25%; }
+.shipdesigner-firing-compass-radar-ring.ring-two { inset: 11%; }
+
+.shipdesigner-firing-compass-heading {
+  position: absolute;
+  z-index: 1;
+  color: rgba(147, 210, 255, .7);
+  font-size: .78rem;
+  line-height: 1;
+  text-shadow: 0 0 6px rgba(74, 174, 255, .45);
+}
+.shipdesigner-firing-compass-heading.heading-n { top: 5px; left: 50%; transform: translateX(-50%); }
+.shipdesigner-firing-compass-heading.heading-e { right: 7px; top: 50%; transform: translateY(-50%); font-size: 1.1rem; }
+.shipdesigner-firing-compass-heading.heading-s { bottom: 5px; left: 50%; transform: translateX(-50%); }
+.shipdesigner-firing-compass-heading.heading-w { left: 7px; top: 50%; transform: translateY(-50%); font-size: 1.1rem; }
+
+.shipdesigner-firing-compass-button,
+.shipdesigner-firing-compass-center {
+  position: absolute;
+  z-index: 3;
+  border: 1px solid rgba(110, 185, 241, .34);
+  color: var(--text);
+  background: linear-gradient(180deg, rgba(18, 45, 70, .96), rgba(7, 21, 36, .96));
+  box-shadow: 0 5px 14px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,255,255,.025);
+  transition: transform .14s ease, border-color .14s ease, box-shadow .14s ease, background .14s ease;
+}
+
+.shipdesigner-firing-compass-button {
+  width: 52px;
+  min-width: 52px;
+  height: 52px;
+  min-height: 52px;
+  padding: 5px;
+  border-radius: 50%;
+  display: grid;
+  place-content: center;
+  gap: 1px;
+  text-align: center;
+}
+
+.shipdesigner-firing-compass-button strong {
+  font-size: .92rem;
+  line-height: 1;
+}
+.shipdesigner-firing-compass-button small {
+  color: var(--muted);
+  font-size: .53rem;
+  line-height: 1;
+}
+.shipdesigner-firing-compass-button.north { top: 0; left: 50%; transform: translate(-50%, -2%); }
+.shipdesigner-firing-compass-button.east { right: 0; top: 50%; transform: translate(2%, -50%); }
+.shipdesigner-firing-compass-button.south { bottom: 0; left: 50%; transform: translate(-50%, 2%); }
+.shipdesigner-firing-compass-button.west { left: 0; top: 50%; transform: translate(-2%, -50%); }
+
+.shipdesigner-firing-compass-button:not(:disabled):hover,
+.shipdesigner-firing-compass-center:not(:disabled):hover {
+  border-color: rgba(119, 207, 255, .88);
+  box-shadow: 0 0 18px rgba(59, 166, 245, .25), inset 0 0 16px rgba(62, 169, 250, .08);
+}
+.shipdesigner-firing-compass-button.north:not(:disabled):hover { transform: translate(-50%, -2%) scale(1.06); }
+.shipdesigner-firing-compass-button.east:not(:disabled):hover { transform: translate(2%, -50%) scale(1.06); }
+.shipdesigner-firing-compass-button.south:not(:disabled):hover { transform: translate(-50%, 2%) scale(1.06); }
+.shipdesigner-firing-compass-button.west:not(:disabled):hover { transform: translate(-2%, -50%) scale(1.06); }
+
+.shipdesigner-firing-compass-button.active,
+.shipdesigner-firing-compass-center.active {
+  border-color: rgba(118, 211, 255, .98);
+  color: #f3fbff;
+  background: linear-gradient(180deg, rgba(31, 111, 174, .96), rgba(9, 42, 73, .98));
+  box-shadow:
+    0 0 0 1px rgba(97, 196, 255, .22),
+    0 0 22px rgba(55, 169, 255, .38),
+    inset 0 0 18px rgba(97, 197, 255, .13);
+}
+.shipdesigner-firing-compass-button.active small { color: rgba(220, 245, 255, .9); }
+
+.shipdesigner-firing-compass-button:disabled,
+.shipdesigner-firing-compass-center:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.shipdesigner-firing-compass-center {
+  inset: 50% auto auto 50%;
+  width: 126px;
+  height: 126px;
+  transform: translate(-50%, -50%);
+  padding: 10px;
+  overflow: hidden;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(18, 48, 77, .98), rgba(3, 15, 28, .99) 68%),
+    rgba(4, 18, 31, .98);
+}
+.shipdesigner-firing-compass-center:not(:disabled):hover { transform: translate(-50%, -50%) scale(1.025); }
+
+.shipdesigner-firing-compass-ship {
+  width: 84%;
+  height: 84%;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,.55)) drop-shadow(0 0 7px rgba(83, 179, 245, .14));
+  pointer-events: none;
+}
+.shipdesigner-firing-compass-center.active .shipdesigner-firing-compass-ship {
+  filter: drop-shadow(0 3px 5px rgba(0,0,0,.55)) drop-shadow(0 0 9px rgba(91, 197, 255, .34));
+}
+
+.shipdesigner-firing-compass-center-label {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  transform: translateX(-50%);
+  min-width: 56px;
+  padding: 2px 7px 3px;
+  border: 1px solid rgba(122, 198, 250, .28);
+  border-radius: 999px;
+  background: rgba(2, 14, 26, .84);
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.shipdesigner-firing-compass-center-label strong {
+  font-size: .72rem;
+  line-height: 1;
+}
+.shipdesigner-firing-compass-center-label small {
+  color: var(--muted);
+  font-size: .5rem;
+  line-height: 1;
+}
+
+.shipdesigner-firing-compass-fixed {
+  position: absolute;
+  z-index: 4;
+  left: 50%;
+  bottom: -15px;
+  transform: translateX(-50%);
+  padding: 2px 8px;
+  border: 1px solid rgba(110, 185, 241, .2);
+  border-radius: 999px;
+  color: var(--muted);
+  background: rgba(5, 18, 31, .96);
+  font-size: .54rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.shipdesigner-firing-compass.fixed .shipdesigner-firing-compass-face {
+  border-color: rgba(102, 198, 255, .5);
+}
+.shipdesigner-firing-compass.fixed .shipdesigner-firing-compass-coverage {
+  background: conic-gradient(rgba(79, 180, 255, .82) 0 360deg);
+}
+
+@media (max-width: 720px) {
+  .shipdesigner-firing-compass {
+    width: min(100%, 238px);
+    margin-bottom: 16px;
+  }
+  .shipdesigner-firing-compass-face { inset: 16px; }
+  .shipdesigner-firing-compass-button {
+    width: 46px;
+    min-width: 46px;
+    height: 46px;
+    min-height: 46px;
+  }
+  .shipdesigner-firing-compass-center {
+    width: 108px;
+    height: 108px;
+  }
+}
+
+.shipdesigner-firing-compass-button.decorative {
+  pointer-events: none;
+  opacity: .32;
+  filter: saturate(.45);
+}
+.shipdesigner-firing-compass-button.decorative strong {
+  color: rgba(170, 205, 228, .66);
+}

@@ -10,6 +10,8 @@ import {
   type ShipWeaponMountType,
 } from '../api'
 import { useI18n, type TranslationKey, type TranslationVars } from '../i18n'
+import type { ShipVisualGenome } from '../shipVisualGenome'
+import { FiringArcCompass } from './FiringArcCompass'
 import { GameIcon } from './GameIcon'
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
@@ -25,6 +27,7 @@ type Props = {
   existingMounts: ShipWeaponMount[]
   hullID: string
   strategicPictureID: number
+  shipGenome: ShipVisualGenome
   computerID: string
   shieldID: string
   nextFreeSlot?: number
@@ -137,6 +140,7 @@ export function WeaponSelectorDialog({
   existingMounts,
   hullID,
   strategicPictureID,
+  shipGenome,
   computerID,
   shieldID,
   nextFreeSlot,
@@ -261,6 +265,7 @@ export function WeaponSelectorDialog({
     existingMounts,
     hullID,
     strategicPictureID,
+  shipGenome,
     computerID,
     shieldID,
     snapshot,
@@ -456,31 +461,26 @@ export function WeaponSelectorDialog({
                     </div>
                   )}
                 </fieldset>
-
-                {selectedWeapon.firing_arc_choices?.length ? (
-                  <fieldset className="shipdesigner-weapon-config-group">
+                {(selectedWeapon.firing_arc_choices?.length || selectedWeapon.fixed_firing_arc_id) ? (
+                  <fieldset className="shipdesigner-weapon-config-group shipdesigner-firing-arc-group">
                     <legend>{t('shipbuilder.firingArc')}</legend>
-                    <div className="shipdesigner-weapon-option-grid">
-                      {selectedWeapon.firing_arc_choices.map((choice) => {
-                        const selected = (firingArcID ?? selectedWeapon.default_firing_arc_id) === choice.id
-                        const label = locale === 'de' ? choice.label_de : choice.label_en
-                        return (
-                          <div className={"shipdesigner-weapon-option" + (selected ? " selected" : "")} key={choice.id}>
-                            <button
-                              type="button"
-                              className="shipdesigner-weapon-option-choice"
-                              data-weapon-firing-arc={choice.id}
-                              aria-pressed={selected}
-                              onClick={() => setFiringArcID(choice.id)}
-                            >
-                              <span>{label}<small>{t('shipbuilder.weaponOptionCosts', { space: percentDeltaLabel(choice.space_cost_percent), cost: percentDeltaLabel(choice.production_cost_percent) })}</small></span>
-                            </button>
-                          </div>
-                        )
-                      })}
-                    </div>
+                    <FiringArcCompass
+                      choices={selectedWeapon.firing_arc_choices}
+                      selectedArcID={firingArcID}
+                      defaultArcID={selectedWeapon.default_firing_arc_id}
+                      fixedArcID={selectedWeapon.fixed_firing_arc_id}
+                      hullID={hullID}
+                      shipGenome={shipGenome}
+                      weaponCount={existingMounts.reduce((sum, mount) => sum + mount.count, 0) + quantity}
+                      locale={locale}
+                      disabled={!selectedWeapon.available}
+                      fixedLabel={t('shipbuilder.fixedArc360')}
+                      onChange={setFiringArcID}
+                    />
                   </fieldset>
-                ) : null}                {selectedWeapon.default_ammo ? (
+                ) : null}
+
+                {selectedWeapon.default_ammo ? (
                   <fieldset className="shipdesigner-weapon-config-group">
                     <legend>{t('shipbuilder.ammoRack')}</legend>
                     {selectedWeapon.ammo_choices?.length ? (
@@ -506,7 +506,6 @@ export function WeaponSelectorDialog({
                     ) : (
                       <p className="muted">{t('shipbuilder.fixedAmmo')}: <strong>{selectedWeapon.default_ammo}</strong></p>
                     )}
-                    {selectedWeapon.fixed_firing_arc_id && <small className="muted">{t('shipbuilder.fixedArc360')}</small>}
                   </fieldset>
                 ) : null}
 

@@ -755,6 +755,32 @@ async function main() {
   assert(editPersisted.pd && editPersisted.autofire, `Edited mount/modifier state did not persist in the slot: ${JSON.stringify(editPersisted)}`)
   const persistedArc = await evaluate(`document.querySelector('.shipdesigner-weapon-config [data-weapon-firing-arc][aria-pressed="true"]')?.dataset.weaponFiringArc || ""`)
   assert(persistedArc === "360", "Edited Beam firing arc did not persist as 360: " + persistedArc)
+
+  const ordnanceCompassSelected = await evaluate(`(() => {
+    const row = [...document.querySelectorAll('.shipdesigner-weapon-selector-row')].find((item) => item.textContent?.includes('Merculit-Rakete'))
+    if (!row) return false
+    row.click()
+    return true
+  })()`)
+  assert(ordnanceCompassSelected, 'Could not select Merculit missile for fixed-360 compass proof')
+  await sleep(100)
+  const ordnanceCompass = await evaluate(`(() => {
+    const compass = document.querySelector('[data-firing-arc-compass]')
+    const arcs = [...document.querySelectorAll('[data-weapon-firing-arc]')].map((button) => ({
+      id: button.dataset.weaponFiringArc || '',
+      pressed: button.getAttribute('aria-pressed') === 'true',
+      disabled: Boolean(button.disabled),
+    }))
+    return {
+      active: compass?.dataset.activeFiringArc || '',
+      fixed: Boolean(compass?.classList.contains('fixed')),
+      ship: Boolean(compass?.querySelector('.shipdesigner-firing-compass-ship')),
+      label: compass?.querySelector('.shipdesigner-firing-compass-fixed')?.textContent || '',
+      arcs,
+    }
+  })()`)
+  assert(ordnanceCompass.active === '360' && ordnanceCompass.fixed && ordnanceCompass.ship, 'Fixed-360 ordnance compass is incomplete: ' + JSON.stringify(ordnanceCompass))
+  assert(ordnanceCompass.arcs.length === 1 && ordnanceCompass.arcs[0].id === '360' && ordnanceCompass.arcs[0].pressed && ordnanceCompass.arcs[0].disabled, 'Fixed-360 ordnance compass exposes an unexpected selectable arc: ' + JSON.stringify(ordnanceCompass))
   await evaluate(`(() => { document.querySelector('.shipdesigner-system-dialog-close')?.click(); return true })()`)
   await sleep(80)
 

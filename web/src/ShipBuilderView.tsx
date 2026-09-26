@@ -445,6 +445,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
           existingMounts={weaponMounts}
           hullID={currentHull.id}
           strategicPictureID={strategicPictureID}
+          shipGenome={candidate}
           computerID={selectedComputer.id}
           shieldID={shieldID}
           nextFreeSlot={editingWeaponMount?.slot ?? nextFreeWeaponSlot}
