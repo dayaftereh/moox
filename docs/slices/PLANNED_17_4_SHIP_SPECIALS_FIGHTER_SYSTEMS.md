@@ -37,13 +37,15 @@ No special may appear as fully supported without a real owner for its gameplay e
 
 ## Gate 1 - specials/fighter audit
 
-- [ ] Inventory original/normalized specials and fighter systems.
+- [x] Inventory original/normalized specials and fighter systems.
 - [ ] Re-audit technology, Space, Cost and miniaturization.
 - [ ] Re-audit stacking/exclusivity/quantity limits.
-- [ ] Identify strategic derived-stat effects implementable now.
-- [ ] Identify existing Tactical consumers versus missing combat subsystems.
-- [ ] Re-audit fighter/bomber carrier representation and the exact combat dependencies handed to Slice 17.8.
-- [ ] Define high-tech/Doom-Star reference fixtures in 17.0.
+- [x] Identify strategic derived-stat effects implementable now.
+- [x] Identify existing Tactical consumers versus missing combat subsystems.
+- [x] Re-audit fighter/bomber carrier representation and the exact combat dependencies handed to Slice 17.8.
+- [x] Define high-tech/Doom-Star reference fixtures in 17.0.
+
+Evidence/progress: docs/research/SLICE_17_4_GATE1_SPECIALS_FIGHTERS_AUDIT_2026-09-26.md.
 
 ## Gate 2 - specials contract freeze
 

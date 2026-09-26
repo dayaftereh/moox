@@ -1,6 +1,6 @@
 # OPEN Slice 17.4 - Ship Specials and Fighter Systems
 Date opened: 2026-09-26
-Status: **Gate 1 specials/fighter audit active**
+Status: **Gate 1 audit active - candidate/support matrix durable; exact Space/PP/miniaturization + compatibility extraction remains**
 Plan: docs/slices/PLANNED_17_4_SHIP_SPECIALS_FIGHTER_SYSTEMS.md
 ## Scope
 This child adds authoritative Ship Designer representation for supported specials and fighter/carrier systems after the accepted Beam and Ordnance design breadth.
@@ -19,3 +19,11 @@ Gate 1 must establish durable original/normalized evidence for:
 - Every candidate special must receive an explicit support classification before acceptance.
 - Deferred fighter/combat-special Tactical consumers remain owned by Slice 17.8.
 - Do not silently simulate or ignore unsupported Tactical effects.
+
+## Gate 1 progress
+
+Durable audit: docs/research/SLICE_17_4_GATE1_SPECIALS_FIGHTERS_AUDIT_2026-09-26.md
+
+Completed: candidate inventory, HELP effect audit, MOOX gap audit, existing Tactical consumer classification, fighter/17.8 handoff, and Doom-Star reference vectors.
+
+Open: exact original Ship Designer Space/PP/miniturization, selectable-vs-automatic, duplicate/quantity and mutual-exclusion rules.

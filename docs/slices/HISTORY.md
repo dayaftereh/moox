@@ -631,11 +631,15 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 
 - Slice 17.3 is closed/accepted; dependency order now advances to bounded follow-up 17.2A without reopening accepted Slice 17.2.
 - Gate 1 is an original-evidence audit of the complete Beam firing-arc matrix, default, legality and exact design quote arithmetic.
-- No Beam arc implementation is allowed before Gate 2 freezes the contract; Tactical direction enforcement remains owned by 17.6.## 2026-09-26 - Slice 17.2A Gate 4 accepted and closed
+- No Beam arc implementation is allowed before Gate 2 freezes the contract; Tactical direction enforcement remains owned by 17.6.
+
+## 2026-09-26 - Slice 17.2A Gate 4 accepted and closed
 - User manually accepted the refined 7171 Beam firing-arc compass HMI and explicitly requested Gate 4.
 - Gate-4 acceptance verifies original-supported Beam arc selection, the +50% 360 design surcharge, lossless save/revision/build/BattleSession FiringArcID retention, compact desktop/mobile HMI, server-authoritative pricing/legality and the metadata-only Tactical boundary.
 - Full Go tests, go vet, web build, git diff check and fresh 7171 Reference-Lab browser smoke pass on the accepted final state.
-- Slice 17.2A is closed with Gates 1-4 complete; no Slice-17 child is opened by this closeout. Slice 17.4 - Ship Specials and Fighter Systems is next and remains planned/not open; Tactical Beam arc enforcement remains owned by 17.6.## 2026-09-26 - Slice 17.4 Ship Specials and Fighter Systems opened
+- Slice 17.2A is closed with Gates 1-4 complete; no Slice-17 child is opened by this closeout. Slice 17.4 - Ship Specials and Fighter Systems is next and remains planned/not open; Tactical Beam arc enforcement remains owned by 17.6.
+
+## 2026-09-26 - Slice 17.4 Ship Specials and Fighter Systems opened
 - Slice 17.2A is closed/accepted with Gates 1-4 complete and no prior child remains open.
 - Slice 17.4 opens as the sole active Slice-17 child in Gate 1 audit.
 - Gate 1 inventories/classifies original and normalized specials/fighter systems, re-audits Technology/Space/Cost/miniaturization and compatibility, identifies strategic effects plus current Tactical consumers, and freezes high-tech/Doom-Star reference needs.
