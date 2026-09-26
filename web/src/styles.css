@@ -7277,8 +7277,8 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 .shipdesigner-firing-compass-coverage {
   inset: 13px;
   background: transparent;
-  -webkit-mask: radial-gradient(circle, transparent 0 47%, #000 48% 89%, transparent 90%);
-  mask: radial-gradient(circle, transparent 0 47%, #000 48% 89%, transparent 90%);
+  -webkit-mask: radial-gradient(circle, transparent 0 61%, #000 62% 89%, transparent 90%);
+  mask: radial-gradient(circle, transparent 0 61%, #000 62% 89%, transparent 90%);
   filter: drop-shadow(0 0 6px rgba(76, 184, 255, .45));
   transition: background .18s ease, filter .18s ease;
 }
@@ -7303,8 +7303,8 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 .shipdesigner-firing-compass-radar-ring {
   border: 1px dashed rgba(117, 191, 248, .24);
 }
-.shipdesigner-firing-compass-radar-ring.ring-one { inset: 25%; }
-.shipdesigner-firing-compass-radar-ring.ring-two { inset: 11%; }
+.shipdesigner-firing-compass-radar-ring.ring-one { inset: 18%; }
+.shipdesigner-firing-compass-radar-ring.ring-two { inset: 7%; }
 
 .shipdesigner-firing-compass-heading {
   position: absolute;
@@ -7401,9 +7401,11 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 }
 .shipdesigner-firing-compass-center:not(:disabled):hover { transform: translate(-50%, -50%) scale(1.025); }
 
-.shipdesigner-firing-compass-ship {
-  width: 84%;
-  height: 84%;
+.procedural-ship-glyph.shipdesigner-firing-compass-ship {
+  position: relative;
+  top: -4px;
+  width: 74%;
+  height: 74%;
   transform: rotate(-90deg);
   transform-origin: 50% 50%;
   filter: drop-shadow(0 3px 5px rgba(0,0,0,.55)) drop-shadow(0 0 7px rgba(83, 179, 245, .14));
