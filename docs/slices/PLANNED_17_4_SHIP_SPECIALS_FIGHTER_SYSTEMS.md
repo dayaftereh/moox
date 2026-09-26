@@ -1,6 +1,6 @@
 # Planned Slice 17.4 - Ship Specials and Fighter Systems
 
-Status: **planned; child of Slice 17; not open; opens only after 17.3 and follow-up 17.2A are closed**.
+Status: **active; Gate 1 specials/fighter audit in progress**.
 
 ## Objective
 
