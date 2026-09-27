@@ -1,6 +1,6 @@
 # Slice 17.4 Gate 1 - Ship Specials and Fighter Systems Audit
 Date: 2026-09-26
-Status: **Gate 1 in progress; candidate/support audit durable, exact ship Space/PP/miniaturization and general compatibility table still open**
+Status: **Gate 1 in progress; original 1.31 Ship Special table and core design-cost/space paths recovered; final miniaturization mapping plus separate fighter/bomber economics/quantity rules still open**
 Parent: Slice 17 - Military Ship Design + Tactical Combat
 Child: Slice 17.4 - Ship Specials and Fighter Systems
 ## 1. Scope and evidence boundary
@@ -14,7 +14,7 @@ It establishes:
 The committed technology extraction provides original technology IDs, technology-field IDs, research cost and HELP descriptions with provenance back to the original 1.31 assets/Orion2.exe.
 Important boundary:
 - research RP is technology research cost, not Ship Designer PP cost;
-- Gate 1 has not yet recovered the exact selectable-special Space/PP/miniturization table from the original design path;
+- Gate 1 has now recovered the original 1.31 selectable-special base Space/PP arrays, exclusions, class and strategic fields directly from Orion2.exe; final miniaturization-category mapping and separate fighter/bomber economics/quantity semantics remain open;
 - no Gate-2 economics or compatibility values may be inferred from HELP prose.
 ## 2. Current MOOX representation gap
 Current core.ShipDesignSpec contains:
@@ -184,20 +184,40 @@ Representative research costs:
 - Inertial Nullifier / Sub-Space Teleporter / Displacement Device 7500 RP
 - Damper Field / Phasing Cloak / Reflection Field / Time Warp Facilitator / Black Hole Generator / Spatial Compressor / Quantum Detonator 15000 RP
 Again: these are research costs, not ship PP costs.
-## 6. Economics / compatibility still open
-Before Gate 1 can close, original evidence is still required for every supported selectable row:
-1. base Ship Designer Space;
-2. base production PP;
-3. miniaturization class and exact rounding;
-4. whether cost/space scale with hull size or quantity;
-5. maximum count / duplicate legality;
-6. mutual exclusions;
-7. automatic-vs-selectable distinction;
-8. fighter-bay quantity semantics;
-9. interaction of Battle Pods / Megafluxers with base hull capacity;
-10. ordering of capacity modifiers relative to mandatory equipment and normal quote validation.
-Orion2.exe is present locally under reference/original/support/files.
-Standard wdis/wdump/objdump tools are not installed in the current environment, so these values remain an explicit Gate-1 extraction task rather than guesses.
+## 6. Original 1.31 economics / compatibility extraction
+Durable original-EXE recovery after the initial Gate-1 candidate audit:
+- embedded Watcom symbol _specials resolves to LE object 2, offset 0x6EE0;
+- record width is 47 bytes;
+- the table contains a dummy id=0 record followed by selectable special IDs 1..39;
+- each record contains two prefix words, id, tech_id, 6 hull-indexed Space values, 6 hull-indexed Cost values, 6 exclusion IDs, one class byte and one signed strategic value;
+- the local Orion2.exe SHA-256 used by the decoder is 7ae2ac2e5904ca330009af2827279d889906b0b9b7a8854c38eb707a56e955b5;
+- hull-indexed Space/PP, exclusion, class and strategic values can therefore be frozen from the local 1.31 executable rather than inferred from HELP prose or a later mod table.
+A classic 1.50 defaults table was used only as a row-name/cross-check aid. 36 of 39 selectable rows match the local 1.31 record fields exactly. The known local-1.31 differences are exclusion sets for:
+- Cloaking Device;
+- Phasing Cloak;
+- Stealth Field.
+Gate 2 must use the local 1.31 values for those rows.
+Original design-path symbols additionally recovered:
+- Special_Legal_For_Design_;
+- Special_System_Exclusion_;
+- Number_Of_Special_Systems_;
+- Design_Template_Costs_;
+- Design_Template_Space_Requirements_;
+- Total_Design_Cost_;
+- Total_Design_Space_.
+Disassembly of the template Cost/Space loops shows:
+- normal installed specials source hull-indexed base Cost and Space directly from _specials;
+- normal special Cost is passed through the existing technology-level cost reducer;
+- normal special Space is passed through the existing technology miniaturization-category space reducer;
+- Battle Pods (id=4) are an explicit exception and bypass those normal special Cost/Space miniaturization reducers.
+The next original anchor is _technology_applications at LE object 2 offset 0x6079. The interrupted research was resolving the exact application/category byte used by Miniaturization_Category_; the first attempted base address was rejected because it produced impossible all-zero category bytes.
+Still required before Gate 1 close:
+1. finish exact Miniaturization_Category_ mapping against _technology_applications and confirm rounding/reducer inputs for all special tech IDs;
+2. decode/freeze Special_Legal_For_Design_ and Special_System_Exclusion_ behavior beyond the record exclusion arrays, including automatic-vs-selectable and duplicate/slot legality;
+3. recover the separate Fighter/Bomber/Heavy Fighter design economics and quantity semantics from the original fighter/weapon path;
+4. freeze Battle Pods / Megafluxers capacity ordering relative to mandatory equipment and final quote validation;
+5. produce the final supported eligibility matrix.
+No Gate-2 contract value should be guessed while those remaining original paths are unresolved.
 ## 7. Provisional support classification
 This is audit classification, not Gate-2 acceptance.
 ### Category 1 candidate - design + strategic/derived effect can be completed in 17.4
@@ -272,10 +292,16 @@ Completed:
 - existing Tactical consumer audit completed;
 - 17.8 fighter/combat-special ownership boundary established;
 - high-tech/Doom-Star reference vectors defined.
+Additional original-EXE progress now durable:
+- _specials table located at object 2 / 0x6EE0;
+- 47-byte record layout decoded, including 6 hull Space, 6 hull PP, exclusions, class and strategic fields;
+- selectable IDs 1..39 plus dummy id=0 confirmed;
+- local 1.31 exclusion differences versus later classic defaults isolated;
+- original legality/exclusion and design Cost/Space routines located;
+- normal special Cost/Space miniaturization path and Battle Pods exception identified.
 Still required before Gate 1 close:
-- exact original Ship Designer Space / PP table;
-- miniaturization/rounding;
-- selectable-vs-automatic table;
-- duplicate/quantity/exclusivity rules;
-- final eligibility matrix.
+- exact Miniaturization_Category_ mapping/rounding from _technology_applications;
+- selectable-vs-automatic plus duplicate/slot legality from original routines;
+- separate Fighter/Bomber/Heavy Fighter economics and quantity semantics;
+- final eligibility/capacity-ordering matrix.
 No implementation should begin before those are frozen in Gate 2.
