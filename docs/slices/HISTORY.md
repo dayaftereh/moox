@@ -643,4 +643,9 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Slice 17.2A is closed/accepted with Gates 1-4 complete and no prior child remains open.
 - Slice 17.4 opens as the sole active Slice-17 child in Gate 1 audit.
 - Gate 1 inventories/classifies original and normalized specials/fighter systems, re-audits Technology/Space/Cost/miniaturization and compatibility, identifies strategic effects plus current Tactical consumers, and freezes high-tech/Doom-Star reference needs.
-- No 17.4 implementation is allowed before Gate 2 freezes the contract; deferred fighter/combat-special Tactical consumers remain owned by Slice 17.8.
+- No 17.4 implementation is allowed before Gate 2 freezes the contract; deferred fighter/combat-special Tactical consumers remain owned by Slice 17.8.## 2026-09-27 - Slice 17.4 Gate 1 specials/fighter audit complete
+- Local Orion2.exe directly closes the remaining economics/legality blockers: _specials has exact hull-indexed Space/PP/exclusion/class/strategic records, all normal Specials resolve through Space miniaturization class 1, and Battle Pods are the explicit non-miniaturized exception.
+- Original Designer routines prove 8 Special slots, duplicate suppression, six exclusion IDs per row, shield prerequisites for Hard Shields/Multi-Phased Shields/Shield Capacitor, and no normal Designer exposure for special record 39.
+- Fighter/Bomber/Heavy Fighter are original weapon rows 29-31 with local 1.31 base Space/PP 80/50, 60/30 and 30/10, normal weapon-row count semantics, and 4 craft per Bay from HELP.
+- Total_Design_Space_ proves researched Megafluxers tech 89 applies floor(base hull Space * 125 / 100); Battle Pods separately contribute fixed negative Special Space, so Gate 2 must preserve the two-path capacity ordering.
+- Every Special/Fighter candidate now has an explicit Gate-1 support classification. Gate 2 contract freeze is ready/not started; no production implementation has begun.

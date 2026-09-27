@@ -1,6 +1,6 @@
 # OPEN Slice 17.4 - Ship Specials and Fighter Systems
 Date opened: 2026-09-26
-Status: **Gate 1 audit active - original 1.31 special Space/PP/exclusion table recovered; miniaturization mapping + fighter economics/legality remain**
+Status: **Gate 1 complete; Gate 2 specials contract freeze ready / not started**
 Plan: docs/slices/PLANNED_17_4_SHIP_SPECIALS_FIGHTER_SYSTEMS.md
 ## Scope
 This child adds authoritative Ship Designer representation for supported specials and fighter/carrier systems after the accepted Beam and Ordnance design breadth.
@@ -26,4 +26,6 @@ Durable audit: docs/research/SLICE_17_4_GATE1_SPECIALS_FIGHTERS_AUDIT_2026-09-26
 
 Completed: candidate inventory, HELP effect audit, MOOX gap audit, existing Tactical consumer classification, fighter/17.8 handoff, and Doom-Star reference vectors.
 
-Open: exact miniaturization-category mapping/rounding, selectable-vs-automatic and duplicate/slot legality, separate Fighter/Bomber/Heavy Fighter economics/quantity semantics, and final capacity-ordering matrix.
+Gate 1 closed: original 1.31 economics/miniaturization, 8-slot/duplicate/exclusion legality, fighter quantity/economics, capacity ordering and explicit support classification are durable.
+
+Next: Gate 2 freezes the supported matrix, compatibility/quote rules, snapshot representation and 17.8 handoffs.

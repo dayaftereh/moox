@@ -1,6 +1,6 @@
 # Slice 17.4 Gate 1 - Ship Specials and Fighter Systems Audit
 Date: 2026-09-26
-Status: **Gate 1 in progress; original 1.31 Ship Special table and core design-cost/space paths recovered; final miniaturization mapping plus separate fighter/bomber economics/quantity rules still open**
+Status: **Gate 1 complete; original 1.31 specials/fighter economics, miniaturization, compatibility, quantity and support ownership audited; Gate 2 ready / not started**
 Parent: Slice 17 - Military Ship Design + Tactical Combat
 Child: Slice 17.4 - Ship Specials and Fighter Systems
 ## 1. Scope and evidence boundary
@@ -218,6 +218,135 @@ Still required before Gate 1 close:
 4. freeze Battle Pods / Megafluxers capacity ordering relative to mandatory equipment and final quote validation;
 5. produce the final supported eligibility matrix.
 No Gate-2 contract value should be guessed while those remaining original paths are unresolved.
+### 6.1 Miniaturization closed
+Direct disassembly of Miniaturization_Category_ at object-1 0x5F11C proves:
+- the technology-application record stride is 13 bytes;
+- byte +12 is read from _technology_applications;
+- the routine defaults the returned Space class to 1;
+- only application classes 3 and 9 enter exception branches that can change the result to Space class 0 or 2.
+Direct evaluation of all 39 _specials tech IDs shows application byte +12 = 0 for every row. Therefore every normal selectable Special uses Space class 1.
+The already-audited class-1 Space factors apply:
+- mini 0 = 100%;
+- mini 1 = 80%;
+- mini 2 = 70%;
+- mini 3 = 60%;
+- mini 4 = 50%;
+- mini 5+ = 40%.
+The universal positive Cost reducer remains:
+- mini 0 = 100%;
+- mini 1 = 75%;
+- mini 2 = 55%;
+- mini 3 = 40%;
+- mini 4 = 30%;
+- mini 5+ = 25%.
+Existing original rounding/minimum-one behavior from Slice 17.1 is reused; no parallel 17.4 approximation is needed.
+Battle Pods id=4 remain the explicit exception already observed in Design_Template_Costs_ / Design_Template_Space_Requirements_: their hull-indexed Cost and negative Space values bypass normal Special miniaturization.
+### 6.2 Slot, duplicate and exclusion legality closed
+Original Special_System_Choices_ proves:
+- the ordinary Designer candidate loop covers IDs 0..38;
+- id=39 is not offered as a normal player-design Special;
+- the current design has exactly 8 Special slots;
+- an already-installed Special choice is marked unavailable, except when editing that same slot.
+Original Number_Of_Special_Systems_ independently counts exactly those 8 slots.
+Original Special_System_Exclusion_:
+- reads the candidate row's 6 exclusion IDs from _specials;
+- compares them against all 8 installed Special slots;
+- ignores the currently edited slot;
+- returns the colliding installed Special ID when present.
+The local 1.31 table also self-excludes IDs 1..38. ID 39 does not self-exclude, but that record is not exposed by the normal Designer candidate loop.
+Original Special_Legal_For_Design_(design, specialID) additionally:
+- checks installed-Special exclusion relationships;
+- rejects Hard Shields id=13, Multi-Phased Shields id=20 and Shield Capacitor id=30 when design+0x12 is zero.
+The prior direct design-layout audit identifies design+0x12 as the installed/best shield, so those three shield-special rows require a nonzero primary shield.
+Gate-2 legality can therefore be server-authoritative with:
+- at most 8 installed Special rows;
+- no duplicate normal Special IDs;
+- local-1.31 6-ID exclusion arrays;
+- the explicit shield prerequisite for IDs 13/20/30;
+- id39 locked from normal Designer selection.
+### 6.3 Fighter/Bomber/Heavy Fighter economics and quantity closed
+The three carrier systems are not _specials rows. They are original _weapons rows 29..31 and therefore reuse the normal authoritative weapon-row quantity and miniaturization path.
+Direct local 1.31 rows:
+| Row | Normalized system | Tech | Base Space | Base PP | Application byte +12 | Space class |
+| ---: | --- | ---: | ---: | ---: | ---: | ---: |
+| 29 | Heavy Fighter Bay | 83 | 80 | 50 | 0 | 1 |
+| 30 | Bomber Bay | 31 | 60 | 30 | 0 | 1 |
+| 31 | Fighter Bay / Interceptor | 66 | 30 | 10 | 0 | 1 |
+All three therefore use the same class-1 Space reducer and universal Cost reducer as other normal weapon rows.
+Original HELP semantics remain:
+- one Fighter Bay count carries a group of 4 Fighters;
+- one Bomber Bay count carries a group of 4 Bombers;
+- one Heavy Fighter Bay count carries a group of 4 Heavy Fighters.
+Therefore the authoritative design quantity is the normal weapon-row count of Bays. There is no separate Special-slot count for fighter systems. Practical maximum count is constrained by normal weapon-row/Space validation rather than a new 17.4 hard cap.
+Tactical launch, movement, interception, firing, return/reload and fighter damage remain explicitly Slice 17.8.
+### 6.4 Battle Pods / Megafluxers capacity ordering closed
+Original Total_Design_Space_:
+- reads base hull Space from the 6-row hull table;
+- tests researched technology application 89, which is Megafluxers;
+- when present, returns floor(base_hull_space * 125 / 100).
+Megafluxers is therefore an automatic researched capacity effect, not a selectable _specials row.
+Battle Pods id=4 are separately represented as a selectable Special with fixed hull-indexed Space:
+- Frigate -12;
+- Destroyer -30;
+- Cruiser -60;
+- Battleship -125;
+- Titan -250;
+- Doom Star -600.
+These values are added by Total_Space_Used_ with the other installed Special-space totals. Because they are negative, Battle Pods reduce used Space by approximately 50% of base hull Space and are not miniaturized.
+The two effects therefore stack through separate original paths:
+1. Megafluxers increases total hull capacity to floor(125% of base);
+2. Battle Pods subtract their fixed negative Space from used Space.
+Gate 2 must preserve that ordering and must not replace it with a multiplicative +25% then +50% approximation.
+### 6.5 Explicit Gate-1 support classification
+This is the audit classification that Gate 2 must freeze or narrow; it is not yet implementation.
+| ID | System | Gate-1 class | Ownership statement |
+| ---: | --- | ---: | --- |
+| 1 | Achilles Targeting Unit | 3 | Design representation; combat targeting deferred to 17.8. |
+| 2 | Augmented Engines | 3 | Design representation; combat movement consumer deferred to 17.8. |
+| 3 | Automated Repair Unit | 3 | Design representation; in-combat repair deferred to 17.8. |
+| 4 | Battle Pods | 1 | Design capacity effect can be complete in 17.4. |
+| 5 | Battle Scanner | 3 | Design/strategic metadata may project; beam-hit combat consumer deferred to 17.8. |
+| 6 | Cloaking Device | 3 | Design representation; Tactical cloak consumer deferred to 17.8. |
+| 7 | Damper Field | 3 | Design representation; combat damage-field consumer deferred to 17.8. |
+| 8 | Displacement Device | 3 | Design representation; combat defense consumer deferred to 17.8. |
+| 9 | ECM Jammer | 3 | Design representation; missile-defense consumer deferred to 17.8. |
+| 10 | Energy Absorber | 3 | Design representation; combat absorption consumer deferred to 17.8. |
+| 11 | Extended Fuel Tanks | 1 | Strategic fuel-range effect can be complete in 17.4. |
+| 12 | Fast Missile Racks | 3 | Design representation; missile firing/readiness consumer deferred to 17.8. |
+| 13 | Hard Shields | 3 | Shield prerequisite is supported; special combat effect deferred to 17.8. |
+| 14 | Heavy Armor | 3 | Derived armor can project; full armor-piercing interaction deferred to 17.8. |
+| 15 | High Energy Focus | 3 | Design representation; beam combat consumer deferred to 17.8. |
+| 16 | Hyper-X Capacitors | 3 | Design representation; beam readiness consumer deferred to 17.8. |
+| 17 | Inertial Nullifier | 2 | Existing Tactical TurningMode consumer can be connected completely. |
+| 18 | Inertial Stabilizer | 2 | Existing Tactical TurningMode consumer can be connected completely. |
+| 19 | Lightning Field | 3 | Design representation; active area-defense consumer deferred to 17.8. |
+| 20 | Multi-Phased Shields | 3 | Shield prerequisite is supported; special shield combat consumer deferred to 17.8. |
+| 21 | Multi-Wave ECM Jammer | 3 | Design representation; missile-defense consumer deferred to 17.8. |
+| 22 | Phase Shifter | 3 | Design representation; phase-shift Tactical consumer deferred to 17.8. |
+| 23 | Phasing Cloak | 3 | Design representation; Tactical cloak consumer deferred to 17.8. |
+| 24 | Quantum Detonator | 3 | Design representation; active detonation consumer deferred to 17.8. |
+| 25 | Rangemaster Unit | 3 | Design representation; beam-range combat consumer deferred to 17.8. |
+| 26 | Reflection Field | 3 | Design representation; reflected-damage consumer deferred to 17.8. |
+| 27 | Reinforced Hull | 3 | Derived Structure may project; full drive/subsystem protection remains deferred to 17.8. |
+| 28 | Scout Lab | 3 | Design/strategic metadata may project; complete encounter/combat bonus has no current consumer. |
+| 29 | Security Stations | 3 | Design representation; boarding-defense consumer deferred to 17.8. |
+| 30 | Shield Capacitor | 3 | Shield prerequisite is supported; recharge/combat consumer deferred to 17.8. |
+| 31 | Stealth Field | 3 | Design/strategic metadata may project; complete detection consumer is not yet present. |
+| 32 | Structural Analyzer | 3 | Design representation; combat damage consumer deferred to 17.8. |
+| 33 | Sub-Space Teleporter | 3 | Design representation; active Tactical teleport consumer deferred to 17.8. |
+| 34 | Time Warp Facilitator | 3 | Design representation; Tactical time/action consumer deferred to 17.8. |
+| 35 | Transporters | 3 | Design representation; boarding transfer consumer deferred to 17.8. |
+| 36 | Troop Pods | 3 | Marine-capacity metadata may project; boarding resolution remains deferred to 17.8. |
+| 37 | Warp Dissipator | 3 | Design representation; Tactical movement/retreat consumer deferred to 17.8. |
+| 38 | Wide Area Jammer | 3 | Design representation; missile-defense consumer deferred to 17.8. |
+| 39 | Regeneration record | 4 | Original record exists but is not exposed by normal Special_System_Choices_; locked as Designer row. |
+| W29 | Heavy Fighter Bay | 3 | Design/count/payload metadata complete; fighter Tactical consumer deferred to 17.8. |
+| W30 | Bomber Bay | 3 | Design/count/payload metadata complete; bomber Tactical consumer deferred to 17.8. |
+| W31 | Fighter Bay / Interceptor | 3 | Design/count/payload metadata complete; fighter Tactical consumer deferred to 17.8. |
+Automatic/non-slot technology effects are separate from the 8 selectable Special slots:
+- Megafluxers tech 89: automatic +25% base hull capacity path; 17.4 design/quote effect.
+- Advanced Damage Control: not a selectable _specials row; any post-battle repair effect must be owned by its appropriate strategic/combat lifecycle rather than rendered as a fake Special slot.
+
 ## 7. Provisional support classification
 This is audit classification, not Gate-2 acceptance.
 ### Category 1 candidate - design + strategic/derived effect can be completed in 17.4
@@ -299,9 +428,12 @@ Additional original-EXE progress now durable:
 - local 1.31 exclusion differences versus later classic defaults isolated;
 - original legality/exclusion and design Cost/Space routines located;
 - normal special Cost/Space miniaturization path and Battle Pods exception identified.
-Still required before Gate 1 close:
-- exact Miniaturization_Category_ mapping/rounding from _technology_applications;
-- selectable-vs-automatic plus duplicate/slot legality from original routines;
-- separate Fighter/Bomber/Heavy Fighter economics and quantity semantics;
-- final eligibility/capacity-ordering matrix.
-No implementation should begin before those are frozen in Gate 2.
+Gate-1 close findings:
+- all 39 Special records have exact original Space/PP/exclusion/class/strategic evidence;
+- all normal selectable Specials resolve to Space miniaturization class 1; Battle Pods are the explicit non-miniaturized exception;
+- 8 Special slots, duplicate rejection, 6-ID exclusion rules and shield prerequisite IDs 13/20/30 are original-evidenced;
+- Special id39 is not offered by the normal Designer choice loop;
+- Fighter/Bomber/Heavy Fighter rows 29..31 have exact local 1.31 economics and normal weapon-row count semantics;
+- Megafluxers and Battle Pods capacity paths/order are directly original-evidenced;
+- every Special/Fighter candidate now has an explicit Gate-1 support class.
+Gate 1 is complete. Gate 2 must now freeze the supported subset, normalized data representation, server-owned compatibility/quote contract, immutable snapshot shape and exact 17.8 handoffs before implementation begins.
