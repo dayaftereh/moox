@@ -648,4 +648,10 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Original Designer routines prove 8 Special slots, duplicate suppression, six exclusion IDs per row, shield prerequisites for Hard Shields/Multi-Phased Shields/Shield Capacitor, and no normal Designer exposure for special record 39.
 - Fighter/Bomber/Heavy Fighter are original weapon rows 29-31 with local 1.31 base Space/PP 80/50, 60/30 and 30/10, normal weapon-row count semantics, and 4 craft per Bay from HELP.
 - Total_Design_Space_ proves researched Megafluxers tech 89 applies floor(base hull Space * 125 / 100); Battle Pods separately contribute fixed negative Special Space, so Gate 2 must preserve the two-path capacity ordering.
-- Every Special/Fighter candidate now has an explicit Gate-1 support classification. Gate 2 contract freeze is ready/not started; no production implementation has begun.
+- Every Special/Fighter candidate now has an explicit Gate-1 support classification. Gate 2 contract freeze is ready/not started; no production implementation has begun.## 2026-09-27 - Slice 17.4 Gate 2 specials/fighter contract frozen
+- Selectable original Special ids 1-38 are frozen for design representation; original id39 Regeneration remains locked from the normal Designer; Fighter/Bomber/Heavy Fighter remain Weapon rows with normal Bay count.
+- The contract freezes a dedicated 8-slot ShipSpecialMount snapshot, local-1.31 exclusion/prerequisite rules, stable rejection reasons, and server-authoritative catalog/preview/HMI boundaries.
+- Normal Specials use the already-audited class-1 Space and universal Cost reducers; Battle Pods keep fixed non-miniaturized negative Space/PP rows.
+- Megafluxers automatically compiles floor(base hull Space * 125 / 100) capacity; Battle Pods separately reduce used Space. Extended Fuel Tanks freezes floor((3*r + 1)/2) strategic range.
+- Only Inertial Stabilizer/Nullifier connect an existing Tactical consumer in 17.4; all other combat-special and fighter behavior is preserved as metadata and explicitly handed to Slice 17.8.
+- Gate 3 implementation is ready/not started; no production implementation was performed in Gate 2.

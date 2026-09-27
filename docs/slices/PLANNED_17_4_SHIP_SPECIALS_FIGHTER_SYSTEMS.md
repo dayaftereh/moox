@@ -1,6 +1,6 @@
 # Planned Slice 17.4 - Ship Specials and Fighter Systems
 
-Status: **active; Gate 1 complete; Gate 2 specials contract freeze ready / not started**.
+Status: **active; Gates 1-2 complete; Gate 3 implementation ready / not started**.
 
 ## Objective
 
@@ -49,12 +49,14 @@ Evidence: docs/research/SLICE_17_4_GATE1_SPECIALS_FIGHTERS_AUDIT_2026-09-26.md -
 
 ## Gate 2 - specials contract freeze
 
-- [ ] Freeze supported special/fighter matrix.
-- [ ] Freeze per-special support classification.
-- [ ] Freeze compatibility, stacking, quantity and rejection rules.
-- [ ] Freeze cost/space/miniaturization.
-- [ ] Freeze ShipDesignSpec snapshot representation.
-- [ ] Freeze Slice-17.8 Tactical ownership for every deferred fighter/combat-special consumer.
+- [x] Freeze supported special/fighter matrix.
+- [x] Freeze per-special support classification.
+- [x] Freeze compatibility, stacking, quantity and rejection rules.
+- [x] Freeze cost/space/miniaturization.
+- [x] Freeze ShipDesignSpec snapshot representation.
+- [x] Freeze Slice-17.8 Tactical ownership for every deferred fighter/combat-special consumer.
+
+Evidence: docs/research/SLICE_17_4_GATE2_SPECIALS_FIGHTERS_CONTRACT_FREEZE_2026-09-27.md - Gate 2 complete.
 
 ## Gate 3 - implementation
 
