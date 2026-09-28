@@ -655,3 +655,12 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Megafluxers automatically compiles floor(base hull Space * 125 / 100) capacity; Battle Pods separately reduce used Space. Extended Fuel Tanks freezes floor((3*r + 1)/2) strategic range.
 - Only Inertial Stabilizer/Nullifier connect an existing Tactical consumer in 17.4; all other combat-special and fighter behavior is preserved as metadata and explicitly handed to Slice 17.8.
 - Gate 3 implementation is ready/not started; no production implementation was performed in Gate 2.
+
+## 2026-09-28 - Slice 17.4 Ship Specials and Fighter Systems accepted/closed
+
+- Gate 4 accepted after manual review of the canonical 7171 All-Tech Ship Designer; the final Specials workflow is visually/behaviorally aligned with the Weapon workflow.
+- Supported Specials/Fighter design breadth is authoritative and persisted through immutable design/construction/Tactical metadata snapshots.
+- Final QA passed: full Go tests, go vet, production web build, Reference-Lab browser smoke including 390px/mobile, and diff checks.
+- Deferred Fighter/Bomber/Combat-Special Tactical consumers remain explicitly owned by Slice 17.8; Slice 17.4 does not simulate them early.
+- Slice 17.4 is closed with Gates 1-4 complete. Its _OPEN_ marker is removed.
+- No later Slice-17 child is opened by this closeout. Slice 17.5 is next in dependency order and remains planned/not open.

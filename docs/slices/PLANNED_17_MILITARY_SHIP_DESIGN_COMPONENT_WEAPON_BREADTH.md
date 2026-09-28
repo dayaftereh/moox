@@ -1,6 +1,6 @@
 # Planned Slice 17 - Military Ship Design + Tactical Combat Program
 
-Status: **active parent program; children 17.0-17.3 and follow-up 17.2A closed/accepted; child 17.4 open with Gates 1-2 complete and Gate 3 ready/not started; children 17.5-17.9 planned/not open**.
+Status: **active parent program; children 17.0-17.4 and follow-up 17.2A closed/accepted; no child currently open; children 17.5-17.9 planned/not open**.
 
 Queue position: **current gameplay program after closed Slice 16**. Slice 18 is reserved downstream for Galaxy/Strategic Navigation fidelity and is not a prerequisite for Slice 17.
 
@@ -119,7 +119,7 @@ Before opening 17.0 Gate 1:
 - [x] 17.2 closed: Beam design breadth is complete to the frozen contract.
 - [x] 17.3 closed: ordnance design breadth is complete to the frozen contract.
 - [x] 17.2A closed: supported Beam firing arcs are original-evidenced, server-authoritative and persisted before 17.4 opens.
-- [ ] 17.4 closed: supported specials/fighter design breadth is complete.
+- [x] 17.4 closed: supported specials/fighter design breadth is complete.
 - [ ] 17.5 closed: broad Tactical combatant admission/shared combat foundation replaces the old fixture-only path.
 - [ ] 17.6 closed: supported Beam weapons/mounts/modifiers resolve authoritatively and Selector preview matches Tactical rules.
 - [ ] 17.7 closed: supported missiles/torpedoes/bombs resolve authoritatively, including projectile/interception/impact behavior.

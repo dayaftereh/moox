@@ -1,6 +1,6 @@
 # Planned Slice 17.4 - Ship Specials and Fighter Systems
 
-Status: **active; Gates 1-2 complete; Gate 3 implementation ready / not started**.
+Status: **closed/accepted; Gates 1-4 complete (2026-09-28)**.
 
 ## Objective
 
@@ -60,21 +60,25 @@ Evidence: docs/research/SLICE_17_4_GATE2_SPECIALS_FIGHTERS_CONTRACT_FREEZE_2026-
 
 ## Gate 3 - implementation
 
-- [ ] Add/finalize special/fighter data and authoritative validation.
-- [ ] Implement accepted strategic/derived-stat effects.
-- [ ] Implement bounded existing-Tactical consumers where frozen.
-- [ ] Extend Designer HMI with supported specials/fighter systems.
-- [ ] Preserve immutable construction/persistence snapshots.
-- [ ] Add 17.0 high-tech/Doom-Star lab fixtures and targeted combat handoffs.
+- [x] Add/finalize special/fighter data and authoritative validation.
+- [x] Implement accepted strategic/derived-stat effects.
+- [x] Implement bounded existing-Tactical consumers where frozen.
+- [x] Extend Designer HMI with supported specials/fighter systems.
+- [x] Preserve immutable construction/persistence snapshots.
+- [x] Add 17.0 high-tech/Doom-Star lab fixtures and targeted combat handoffs.
+
+Evidence: docs/research/SLICE_17_4_GATE3_IMPLEMENTATION_2026-09-28.md - Gate 3 complete.
 
 ## Gate 4 - QA + close
 
-- [ ] Every visible supported special has the promised effect/support classification.
-- [ ] No unsupported tactical effect is silently simulated or ignored.
-- [ ] Compatibility/space/cost/technology rules pass deterministic matrices.
-- [ ] Late-game designs are practical to test through reference labs.
-- [ ] Construction/persistence/revision remain exact.
-- [ ] Full tests/vet/web/browser checks and `git diff --check` pass.
+- [x] Every visible supported special has the promised effect/support classification.
+- [x] No unsupported tactical effect is silently simulated or ignored.
+- [x] Compatibility/space/cost/technology rules pass deterministic matrices.
+- [x] Late-game designs are practical to test through reference labs.
+- [x] Construction/persistence/revision remain exact.
+- [x] Full tests/vet/web/browser checks and `git diff --check` pass.
+
+Evidence: docs/research/SLICE_17_4_GATE4_ACCEPTANCE_CLOSE_2026-09-28.md - Gate 4 accepted/closed.
 
 ## Exit criterion
 
