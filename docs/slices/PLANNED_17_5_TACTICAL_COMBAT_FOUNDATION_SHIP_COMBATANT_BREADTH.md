@@ -1,6 +1,6 @@
 # Planned Slice 17.5 - Tactical Combat Foundation / Ship Combatant Breadth
 
-Status: **planned; child of Slice 17; not open**.
+Status: **open; Gate 1 foundation audit active**.
 
 ## Objective
 

@@ -664,3 +664,11 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Deferred Fighter/Bomber/Combat-Special Tactical consumers remain explicitly owned by Slice 17.8; Slice 17.4 does not simulate them early.
 - Slice 17.4 is closed with Gates 1-4 complete. Its _OPEN_ marker is removed.
 - No later Slice-17 child is opened by this closeout. Slice 17.5 is next in dependency order and remains planned/not open.
+
+## 2026-09-28 - Slice 17.5 Tactical Combat Foundation / Ship Combatant Breadth opened
+
+- Slice 17.4 is closed/accepted with Gates 1-4 complete and no prior Slice-17 child remains open.
+- Slice 17.5 opens as the sole active Slice-17 child in Gate 1 foundation audit.
+- Gate 1 re-audits the Slice-15.5 baseline-only Tactical combatant guard, all six hull durability baselines, mandatory-system Tactical effects, BattleSession RNG/damage/action/event authority, Laser-specific UI assumptions and representative early/mid/late combatant vectors.
+- The old Frigate/Electronic/Titanium/no-Shield/Standard-Fuel guard must not be deleted before Gate 2 freezes its verified replacement.
+- Complete Beam, ordnance and Fighter/Combat-Special Tactical behavior remains owned by Slices 17.6, 17.7 and 17.8.
