@@ -55,14 +55,14 @@ The existing Laser vertical slice remains a regression baseline, not the archite
 
 ## Gate 1 - foundation audit
 
-- [ ] Re-audit the Slice-15.5 Tactical combatant guard and every hard-coded Frigate/Electronic/Titanium/no-Shield/Standard-Fuel value it protects.
-- [ ] Re-audit direct original evidence for all six hull durability baselines.
-- [ ] Re-audit Armor multipliers/effects, Computer combat targeting inputs, Shield behavior, drive combat speed and any Tactical relevance of Fuel Cells.
-- [ ] Audit the current BattleSession RNG, damage-layer, weapon-slot readiness, legal-fire projection and combat-event model.
-- [ ] Audit current Tactical UI assumptions that are Laser-specific versus already weapon-family-neutral.
-- [ ] Audit existing beam/movement animation event routing and identify the minimum generic presentation/event envelope needed by 17.6-17.8.
-- [ ] Produce representative early/mid/late combatant vectors for all six hull classes.
-- [ ] Define explicit unsupported-per-weapon behavior that does not reject an otherwise valid encounter.
+- [x] Re-audit the Slice-15.5 Tactical combatant guard and every hard-coded Frigate/Electronic/Titanium/no-Shield/Standard-Fuel value it protects.
+- [x] Re-audit direct original evidence for all six hull durability baselines.
+- [x] Re-audit Armor multipliers/effects, Computer combat targeting inputs, Shield behavior, drive combat speed and any Tactical relevance of Fuel Cells.
+- [x] Audit the current BattleSession RNG, damage-layer, weapon-slot readiness, legal-fire projection and combat-event model.
+- [x] Audit current Tactical UI assumptions that are Laser-specific versus already weapon-family-neutral.
+- [x] Audit existing beam/movement animation event routing and identify the minimum generic presentation/event envelope needed by 17.6-17.8.
+- [x] Produce representative early/mid/late combatant vectors for all six hull classes.
+- [x] Define explicit unsupported-per-weapon behavior that does not reject an otherwise valid encounter.
 
 ## Gate 2 - foundation contract freeze
 

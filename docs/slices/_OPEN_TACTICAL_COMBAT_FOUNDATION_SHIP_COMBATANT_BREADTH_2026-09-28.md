@@ -1,6 +1,6 @@
 # OPEN Slice 17.5 - Tactical Combat Foundation / Ship Combatant Breadth
 Date opened: 2026-09-28
-Status: **Gate 1 foundation audit active; current baseline guard/runtime gaps mapped**
+Status: **Gate 1 complete; Gate 2 foundation contract freeze ready**
 Plan: docs/slices/PLANNED_17_5_TACTICAL_COMBAT_FOUNDATION_SHIP_COMBATANT_BREADTH.md
 
 ## Scope
@@ -32,4 +32,6 @@ Initial audit: docs/research/SLICE_17_5_GATE1_TACTICAL_FOUNDATION_AUDIT_2026-09-
 
 Mapped: duplicate Game/Battle Slice-15.5 admission guards, singleton Frigate/Electronic durability/offense substitutions, Nuclear/Fusion-only speed rules, missing Shield/Fuel Tactical snapshot fields, Armor-to-Structure-only damage layering, and the existing BattleSession/RNG/event foundations that can be preserved.
 
-Still open: original-value matrix for all hulls/Armors/Computers/Shields/Drives, Fuel tactical relevance, generic unsupported-action projection, representative combatant vectors and event/UI neutrality audit.
+Gate 1 complete: the local 1.31 executable now directly closes all six hull durability rows, all Armor multipliers, all Computer Beam-Offense rows, all Drive min/max matrices, primary Shield block/capacity/facing/recharge semantics, and Fuel tactical neutrality. Current BattleSession RNG/readiness/event authority and the generic unsupported-action replacement surface are audited. Early/mid/late representative vectors cover all six hull classes.
+
+Next: Gate 2 contract freeze. The protected baseline admission guard remains in place until Gate 3 implements the frozen replacement.
