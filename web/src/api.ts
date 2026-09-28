@@ -366,6 +366,10 @@ export type ShipVisualGenomeWire = {
   cutouts?: Array<{ t: number; offset: number; rx: number; ry: number; angle: number }>
   primitives?: Array<{ kind: 'wedge' | 'spike' | 'pod'; t: number; length: number; width: number; sweep: number }>
 }
+export type ShipSpecialMount = {
+  slot: number
+  special_id: string
+}
 export type ShipDesignSpec = {
   hull_id: string
   strategic_picture_id: number
@@ -381,6 +385,7 @@ export type ShipDesignSpec = {
   space_used: number
   base_design_cost_pp: number
   production_cost_pp: number
+  specials?: ShipSpecialMount[]
   weapons?: ShipWeaponMount[]
 }
 export type ShipDesign = { id: number; empire_id: number; revision: number; visual_revision?: number; name: string; spec: ShipDesignSpec; visual_genome?: ShipVisualGenomeWire }
@@ -423,6 +428,8 @@ export type MilitaryDesignerAutomaticSystems = {
   armor_durability_multiple?: number
   fuel_cell_id?: string
   fuel_range_parsecs?: number
+  megafluxers_known: boolean
+  hull_space_percent: number
 }
 export type MilitaryDesignerWeaponMountChoice = {
   id: ShipWeaponMountType
@@ -475,6 +482,26 @@ export type MilitaryDesignerWeaponChoice = {
   default_firing_arc_id?: ShipWeaponFiringArcID
   innate_effect_ids?: string[]
   tactical_support: string
+  craft_per_unit?: number
+}
+export type MilitaryDesignerSpecialChoice = {
+  id: string
+  name_key: string
+  original_id: number
+  technology_id: number
+  technology_field_id: number
+  technology_known: boolean
+  available: boolean
+  lock_reason?: string
+  support_class: number
+  tactical_support: string
+  miniaturization_level: number
+  cost_reduction_percent: number
+  space_reduction_percent: number
+  effective_cost_by_hull_pp: number[]
+  effective_space_by_hull: number[]
+  excluded_special_ids?: string[]
+  requires_shield?: boolean
 }
 export type MilitaryDesignerVariant = { key: string; hull_id: string; weapons?: ShipWeaponMount[]; spec: ShipDesignSpec; command_point_cost: number }
 export type MilitaryDesignerCatalog = {
@@ -483,6 +510,7 @@ export type MilitaryDesignerCatalog = {
   shields: MilitaryDesignerComponentChoice[]
   automatic_systems: MilitaryDesignerAutomaticSystems
   weapons: MilitaryDesignerWeaponChoice[]
+  specials: MilitaryDesignerSpecialChoice[]
   variants: MilitaryDesignerVariant[]
   production_cost_numerator: number
   production_cost_denominator: number
@@ -497,6 +525,7 @@ export type SaveMilitaryDesignPayload = {
   strategic_picture_id: number
   computer_id?: string
   shield_id?: string | null
+  specials?: ShipSpecialMount[]
   weapons?: ShipWeaponMount[]
 }
 export type MilitaryDesignDraft = {
@@ -504,6 +533,7 @@ export type MilitaryDesignDraft = {
   strategic_picture_id: number
   computer_id?: string
   shield_id?: string | null
+  specials?: ShipSpecialMount[]
   weapons?: ShipWeaponMount[]
 }
 export type MilitaryDesignWeaponRowPreview = {
@@ -520,6 +550,15 @@ export type MilitaryDesignWeaponRowPreview = {
   row_space: number
   row_cost_pp: number
 }
+export type MilitaryDesignSpecialRowPreview = {
+  slot: number
+  special_id: string
+  miniaturization_level: number
+  unit_space: number
+  unit_cost_pp: number
+  support_class: number
+  tactical_support: string
+}
 export type MilitaryDesignDraftProjection = {
   save_available: boolean
   rejection_reason?: string
@@ -530,6 +569,7 @@ export type MilitaryDesignDraftProjection = {
   base_design_cost_pp: number
   production_cost_pp: number
   weapons?: MilitaryDesignWeaponRowPreview[]
+  specials?: MilitaryDesignSpecialRowPreview[]
   spec?: ShipDesignSpec
 }
 export type MilitaryDesignPreviewSnapshot = {

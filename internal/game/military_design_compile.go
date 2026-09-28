@@ -201,10 +201,11 @@ func (r *EconomyRules) selectedShipShield(empire *core.Empire, id *string) (*rul
 
 func cloneShipDesignSpec(spec core.ShipDesignSpec) core.ShipDesignSpec {
 	spec.Weapons = core.CloneShipWeaponMounts(spec.Weapons)
+	spec.Specials = core.CloneShipSpecialMounts(spec.Specials)
 	return spec
 }
 
-func (r *EconomyRules) compileMilitaryDesignSpec(empire *core.Empire, hullID string, strategicPictureID int, selections militaryDesignSelections, weapons []core.ShipWeaponMount) (core.ShipDesignSpec, error) {
+func (r *EconomyRules) compileMilitaryDesignSpec(empire *core.Empire, hullID string, strategicPictureID int, selections militaryDesignSelections, weapons []core.ShipWeaponMount, specials []core.ShipSpecialMount) (core.ShipDesignSpec, error) {
 	if r == nil || empire == nil {
 		return core.ShipDesignSpec{}, fmt.Errorf("military design requires rules and empire")
 	}
@@ -280,6 +281,11 @@ func (r *EconomyRules) compileMilitaryDesignSpec(empire *core.Empire, hullID str
 		shieldID = shield.ID
 	}
 
+	specialSnapshot, _, specialSpace, specialCost, err := r.quoteShipSpecials(empire, index, shieldID, specials)
+	if err != nil {
+		return core.ShipDesignSpec{}, err
+	}
+
 	if len(weaponSnapshot) > 0 {
 		if r.TacticalCombat == nil {
 			return core.ShipDesignSpec{}, fmt.Errorf("tactical combat rules are unavailable")
@@ -294,8 +300,18 @@ func (r *EconomyRules) compileMilitaryDesignSpec(empire *core.Empire, hullID str
 			baseCost += quote.RowCostPP
 		}
 	}
-	if spaceUsed > hull.BaseSpace {
-		return core.ShipDesignSpec{}, militaryDesignError(MilitaryDesignReasonSpaceExceeded, "military design uses %d space but hull %q has only %d", spaceUsed, hull.ID, hull.BaseSpace)
+	spaceUsed += specialSpace
+	baseCost += specialCost
+	hullSpace := hull.BaseSpace
+	if r.ShipSpecials != nil && empireKnowsTechnology(empire, r.ShipSpecials.Megafluxers.TechnologyID) {
+		hullSpace = (hull.BaseSpace * r.ShipSpecials.Megafluxers.HullSpacePercent) / 100
+	}
+	fuelRange := fuel.RangeParsecs
+	if shipSpecialInstalled(specialSnapshot, "extended_fuel_tanks") {
+		fuelRange = (3*fuelRange + 1) / 2
+	}
+	if spaceUsed > hullSpace {
+		return core.ShipDesignSpec{}, militaryDesignError(MilitaryDesignReasonSpaceExceeded, "military design uses %d space but hull %q has only %d", spaceUsed, hull.ID, hullSpace)
 	}
 	productionCost := militaryShipProductionCostPP(empire, baseCost, r.RaceModifiers)
 	return core.ShipDesignSpec{
@@ -307,12 +323,13 @@ func (r *EconomyRules) compileMilitaryDesignSpec(empire *core.Empire, hullID str
 		ArmorID:            armor.ID,
 		ShieldID:           shieldID,
 		FuelCellID:         fuel.ID,
-		FuelRangeParsecs:   fuel.RangeParsecs,
+		FuelRangeParsecs:   fuelRange,
 		HullBaseCostPP:     hull.BaseCostPP,
-		HullSpace:          hull.BaseSpace,
+		HullSpace:          hullSpace,
 		SpaceUsed:          spaceUsed,
 		BaseDesignCostPP:   baseCost,
 		ProductionCostPP:   productionCost,
+		Specials:           specialSnapshot,
 		Weapons:            weaponSnapshot,
 	}, nil
 }
@@ -323,7 +340,7 @@ func (r *EconomyRules) effectiveMilitaryDesignSpec(empire *core.Empire, stored c
 		ComputerID: stored.ComputerID,
 		ArmorID:    stored.ArmorID,
 		ShieldID:   &shieldID,
-	}, stored.Weapons)
+	}, stored.Weapons, stored.Specials)
 }
 
 func (r *EconomyRules) ProjectMilitaryDesign(design core.ShipDesign, empire *core.Empire) (core.ShipDesign, error) {

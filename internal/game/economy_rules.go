@@ -156,6 +156,7 @@ type EconomyRules struct {
 	ShipArmors                                    []ruleset.ShipArmor
 	ShipShields                                   []ruleset.ShipShield
 	ShipFuelCells                                 []ruleset.ShipFuelCell
+	ShipSpecials                                  *ruleset.ShipSpecialsFile
 	TacticalCombat                                *ruleset.TacticalCombatFile
 	NewGameGalaxy                                 *ruleset.NewGameGalaxyFile
 }
@@ -196,6 +197,13 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 	}
 	if err := shipHulls.Validate(); err != nil {
 		return nil, fmt.Errorf("validate ship hulls: %w", err)
+	}
+	shipSpecials, err := ruleset.LoadShipSpecials(filepath.Join(rulesetDir, "ship_specials.json"))
+	if err != nil {
+		return nil, fmt.Errorf("load ship specials: %w", err)
+	}
+	if err := shipSpecials.Validate(); err != nil {
+		return nil, fmt.Errorf("validate ship specials: %w", err)
 	}
 	newGameGalaxy, err := ruleset.LoadNewGameGalaxy(filepath.Join(rulesetDir, "new_game_galaxy.json"))
 	if err != nil {
@@ -582,6 +590,7 @@ func LoadEconomyRules(rulesetDir string) (*EconomyRules, error) {
 		ShipArmors:                     append([]ruleset.ShipArmor(nil), shipHulls.MandatoryComponents.Armors...),
 		ShipShields:                    append([]ruleset.ShipShield(nil), shipHulls.MandatoryComponents.Shields...),
 		ShipFuelCells:                  append([]ruleset.ShipFuelCell(nil), shipHulls.MandatoryComponents.FuelCells...),
+		ShipSpecials:                   shipSpecials,
 		TacticalCombat:                 tacticalCombat,
 		NewGameGalaxy:                  newGameGalaxy,
 	}

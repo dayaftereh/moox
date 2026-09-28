@@ -170,7 +170,7 @@ func (r *EconomyResolver) prepareEncounterBoundary(ctx ResolveContext, state *co
 					DefenderColonyIDs: append([]core.ID(nil), defender.colonyIDs...),
 					Participants:      participants,
 				}
-				tactical, unsupportedReason, err := tacticalMetadataForEncounter(state, candidate, r.Rules.TacticalCombat)
+				tactical, unsupportedReason, err := tacticalMetadataForEncounterWithSpecials(state, candidate, r.Rules.TacticalCombat, r.Rules.ShipSpecials)
 				if err != nil {
 					return nil, nil, err
 				}

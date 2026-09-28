@@ -7500,3 +7500,75 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 .shipdesigner-firing-compass-button.decorative strong {
   color: rgba(170, 205, 228, .66);
 }
+
+
+/* Slice 17.4 - Ship Specials */
+.shipdesigner-specials-section {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-soft);
+}
+.shipdesigner-specials-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.shipdesigner-specials-heading .eyebrow { margin: 0 0 2px; }
+.shipdesigner-specials-heading .badge { flex: 0 0 auto; }
+.shipdesigner-specials-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+.shipdesigner-special-slot {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: var(--panel-soft);
+}
+.shipdesigner-special-slot.installed {
+  border-color: var(--border);
+}
+.shipdesigner-special-slot label {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.shipdesigner-special-slot label > span {
+  font-size: .68rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.shipdesigner-special-slot select {
+  width: 100%;
+  min-width: 0;
+}
+.shipdesigner-special-meta {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3px 8px;
+  align-items: center;
+  margin-top: 6px;
+  font-size: .72rem;
+}
+.shipdesigner-special-meta strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.shipdesigner-special-meta .support {
+  grid-column: 1 / -1;
+  justify-self: start;
+  white-space: normal;
+  line-height: 1.25;
+}
+.shipdesigner-specials-error { margin: 8px 0 0; }
+
+@media (max-width: 720px) {
+  .shipdesigner-specials-grid { grid-template-columns: 1fr; }
+  .shipdesigner-special-slot { padding: 7px; }
+}

@@ -9,11 +9,13 @@ import {
   type MilitaryDesignerHullChoice,
   type PlayerSnapshot,
   type ShipDesign,
+  type ShipSpecialMount,
   type ShipWeaponMount,
 } from './api'
 import { ProceduralShipGlyph } from './components/ProceduralShipGlyph'
 import { GameIcon } from './components/GameIcon'
 import { ShipSystemInfoCard } from './components/ShipSystemInfoCard'
+import { SpecialSystemsPanel } from './components/SpecialSystemsPanel'
 import { WeaponSelectorDialog } from './components/WeaponSelectorDialog'
 import { Card, PageHeader } from './components/ui'
 import type { TranslationKey, TranslationVars } from './i18n'
@@ -51,6 +53,9 @@ function cloneWeaponMounts(weapons?: ShipWeaponMount[]): ShipWeaponMount[] {
     .map((mount) => ({ ...mount, modifier_ids: mount.modifier_ids ? [...mount.modifier_ids] : undefined }))
     .sort((a, b) => a.slot - b.slot)
 }
+function cloneSpecialMounts(specials?: ShipSpecialMount[]): ShipSpecialMount[] {
+  return (specials ?? []).map((mount) => ({ ...mount })).sort((a, b) => a.slot - b.slot)
+}
 
 function lockLabel(t: Translator, hull?: MilitaryDesignerHullChoice): string {
   if (!hull?.lock_reason) return ''
@@ -77,6 +82,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
   const [computerID, setComputerID] = useState(() => selectedDesign?.spec.computer_id ?? bestAvailableComputer?.id ?? '')
   const [shieldID, setShieldID] = useState(() => selectedDesign ? (selectedDesign.spec.shield_id ?? '') : (bestAvailableShield?.id ?? ''))
   const [weaponMounts, setWeaponMounts] = useState<ShipWeaponMount[]>(() => cloneWeaponMounts(selectedDesign?.spec.weapons))
+  const [specialMounts, setSpecialMounts] = useState<ShipSpecialMount[]>(() => cloneSpecialMounts(selectedDesign?.spec.specials))
   const [visualOverride, setVisualOverride] = useState<ShipVisualGenome | null>(() => selectedDesign ? designVisual(selectedDesign) : null)
   const [roll, setRoll] = useState(1)
   const [saving, setSaving] = useState(false)
@@ -95,6 +101,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
     setComputerID(selectedDesign.spec.computer_id)
     setShieldID(selectedDesign.spec.shield_id ?? '')
     setWeaponMounts(cloneWeaponMounts(selectedDesign.spec.weapons))
+    setSpecialMounts(cloneSpecialMounts(selectedDesign.spec.specials))
     setVisualOverride(designVisual(selectedDesign))
     setSaveError('')
   }, [selectedDesign?.id, selectedDesign?.revision, selectedDesign?.visual_revision])
@@ -130,6 +137,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
         strategic_picture_id: strategicPictureID,
         computer_id: selectedComputer.id,
         shield_id: shieldID,
+        ...(specialMounts.length > 0 ? { specials: cloneSpecialMounts(specialMounts) } : {}),
         ...(weaponMounts.length > 0 ? { weapons: cloneWeaponMounts(weaponMounts) } : {}),
       }).then((result) => {
         if (cancelled) return
@@ -155,6 +163,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
     shieldID,
     selectedShield?.id,
     weaponMounts,
+    specialMounts,
   ])
   const candidate = useMemo(() => {
     if (visualOverride && String(visualOverride.hullId) === hullID) return visualOverride
@@ -168,6 +177,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
     setComputerID(design.spec.computer_id)
     setShieldID(design.spec.shield_id ?? '')
     setWeaponMounts(cloneWeaponMounts(design.spec.weapons))
+    setSpecialMounts(cloneSpecialMounts(design.spec.specials))
     setVisualOverride(designVisual(design))
     setRoll((value) => value + 1)
     setSaveError('')
@@ -181,6 +191,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
     setComputerID(bestAvailableComputer?.id ?? '')
     setShieldID(bestAvailableShield?.id ?? '')
     setWeaponMounts([])
+    setSpecialMounts([])
     setVisualOverride(null)
     setRoll((value) => value + 1)
     setSaveError('')
@@ -194,6 +205,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
     if (!next || next.id === hullID) return
     setHullID(next.id)
     setWeaponMounts([])
+    setSpecialMounts([])
     setVisualOverride(null)
     setRoll((value) => value + 1)
     setSaveError('')
@@ -214,6 +226,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
         strategic_picture_id: strategicPictureID,
         computer_id: selectedComputer.id,
         shield_id: shieldID,
+        ...(specialMounts.length > 0 ? { specials: cloneSpecialMounts(specialMounts) } : {}),
         ...(mounts.length > 0 ? { weapons: cloneWeaponMounts(mounts) } : {}),
       })
       return result.preview.projection
@@ -285,6 +298,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
         strategic_picture_id: strategicPictureID,
         computer_id: selectedComputer?.id ?? '',
         shield_id: shieldID,
+        ...(specialMounts.length > 0 ? { specials: cloneSpecialMounts(specialMounts) } : {}),
         ...(weaponMounts.length > 0 ? { weapons: cloneWeaponMounts(weaponMounts) } : {}),
       })
       gameplaySaved = true
@@ -307,6 +321,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
         setComputerID(finalDesign.spec.computer_id)
         setShieldID(finalDesign.spec.shield_id ?? '')
         setWeaponMounts(cloneWeaponMounts(finalDesign.spec.weapons))
+        setSpecialMounts(cloneSpecialMounts(finalDesign.spec.specials))
         setSaveNotice(t('shipbuilder.designSaved', { revision: finalDesign.revision, visualRevision: finalDesign.visual_revision ?? 0 }))
       } else {
         setSaveNotice(t('shipbuilder.designSavedSimple'))
@@ -418,6 +433,18 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
                 <p className="muted">{hullLock || t('shipbuilder.noAuthoritativePreview')}</p>
               </section>
             )}
+            {spec && currentHull && (
+              <SpecialSystemsPanel
+                choices={designer.specials ?? []}
+                mounts={specialMounts}
+                previews={designPreview?.specials}
+                hullIndex={currentHull.size_index}
+                disabled={!planningWritable}
+                error={designPreview?.rejection_reason?.startsWith('special_') ? designPreview.rejection_message : undefined}
+                onChange={(mounts) => { setSpecialMounts(cloneSpecialMounts(mounts)); setSaveNotice('') }}
+                t={t}
+              />
+            )}
           </Card>
 
           <Card className="shipdesigner-summary-card">
@@ -443,6 +470,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
           snapshot={snapshot}
           weapons={designer.weapons}
           existingMounts={weaponMounts}
+          specials={specialMounts}
           hullID={currentHull.id}
           strategicPictureID={strategicPictureID}
           shipGenome={candidate}

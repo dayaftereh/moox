@@ -54,6 +54,12 @@ type TacticalWeaponSpec struct {
 	TacticalSupport string                      `json:"tactical_support,omitempty"`
 }
 
+type TacticalSpecialSpec struct {
+	Slot            int    `json:"slot"`
+	SpecialID       string `json:"special_id"`
+	TacticalSupport string `json:"tactical_support"`
+}
+
 type TacticalShipSpec struct {
 	ShipID               core.ID                `json:"ship_id"`
 	EmpireID             core.ID                `json:"empire_id"`
@@ -72,6 +78,7 @@ type TacticalShipSpec struct {
 	SourceVisualRevision uint32                 `json:"source_visual_revision,omitempty"`
 	VisualGenome         *core.ShipVisualGenome `json:"visual_genome,omitempty"`
 	Weapons              []TacticalWeaponSpec   `json:"weapons,omitempty"`
+	Specials             []TacticalSpecialSpec  `json:"specials,omitempty"`
 	CurrentCombatSpeed   int                    `json:"current_combat_speed"`
 	BeamOffense          int                    `json:"beam_offense"`
 	BeamDefense          int                    `json:"beam_defense"`

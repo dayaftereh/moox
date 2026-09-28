@@ -74,6 +74,10 @@ func hasShipFuelCell(items []ruleset.ShipFuelCell, id string) bool {
 }
 
 func tacticalMetadataForEncounter(state *core.GameState, encounter Encounter, rules *ruleset.TacticalCombatFile) (*battle.TacticalSpec, string, error) {
+	return tacticalMetadataForEncounterWithSpecials(state, encounter, rules, nil)
+}
+
+func tacticalMetadataForEncounterWithSpecials(state *core.GameState, encounter Encounter, rules *ruleset.TacticalCombatFile, specialRules *ruleset.ShipSpecialsFile) (*battle.TacticalSpec, string, error) {
 	if state == nil {
 		return nil, "", fmt.Errorf("tactical encounter state is nil")
 	}
@@ -120,7 +124,7 @@ func tacticalMetadataForEncounter(state *core.GameState, encounter Encounter, ru
 			y := tacticalDeploymentY(len(side.ShipIDs), i)
 			// Original MOO2 uses pristine/max combat speed for an undamaged ship; engine
 			// damage reduces Current_Design_Base_Combat_Speed_ toward MinSpeed.
-			tactical.Ships = append(tactical.Ships, baselineTacticalShip(*ship, side.SeatID, x, y, facing, drive.MaxSpeed, rules))
+			tactical.Ships = append(tactical.Ships, baselineTacticalShip(*ship, side.SeatID, x, y, facing, drive.MaxSpeed, rules, specialRules))
 		}
 		return "", nil
 	}
@@ -195,7 +199,7 @@ func baselineCombatantUnsupportedReason(ship core.Ship, rules *ruleset.TacticalC
 	return ""
 }
 
-func baselineTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing, speed int, rules *ruleset.TacticalCombatFile) battle.TacticalShipSpec {
+func baselineTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing, speed int, rules *ruleset.TacticalCombatFile, specialRules *ruleset.ShipSpecialsFile) battle.TacticalShipSpec {
 	out := battle.TacticalShipSpec{
 		ShipID:               ship.ID,
 		EmpireID:             ship.EmpireID,
@@ -233,6 +237,23 @@ func baselineTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing, 
 			InnateEffectIDs: append([]string(nil), weaponRule.InnateEffectIDs...),
 			TacticalSupport: weaponRule.TacticalSupport,
 		})
+	}
+	for _, special := range ship.Spec.Specials {
+		support := "metadata_only"
+		if specialRules != nil {
+			if rule, ok := specialRules.ByID(special.SpecialID); ok {
+				support = rule.TacticalSupport
+			}
+		}
+		out.Specials = append(out.Specials, battle.TacticalSpecialSpec{
+			Slot: special.Slot, SpecialID: special.SpecialID, TacticalSupport: support,
+		})
+		switch special.SpecialID {
+		case "inertial_stabilizer":
+			out.TurningMode = battle.TacticalTurningInertialStabilizer
+		case "inertial_nullifier":
+			out.TurningMode = battle.TacticalTurningInertialNullifier
+		}
 	}
 	return out
 }

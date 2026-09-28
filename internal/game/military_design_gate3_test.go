@@ -37,9 +37,10 @@ func TestSlice171MiniaturizationGoldenVectors(t *testing.T) {
 		wantSpace  int
 		wantCompLv int
 		wantShLv   int
+		wantHull   int
 	}{
-		{name: "mid", profile: ReferenceTriangleProfileMidTech, wantCost: 275, wantSpace: 13, wantCompLv: 3, wantShLv: 2},
-		{name: "all", profile: ReferenceTriangleProfileAllTech, wantCost: 264, wantSpace: 5, wantCompLv: 8, wantShLv: 9},
+		{name: "mid", profile: ReferenceTriangleProfileMidTech, wantCost: 275, wantSpace: 13, wantCompLv: 3, wantShLv: 2, wantHull: 120},
+		{name: "all", profile: ReferenceTriangleProfileAllTech, wantCost: 264, wantSpace: 5, wantCompLv: 8, wantShLv: 9, wantHull: 150},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			state := core.NewSmallFixture(0x171100 + uint64(len(tc.name)))
@@ -49,11 +50,11 @@ func TestSlice171MiniaturizationGoldenVectors(t *testing.T) {
 			spec, err := rules.compileMilitaryDesignSpec(empire, "cruiser", hullPictureForTest(t, rules, "cruiser"), militaryDesignSelections{
 				ComputerID: "electronic_computer",
 				ShieldID:   &shield,
-			}, nil)
+			}, nil, nil)
 			if err != nil {
 				t.Fatal(err)
 			}
-			if spec.BaseDesignCostPP != tc.wantCost || spec.ProductionCostPP != tc.wantCost || spec.SpaceUsed != tc.wantSpace || spec.HullSpace != 120 {
+			if spec.BaseDesignCostPP != tc.wantCost || spec.ProductionCostPP != tc.wantCost || spec.SpaceUsed != tc.wantSpace || spec.HullSpace != tc.wantHull {
 				t.Fatalf("profile=%s Cruiser spec=%+v want cost=%d space=%d", tc.profile, spec, tc.wantCost, tc.wantSpace)
 			}
 			compLevel, err := rules.shipComponentMiniaturizationLevel(empire, 58)

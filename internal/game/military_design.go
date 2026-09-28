@@ -17,13 +17,14 @@ const (
 )
 
 type SaveMilitaryDesignPayload struct {
-	DesignID           core.ID                `json:"design_id,omitempty"`
-	Name               string                 `json:"name"`
-	HullID             string                 `json:"hull_id"`
-	StrategicPictureID int                    `json:"strategic_picture_id"`
-	ComputerID         string                 `json:"computer_id,omitempty"`
-	ShieldID           *string                `json:"shield_id,omitempty"`
-	Weapons            []core.ShipWeaponMount `json:"weapons,omitempty"`
+	DesignID           core.ID                 `json:"design_id,omitempty"`
+	Name               string                  `json:"name"`
+	HullID             string                  `json:"hull_id"`
+	StrategicPictureID int                     `json:"strategic_picture_id"`
+	ComputerID         string                  `json:"computer_id,omitempty"`
+	ShieldID           *string                 `json:"shield_id,omitempty"`
+	Specials           []core.ShipSpecialMount `json:"specials,omitempty"`
+	Weapons            []core.ShipWeaponMount  `json:"weapons,omitempty"`
 }
 
 type MilitaryDesignSavedEvent struct {
@@ -62,6 +63,9 @@ func validateSaveMilitaryDesignPayload(payload SaveMilitaryDesignPayload) error 
 	}
 	if payload.StrategicPictureID < 0 {
 		return fmt.Errorf("strategic_picture_id must be non-negative")
+	}
+	if _, err := canonicalShipSpecialMounts(payload.Specials); err != nil {
+		return err
 	}
 	if err := validateBaselineMilitaryWeapons(payload.Weapons); err != nil {
 		return err
@@ -116,7 +120,7 @@ func (r *EconomyResolver) saveMilitaryDesign(state *core.GameState, empireID cor
 	spec, err := r.Rules.compileMilitaryDesignSpec(empire, payload.HullID, payload.StrategicPictureID, militaryDesignSelections{
 		ComputerID: payload.ComputerID,
 		ShieldID:   payload.ShieldID,
-	}, payload.Weapons)
+	}, payload.Weapons, payload.Specials)
 	if err != nil {
 		return DomainEvent{}, err
 	}
@@ -155,7 +159,7 @@ func (r *EconomyResolver) saveMilitaryDesign(state *core.GameState, empireID cor
 }
 
 func (r *EconomyRules) clearedMilitaryDesignSpec(empire *core.Empire, hullID string, strategicPictureID int, weapons []core.ShipWeaponMount) (core.ShipDesignSpec, error) {
-	return r.compileMilitaryDesignSpec(empire, hullID, strategicPictureID, militaryDesignSelections{}, weapons)
+	return r.compileMilitaryDesignSpec(empire, hullID, strategicPictureID, militaryDesignSelections{}, weapons, nil)
 }
 
 func militaryShipProductionCostPP(empire *core.Empire, baseCostPP int, modifiers map[string]RaceEconomyModifiers) int {

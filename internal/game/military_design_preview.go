@@ -7,11 +7,12 @@ import (
 )
 
 type MilitaryDesignDraft struct {
-	HullID             string                 `json:"hull_id"`
-	StrategicPictureID int                    `json:"strategic_picture_id"`
-	ComputerID         string                 `json:"computer_id,omitempty"`
-	ShieldID           *string                `json:"shield_id,omitempty"`
-	Weapons            []core.ShipWeaponMount `json:"weapons,omitempty"`
+	HullID             string                  `json:"hull_id"`
+	StrategicPictureID int                     `json:"strategic_picture_id"`
+	ComputerID         string                  `json:"computer_id,omitempty"`
+	ShieldID           *string                 `json:"shield_id,omitempty"`
+	Specials           []core.ShipSpecialMount `json:"specials,omitempty"`
+	Weapons            []core.ShipWeaponMount  `json:"weapons,omitempty"`
 }
 
 type MilitaryDesignWeaponRowPreview struct {
@@ -29,17 +30,28 @@ type MilitaryDesignWeaponRowPreview struct {
 	RowCostPP            int                         `json:"row_cost_pp"`
 }
 
+type MilitaryDesignSpecialRowPreview struct {
+	Slot                 int    `json:"slot"`
+	SpecialID            string `json:"special_id"`
+	MiniaturizationLevel int    `json:"miniaturization_level"`
+	UnitSpace            int    `json:"unit_space"`
+	UnitCostPP           int    `json:"unit_cost_pp"`
+	SupportClass         int    `json:"support_class"`
+	TacticalSupport      string `json:"tactical_support"`
+}
+
 type MilitaryDesignDraftPreview struct {
-	SaveAvailable    bool                             `json:"save_available"`
-	RejectionReason  string                           `json:"rejection_reason,omitempty"`
-	RejectionMessage string                           `json:"rejection_message,omitempty"`
-	HullSpace        int                              `json:"hull_space"`
-	SpaceUsed        int                              `json:"space_used"`
-	RemainingSpace   int                              `json:"remaining_space"`
-	BaseDesignCostPP int                              `json:"base_design_cost_pp"`
-	ProductionCostPP int                              `json:"production_cost_pp"`
-	Weapons          []MilitaryDesignWeaponRowPreview `json:"weapons,omitempty"`
-	Spec             *core.ShipDesignSpec             `json:"spec,omitempty"`
+	SaveAvailable    bool                              `json:"save_available"`
+	RejectionReason  string                            `json:"rejection_reason,omitempty"`
+	RejectionMessage string                            `json:"rejection_message,omitempty"`
+	HullSpace        int                               `json:"hull_space"`
+	SpaceUsed        int                               `json:"space_used"`
+	RemainingSpace   int                               `json:"remaining_space"`
+	BaseDesignCostPP int                               `json:"base_design_cost_pp"`
+	ProductionCostPP int                               `json:"production_cost_pp"`
+	Weapons          []MilitaryDesignWeaponRowPreview  `json:"weapons,omitempty"`
+	Specials         []MilitaryDesignSpecialRowPreview `json:"specials,omitempty"`
+	Spec             *core.ShipDesignSpec              `json:"spec,omitempty"`
 }
 
 func militaryDesignReasonFromError(err error) string {
@@ -73,7 +85,15 @@ func militaryDesignReasonFromError(err error) string {
 		MilitaryDesignReasonWeaponAmmoInvalid,
 		MilitaryDesignReasonWeaponAmmoNotAllowed,
 		MilitaryDesignReasonWeaponFiringArcUnknown,
-		MilitaryDesignReasonWeaponFiringArcNotAllowed:
+		MilitaryDesignReasonWeaponFiringArcNotAllowed,
+		MilitaryDesignReasonSpecialUnknown,
+		MilitaryDesignReasonSpecialTechnologyRequired,
+		MilitaryDesignReasonSpecialSlotOutOfRange,
+		MilitaryDesignReasonSpecialSlotDuplicate,
+		MilitaryDesignReasonSpecialDuplicate,
+		MilitaryDesignReasonSpecialExclusionConflict,
+		MilitaryDesignReasonSpecialRequiresShield,
+		MilitaryDesignReasonSpecialNotSupported:
 		return reason
 	default:
 		return ""
@@ -93,7 +113,7 @@ func (r *EconomyRules) PreviewMilitaryDesign(empire *core.Empire, draft Military
 		ComputerID: draft.ComputerID,
 		ShieldID:   draft.ShieldID,
 	}
-	baseSpec, err := r.compileMilitaryDesignSpec(empire, draft.HullID, draft.StrategicPictureID, selections, nil)
+	baseSpec, err := r.compileMilitaryDesignSpec(empire, draft.HullID, draft.StrategicPictureID, selections, nil, nil)
 	if err != nil {
 		return rejectedMilitaryDesignPreview(err)
 	}
@@ -137,11 +157,34 @@ func (r *EconomyRules) PreviewMilitaryDesign(empire *core.Empire, draft Military
 		})
 	}
 
-	spaceUsed := baseSpec.SpaceUsed + weaponSpace
-	baseCost := baseSpec.BaseDesignCostPP + weaponCost
+	hull := r.ShipHulls[draft.HullID]
+	specialMounts, specialQuotes, specialSpace, specialCost, specialErr := r.quoteShipSpecials(empire, hull.SizeIndex, baseSpec.ShieldID, draft.Specials)
+	if specialErr != nil {
+		preview := rejectedMilitaryDesignPreview(specialErr)
+		preview.HullSpace = baseSpec.HullSpace
+		preview.SpaceUsed = baseSpec.SpaceUsed + weaponSpace
+		preview.RemainingSpace = baseSpec.HullSpace - preview.SpaceUsed
+		preview.BaseDesignCostPP = baseSpec.BaseDesignCostPP + weaponCost
+		preview.ProductionCostPP = militaryShipProductionCostPP(empire, preview.BaseDesignCostPP, r.RaceModifiers)
+		preview.Weapons = rows
+		return preview
+	}
+	specialRows := make([]MilitaryDesignSpecialRowPreview, 0, len(specialQuotes))
+	for _, quote := range specialQuotes {
+		specialRows = append(specialRows, MilitaryDesignSpecialRowPreview{
+			Slot: quote.Mount.Slot, SpecialID: quote.Mount.SpecialID,
+			MiniaturizationLevel: quote.MiniaturizationLevel,
+			UnitSpace:            quote.UnitSpace, UnitCostPP: quote.UnitCostPP,
+			SupportClass: quote.Special.SupportClass, TacticalSupport: quote.Special.TacticalSupport,
+		})
+	}
+
+	spaceUsed := baseSpec.SpaceUsed + weaponSpace + specialSpace
+	baseCost := baseSpec.BaseDesignCostPP + weaponCost + specialCost
 	productionCost := militaryShipProductionCostPP(empire, baseCost, r.RaceModifiers)
 	provisionalSpec := baseSpec
 	provisionalSpec.Weapons = core.CloneShipWeaponMounts(mounts)
+	provisionalSpec.Specials = core.CloneShipSpecialMounts(specialMounts)
 	provisionalSpec.SpaceUsed = spaceUsed
 	provisionalSpec.BaseDesignCostPP = baseCost
 	provisionalSpec.ProductionCostPP = productionCost
@@ -150,6 +193,7 @@ func (r *EconomyRules) PreviewMilitaryDesign(empire *core.Empire, draft Military
 		BaseDesignCostPP: baseCost,
 		ProductionCostPP: productionCost,
 		Weapons:          rows, Spec: &provisionalSpec,
+		Specials: specialRows,
 	}
 	if spaceUsed > baseSpec.HullSpace {
 		err := militaryDesignError(MilitaryDesignReasonSpaceExceeded, "military design uses %d space but hull %q has only %d", spaceUsed, draft.HullID, baseSpec.HullSpace)
@@ -158,7 +202,7 @@ func (r *EconomyRules) PreviewMilitaryDesign(empire *core.Empire, draft Military
 		return preview
 	}
 
-	spec, err := r.compileMilitaryDesignSpec(empire, draft.HullID, draft.StrategicPictureID, selections, mounts)
+	spec, err := r.compileMilitaryDesignSpec(empire, draft.HullID, draft.StrategicPictureID, selections, mounts, specialMounts)
 	if err != nil {
 		preview.RejectionReason = militaryDesignReasonFromError(err)
 		preview.RejectionMessage = err.Error()

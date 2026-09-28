@@ -92,23 +92,36 @@ func CloneShipWeaponMounts(in []ShipWeaponMount) []ShipWeaponMount {
 	return out
 }
 
+type ShipSpecialMount struct {
+	Slot      int    `json:"slot"`
+	SpecialID string `json:"special_id"`
+}
+
+func CloneShipSpecialMounts(in []ShipSpecialMount) []ShipSpecialMount {
+	if len(in) == 0 {
+		return nil
+	}
+	return append([]ShipSpecialMount(nil), in...)
+}
+
 // ShipDesignSpec is the authoritative supported design snapshot.
 type ShipDesignSpec struct {
-	HullID             string            `json:"hull_id"`
-	StrategicPictureID int               `json:"strategic_picture_id"`
-	WarpDriveID        string            `json:"warp_drive_id"`
-	FTLSpeed           int               `json:"ftl_speed"`
-	ComputerID         string            `json:"computer_id"`
-	ArmorID            string            `json:"armor_id"`
-	ShieldID           string            `json:"shield_id,omitempty"`
-	FuelCellID         string            `json:"fuel_cell_id"`
-	FuelRangeParsecs   int               `json:"fuel_range_parsecs"`
-	HullBaseCostPP     int               `json:"hull_base_cost_pp"`
-	HullSpace          int               `json:"hull_space"`
-	SpaceUsed          int               `json:"space_used"`
-	BaseDesignCostPP   int               `json:"base_design_cost_pp"`
-	ProductionCostPP   int               `json:"production_cost_pp"`
-	Weapons            []ShipWeaponMount `json:"weapons,omitempty"`
+	HullID             string             `json:"hull_id"`
+	StrategicPictureID int                `json:"strategic_picture_id"`
+	WarpDriveID        string             `json:"warp_drive_id"`
+	FTLSpeed           int                `json:"ftl_speed"`
+	ComputerID         string             `json:"computer_id"`
+	ArmorID            string             `json:"armor_id"`
+	ShieldID           string             `json:"shield_id,omitempty"`
+	FuelCellID         string             `json:"fuel_cell_id"`
+	FuelRangeParsecs   int                `json:"fuel_range_parsecs"`
+	HullBaseCostPP     int                `json:"hull_base_cost_pp"`
+	HullSpace          int                `json:"hull_space"`
+	SpaceUsed          int                `json:"space_used"`
+	BaseDesignCostPP   int                `json:"base_design_cost_pp"`
+	ProductionCostPP   int                `json:"production_cost_pp"`
+	Specials           []ShipSpecialMount `json:"specials,omitempty"`
+	Weapons            []ShipWeaponMount  `json:"weapons,omitempty"`
 }
 
 type ShipDesign struct {
@@ -139,7 +152,7 @@ func validateShipDesignSpec(spec ShipDesignSpec, label string) error {
 	if spec.StrategicPictureID < 0 || spec.FTLSpeed < 2 || spec.FuelRangeParsecs <= 0 {
 		return fmt.Errorf("%s has invalid strategic picture/drive/fuel values", label)
 	}
-	if spec.HullBaseCostPP <= 0 || spec.HullSpace <= 0 || spec.SpaceUsed < 0 || spec.SpaceUsed > spec.HullSpace {
+	if spec.HullBaseCostPP <= 0 || spec.HullSpace <= 0 || spec.SpaceUsed > spec.HullSpace {
 		return fmt.Errorf("%s has invalid hull cost/space values", label)
 	}
 	if spec.BaseDesignCostPP < spec.HullBaseCostPP || spec.ProductionCostPP <= 0 {
@@ -176,6 +189,27 @@ func validateShipDesignSpec(spec ShipDesignSpec, label string) error {
 			previousModifierRank = rank
 		}
 		previousSlot = mount.Slot
+	}
+	if len(spec.Specials) > 8 {
+		return fmt.Errorf("%s has %d special mounts, maximum is 8", label, len(spec.Specials))
+	}
+	previousSpecialSlot := -1
+	seenSpecialIDs := make(map[string]struct{}, len(spec.Specials))
+	for i, special := range spec.Specials {
+		if special.Slot < 0 || special.Slot > 7 {
+			return fmt.Errorf("%s special[%d] slot %d is outside 0..7", label, i, special.Slot)
+		}
+		if i > 0 && special.Slot <= previousSpecialSlot {
+			return fmt.Errorf("%s special mounts must be strictly ascending by slot", label)
+		}
+		if special.SpecialID == "" {
+			return fmt.Errorf("%s special[%d] requires special_id", label, i)
+		}
+		if _, ok := seenSpecialIDs[special.SpecialID]; ok {
+			return fmt.Errorf("%s has duplicate special %q", label, special.SpecialID)
+		}
+		seenSpecialIDs[special.SpecialID] = struct{}{}
+		previousSpecialSlot = special.Slot
 	}
 	return nil
 }

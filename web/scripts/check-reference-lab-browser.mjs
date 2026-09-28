@@ -329,7 +329,7 @@ async function main() {
   const freeSpaceMatch = designerUI.spaceAvailableText.match(/(\d+)\s+Space/)
   const displayedFreeSpace = Number(freeSpaceMatch?.[1] ?? NaN)
   const expectedBeamDefense = frigateHull && Number.isFinite(displayedFreeSpace)
-    ? (frigateHull.base_combat_speed + (designerCatalog?.automatic_systems?.tactical_speed_bonus ?? 0) + Math.ceil(((designerCatalog?.max_unused_space_combat_speed_bonus ?? 0) * displayedFreeSpace) / Math.max(1, frigateHull.base_space))) * (designerCatalog?.beam_defense_per_combat_speed ?? 0)
+    ? (frigateHull.base_combat_speed + (designerCatalog?.automatic_systems?.tactical_speed_bonus ?? 0) + Math.ceil(((designerCatalog?.max_unused_space_combat_speed_bonus ?? 0) * displayedFreeSpace) / Math.max(1, Math.floor((frigateHull.base_space * (designerCatalog?.automatic_systems?.hull_space_percent ?? 100)) / 100)))) * (designerCatalog?.beam_defense_per_combat_speed ?? 0)
     : NaN
   assert(Number.isFinite(expectedBeamDefense), 'Could not derive original Beam Defense expectation from Designer catalog')
   assert(designerUI.combatRatingsText.replace(/\s+/g, '').includes(`Strahlenabwehr+${expectedBeamDefense}`), `Beam Defense does not match projected original formula: ${designerUI.combatRatingsText}, want +${expectedBeamDefense}`)
@@ -545,7 +545,7 @@ async function main() {
   }
   const firstWeaponAdd = await addWeapon()
   assert(firstWeaponAdd.installed, `Could not install first standard Laser through selector: ${JSON.stringify(firstWeaponAdd)}`)
-  assert(firstWeaponAdd.rows === 26, `Weapon selector row count=${firstWeaponAdd.rows}, want 26`)
+  assert(firstWeaponAdd.rows === 29, `Weapon selector row count=${firstWeaponAdd.rows}, want 29`)
   assert(firstWeaponAdd.weaponTexts?.some((text) => text.includes('Nuklearrakete')), `Weapon selector does not expose Slice-17.3 Nuclear Missile row: ${JSON.stringify(firstWeaponAdd.weaponTexts)}`)
   assert(firstWeaponAdd.filtersInitiallyHidden && firstWeaponAdd.filterToggleExpanded === 'false', `Weapon selector filters are not collapsed by default: ${JSON.stringify(firstWeaponAdd)}`)
   assert(firstWeaponAdd.filterControls?.hasSearch && firstWeaponAdd.filterControls?.selectCount >= 3, `Collapsed filter panel does not expose search/select controls when opened: ${JSON.stringify(firstWeaponAdd)}`)

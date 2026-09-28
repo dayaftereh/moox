@@ -15,7 +15,7 @@ func TestRulesIdentityMatchesReviewedMOO2131Fingerprint(t *testing.T) {
 	if rules.RulesetID != "moo2-1.31" {
 		t.Fatalf("ruleset id=%q", rules.RulesetID)
 	}
-	const want = "5ba202f2e446219b928b43aebb4b0dc6d659db8ec7711de1fc7dd8aa192fb448"
+	const want = "5bae9665451f7105fe0594a325f26f36c78ca10a5a972e17d9b4fffcdda9d29f"
 	if rules.RulesetSHA256 != want {
 		t.Fatalf("ruleset sha256=%s want=%s", rules.RulesetSHA256, want)
 	}

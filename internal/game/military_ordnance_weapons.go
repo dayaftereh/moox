@@ -174,6 +174,8 @@ func (r *EconomyRules) quoteWeapon(empire *core.Empire, input core.ShipWeaponMou
 		return r.quoteBeamWeapon(empire, mount)
 	case isFrozenOrdnanceWeaponID(mount.WeaponID):
 		return r.quoteOrdnanceWeapon(empire, mount)
+	case isFrozenFighterWeaponID(mount.WeaponID):
+		return r.quoteFighterWeapon(empire, mount)
 	default:
 		return militaryBeamWeaponQuote{}, militaryDesignError(MilitaryDesignReasonWeaponUnknown, "unknown supported weapon %q", mount.WeaponID)
 	}

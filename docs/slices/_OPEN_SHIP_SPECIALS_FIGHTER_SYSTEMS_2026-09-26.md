@@ -1,6 +1,6 @@
 # OPEN Slice 17.4 - Ship Specials and Fighter Systems
 Date opened: 2026-09-26
-Status: **Gates 1-2 complete; Gate 3 implementation ready / not started**
+Status: **Gates 1-3 complete; Gate 4 review pending**
 Plan: docs/slices/PLANNED_17_4_SHIP_SPECIALS_FIGHTER_SYSTEMS.md
 ## Scope
 This child adds authoritative Ship Designer representation for supported specials and fighter/carrier systems after the accepted Beam and Ordnance design breadth.
@@ -37,3 +37,13 @@ Contract: docs/research/SLICE_17_4_GATE2_SPECIALS_FIGHTERS_CONTRACT_FREEZE_2026-
 Frozen: supported matrix, support classes, 8-slot/exclusion/prerequisite rules, Space/PP/miniaturization, Special snapshot shape, Megafluxers/Battle Pods/Extended Fuel Tanks effects, Fighter quantity semantics and exact 17.8 handoffs.
 
 Next: Gate 3 implementation in the frozen order; no scope broadening.
+
+## Gate 3 implementation
+
+Implementation evidence: docs/research/SLICE_17_4_GATE3_IMPLEMENTATION_2026-09-28.md
+
+Completed: authoritative Special rules/catalog/quote/save snapshots, Megafluxers/Battle Pods/Extended Fuel Tanks frozen strategic effects, Fighter/Bomber/Heavy Fighter bay rows, immutable construction persistence, explicit Tactical metadata handoff with inertial turning consumers, and responsive 8-slot Ship Designer HMI.
+
+Verification: full Go tests, go vet, production web build, Reference-Lab browser smoke including 390 px layout, direct All-Tech Special/Fighter review, and diff checks all pass.
+
+Next: Gate 4 review/acceptance. Deferred Special/Fighter tactical consumers remain Slice 17.8 scope.

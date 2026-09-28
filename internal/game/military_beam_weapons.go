@@ -148,7 +148,7 @@ func canonicalWeaponMounts(mounts []core.ShipWeaponMount) ([]core.ShipWeaponMoun
 		}
 	}
 	for i := range out {
-		if !isFrozenBeamWeaponID(out[i].WeaponID) && !isFrozenOrdnanceWeaponID(out[i].WeaponID) {
+		if !isFrozenBeamWeaponID(out[i].WeaponID) && !isFrozenOrdnanceWeaponID(out[i].WeaponID) && !isFrozenFighterWeaponID(out[i].WeaponID) {
 			return nil, militaryDesignError(MilitaryDesignReasonWeaponUnknown, "unknown supported weapon %q", out[i].WeaponID)
 		}
 	}

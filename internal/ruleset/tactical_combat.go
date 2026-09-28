@@ -55,6 +55,7 @@ type TacticalWeaponRule struct {
 	AllowedModifierMask int      `json:"allowed_modifier_mask,omitempty"`
 	InnateEffectIDs     []string `json:"innate_effect_ids,omitempty"`
 	TacticalSupport     string   `json:"tactical_support,omitempty"`
+	CraftPerUnit        int      `json:"craft_per_unit,omitempty"`
 }
 
 type TacticalBeamModifierRule struct {
@@ -182,17 +183,21 @@ func (f *TacticalCombatFile) Validate() error {
 	}
 	seenWeapons := make(map[string]struct{}, len(weapons))
 	for i, weapon := range weapons {
-		if weapon.ID == "" || weapon.TechnologyID <= 0 || weapon.MinDamage <= 0 || weapon.MaxDamage < weapon.MinDamage {
+		if weapon.ID == "" || weapon.TechnologyID <= 0 {
 			return fmt.Errorf("invalid tactical weapon[%d]", i)
 		}
 		switch weapon.Kind {
 		case "beam", "torpedo", "bomb":
-			if weapon.BaseSpace <= 0 || weapon.BaseCostPP <= 0 {
-				return fmt.Errorf("invalid %s weapon[%d] base Space/Cost", weapon.Kind, i)
+			if weapon.BaseSpace <= 0 || weapon.BaseCostPP <= 0 || weapon.MinDamage <= 0 || weapon.MaxDamage < weapon.MinDamage || weapon.CraftPerUnit != 0 {
+				return fmt.Errorf("invalid %s weapon[%d]", weapon.Kind, i)
 			}
 		case "missile":
-			if weapon.BaseSpace < 0 || weapon.BaseCostPP < 0 {
-				return fmt.Errorf("invalid Missile weapon[%d] base Space/Cost", i)
+			if weapon.BaseSpace < 0 || weapon.BaseCostPP < 0 || weapon.MinDamage <= 0 || weapon.MaxDamage < weapon.MinDamage || weapon.CraftPerUnit != 0 {
+				return fmt.Errorf("invalid Missile weapon[%d]", i)
+			}
+		case "fighter":
+			if weapon.BaseSpace <= 0 || weapon.BaseCostPP <= 0 || weapon.MinDamage != 0 || weapon.MaxDamage != 0 || weapon.CraftPerUnit <= 0 || weapon.TacticalSupport != "metadata_only" {
+				return fmt.Errorf("invalid Fighter weapon[%d]", i)
 			}
 		default:
 			return fmt.Errorf("invalid tactical weapon[%d] kind %q", i, weapon.Kind)

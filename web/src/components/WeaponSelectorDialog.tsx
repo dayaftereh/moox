@@ -4,6 +4,7 @@ import {
   type MilitaryDesignDraftProjection,
   type MilitaryDesignerWeaponChoice,
   type PlayerSnapshot,
+  type ShipSpecialMount,
   type ShipWeaponFiringArcID,
   type ShipWeaponModifierID,
   type ShipWeaponMount,
@@ -25,6 +26,7 @@ type Props = {
   snapshot: PlayerSnapshot
   weapons: MilitaryDesignerWeaponChoice[]
   existingMounts: ShipWeaponMount[]
+  specials: ShipSpecialMount[]
   hullID: string
   strategicPictureID: number
   shipGenome: ShipVisualGenome
@@ -64,6 +66,9 @@ const weaponTranslationKeys: Record<string, TranslationKey> = {
   neutronium_bomb: 'shipbuilder.weapon.neutroniumBomb',
   death_spores: 'shipbuilder.weapon.deathSpores',
   bio_terminator: 'shipbuilder.weapon.bioTerminator',
+  fighter_bays: 'shipbuilder.weapon.fighterBays',
+  bomber_bays: 'shipbuilder.weapon.bomberBays',
+  heavy_fighter_bays: 'shipbuilder.weapon.heavyFighterBays',
 }
 
 const mountTranslationKeys: Record<ShipWeaponMountType, TranslationKey> = {
@@ -138,6 +143,7 @@ export function WeaponSelectorDialog({
   snapshot,
   weapons,
   existingMounts,
+  specials,
   hullID,
   strategicPictureID,
   shipGenome,
@@ -241,6 +247,7 @@ export function WeaponSelectorDialog({
       strategic_picture_id: strategicPictureID,
       computer_id: computerID,
       shield_id: shieldID,
+      ...(specials.length > 0 ? { specials: specials.map((mount) => ({ ...mount })) } : {}),
       weapons: draftWeapons,
     }).then((result) => {
       if (cancelled) return
@@ -399,6 +406,7 @@ export function WeaponSelectorDialog({
                   <span className="shipdesigner-weapon-selector-name">
                     <strong>{weaponLabel(t, weapon)}</strong>
                     {!weapon.available && <small>{t('shipbuilder.filterLocked')}</small>}
+                    {weapon.craft_per_unit ? <small>{t('shipbuilder.craftPerBay', { count: weapon.craft_per_unit })}</small> : null}
                   </span>
                   <span>{damageLabel(weapon)}</span>
                   <span>{weapon.effective_standard_space} {t('shipbuilder.space')}</span>
@@ -416,6 +424,7 @@ export function WeaponSelectorDialog({
                   <div>
                     <p className="eyebrow">{t('shipbuilder.weaponSelectorTitle')}</p>
                     <h4>{weaponLabel(t, selectedWeapon)}</h4>
+                    {selectedWeapon.craft_per_unit ? <small className="muted">{t('shipbuilder.craftPerBay', { count: selectedWeapon.craft_per_unit })}</small> : null}
                   </div>
                   <span className="shipdesigner-weapon-damage">
                     <small>{t('shipbuilder.baseDamage')}</small>

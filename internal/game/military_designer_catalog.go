@@ -51,6 +51,26 @@ type MilitaryDesignerComponentChoice struct {
 	ShieldCapacityPerHullClass int    `json:"shield_capacity_per_hull_class,omitempty"`
 }
 
+type MilitaryDesignerSpecialChoice struct {
+	ID                    string   `json:"id"`
+	NameKey               string   `json:"name_key"`
+	OriginalID            int      `json:"original_id"`
+	TechnologyID          int      `json:"technology_id"`
+	TechnologyFieldID     int      `json:"technology_field_id"`
+	TechnologyKnown       bool     `json:"technology_known"`
+	Available             bool     `json:"available"`
+	LockReason            string   `json:"lock_reason,omitempty"`
+	SupportClass          int      `json:"support_class"`
+	TacticalSupport       string   `json:"tactical_support"`
+	MiniaturizationLevel  int      `json:"miniaturization_level"`
+	CostReductionPercent  int      `json:"cost_reduction_percent"`
+	SpaceReductionPercent int      `json:"space_reduction_percent"`
+	EffectiveCostByHullPP []int    `json:"effective_cost_by_hull_pp"`
+	EffectiveSpaceByHull  []int    `json:"effective_space_by_hull"`
+	ExcludedSpecialIDs    []string `json:"excluded_special_ids,omitempty"`
+	RequiresShield        bool     `json:"requires_shield,omitempty"`
+}
+
 type MilitaryDesignerAutomaticSystems struct {
 	WarpDriveID             string `json:"warp_drive_id,omitempty"`
 	FTLSpeed                int    `json:"ftl_speed,omitempty"`
@@ -59,6 +79,8 @@ type MilitaryDesignerAutomaticSystems struct {
 	ArmorDurabilityMultiple int    `json:"armor_durability_multiple,omitempty"`
 	FuelCellID              string `json:"fuel_cell_id,omitempty"`
 	FuelRangeParsecs        int    `json:"fuel_range_parsecs,omitempty"`
+	MegafluxersKnown        bool   `json:"megafluxers_known"`
+	HullSpacePercent        int    `json:"hull_space_percent"`
 }
 
 type MilitaryDesignerWeaponMountChoice struct {
@@ -115,6 +137,7 @@ type MilitaryDesignerWeaponChoice struct {
 	FixedFiringArcID        core.ShipWeaponFiringArcID              `json:"fixed_firing_arc_id,omitempty"`
 	InnateEffectIDs         []string                                `json:"innate_effect_ids,omitempty"`
 	TacticalSupport         string                                  `json:"tactical_support"`
+	CraftPerUnit            int                                     `json:"craft_per_unit,omitempty"`
 }
 
 func beamFiringArcChoices() []MilitaryDesignerWeaponFiringArcChoice {
@@ -141,6 +164,7 @@ type MilitaryDesignerCatalog struct {
 	Shields                        []MilitaryDesignerComponentChoice `json:"shields"`
 	AutomaticSystems               MilitaryDesignerAutomaticSystems  `json:"automatic_systems"`
 	Weapons                        []MilitaryDesignerWeaponChoice    `json:"weapons"`
+	Specials                       []MilitaryDesignerSpecialChoice   `json:"specials"`
 	Variants                       []MilitaryDesignerVariant         `json:"variants"`
 	ProductionCostNumerator        int                               `json:"production_cost_numerator"`
 	ProductionCostDenominator      int                               `json:"production_cost_denominator"`
@@ -205,6 +229,58 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 	if hasFuel {
 		catalog.AutomaticSystems.FuelCellID = fuel.ID
 		catalog.AutomaticSystems.FuelRangeParsecs = fuel.RangeParsecs
+	}
+	catalog.AutomaticSystems.HullSpacePercent = 100
+	if r.ShipSpecials != nil {
+		catalog.AutomaticSystems.MegafluxersKnown = empireKnowsTechnology(empire, r.ShipSpecials.Megafluxers.TechnologyID)
+		if catalog.AutomaticSystems.MegafluxersKnown {
+			catalog.AutomaticSystems.HullSpacePercent = r.ShipSpecials.Megafluxers.HullSpacePercent
+		}
+		for _, special := range r.ShipSpecials.Specials {
+			known := empireKnowsTechnology(empire, special.TechnologyID)
+			level := 0
+			if known && special.Miniaturizes {
+				var err error
+				level, err = r.shipComponentMiniaturizationLevel(empire, special.TechnologyID)
+				if err != nil {
+					return MilitaryDesignerCatalog{}, err
+				}
+			}
+			effectiveSpace := append([]int(nil), special.BaseSpaceByHull...)
+			effectiveCost := append([]int(nil), special.BaseCostByHullPP...)
+			if special.Miniaturizes {
+				for i := range effectiveSpace {
+					effectiveSpace[i] = miniaturizedComponentSpace(special.BaseSpaceByHull[i], level, special.MiniaturizationClass)
+					effectiveCost[i] = miniaturizedComponentCost(special.BaseCostByHullPP[i], level)
+				}
+			}
+			excludedIDs := make([]string, 0, len(special.ExcludedOriginalIDs))
+			for _, originalID := range special.ExcludedOriginalIDs {
+				excluded, ok := r.ShipSpecials.ByOriginalID(originalID)
+				if ok && excluded.ID != special.ID {
+					excludedIDs = append(excludedIDs, excluded.ID)
+				}
+			}
+			lockReason := ""
+			if !known {
+				lockReason = MilitaryDesignReasonSpecialTechnologyRequired
+			}
+			costReduction := 0
+			spaceReduction := 0
+			if special.Miniaturizes {
+				costReduction = 100 - miniaturizationCostPercent(level)
+				spaceReduction = 100 - miniaturizationSpacePerThousand(level, special.MiniaturizationClass)/10
+			}
+			catalog.Specials = append(catalog.Specials, MilitaryDesignerSpecialChoice{
+				ID: special.ID, NameKey: r.TechnologyNameKeyByID[special.TechnologyID],
+				OriginalID: special.OriginalID, TechnologyID: special.TechnologyID, TechnologyFieldID: r.TechnologyFieldByID[special.TechnologyID],
+				TechnologyKnown: known, Available: known, LockReason: lockReason,
+				SupportClass: special.SupportClass, TacticalSupport: special.TacticalSupport,
+				MiniaturizationLevel: level, CostReductionPercent: costReduction, SpaceReductionPercent: spaceReduction,
+				EffectiveCostByHullPP: effectiveCost, EffectiveSpaceByHull: effectiveSpace,
+				ExcludedSpecialIDs: excludedIDs, RequiresShield: special.RequiresShield,
+			})
+		}
 	}
 	if !hasDrive || !hasArmor || !hasFuel {
 		for i := range catalog.Hulls {
@@ -318,7 +394,9 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 			}
 
 			modifierSource := r.TacticalCombat.BeamModifiers
-			if weapon.Kind != "beam" {
+			if weapon.Kind == "fighter" {
+				modifierSource = nil
+			} else if weapon.Kind != "beam" {
 				modifierSource = r.TacticalCombat.WeaponModifiers()
 			}
 			modifierChoices := make([]MilitaryDesignerWeaponModifierChoice, 0, 6)
@@ -351,7 +429,7 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 				firingArcChoices = beamFiringArcChoices()
 				defaultFiringArc = core.ShipWeaponFiringArcForward
 				defaultMount.FiringArcID = defaultFiringArc
-			} else {
+			} else if weapon.Kind != "fighter" {
 				fixedArc = core.ShipWeaponFiringArc360
 				defaultMount.FiringArcID = fixedArc
 				switch weapon.Kind {
@@ -399,7 +477,7 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 				FiringArcChoices:        firingArcChoices,
 				DefaultFiringArcID:      defaultFiringArc,
 				FixedFiringArcID:        fixedArc,
-				InnateEffectIDs:         append([]string(nil), weapon.InnateEffectIDs...), TacticalSupport: weapon.TacticalSupport,
+				InnateEffectIDs:         append([]string(nil), weapon.InnateEffectIDs...), TacticalSupport: weapon.TacticalSupport, CraftPerUnit: weapon.CraftPerUnit,
 			})
 		}
 	}

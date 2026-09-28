@@ -49,8 +49,8 @@ func TestMilitaryDesignerCatalogProjectsOrderedAuthoritativeBaseline(t *testing.
 	if catalog.Hulls[5].RequiredTechnologyKey != "doom_star_construction" || catalog.Hulls[5].RequiredTechnologyID != 55 || catalog.Hulls[5].TechnologyKnown || catalog.Hulls[5].LockReason != ShipDesignerLockTechnologyRequired {
 		t.Fatalf("Doom Star lock=%+v", catalog.Hulls[5])
 	}
-	if len(catalog.Weapons) != 26 {
-		t.Fatalf("weapon choices=%d want 26", len(catalog.Weapons))
+	if len(catalog.Weapons) != 29 {
+		t.Fatalf("weapon choices=%d want 29", len(catalog.Weapons))
 	}
 	laserChoice, ok := designerWeaponChoiceByID(catalog.Weapons, "laser_cannon")
 	if !ok || laserChoice.TechnologyID != 100 || !laserChoice.Available {
@@ -111,8 +111,8 @@ func TestMilitaryDesignerCatalogLocksUnknownLaserAndOmitsIllegalPreview(t *testi
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(catalog.Weapons) != 26 {
-		t.Fatalf("locked weapon catalog size=%d want 26", len(catalog.Weapons))
+	if len(catalog.Weapons) != 29 {
+		t.Fatalf("locked weapon catalog size=%d want 29", len(catalog.Weapons))
 	}
 	laserChoice, ok := designerWeaponChoiceByID(catalog.Weapons, "laser_cannon")
 	if !ok || laserChoice.TechnologyKnown || laserChoice.Available || laserChoice.LockReason != ShipDesignerLockTechnologyRequired {

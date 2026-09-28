@@ -128,8 +128,8 @@ func TestPlayerDecisionViewIsPlayerSafeDeepCopyAndDeterministic(t *testing.T) {
 	if len(view.Decisions.ShipDesigner.Hulls) != 6 || view.Decisions.ShipDesigner.Hulls[0].ID != "frigate" || !view.Decisions.ShipDesigner.Hulls[0].SaveAvailable {
 		t.Fatalf("decision Ship Designer hulls=%+v", view.Decisions.ShipDesigner.Hulls)
 	}
-	if len(view.Decisions.ShipDesigner.Weapons) != 26 {
-		t.Fatalf("decision Ship Designer weapon count=%d want=26", len(view.Decisions.ShipDesigner.Weapons))
+	if len(view.Decisions.ShipDesigner.Weapons) != 29 {
+		t.Fatalf("decision Ship Designer weapon count=%d want=29", len(view.Decisions.ShipDesigner.Weapons))
 	}
 	foundLaser := false
 	for _, weapon := range view.Decisions.ShipDesigner.Weapons {

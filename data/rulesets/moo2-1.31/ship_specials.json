@@ -1,0 +1,1130 @@
+{
+  "schema_version": 1,
+  "ruleset": "moo2-1.31",
+  "megafluxers": {
+    "technology_id": 89,
+    "hull_space_percent": 125
+  },
+  "specials": [
+    {
+      "id": "achilles_targeting_unit",
+      "original_id": 1,
+      "technology_id": 1,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        15,
+        22,
+        37,
+        75,
+        150,
+        375
+      ],
+      "excluded_original_ids": [
+        1
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "augmented_engines",
+      "original_id": 2,
+      "technology_id": 20,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        5,
+        7,
+        12,
+        25,
+        50,
+        125
+      ],
+      "excluded_original_ids": [
+        2
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "automated_repair_unit",
+      "original_id": 3,
+      "technology_id": 23,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "excluded_original_ids": [
+        3
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "battle_pods",
+      "original_id": 4,
+      "technology_id": 25,
+      "base_space_by_hull": [
+        -12,
+        -30,
+        -60,
+        -125,
+        -250,
+        -600
+      ],
+      "base_cost_by_hull_pp": [
+        20,
+        60,
+        175,
+        400,
+        800,
+        2500
+      ],
+      "excluded_original_ids": [
+        4
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": false,
+      "support_class": 1,
+      "tactical_support": "strategic_only"
+    },
+    {
+      "id": "battle_scanner",
+      "original_id": 5,
+      "technology_id": 26,
+      "base_space_by_hull": [
+        12,
+        18,
+        30,
+        60,
+        125,
+        325
+      ],
+      "base_cost_by_hull_pp": [
+        5,
+        7,
+        12,
+        25,
+        50,
+        125
+      ],
+      "excluded_original_ids": [
+        5
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "cloaking_device",
+      "original_id": 6,
+      "technology_id": 38,
+      "base_space_by_hull": [
+        12,
+        18,
+        30,
+        60,
+        125,
+        325
+      ],
+      "base_cost_by_hull_pp": [
+        12,
+        18,
+        30,
+        60,
+        125,
+        325
+      ],
+      "excluded_original_ids": [
+        23,
+        6
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "damper_field",
+      "original_id": 7,
+      "technology_id": 45,
+      "base_space_by_hull": [
+        5,
+        7,
+        12,
+        25,
+        50,
+        125
+      ],
+      "base_cost_by_hull_pp": [
+        7,
+        10,
+        18,
+        40,
+        75,
+        190
+      ],
+      "excluded_original_ids": [
+        7,
+        13,
+        20,
+        30
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "displacement_device",
+      "original_id": 8,
+      "technology_id": 53,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        15,
+        22,
+        40,
+        75,
+        150,
+        375
+      ],
+      "excluded_original_ids": [
+        8
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "ecm_jammer",
+      "original_id": 9,
+      "technology_id": 57,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        5,
+        7,
+        12,
+        25,
+        50,
+        125
+      ],
+      "excluded_original_ids": [
+        21,
+        9,
+        38
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "energy_absorber",
+      "original_id": 10,
+      "technology_id": 60,
+      "base_space_by_hull": [
+        12,
+        18,
+        30,
+        60,
+        125,
+        325
+      ],
+      "base_cost_by_hull_pp": [
+        12,
+        18,
+        30,
+        60,
+        125,
+        325
+      ],
+      "excluded_original_ids": [
+        10
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "extended_fuel_tanks",
+      "original_id": 11,
+      "technology_id": 63,
+      "base_space_by_hull": [
+        12,
+        18,
+        30,
+        60,
+        125,
+        325
+      ],
+      "base_cost_by_hull_pp": [
+        5,
+        10,
+        15,
+        30,
+        60,
+        100
+      ],
+      "excluded_original_ids": [
+        11
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 1,
+      "tactical_support": "strategic_only"
+    },
+    {
+      "id": "fast_missile_racks",
+      "original_id": 12,
+      "technology_id": 64,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "excluded_original_ids": [
+        12
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "hard_shields",
+      "original_id": 13,
+      "technology_id": 81,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "excluded_original_ids": [
+        13,
+        7
+      ],
+      "requires_shield": true,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "heavy_armor",
+      "original_id": 14,
+      "technology_id": 82,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        5,
+        7,
+        12,
+        25,
+        50,
+        125
+      ],
+      "excluded_original_ids": [
+        14
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "high_energy_focus",
+      "original_id": 15,
+      "technology_id": 85,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "excluded_original_ids": [
+        15
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "hyper_x_capacitors",
+      "original_id": 16,
+      "technology_id": 90,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "excluded_original_ids": [
+        16
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "inertial_nullifier",
+      "original_id": 17,
+      "technology_id": 93,
+      "base_space_by_hull": [
+        15,
+        25,
+        40,
+        75,
+        150,
+        375
+      ],
+      "base_cost_by_hull_pp": [
+        22,
+        40,
+        60,
+        100,
+        225,
+        500
+      ],
+      "excluded_original_ids": [
+        18,
+        17
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 2,
+      "tactical_support": "turning_mode"
+    },
+    {
+      "id": "inertial_stabilizer",
+      "original_id": 18,
+      "technology_id": 94,
+      "base_space_by_hull": [
+        15,
+        25,
+        40,
+        75,
+        150,
+        375
+      ],
+      "base_cost_by_hull_pp": [
+        5,
+        7,
+        12,
+        25,
+        50,
+        125
+      ],
+      "excluded_original_ids": [
+        17,
+        18
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 2,
+      "tactical_support": "turning_mode"
+    },
+    {
+      "id": "lightning_field",
+      "original_id": 19,
+      "technology_id": 102,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "excluded_original_ids": [
+        19
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "multi_phased_shields",
+      "original_id": 20,
+      "technology_id": 112,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "excluded_original_ids": [
+        20,
+        7
+      ],
+      "requires_shield": true,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "multi_wave_ecm_jammer",
+      "original_id": 21,
+      "technology_id": 111,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "excluded_original_ids": [
+        9,
+        21,
+        38
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "phase_shifter",
+      "original_id": 22,
+      "technology_id": 125,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        15,
+        22,
+        37,
+        75,
+        150,
+        375
+      ],
+      "excluded_original_ids": [
+        33,
+        22
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "phasing_cloak",
+      "original_id": 23,
+      "technology_id": 126,
+      "base_space_by_hull": [
+        15,
+        25,
+        40,
+        75,
+        150,
+        375
+      ],
+      "base_cost_by_hull_pp": [
+        22,
+        40,
+        60,
+        100,
+        225,
+        500
+      ],
+      "excluded_original_ids": [
+        6,
+        23
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "quantum_detonator",
+      "original_id": 24,
+      "technology_id": 150,
+      "base_space_by_hull": [
+        2,
+        3,
+        7,
+        15,
+        30,
+        75
+      ],
+      "base_cost_by_hull_pp": [
+        3,
+        5,
+        10,
+        22,
+        45,
+        100
+      ],
+      "excluded_original_ids": [
+        24
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "rangemaster_unit",
+      "original_id": 25,
+      "technology_id": 151,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "excluded_original_ids": [
+        25
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "reflection_field",
+      "original_id": 26,
+      "technology_id": 153,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        15,
+        22,
+        37,
+        75,
+        150,
+        375
+      ],
+      "excluded_original_ids": [
+        26
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "reinforced_hull",
+      "original_id": 27,
+      "technology_id": 56,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        5,
+        7,
+        12,
+        25,
+        50,
+        125
+      ],
+      "excluded_original_ids": [
+        27
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "scout_lab",
+      "original_id": 28,
+      "technology_id": 158,
+      "base_space_by_hull": [
+        12,
+        20,
+        40,
+        75,
+        150,
+        375
+      ],
+      "base_cost_by_hull_pp": [
+        7,
+        12,
+        20,
+        37,
+        75,
+        180
+      ],
+      "excluded_original_ids": [
+        28
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "security_stations",
+      "original_id": 29,
+      "technology_id": 159,
+      "base_space_by_hull": [
+        5,
+        7,
+        12,
+        25,
+        50,
+        125
+      ],
+      "base_cost_by_hull_pp": [
+        2,
+        3,
+        6,
+        12,
+        25,
+        70
+      ],
+      "excluded_original_ids": [
+        29
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "shield_capacitors",
+      "original_id": 30,
+      "technology_id": 161,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "excluded_original_ids": [
+        30,
+        7
+      ],
+      "requires_shield": true,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "stealth_field",
+      "original_id": 31,
+      "technology_id": 172,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "excluded_original_ids": [
+        31
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "structural_analyzer",
+      "original_id": 32,
+      "technology_id": 175,
+      "base_space_by_hull": [
+        7,
+        10,
+        18,
+        40,
+        75,
+        190
+      ],
+      "base_cost_by_hull_pp": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "excluded_original_ids": [
+        32
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "sub_space_teleporter",
+      "original_id": 33,
+      "technology_id": 177,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        15,
+        22,
+        37,
+        75,
+        150,
+        375
+      ],
+      "excluded_original_ids": [
+        22,
+        33
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "time_warp_facilitator",
+      "original_id": 34,
+      "technology_id": 185,
+      "base_space_by_hull": [
+        15,
+        25,
+        40,
+        75,
+        150,
+        375
+      ],
+      "base_cost_by_hull_pp": [
+        22,
+        40,
+        60,
+        100,
+        225,
+        500
+      ],
+      "excluded_original_ids": [
+        34
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "transporters",
+      "original_id": 35,
+      "technology_id": 190,
+      "base_space_by_hull": [
+        10,
+        15,
+        25,
+        50,
+        100,
+        250
+      ],
+      "base_cost_by_hull_pp": [
+        5,
+        7,
+        12,
+        25,
+        50,
+        125
+      ],
+      "excluded_original_ids": [
+        35
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "troop_pods",
+      "original_id": 36,
+      "technology_id": 192,
+      "base_space_by_hull": [
+        12,
+        18,
+        30,
+        60,
+        125,
+        325
+      ],
+      "base_cost_by_hull_pp": [
+        5,
+        7,
+        12,
+        25,
+        50,
+        125
+      ],
+      "excluded_original_ids": [
+        36
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "warp_dissipater",
+      "original_id": 37,
+      "technology_id": 196,
+      "base_space_by_hull": [
+        15,
+        25,
+        40,
+        75,
+        150,
+        375
+      ],
+      "base_cost_by_hull_pp": [
+        15,
+        25,
+        40,
+        75,
+        150,
+        375
+      ],
+      "excluded_original_ids": [
+        37
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    },
+    {
+      "id": "wide_area_jammer",
+      "original_id": 38,
+      "technology_id": 199,
+      "base_space_by_hull": [
+        20,
+        30,
+        50,
+        100,
+        200,
+        500
+      ],
+      "base_cost_by_hull_pp": [
+        20,
+        30,
+        50,
+        100,
+        200,
+        500
+      ],
+      "excluded_original_ids": [
+        9,
+        38,
+        21
+      ],
+      "requires_shield": false,
+      "miniaturization_class": 1,
+      "miniaturizes": true,
+      "support_class": 3,
+      "tactical_support": "metadata_only"
+    }
+  ]
+}

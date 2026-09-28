@@ -24,6 +24,7 @@ var authoritativeRulesFiles = []string{
 	"race_traits.json",
 	"races.json",
 	"ship_hulls.json",
+	"ship_specials.json",
 	"tactical_combat.json",
 	"technologies.json",
 }

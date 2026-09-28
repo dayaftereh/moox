@@ -30,6 +30,9 @@ const weaponTranslationKeys: Record<string, TranslationKey> = {
   neutronium_bomb: 'shipbuilder.weapon.neutroniumBomb',
   death_spores: 'shipbuilder.weapon.deathSpores',
   bio_terminator: 'shipbuilder.weapon.bioTerminator',
+  fighter_bays: 'shipbuilder.weapon.fighterBays',
+  bomber_bays: 'shipbuilder.weapon.bomberBays',
+  heavy_fighter_bays: 'shipbuilder.weapon.heavyFighterBays',
 }
 
 export const mountTranslationKeys: Record<ShipWeaponMountType, TranslationKey> = {
