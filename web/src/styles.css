@@ -7591,7 +7591,7 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 .shipdesigner-info-card.weapon.shipdesigner-special-slot-card {
   border-color: var(--accent);
 }
-.shipdesigner-special-info,
+.shipdesigner-special-edit,
 .shipdesigner-special-remove {
   width: 29px;
   min-width: 29px;
@@ -7599,7 +7599,7 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   min-height: 29px;
   padding: 5px;
 }
-.shipdesigner-special-info {
+.shipdesigner-special-edit {
   font-weight: 800;
   font-size: .78rem;
 }
@@ -7662,5 +7662,54 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   }
   .shipdesigner-special-detail-stats > div {
     padding: 6px;
+  }
+}
+
+
+.shipdesigner-special-remove-error-dialog {
+  width: min(520px, calc(100vw - 28px));
+}
+
+.shipdesigner-special-remove-error-body {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+}
+
+.shipdesigner-special-remove-error-body > p {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.shipdesigner-special-remove-space-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.shipdesigner-special-remove-space-grid > div {
+  display: grid;
+  gap: 4px;
+  padding: 10px;
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, .025);
+}
+
+.shipdesigner-special-remove-space-grid small {
+  color: var(--muted);
+  font-size: .6rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.shipdesigner-special-remove-space-grid strong {
+  font-size: 1.05rem;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 520px) {
+  .shipdesigner-special-remove-space-grid {
+    grid-template-columns: 1fr;
   }
 }

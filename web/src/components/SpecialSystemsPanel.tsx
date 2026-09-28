@@ -9,7 +9,14 @@ import { useI18n, type TranslationKey, type TranslationVars } from '../i18n'
 import { GameIcon } from './GameIcon'
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
-type DialogMode = 'add' | 'info'
+type DialogMode = 'add' | 'edit'
+type RemovalErrorState = {
+  special: string
+  reason?: string
+  used: number
+  capacity: number
+  message?: string
+}
 
 type Props = {
   choices: MilitaryDesignerSpecialChoice[]
@@ -97,10 +104,12 @@ export function SpecialSystemsPanel({
   const { locale } = useI18n()
   const [dialogMode, setDialogMode] = useState<DialogMode | null>(null)
   const [selectedSpecialID, setSelectedSpecialID] = useState('')
+  const [editingSlot, setEditingSlot] = useState<number | null>(null)
   const [candidatePreview, setCandidatePreview] = useState<MilitaryDesignDraftProjection>()
   const [previewing, setPreviewing] = useState(false)
   const [previewError, setPreviewError] = useState('')
   const [operationError, setOperationError] = useState('')
+  const [removalError, setRemovalError] = useState<RemovalErrorState | null>(null)
   const previewRequest = useRef(0)
 
   const normalized = [...mounts].sort((a, b) => a.slot - b.slot)
@@ -108,23 +117,25 @@ export function SpecialSystemsPanel({
   const freeSlot = nextFreeSlot(normalized)
   const addChoices = choices.filter((choice) => !installedIDs.has(choice.id))
   const canAdd = !disabled && normalized.length < 8 && freeSlot != null && addChoices.length > 0
-  const listChoices = dialogMode === 'add' ? addChoices : choices
+  const editingMount = editingSlot == null ? undefined : normalized.find((mount) => mount.slot === editingSlot)
+  const editChoices = choices.filter((choice) => choice.id === editingMount?.special_id || !installedIDs.has(choice.id))
+  const listChoices = dialogMode === 'add' ? addChoices : editChoices
   const selectedChoice = choices.find((choice) => choice.id === selectedSpecialID)
-  const selectedInstalledMount = normalized.find((mount) => mount.special_id === selectedSpecialID)
-  const selectedExistingPreview = selectedInstalledMount
-    ? previews?.find((row) => row.slot === selectedInstalledMount.slot)
-    : undefined
-  const selectedCandidatePreview = dialogMode === 'add' && freeSlot != null
-    ? candidatePreview?.specials?.find((row) => row.slot === freeSlot)
-    : undefined
+  const selectedExistingPreview = editingSlot == null
+    ? undefined
+    : previews?.find((row) => row.slot === editingSlot)
+  const targetSlot = dialogMode === 'add' ? freeSlot : editingSlot
+  const selectedCandidatePreview = targetSlot == null
+    ? undefined
+    : candidatePreview?.specials?.find((row) => row.slot === targetSlot)
   const selectedRow = selectedCandidatePreview ?? selectedExistingPreview
   const selectedSpace = selectedRow?.unit_space ?? selectedChoice?.effective_space_by_hull?.[hullIndex]
   const selectedCost = selectedRow?.unit_cost_pp ?? selectedChoice?.effective_cost_by_hull_pp?.[hullIndex]
   const selectedSupport = selectedRow?.tactical_support ?? selectedChoice?.tactical_support
-  const canInstall = Boolean(
-    dialogMode === 'add'
+  const canApply = Boolean(
+    dialogMode
       && selectedChoice?.available
-      && freeSlot != null
+      && targetSlot != null
       && !previewing
       && candidatePreview?.save_available
       && selectedCandidatePreview,
@@ -141,9 +152,11 @@ export function SpecialSystemsPanel({
   }
 
   useEffect(() => {
-    if (!dialogMode) return
+    if (!dialogMode && !removalError) return
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === 'Escape') closeDialog()
+      if (event.key !== 'Escape') return
+      if (removalError) setRemovalError(null)
+      else closeDialog()
     }
     document.body.classList.add('modal-open')
     window.addEventListener('keydown', onKeyDown)
@@ -151,12 +164,13 @@ export function SpecialSystemsPanel({
       window.removeEventListener('keydown', onKeyDown)
       document.body.classList.remove('modal-open')
     }
-  }, [dialogMode])
+  }, [dialogMode, removalError])
 
   function closeDialog() {
     previewRequest.current += 1
     setDialogMode(null)
     setSelectedSpecialID('')
+    setEditingSlot(null)
     setCandidatePreview(undefined)
     setPreviewing(false)
     setPreviewError('')
@@ -164,31 +178,34 @@ export function SpecialSystemsPanel({
 
   function openAdd() {
     setOperationError('')
+    setRemovalError(null)
     setSelectedSpecialID('')
+    setEditingSlot(null)
     setCandidatePreview(undefined)
     setPreviewError('')
     setDialogMode('add')
   }
 
-  function openInfo(specialID: string) {
+  function openEdit(slot: number, specialID: string) {
     setOperationError('')
+    setRemovalError(null)
     setSelectedSpecialID(specialID)
+    setEditingSlot(slot)
     setCandidatePreview(undefined)
     setPreviewError('')
-    setDialogMode('info')
+    setDialogMode('edit')
   }
 
   async function selectSpecial(specialID: string) {
     setSelectedSpecialID(specialID)
     setPreviewError('')
     setCandidatePreview(undefined)
-    if (dialogMode !== 'add' || freeSlot == null) return
+    if (!dialogMode || targetSlot == null) return
 
     const request = ++previewRequest.current
-    const next = [
-      ...normalized,
-      { slot: freeSlot, special_id: specialID },
-    ].sort((a, b) => a.slot - b.slot)
+    const next = dialogMode === 'add'
+      ? [...normalized, { slot: targetSlot, special_id: specialID }].sort((a, b) => a.slot - b.slot)
+      : normalized.map((mount) => mount.slot === targetSlot ? { ...mount, special_id: specialID } : mount)
 
     setPreviewing(true)
     const projection = await onPreview(next)
@@ -206,31 +223,46 @@ export function SpecialSystemsPanel({
 
   async function removeSpecial(slot: number) {
     if (disabled) return
+    const mount = normalized.find((candidate) => candidate.slot === slot)
+    const special = mount ? labelForID(mount.special_id) : t('shipbuilder.specialSystems')
     setOperationError('')
+    setRemovalError(null)
     const next = normalized.filter((mount) => mount.slot !== slot)
     const projection = await onPreview(next)
     if (!projection) {
-      setOperationError(t('shipbuilder.specialPreviewUnavailable'))
+      setRemovalError({
+        special,
+        reason: 'preview_unavailable',
+        used: 0,
+        capacity: 0,
+        message: t('shipbuilder.specialPreviewUnavailable'),
+      })
       return
     }
     if (!projection.save_available) {
-      setOperationError(projection.rejection_message ?? t('shipbuilder.previewRejected'))
+      setRemovalError({
+        special,
+        reason: projection.rejection_reason,
+        used: projection.space_used,
+        capacity: projection.hull_space,
+        message: projection.rejection_message,
+      })
       return
     }
     onChange(projection.spec?.specials ?? next, projection)
   }
 
-  function installSelected() {
-    if (!canInstall || !selectedChoice || freeSlot == null || !candidatePreview) return
-    const next = [
-      ...normalized,
-      { slot: freeSlot, special_id: selectedChoice.id },
-    ].sort((a, b) => a.slot - b.slot)
+  function applySelected() {
+    if (!canApply || !selectedChoice || targetSlot == null || !candidatePreview) return
+    const next = dialogMode === 'add'
+      ? [...normalized, { slot: targetSlot, special_id: selectedChoice.id }].sort((a, b) => a.slot - b.slot)
+      : normalized.map((mount) => mount.slot === targetSlot ? { ...mount, special_id: selectedChoice.id } : mount)
     onChange(candidatePreview.spec?.specials ?? next, candidatePreview)
     closeDialog()
   }
 
   const excludedNames = selectedChoice?.excluded_special_ids?.map(labelForID) ?? []
+  const missingSpace = removalError ? Math.max(0, removalError.used - removalError.capacity) : 0
 
   return (
     <>
@@ -258,11 +290,11 @@ export function SpecialSystemsPanel({
                   <div className="shipdesigner-weapon-slot-controls">
                     <button
                       type="button"
-                      className="button-ghost shipdesigner-weapon-edit shipdesigner-special-info"
-                      aria-label={t('shipbuilder.specialDetails', { special: specialLabel(choice, mount.special_id) })}
-                      title={t('shipbuilder.specialDetails', { special: specialLabel(choice, mount.special_id) })}
-                      onClick={() => openInfo(mount.special_id)}
-                    >?</button>
+                      className="button-ghost shipdesigner-weapon-edit shipdesigner-special-edit"
+                      aria-label={t('shipbuilder.editSpecial', { special: specialLabel(choice, mount.special_id) })}
+                      title={t('shipbuilder.editSpecial', { special: specialLabel(choice, mount.special_id) })}
+                      onClick={() => openEdit(mount.slot, mount.special_id)}
+                    ><GameIcon name="edit" /></button>
                     <button
                       type="button"
                       className="button-ghost shipdesigner-weapon-edit shipdesigner-special-remove"
@@ -318,7 +350,7 @@ export function SpecialSystemsPanel({
               <div>
                 <p className="eyebrow">{t('shipbuilder.specialSystems')}</p>
                 <h3 id="shipdesigner-special-selector-title">
-                  {dialogMode === 'add' ? t('shipbuilder.specialSelectorTitle') : t('shipbuilder.specialInfoTitle')}
+                  {dialogMode === 'add' ? t('shipbuilder.specialSelectorTitle') : t('shipbuilder.specialEditTitle')}
                 </h3>
                 <p className="muted">{t('shipbuilder.specialSelectorHint')}</p>
               </div>
@@ -390,7 +422,7 @@ export function SpecialSystemsPanel({
                         </fieldset>
                       )}
 
-                      {dialogMode === 'add' && (
+                      {dialogMode && (
                         <div className="shipdesigner-weapon-config-bottom">
                           <div className="shipdesigner-weapon-preview">
                             {previewing && <small>{t('shipbuilder.previewing')}</small>}
@@ -406,11 +438,10 @@ export function SpecialSystemsPanel({
 
                     <footer className="shipdesigner-system-dialog-actions shipdesigner-weapon-selector-actions">
                       <button type="button" className="button-ghost" onClick={closeDialog}>{t('common.close')}</button>
-                      {dialogMode === 'add' && (
-                        <button type="button" className="button-primary" disabled={!canInstall} onClick={installSelected}>
-                          <span aria-hidden="true">+</span>{t('shipbuilder.installSpecial')}
-                        </button>
-                      )}
+                      <button type="button" className="button-primary" disabled={!canApply} onClick={applySelected}>
+                        {dialogMode === 'edit' ? <GameIcon name="edit" /> : <span aria-hidden="true">+</span>}
+                        {dialogMode === 'edit' ? t('shipbuilder.applyChanges') : t('shipbuilder.installSpecial')}
+                      </button>
                     </footer>
                   </>
                 ) : (
@@ -418,6 +449,51 @@ export function SpecialSystemsPanel({
                 )}
               </aside>
             </div>
+          </section>
+        </div>
+      )}
+
+      {removalError && (
+        <div className="shipdesigner-system-dialog-backdrop" role="presentation" onPointerDown={(event) => { if (event.target === event.currentTarget) setRemovalError(null) }}>
+          <section className="shipdesigner-system-dialog shipdesigner-special-remove-error-dialog" role="alertdialog" aria-modal="true" aria-labelledby="shipdesigner-special-remove-error-title">
+            <header className="shipdesigner-system-dialog-header">
+              <div>
+                <p className="eyebrow">{t('shipbuilder.specialSystems')}</p>
+                <h3 id="shipdesigner-special-remove-error-title">
+                  {removalError.reason === 'space_exceeded'
+                    ? t('shipbuilder.specialRemoveSpaceTitle')
+                    : t('shipbuilder.specialRemoveBlockedTitle')}
+                </h3>
+              </div>
+              <button type="button" className="button-ghost shipdesigner-system-dialog-close" onClick={() => setRemovalError(null)} aria-label={t('common.close')}>
+                <GameIcon name="close" />
+              </button>
+            </header>
+
+            <div className="shipdesigner-special-remove-error-body">
+              {removalError.reason === 'space_exceeded' ? (
+                <>
+                  <p>{t('shipbuilder.specialRemoveSpaceBody', { special: removalError.special })}</p>
+                  <div className="shipdesigner-special-remove-space-grid">
+                    <div><small>{t('shipbuilder.spaceRequired')}</small><strong>{removalError.used}</strong></div>
+                    <div><small>{t('shipbuilder.spaceAvailable')}</small><strong>{removalError.capacity}</strong></div>
+                    <div><small>{t('shipbuilder.spaceMissing')}</small><strong>{missingSpace}</strong></div>
+                  </div>
+                  <p className="muted">{t('shipbuilder.specialRemoveSpaceHint')}</p>
+                </>
+              ) : (
+                <>
+                  <p>{t('shipbuilder.specialRemoveBlockedBody', { special: removalError.special })}</p>
+                  {removalError.message && <p className="muted">{removalError.message.replace(/^\w+:\s*/, '')}</p>}
+                </>
+              )}
+            </div>
+
+            <footer className="shipdesigner-system-dialog-actions">
+              <button type="button" className="button-primary" onClick={() => setRemovalError(null)}>
+                {t('shipbuilder.understood')}
+              </button>
+            </footer>
           </section>
         </div>
       )}
