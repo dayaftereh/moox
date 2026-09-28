@@ -458,6 +458,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
                 mounts={specialMounts}
                 previews={designPreview?.specials}
                 hullIndex={currentHull.size_index}
+                remainingSpace={remainingSpace}
                 disabled={!planningWritable}
                 error={designPreview?.rejection_reason?.startsWith('special_') ? designPreview.rejection_message : undefined}
                 onPreview={previewSpecialMounts}
@@ -504,6 +505,7 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
           computerID={selectedComputer.id}
           shieldID={shieldID}
           nextFreeSlot={editingWeaponMount?.slot ?? nextFreeWeaponSlot}
+          availableSpace={remainingSpace + (editingWeaponMount ? (designPreview?.weapons?.find((row) => row.slot === editingWeaponMount.slot)?.row_space ?? 0) : 0)}
           editingMount={editingWeaponMount}
           onInstall={installWeaponMount}
           onClose={closeWeaponSelector}

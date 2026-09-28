@@ -23,6 +23,7 @@ type Props = {
   mounts: ShipSpecialMount[]
   previews?: MilitaryDesignSpecialRowPreview[]
   hullIndex: number
+  remainingSpace: number
   disabled?: boolean
   error?: string
   onPreview: (mounts: ShipSpecialMount[]) => Promise<MilitaryDesignDraftProjection | undefined>
@@ -95,6 +96,7 @@ export function SpecialSystemsPanel({
   mounts,
   previews,
   hullIndex,
+  remainingSpace,
   disabled = false,
   error,
   onPreview,
@@ -365,18 +367,20 @@ export function SpecialSystemsPanel({
                   const selected = choice.id === selectedSpecialID
                   const space = choice.effective_space_by_hull?.[hullIndex]
                   const cost = choice.effective_cost_by_hull_pp?.[hullIndex]
+                  const insufficientSpace = dialogMode === 'add' && space != null && space > remainingSpace
                   return (
                     <button
                       type="button"
                       role="option"
                       aria-selected={selected}
+                      data-insufficient-space={insufficientSpace ? 'true' : undefined}
                       className={"shipdesigner-weapon-selector-row shipdesigner-special-selector-row" + (selected ? " selected" : "") + (choice.available ? "" : " locked")}
                       key={choice.id}
                       data-special-choice={choice.id}
                       onClick={() => { void selectSpecial(choice.id) }}
                     >
                       <span className="shipdesigner-weapon-selector-name">
-                        <strong>{specialLabel(choice)}</strong>
+                        <strong className={insufficientSpace ? 'shipdesigner-selector-name-no-space' : undefined}>{specialLabel(choice)}</strong>
                         {!choice.available && <small>{t('shipbuilder.specialLocked')}</small>}
                         <small>{supportLabel(t, choice.tactical_support)}</small>
                       </span>

@@ -33,6 +33,7 @@ type Props = {
   computerID: string
   shieldID: string
   nextFreeSlot?: number
+  availableSpace: number
   editingMount?: ShipWeaponMount
   onInstall: (mount: ShipWeaponMount, preview: MilitaryDesignDraftProjection) => void
   onClose: () => void
@@ -150,6 +151,7 @@ export function WeaponSelectorDialog({
   computerID,
   shieldID,
   nextFreeSlot,
+  availableSpace,
   editingMount,
   onInstall,
   onClose,
@@ -394,17 +396,19 @@ export function WeaponSelectorDialog({
           <div className="shipdesigner-weapon-selector-list" role="listbox" aria-label={t('shipbuilder.weaponSelectorTitle')}>
             {filteredWeapons.map((weapon) => {
               const selected = weapon.id === selectedWeaponID
+              const insufficientSpace = weapon.effective_standard_space > availableSpace
               return (
                 <button
                   type="button"
                   role="option"
                   aria-selected={selected}
+                  data-insufficient-space={insufficientSpace ? 'true' : undefined}
                   className={`shipdesigner-weapon-selector-row${selected ? ' selected' : ''}${weapon.available ? '' : ' locked'}`}
                   key={weapon.id}
                   onClick={() => selectWeapon(weapon.id)}
                 >
                   <span className="shipdesigner-weapon-selector-name">
-                    <strong>{weaponLabel(t, weapon)}</strong>
+                    <strong className={insufficientSpace ? 'shipdesigner-selector-name-no-space' : undefined}>{weaponLabel(t, weapon)}</strong>
                     {!weapon.available && <small>{t('shipbuilder.filterLocked')}</small>}
                     {weapon.craft_per_unit ? <small>{t('shipbuilder.craftPerBay', { count: weapon.craft_per_unit })}</small> : null}
                   </span>

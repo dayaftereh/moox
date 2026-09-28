@@ -6396,6 +6396,13 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.shipdesigner-selector-name-no-space {
+  opacity: .62;
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  text-decoration-skip-ink: none;
+}
 .shipdesigner-weapon-selector-name small {
   color: var(--muted);
   font-size: .62rem;
