@@ -54,6 +54,7 @@ type MilitaryDesignerComponentChoice struct {
 type MilitaryDesignerSpecialChoice struct {
 	ID                    string   `json:"id"`
 	NameKey               string   `json:"name_key"`
+	Description           string   `json:"description,omitempty"`
 	OriginalID            int      `json:"original_id"`
 	TechnologyID          int      `json:"technology_id"`
 	TechnologyFieldID     int      `json:"technology_field_id"`
@@ -272,7 +273,7 @@ func (r *EconomyRules) MilitaryDesignerCatalog(empire *core.Empire) (MilitaryDes
 				spaceReduction = 100 - miniaturizationSpacePerThousand(level, special.MiniaturizationClass)/10
 			}
 			catalog.Specials = append(catalog.Specials, MilitaryDesignerSpecialChoice{
-				ID: special.ID, NameKey: r.TechnologyNameKeyByID[special.TechnologyID],
+				ID: special.ID, NameKey: r.TechnologyNameKeyByID[special.TechnologyID], Description: r.TechnologyDescriptionByID[special.TechnologyID],
 				OriginalID: special.OriginalID, TechnologyID: special.TechnologyID, TechnologyFieldID: r.TechnologyFieldByID[special.TechnologyID],
 				TechnologyKnown: known, Available: known, LockReason: lockReason,
 				SupportClass: special.SupportClass, TacticalSupport: special.TacticalSupport,

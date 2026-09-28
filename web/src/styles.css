@@ -7501,74 +7501,171 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   color: rgba(170, 205, 228, .66);
 }
 
-
-/* Slice 17.4 - Ship Specials */
+/* Slice 17.4 Gate-4 Special selector alignment. */
 .shipdesigner-specials-section {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 7px;
+  height: 164px;
   margin-top: 12px;
   padding-top: 10px;
   border-top: 1px solid var(--border-soft);
 }
-.shipdesigner-specials-heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 8px;
+.shipdesigner-specials-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  padding-right: 2px;
 }
-.shipdesigner-specials-heading .eyebrow { margin: 0 0 2px; }
-.shipdesigner-specials-heading .badge { flex: 0 0 auto; }
-.shipdesigner-specials-grid {
+.shipdesigner-specials-scroll .shipdesigner-installed-info-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: 6px;
+  margin-top: 0;
+}
+.shipdesigner-specials-scroll.add-target {
+  cursor: pointer;
+}
+.shipdesigner-specials-empty {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-height: 100%;
+  place-items: center;
+  padding: 14px;
+  border: 1px dashed var(--border-soft);
+  border-radius: var(--radius-sm);
+  color: var(--muted);
+  text-align: center;
+  font-size: .75rem;
+}
+.shipdesigner-info-card.weapon.shipdesigner-special-slot-card,
+.shipdesigner-info-card.weapon.shipdesigner-special-slot-add {
+  min-height: 52px;
+  padding: 6px 8px;
+}
+.shipdesigner-info-card.weapon.shipdesigner-special-slot-add {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  justify-content: start;
+  gap: 8px;
+  width: 100%;
+  border: 1px dashed var(--accent);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+.shipdesigner-info-card.weapon.shipdesigner-special-slot-add:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+.shipdesigner-special-slot-add-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-weight: 800;
+}
+.shipdesigner-special-slot-add > strong {
+  min-width: 0;
+  font-size: .74rem;
+  line-height: 1.15;
+}
+.shipdesigner-specials-heading {
+  align-items: flex-start;
+}
+.shipdesigner-specials-heading > div {
+  min-width: 0;
+}
+.shipdesigner-specials-heading .eyebrow {
+  margin: 0;
+}
+.shipdesigner-specials-heading .muted {
+  display: block;
+  margin-top: 2px;
+  max-width: 520px;
+  font-size: .58rem;
+  line-height: 1.25;
+}
+.shipdesigner-specials-heading .badge {
+  flex: 0 0 auto;
+}
+.shipdesigner-info-card.weapon.shipdesigner-special-slot-card {
+  border-color: var(--accent);
+}
+.shipdesigner-special-info,
+.shipdesigner-special-remove {
+  width: 29px;
+  min-width: 29px;
+  height: 29px;
+  min-height: 29px;
+  padding: 5px;
+}
+.shipdesigner-special-info {
+  font-weight: 800;
+  font-size: .78rem;
+}
+.shipdesigner-special-remove svg {
+  width: 15px;
+  height: 15px;
+}
+.shipdesigner-special-selector-row {
+  grid-template-columns: minmax(150px, 1fr) minmax(64px, .4fr) minmax(76px, .48fr) minmax(62px, .4fr);
+}
+.shipdesigner-special-selector-row > span:not(.shipdesigner-weapon-selector-name) {
+  font-variant-numeric: tabular-nums;
+}
+.shipdesigner-special-description {
+  margin-bottom: 12px;
+}
+.shipdesigner-special-description p {
+  margin: 0;
+  line-height: 1.5;
+}
+.shipdesigner-special-detail-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 7px;
 }
-.shipdesigner-special-slot {
+.shipdesigner-special-detail-stats > div {
+  display: grid;
+  gap: 3px;
   min-width: 0;
   padding: 8px;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-sm);
-  background: var(--panel-soft);
+  background: rgba(255,255,255,.025);
 }
-.shipdesigner-special-slot.installed {
-  border-color: var(--border);
-}
-.shipdesigner-special-slot label {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-}
-.shipdesigner-special-slot label > span {
-  font-size: .68rem;
+.shipdesigner-special-detail-stats small {
   color: var(--muted);
+  font-size: .58rem;
   text-transform: uppercase;
-  letter-spacing: .06em;
+  letter-spacing: .04em;
 }
-.shipdesigner-special-slot select {
-  width: 100%;
-  min-width: 0;
+.shipdesigner-special-detail-stats strong {
+  font-variant-numeric: tabular-nums;
 }
-.shipdesigner-special-meta {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 3px 8px;
-  align-items: center;
-  margin-top: 6px;
-  font-size: .72rem;
+.shipdesigner-special-selector .shipdesigner-weapon-config-bottom {
+  margin-top: 10px;
 }
-.shipdesigner-special-meta strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.shipdesigner-specials-error {
+  margin: 0;
 }
-.shipdesigner-special-meta .support {
-  grid-column: 1 / -1;
-  justify-self: start;
-  white-space: normal;
-  line-height: 1.25;
-}
-.shipdesigner-specials-error { margin: 8px 0 0; }
 
-@media (max-width: 720px) {
-  .shipdesigner-specials-grid { grid-template-columns: 1fr; }
-  .shipdesigner-special-slot { padding: 7px; }
+@media (max-width: 700px) {
+  .shipdesigner-specials-heading .muted {
+    display: none;
+  }
+  .shipdesigner-special-selector-row {
+    grid-template-columns: minmax(108px, 1fr) 44px 54px 48px;
+  }
+  .shipdesigner-special-detail-stats {
+    gap: 4px;
+  }
+  .shipdesigner-special-detail-stats > div {
+    padding: 6px;
+  }
 }

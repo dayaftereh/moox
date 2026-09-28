@@ -487,6 +487,7 @@ export type MilitaryDesignerWeaponChoice = {
 export type MilitaryDesignerSpecialChoice = {
   id: string
   name_key: string
+  description?: string
   original_id: number
   technology_id: number
   technology_field_id: number

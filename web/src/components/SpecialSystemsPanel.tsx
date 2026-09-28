@@ -1,11 +1,15 @@
+import { useEffect, useRef, useState } from 'react'
 import {
+  type MilitaryDesignDraftProjection,
   type MilitaryDesignSpecialRowPreview,
   type MilitaryDesignerSpecialChoice,
   type ShipSpecialMount,
 } from '../api'
 import { useI18n, type TranslationKey, type TranslationVars } from '../i18n'
+import { GameIcon } from './GameIcon'
 
 type Translator = (key: TranslationKey, vars?: TranslationVars) => string
+type DialogMode = 'add' | 'info'
 
 type Props = {
   choices: MilitaryDesignerSpecialChoice[]
@@ -14,7 +18,8 @@ type Props = {
   hullIndex: number
   disabled?: boolean
   error?: string
-  onChange: (mounts: ShipSpecialMount[]) => void
+  onPreview: (mounts: ShipSpecialMount[]) => Promise<MilitaryDesignDraftProjection | undefined>
+  onChange: (mounts: ShipSpecialMount[], preview?: MilitaryDesignDraftProjection) => void
   t: Translator
 }
 
@@ -60,7 +65,7 @@ const labels: Record<string, { en: string; de: string }> = {
 }
 
 function humanize(value: string): string {
-  return value.replaceAll('_', ' ').replace(/w/g, (letter) => letter.toUpperCase())
+  return value.replaceAll('_', ' ').replace(/\b\w/g, (letter) => letter.toUpperCase())
 }
 
 function supportLabel(t: Translator, support: string): string {
@@ -74,6 +79,10 @@ function supportLabel(t: Translator, support: string): string {
   }
 }
 
+function nextFreeSlot(mounts: ShipSpecialMount[]): number | undefined {
+  return Array.from({ length: 8 }, (_, slot) => slot).find((slot) => !mounts.some((mount) => mount.slot === slot))
+}
+
 export function SpecialSystemsPanel({
   choices,
   mounts,
@@ -81,81 +90,337 @@ export function SpecialSystemsPanel({
   hullIndex,
   disabled = false,
   error,
+  onPreview,
   onChange,
   t,
 }: Props) {
   const { locale } = useI18n()
-  const normalized = [...mounts].sort((a, b) => a.slot - b.slot)
+  const [dialogMode, setDialogMode] = useState<DialogMode | null>(null)
+  const [selectedSpecialID, setSelectedSpecialID] = useState('')
+  const [candidatePreview, setCandidatePreview] = useState<MilitaryDesignDraftProjection>()
+  const [previewing, setPreviewing] = useState(false)
+  const [previewError, setPreviewError] = useState('')
+  const [operationError, setOperationError] = useState('')
+  const previewRequest = useRef(0)
 
-  function changeSlot(slot: number, specialID: string) {
-    const next = normalized.filter((mount) => mount.slot !== slot)
-    if (specialID) next.push({ slot, special_id: specialID })
-    next.sort((a, b) => a.slot - b.slot)
-    onChange(next)
+  const normalized = [...mounts].sort((a, b) => a.slot - b.slot)
+  const installedIDs = new Set(normalized.map((mount) => mount.special_id))
+  const freeSlot = nextFreeSlot(normalized)
+  const addChoices = choices.filter((choice) => !installedIDs.has(choice.id))
+  const canAdd = !disabled && normalized.length < 8 && freeSlot != null && addChoices.length > 0
+  const listChoices = dialogMode === 'add' ? addChoices : choices
+  const selectedChoice = choices.find((choice) => choice.id === selectedSpecialID)
+  const selectedInstalledMount = normalized.find((mount) => mount.special_id === selectedSpecialID)
+  const selectedExistingPreview = selectedInstalledMount
+    ? previews?.find((row) => row.slot === selectedInstalledMount.slot)
+    : undefined
+  const selectedCandidatePreview = dialogMode === 'add' && freeSlot != null
+    ? candidatePreview?.specials?.find((row) => row.slot === freeSlot)
+    : undefined
+  const selectedRow = selectedCandidatePreview ?? selectedExistingPreview
+  const selectedSpace = selectedRow?.unit_space ?? selectedChoice?.effective_space_by_hull?.[hullIndex]
+  const selectedCost = selectedRow?.unit_cost_pp ?? selectedChoice?.effective_cost_by_hull_pp?.[hullIndex]
+  const selectedSupport = selectedRow?.tactical_support ?? selectedChoice?.tactical_support
+  const canInstall = Boolean(
+    dialogMode === 'add'
+      && selectedChoice?.available
+      && freeSlot != null
+      && !previewing
+      && candidatePreview?.save_available
+      && selectedCandidatePreview,
+  )
+
+  function specialLabel(choice: MilitaryDesignerSpecialChoice | undefined, fallback = ''): string {
+    if (!choice) return fallback
+    const translated = labels[choice.id]
+    return translated?.[locale === 'de' ? 'de' : 'en'] ?? humanize(choice.id)
   }
 
+  function labelForID(id: string): string {
+    return specialLabel(choices.find((choice) => choice.id === id), humanize(id))
+  }
+
+  useEffect(() => {
+    if (!dialogMode) return
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') closeDialog()
+    }
+    document.body.classList.add('modal-open')
+    window.addEventListener('keydown', onKeyDown)
+    return () => {
+      window.removeEventListener('keydown', onKeyDown)
+      document.body.classList.remove('modal-open')
+    }
+  }, [dialogMode])
+
+  function closeDialog() {
+    previewRequest.current += 1
+    setDialogMode(null)
+    setSelectedSpecialID('')
+    setCandidatePreview(undefined)
+    setPreviewing(false)
+    setPreviewError('')
+  }
+
+  function openAdd() {
+    setOperationError('')
+    setSelectedSpecialID('')
+    setCandidatePreview(undefined)
+    setPreviewError('')
+    setDialogMode('add')
+  }
+
+  function openInfo(specialID: string) {
+    setOperationError('')
+    setSelectedSpecialID(specialID)
+    setCandidatePreview(undefined)
+    setPreviewError('')
+    setDialogMode('info')
+  }
+
+  async function selectSpecial(specialID: string) {
+    setSelectedSpecialID(specialID)
+    setPreviewError('')
+    setCandidatePreview(undefined)
+    if (dialogMode !== 'add' || freeSlot == null) return
+
+    const request = ++previewRequest.current
+    const next = [
+      ...normalized,
+      { slot: freeSlot, special_id: specialID },
+    ].sort((a, b) => a.slot - b.slot)
+
+    setPreviewing(true)
+    const projection = await onPreview(next)
+    if (request !== previewRequest.current) return
+    setPreviewing(false)
+    if (!projection) {
+      setPreviewError(t('shipbuilder.specialPreviewUnavailable'))
+      return
+    }
+    setCandidatePreview(projection)
+    if (!projection.save_available) {
+      setPreviewError(projection.rejection_message ?? t('shipbuilder.previewRejected'))
+    }
+  }
+
+  async function removeSpecial(slot: number) {
+    if (disabled) return
+    setOperationError('')
+    const next = normalized.filter((mount) => mount.slot !== slot)
+    const projection = await onPreview(next)
+    if (!projection) {
+      setOperationError(t('shipbuilder.specialPreviewUnavailable'))
+      return
+    }
+    if (!projection.save_available) {
+      setOperationError(projection.rejection_message ?? t('shipbuilder.previewRejected'))
+      return
+    }
+    onChange(projection.spec?.specials ?? next, projection)
+  }
+
+  function installSelected() {
+    if (!canInstall || !selectedChoice || freeSlot == null || !candidatePreview) return
+    const next = [
+      ...normalized,
+      { slot: freeSlot, special_id: selectedChoice.id },
+    ].sort((a, b) => a.slot - b.slot)
+    onChange(candidatePreview.spec?.specials ?? next, candidatePreview)
+    closeDialog()
+  }
+
+  const excludedNames = selectedChoice?.excluded_special_ids?.map(labelForID) ?? []
+
   return (
-    <section className="shipdesigner-specials-section" data-special-systems>
-      <div className="shipdesigner-specials-heading">
-        <div>
-          <p className="eyebrow">{t('shipbuilder.specialSystems')}</p>
-          <small className="muted">{t('shipbuilder.specialSystemsHint')}</small>
+    <>
+      <section className="shipdesigner-specials-section" data-special-systems>
+        <div className="shipdesigner-specials-heading">
+          <div>
+            <p className="eyebrow">{t('shipbuilder.installedSpecials')}</p>
+            <small className="muted">{t('shipbuilder.specialSystemsHint')}</small>
+          </div>
+          <span className="badge">{normalized.length}/8</span>
         </div>
-        <span className="badge">{mounts.length}/8</span>
-      </div>
 
-      <div className="shipdesigner-specials-grid">
-        {Array.from({ length: 8 }, (_, slot) => {
-          const mount = normalized.find((candidate) => candidate.slot === slot)
-          const choice = choices.find((candidate) => candidate.id === mount?.special_id)
-          const preview = previews?.find((candidate) => candidate.slot === slot)
-          const space = preview?.unit_space ?? choice?.effective_space_by_hull?.[hullIndex]
-          const cost = preview?.unit_cost_pp ?? choice?.effective_cost_by_hull_pp?.[hullIndex]
-          const support = preview?.tactical_support ?? choice?.tactical_support
-          const labelSet = choice ? labels[choice.id] : undefined
-          const label = choice ? (labelSet?.[locale === 'de' ? 'de' : 'en'] ?? humanize(choice.id)) : ''
-
-          return (
-            <article className={"shipdesigner-special-slot" + (mount ? " installed" : "")} key={slot} data-special-slot={slot}>
-              <label>
-                <span>{t('shipbuilder.specialSlot', { slot: slot + 1 })}</span>
-                <select
-                  value={mount?.special_id ?? ''}
-                  disabled={disabled}
-                  onChange={(event) => changeSlot(slot, event.target.value)}
-                  aria-label={t('shipbuilder.specialSlot', { slot: slot + 1 })}
+        <div className={"shipdesigner-specials-scroll" + (normalized.length === 0 && canAdd ? " add-target" : "")} onClick={normalized.length === 0 && canAdd ? openAdd : undefined}>
+          <div className="shipdesigner-installed-info-grid">
+            {normalized.map((mount) => {
+              const choice = choices.find((candidate) => candidate.id === mount.special_id)
+              return (
+                <article
+                  className="shipdesigner-info-card weapon shipdesigner-special-slot-card"
+                  key={mount.slot}
+                  data-special-slot={mount.slot}
+                  data-special-id={mount.special_id}
                 >
-                  <option value="">{t('shipbuilder.specialNone')}</option>
-                  {choices.map((candidate) => {
-                    const candidateLabels = labels[candidate.id]
-                    const candidateLabel = candidateLabels?.[locale === 'de' ? 'de' : 'en'] ?? humanize(candidate.id)
-                    const candidateSpace = candidate.effective_space_by_hull?.[hullIndex]
-                    const candidateCost = candidate.effective_cost_by_hull_pp?.[hullIndex]
-                    const suffix = candidateSpace == null || candidateCost == null ? '' : ` · ${candidateSpace} S · ${candidateCost} PP`
-                    return (
-                      <option
-                        key={candidate.id}
-                        value={candidate.id}
-                        disabled={!candidate.available && candidate.id !== mount?.special_id}
-                      >
-                        {candidateLabel}{suffix}{!candidate.available ? ` · ${t('shipbuilder.specialLocked')}` : ''}
-                      </option>
-                    )
-                  })}
-                </select>
-              </label>
-              {mount && choice && (
-                <div className="shipdesigner-special-meta">
-                  <strong>{label}</strong>
-                  <span>{space == null ? '—' : `${space} S`} · {cost == null ? '—' : `${cost} PP`}</span>
-                  {support && <span className={"badge support " + support}>{supportLabel(t, support)}</span>}
-                </div>
-              )}
-            </article>
-          )
-        })}
-      </div>
-      {error && <p className="shipbuilder-save-state error shipdesigner-specials-error">{error}</p>}
-    </section>
+                  <strong>{specialLabel(choice, mount.special_id)}</strong>
+                  <div className="shipdesigner-weapon-slot-controls">
+                    <button
+                      type="button"
+                      className="button-ghost shipdesigner-weapon-edit shipdesigner-special-info"
+                      aria-label={t('shipbuilder.specialDetails', { special: specialLabel(choice, mount.special_id) })}
+                      title={t('shipbuilder.specialDetails', { special: specialLabel(choice, mount.special_id) })}
+                      onClick={() => openInfo(mount.special_id)}
+                    >?</button>
+                    <button
+                      type="button"
+                      className="button-ghost shipdesigner-weapon-edit shipdesigner-special-remove"
+                      aria-label={t('shipbuilder.removeSpecial', { special: specialLabel(choice, mount.special_id) })}
+                      title={t('shipbuilder.removeSpecial', { special: specialLabel(choice, mount.special_id) })}
+                      disabled={disabled}
+                      onClick={() => { void removeSpecial(mount.slot) }}
+                    ><GameIcon name="close" /></button>
+                  </div>
+                </article>
+              )
+            })}
+
+            {canAdd && (
+              <button
+                type="button"
+                className="shipdesigner-info-card weapon shipdesigner-special-slot-add"
+                data-add-special
+                aria-label={t('shipbuilder.addSpecial')}
+                onClick={(event) => { event.stopPropagation(); openAdd() }}
+              >
+                <span className="shipdesigner-special-slot-add-icon" aria-hidden="true">+</span>
+                <strong>{t('shipbuilder.addSpecial')}</strong>
+              </button>
+            )}
+
+            {normalized.length === 0 && !canAdd && (
+              <div className="shipdesigner-specials-empty">{t('shipbuilder.noInstalledSpecials')}</div>
+            )}
+          </div>
+        </div>
+
+        {(operationError || error) && (
+          <p className="shipbuilder-save-state error shipdesigner-specials-error">
+            {operationError || error}
+          </p>
+        )}
+      </section>
+
+      {dialogMode && (
+        <div
+          className="shipdesigner-system-dialog-backdrop shipdesigner-weapon-selector-backdrop"
+          role="presentation"
+          onPointerDown={(event) => { if (event.target === event.currentTarget) closeDialog() }}
+        >
+          <section
+            className="shipdesigner-system-dialog shipdesigner-weapon-selector shipdesigner-special-selector"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="shipdesigner-special-selector-title"
+          >
+            <header className="shipdesigner-system-dialog-header">
+              <div>
+                <p className="eyebrow">{t('shipbuilder.specialSystems')}</p>
+                <h3 id="shipdesigner-special-selector-title">
+                  {dialogMode === 'add' ? t('shipbuilder.specialSelectorTitle') : t('shipbuilder.specialInfoTitle')}
+                </h3>
+                <p className="muted">{t('shipbuilder.specialSelectorHint')}</p>
+              </div>
+              <button type="button" className="button-ghost shipdesigner-system-dialog-close" onClick={closeDialog} aria-label={t('common.close')}>
+                <GameIcon name="close" />
+              </button>
+            </header>
+
+            <div className={"shipdesigner-weapon-selector-body" + (selectedChoice ? " has-selection" : "")}>
+              <div className="shipdesigner-weapon-selector-list" role="listbox" aria-label={t('shipbuilder.specialSelectorTitle')}>
+                {listChoices.map((choice) => {
+                  const selected = choice.id === selectedSpecialID
+                  const space = choice.effective_space_by_hull?.[hullIndex]
+                  const cost = choice.effective_cost_by_hull_pp?.[hullIndex]
+                  return (
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={selected}
+                      className={"shipdesigner-weapon-selector-row shipdesigner-special-selector-row" + (selected ? " selected" : "") + (choice.available ? "" : " locked")}
+                      key={choice.id}
+                      data-special-choice={choice.id}
+                      onClick={() => { void selectSpecial(choice.id) }}
+                    >
+                      <span className="shipdesigner-weapon-selector-name">
+                        <strong>{specialLabel(choice)}</strong>
+                        {!choice.available && <small>{t('shipbuilder.specialLocked')}</small>}
+                        <small>{supportLabel(t, choice.tactical_support)}</small>
+                      </span>
+                      <span>{t('shipbuilder.specialMiniLevel', { level: choice.miniaturization_level })}</span>
+                      <span>{space == null ? '—' : `${space} ${t('shipbuilder.space')}`}</span>
+                      <span>{cost == null ? '—' : `${cost} PP`}</span>
+                    </button>
+                  )
+                })}
+              </div>
+
+              <aside className="shipdesigner-weapon-config">
+                {selectedChoice ? (
+                  <>
+                    <div className="shipdesigner-weapon-config-scroll">
+                      <div className="shipdesigner-weapon-config-title">
+                        <div>
+                          <p className="eyebrow">{t('shipbuilder.specialDetailsTitle')}</p>
+                          <h4>{specialLabel(selectedChoice)}</h4>
+                        </div>
+                        {selectedSupport && <span className={"badge support " + selectedSupport}>{supportLabel(t, selectedSupport)}</span>}
+                      </div>
+
+                      <div className="shipdesigner-system-dialog-detail shipdesigner-special-description">
+                        <strong>{t('shipbuilder.specialOriginalDescription')}</strong>
+                        <p>{selectedChoice.description || t('shipbuilder.specialDescriptionUnavailable')}</p>
+                      </div>
+
+                      <fieldset className="shipdesigner-weapon-config-group">
+                        <legend>{t('shipbuilder.specialCosts')}</legend>
+                        <div className="shipdesigner-special-detail-stats">
+                          <div><small>{t('shipbuilder.space')}</small><strong>{selectedSpace == null ? '—' : selectedSpace}</strong></div>
+                          <div><small>PP</small><strong>{selectedCost == null ? '—' : selectedCost}</strong></div>
+                          <div><small>{t('shipbuilder.specialMiniaturization')}</small><strong>{selectedChoice.miniaturization_level}</strong></div>
+                        </div>
+                      </fieldset>
+
+                      {(selectedChoice.requires_shield || excludedNames.length > 0) && (
+                        <fieldset className="shipdesigner-weapon-config-group">
+                          <legend>{t('shipbuilder.specialRequirements')}</legend>
+                          {selectedChoice.requires_shield && <p className="muted">{t('shipbuilder.specialRequiresShield')}</p>}
+                          {excludedNames.length > 0 && <p className="muted">{t('shipbuilder.specialConflictsWith', { specials: excludedNames.join(', ') })}</p>}
+                        </fieldset>
+                      )}
+
+                      {dialogMode === 'add' && (
+                        <div className="shipdesigner-weapon-config-bottom">
+                          <div className="shipdesigner-weapon-preview">
+                            {previewing && <small>{t('shipbuilder.previewing')}</small>}
+                            {!previewing && selectedCandidatePreview && (
+                              <strong>{t('shipbuilder.specialCurrentTotals', { space: selectedCandidatePreview.unit_space, cost: selectedCandidatePreview.unit_cost_pp })}</strong>
+                            )}
+                            {!previewing && candidatePreview && <small>{candidatePreview.remaining_space} {t('shipbuilder.spaceAvailable')}</small>}
+                            {previewError && <small className="error">{previewError}</small>}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    <footer className="shipdesigner-system-dialog-actions shipdesigner-weapon-selector-actions">
+                      <button type="button" className="button-ghost" onClick={closeDialog}>{t('common.close')}</button>
+                      {dialogMode === 'add' && (
+                        <button type="button" className="button-primary" disabled={!canInstall} onClick={installSelected}>
+                          <span aria-hidden="true">+</span>{t('shipbuilder.installSpecial')}
+                        </button>
+                      )}
+                    </footer>
+                  </>
+                ) : (
+                  <div className="shipdesigner-weapon-config-empty">{t('shipbuilder.specialSelectorHint')}</div>
+                )}
+              </aside>
+            </div>
+          </section>
+        </div>
+      )}
+    </>
   )
 }

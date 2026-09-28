@@ -35,6 +35,16 @@ func TestSlice174SpecialRulesCatalogAndFighterRows(t *testing.T) {
 	if len(catalog.Specials) != 38 {
 		t.Fatalf("special catalog=%d want=38", len(catalog.Specials))
 	}
+	var battlePodsChoice *MilitaryDesignerSpecialChoice
+	for i := range catalog.Specials {
+		if catalog.Specials[i].ID == "battle_pods" {
+			battlePodsChoice = &catalog.Specials[i]
+			break
+		}
+	}
+	if battlePodsChoice == nil || battlePodsChoice.Description == "" {
+		t.Fatalf("Battle Pods catalog description missing: %+v", battlePodsChoice)
+	}
 	if !catalog.AutomaticSystems.MegafluxersKnown || catalog.AutomaticSystems.HullSpacePercent != 125 {
 		t.Fatalf("Megafluxers projection=%+v", catalog.AutomaticSystems)
 	}

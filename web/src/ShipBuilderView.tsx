@@ -235,6 +235,25 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
       return undefined
     }
   }
+
+  async function previewSpecialMounts(mounts: ShipSpecialMount[]): Promise<MilitaryDesignDraftProjection | undefined> {
+    if (!currentHull?.save_available || !selectedComputer) return undefined
+    try {
+      const result = await previewMilitaryDesign(snapshot, snapshot.view.seat.seat.id, {
+        hull_id: currentHull.id,
+        strategic_picture_id: strategicPictureID,
+        computer_id: selectedComputer.id,
+        shield_id: shieldID,
+        ...(mounts.length > 0 ? { specials: cloneSpecialMounts(mounts) } : {}),
+        ...(weaponMounts.length > 0 ? { weapons: cloneWeaponMounts(weaponMounts) } : {}),
+      })
+      return result.preview.projection
+    } catch (error: unknown) {
+      setDesignPreviewError(error instanceof Error ? error.message : String(error))
+      return undefined
+    }
+  }
+
   function openAddWeapon() {
     setWeaponEditorSlot(null)
     setWeaponSelectorOpen(true)
@@ -441,7 +460,15 @@ export function ShipBuilderView({ snapshot, initialDesignID, reloadSnapshot, t }
                 hullIndex={currentHull.size_index}
                 disabled={!planningWritable}
                 error={designPreview?.rejection_reason?.startsWith('special_') ? designPreview.rejection_message : undefined}
-                onChange={(mounts) => { setSpecialMounts(cloneSpecialMounts(mounts)); setSaveNotice('') }}
+                onPreview={previewSpecialMounts}
+                onChange={(mounts, preview) => {
+                  setSpecialMounts(cloneSpecialMounts(mounts))
+                  if (preview) {
+                    setDesignPreview(preview)
+                    setDesignPreviewError('')
+                  }
+                  setSaveNotice('')
+                }}
                 t={t}
               />
             )}
