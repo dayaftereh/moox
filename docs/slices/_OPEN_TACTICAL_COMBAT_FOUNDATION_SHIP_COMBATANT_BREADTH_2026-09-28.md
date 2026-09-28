@@ -1,6 +1,6 @@
 # OPEN Slice 17.5 - Tactical Combat Foundation / Ship Combatant Breadth
 Date opened: 2026-09-28
-Status: **Gate 1 foundation audit active**
+Status: **Gate 1 foundation audit active; current baseline guard/runtime gaps mapped**
 Plan: docs/slices/PLANNED_17_5_TACTICAL_COMBAT_FOUNDATION_SHIP_COMBATANT_BREADTH.md
 
 ## Scope
@@ -25,3 +25,11 @@ Gate 1 must establish durable evidence for:
 - BattleSession remains the sole Tactical authority; browser presentation must not invent hit, damage, readiness or legal-fire rules.
 - Unsupported later-family weapons must become explicit per-action unavailability, not whole-encounter rejection.
 - Only one Slice-17 child is open.
+
+## Gate 1 progress
+
+Initial audit: docs/research/SLICE_17_5_GATE1_TACTICAL_FOUNDATION_AUDIT_2026-09-28.md
+
+Mapped: duplicate Game/Battle Slice-15.5 admission guards, singleton Frigate/Electronic durability/offense substitutions, Nuclear/Fusion-only speed rules, missing Shield/Fuel Tactical snapshot fields, Armor-to-Structure-only damage layering, and the existing BattleSession/RNG/event foundations that can be preserved.
+
+Still open: original-value matrix for all hulls/Armors/Computers/Shields/Drives, Fuel tactical relevance, generic unsupported-action projection, representative combatant vectors and event/UI neutrality audit.
