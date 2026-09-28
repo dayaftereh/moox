@@ -235,12 +235,12 @@ export function SpecialSystemsPanel({
   return (
     <>
       <section className="shipdesigner-specials-section" data-special-systems>
-        <div className="shipdesigner-specials-heading">
-          <div>
-            <p className="eyebrow">{t('shipbuilder.installedSpecials')}</p>
-            <small className="muted">{t('shipbuilder.specialSystemsHint')}</small>
+        <div className="shipdesigner-installed-weapons-heading shipdesigner-specials-heading">
+          <p className="eyebrow">{t('shipbuilder.installedSpecials')}</p>
+          <div className="shipdesigner-space-available">
+            <span>{t('shipbuilder.freeSlots')}</span>
+            <strong>{8 - normalized.length}</strong>
           </div>
-          <span className="badge">{normalized.length}/8</span>
         </div>
 
         <div className={"shipdesigner-specials-scroll" + (normalized.length === 0 && canAdd ? " add-target" : "")} onClick={normalized.length === 0 && canAdd ? openAdd : undefined}>

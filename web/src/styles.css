@@ -7507,7 +7507,7 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   grid-template-rows: auto minmax(0, 1fr);
   gap: 7px;
   height: 164px;
-  margin-top: 12px;
+  margin: 12px 11px 0;
   padding-top: 10px;
   border-top: 1px solid var(--border-soft);
 }
@@ -7540,58 +7540,53 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 }
 .shipdesigner-info-card.weapon.shipdesigner-special-slot-card,
 .shipdesigner-info-card.weapon.shipdesigner-special-slot-add {
+  height: 52px;
   min-height: 52px;
-  padding: 6px 8px;
+  max-height: 52px;
+  box-sizing: border-box;
 }
 .shipdesigner-info-card.weapon.shipdesigner-special-slot-add {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas: "addicon name";
   align-items: center;
-  justify-content: start;
+  justify-items: start;
   gap: 8px;
   width: 100%;
-  border: 1px dashed var(--accent);
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: inherit;
+  padding: 6px 9px;
+  border-style: dashed;
+  border-color: var(--border-soft);
+  background: rgba(255,255,255,.018);
+  color: var(--text);
   text-align: left;
+  cursor: pointer;
 }
 .shipdesigner-info-card.weapon.shipdesigner-special-slot-add:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  border-color: var(--accent);
+  background: rgba(255,255,255,.045);
 }
 .shipdesigner-special-slot-add-icon {
-  display: grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 999px;
-  border: 1px solid var(--accent);
+  grid-area: addicon;
   color: var(--accent);
-  font-weight: 800;
+  font-size: 1.2rem;
+  line-height: 1;
 }
 .shipdesigner-special-slot-add > strong {
-  min-width: 0;
-  font-size: .74rem;
-  line-height: 1.15;
+  grid-area: name;
+  font-size: .72rem;
 }
 .shipdesigner-specials-heading {
-  align-items: flex-start;
-}
-.shipdesigner-specials-heading > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   min-width: 0;
 }
 .shipdesigner-specials-heading .eyebrow {
   margin: 0;
 }
-.shipdesigner-specials-heading .muted {
-  display: block;
-  margin-top: 2px;
-  max-width: 520px;
-  font-size: .58rem;
-  line-height: 1.25;
-}
-.shipdesigner-specials-heading .badge {
-  flex: 0 0 auto;
+.shipdesigner-specials-heading .shipdesigner-space-available {
+  min-width: 0;
 }
 .shipdesigner-info-card.weapon.shipdesigner-special-slot-card {
   border-color: var(--accent);
