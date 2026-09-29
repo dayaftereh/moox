@@ -60,30 +60,62 @@
                    "min_damage":  1,
                    "max_damage":  4
                },
-    "frigate":  {
-                    "hull_id":  "frigate",
-                    "armor_id":  "titanium_armor",
-                    "fuel_cell_id":  "standard_fuel_cells",
-                    "armor_hits":  4,
-                    "structure":  4
-                },
-    "drives":  [
-                   {
-                       "drive_id":  "nuclear_drive",
-                       "min_speed":  10,
-                       "max_speed":  20
-                   },
-                   {
-                       "drive_id":  "fusion_drive",
-                       "min_speed":  12,
-                       "max_speed":  22
-                   }
-               ],
-    "computer":  {
-                     "computer_id":  "electronic_computer",
-                     "beam_offense":  25
-                 },
-    "weapons":  [
+    "frigate": {
+      "hull_id": "frigate",
+      "armor_id": "titanium_armor",
+      "fuel_cell_id": "standard_fuel_cells",
+      "armor_hits": 4,
+      "structure": 4
+    },
+    "hulls": [
+      {"hull_id":"frigate","base_armor":4,"structure":4,"base_combat_speed":10,"shield_hull_factor":1},
+      {"hull_id":"destroyer","base_armor":10,"structure":10,"base_combat_speed":8,"shield_hull_factor":2},
+      {"hull_id":"cruiser","base_armor":30,"structure":30,"base_combat_speed":6,"shield_hull_factor":3},
+      {"hull_id":"battleship","base_armor":50,"structure":50,"base_combat_speed":5,"shield_hull_factor":4},
+      {"hull_id":"titan","base_armor":80,"structure":80,"base_combat_speed":4,"shield_hull_factor":5},
+      {"hull_id":"doom_star","base_armor":150,"structure":150,"base_combat_speed":3,"shield_hull_factor":7}
+    ],
+    "armors": [
+      {"armor_id":"titanium_armor","bonus_percent":0},
+      {"armor_id":"tritanium_armor","bonus_percent":100},
+      {"armor_id":"zortrium_armor","bonus_percent":300},
+      {"armor_id":"neutronium_armor","bonus_percent":500},
+      {"armor_id":"adamantium_armor","bonus_percent":700},
+      {"armor_id":"xentronium_armor","bonus_percent":900}
+    ],
+    "drives": [
+      {"drive_id":"nuclear_drive","min_speed":10,"max_speed":20,"combat_speed_bonus":0},
+      {"drive_id":"fusion_drive","min_speed":12,"max_speed":22,"combat_speed_bonus":2},
+      {"drive_id":"ion_drive","min_speed":14,"max_speed":24,"combat_speed_bonus":4},
+      {"drive_id":"anti_matter_drive","min_speed":16,"max_speed":26,"combat_speed_bonus":6},
+      {"drive_id":"hyper_drive","min_speed":18,"max_speed":28,"combat_speed_bonus":8},
+      {"drive_id":"interphased_drive","min_speed":20,"max_speed":30,"combat_speed_bonus":10}
+    ],
+    "computer": {"computer_id":"electronic_computer","beam_offense":25},
+    "computers": [
+      {"computer_id":"electronic_computer","beam_offense":25},
+      {"computer_id":"optronic_computer","beam_offense":50},
+      {"computer_id":"positronic_computer","beam_offense":75},
+      {"computer_id":"cybertronic_computer","beam_offense":100},
+      {"computer_id":"moleculartronic_computer","beam_offense":125}
+    ],
+    "shields": [
+      {"shield_id":"class_i_shield","strength":1},
+      {"shield_id":"class_iii_shield","strength":3},
+      {"shield_id":"class_v_shield","strength":5},
+      {"shield_id":"class_vii_shield","strength":7},
+      {"shield_id":"class_x_shield","strength":10}
+    ],
+    "fuel_cells": [
+      {"fuel_cell_id":"standard_fuel_cells"},
+      {"fuel_cell_id":"deuterium_fuel_cells"},
+      {"fuel_cell_id":"iridium_fuel_cells"},
+      {"fuel_cell_id":"urridium_fuel_cells"},
+      {"fuel_cell_id":"thorium_fuel_cells"}
+    ],
+    "max_unused_space_combat_speed_bonus": 10,
+    "beam_defense_per_combat_speed": 5,
+    "shield_capacity_per_strength": 5,    "weapons":  [
                     {
                         "id":  "mass_driver",
                         "original_index":  1,

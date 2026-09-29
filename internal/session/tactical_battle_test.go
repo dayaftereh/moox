@@ -52,7 +52,7 @@ func makeTacticalStrategicFixture(t *testing.T, systemCount int) (*core.GameStat
 	defenderSpec := core.ShipDesignSpec{
 		HullID: "frigate", StrategicPictureID: 0, WarpDriveID: "nuclear_drive", FTLSpeed: 2,
 		ComputerID: "electronic_computer", ArmorID: "titanium_armor", FuelCellID: "standard_fuel_cells", FuelRangeParsecs: 4,
-		HullBaseCostPP: 20, HullSpace: 25, SpaceUsed: 0, BaseDesignCostPP: 25, ProductionCostPP: 25,
+		HullBaseCostPP: 20, HullSpace: 25, SpaceUsed: 10, BaseDesignCostPP: 25, ProductionCostPP: 25,
 	}
 	attackerDesignID := state.NewID()
 	defenderDesignID := state.NewID()

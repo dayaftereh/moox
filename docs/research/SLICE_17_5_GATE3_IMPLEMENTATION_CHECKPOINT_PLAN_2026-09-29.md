@@ -1,7 +1,7 @@
 # Slice 17.5 Gate 3 - Implementation Checkpoint Plan
 
 Date: 2026-09-29
-Status: **Checkpoint 1 ready / not started**
+Status: **Checkpoint 1 complete; Checkpoint 2 ready / not started**
 Base commit: `4939a04 docs(slice): freeze 17.5 gate 2 tactical foundation`
 Gate 2 contract: `docs/research/SLICE_17_5_GATE2_TACTICAL_FOUNDATION_CONTRACT_FREEZE_2026-09-29.md`
 OPEN slice: `docs/slices/_OPEN_TACTICAL_COMBAT_FOUNDATION_SHIP_COMBATANT_BREADTH_2026-09-28.md`
@@ -24,7 +24,7 @@ No push unless explicitly requested. Slice 17.5 remains OPEN until Gate 4 accept
 
 ## Checkpoint 1 - Tactical Ruleset and Ship Projection
 
-Status: **READY / NOT STARTED**
+Status: **COMPLETE**
 
 Scope:
 
@@ -43,7 +43,7 @@ Acceptance:
 
 ## Checkpoint 2 - Broad Combatant Admission
 
-Status: **PENDING CHECKPOINT 1**
+Status: **READY / NOT STARTED**
 
 Scope:
 
@@ -135,6 +135,6 @@ Acceptance:
 
 ## Current resume point
 
-Resume at **Checkpoint 1 - Tactical Ruleset and Ship Projection** from clean HEAD `4939a04`.
+Resume at **Checkpoint 2 - Broad Combatant Admission** only after explicit user continuation. Checkpoint 1 is complete and committed; verify the current clean HEAD with `git log -1 --oneline` before continuing.
 
-Do not skip ahead to Checkpoint 2 if Checkpoint 1 is incomplete or uncommitted.
+Do not start Checkpoint 2 until the user explicitly says to continue.

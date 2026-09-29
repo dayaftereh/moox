@@ -9,18 +9,26 @@ import (
 const TacticalCombatSchemaVersion = 1
 
 type TacticalCombatFile struct {
-	SchemaVersion     int                        `json:"schema_version"`
-	Ruleset           string                     `json:"ruleset"`
-	Initiative        TacticalInitiativeRules    `json:"initiative"`
-	RNG               TacticalRNGRules           `json:"rng"`
-	Beam              TacticalBeamRules          `json:"beam"`
-	Weapon            TacticalWeaponRule         `json:"weapon"`
-	Weapons           []TacticalWeaponRule       `json:"weapons,omitempty"`
-	BeamModifiers     []TacticalBeamModifierRule `json:"beam_modifiers,omitempty"`
-	OrdnanceModifiers []TacticalBeamModifierRule `json:"ordnance_modifiers,omitempty"`
-	Frigate           TacticalFrigateRule        `json:"frigate"`
-	Drives            []TacticalDriveSpeedRule   `json:"drives"`
-	Computer          TacticalComputerRule       `json:"computer"`
+	SchemaVersion                  int                        `json:"schema_version"`
+	Ruleset                        string                     `json:"ruleset"`
+	Initiative                     TacticalInitiativeRules    `json:"initiative"`
+	RNG                            TacticalRNGRules           `json:"rng"`
+	Beam                           TacticalBeamRules          `json:"beam"`
+	Weapon                         TacticalWeaponRule         `json:"weapon"`
+	Weapons                        []TacticalWeaponRule       `json:"weapons,omitempty"`
+	BeamModifiers                  []TacticalBeamModifierRule `json:"beam_modifiers,omitempty"`
+	OrdnanceModifiers              []TacticalBeamModifierRule `json:"ordnance_modifiers,omitempty"`
+	Frigate                        TacticalFrigateRule        `json:"frigate"`
+	Hulls                          []TacticalHullRule         `json:"hulls"`
+	Armors                         []TacticalArmorRule        `json:"armors"`
+	Drives                         []TacticalDriveSpeedRule   `json:"drives"`
+	Computer                       TacticalComputerRule       `json:"computer"`
+	Computers                      []TacticalComputerRule     `json:"computers"`
+	Shields                        []TacticalShieldRule       `json:"shields"`
+	FuelCells                      []TacticalFuelCellRule     `json:"fuel_cells"`
+	MaxUnusedSpaceCombatSpeedBonus int                        `json:"max_unused_space_combat_speed_bonus"`
+	BeamDefensePerCombatSpeed      int                        `json:"beam_defense_per_combat_speed"`
+	ShieldCapacityPerStrength      int                        `json:"shield_capacity_per_strength"`
 }
 
 type TacticalInitiativeRules struct {
@@ -75,15 +83,38 @@ type TacticalFrigateRule struct {
 	Structure  int    `json:"structure"`
 }
 
+type TacticalHullRule struct {
+	HullID           string `json:"hull_id"`
+	BaseArmor        int    `json:"base_armor"`
+	Structure        int    `json:"structure"`
+	BaseCombatSpeed  int    `json:"base_combat_speed"`
+	ShieldHullFactor int    `json:"shield_hull_factor"`
+}
+
+type TacticalArmorRule struct {
+	ArmorID      string `json:"armor_id"`
+	BonusPercent int    `json:"bonus_percent"`
+}
+
 type TacticalDriveSpeedRule struct {
-	DriveID  string `json:"drive_id"`
-	MinSpeed int    `json:"min_speed"`
-	MaxSpeed int    `json:"max_speed"`
+	DriveID          string `json:"drive_id"`
+	MinSpeed         int    `json:"min_speed"`
+	MaxSpeed         int    `json:"max_speed"`
+	CombatSpeedBonus int    `json:"combat_speed_bonus"`
 }
 
 type TacticalComputerRule struct {
 	ComputerID  string `json:"computer_id"`
 	BeamOffense int    `json:"beam_offense"`
+}
+
+type TacticalShieldRule struct {
+	ShieldID string `json:"shield_id"`
+	Strength int    `json:"strength"`
+}
+
+type TacticalFuelCellRule struct {
+	FuelCellID string `json:"fuel_cell_id"`
 }
 
 func LoadTacticalCombat(path string) (*TacticalCombatFile, error) {
@@ -151,6 +182,59 @@ func (f *TacticalCombatFile) WeaponModifiers() []TacticalBeamModifierRule {
 	out = append(out, f.BeamModifiers...)
 	out = append(out, f.OrdnanceModifiers...)
 	return out
+}
+func (f *TacticalCombatFile) HullByID(id string) (TacticalHullRule, bool) {
+	for _, rule := range f.Hulls {
+		if rule.HullID == id {
+			return rule, true
+		}
+	}
+	return TacticalHullRule{}, false
+}
+
+func (f *TacticalCombatFile) ArmorByID(id string) (TacticalArmorRule, bool) {
+	for _, rule := range f.Armors {
+		if rule.ArmorID == id {
+			return rule, true
+		}
+	}
+	return TacticalArmorRule{}, false
+}
+
+func (f *TacticalCombatFile) DriveByID(id string) (TacticalDriveSpeedRule, bool) {
+	for _, rule := range f.Drives {
+		if rule.DriveID == id {
+			return rule, true
+		}
+	}
+	return TacticalDriveSpeedRule{}, false
+}
+
+func (f *TacticalCombatFile) ComputerByID(id string) (TacticalComputerRule, bool) {
+	for _, rule := range f.Computers {
+		if rule.ComputerID == id {
+			return rule, true
+		}
+	}
+	return TacticalComputerRule{}, false
+}
+
+func (f *TacticalCombatFile) ShieldByID(id string) (TacticalShieldRule, bool) {
+	for _, rule := range f.Shields {
+		if rule.ShieldID == id {
+			return rule, true
+		}
+	}
+	return TacticalShieldRule{}, false
+}
+
+func (f *TacticalCombatFile) FuelCellByID(id string) (TacticalFuelCellRule, bool) {
+	for _, rule := range f.FuelCells {
+		if rule.FuelCellID == id {
+			return rule, true
+		}
+	}
+	return TacticalFuelCellRule{}, false
 }
 func (f *TacticalCombatFile) Validate() error {
 	if f == nil {
@@ -231,12 +315,41 @@ func (f *TacticalCombatFile) Validate() error {
 	if f.Frigate.HullID == "" || f.Frigate.ArmorID == "" || f.Frigate.FuelCellID == "" || f.Frigate.ArmorHits <= 0 || f.Frigate.Structure <= 0 {
 		return fmt.Errorf("invalid Frigate tactical rule")
 	}
-	if len(f.Drives) != 2 {
-		return fmt.Errorf("expected exactly 2 baseline tactical drive rules, got %d", len(f.Drives))
+	if f.MaxUnusedSpaceCombatSpeedBonus != 10 || f.BeamDefensePerCombatSpeed != 5 || f.ShieldCapacityPerStrength != 5 {
+		return fmt.Errorf("invalid tactical foundation constants")
+	}
+	if len(f.Hulls) != 6 {
+		return fmt.Errorf("expected exactly 6 tactical hull rules, got %d", len(f.Hulls))
+	}
+	seenHull := make(map[string]struct{}, len(f.Hulls))
+	for i, hull := range f.Hulls {
+		if hull.HullID == "" || hull.BaseArmor <= 0 || hull.Structure <= 0 || hull.BaseCombatSpeed <= 0 || hull.ShieldHullFactor <= 0 {
+			return fmt.Errorf("invalid tactical hull[%d]", i)
+		}
+		if _, ok := seenHull[hull.HullID]; ok {
+			return fmt.Errorf("duplicate tactical hull %q", hull.HullID)
+		}
+		seenHull[hull.HullID] = struct{}{}
+	}
+	if len(f.Armors) != 6 {
+		return fmt.Errorf("expected exactly 6 tactical armor rules, got %d", len(f.Armors))
+	}
+	seenArmor := make(map[string]struct{}, len(f.Armors))
+	for i, armor := range f.Armors {
+		if armor.ArmorID == "" || armor.BonusPercent < 0 {
+			return fmt.Errorf("invalid tactical armor[%d]", i)
+		}
+		if _, ok := seenArmor[armor.ArmorID]; ok {
+			return fmt.Errorf("duplicate tactical armor %q", armor.ArmorID)
+		}
+		seenArmor[armor.ArmorID] = struct{}{}
+	}
+	if len(f.Drives) != 6 {
+		return fmt.Errorf("expected exactly 6 tactical drive rules, got %d", len(f.Drives))
 	}
 	seenDrive := make(map[string]struct{}, len(f.Drives))
 	for i, drive := range f.Drives {
-		if drive.DriveID == "" || drive.MinSpeed <= 0 || drive.MaxSpeed < drive.MinSpeed {
+		if drive.DriveID == "" || drive.MinSpeed <= 0 || drive.MaxSpeed < drive.MinSpeed || drive.CombatSpeedBonus < 0 {
 			return fmt.Errorf("invalid tactical drive[%d]", i)
 		}
 		if _, ok := seenDrive[drive.DriveID]; ok {
@@ -245,7 +358,46 @@ func (f *TacticalCombatFile) Validate() error {
 		seenDrive[drive.DriveID] = struct{}{}
 	}
 	if f.Computer.ComputerID == "" || f.Computer.BeamOffense <= 0 {
-		return fmt.Errorf("invalid tactical computer rule")
+		return fmt.Errorf("invalid baseline tactical computer rule")
+	}
+	if len(f.Computers) != 5 {
+		return fmt.Errorf("expected exactly 5 tactical computer rules, got %d", len(f.Computers))
+	}
+	seenComputer := make(map[string]struct{}, len(f.Computers))
+	for i, computer := range f.Computers {
+		if computer.ComputerID == "" || computer.BeamOffense <= 0 {
+			return fmt.Errorf("invalid tactical computer[%d]", i)
+		}
+		if _, ok := seenComputer[computer.ComputerID]; ok {
+			return fmt.Errorf("duplicate tactical computer %q", computer.ComputerID)
+		}
+		seenComputer[computer.ComputerID] = struct{}{}
+	}
+	if len(f.Shields) != 5 {
+		return fmt.Errorf("expected exactly 5 tactical shield rules, got %d", len(f.Shields))
+	}
+	seenShield := make(map[string]struct{}, len(f.Shields))
+	for i, shield := range f.Shields {
+		if shield.ShieldID == "" || shield.Strength <= 0 {
+			return fmt.Errorf("invalid tactical shield[%d]", i)
+		}
+		if _, ok := seenShield[shield.ShieldID]; ok {
+			return fmt.Errorf("duplicate tactical shield %q", shield.ShieldID)
+		}
+		seenShield[shield.ShieldID] = struct{}{}
+	}
+	if len(f.FuelCells) != 5 {
+		return fmt.Errorf("expected exactly 5 tactical fuel-cell rules, got %d", len(f.FuelCells))
+	}
+	seenFuel := make(map[string]struct{}, len(f.FuelCells))
+	for i, fuel := range f.FuelCells {
+		if fuel.FuelCellID == "" {
+			return fmt.Errorf("invalid tactical fuel cell[%d]", i)
+		}
+		if _, ok := seenFuel[fuel.FuelCellID]; ok {
+			return fmt.Errorf("duplicate tactical fuel cell %q", fuel.FuelCellID)
+		}
+		seenFuel[fuel.FuelCellID] = struct{}{}
 	}
 	return nil
 }

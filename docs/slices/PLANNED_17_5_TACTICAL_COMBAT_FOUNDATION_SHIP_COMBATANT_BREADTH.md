@@ -81,7 +81,7 @@ Execution plan: docs/research/SLICE_17_5_GATE3_IMPLEMENTATION_CHECKPOINT_PLAN_20
 
 Gate 3 is executed in five bounded checkpoints. After each checkpoint: focused QA, git diff --check, dedicated commit, clean-tree verification, durable ASH session checkpoint, user report, then stop until explicit continuation.
 
-Current checkpoint: **1 - Tactical Ruleset and Ship Projection (ready / not started)**.
+Current checkpoint: **1 complete; 2 - Broad Combatant Admission ready / not started**.
 
 ## Gate 3 - implementation
 

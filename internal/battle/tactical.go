@@ -72,6 +72,8 @@ type TacticalShipSpec struct {
 	WarpDriveID          string                 `json:"warp_drive_id"`
 	ComputerID           string                 `json:"computer_id"`
 	ArmorID              string                 `json:"armor_id"`
+	ShieldID             string                 `json:"shield_id,omitempty"`
+	FuelCellID           string                 `json:"fuel_cell_id"`
 	SourceDesignID       core.ID                `json:"source_design_id,omitempty"`
 	SourceDesignRevision uint32                 `json:"source_design_revision,omitempty"`
 	StrategicPictureID   int                    `json:"strategic_picture_id,omitempty"`
@@ -79,11 +81,14 @@ type TacticalShipSpec struct {
 	VisualGenome         *core.ShipVisualGenome `json:"visual_genome,omitempty"`
 	Weapons              []TacticalWeaponSpec   `json:"weapons,omitempty"`
 	Specials             []TacticalSpecialSpec  `json:"specials,omitempty"`
+	MinimumCombatSpeed   int                    `json:"minimum_combat_speed"`
 	CurrentCombatSpeed   int                    `json:"current_combat_speed"`
 	BeamOffense          int                    `json:"beam_offense"`
 	BeamDefense          int                    `json:"beam_defense"`
 	ArmorMax             int                    `json:"armor_max"`
 	StructureMax         int                    `json:"structure_max"`
+	ShieldStrength       int                    `json:"shield_strength"`
+	ShieldArcMax         int                    `json:"shield_arc_max"`
 }
 
 type TacticalSpec struct {
@@ -418,17 +423,17 @@ func validateBaselineCombatant(s TacticalShipSpec) error {
 	}
 	switch s.WarpDriveID {
 	case "fusion_drive":
-		if s.CurrentCombatSpeed != 22 {
-			return fmt.Errorf("fusion tactical ship %d requires pristine combat speed 22", s.ShipID)
+		if (s.MinimumCombatSpeed != 0 && s.MinimumCombatSpeed != 12) || s.CurrentCombatSpeed < 12 || s.CurrentCombatSpeed > 22 {
+			return fmt.Errorf("fusion tactical ship %d requires combat speed within 12..22", s.ShipID)
 		}
 	case "nuclear_drive":
-		if s.CurrentCombatSpeed != 20 {
-			return fmt.Errorf("nuclear tactical ship %d requires pristine combat speed 20", s.ShipID)
+		if (s.MinimumCombatSpeed != 0 && s.MinimumCombatSpeed != 10) || s.CurrentCombatSpeed < 10 || s.CurrentCombatSpeed > 20 {
+			return fmt.Errorf("nuclear tactical ship %d requires combat speed within 10..20", s.ShipID)
 		}
 	default:
 		return fmt.Errorf("tactical ship %d drive %q is outside the Slice 15.5 baseline", s.ShipID, s.WarpDriveID)
 	}
-	if s.BeamOffense != 25 || s.BeamDefense != 0 {
+	if s.BeamOffense != 25 || (s.BeamDefense != 0 && s.BeamDefense != s.CurrentCombatSpeed*5) {
 		return fmt.Errorf("tactical ship %d offense/defense is outside the Slice 15.5 baseline", s.ShipID)
 	}
 	switch s.TurningMode {

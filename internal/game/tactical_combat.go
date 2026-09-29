@@ -29,9 +29,34 @@ func validateTacticalCombatReferences(file *ruleset.TacticalCombatFile, technolo
 	if !hasShipComputer(components.Computers, file.Computer.ComputerID) {
 		return fmt.Errorf("tactical rules reference unknown computer %q", file.Computer.ComputerID)
 	}
+	for _, hull := range file.Hulls {
+		if _, ok := hulls[hull.HullID]; !ok {
+			return fmt.Errorf("tactical rules reference unknown hull %q", hull.HullID)
+		}
+	}
+	for _, armor := range file.Armors {
+		if !hasShipArmor(components.Armors, armor.ArmorID) {
+			return fmt.Errorf("tactical rules reference unknown armor %q", armor.ArmorID)
+		}
+	}
 	for _, drive := range file.Drives {
 		if !hasShipDrive(components.Drives, drive.DriveID) {
 			return fmt.Errorf("tactical rules reference unknown drive %q", drive.DriveID)
+		}
+	}
+	for _, computer := range file.Computers {
+		if !hasShipComputer(components.Computers, computer.ComputerID) {
+			return fmt.Errorf("tactical rules reference unknown computer %q", computer.ComputerID)
+		}
+	}
+	for _, shield := range file.Shields {
+		if !hasShipShield(components.Shields, shield.ShieldID) {
+			return fmt.Errorf("tactical rules reference unknown shield %q", shield.ShieldID)
+		}
+	}
+	for _, fuel := range file.FuelCells {
+		if !hasShipFuelCell(components.FuelCells, fuel.FuelCellID) {
+			return fmt.Errorf("tactical rules reference unknown fuel cell %q", fuel.FuelCellID)
 		}
 	}
 	return nil
@@ -65,6 +90,15 @@ func hasShipArmor(items []ruleset.ShipArmor, id string) bool {
 }
 
 func hasShipFuelCell(items []ruleset.ShipFuelCell, id string) bool {
+	for _, item := range items {
+		if item.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
+func hasShipShield(items []ruleset.ShipShield, id string) bool {
 	for _, item := range items {
 		if item.ID == id {
 			return true
@@ -117,14 +151,12 @@ func tacticalMetadataForEncounterWithSpecials(state *core.GameState, encounter E
 			if reason := baselineCombatantUnsupportedReason(*ship, rules); reason != "" {
 				return reason, nil
 			}
-			drive, ok := tacticalDriveRule(rules, ship.Spec.WarpDriveID)
-			if !ok {
-				return "", fmt.Errorf("tactical rules have no drive %q", ship.Spec.WarpDriveID)
-			}
 			y := tacticalDeploymentY(len(side.ShipIDs), i)
-			// Original MOO2 uses pristine/max combat speed for an undamaged ship; engine
-			// damage reduces Current_Design_Base_Combat_Speed_ toward MinSpeed.
-			tactical.Ships = append(tactical.Ships, baselineTacticalShip(*ship, side.SeatID, x, y, facing, drive.MaxSpeed, rules, specialRules))
+			projected, err := baselineTacticalShip(*ship, side.SeatID, x, y, facing, rules, specialRules)
+			if err != nil {
+				return "", err
+			}
+			tactical.Ships = append(tactical.Ships, projected)
 		}
 		return "", nil
 	}
@@ -199,7 +231,77 @@ func baselineCombatantUnsupportedReason(ship core.Ship, rules *ruleset.TacticalC
 	return ""
 }
 
-func baselineTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing, speed int, rules *ruleset.TacticalCombatFile, specialRules *ruleset.ShipSpecialsFile) battle.TacticalShipSpec {
+type tacticalFoundationValues struct {
+	MinimumCombatSpeed int
+	CurrentCombatSpeed int
+	BeamOffense        int
+	BeamDefense        int
+	ArmorMax           int
+	StructureMax       int
+	ShieldStrength     int
+	ShieldArcMax       int
+}
+
+func tacticalFoundationForShip(ship core.Ship, rules *ruleset.TacticalCombatFile) (tacticalFoundationValues, error) {
+	if rules == nil {
+		return tacticalFoundationValues{}, fmt.Errorf("tactical rules are nil")
+	}
+	hull, ok := rules.HullByID(ship.Spec.HullID)
+	if !ok {
+		return tacticalFoundationValues{}, fmt.Errorf("tactical rules have no hull %q", ship.Spec.HullID)
+	}
+	armor, ok := rules.ArmorByID(ship.Spec.ArmorID)
+	if !ok {
+		return tacticalFoundationValues{}, fmt.Errorf("tactical rules have no armor %q", ship.Spec.ArmorID)
+	}
+	drive, ok := rules.DriveByID(ship.Spec.WarpDriveID)
+	if !ok {
+		return tacticalFoundationValues{}, fmt.Errorf("tactical rules have no drive %q", ship.Spec.WarpDriveID)
+	}
+	computer, ok := rules.ComputerByID(ship.Spec.ComputerID)
+	if !ok {
+		return tacticalFoundationValues{}, fmt.Errorf("tactical rules have no computer %q", ship.Spec.ComputerID)
+	}
+	if _, ok := rules.FuelCellByID(ship.Spec.FuelCellID); !ok {
+		return tacticalFoundationValues{}, fmt.Errorf("tactical rules have no fuel cell %q", ship.Spec.FuelCellID)
+	}
+
+	unusedBonus := rules.MaxUnusedSpaceCombatSpeedBonus
+	if ship.Spec.HullSpace > 0 {
+		unused := ship.Spec.HullSpace - ship.Spec.SpaceUsed
+		if unused < 0 {
+			unused = 0
+		}
+		if unused > ship.Spec.HullSpace {
+			unused = ship.Spec.HullSpace
+		}
+		unusedBonus = (rules.MaxUnusedSpaceCombatSpeedBonus*unused + ship.Spec.HullSpace - 1) / ship.Spec.HullSpace
+	}
+	minimumSpeed := hull.BaseCombatSpeed + drive.CombatSpeedBonus
+	currentSpeed := minimumSpeed + unusedBonus
+	armorMax := hull.BaseArmor + (hull.BaseArmor*armor.BonusPercent)/100
+	shieldStrength, shieldArcMax := 0, 0
+	if ship.Spec.ShieldID != "" {
+		shield, ok := rules.ShieldByID(ship.Spec.ShieldID)
+		if !ok {
+			return tacticalFoundationValues{}, fmt.Errorf("tactical rules have no shield %q", ship.Spec.ShieldID)
+		}
+		shieldStrength = shield.Strength
+		shieldArcMax = shield.Strength * rules.ShieldCapacityPerStrength * hull.ShieldHullFactor
+	}
+	return tacticalFoundationValues{
+		MinimumCombatSpeed: minimumSpeed, CurrentCombatSpeed: currentSpeed,
+		BeamOffense: computer.BeamOffense, BeamDefense: currentSpeed * rules.BeamDefensePerCombatSpeed,
+		ArmorMax: armorMax, StructureMax: hull.Structure,
+		ShieldStrength: shieldStrength, ShieldArcMax: shieldArcMax,
+	}, nil
+}
+
+func baselineTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing int, rules *ruleset.TacticalCombatFile, specialRules *ruleset.ShipSpecialsFile) (battle.TacticalShipSpec, error) {
+	foundation, err := tacticalFoundationForShip(ship, rules)
+	if err != nil {
+		return battle.TacticalShipSpec{}, err
+	}
 	out := battle.TacticalShipSpec{
 		ShipID:               ship.ID,
 		EmpireID:             ship.EmpireID,
@@ -212,15 +314,20 @@ func baselineTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing, 
 		WarpDriveID:          ship.Spec.WarpDriveID,
 		ComputerID:           ship.Spec.ComputerID,
 		ArmorID:              ship.Spec.ArmorID,
+		ShieldID:             ship.Spec.ShieldID,
+		FuelCellID:           ship.Spec.FuelCellID,
 		SourceDesignID:       ship.SourceDesignID,
 		SourceDesignRevision: ship.SourceDesignRevision,
 		StrategicPictureID:   ship.Spec.StrategicPictureID,
 		SourceVisualRevision: ship.SourceVisualRevision,
-		CurrentCombatSpeed:   speed,
-		BeamOffense:          rules.Computer.BeamOffense,
-		BeamDefense:          0,
-		ArmorMax:             rules.Frigate.ArmorHits,
-		StructureMax:         rules.Frigate.Structure,
+		MinimumCombatSpeed:   foundation.MinimumCombatSpeed,
+		CurrentCombatSpeed:   foundation.CurrentCombatSpeed,
+		BeamOffense:          foundation.BeamOffense,
+		BeamDefense:          foundation.BeamDefense,
+		ArmorMax:             foundation.ArmorMax,
+		StructureMax:         foundation.StructureMax,
+		ShieldStrength:       foundation.ShieldStrength,
+		ShieldArcMax:         foundation.ShieldArcMax,
 	}
 	if ship.VisualGenome != nil {
 		genome := core.CloneShipVisualGenome(*ship.VisualGenome)
@@ -255,7 +362,7 @@ func baselineTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing, 
 			out.TurningMode = battle.TacticalTurningInertialNullifier
 		}
 	}
-	return out
+	return out, nil
 }
 
 func tacticalDriveRule(rules *ruleset.TacticalCombatFile, id string) (ruleset.TacticalDriveSpeedRule, bool) {
