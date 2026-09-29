@@ -112,6 +112,7 @@ type TacticalShipState struct {
 	MovementMax        int                   `json:"movement_max"`
 	ActivationComplete bool                  `json:"activation_complete"`
 	ArmorCurrent       int                   `json:"armor_current"`
+	ShieldArcCurrent   [4]int                `json:"shield_arc_current"`
 	StructureDamage    int                   `json:"structure_damage"`
 	Weapons            []TacticalWeaponState `json:"weapons,omitempty"`
 	Destroyed          bool                  `json:"destroyed"`
@@ -165,6 +166,7 @@ type TacticalShipView struct {
 	WarpDriveID          string                 `json:"warp_drive_id"`
 	ComputerID           string                 `json:"computer_id"`
 	ArmorID              string                 `json:"armor_id"`
+	ShieldID             string                 `json:"shield_id,omitempty"`
 	SourceDesignID       core.ID                `json:"source_design_id,omitempty"`
 	SourceDesignRevision uint32                 `json:"source_design_revision,omitempty"`
 	StrategicPictureID   int                    `json:"strategic_picture_id,omitempty"`
@@ -178,6 +180,9 @@ type TacticalShipView struct {
 	ActivationComplete   bool                   `json:"activation_complete"`
 	ArmorCurrent         int                    `json:"armor_current"`
 	ArmorMax             int                    `json:"armor_max"`
+	ShieldStrength       int                    `json:"shield_strength"`
+	ShieldArcCurrent     [4]int                 `json:"shield_arc_current"`
+	ShieldArcMax         int                    `json:"shield_arc_max"`
 	StructureCurrent     int                    `json:"structure_current"`
 	StructureMax         int                    `json:"structure_max"`
 	BeamOffense          int                    `json:"beam_offense"`
@@ -663,7 +668,7 @@ func newTacticalRuntime(spec TacticalSpec) (tacticalRuntime, error) {
 		nextEventSequence: 1,
 	}
 	for i, ship := range spec.Ships {
-		state := TacticalShipState{ShipID: ship.ShipID, X: ship.X, Y: ship.Y, Facing: ship.Facing, MovementCurrent: ship.CurrentCombatSpeed, MovementMax: ship.CurrentCombatSpeed, ArmorCurrent: ship.ArmorMax, Weapons: make([]TacticalWeaponState, len(ship.Weapons))}
+		state := TacticalShipState{ShipID: ship.ShipID, X: ship.X, Y: ship.Y, Facing: ship.Facing, MovementCurrent: ship.CurrentCombatSpeed, MovementMax: ship.CurrentCombatSpeed, ArmorCurrent: ship.ArmorMax, ShieldArcCurrent: fullTacticalShieldArcs(ship.ShieldArcMax), Weapons: make([]TacticalWeaponState, len(ship.Weapons))}
 		for j, weapon := range ship.Weapons {
 			state.Weapons[j] = TacticalWeaponState{Slot: weapon.Slot, Ready: baselineTacticalFireSupported(weapon)}
 		}
@@ -982,6 +987,161 @@ func turnCostPerFacing(ship TacticalShipSpec) int {
 		return 2
 	}
 }
+
+type tacticalDamageApplication struct {
+	IncomingDamage     int
+	ShieldArc          int
+	ShieldBefore       int
+	ShieldAfter        int
+	PostBlockDamage    int
+	ShieldAbsorbed     int
+	LowerLayerOverflow int
+	ArmorBefore        int
+	ArmorAfter         int
+	StructureBefore    int
+	StructureAfter     int
+	Layer              string
+}
+
+func fullTacticalShieldArcs(max int) [4]int {
+	if max < 0 {
+		max = 0
+	}
+	return [4]int{max, max, max, max}
+}
+
+func tacticalShieldImpactArc(target, source TacticalShipState) int {
+	bearing := math.Atan2(float64(source.Y-target.Y), float64(source.X-target.X)) * 180 / math.Pi
+	if bearing < 0 {
+		bearing += 360
+	}
+	relative := math.Mod(bearing-float64(target.Facing)*22.5+360, 360)
+	switch {
+	case relative <= 45 || relative > 315:
+		return 0
+	case relative <= 135:
+		return 3
+	case relative <= 225:
+		return 2
+	default:
+		return 1
+	}
+}
+
+func applyTacticalDamage(targetSpec TacticalShipSpec, targetState *TacticalShipState, sourceState TacticalShipState, incomingDamage int) tacticalDamageApplication {
+	result := tacticalDamageApplication{
+		IncomingDamage:  incomingDamage,
+		ShieldArc:       tacticalShieldImpactArc(*targetState, sourceState),
+		ArmorBefore:     targetState.ArmorCurrent,
+		ArmorAfter:      targetState.ArmorCurrent,
+		StructureBefore: targetState.StructureDamage,
+		StructureAfter:  targetState.StructureDamage,
+	}
+	result.ShieldBefore = targetState.ShieldArcCurrent[result.ShieldArc]
+	result.ShieldAfter = result.ShieldBefore
+
+	result.PostBlockDamage = incomingDamage - targetSpec.ShieldStrength
+	if result.PostBlockDamage < 0 {
+		result.PostBlockDamage = 0
+	}
+	remainingDamage := result.PostBlockDamage
+	if remainingDamage > 0 && targetState.ShieldArcCurrent[result.ShieldArc] > 0 {
+		result.ShieldAbsorbed = remainingDamage
+		if result.ShieldAbsorbed > targetState.ShieldArcCurrent[result.ShieldArc] {
+			result.ShieldAbsorbed = targetState.ShieldArcCurrent[result.ShieldArc]
+		}
+		targetState.ShieldArcCurrent[result.ShieldArc] -= result.ShieldAbsorbed
+		remainingDamage -= result.ShieldAbsorbed
+		result.ShieldAfter = targetState.ShieldArcCurrent[result.ShieldArc]
+	}
+	result.LowerLayerOverflow = remainingDamage
+
+	if remainingDamage > 0 && targetState.ArmorCurrent > 0 {
+		absorbed := remainingDamage
+		if absorbed > targetState.ArmorCurrent {
+			absorbed = targetState.ArmorCurrent
+		}
+		targetState.ArmorCurrent -= absorbed
+		remainingDamage -= absorbed
+		result.ArmorAfter = targetState.ArmorCurrent
+	}
+	if remainingDamage > 0 {
+		targetState.StructureDamage += remainingDamage
+		if targetState.StructureDamage > targetSpec.StructureMax {
+			targetState.StructureDamage = targetSpec.StructureMax
+		}
+		result.StructureAfter = targetState.StructureDamage
+	}
+	if targetState.StructureDamage >= targetSpec.StructureMax {
+		targetState.Destroyed = true
+	}
+
+	shieldChanged := result.ShieldBefore > result.ShieldAfter
+	armorChanged := result.ArmorBefore > result.ArmorAfter
+	structureChanged := result.StructureAfter > result.StructureBefore
+	switch {
+	case shieldChanged && armorChanged && structureChanged:
+		result.Layer = "shield_armor_structure"
+	case shieldChanged && armorChanged:
+		result.Layer = "shield_armor"
+	case shieldChanged && structureChanged:
+		result.Layer = "shield_structure"
+	case shieldChanged:
+		result.Layer = "shield"
+	case targetSpec.ShieldStrength > 0 && incomingDamage > 0 && result.PostBlockDamage == 0:
+		result.Layer = "shield_block"
+	case armorChanged && structureChanged:
+		result.Layer = "armor_structure"
+	case armorChanged:
+		result.Layer = "armor"
+	case structureChanged:
+		result.Layer = "structure"
+	case targetState.StructureDamage >= targetSpec.StructureMax && incomingDamage > 0:
+		result.Layer = "structure_overkill"
+	}
+	return result
+}
+
+func rechargeTacticalShieldArcs(arcs *[4]int, max int) {
+	if arcs == nil || max <= 0 {
+		return
+	}
+	budget := max * 3 / 10
+	for budget > 0 {
+		changed := false
+		for arc := 0; arc < len(arcs) && budget > 0; arc++ {
+			if arcs[arc] < 0 {
+				arcs[arc] = 0
+			}
+			if arcs[arc] >= max {
+				continue
+			}
+			arcs[arc]++
+			budget--
+			changed = true
+		}
+		if !changed {
+			break
+		}
+	}
+}
+
+func rechargeTacticalShields(spec TacticalSpec, r *tacticalRuntime) {
+	if r == nil {
+		return
+	}
+	for i := range r.state.Ships {
+		state := &r.state.Ships[i]
+		if state.Destroyed {
+			continue
+		}
+		ship := tacticalShipSpec(spec, state.ShipID)
+		if ship == nil || ship.ShieldArcMax <= 0 {
+			continue
+		}
+		rechargeTacticalShieldArcs(&state.ShieldArcCurrent, ship.ShieldArcMax)
+	}
+}
 func buildTacticalView(spec TacticalSpec, r tacticalRuntime) TacticalView {
 	view := TacticalView{State: cloneTacticalState(r.state), Events: cloneTacticalEvents(r.events), Ships: tacticalShipViews(spec, &r)}
 	state := r.shipState(r.state.ActiveShipID)
@@ -1006,11 +1166,12 @@ func tacticalShipViews(spec TacticalSpec, r *tacticalRuntime) []TacticalShipView
 		}
 		view := TacticalShipView{
 			ShipID: shipSpec.ShipID, EmpireID: shipSpec.EmpireID, SeatID: shipSpec.SeatID,
-			HullID: shipSpec.HullID, WarpDriveID: shipSpec.WarpDriveID, ComputerID: shipSpec.ComputerID, ArmorID: shipSpec.ArmorID,
+			HullID: shipSpec.HullID, WarpDriveID: shipSpec.WarpDriveID, ComputerID: shipSpec.ComputerID, ArmorID: shipSpec.ArmorID, ShieldID: shipSpec.ShieldID,
 			SourceDesignID: shipSpec.SourceDesignID, SourceDesignRevision: shipSpec.SourceDesignRevision, StrategicPictureID: shipSpec.StrategicPictureID,
 			SourceVisualRevision: shipSpec.SourceVisualRevision,
 			X:                    state.X, Y: state.Y, Facing: state.Facing, MovementCurrent: state.MovementCurrent, MovementMax: state.MovementMax,
 			ActivationComplete: state.ActivationComplete, ArmorCurrent: state.ArmorCurrent, ArmorMax: shipSpec.ArmorMax,
+			ShieldStrength: shipSpec.ShieldStrength, ShieldArcCurrent: state.ShieldArcCurrent, ShieldArcMax: shipSpec.ShieldArcMax,
 			StructureCurrent: shipSpec.StructureMax - state.StructureDamage, StructureMax: shipSpec.StructureMax,
 			BeamOffense: shipSpec.BeamOffense, BeamDefense: shipSpec.BeamDefense, Destroyed: state.Destroyed,
 			Weapons: make([]TacticalWeaponView, 0, len(shipSpec.Weapons)),
@@ -1132,9 +1293,7 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 		hit := effectiveRoll >= threshold
 		damage := 0
 		selectionRoll := 0
-		layer := ""
-		beforeArmor, afterArmor := targetState.ArmorCurrent, targetState.ArmorCurrent
-		beforeStructure, afterStructure := targetState.StructureDamage, targetState.StructureDamage
+		var damageApplied tacticalDamageApplication
 		if hit {
 			hitCount++
 			damage = beamDamage(*weapon, spec.Tactical.Rules.BeamDamageRangeModifiers[rangeIndex], effectiveRoll, threshold, spec.Tactical.Rules.BeamEffectiveRollCap)
@@ -1143,35 +1302,7 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 			if err != nil {
 				return nil, err
 			}
-			remainingDamage := damage
-			if targetState.ArmorCurrent > 0 {
-				absorbed := remainingDamage
-				if absorbed > targetState.ArmorCurrent {
-					absorbed = targetState.ArmorCurrent
-				}
-				targetState.ArmorCurrent -= absorbed
-				remainingDamage -= absorbed
-				afterArmor = targetState.ArmorCurrent
-			}
-			if remainingDamage > 0 {
-				// Internal subsystem damage remains deferred. Grouped volleys apply
-				// each physical weapon sequentially to aggregate Armor/Structure.
-				targetState.StructureDamage += remainingDamage
-				if targetState.StructureDamage > targetSpec.StructureMax {
-					targetState.StructureDamage = targetSpec.StructureMax
-				}
-				afterStructure = targetState.StructureDamage
-			}
-			switch {
-			case beforeArmor > 0 && afterStructure > beforeStructure:
-				layer = "armor_structure"
-			case beforeArmor > afterArmor:
-				layer = "armor"
-			case afterStructure > beforeStructure:
-				layer = "structure"
-			case targetState.StructureDamage >= targetSpec.StructureMax:
-				layer = "structure_overkill"
-			}
+			damageApplied = applyTacticalDamage(*targetSpec, targetState, *activeState, damage)
 		}
 		if err := r.appendEvent("beam_fired", seatID, commandSequence, map[string]any{
 			"ship_id": active.ShipID, "target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
@@ -1183,11 +1314,13 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 		}
 		if hit {
 			if err := r.appendEvent("battle_damage_applied", seatID, commandSequence, map[string]any{
-				"target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
+				"source_ship_id": active.ShipID, "target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
 				"shot_index": shotIndex + 1, "shot_count": weapon.Count,
-				"layer": layer, "damage": damage, "selection_roll": selectionRoll,
-				"armor_before": beforeArmor, "armor_after": afterArmor,
-				"structure_damage_before": beforeStructure, "structure_damage_after": afterStructure,
+				"layer": damageApplied.Layer, "damage": damage, "incoming_damage": damageApplied.IncomingDamage, "selection_roll": selectionRoll,
+				"shield_arc": damageApplied.ShieldArc, "shield_before": damageApplied.ShieldBefore, "shield_after": damageApplied.ShieldAfter,
+				"post_block_damage": damageApplied.PostBlockDamage, "shield_absorbed": damageApplied.ShieldAbsorbed, "lower_layer_overflow": damageApplied.LowerLayerOverflow,
+				"armor_before": damageApplied.ArmorBefore, "armor_after": damageApplied.ArmorAfter,
+				"structure_damage_before": damageApplied.StructureBefore, "structure_damage_after": damageApplied.StructureAfter,
 			}); err != nil {
 				return nil, err
 			}
@@ -1343,6 +1476,7 @@ func advanceAfterActivationCompletion(spec Spec, r *tacticalRuntime) error {
 		return nil
 	}
 	r.state.Round++
+	rechargeTacticalShields(*spec.Tactical, r)
 	for i := range r.state.Ships {
 		if r.state.Ships[i].Destroyed {
 			continue

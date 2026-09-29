@@ -1,7 +1,7 @@
 # Slice 17.5 Gate 3 - Implementation Checkpoint Plan
 
 Date: 2026-09-29
-Status: **Checkpoints 1-2 complete; Checkpoint 3 ready / not started**
+Status: **Checkpoints 1-3 complete; Checkpoint 4 ready / not started**
 Base commit: `4939a04 docs(slice): freeze 17.5 gate 2 tactical foundation`
 Gate 2 contract: `docs/research/SLICE_17_5_GATE2_TACTICAL_FOUNDATION_CONTRACT_FREEZE_2026-09-29.md`
 OPEN slice: `docs/slices/_OPEN_TACTICAL_COMBAT_FOUNDATION_SHIP_COMBATANT_BREADTH_2026-09-28.md`
@@ -62,7 +62,7 @@ Acceptance:
 
 ## Checkpoint 3 - Shields and Shared Damage Foundation
 
-Status: **READY / NOT STARTED**
+Status: **COMPLETE**
 
 Scope:
 
@@ -83,7 +83,7 @@ Acceptance:
 
 ## Checkpoint 4 - Generic Weapon Action Availability and UI Consumption
 
-Status: **PENDING CHECKPOINT 3**
+Status: **READY / NOT STARTED**
 
 Scope:
 
@@ -135,6 +135,6 @@ Acceptance:
 
 ## Current resume point
 
-Resume at **Checkpoint 3 - Shields and Shared Damage Foundation** only after explicit user continuation. Checkpoints 1-2 are complete and committed; verify the current clean HEAD with `git log -1 --oneline` before continuing.
+Resume at **Checkpoint 4 - Generic Weapon Action Availability and UI Consumption** only after explicit user continuation. Checkpoints 1-3 are complete and committed; verify the current clean HEAD with `git log -1 --oneline` before continuing.
 
-Do not start Checkpoint 3 until the user explicitly says to continue.
+Do not start Checkpoint 4 until the user explicitly says to continue.
