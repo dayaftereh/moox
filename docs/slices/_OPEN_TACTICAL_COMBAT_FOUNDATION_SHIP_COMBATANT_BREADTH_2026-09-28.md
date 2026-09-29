@@ -1,6 +1,6 @@
 # OPEN Slice 17.5 - Tactical Combat Foundation / Ship Combatant Breadth
 Date opened: 2026-09-28
-Status: **Gate 1 complete; Gate 2 foundation contract freeze ready**
+Status: **Gates 1-2 complete; Gate 3 implementation ready / not started**
 Plan: docs/slices/PLANNED_17_5_TACTICAL_COMBAT_FOUNDATION_SHIP_COMBATANT_BREADTH.md
 
 ## Scope
@@ -34,4 +34,11 @@ Mapped: duplicate Game/Battle Slice-15.5 admission guards, singleton Frigate/Ele
 
 Gate 1 complete: the local 1.31 executable now directly closes all six hull durability rows, all Armor multipliers, all Computer Beam-Offense rows, all Drive min/max matrices, primary Shield block/capacity/facing/recharge semantics, and Fuel tactical neutrality. Current BattleSession RNG/readiness/event authority and the generic unsupported-action replacement surface are audited. Early/mid/late representative vectors cover all six hull classes.
 
-Next: Gate 2 contract freeze. The protected baseline admission guard remains in place until Gate 3 implements the frozen replacement.
+Next: Gate 3 implementation of the frozen foundation. The protected baseline admission guard remains in place until the replacement projection/validation is implemented and regression-green.
+## Gate 2 contract freeze
+
+Contract: docs/research/SLICE_17_5_GATE2_TACTICAL_FOUNDATION_CONTRACT_FREEZE_2026-09-29.md
+
+Frozen: all six Hull durability rows; all six Armor multipliers; all five Computer Beam-Offense rows; all six Drive min/max matrices and the accepted concrete-design speed formula; no-Shield plus Class I/III/V/VII/X four-facing Shield capacity/block/recharge semantics; Fuel tactical neutrality; base Beam Defense from current combat speed; replacement semantics for both Slice-15.5 admission guards; generic per-slot action availability with explicit unsupported-action projection; shared RNG/damage/event/presentation authority; deterministic early/mid/late Combat Lab vectors; and compatibility boundaries for Slices 17.6-17.8.
+
+Gate 3 may now implement the frozen replacement. It must not add complete Beam, ordnance or fighter/combat-Special family behavior owned by Slices 17.6-17.8.

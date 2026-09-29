@@ -66,14 +66,14 @@ The existing Laser vertical slice remains a regression baseline, not the archite
 
 ## Gate 2 - foundation contract freeze
 
-- [ ] Freeze the accepted hull/Armor/Computer/Shield/Drive/Fuel Tactical matrix.
-- [ ] Freeze replacement semantics for the old baseline-only admission guard.
-- [ ] Freeze generic weapon-slot/action availability and unsupported-action projection.
-- [ ] Freeze authoritative RNG sequencing and shared damage-layer application boundaries.
-- [ ] Freeze the common combat-event envelope consumed by Tactical UI and replay/Observer projections.
-- [ ] Freeze generic presentation rules: events drive effects; effects never drive authority.
-- [ ] Freeze deterministic Combat Lab vectors proving broad admission and shared damage/event behavior.
-- [ ] Freeze compatibility boundaries that 17.6 Beam, 17.7 Ordnance and 17.8 Fighters/Specials must consume rather than fork.
+- [x] Freeze the accepted hull/Armor/Computer/Shield/Drive/Fuel Tactical matrix.
+- [x] Freeze replacement semantics for the old baseline-only admission guard.
+- [x] Freeze generic weapon-slot/action availability and unsupported-action projection.
+- [x] Freeze authoritative RNG sequencing and shared damage-layer application boundaries.
+- [x] Freeze the common combat-event envelope consumed by Tactical UI and replay/Observer projections.
+- [x] Freeze generic presentation rules: events drive effects; effects never drive authority.
+- [x] Freeze deterministic Combat Lab vectors proving broad admission and shared damage/event behavior.
+- [x] Freeze compatibility boundaries that 17.6 Beam, 17.7 Ordnance and 17.8 Fighters/Specials must consume rather than fork.
 
 ## Gate 3 - implementation
 
