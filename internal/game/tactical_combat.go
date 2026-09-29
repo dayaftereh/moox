@@ -360,7 +360,7 @@ func projectTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing in
 		canonical, _ := canonicalWeaponMount(mount)
 		weaponRule, _ := rules.WeaponByID(canonical.WeaponID)
 		out.Weapons = append(out.Weapons, battle.TacticalWeaponSpec{
-			Slot: canonical.Slot, WeaponID: canonical.WeaponID, Count: canonical.Count,
+			Slot: canonical.Slot, WeaponID: canonical.WeaponID, WeaponFamily: weaponRule.Kind, Count: canonical.Count,
 			MountType: canonical.MountType, ModifierIDs: append([]core.ShipWeaponModifierID(nil), canonical.ModifierIDs...),
 			Ammo: canonical.Ammo, FiringArcID: canonical.FiringArcID,
 			MinDamage: weaponRule.MinDamage, MaxDamage: weaponRule.MaxDamage,

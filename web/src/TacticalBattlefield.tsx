@@ -38,6 +38,19 @@ type TacticalDamageLayer = { kind: TacticalDamageLayerKind; amount: number }
 type TacticalBeamAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number; shotCount: number; layers: TacticalDamageLayer[] }
 type TacticalMoveAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number }
 
+function weaponUnavailableLabel(reason: string | undefined, t: Translator): string {
+  switch (reason) {
+    case 'tactical_consumer_unavailable':
+      return t('battlefield.tacticalConsumerUnavailable')
+    case 'weapon_not_ready':
+      return t('battlefield.weaponSpent')
+    case 'no_legal_targets':
+      return t('battlefield.noWeaponTargets')
+    default:
+      return t('battlefield.weaponUnavailable')
+  }
+}
+
 const MIN_ZOOM = 0.45
 const MAX_ZOOM = 7
 const FOCUS_ZOOM = 3.2
@@ -144,13 +157,13 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const ownShips = ships.filter((ship) => ship.seat_id === ownSeatID)
   const remainingOwnShips = ownShips.filter((ship) => !ship.destroyed && !ship.activation_complete)
   const legalMoves = tactical.legal_moves ?? []
-  const legalFireActions = tactical.legal_fire_actions ?? []
+  const weaponActions = tactical.weapon_actions ?? []
   const waitTargetShipIDs = tactical.wait_target_ship_ids ?? []
   const waitTargetShipIDSet = useMemo(() => new Set(waitTargetShipIDs), [waitTargetShipIDs])
   const activeShip = ships.find((ship) => ship.ship_id === tactical.state.active_ship_id)
   const ownActivation = activeShip?.seat_id === ownSeatID
   const [mode, setMode] = useState<TacticalMode>('combat')
-  const [selectedWeaponSlot, setSelectedWeaponSlot] = useState<number | null>(() => legalFireActions[0]?.weapon_slot ?? null)
+  const [selectedWeaponSlot, setSelectedWeaponSlot] = useState<number | null>(() => weaponActions.find((action) => action.available)?.weapon_slot ?? null)
   const [beamAnimation, setBeamAnimation] = useState<TacticalBeamAnimation | null>(null)
   const [moveAnimation, setMoveAnimation] = useState<TacticalMoveAnimation | null>(null)
   const [scannedShipID, setScannedShipID] = useState<number | null>(null)
@@ -195,10 +208,11 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const observedEventSequenceRef = useRef<number | null>(null)
 
   useEffect(() => {
-    if (selectedWeaponSlot == null || !legalFireActions.some((action) => action.weapon_slot === selectedWeaponSlot)) {
-      setSelectedWeaponSlot(legalFireActions[0]?.weapon_slot ?? null)
+    const selected = weaponActions.find((action) => action.weapon_slot === selectedWeaponSlot)
+    if (selectedWeaponSlot == null || !selected?.available) {
+      setSelectedWeaponSlot(weaponActions.find((action) => action.available)?.weapon_slot ?? null)
     }
-  }, [legalFireActions, selectedWeaponSlot])
+  }, [weaponActions, selectedWeaponSlot])
 
   useEffect(() => {
     if (scannedShipID != null && !ships.some((ship) => ship.ship_id === scannedShipID)) setScannedShipID(null)
@@ -221,10 +235,10 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     if (ownActivation && activeShip) setSelectedShipID(activeShip.ship_id)
   }, [activeShip?.ship_id, ownActivation])
 
-  const selectedFireAction = legalFireActions.find((action) => action.weapon_slot === selectedWeaponSlot) ?? legalFireActions[0]
-  const fireActionBySlot = useMemo(() => new Map(legalFireActions.map((action) => [action.weapon_slot, action])), [legalFireActions])
+  const selectedWeaponAction = weaponActions.find((action) => action.weapon_slot === selectedWeaponSlot) ?? weaponActions.find((action) => action.available)
+  const weaponActionBySlot = useMemo(() => new Map(weaponActions.map((action) => [action.weapon_slot, action])), [weaponActions])
   const activeWeapons = ownActivation ? (activeShip?.weapons ?? []) : []
-  const legalTargetByID = useMemo(() => new Map((selectedFireAction?.targets ?? []).map((target) => [target.target_ship_id, target])), [selectedFireAction])
+  const legalTargetByID = useMemo(() => new Map((selectedWeaponAction?.available ? selectedWeaponAction.targets ?? [] : []).map((target) => [target.target_ship_id, target])), [selectedWeaponAction])
   const legalMoveByCell = useMemo(() => new Map(legalMoves.map((move) => [`${move.x}:${move.y}`, move])), [legalMoves])
   const reachableGridD = useMemo(() => reachableGridPath(legalMoves), [legalMoves])
   const scannedShip = ships.find((ship) => ship.ship_id === scannedShipID)
@@ -338,9 +352,9 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
       }
       return
     }
-    if (controlsDisabled || !activeShip || !selectedFireAction) return
+    if (controlsDisabled || !activeShip || !selectedWeaponAction?.available || selectedWeaponAction.command_kind !== 'battle.fire_beam') return
     if (!legalTargetByID.has(ship.ship_id)) return
-    void runCommand(tacticalFireBeamCommand(tactical, activeShip.ship_id, ship.ship_id, selectedFireAction.weapon_slot))
+    void runCommand(tacticalFireBeamCommand(tactical, activeShip.ship_id, ship.ship_id, selectedWeaponAction.weapon_slot))
   }
 
   const waitActivation = () => {
@@ -588,14 +602,14 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             <div className="tactical-control-tools">
               <div className="tactical-weapon-strip" aria-label={t('battlefield.weaponAction')}>
                 {activeWeapons.map((weapon) => {
-                  const action = fireActionBySlot.get(weapon.slot)
+                  const action = weaponActionBySlot.get(weapon.slot)
                   const isSelected = selectedWeaponSlot === weapon.slot
-                  const canSelect = weapon.ready && !!action && !controlsDisabled
+                  const canSelect = !!action?.available && !controlsDisabled
                   return (
                     <button
                       key={weapon.slot}
                       type="button"
-                      className={(isSelected ? 'is-active' : '') + (weapon.ready ? '' : ' is-spent')}
+                      className={(isSelected ? 'is-active' : '') + (action?.unavailable_reason === 'weapon_not_ready' ? ' is-spent' : '')}
                       disabled={!canSelect}
                       aria-pressed={isSelected}
                       onClick={() => setSelectedWeaponSlot(weapon.slot)}
@@ -603,7 +617,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                       <GameIcon name="fleet-combat" />
                       <span>
                         <strong>S{weapon.slot + 1} {humanize(weapon.weapon_id)} ×{weapon.count}</strong>
-                        <small>{t('battlefield.baseDamageShort', { min: weapon.min_damage * weapon.count, max: weapon.max_damage * weapon.count })} · {!weapon.ready ? t('battlefield.weaponSpent') : action ? t('battlefield.targets', { count: action.targets.length }) : t('battlefield.noWeaponTargets')}</small>
+                        <small>{t('battlefield.baseDamageShort', { min: weapon.min_damage, max: weapon.max_damage })} · {action?.available ? t('battlefield.targets', { count: action.targets?.length ?? 0 }) : weaponUnavailableLabel(action?.unavailable_reason, t)}</small>
                       </span>
                     </button>
                   )

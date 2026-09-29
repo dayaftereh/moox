@@ -1,6 +1,6 @@
 # Planned Slice 17.5 - Tactical Combat Foundation / Ship Combatant Breadth
 
-Status: **open; Gates 1-2 complete; Gate 3 Checkpoints 1-3 complete; Checkpoint 4 ready / not started**.
+Status: **open; Gates 1-2 complete; Gate 3 Checkpoints 1-4 complete; Checkpoint 5 ready / not started**.
 
 ## Objective
 
@@ -81,7 +81,7 @@ Execution plan: docs/research/SLICE_17_5_GATE3_IMPLEMENTATION_CHECKPOINT_PLAN_20
 
 Gate 3 is executed in five bounded checkpoints. After each checkpoint: focused QA, git diff --check, dedicated commit, clean-tree verification, durable ASH session checkpoint, user report, then stop until explicit continuation.
 
-Current checkpoint: **1-3 complete; 4 - Generic Weapon Action Availability and UI Consumption ready / not started**.
+Current checkpoint: **1-4 complete; 5 - Integration, Regression and Gate 3 Evidence ready / not started**.
 
 ## Gate 3 - implementation
 

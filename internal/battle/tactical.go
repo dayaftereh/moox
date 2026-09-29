@@ -20,6 +20,10 @@ const (
 	TacticalOutcomeVictory = "tactical_victory"
 	TacticalOutcomeRetreat = "tactical_retreat"
 
+	TacticalWeaponUnavailableConsumer  = "tactical_consumer_unavailable"
+	TacticalWeaponUnavailableNotReady  = "weapon_not_ready"
+	TacticalWeaponUnavailableNoTargets = "no_legal_targets"
+
 	BaselineTacticalRNGState uint32 = 0x001500BD
 
 	TacticalTurningNormal             = "normal"
@@ -43,6 +47,7 @@ type TacticalRulesSnapshot struct {
 type TacticalWeaponSpec struct {
 	Slot            int                         `json:"slot"`
 	WeaponID        string                      `json:"weapon_id"`
+	WeaponFamily    string                      `json:"weapon_family"`
 	Count           int                         `json:"count"`
 	MountType       core.ShipWeaponMountType    `json:"mount_type,omitempty"`
 	ModifierIDs     []core.ShipWeaponModifierID `json:"modifier_ids,omitempty"`
@@ -203,15 +208,27 @@ type TacticalFireAction struct {
 	Targets    []TacticalFireTarget `json:"targets"`
 }
 
+type TacticalWeaponActionAvailability struct {
+	ShipID            core.ID              `json:"ship_id"`
+	WeaponSlot        int                  `json:"weapon_slot"`
+	WeaponID          string               `json:"weapon_id"`
+	WeaponFamily      string               `json:"weapon_family"`
+	CommandKind       string               `json:"command_kind,omitempty"`
+	Available         bool                 `json:"available"`
+	UnavailableReason string               `json:"unavailable_reason,omitempty"`
+	Targets           []TacticalFireTarget `json:"targets,omitempty"`
+}
+
 type TacticalView struct {
-	State             TacticalState        `json:"state"`
-	Events            []TacticalEvent      `json:"events"`
-	Ships             []TacticalShipView   `json:"ships"`
-	LegalMoves        []TacticalMoveOption `json:"legal_moves,omitempty"`
-	LegalFireActions  []TacticalFireAction `json:"legal_fire_actions,omitempty"`
-	CanEndActivation  bool                 `json:"can_end_activation"`
-	CanWaitActivation bool                 `json:"can_wait_activation"`
-	WaitTargetShipIDs []core.ID            `json:"wait_target_ship_ids,omitempty"`
+	State             TacticalState                      `json:"state"`
+	Events            []TacticalEvent                    `json:"events"`
+	Ships             []TacticalShipView                 `json:"ships"`
+	LegalMoves        []TacticalMoveOption               `json:"legal_moves,omitempty"`
+	WeaponActions     []TacticalWeaponActionAvailability `json:"weapon_actions,omitempty"`
+	LegalFireActions  []TacticalFireAction               `json:"legal_fire_actions,omitempty"`
+	CanEndActivation  bool                               `json:"can_end_activation"`
+	CanWaitActivation bool                               `json:"can_wait_activation"`
+	WaitTargetShipIDs []core.ID                          `json:"wait_target_ship_ids,omitempty"`
 }
 
 type MoveShipPayload struct {
@@ -1152,7 +1169,8 @@ func buildTacticalView(spec TacticalSpec, r tacticalRuntime) TacticalView {
 			view.CanWaitActivation = len(view.WaitTargetShipIDs) != 0
 		}
 		view.LegalMoves = legalMoves(spec, &r)
-		view.LegalFireActions = legalFireActions(spec, &r)
+		view.WeaponActions = tacticalWeaponActions(spec, &r)
+		view.LegalFireActions = legalFireActions(view.WeaponActions)
 	}
 	return view
 }
@@ -1195,36 +1213,89 @@ func tacticalShipViews(spec TacticalSpec, r *tacticalRuntime) []TacticalShipView
 	return out
 }
 
-func legalFireActions(spec TacticalSpec, r *tacticalRuntime) []TacticalFireAction {
+func tacticalWeaponFamily(w TacticalWeaponSpec) string {
+	if w.WeaponFamily != "" {
+		return w.WeaponFamily
+	}
+	if w.WeaponID == "laser_cannon" {
+		return "beam"
+	}
+	return ""
+}
+
+func tacticalBeamTargets(spec TacticalSpec, r *tacticalRuntime, activeSpec *TacticalShipSpec, activeState *TacticalShipState) []TacticalFireTarget {
+	if activeSpec == nil || activeState == nil {
+		return nil
+	}
+	var targets []TacticalFireTarget
+	for _, targetSpec := range spec.Ships {
+		if targetSpec.EmpireID == activeSpec.EmpireID {
+			continue
+		}
+		targetState := r.shipState(targetSpec.ShipID)
+		if targetState == nil || targetState.Destroyed {
+			continue
+		}
+		rangeIndex := tacticalRangeIndex(activeState.X, activeState.Y, targetState.X, targetState.Y)
+		if rangeIndex < 0 || rangeIndex >= len(spec.Rules.BeamToHitRangeModifiers) {
+			continue
+		}
+		targets = append(targets, TacticalFireTarget{TargetShipID: targetSpec.ShipID, RangeIndex: rangeIndex})
+	}
+	return targets
+}
+
+func tacticalWeaponActions(spec TacticalSpec, r *tacticalRuntime) []TacticalWeaponActionAvailability {
 	activeSpec := tacticalShipSpec(spec, r.state.ActiveShipID)
 	activeState := r.shipState(r.state.ActiveShipID)
 	if activeSpec == nil || activeState == nil || activeState.Destroyed || activeState.ActivationComplete {
 		return nil
 	}
-	out := make([]TacticalFireAction, 0, len(activeSpec.Weapons))
+	out := make([]TacticalWeaponActionAvailability, 0, len(activeSpec.Weapons))
 	for _, weaponSpec := range activeSpec.Weapons {
-		ready := weaponState(activeState, weaponSpec.Slot)
-		if ready == nil || !ready.Ready || !baselineTacticalFireSupported(weaponSpec) {
+		action := TacticalWeaponActionAvailability{
+			ShipID:       activeSpec.ShipID,
+			WeaponSlot:   weaponSpec.Slot,
+			WeaponID:     weaponSpec.WeaponID,
+			WeaponFamily: tacticalWeaponFamily(weaponSpec),
+		}
+		if !baselineTacticalFireSupported(weaponSpec) {
+			action.UnavailableReason = TacticalWeaponUnavailableConsumer
+			out = append(out, action)
 			continue
 		}
-		action := TacticalFireAction{ShipID: activeSpec.ShipID, WeaponSlot: weaponSpec.Slot, WeaponID: weaponSpec.WeaponID}
-		for _, targetSpec := range spec.Ships {
-			if targetSpec.EmpireID == activeSpec.EmpireID {
-				continue
-			}
-			targetState := r.shipState(targetSpec.ShipID)
-			if targetState == nil || targetState.Destroyed {
-				continue
-			}
-			rangeIndex := tacticalRangeIndex(activeState.X, activeState.Y, targetState.X, targetState.Y)
-			if rangeIndex < 0 || rangeIndex >= len(spec.Rules.BeamToHitRangeModifiers) {
-				continue
-			}
-			action.Targets = append(action.Targets, TacticalFireTarget{TargetShipID: targetSpec.ShipID, RangeIndex: rangeIndex})
-		}
-		if len(action.Targets) > 0 {
+		action.CommandKind = CommandFireBeam
+		ready := weaponState(activeState, weaponSpec.Slot)
+		if ready == nil || !ready.Ready {
+			action.UnavailableReason = TacticalWeaponUnavailableNotReady
 			out = append(out, action)
+			continue
 		}
+		targets := tacticalBeamTargets(spec, r, activeSpec, activeState)
+		if len(targets) == 0 {
+			action.UnavailableReason = TacticalWeaponUnavailableNoTargets
+			out = append(out, action)
+			continue
+		}
+		action.Available = true
+		action.Targets = targets
+		out = append(out, action)
+	}
+	return out
+}
+
+func legalFireActions(actions []TacticalWeaponActionAvailability) []TacticalFireAction {
+	out := make([]TacticalFireAction, 0, len(actions))
+	for _, action := range actions {
+		if !action.Available || action.CommandKind != CommandFireBeam {
+			continue
+		}
+		out = append(out, TacticalFireAction{
+			ShipID:     action.ShipID,
+			WeaponSlot: action.WeaponSlot,
+			WeaponID:   action.WeaponID,
+			Targets:    append([]TacticalFireTarget(nil), action.Targets...),
+		})
 	}
 	return out
 }

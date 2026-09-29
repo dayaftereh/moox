@@ -1,6 +1,6 @@
 # Planned Slice 17 - Military Ship Design + Tactical Combat Program
 
-Status: **active parent program; children 17.0-17.4 and follow-up 17.2A closed/accepted; Slice 17.5 Gates 1-2 complete / Gate 3 Checkpoints 1-3 complete / Checkpoint 4 ready; children 17.6-17.9 planned/not open**.
+Status: **active parent program; children 17.0-17.4 and follow-up 17.2A closed/accepted; Slice 17.5 Gates 1-2 complete / Gate 3 Checkpoints 1-4 complete / Checkpoint 5 ready; children 17.6-17.9 planned/not open**.
 
 Queue position: **current gameplay program after closed Slice 16**. Slice 18 is reserved downstream for Galaxy/Strategic Navigation fidelity and is not a prerequisite for Slice 17.
 

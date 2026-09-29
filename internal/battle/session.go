@@ -289,6 +289,7 @@ func (s *Session) PlayerView(seatID protocol.SeatID) (View, error) {
 		active := tacticalShipSpec(*view.Spec.Tactical, view.Tactical.State.ActiveShipID)
 		if active == nil || active.SeatID != seatID || view.Phase != PhaseActive {
 			view.Tactical.LegalMoves = nil
+			view.Tactical.WeaponActions = nil
 			view.Tactical.LegalFireActions = nil
 			view.Tactical.CanEndActivation = false
 		}
@@ -310,6 +311,7 @@ func (s *Session) View() View {
 		tactical := buildTacticalView(*s.spec.Tactical, *s.tactical)
 		if s.phase != PhaseActive {
 			tactical.LegalMoves = nil
+			tactical.WeaponActions = nil
 			tactical.LegalFireActions = nil
 			tactical.CanEndActivation = false
 			tactical.CanWaitActivation = false

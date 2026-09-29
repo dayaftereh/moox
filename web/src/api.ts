@@ -776,7 +776,7 @@ export type BattleSide = {
   ship_ids: number[]
   civilian_fleet_ids?: number[]
 }
-export type TacticalWeaponSpec = { slot: number; weapon_id: string; count: number; min_damage: number; max_damage: number }
+export type TacticalWeaponSpec = { slot: number; weapon_id: string; weapon_family: string; count: number; min_damage: number; max_damage: number }
 export type TacticalShipSpec = {
   ship_id: number; empire_id: number; seat_id: number; x: number; y: number; facing: number; turning_mode?: string
   hull_id: string; warp_drive_id: string; computer_id: string; armor_id: string
@@ -805,10 +805,14 @@ export type TacticalState = {
 export type TacticalMoveOption = { x: number; y: number; move_cost: number; resulting_facing: number; movement_remaining_after: number }
 export type TacticalFireTarget = { target_ship_id: number; range_index: number }
 export type TacticalFireAction = { ship_id: number; weapon_slot: number; weapon_id: string; targets: TacticalFireTarget[] }
+export type TacticalWeaponActionAvailability = {
+  ship_id: number; weapon_slot: number; weapon_id: string; weapon_family: string
+  command_kind?: string; available: boolean; unavailable_reason?: string; targets?: TacticalFireTarget[]
+}
 export type TacticalEvent = { sequence: number; kind: string; seat_id?: number; command_sequence?: number; data?: Record<string, unknown> }
 export type TacticalView = {
   state: TacticalState; events: TacticalEvent[]; ships: TacticalShipView[]
-  legal_moves?: TacticalMoveOption[]; legal_fire_actions?: TacticalFireAction[]; can_end_activation: boolean
+  legal_moves?: TacticalMoveOption[]; weapon_actions?: TacticalWeaponActionAvailability[]; legal_fire_actions?: TacticalFireAction[]; can_end_activation: boolean
   can_wait_activation?: boolean; wait_target_ship_ids?: number[]
 }
 
