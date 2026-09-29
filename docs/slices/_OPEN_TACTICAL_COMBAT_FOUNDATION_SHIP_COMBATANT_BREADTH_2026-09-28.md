@@ -1,6 +1,6 @@
 # OPEN Slice 17.5 - Tactical Combat Foundation / Ship Combatant Breadth
 Date opened: 2026-09-28
-Status: **Gates 1-2 complete; Gate 3 Checkpoints 1-4 complete; Checkpoint 5 ready / not started**
+Status: **Gates 1-3 complete; Gate 4 review ready / not started**
 Plan: docs/slices/PLANNED_17_5_TACTICAL_COMBAT_FOUNDATION_SHIP_COMBATANT_BREADTH.md
 
 ## Scope
@@ -47,6 +47,8 @@ Gate 3 may now implement the frozen replacement. It must not add complete Beam, 
 
 Plan: docs/research/SLICE_17_5_GATE3_IMPLEMENTATION_CHECKPOINT_PLAN_2026-09-29.md
 
+Gate 3 evidence: docs/research/SLICE_17_5_GATE3_IMPLEMENTATION_EVIDENCE_2026-09-29.md
+
 Gate 3 is split into five recoverable checkpoints:
 
 1. Tactical Ruleset and Ship Projection.
@@ -57,4 +59,4 @@ Gate 3 is split into five recoverable checkpoints:
 
 After each checkpoint: test, diff-check, dedicated commit, clean-tree verification, durable session checkpoint, report to the user, then stop until explicit continuation.
 
-Current resume point: **Checkpoint 5 ready / not started**. Checkpoints 1-4 are complete; verify clean HEAD before continuation.
+Current resume point: **Gate 4 review ready / not started**. Gate 3 Checkpoints 1-5 are complete; verify clean HEAD before continuation.
