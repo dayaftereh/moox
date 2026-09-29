@@ -1,6 +1,6 @@
 # OPEN Slice 17.5 - Tactical Combat Foundation / Ship Combatant Breadth
 Date opened: 2026-09-28
-Status: **Gates 1-2 complete; Gate 3 implementation ready / not started**
+Status: **Gates 1-2 complete; Gate 3 Checkpoint 1 ready / not started**
 Plan: docs/slices/PLANNED_17_5_TACTICAL_COMBAT_FOUNDATION_SHIP_COMBATANT_BREADTH.md
 
 ## Scope
@@ -42,3 +42,19 @@ Contract: docs/research/SLICE_17_5_GATE2_TACTICAL_FOUNDATION_CONTRACT_FREEZE_202
 Frozen: all six Hull durability rows; all six Armor multipliers; all five Computer Beam-Offense rows; all six Drive min/max matrices and the accepted concrete-design speed formula; no-Shield plus Class I/III/V/VII/X four-facing Shield capacity/block/recharge semantics; Fuel tactical neutrality; base Beam Defense from current combat speed; replacement semantics for both Slice-15.5 admission guards; generic per-slot action availability with explicit unsupported-action projection; shared RNG/damage/event/presentation authority; deterministic early/mid/late Combat Lab vectors; and compatibility boundaries for Slices 17.6-17.8.
 
 Gate 3 may now implement the frozen replacement. It must not add complete Beam, ordnance or fighter/combat-Special family behavior owned by Slices 17.6-17.8.
+
+## Gate 3 checkpoint execution
+
+Plan: docs/research/SLICE_17_5_GATE3_IMPLEMENTATION_CHECKPOINT_PLAN_2026-09-29.md
+
+Gate 3 is split into five recoverable checkpoints:
+
+1. Tactical Ruleset and Ship Projection.
+2. Broad Combatant Admission.
+3. Shields and Shared Damage Foundation.
+4. Generic Weapon Action Availability and UI Consumption.
+5. Integration, Regression and Gate 3 Evidence.
+
+After each checkpoint: test, diff-check, dedicated commit, clean-tree verification, durable session checkpoint, report to the user, then stop until explicit continuation.
+
+Current resume point: **Checkpoint 1 ready / not started**, base HEAD 4939a04.
