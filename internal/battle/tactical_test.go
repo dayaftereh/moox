@@ -50,14 +50,14 @@ func baselineTacticalBattleSpec() Spec {
 			Ships: []TacticalShipSpec{
 				{
 					ShipID: 100, EmpireID: 1, SeatID: 1, X: 10, Y: 10,
-					HullID: "frigate", WarpDriveID: "fusion_drive", ComputerID: "electronic_computer", ArmorID: "titanium_armor",
+					HullID: "frigate", WarpDriveID: "fusion_drive", ComputerID: "electronic_computer", ArmorID: "titanium_armor", FuelCellID: "standard_fuel_cells",
 					Weapons:            []TacticalWeaponSpec{{Slot: 0, WeaponID: "laser_cannon", Count: 1, MinDamage: 1, MaxDamage: 4}},
-					CurrentCombatSpeed: 22, BeamOffense: 25, BeamDefense: 0, ArmorMax: 4, StructureMax: 4,
+					MinimumCombatSpeed: 12, CurrentCombatSpeed: 22, BeamOffense: 25, BeamDefense: 110, ArmorMax: 4, StructureMax: 4,
 				},
 				{
 					ShipID: 200, EmpireID: 2, SeatID: 2, X: 11, Y: 10,
-					HullID: "frigate", WarpDriveID: "nuclear_drive", ComputerID: "electronic_computer", ArmorID: "titanium_armor",
-					CurrentCombatSpeed: 20, BeamOffense: 25, BeamDefense: 0, ArmorMax: 4, StructureMax: 4,
+					HullID: "frigate", WarpDriveID: "nuclear_drive", ComputerID: "electronic_computer", ArmorID: "titanium_armor", FuelCellID: "standard_fuel_cells",
+					MinimumCombatSpeed: 10, CurrentCombatSpeed: 20, BeamOffense: 25, BeamDefense: 100, ArmorMax: 4, StructureMax: 4,
 				},
 			},
 		},
@@ -321,7 +321,7 @@ func TestDeferredInternalSelectionFallsBackToAggregateStructure(t *testing.T) {
 		if raw > 95 {
 			effective = 100
 		} else {
-			effective += 25
+			effective += s.spec.Tactical.Ships[0].BeamOffense - s.spec.Tactical.Ships[1].BeamDefense
 			if effective > 100 {
 				effective = 100
 			}

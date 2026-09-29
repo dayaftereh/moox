@@ -360,10 +360,8 @@ func TestParallelTacticalBattlesKeepLocalEventsAndGlobalStableCompletionOrder(t 
 	}
 }
 
-func TestUnsupportedStrategicEncounterRemainsExplicitManualLifecycleBattle(t *testing.T) {
+func TestSlice175Checkpoint2ShieldedStrategicEncounterStartsTacticalBattle(t *testing.T) {
 	state, seats, fixture := makeTacticalStrategicFixture(t, 1)
-	// Give the defender a shield. This remains a structurally valid strategic Ship,
-	// but shields are still deliberately outside the current Tactical baseline.
 	for i := range state.Ships {
 		if state.Ships[i].ID == fixture.defenderShipIDs[0] {
 			state.Ships[i].Spec.ShieldID = "class_i_shield"
@@ -373,27 +371,27 @@ func TestUnsupportedStrategicEncounterRemainsExplicitManualLifecycleBattle(t *te
 		t.Fatal(err)
 	}
 	resolver := loadTacticalEconomyResolver(t)
-	s, err := NewGameSession("tactical-unsupported", state, seats)
+	s, err := NewGameSession("tactical-shielded", state, seats)
 	if err != nil {
 		t.Fatal(err)
 	}
-	submitStubTurn(t, s, "tactical-unsupported")
+	submitStubTurn(t, s, "tactical-shielded")
 	if err := s.ResolveStrategic(resolver); err != nil {
 		t.Fatal(err)
 	}
 	started, _ := s.ObserverView()
-	if len(started.Battles) != 1 || started.Battles[0].Spec.Tactical != nil || started.Battles[0].Spec.TacticalUnsupportedReason == "" {
-		t.Fatalf("unsupported encounter was not explicit: %+v", started.Battles)
+	if len(started.Battles) != 1 || started.Battles[0].Spec.Tactical == nil || started.Battles[0].Spec.TacticalUnsupportedReason != "" || started.Battles[0].Tactical == nil {
+		t.Fatalf("shielded legal encounter did not start Tactical: %+v", started.Battles)
 	}
-	fire, _ := battle.NewFireBeamCommand(1, battle.FireBeamPayload{ShipID: fixture.attackerShipIDs[0], TargetShipID: fixture.defenderShipIDs[0], WeaponSlot: 0})
-	if err := s.SubmitBattleCommand(started.Battles[0].Spec.ID, started.Battles[0].Spec.Attacker.SeatID, fire); err == nil {
-		t.Fatal("expected tactical command to explicit unsupported lifecycle battle to reject")
+	var defender *battle.TacticalShipSpec
+	for i := range started.Battles[0].Spec.Tactical.Ships {
+		ship := &started.Battles[0].Spec.Tactical.Ships[i]
+		if ship.ShipID == fixture.defenderShipIDs[0] {
+			defender = ship
+			break
+		}
 	}
-	if err := s.CompleteBattle(started.Battles[0].Spec.ID, battle.Result{WinnerSeat: started.Battles[0].Spec.Attacker.SeatID, Outcome: "external_tactical_result", DestroyedShipIDs: fixture.defenderShipIDs}); err != nil {
-		t.Fatalf("unsupported lifecycle battle rejected manual result: %v", err)
-	}
-	finished, _ := s.ObserverView()
-	if finished.Phase != PhasePostResolution || finished.Battles[0].Phase != battle.PhaseCompleted {
-		t.Fatalf("unsupported manual lifecycle did not finish: %+v", finished.Battles[0])
+	if defender == nil || defender.ShieldID != "class_i_shield" || defender.ShieldStrength != 1 || defender.ShieldArcMax != 5 {
+		t.Fatalf("shielded defender projection=%+v", defender)
 	}
 }

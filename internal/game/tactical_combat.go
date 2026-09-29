@@ -148,11 +148,11 @@ func tacticalMetadataForEncounterWithSpecials(state *core.GameState, encounter E
 			if ship.EmpireID != side.EmpireID {
 				return "", fmt.Errorf("encounter tactical Ship %d ownership differs from strategic side identity", shipID)
 			}
-			if reason := baselineCombatantUnsupportedReason(*ship, rules); reason != "" {
-				return reason, nil
+			if err := validateTacticalCombatant(*ship, rules, specialRules); err != nil {
+				return "", err
 			}
 			y := tacticalDeploymentY(len(side.ShipIDs), i)
-			projected, err := baselineTacticalShip(*ship, side.SeatID, x, y, facing, rules, specialRules)
+			projected, err := projectTacticalShip(*ship, side.SeatID, x, y, facing, rules, specialRules)
 			if err != nil {
 				return "", err
 			}
@@ -184,51 +184,74 @@ func tacticalDeploymentY(count, index int) int {
 	return 9 + index*2
 }
 
-func baselineCombatantUnsupportedReason(ship core.Ship, rules *ruleset.TacticalCombatFile) string {
-	if ship.Spec.HullID != rules.Frigate.HullID || ship.Spec.ComputerID != rules.Computer.ComputerID || ship.Spec.ArmorID != rules.Frigate.ArmorID || ship.Spec.ShieldID != "" || ship.Spec.FuelCellID != rules.Frigate.FuelCellID {
-		return "Slice 15.5 tactical combatant requires Frigate/Electronic/Titanium/no-shield/standard-fuel equipment"
-	}
-	if _, ok := tacticalDriveRule(rules, ship.Spec.WarpDriveID); !ok {
-		return fmt.Sprintf("Slice 15.5 tactical combatant drive %q is unsupported", ship.Spec.WarpDriveID)
+func validateTacticalCombatant(ship core.Ship, rules *ruleset.TacticalCombatFile, specialRules *ruleset.ShipSpecialsFile) error {
+	if _, err := tacticalFoundationForShip(ship, rules); err != nil {
+		return fmt.Errorf("tactical combatant ship %d: %w", ship.ID, err)
 	}
 	if len(ship.Spec.Weapons) > 8 {
-		return "tactical combatant supports at most eight weapon mounts"
+		return fmt.Errorf("tactical combatant ship %d has %d weapon mounts, maximum is 8", ship.ID, len(ship.Spec.Weapons))
 	}
 	previousSlot := -1
 	for i, weapon := range ship.Spec.Weapons {
 		if weapon.Slot < 0 || weapon.Slot > 7 || (i > 0 && weapon.Slot <= previousSlot) {
-			return "tactical combatant weapon slots must be unique, ascending and within 0..7"
+			return fmt.Errorf("tactical combatant ship %d weapon slots must be unique, ascending and within 0..7", ship.ID)
 		}
 		canonical, err := canonicalWeaponMount(weapon)
 		if err != nil {
-			return fmt.Sprintf("tactical combatant weapon slot %d is invalid: %v", weapon.Slot, err)
+			return fmt.Errorf("tactical combatant ship %d weapon slot %d: %w", ship.ID, weapon.Slot, err)
 		}
 		if canonical.Count <= 0 {
-			return "tactical combatant weapon count must be positive"
+			return fmt.Errorf("tactical combatant ship %d weapon slot %d count must be positive", ship.ID, weapon.Slot)
 		}
+		modifiers, err := canonicalWeaponModifierIDs(canonical.ModifierIDs)
+		if err != nil {
+			return fmt.Errorf("tactical combatant ship %d weapon slot %d modifiers: %w", ship.ID, weapon.Slot, err)
+		}
+		canonical.ModifierIDs = modifiers
 		weaponRule, ok := rules.WeaponByID(canonical.WeaponID)
 		if !ok {
-			return fmt.Sprintf("tactical combatant Beam %q is unsupported", canonical.WeaponID)
+			return fmt.Errorf("tactical combatant ship %d weapon %q is unknown", ship.ID, canonical.WeaponID)
 		}
-		if weaponRule.Kind != "beam" {
-			if weaponRule.TacticalSupport != "metadata_only" {
-				return fmt.Sprintf("tactical combatant ordnance %q has unsupported tactical mode %q", canonical.WeaponID, weaponRule.TacticalSupport)
+		if weaponRule.Kind == "beam" {
+			if mountBit := beamMountBit(canonical.MountType); mountBit != 0 && weaponRule.AllowedModifierMask&mountBit == 0 {
+				return fmt.Errorf("tactical combatant Beam %q does not allow mount %q", canonical.WeaponID, canonical.MountType)
 			}
-			previousSlot = weapon.Slot
-			continue
-		}
-		if mountBit := beamMountBit(canonical.MountType); mountBit != 0 && weaponRule.AllowedModifierMask&mountBit == 0 {
-			return fmt.Sprintf("tactical combatant Beam %q does not allow mount %q", canonical.WeaponID, canonical.MountType)
-		}
-		for _, modifierID := range canonical.ModifierIDs {
-			modifier, ok := beamModifierByID(rules.BeamModifiers, modifierID)
-			if !ok || modifier.Kind != "special" || weaponRule.AllowedModifierMask&modifier.Bit == 0 {
-				return fmt.Sprintf("tactical combatant Beam %q does not allow modifier %q", canonical.WeaponID, modifierID)
+			for _, modifierID := range canonical.ModifierIDs {
+				modifier, ok := beamModifierByID(rules.BeamModifiers, modifierID)
+				if !ok || modifier.Kind != "special" || weaponRule.AllowedModifierMask&modifier.Bit == 0 {
+					return fmt.Errorf("tactical combatant Beam %q does not allow modifier %q", canonical.WeaponID, modifierID)
+				}
 			}
+		} else if weaponRule.TacticalSupport != "metadata_only" {
+			return fmt.Errorf("tactical combatant later-family weapon %q has invalid tactical support %q", canonical.WeaponID, weaponRule.TacticalSupport)
 		}
 		previousSlot = weapon.Slot
 	}
-	return ""
+
+	if len(ship.Spec.Specials) > 8 {
+		return fmt.Errorf("tactical combatant ship %d has %d special mounts, maximum is 8", ship.ID, len(ship.Spec.Specials))
+	}
+	previousSpecialSlot := -1
+	seenSpecialIDs := make(map[string]struct{}, len(ship.Spec.Specials))
+	for i, special := range ship.Spec.Specials {
+		if special.Slot < 0 || special.Slot > 7 || (i > 0 && special.Slot <= previousSpecialSlot) {
+			return fmt.Errorf("tactical combatant ship %d special slots must be unique, ascending and within 0..7", ship.ID)
+		}
+		if special.SpecialID == "" {
+			return fmt.Errorf("tactical combatant ship %d special slot %d requires special_id", ship.ID, special.Slot)
+		}
+		if _, ok := seenSpecialIDs[special.SpecialID]; ok {
+			return fmt.Errorf("tactical combatant ship %d has duplicate special %q", ship.ID, special.SpecialID)
+		}
+		if specialRules != nil {
+			if _, ok := specialRules.ByID(special.SpecialID); !ok {
+				return fmt.Errorf("tactical combatant ship %d special %q is unknown", ship.ID, special.SpecialID)
+			}
+		}
+		seenSpecialIDs[special.SpecialID] = struct{}{}
+		previousSpecialSlot = special.Slot
+	}
+	return nil
 }
 
 type tacticalFoundationValues struct {
@@ -297,7 +320,7 @@ func tacticalFoundationForShip(ship core.Ship, rules *ruleset.TacticalCombatFile
 	}, nil
 }
 
-func baselineTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing int, rules *ruleset.TacticalCombatFile, specialRules *ruleset.ShipSpecialsFile) (battle.TacticalShipSpec, error) {
+func projectTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing int, rules *ruleset.TacticalCombatFile, specialRules *ruleset.ShipSpecialsFile) (battle.TacticalShipSpec, error) {
 	foundation, err := tacticalFoundationForShip(ship, rules)
 	if err != nil {
 		return battle.TacticalShipSpec{}, err
@@ -363,13 +386,4 @@ func baselineTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing i
 		}
 	}
 	return out, nil
-}
-
-func tacticalDriveRule(rules *ruleset.TacticalCombatFile, id string) (ruleset.TacticalDriveSpeedRule, bool) {
-	for _, drive := range rules.Drives {
-		if drive.DriveID == id {
-			return drive, true
-		}
-	}
-	return ruleset.TacticalDriveSpeedRule{}, false
 }

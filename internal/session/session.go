@@ -561,7 +561,7 @@ func validateEncounterTacticalSnapshot(state *core.GameState, encounter Encounte
 		if strategic == nil {
 			return fmt.Errorf("tactical Ship %d is absent from the prepared strategic state", tacticalShip.ShipID)
 		}
-		if strategic.EmpireID != tacticalShip.EmpireID || strategic.Spec.HullID != tacticalShip.HullID || strategic.Spec.WarpDriveID != tacticalShip.WarpDriveID || strategic.Spec.ComputerID != tacticalShip.ComputerID || strategic.Spec.ArmorID != tacticalShip.ArmorID || strategic.Spec.ShieldID != "" || strategic.Spec.FuelCellID != "standard_fuel_cells" {
+		if strategic.EmpireID != tacticalShip.EmpireID || strategic.Spec.HullID != tacticalShip.HullID || strategic.Spec.WarpDriveID != tacticalShip.WarpDriveID || strategic.Spec.ComputerID != tacticalShip.ComputerID || strategic.Spec.ArmorID != tacticalShip.ArmorID || strategic.Spec.ShieldID != tacticalShip.ShieldID || strategic.Spec.FuelCellID != tacticalShip.FuelCellID {
 			return fmt.Errorf("tactical Ship %d snapshot differs from prepared strategic Ship equipment", tacticalShip.ShipID)
 		}
 		if len(strategic.Spec.Weapons) != len(tacticalShip.Weapons) {

@@ -51,7 +51,7 @@ func TestSlice175Checkpoint1TacticalFoundationMatrix(t *testing.T) {
 						HullSpace: 100, SpaceUsed: 100,
 					},
 				}
-				full, err := baselineTacticalShip(ship, protocol.SeatID(1), 10, 10, 0, rules, nil)
+				full, err := projectTacticalShip(ship, protocol.SeatID(1), 10, 10, 0, rules, nil)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -73,7 +73,7 @@ func TestSlice175Checkpoint1TacticalFoundationMatrix(t *testing.T) {
 				}
 
 				ship.Spec.SpaceUsed = 0
-				empty, err := baselineTacticalShip(ship, protocol.SeatID(1), 10, 10, 0, rules, nil)
+				empty, err := projectTacticalShip(ship, protocol.SeatID(1), 10, 10, 0, rules, nil)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -99,19 +99,6 @@ func TestSlice175Checkpoint1UnusedSpaceSpeedUsesCeiling(t *testing.T) {
 	}
 	if got.MinimumCombatSpeed != 10 || got.CurrentCombatSpeed != 15 || got.BeamDefense != 75 {
 		t.Fatalf("partial design speed/defense=%d/%d/%d want=10/15/75", got.MinimumCombatSpeed, got.CurrentCombatSpeed, got.BeamDefense)
-	}
-}
-
-func TestSlice175Checkpoint1KeepsBaselineAdmissionGuard(t *testing.T) {
-	rules := tacticalMetadataRules(t)
-	ship := tacticalMetadataShip(101, 1, "ion_drive", false)
-	ship.Spec.HullID = "destroyer"
-	ship.Spec.ComputerID = "positronic_computer"
-	ship.Spec.ArmorID = "zortrium_armor"
-	ship.Spec.ShieldID = "class_iii_shield"
-	ship.Spec.FuelCellID = "iridium_fuel_cells"
-	if reason := baselineCombatantUnsupportedReason(ship, rules); reason == "" {
-		t.Fatal("Checkpoint 1 must not remove the Slice 15.5 baseline admission guard")
 	}
 }
 

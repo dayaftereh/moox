@@ -328,7 +328,7 @@ func validateTacticalSpec(spec Spec) error {
 				return fmt.Errorf("tactical ship %d visual_genome: %w", ship.ShipID, err)
 			}
 		}
-		if err := validateBaselineCombatant(ship); err != nil {
+		if err := validateTacticalCombatantSnapshot(ship); err != nil {
 			return err
 		}
 		byID[ship.ShipID] = ship
@@ -381,8 +381,11 @@ func tacticalWeaponModifierRank(id core.ShipWeaponModifierID) int {
 }
 
 func validateTacticalWeaponSnapshot(w TacticalWeaponSpec) error {
-	if w.WeaponID == "" || w.Count <= 0 || w.MinDamage <= 0 || w.MaxDamage < w.MinDamage {
+	if w.WeaponID == "" || w.Count <= 0 || w.MinDamage < 0 || w.MaxDamage < w.MinDamage {
 		return fmt.Errorf("invalid tactical weapon snapshot %q", w.WeaponID)
+	}
+	if w.MinDamage == 0 && (w.MaxDamage != 0 || w.TacticalSupport != "metadata_only") {
+		return fmt.Errorf("tactical weapon %q has invalid zero-damage metadata", w.WeaponID)
 	}
 	switch canonicalTacticalWeaponMountType(w.MountType) {
 	case core.ShipWeaponMountStandard, core.ShipWeaponMountHeavy, core.ShipWeaponMountPointDefense:
@@ -417,25 +420,175 @@ func baselineTacticalFireSupported(w TacticalWeaponSpec) bool {
 		w.MaxDamage == 4 &&
 		(w.TacticalSupport == "" || w.TacticalSupport == "baseline")
 }
-func validateBaselineCombatant(s TacticalShipSpec) error {
-	if s.HullID != "frigate" || s.ComputerID != "electronic_computer" || s.ArmorID != "titanium_armor" || s.ArmorMax != 4 || s.StructureMax != 4 {
-		return fmt.Errorf("tactical ship %d is outside the Slice 15.5 Frigate/Electronic/Titanium baseline", s.ShipID)
-	}
-	switch s.WarpDriveID {
-	case "fusion_drive":
-		if (s.MinimumCombatSpeed != 0 && s.MinimumCombatSpeed != 12) || s.CurrentCombatSpeed < 12 || s.CurrentCombatSpeed > 22 {
-			return fmt.Errorf("fusion tactical ship %d requires combat speed within 12..22", s.ShipID)
-		}
-	case "nuclear_drive":
-		if (s.MinimumCombatSpeed != 0 && s.MinimumCombatSpeed != 10) || s.CurrentCombatSpeed < 10 || s.CurrentCombatSpeed > 20 {
-			return fmt.Errorf("nuclear tactical ship %d requires combat speed within 10..20", s.ShipID)
-		}
+
+type tacticalHullValidationRule struct {
+	BaseArmor       int
+	Structure       int
+	BaseCombatSpeed int
+	ShieldFactor    int
+}
+
+func tacticalHullValidationRuleFor(id string) (tacticalHullValidationRule, bool) {
+	switch id {
+	case "frigate":
+		return tacticalHullValidationRule{BaseArmor: 4, Structure: 4, BaseCombatSpeed: 10, ShieldFactor: 1}, true
+	case "destroyer":
+		return tacticalHullValidationRule{BaseArmor: 10, Structure: 10, BaseCombatSpeed: 8, ShieldFactor: 2}, true
+	case "cruiser":
+		return tacticalHullValidationRule{BaseArmor: 30, Structure: 30, BaseCombatSpeed: 6, ShieldFactor: 3}, true
+	case "battleship":
+		return tacticalHullValidationRule{BaseArmor: 50, Structure: 50, BaseCombatSpeed: 5, ShieldFactor: 4}, true
+	case "titan":
+		return tacticalHullValidationRule{BaseArmor: 80, Structure: 80, BaseCombatSpeed: 4, ShieldFactor: 5}, true
+	case "doom_star":
+		return tacticalHullValidationRule{BaseArmor: 150, Structure: 150, BaseCombatSpeed: 3, ShieldFactor: 7}, true
 	default:
-		return fmt.Errorf("tactical ship %d drive %q is outside the Slice 15.5 baseline", s.ShipID, s.WarpDriveID)
+		return tacticalHullValidationRule{}, false
 	}
-	if s.BeamOffense != 25 || (s.BeamDefense != 0 && s.BeamDefense != s.CurrentCombatSpeed*5) {
-		return fmt.Errorf("tactical ship %d offense/defense is outside the Slice 15.5 baseline", s.ShipID)
+}
+
+func tacticalArmorBonusPercentFor(id string) (int, bool) {
+	switch id {
+	case "titanium_armor":
+		return 0, true
+	case "tritanium_armor":
+		return 100, true
+	case "zortrium_armor":
+		return 300, true
+	case "neutronium_armor":
+		return 500, true
+	case "adamantium_armor":
+		return 700, true
+	case "xentronium_armor":
+		return 900, true
+	default:
+		return 0, false
 	}
+}
+
+func tacticalDriveCombatSpeedBonusFor(id string) (int, bool) {
+	switch id {
+	case "nuclear_drive":
+		return 0, true
+	case "fusion_drive":
+		return 2, true
+	case "ion_drive":
+		return 4, true
+	case "anti_matter_drive":
+		return 6, true
+	case "hyper_drive":
+		return 8, true
+	case "interphased_drive":
+		return 10, true
+	default:
+		return 0, false
+	}
+}
+
+func tacticalComputerBeamOffenseFor(id string) (int, bool) {
+	switch id {
+	case "electronic_computer":
+		return 25, true
+	case "optronic_computer":
+		return 50, true
+	case "positronic_computer":
+		return 75, true
+	case "cybertronic_computer":
+		return 100, true
+	case "moleculartronic_computer":
+		return 125, true
+	default:
+		return 0, false
+	}
+}
+
+func tacticalShieldStrengthFor(id string) (int, bool) {
+	switch id {
+	case "":
+		return 0, true
+	case "class_i_shield":
+		return 1, true
+	case "class_iii_shield":
+		return 3, true
+	case "class_v_shield":
+		return 5, true
+	case "class_vii_shield":
+		return 7, true
+	case "class_x_shield":
+		return 10, true
+	default:
+		return 0, false
+	}
+}
+
+func tacticalFuelCellAccepted(id string) bool {
+	switch id {
+	case "standard_fuel_cells", "deuterium_fuel_cells", "iridium_fuel_cells", "urridium_fuel_cells", "thorium_fuel_cells":
+		return true
+	default:
+		return false
+	}
+}
+
+func validateTacticalSpecialSnapshot(s TacticalSpecialSpec) error {
+	if s.SpecialID == "" {
+		return fmt.Errorf("tactical special requires special_id")
+	}
+	switch s.TacticalSupport {
+	case "metadata_only", "strategic_only", "turning_mode":
+		return nil
+	default:
+		return fmt.Errorf("tactical special %q has invalid support mode %q", s.SpecialID, s.TacticalSupport)
+	}
+}
+
+func validateTacticalCombatantSnapshot(s TacticalShipSpec) error {
+	hull, ok := tacticalHullValidationRuleFor(s.HullID)
+	if !ok {
+		return fmt.Errorf("tactical ship %d has unknown hull %q", s.ShipID, s.HullID)
+	}
+	armorBonus, ok := tacticalArmorBonusPercentFor(s.ArmorID)
+	if !ok {
+		return fmt.Errorf("tactical ship %d has unknown armor %q", s.ShipID, s.ArmorID)
+	}
+	driveBonus, ok := tacticalDriveCombatSpeedBonusFor(s.WarpDriveID)
+	if !ok {
+		return fmt.Errorf("tactical ship %d has unknown drive %q", s.ShipID, s.WarpDriveID)
+	}
+	beamOffense, ok := tacticalComputerBeamOffenseFor(s.ComputerID)
+	if !ok {
+		return fmt.Errorf("tactical ship %d has unknown computer %q", s.ShipID, s.ComputerID)
+	}
+	shieldStrength, ok := tacticalShieldStrengthFor(s.ShieldID)
+	if !ok {
+		return fmt.Errorf("tactical ship %d has unknown shield %q", s.ShipID, s.ShieldID)
+	}
+	if !tacticalFuelCellAccepted(s.FuelCellID) {
+		return fmt.Errorf("tactical ship %d has unknown fuel cell %q", s.ShipID, s.FuelCellID)
+	}
+
+	minimumSpeed := hull.BaseCombatSpeed + driveBonus
+	if s.MinimumCombatSpeed != minimumSpeed {
+		return fmt.Errorf("tactical ship %d minimum combat speed %d does not match derived %d", s.ShipID, s.MinimumCombatSpeed, minimumSpeed)
+	}
+	if s.CurrentCombatSpeed < minimumSpeed || s.CurrentCombatSpeed > minimumSpeed+10 {
+		return fmt.Errorf("tactical ship %d current combat speed %d is outside derived %d..%d", s.ShipID, s.CurrentCombatSpeed, minimumSpeed, minimumSpeed+10)
+	}
+	if s.BeamOffense != beamOffense {
+		return fmt.Errorf("tactical ship %d Beam Offense %d does not match derived %d", s.ShipID, s.BeamOffense, beamOffense)
+	}
+	if s.BeamDefense != s.CurrentCombatSpeed*5 {
+		return fmt.Errorf("tactical ship %d Beam Defense %d does not match derived %d", s.ShipID, s.BeamDefense, s.CurrentCombatSpeed*5)
+	}
+	armorMax := hull.BaseArmor + (hull.BaseArmor*armorBonus)/100
+	if s.ArmorMax != armorMax || s.StructureMax != hull.Structure {
+		return fmt.Errorf("tactical ship %d durability %d/%d does not match derived %d/%d", s.ShipID, s.ArmorMax, s.StructureMax, armorMax, hull.Structure)
+	}
+	shieldArcMax := shieldStrength * 5 * hull.ShieldFactor
+	if s.ShieldStrength != shieldStrength || s.ShieldArcMax != shieldArcMax {
+		return fmt.Errorf("tactical ship %d shield strength/arc %d/%d does not match derived %d/%d", s.ShipID, s.ShieldStrength, s.ShieldArcMax, shieldStrength, shieldArcMax)
+	}
+
 	switch s.TurningMode {
 	case "", TacticalTurningNormal, TacticalTurningInertialStabilizer, TacticalTurningInertialNullifier:
 	default:
@@ -453,6 +606,24 @@ func validateBaselineCombatant(s TacticalShipSpec) error {
 			return fmt.Errorf("tactical ship %d weapon slot %d: %w", s.ShipID, w.Slot, err)
 		}
 		previousSlot = w.Slot
+	}
+	if len(s.Specials) > 8 {
+		return fmt.Errorf("tactical ship %d has %d special mounts, maximum is 8", s.ShipID, len(s.Specials))
+	}
+	previousSpecialSlot := -1
+	seenSpecialIDs := make(map[string]struct{}, len(s.Specials))
+	for i, special := range s.Specials {
+		if special.Slot < 0 || special.Slot > 7 || (i > 0 && special.Slot <= previousSpecialSlot) {
+			return fmt.Errorf("tactical ship %d special slots must be unique, ascending and within 0..7", s.ShipID)
+		}
+		if _, ok := seenSpecialIDs[special.SpecialID]; ok {
+			return fmt.Errorf("tactical ship %d has duplicate special %q", s.ShipID, special.SpecialID)
+		}
+		if err := validateTacticalSpecialSnapshot(special); err != nil {
+			return fmt.Errorf("tactical ship %d special slot %d: %w", s.ShipID, special.Slot, err)
+		}
+		seenSpecialIDs[special.SpecialID] = struct{}{}
+		previousSpecialSlot = special.Slot
 	}
 	return nil
 }

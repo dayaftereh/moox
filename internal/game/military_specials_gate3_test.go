@@ -168,7 +168,7 @@ func TestSlice174TacticalSpecialMetadataAndInertialTurning(t *testing.T) {
 		{Slot: 1, SpecialID: "inertial_stabilizer"},
 		{Slot: 2, SpecialID: "scout_lab"},
 	}
-	got, err := baselineTacticalShip(ship, protocol.SeatID(1), 10, 12, 0, rules.TacticalCombat, rules.ShipSpecials)
+	got, err := projectTacticalShip(ship, protocol.SeatID(1), 10, 12, 0, rules.TacticalCombat, rules.ShipSpecials)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -183,7 +183,7 @@ func TestSlice174TacticalSpecialMetadataAndInertialTurning(t *testing.T) {
 	}
 
 	ship.Spec.Specials = []core.ShipSpecialMount{{Slot: 0, SpecialID: "inertial_nullifier"}}
-	got, err = baselineTacticalShip(ship, protocol.SeatID(1), 10, 12, 0, rules.TacticalCombat, rules.ShipSpecials)
+	got, err = projectTacticalShip(ship, protocol.SeatID(1), 10, 12, 0, rules.TacticalCombat, rules.ShipSpecials)
 	if err != nil {
 		t.Fatal(err)
 	}
