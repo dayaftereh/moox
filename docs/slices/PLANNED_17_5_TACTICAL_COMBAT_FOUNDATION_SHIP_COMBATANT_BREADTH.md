@@ -1,6 +1,6 @@
 # Planned Slice 17.5 - Tactical Combat Foundation / Ship Combatant Breadth
 
-Status: **open; Gates 1-3 complete; Gate 4 review ready / not started**.
+Status: **closed/accepted; Gates 1-4 complete (2026-09-30)**.
 
 ## Objective
 
@@ -81,30 +81,32 @@ Execution plan: docs/research/SLICE_17_5_GATE3_IMPLEMENTATION_CHECKPOINT_PLAN_20
 
 Gate 3 is executed in five bounded checkpoints. After each checkpoint: focused QA, git diff --check, dedicated commit, clean-tree verification, durable ASH session checkpoint, user report, then stop until explicit continuation.
 
-Current checkpoint: **Gate 3 complete; Gate 4 review ready / not started**.
+Current checkpoint: **Gate 4 accepted/closed; Gates 1-4 complete**.
 
 ## Gate 3 - implementation
 
-- [ ] Replace the baseline-only Tactical combatant path with the frozen hull/mandatory-system rules.
-- [ ] Remove the exact Frigate/Electronic/Titanium/no-Shield/Standard-Fuel gate only after Tactical snapshots derive correct values.
-- [ ] Keep Fuel Cells admission-neutral unless the frozen evidence contract assigns a Tactical effect.
-- [ ] Generalize Tactical weapon/action projection so unsupported weapon families disable only their own actions rather than the entire encounter.
-- [ ] Normalize shared RNG/result/damage event plumbing required by all later weapon-family slices.
-- [ ] Extend Tactical UI selection/action rendering to consume generic server-projected weapon/action descriptors.
-- [ ] Preserve the accepted Laser baseline and existing movement/selection/retreat behavior.
-- [ ] Preserve save/load/replay/Observer behavior and deterministic event ordering.
-- [ ] Add all-hull/mandatory-system Tactical admission and derived-stat regressions.
+- [x] Replace the baseline-only Tactical combatant path with the frozen hull/mandatory-system rules.
+- [x] Remove the exact Frigate/Electronic/Titanium/no-Shield/Standard-Fuel gate only after Tactical snapshots derive correct values.
+- [x] Keep Fuel Cells admission-neutral unless the frozen evidence contract assigns a Tactical effect.
+- [x] Generalize Tactical weapon/action projection so unsupported weapon families disable only their own actions rather than the entire encounter.
+- [x] Normalize shared RNG/result/damage event plumbing required by all later weapon-family slices.
+- [x] Extend Tactical UI selection/action rendering to consume generic server-projected weapon/action descriptors.
+- [x] Preserve the accepted Laser baseline and existing movement/selection/retreat behavior.
+- [x] Preserve save/load/replay/Observer behavior and deterministic event ordering.
+- [x] Add all-hull/mandatory-system Tactical admission and derived-stat regressions.
 
 ## Gate 4 - QA + close
 
-- [ ] Every accepted 17.1 hull/mandatory-system representative enters Tactical with frozen durability/offense/defense/speed values.
-- [ ] The old Slice-15.5 Frigate/Electronic/Titanium/no-shield/standard-fuel rejection no longer blocks otherwise legal richer designs.
-- [ ] No hidden baseline substitution remains for Titan/Doom Star, later Armor, later Computers, Shields or Drives.
-- [ ] A ship carrying a not-yet-implemented weapon family can still enter Tactical; only that specific action is explicitly unavailable.
-- [ ] Existing Laser combat remains authoritative and regression-green.
-- [ ] Tactical UI consumes generic action/event data without adding client-side hit/damage formulas.
-- [ ] Generic event-driven presentation remains presentation-only.
-- [ ] Full Go/vet/web/browser/persistence/replay/reference-game QA passes.
+- [x] Every accepted 17.1 hull/mandatory-system representative enters Tactical with frozen durability/offense/defense/speed values.
+- [x] The old Slice-15.5 Frigate/Electronic/Titanium/no-shield/standard-fuel rejection no longer blocks otherwise legal richer designs.
+- [x] No hidden baseline substitution remains for Titan/Doom Star, later Armor, later Computers, Shields or Drives.
+- [x] A ship carrying a not-yet-implemented weapon family can still enter Tactical; only that specific action is explicitly unavailable.
+- [x] Existing Laser combat remains authoritative and regression-green.
+- [x] Tactical UI consumes generic action/event data without adding client-side hit/damage formulas.
+- [x] Generic event-driven presentation remains presentation-only.
+- [x] Full Go/vet/web/browser/persistence/replay/reference-game QA passes.
+
+Evidence: docs/research/SLICE_17_5_GATE4_ACCEPTANCE_CLOSE_2026-09-30.md - Gate 4 accepted/closed.
 
 ## Exit criterion
 

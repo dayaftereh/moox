@@ -672,3 +672,12 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Gate 1 re-audits the Slice-15.5 baseline-only Tactical combatant guard, all six hull durability baselines, mandatory-system Tactical effects, BattleSession RNG/damage/action/event authority, Laser-specific UI assumptions and representative early/mid/late combatant vectors.
 - The old Frigate/Electronic/Titanium/no-Shield/Standard-Fuel guard must not be deleted before Gate 2 freezes its verified replacement.
 - Complete Beam, ordnance and Fighter/Combat-Special Tactical behavior remains owned by Slices 17.6, 17.7 and 17.8.
+
+## 2026-09-30 - Slice 17.5 Tactical Combat Foundation accepted/closed
+
+- Gate 4 accepted after live 7171 All-Tech review proved broad late-game Ship Designer combatants now reach Tactical without the old Slice-15.5 Frigate/Electronic/Titanium/no-Shield/Standard-Fuel restriction.
+- The live review found and fixed one real foundation regression: metadata-only ordnance modifier `fast` was valid in Core/Designer but rejected by Battle tactical validation; `56dee99` aligns the Tactical modifier ordering and adds direct plus full ResolveStrategic -> Encounter -> Tactical regression coverage.
+- Galaxy Fleet/Ship detail popovers now expose persisted built-Ship Specials alongside Weapons for own-local, transit and foreign concrete Ships in `f29f0c7`; combat-Special behavior remains deferred to Slice 17.8.
+- Final Gate-4 QA passed focused Laser/Slice-17.5/replay/persistence regressions, full `go test ./... -count=1`, `go vet ./...`, production web build, fresh Reference-Lab browser smoke and diff checks.
+- Slice 17.5 is closed with Gates 1-4 complete; its `_OPEN_` marker is removed.
+- Slice 17.6 Tactical Beam Weapons & Beam Modifiers is the next prepared objective and remains planned/not open.
