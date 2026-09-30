@@ -1,6 +1,6 @@
 # OPEN Slice 17.6 - Tactical Beam Weapons & Beam Modifiers
 Date opened: 2026-09-30
-Status: **Gates 1-2 complete; Gate 3 implementation ready / not started**
+Status: **Gates 1-2 complete; Gate 3 checkpoint 1 shared Beam rules / Selector preview active**
 Plan: docs/slices/PLANNED_17_6_TACTICAL_BEAM_WEAPONS_MODIFIERS.md
 Evidence: docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md
 
