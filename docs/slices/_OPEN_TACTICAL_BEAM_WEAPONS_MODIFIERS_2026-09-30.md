@@ -2,6 +2,7 @@
 Date opened: 2026-09-30
 Status: **Gate 1 original Beam-effect audit active**
 Plan: docs/slices/PLANNED_17_6_TACTICAL_BEAM_WEAPONS_MODIFIERS.md
+Evidence: docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md
 
 ## Scope
 
@@ -29,4 +30,4 @@ Gate 1 must establish direct/frozen original evidence for:
 
 ## Gate 1 progress
 
-Opening checkpoint only. Direct original-evidence audit is ready to begin; no 17.6 production implementation has started.
+Checkpoint 1 is permanently recorded in docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md. Generic Beam hit/range/damage plus Heavy, Point Defense, Autofire, Continuous, No Range Dissipation, Shield Piercing, Armor Piercing and major innate Beam paths are directly evidenced. Gate 1 remains active for marine-loss, Enveloping overflow order, the Beam Point-Defense projectile-interceptor hook, Selector configured/effective preview, event/VFX fields and deterministic early/mid/late vectors. No 17.6 production implementation has started.
