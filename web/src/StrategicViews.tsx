@@ -1313,6 +1313,16 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                         </div>
                       ) : <small>{t('system.noWeapons')}</small>}
                     </section>
+                    <section className="galaxy-fleet-info-weapons">
+                      <strong>{t('shipbuilder.specialSystems')}</strong>
+                      {(selectedTransitInfoUnit.ship.spec.specials?.length ?? 0) > 0 ? (
+                        <div>
+                          {selectedTransitInfoUnit.ship.spec.specials?.map((special) => (
+                            <span key={'transit-fleet-info-special-' + special.slot}>{humanizeToken(special.special_id)}</span>
+                          ))}
+                        </div>
+                      ) : <small>{t('common.none')}</small>}
+                    </section>
                     <small className="galaxy-fleet-info-damage">{t('system.damageNotStrategic')}</small>
                   </div>
                 ) : (
@@ -1443,6 +1453,12 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                       {(selectedForeignInfoUnit.ship.spec.weapons?.length ?? 0) > 0 ? (
                         <div>{selectedForeignInfoUnit.ship.spec.weapons?.map((weapon) => <span key={'foreign-fleet-info-weapon-' + weapon.slot}>{weapon.count}× {humanizeToken(weapon.weapon_id)}</span>)}</div>
                       ) : <small>{t('system.noWeapons')}</small>}
+                    </section>
+                    <section className="galaxy-fleet-info-weapons">
+                      <strong>{t('shipbuilder.specialSystems')}</strong>
+                      {(selectedForeignInfoUnit.ship.spec.specials?.length ?? 0) > 0 ? (
+                        <div>{selectedForeignInfoUnit.ship.spec.specials?.map((special) => <span key={'foreign-fleet-info-special-' + special.slot}>{humanizeToken(special.special_id)}</span>)}</div>
+                      ) : <small>{t('common.none')}</small>}
                     </section>
                     <small className="galaxy-fleet-info-damage">{t('system.damageNotStrategic')}</small>
                   </div>
@@ -1642,6 +1658,16 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
                           ))}
                         </div>
                       ) : <small>{t('system.noWeapons')}</small>}
+                    </section>
+                    <section className="galaxy-fleet-info-weapons">
+                      <strong>{t('shipbuilder.specialSystems')}</strong>
+                      {(fleetInfoUnit.ship.spec.specials?.length ?? 0) > 0 ? (
+                        <div>
+                          {fleetInfoUnit.ship.spec.specials?.map((special) => (
+                            <span key={'fleet-info-special-' + special.slot}>{humanizeToken(special.special_id)}</span>
+                          ))}
+                        </div>
+                      ) : <small>{t('common.none')}</small>}
                     </section>
                     <small className="galaxy-fleet-info-damage">{t('system.damageNotStrategic')}</small>
                   </div>
