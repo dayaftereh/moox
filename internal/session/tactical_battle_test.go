@@ -395,3 +395,93 @@ func TestSlice175Checkpoint2ShieldedStrategicEncounterStartsTacticalBattle(t *te
 		t.Fatalf("shielded defender projection=%+v", defender)
 	}
 }
+
+func TestSlice175Gate4MetadataOnlyOrdnanceModifierReachesTacticalEncounter(t *testing.T) {
+	state, seats, fixture := makeTacticalStrategicFixture(t, 1)
+	attackerID := fixture.attackerShipIDs[0]
+	for i := range state.Ships {
+		if state.Ships[i].ID != attackerID {
+			continue
+		}
+		state.Ships[i].Name = "Mm"
+		state.Ships[i].Spec = core.ShipDesignSpec{
+			HullID:             "battleship",
+			StrategicPictureID: 24,
+			WarpDriveID:        "interphased_drive",
+			FTLSpeed:           7,
+			ComputerID:         "cybertronic_computer",
+			ArmorID:            "xentronium_armor",
+			ShieldID:           "class_v_shield",
+			FuelCellID:         "thorium_fuel_cells",
+			FuelRangeParsecs:   255,
+			HullBaseCostPP:     600,
+			HullSpace:          312,
+			SpaceUsed:          259,
+			BaseDesignCostPP:   1456,
+			ProductionCostPP:   1456,
+			Specials: []core.ShipSpecialMount{
+				{Slot: 0, SpecialID: "battle_pods"},
+			},
+			Weapons: []core.ShipWeaponMount{
+				{
+					Slot:        0,
+					WeaponID:    "mauler_device",
+					Count:       2,
+					MountType:   core.ShipWeaponMountHeavy,
+					FiringArcID: core.ShipWeaponFiringArc360,
+				},
+				{
+					Slot:        1,
+					WeaponID:    "pulson_missile",
+					Count:       3,
+					MountType:   core.ShipWeaponMountStandard,
+					ModifierIDs: []core.ShipWeaponModifierID{core.ShipWeaponModifierFast},
+					Ammo:        10,
+					FiringArcID: core.ShipWeaponFiringArc360,
+				},
+				{
+					Slot:        2,
+					WeaponID:    "fusion_beam",
+					Count:       3,
+					MountType:   core.ShipWeaponMountHeavy,
+					ModifierIDs: []core.ShipWeaponModifierID{core.ShipWeaponModifierEnveloping},
+					FiringArcID: core.ShipWeaponFiringArc360,
+				},
+			},
+		}
+		break
+	}
+	if err := state.Validate(); err != nil {
+		t.Fatal(err)
+	}
+
+	resolver := loadTacticalEconomyResolver(t)
+	s, err := NewGameSession("tactical-live-loadout", state, seats)
+	if err != nil {
+		t.Fatal(err)
+	}
+	submitStubTurn(t, s, "tactical-live-loadout")
+	if err := s.ResolveStrategic(resolver); err != nil {
+		t.Fatalf("strategic resolution rejected live All-Tech loadout: %v", err)
+	}
+
+	started, err := s.ObserverView()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if started.Phase != PhaseEncounters || len(started.Battles) != 1 {
+		t.Fatalf("live All-Tech loadout did not reach encounter boundary: phase=%q battles=%d", started.Phase, len(started.Battles))
+	}
+	view := started.Battles[0]
+	if view.Spec.Tactical == nil || view.Spec.TacticalUnsupportedReason != "" || view.Tactical == nil {
+		t.Fatalf("live All-Tech loadout did not start Tactical: %+v", view)
+	}
+	if len(view.Tactical.WeaponActions) != 3 {
+		t.Fatalf("live All-Tech weapon actions=%+v", view.Tactical.WeaponActions)
+	}
+	for _, action := range view.Tactical.WeaponActions {
+		if action.Available || action.UnavailableReason != battle.TacticalWeaponUnavailableConsumer || len(action.Targets) != 0 {
+			t.Fatalf("metadata-only weapon action must remain visible but unavailable: %+v", action)
+		}
+	}
+}

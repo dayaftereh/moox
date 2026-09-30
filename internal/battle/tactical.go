@@ -397,6 +397,18 @@ func tacticalWeaponModifierRank(id core.ShipWeaponModifierID) int {
 		return 4
 	case core.ShipWeaponModifierEnveloping:
 		return 5
+	case core.ShipWeaponModifierMIRV:
+		return 6
+	case core.ShipWeaponModifierECCM:
+		return 7
+	case core.ShipWeaponModifierArmored:
+		return 8
+	case core.ShipWeaponModifierFast:
+		return 9
+	case core.ShipWeaponModifierEmissionsGuidance:
+		return 10
+	case core.ShipWeaponModifierOverloaded:
+		return 11
 	default:
 		return -1
 	}
