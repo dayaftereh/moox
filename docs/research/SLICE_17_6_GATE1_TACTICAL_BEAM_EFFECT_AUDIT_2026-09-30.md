@@ -1,7 +1,7 @@
 # Slice 17.6 Gate 1 - Tactical Beam Effect Audit
 
 Date: 2026-09-30
-Status: **IN PROGRESS - checkpoint 1 evidence committed; Gate 1 not complete**
+Status: **COMPLETE - Gate 1 accepted; Gate 2 contract freeze ready / not started**
 
 Parent: Slice 17 - Military Ship Design + Tactical Combat
 Child: Slice 17.6 - Tactical Beam Weapons & Beam Modifiers
@@ -445,16 +445,221 @@ For multiple Beam identities and effects, Gate 2 must freeze replay-safe server 
 
 Exact redundancy between event data and immutable Tactical weapon snapshots is a Gate-2 decision, but React must not infer combat rules from weapon names.
 
-## 15. Open Gate-1 evidence items
+## 15. Final original interaction order
+
+The directly audited executable path freezes the following Gate-1 ordering for Gate-2 contract work.
+
+### 15.1 Battery / physical-unit order
+
+For a Beam battery, `Fire_Ship_` keeps a remaining physical weapon-unit count in its firing record. It requires that count to be positive, calls `Fire_Beam_Weapon_` once, decrements the remaining unit count, and can loop back for the next unit while the target remains valid.
+
+Therefore:
+
+- without Autofire: total Beam hit attempts = configured physical `Count`;
+- with Autofire: each physical unit performs the inner three-shot Autofire loop, so total hit attempts = `Count * 3`;
+- all three Autofire shots of one physical unit resolve before the next physical unit enters `Fire_Beam_Weapon_`.
+
+### 15.2 Per-physical-unit setup order
+
+For each physical unit:
+
+1. load weapon identity and configured modifier/mount flags;
+2. normalize innate weapon effects into the downstream effect flags where the executable does so:
+   - Particle Beam -> Shield Piercing;
+   - Plasma Cannon -> Enveloping;
+   - Death Ray -> Continuous;
+   - Mass Driver/Gauss/Disrupter -> No Range Dissipation path;
+   - Fusion/Plasma/Mauler innate `0x0002` -> doubled range To-Hit adjustment;
+   - Mauler -> Always-Hit override after the raw RNG draw;
+3. derive tactical range / facing;
+4. apply Heavy/Point-Defense range-index transformation;
+5. obtain range To-Hit adjustment, including Rangemaster dependency and innate doubled range-To-Hit where applicable;
+6. initialize damage percent at 100;
+7. add High Energy Focus dependency (+50);
+8. add normal range-damage modifier unless selected/innate No Range Dissipation suppresses it;
+9. apply Point Defense (-50 damage, +25 To-Hit) or Heavy (+50 damage);
+10. combine the resulting Beam damage percent with the player/ship-leader-derived percent from `0x21224`;
+11. scale min/max damage with original nearest-integer percentage rounding, clamp minimum to at least 1, clamp maximum >= minimum;
+12. form attacker Beam Offense - target Beam Defense;
+13. if Autofire, set inner shot count to 3 and apply -20 to the attack differential for every inner shot;
+14. if Continuous, add +25 to the attack differential.
+
+### 15.3 Per-shot order
+
+For every inner shot:
+
+1. consume `Random_(100)` for the hit roll;
+2. if Mauler innate Always Hit is present, overwrite the drawn raw roll with 100 **after the RNG call**; RNG is still consumed;
+3. apply the remaining accepted hit-roll dependencies / later Slice-17.8 special hooks;
+4. normalize raw roll >95 to effective 100; otherwise add the attack differential and cap at 100;
+5. compute threshold `min(95, 40 - rangeToHitModifier)`;
+6. miss if effective roll < threshold;
+7. on hit, interpolate damage between already-scaled min/max with the integer hit-quality formula;
+8. apply later target-side/Special hooks at their executable positions;
+9. dispatch either:
+   - one normal facing damage application; or
+   - Enveloping facings 0,1,2,3, each with a fresh copy of the same original hit damage;
+10. `Apply_Ship_Damage_` handles Shield Piercing / Hard Shields, Shield block/pool, Armor Piercing / Armor selection and lower-layer damage;
+11. resolve innate post-layer effects such as Graviton extra StructureDamage and Neutron/Death marine loss;
+12. consume any downstream damage-layer/internal-selection RNG in that shot before the next shot begins.
+
+This ordering is the Gate-1 basis for deterministic BattleSession RNG and event sequencing.
+
+### 15.4 Point Defense reaction order
+
+Beam Point Defense projectile interception is separate from normal activation fire:
+
+1. projectile/actor logic identifies an incoming actor;
+2. the Beam PD reaction temporarily exposes eligible PD slots;
+3. the reaction fires against actor coordinates;
+4. the normal weapon readiness bytes are restored afterward.
+
+Slice 17.7 owns the projectile lifecycle and calls into this Beam capability; normal activation readiness must not be consumed by the reactive PD handoff.
+
+## 16. Deterministic original/reference vectors
+
+These vectors use the directly audited executable rules and explicit raw hit inputs. They are intended as Gate-2/3 golden controls, not probability claims.
+
+Common assumptions unless stated:
+
+- player/ship-leader damage percent = 100;
+- no combat Specials other than innate weapon effects;
+- Beam Offense - Beam Defense = 0;
+- no Hard Shields / Heavy Armor / other deferred target-side Special dependency.
+
+### 16.1 Early-game rounding vector - Laser Cannon / Standard
+
+Input:
+
+- Laser base damage 1-4;
+- Standard mount;
+- effective range index 2;
+- range To-Hit = -10;
+- range damage = -10%;
+- combined damage percent = 90;
+- raw hit roll = 100.
+
+Expected:
+
+- scaled min = `max(1, (1*90+50)/100) = 1`;
+- scaled max = `(4*90+50)/100 = 4`;
+- threshold = 50;
+- effective roll = 100;
+- hit = true;
+- final Beam damage = 4.
+
+This is the canonical control for the current MOOX truncation parity gap: the existing baseline helper would derive 0-3 before interpolation.
+
+### 16.2 Mid-game vector - Particle Beam / Heavy
+
+Input:
+
+- Particle Beam base damage 10-30;
+- Heavy mount;
+- geometric range index 4 -> Heavy effective index 2;
+- effective range To-Hit = -10;
+- range damage = -10%;
+- Heavy damage adjustment = +50%;
+- combined damage percent = 140;
+- raw hit roll = 80;
+- innate natural Shield Piercing.
+
+Expected:
+
+- scaled min/max = 14-42;
+- threshold = 50;
+- effective roll = 80;
+- hit = true;
+- interpolated Beam damage = 31;
+- absent Hard Shields, the Shield layer is bypassed by innate Shield Piercing.
+
+### 16.3 Late-game vector - Mauler Device / Heavy
+
+Input:
+
+- Mauler base damage 100-100;
+- Heavy mount;
+- geometric range index 4 -> Heavy effective index 2;
+- normal range To-Hit at index 2 = -10, doubled by innate `0x0002` to -20;
+- range damage = -10%;
+- Heavy damage adjustment = +50%;
+- combined damage percent = 140;
+- one `Random_(100)` hit draw is still consumed;
+- innate Always Hit overwrites that raw result to 100.
+
+Expected:
+
+- scaled min/max = 140-140;
+- threshold = 60;
+- effective roll = 100;
+- hit = true;
+- Beam damage = 140.
+
+### 16.4 Point-Defense ship-target vector - Laser Cannon / PD
+
+Input:
+
+- Laser base damage 1-4;
+- Point Defense mount;
+- geometric range index 2 -> PD effective index 4;
+- range To-Hit at index 4 = -30 plus PD +25 -> -5;
+- range damage at index 4 = -30%;
+- PD damage adjustment = -50%;
+- combined damage percent = 20;
+- raw hit roll = 50.
+
+Expected:
+
+- scaled min/max = 1-1 after original rounding/minimum clamp;
+- threshold = 45;
+- effective roll = 50;
+- hit = true;
+- Beam damage = 1.
+
+This vector proves Point Defense remains a valid ship-target Beam mode in addition to its later projectile-reaction capability.
+
+### 16.5 Autofire physical-count vector
+
+Input:
+
+- one Beam battery with configured physical `Count = 2`;
+- Autofire modifier selected;
+- target remains valid for the complete battery.
+
+Expected:
+
+- outer physical-unit calls = 2;
+- inner Autofire shots per physical unit = 3;
+- total hit attempts = 6;
+- every hit attempt receives the Autofire -20 attack-differential adjustment;
+- ordering is unit1 shot1/shot2/shot3, then unit2 shot1/shot2/shot3;
+- each shot consumes its hit RNG before the next shot; hit-only downstream damage/internal RNG occurs before advancing to the next shot.
+
+## 17. Gate-1 close result
+
+Gate 1 original Beam-effect audit is complete.
+
+Direct/original evidence now covers:
+
+- all supported 13 Beam identities and innate effects required by 17.6;
+- Standard / Heavy / Point Defense;
+- all supported selectable Beam modifiers;
+- range, hit, damage, exact percentage rounding, physical count, Autofire shot order and RNG order;
+- Shield/Armor/Structure dependencies and explicit Slice-17.8 Special hooks;
+- Beam-side Point Defense handoff to Slice 17.7;
+- current server Weapon Selector configured-preview extension path;
+- current Beam event / VFX / readiness behavior;
+- deterministic early/mid/late plus PD/Autofire reference vectors.
+
+No production behavior was changed during Gate 1. Gate 2 may now freeze the implementation/API/event contract from this evidence.
+
+## 18. Open Gate-1 evidence items
 
 The following are intentionally **not yet frozen**:
 
-1. deterministic representative early/mid/late reference vectors;
-2. final interaction-order table for all accepted selected + innate effects, including physical weapon count x Autofire shot ordering.
+None. Gate 1 is complete; remaining work belongs to Gate 2 contract freeze.
 
-Gate 1 remains active until those items are closed or explicitly evidenced as downstream dependencies.
-
-## 16. Recovery point
+## 19. Recovery point
 
 Checkpoint-1 conclusions are safe to resume from without repeating the original audit:
 
@@ -478,4 +683,4 @@ Checkpoint-1 conclusions are safe to resume from without repeating the original 
 - Enveloping: four ordered facing applications 0..3, each reset to the same original Beam damage;
 - Point Defense projectile handoff: incoming-actor reservation plus reactive `Fire_Ship_` call against actor coordinates, with normal slot readiness restored afterward.
 
-Checkpoint 3 closes the Selector configured/effective-preview architecture audit, current Beam event/VFX/readiness audit and the original damage-scaling rounding boundary. A concrete current-runtime parity gap is documented: original percentage scaling rounds with +50 and clamps minimum damage to 1; current baseline helper truncates. Deterministic early/mid/late vectors and the final interaction-order table (including physical count x Autofire ordering) remain open. No production implementation is authorized by this checkpoint.
+Gate-1 final checkpoint closes physical Count x Autofire ordering, the final effect/RNG interaction order and deterministic early/mid/late plus PD/Autofire reference vectors. Gate 1 is complete. Gate 2 contract freeze is next; no production implementation is authorized yet.
