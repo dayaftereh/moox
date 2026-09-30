@@ -681,3 +681,10 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Final Gate-4 QA passed focused Laser/Slice-17.5/replay/persistence regressions, full `go test ./... -count=1`, `go vet ./...`, production web build, fresh Reference-Lab browser smoke and diff checks.
 - Slice 17.5 is closed with Gates 1-4 complete; its `_OPEN_` marker is removed.
 - Slice 17.6 Tactical Beam Weapons & Beam Modifiers is the next prepared objective and remains planned/not open.
+
+## 2026-09-30 - Slice 17.6 Tactical Beam Weapons & Beam Modifiers opened
+
+- Slice 17.5 is closed/accepted with Gates 1-4 complete and no prior Slice-17 child remains open.
+- Slice 17.6 opens as the sole active Slice-17 child in Gate 1 original Beam-effect audit.
+- Gate 1 re-audits direct original evidence for supported Beam identities, Standard/Heavy/Point Defense, modifier consumers, hit/range/damage/RNG ordering, Beam-side Point Defense hooks, Selector configured/effective preview and event/VFX authority.
+- No Beam implementation is allowed before Gate 2 freezes the contract; ordnance projectile behavior remains owned by Slice 17.7 and Fighters/combat Specials by Slice 17.8.

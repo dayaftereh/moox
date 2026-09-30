@@ -38,11 +38,11 @@ When a planned slice actually starts:
 
 Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1 always requires a fresh repository checkup and original-evidence review at the time work begins.
 
-### Current active / prepared queue - 2026-09-28
+### Current active / prepared queue - 2026-09-30
 
 Active:
 
-- **No Slice-17 child is currently open. Slice 17.5 - Tactical Combat Foundation / Ship Combatant Breadth is closed/accepted with Gates 1-4 complete.** Slices 17.0-17.5 and follow-up 17.2A are closed/accepted; Slice 17.6 is the next prepared objective and remains planned/not open; Slices 17.7-17.9 remain planned/not open.
+- **Slice 17.6 - Tactical Beam Weapons & Beam Modifiers is open in Gate 1 original Beam-effect audit.** Exactly one `_OPEN_` marker exists; Slices 17.0-17.5 and follow-up 17.2A remain closed/accepted, and Slices 17.7-17.9 remain planned/not open.
 
 Closed/parked Slice-15 state:
 
@@ -54,7 +54,7 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - active parent program; child order 17.0 -> 17.1 -> 17.2 -> 17.3 -> 17.2A -> 17.4 -> 17.5 -> 17.6 -> 17.7 -> 17.8 -> 17.9; 17.0-17.5 and follow-up 17.2A are closed/accepted at Gates 1-4; 17.6 is the next prepared objective and remains planned/not open; 17.7-17.9 remain planned/not open.
+1. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - active parent program; child order 17.0 -> 17.1 -> 17.2 -> 17.3 -> 17.2A -> 17.4 -> 17.5 -> 17.6 -> 17.7 -> 17.8 -> 17.9; 17.0-17.5 and follow-up 17.2A are closed/accepted at Gates 1-4; 17.6 is open in Gate 1 original Beam-effect audit; 17.7-17.9 remain planned/not open.
 2. PLANNED_18_GALAXY_GENERATION_STRATEGIC_NAVIGATION_FIDELITY.md - reserved Galaxy Generation / Strategic Navigation fidelity pass; planned, not open.
 3. PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md - dedicated authoritative Spy/intelligence mechanics; Slice 19 remains intentionally unassigned.
 4. PLANNED_21_COLONY_BUILDINGS_PLANET_EFFECTS_POLLUTION_FIDELITY.md - authoritative Colony/Building/Planet effects including Pollution.

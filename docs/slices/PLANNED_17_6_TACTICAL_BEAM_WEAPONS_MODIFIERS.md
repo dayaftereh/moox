@@ -1,6 +1,6 @@
 # Planned Slice 17.6 - Tactical Beam Weapons & Beam Modifiers
 
-Status: **planned; child of Slice 17; not open**.
+Status: **open; Gate 1 original Beam-effect audit active (2026-09-30)**.
 
 ## Objective
 
