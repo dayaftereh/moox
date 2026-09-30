@@ -30,4 +30,4 @@ Gate 1 must establish direct/frozen original evidence for:
 
 ## Gate 1 progress
 
-Checkpoint 2 is recorded in docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md. Original-evidence audit now closes supported Beam identity effects, Standard/Heavy/Point Defense ship-target semantics, selectable modifier effects, Neutron/Death marine-loss, Enveloping four-facing ordering and the Beam-PD reactive projectile handoff. Gate 1 remains active for Selector configured/effective preview, Beam event/VFX payloads, final interaction ordering and deterministic early/mid/late vectors. No 17.6 production implementation has started.
+Checkpoint 3 is recorded in docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md. Selector configured/effective preview and Beam event/VFX/readiness audits are closed, and exact original damage percentage rounding is documented together with the current truncation parity gap. Gate 1 remains active only for deterministic early/mid/late vectors and the final interaction-order table, including physical weapon-count x Autofire ordering. No 17.6 production implementation has started.

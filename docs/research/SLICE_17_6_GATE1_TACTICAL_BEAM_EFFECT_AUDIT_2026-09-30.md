@@ -319,18 +319,142 @@ Current Slice-17.5 foundation already provides:
 
 17.6 still needs the frozen generic Beam consumer that replaces the Laser-only execution gate without moving formulas into React.
 
-## 12. Open Gate-1 evidence items
+## 12. Exact original damage scaling / rounding and current parity gap
+
+Direct `Fire_Beam_Weapon_` code at `0x2967C..0x296F8` closes a rounding boundary that the original Slice-07 baseline fixture did not exercise.
+
+### 12.1 Original effective damage percent
+
+`Get_Beam_Weapon_Modifiers_` starts the Beam damage multiplier at 100 and applies Beam-side percentage adjustments, including:
+
+- High Energy Focus dependency: +50;
+- normal range damage dissipation unless selectable/innate No Range Dissipation suppresses it;
+- Point Defense: -50;
+- Heavy: +50.
+
+The firing path then reads a player-indexed percentage from original table `0x21224`. That table is initialized as `100 + best applicable ship-leader-derived bonus` for the player. Gate 1 does not invent a broader leader model; the executable dependency is recorded as a player/ship-leader-derived Beam damage percent.
+
+The combined percent used to scale the weapon table is additive:
+
+`combinedDamagePercent = beamDamagePercent + (playerLeaderPercent - 100)`
+
+### 12.2 Original min/max rounding
+
+For positive supported Beam values the executable scales the configured base min/max with nearest-integer percentage rounding:
+
+`scaled = (base * combinedDamagePercent + 50) / 100`
+
+Then:
+
+- scaled minimum is clamped to **at least 1**;
+- scaled maximum is clamped to be **at least the scaled minimum**;
+- only after those integer bounds are fixed does hit quality interpolate between min and max.
+
+The later interpolation remains:
+
+`damage = min + ((effectiveRoll - threshold) * (max - min + 1)) / (100 - threshold)`
+
+with integer truncation at that division.
+
+### 12.3 Current MOOX parity gap
+
+Current `internal/battle/tactical.go::beamDamage` computes:
+
+- `weapon.MinDamage * multiplier / 100`;
+- `weapon.MaxDamage * multiplier / 100`;
+
+without the original `+50` rounding and without the original minimum-damage clamp to 1. It also currently receives only the baseline range modifier because Slice 17.6 has not implemented Heavy/PD/HEF/leader-effective damage yet.
+
+This is a **known Gate-1 parity gap**, not an authorization to patch production code before Gate 2 freezes the shared Beam calculator.
+
+A concrete early-game edge case proves why the boundary matters: Laser Cannon base 1-4 at a -10% damage range band scales in the original to **1-4** (0.9 rounds/clamps to 1; 3.6 rounds to 4), while the current truncating helper would derive **0-3**.
+
+## 13. Weapon Selector configured/effective preview audit
+
+The current design preview already provides the correct server-owned transport path.
+
+`MilitaryDesignWeaponRowPreview` currently returns, per concrete candidate row:
+
+- slot;
+- `weapon_id`;
+- count;
+- mount type;
+- modifier IDs;
+- ammo;
+- firing arc;
+- miniaturization level;
+- unit/row Space;
+- unit/row PP cost.
+
+The row is built from the same authoritative server quote that validates/canonicalizes the candidate mount. `WeaponSelectorDialog` requests `previewMilitaryDesign` for the concrete candidate configuration rather than calculating Space/PP locally.
+
+Therefore Gate 2 should extend this existing row/quote path with **server-derived Tactical configured/effective Beam fields**. It must not add a second React formula implementation.
+
+The required architectural shape is one shared server-side Beam-effect derivation used by:
+
+1. Designer/Weapon Selector preview for configured/effective values;
+2. Tactical/BattleSession resolution for the same configured weapon snapshot;
+3. Combat/Designer Lab golden vectors.
+
+The exact public field names and which values are configuration-static versus runtime/range/target-dependent remain a Gate-2 contract decision.
+
+## 14. Beam events, readiness and current presentation audit
+
+### 14.1 Current server events
+
+The existing Laser vertical slice already emits one `beam_fired` event per resolved physical shot containing:
+
+- source ship ID;
+- target ship ID;
+- weapon slot;
+- shot index / shot count;
+- range index;
+- raw and effective hit roll;
+- threshold;
+- hit flag;
+- damage.
+
+For hits, `battle_damage_applied` additionally carries the damage-layer result including Shield arc/current values, Armor/Structure before/after, block/absorption/overflow and the damage-selection roll.
+
+For multi-shot baseline mounts, `beam_volley_resolved` aggregates ship/target/slot, shot count, hit count and total damage.
+
+Weapon readiness is consumed **after the full current mount loop**, not after each individual `beam_fired` event.
+
+### 14.2 Current UI behavior
+
+`TacticalBattlefield` consumes only authoritative events:
+
+- a single-shot `beam_fired` may create a beam animation;
+- when shot count is greater than one, per-shot beam animations are suppressed and `beam_volley_resolved` drives one grouped presentation;
+- damage layers are derived from matching `battle_damage_applied` events;
+- animation lifetime is a browser timer and never gates BattleSession progression.
+
+This is already the correct authority split for 17.6.
+
+### 14.3 Event identity gap for 17.6
+
+Current `beam_fired` / `beam_volley_resolved` payloads identify the slot but do **not** carry Beam identity or configured/effective effect identity. That was sufficient while every executable Beam was Laser.
+
+For multiple Beam identities and effects, Gate 2 must freeze replay-safe server event/snapshot identity sufficient to distinguish at least:
+
+- `weapon_id`;
+- configured mount;
+- configured modifiers / innate effects as required for presentation;
+- grouped versus physical-shot semantics;
+- Enveloping/per-facing damage results without client recomputation.
+
+Exact redundancy between event data and immutable Tactical weapon snapshots is a Gate-2 decision, but React must not infer combat rules from weapon names.
+
+## 15. Open Gate-1 evidence items
 
 The following are intentionally **not yet frozen**:
 
-1. the current server Weapon Selector preview/API shape and the minimum shared configured/effective Beam-stat model;
-2. the existing Beam fire/damage event payload versus fields needed for misses, Autofire/grouped shots, Beam identity and per-facing effects;
-3. deterministic representative early/mid/late reference vectors;
-4. final interaction-order table for all accepted selected + innate effects.
+1. deterministic representative early/mid/late reference vectors;
+2. final interaction-order table for all accepted selected + innate effects, including physical weapon count x Autofire shot ordering.
 
 Gate 1 remains active until those items are closed or explicitly evidenced as downstream dependencies.
 
-## 13. Recovery point
+## 16. Recovery point
 
 Checkpoint-1 conclusions are safe to resume from without repeating the original audit:
 
@@ -354,4 +478,4 @@ Checkpoint-1 conclusions are safe to resume from without repeating the original 
 - Enveloping: four ordered facing applications 0..3, each reset to the same original Beam damage;
 - Point Defense projectile handoff: incoming-actor reservation plus reactive `Fire_Ship_` call against actor coordinates, with normal slot readiness restored afterward.
 
-Checkpoint 2 closes the marine-loss, Enveloping-order and Beam-PD handoff items. Selector preview, Beam event/VFX payloads, final interaction ordering and deterministic vectors remain open. No production implementation is authorized by this checkpoint.
+Checkpoint 3 closes the Selector configured/effective-preview architecture audit, current Beam event/VFX/readiness audit and the original damage-scaling rounding boundary. A concrete current-runtime parity gap is documented: original percentage scaling rounds with +50 and clamps minimum damage to 1; current baseline helper truncates. Deterministic early/mid/late vectors and the final interaction-order table (including physical count x Autofire ordering) remain open. No production implementation is authorized by this checkpoint.
