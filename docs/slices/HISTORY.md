@@ -688,3 +688,12 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Slice 17.6 opens as the sole active Slice-17 child in Gate 1 original Beam-effect audit.
 - Gate 1 re-audits direct original evidence for supported Beam identities, Standard/Heavy/Point Defense, modifier consumers, hit/range/damage/RNG ordering, Beam-side Point Defense hooks, Selector configured/effective preview and event/VFX authority.
 - No Beam implementation is allowed before Gate 2 freezes the contract; ordnance projectile behavior remains owned by Slice 17.7 and Fighters/combat Specials by Slice 17.8.
+
+## 2026-09-30 - Slice 17.6 Gate 2 Tactical Beam contract frozen
+
+- Gate 1 original Beam-effect audit is complete in `docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md`.
+- Gate 2 freezes the full 13-Beam executable matrix, Standard/Heavy/Point Defense semantics, selected/innate modifier ordering, original percentage rounding, physical Count x Autofire ordering, server RNG/readiness authority and firing-arc legality.
+- One shared server-owned Beam derivation must feed Weapon Selector configured preview, BattleSession resolution and deterministic reference tests; React receives no Beam combat formulas.
+- Minimal Tactical MarineMax/MarineCurrent state is frozen for Neutron Blaster/Death Ray using original hull values 5/8/12/20/30/50; Troop Pods may be consumed only as a passive x2 MarineMax input while active boarding/Special behavior remains Slice 17.8.
+- Beam-side reactive Point Defense is frozen as a 17.6 capability with normal readiness restored after reaction; projectile lifecycle/interception timing remains Slice 17.7.
+- Gate 3 implementation is released against `docs/research/SLICE_17_6_GATE2_TACTICAL_BEAM_CONTRACT_FREEZE_2026-09-30.md`; no production Beam implementation was part of Gate 2.

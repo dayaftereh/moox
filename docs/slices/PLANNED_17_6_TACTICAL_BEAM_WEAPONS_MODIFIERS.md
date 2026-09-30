@@ -1,6 +1,6 @@
 # Planned Slice 17.6 - Tactical Beam Weapons & Beam Modifiers
 
-Status: **open; Gate 1 original Beam-effect audit complete; Gate 2 contract freeze ready / not started (2026-09-30)**.
+Status: **open; Gates 1-2 complete; Gate 3 implementation ready / not started (2026-09-30)**.
 
 ## Objective
 
@@ -65,17 +65,19 @@ The Weapon Selector must stop treating a static catalog damage badge as the comp
 - [x] Audit existing `beam_fired`/damage events and current Laser animation/readiness behavior.
 - [x] Produce deterministic original/reference vectors for representative early-, mid- and late-game Beams.
 
+Evidence: docs/research/SLICE_17_6_GATE2_TACTICAL_BEAM_CONTRACT_FREEZE_2026-09-30.md - Gate 2 frozen/complete.
+
 ## Gate 2 - Tactical Beam contract freeze
 
-- [ ] Freeze the exact supported Tactical Beam effect matrix.
-- [ ] Freeze Standard / Heavy / Point Defense semantics and incompatibilities.
-- [ ] Freeze every supported modifier's rule, interaction order and rounding behavior.
-- [ ] Freeze hit-roll, range, damage-roll and readiness/shot-consumption authority.
-- [ ] Freeze Beam-side Point Defense interceptor hooks consumed later by 17.7.
-- [ ] Freeze base-damage versus configured/effective-damage terminology and Selector preview fields.
-- [ ] Freeze server API/snapshot/event fields required by Tactical, replay and Weapon Selector preview.
-- [ ] Freeze Beam event/VFX presentation semantics without making timing authoritative.
-- [ ] Freeze deterministic Combat/Designer Lab vectors proving Selector/Tactical parity.
+- [x] Freeze the exact supported Tactical Beam effect matrix.
+- [x] Freeze Standard / Heavy / Point Defense semantics and incompatibilities.
+- [x] Freeze every supported modifier's rule, interaction order and rounding behavior.
+- [x] Freeze hit-roll, range, damage-roll and readiness/shot-consumption authority.
+- [x] Freeze Beam-side Point Defense interceptor hooks consumed later by 17.7.
+- [x] Freeze base-damage versus configured/effective-damage terminology and Selector preview fields.
+- [x] Freeze server API/snapshot/event fields required by Tactical, replay and Weapon Selector preview.
+- [x] Freeze Beam event/VFX presentation semantics without making timing authoritative.
+- [x] Freeze deterministic Combat/Designer Lab vectors proving Selector/Tactical parity.
 
 ## Gate 3 - implementation
 

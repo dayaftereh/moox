@@ -1,6 +1,6 @@
 # OPEN Slice 17.6 - Tactical Beam Weapons & Beam Modifiers
 Date opened: 2026-09-30
-Status: **Gate 1 complete; Gate 2 Tactical Beam contract freeze ready / not started**
+Status: **Gates 1-2 complete; Gate 3 implementation ready / not started**
 Plan: docs/slices/PLANNED_17_6_TACTICAL_BEAM_WEAPONS_MODIFIERS.md
 Evidence: docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md
 
@@ -30,4 +30,4 @@ Gate 1 must establish direct/frozen original evidence for:
 
 ## Gate 1 progress
 
-Gate 1 is complete in docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md. The final evidence closes physical Count x Autofire ordering, exact effect/RNG order and deterministic early/mid/late plus PD/Autofire vectors. Gate 2 Tactical Beam contract freeze is ready / not started. No 17.6 production implementation has started.
+Gate 1 is complete in docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md. Gate 2 is frozen/complete in docs/research/SLICE_17_6_GATE2_TACTICAL_BEAM_CONTRACT_FREEZE_2026-09-30.md, including the shared Beam calculator/preview contract, exact rounding/RNG/readiness/events, minimal Marine state, passive Troop Pods marine-capacity dependency, and the 17.7 Point-Defense handoff. Gate 3 implementation is ready / not started.
