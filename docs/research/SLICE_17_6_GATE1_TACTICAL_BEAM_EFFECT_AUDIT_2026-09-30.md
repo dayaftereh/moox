@@ -171,7 +171,7 @@ Those Special behaviors remain owned by Slice 17.8; the Beam API dependency must
 
 `Fire_Beam_Weapon_` enters the four-facing damage-application path when Enveloping is selected. Plasma Cannon's innate Enveloping flag normalizes into this same path.
 
-The exact per-facing mutable-damage reset/overflow ordering is still being audited and is **not frozen yet**.
+Direct code at `0x29829..0x2989A` closes the ordering: the loop iterates facing indices **0, 1, 2, 3**. Before every `Apply_Ship_Damage_` call it copies the same original post-hit damage value into a fresh local mutable damage cell. Therefore each facing receives an **independent full application of the original Beam damage**, rather than carrying residual damage from the previous facing. Return/status flags are OR-aggregated, while the loop itself is not terminated by an earlier-facing hit.
 
 ## 5. Innate Beam-effect flags directly extracted
 
@@ -245,14 +245,15 @@ Operationally, a surviving target receives one additional full current-damage am
 
 ### 7.3 Neutron Blaster / Death Ray - innate `0x0010`
 
-The executable exposes the marine-kill hook:
+The executable closes the marine-kill hook exactly:
 
 - Damper Field suppresses the hook;
-- otherwise the path calls `0x266AF` with approximately `damage / 5`.
+- the current mutable post-Shield damage is divided by **5** with signed integer division / truncation toward zero;
+- that quotient is passed to original routine `0x266AF`;
+- `0x266AF` subtracts the amount from tactical-ship byte field `+0xAF`, saturating at zero rather than underflowing;
+- a `0xFF` value at `+0xAF` is treated as a sentinel and skips this loss path.
 
-The exact target field and marine-loss calculation in `0x266AF` are still open and must be closed before Gate 1 completes.
-
-Death Ray combines this hook with its innate Continuous effect.
+The executable context identifies `+0xAF` as the crew/marine-count field used by this effect; Gate 1 records the offset explicitly rather than inventing a broader crew model. Death Ray combines this hook with its innate Continuous effect.
 
 ## 8. Supported Beam range legality
 
@@ -262,7 +263,25 @@ For these 13 IDs the audited Beam case adds no weapon-specific hard maximum-dist
 
 The special hard-distance exceptions observed in this function belong to other weapon IDs, not this 13-Beam set.
 
-## 9. Combat-Special dependencies exposed by the original Beam path
+## 9. Beam Point Defense projectile handoff
+
+Direct original code now closes the Beam-side interceptor contract required by Slice 17.7.
+
+### 9.1 Incoming-actor reservation
+
+Original routine `0x195D0` scans up to 300 Tactical actor records at global base `0x1AB14` with stride `0x1A`. For a candidate ship it detects active actors whose recorded target ship matches that ship and whose origin ship differs. The Beam AI path at `0x19B9E` checks Point Defense mount bit `0x0004`; when an incoming hostile actor exists, that PD mount is withheld from ordinary ship-target firing.
+
+### 9.2 Reactive interceptor firing
+
+Original function beginning at `0x26C9C` receives a ship plus one active `0x1A` Tactical actor index. It snapshots all eight weapon-slot readiness bytes, temporarily masks the slots, then evaluates candidate weapons. For Beam weapon type `0`, Point Defense bit `0x0004` explicitly enters the reactive-fire path. The function compares the actor coordinates against the defending ship position and calls `Fire_Ship_` using the actor X/Y coordinates and a distinct target-mode flag of `1`.
+
+After the reaction pass, the original readiness bytes for all eight weapon slots are restored exactly. Therefore Beam Point Defense interception is a **reactive capability separate from ordinary activation readiness consumption**.
+
+### 9.3 Slice boundary
+
+Slice 17.6 must freeze and later expose a server-authoritative Beam-PD capability sufficient for a projectile actor to request an interception reaction, including the configured Beam identity/mount/modifiers and the fact that the reaction does not consume normal activation readiness. Slice 17.7 still owns projectile creation, flight, target locks, interception timing/eligibility, projectile durability/evasion, interception result, impact and projectile events. No projectile runtime belongs in Core ShipDesignSpec.
+
+## 10. Combat-Special dependencies exposed by the original Beam path
 
 The executable Beam path references several Special identities, including:
 
@@ -285,7 +304,7 @@ Examples already directly observed:
 
 These are **dependencies**, not a claim that Slice 17.6 owns complete combat-Special implementation. Slice 17.8 retains the behavioral consumer scope; Gate 2 must freeze explicit Beam-side hooks so the boundaries compose later.
 
-## 10. Current MOOX parity / gaps
+## 11. Current MOOX parity / gaps
 
 Current Slice-17.5 foundation already provides:
 
@@ -300,21 +319,18 @@ Current Slice-17.5 foundation already provides:
 
 17.6 still needs the frozen generic Beam consumer that replaces the Laser-only execution gate without moving formulas into React.
 
-## 11. Open Gate-1 evidence items
+## 12. Open Gate-1 evidence items
 
 The following are intentionally **not yet frozen**:
 
-1. exact marine-loss behavior inside original function `0x266AF`;
-2. exact Enveloping four-facing mutable-damage/overflow ordering;
-3. the Beam Point Defense -> missile/projectile interceptor hook consumed later by Slice 17.7;
-4. the current server Weapon Selector preview/API shape and the minimum shared configured/effective Beam-stat model;
-5. the existing Beam fire/damage event payload versus fields needed for misses, Autofire/grouped shots, Beam identity and per-facing effects;
-6. deterministic representative early/mid/late reference vectors;
-7. final interaction-order table for all accepted selected + innate effects.
+1. the current server Weapon Selector preview/API shape and the minimum shared configured/effective Beam-stat model;
+2. the existing Beam fire/damage event payload versus fields needed for misses, Autofire/grouped shots, Beam identity and per-facing effects;
+3. deterministic representative early/mid/late reference vectors;
+4. final interaction-order table for all accepted selected + innate effects.
 
 Gate 1 remains active until those items are closed or explicitly evidenced as downstream dependencies.
 
-## 12. Recovery point
+## 13. Recovery point
 
 Checkpoint-1 conclusions are safe to resume from without repeating the original audit:
 
@@ -333,6 +349,9 @@ Checkpoint-1 conclusions are safe to resume from without repeating the original 
 - Ion -> Armor bypass + quarter damage versus monster/Antaran band;
 - Graviton -> extra StructureDamage;
 - Fusion/Plasma/Mauler `0x0002` -> doubled range To-Hit adjustment;
-- supported 13-Beam family: no additional per-weapon hard max-range gate in `Weapon_In_Range_`.
+- supported 13-Beam family: no additional per-weapon hard max-range gate in `Weapon_In_Range_`;
+- Neutron/Death marine effect: post-Shield damage / 5, saturating loss at `ship+0xAF`, suppressed by Damper Field;
+- Enveloping: four ordered facing applications 0..3, each reset to the same original Beam damage;
+- Point Defense projectile handoff: incoming-actor reservation plus reactive `Fire_Ship_` call against actor coordinates, with normal slot readiness restored afterward.
 
-No production implementation is authorized by this checkpoint.
+Checkpoint 2 closes the marine-loss, Enveloping-order and Beam-PD handoff items. Selector preview, Beam event/VFX payloads, final interaction ordering and deterministic vectors remain open. No production implementation is authorized by this checkpoint.

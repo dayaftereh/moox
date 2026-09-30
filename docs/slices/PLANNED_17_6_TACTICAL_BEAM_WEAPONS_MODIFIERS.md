@@ -56,11 +56,11 @@ The Weapon Selector must stop treating a static catalog damage badge as the comp
 
 ## Gate 1 - original Beam-effect audit
 
-- [ ] Re-audit direct original evidence for every supported Beam identity's Tactical range/hit/damage behavior.
-- [ ] Re-audit Standard / Heavy / Point Defense behavior and incompatibilities.
-- [ ] Re-audit each supported 17.2 Beam modifier's exact Tactical effect and legal compatibility.
+- [x] Re-audit direct original evidence for every supported Beam identity's Tactical range/hit/damage behavior.
+- [x] Re-audit Standard / Heavy / Point Defense behavior and incompatibilities.
+- [x] Re-audit each supported 17.2 Beam modifier's exact Tactical effect and legal compatibility.
 - [ ] Resolve hit-roll inputs, distance/range effects, damage rolls, shot counts, defense interaction and exact rounding/order boundaries.
-- [ ] Audit Beam-side Point Defense semantics and the handoff required for 17.7 projectile interception.
+- [x] Audit Beam-side Point Defense semantics and the handoff required for 17.7 projectile interception.
 - [ ] Audit current Weapon Selector preview API/model for one server-owned effective-stat path.
 - [ ] Audit existing `beam_fired`/damage events and current Laser animation/readiness behavior.
 - [ ] Produce deterministic original/reference vectors for representative early-, mid- and late-game Beams.
