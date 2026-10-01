@@ -5101,11 +5101,13 @@ button.galaxy-node-marker-player-fleet.is-open {
 .tactical-damage-number.is-shield { fill: #68d8ff; }
 .tactical-damage-number.is-armor { fill: #ffc45e; }
 .tactical-damage-number.is-structure { fill: #ff5a57; }
-.tactical-beam-animation.is-miss .tactical-beam-core {
+.tactical-beam-animation.is-miss .tactical-beam-core,
+.tactical-beam-shot.is-miss .tactical-beam-core {
   stroke: rgba(255, 182, 126, .9);
   stroke-dasharray: 4 3;
 }
-.tactical-beam-animation.is-miss .tactical-beam-impact { opacity: .24; }
+.tactical-beam-animation.is-miss .tactical-beam-impact,
+.tactical-beam-shot.is-miss .tactical-beam-impact { opacity: .24; }
 @keyframes tactical-damage-float {
   0% { opacity: 0; transform: translateY(0) scale(.78); }
   8% { opacity: 1; transform: translateY(-1px) scale(1.1); }

@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
 import {
   decodeShipVisualGenome,
   tacticalEndActivationCommand,
@@ -35,7 +35,7 @@ type PointerPoint = { x: number; y: number }
 type GestureSnapshot = { x: number; y: number; distance: number }
 type TacticalDamageLayerKind = 'shield' | 'armor' | 'structure'
 type TacticalDamageLayer = { kind: TacticalDamageLayerKind; amount: number }
-type TacticalBeamAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number; shotCount: number; layers: TacticalDamageLayer[] }
+type TacticalBeamAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number; shotCount: number; shotHits: boolean[]; weaponID: string; physicalWeaponCount: number; burstShotCount: number; layers: TacticalDamageLayer[] }
 type TacticalMoveAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number }
 
 function weaponUnavailableLabel(reason: string | undefined, t: Translator): string {
@@ -273,14 +273,29 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         if (event.kind === 'beam_fired' && shotCount > 1) continue
         const sourceID = eventNumber(event.data, 'ship_id')
         const targetID = eventNumber(event.data, 'target_ship_id')
+        const weaponSlot = eventNumber(event.data, 'weapon_slot')
         const source = ships.find((ship) => ship.ship_id === sourceID)
         const target = ships.find((ship) => ship.ship_id === targetID)
+        const shotEvents = event.kind === 'beam_volley_resolved'
+          ? events
+            .filter((candidate) => candidate.kind === 'beam_fired'
+              && candidate.command_sequence === event.command_sequence
+              && eventNumber(candidate.data, 'ship_id') === sourceID
+              && eventNumber(candidate.data, 'target_ship_id') === targetID
+              && eventNumber(candidate.data, 'weapon_slot') === weaponSlot)
+            .sort((a, b) => (eventNumber(a.data, 'shot_index') ?? 0) - (eventNumber(b.data, 'shot_index') ?? 0))
+          : [event]
+        const shotHits = shotEvents.map((shot) => shot.data?.hit === true)
         if (source && target) {
           setBeamAnimation({
             sequence: event.sequence, fromX: source.x, fromY: source.y, toX: target.x, toY: target.y,
-            hit: event.kind === 'beam_volley_resolved' ? (eventNumber(event.data, 'hit_count') ?? 0) > 0 : event.data?.hit === true,
+            hit: shotHits.some(Boolean),
             damage: event.kind === 'beam_volley_resolved' ? eventNumber(event.data, 'total_damage') ?? 0 : eventNumber(event.data, 'damage') ?? 0,
             shotCount,
+            shotHits,
+            weaponID: typeof event.data?.weapon_id === 'string' ? event.data.weapon_id : '',
+            physicalWeaponCount: eventNumber(event.data, 'physical_weapon_count') ?? 1,
+            burstShotCount: eventNumber(event.data, 'burst_shot_count') ?? 1,
             layers: damageLayersForBeam(events, event),
           })
         }
@@ -524,17 +539,18 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
           )}
 
           {beamAnimation && (
-            <g key={beamAnimation.sequence} className={`tactical-beam-animation ${beamAnimation.hit ? 'is-hit' : 'is-miss'}`} data-sequence={beamAnimation.sequence} data-hit={beamAnimation.hit ? 'true' : 'false'} data-damage={beamAnimation.damage} data-shot-count={beamAnimation.shotCount} pointerEvents="none">
+            <g key={beamAnimation.sequence} className={`tactical-beam-animation ${beamAnimation.hit ? 'is-hit' : 'is-miss'}`} data-sequence={beamAnimation.sequence} data-hit={beamAnimation.hit ? 'true' : 'false'} data-hit-count={beamAnimation.shotHits.filter(Boolean).length} data-damage={beamAnimation.damage} data-shot-count={beamAnimation.shotCount} data-physical-weapon-count={beamAnimation.physicalWeaponCount} data-burst-shot-count={beamAnimation.burstShotCount} data-weapon-id={beamAnimation.weaponID} pointerEvents="none">
               {Array.from({ length: Math.min(beamAnimation.shotCount, 8) }, (_, index) => {
                 const offset = beamShotOffset(beamAnimation, index)
+                const shotHit = beamAnimation.shotHits[index] === true
                 return (
-                  <g key={index} transform={`translate(${offset.x} ${offset.y})`}>
+                  <g key={index} className={`tactical-beam-shot ${shotHit ? 'is-hit' : 'is-miss'}`} data-shot-index={index + 1} data-hit={shotHit ? 'true' : 'false'} transform={`translate(${offset.x} ${offset.y})`}>
                     <line x1={beamAnimation.fromX} y1={beamAnimation.fromY} x2={beamAnimation.toX} y2={beamAnimation.toY} className="tactical-beam-glow" />
                     <line x1={beamAnimation.fromX} y1={beamAnimation.fromY} x2={beamAnimation.toX} y2={beamAnimation.toY} className="tactical-beam-core" />
+                    <circle cx={beamAnimation.toX} cy={beamAnimation.toY} r={0.36} className="tactical-beam-impact" />
                   </g>
                 )
               })}
-              <circle cx={beamAnimation.toX} cy={beamAnimation.toY} r={0.36} className="tactical-beam-impact" />
               {(beamAnimation.layers.length > 0 ? beamAnimation.layers : (beamAnimation.hit && beamAnimation.damage > 0 ? [{ kind: 'structure' as const, amount: beamAnimation.damage }] : [])).map((layer, index) => (
                 <text
                   key={`${beamAnimation.sequence}:${layer.kind}:${index}`}

@@ -1,7 +1,7 @@
 # Slice 17.6 Gate 3 - Implementation Evidence
 
 Date: 2026-10-01
-Status: **Checkpoints 1-3 complete; Checkpoint 4 ready**
+Status: **Checkpoints 1-4 complete; Checkpoint 5 ready**
 
 Contract authority:
 
@@ -222,3 +222,44 @@ Passed on the Checkpoint-3 working tree:
 ## Checkpoint 3 close result
 
 Gate 3 checkpoints 1-3 are complete. Checkpoint 4 is released for reactive Beam Point Defense handoff plus frozen event/VFX identity. Projectile lifecycle remains Slice 17.7, and broader active combat-Special mechanics remain Slice 17.8.
+
+## Checkpoint 4 - reactive PD handoff + events/VFX identity
+
+Checkpoint 4 exposes the frozen Beam Point Defense reaction boundary without pulling Slice 17.7 projectile lifecycle into 17.6.
+
+Implemented:
+
+- `BattleSession.ResolveReactiveBeamPointDefense(...)` is a server-owned internal reaction surface rather than a new player protocol command;
+- the caller supplies the incoming actor coordinates plus the defense input that Slice 17.7 will derive from projectile semantics;
+- only Point Defense Beam mounts are accepted; normal Standard/Heavy Beam mounts reject without state/event mutation;
+- the reaction uses the configured Beam identity, transformed PD range, frozen To-Hit/RNG rules, Count and Autofire ordering;
+- reactive shots consume authoritative Beam hit RNG and emit Beam shot/volley facts, but do not mutate projectile state or invent interception semantics;
+- all normal weapon readiness bytes on the reacting ship are restored exactly after the reaction, including a pre-existing `ready=false` state;
+- reactive execution does not advance the player Tactical command sequence;
+- normal `beam_fired` events now include `weapon_id`, `mount_type`, canonical `modifier_ids`, physical weapon index/count, burst index/count, flattened shot index/count and the frozen hit/damage facts;
+- `battle_damage_applied` carries the same shot/weapon identity plus Enveloping `application_index` / `application_count` and facing result identity;
+- `beam_volley_resolved` carries weapon identity and physical/burst grouping facts without replacing per-shot authority;
+- browser Beam presentation remains event-only and reconstructs grouped Autofire hit/miss state from the authoritative per-shot `beam_fired` events instead of collapsing a mixed volley into one invented hit state.
+
+### Checkpoint 4 deterministic evidence
+
+Regression coverage verifies:
+
+- Count=2 + Autofire emits six authoritative shots in physical-weapon outer / burst inner order;
+- each shot carries physical index/count, burst index/count and flattened index/count;
+- Enveloping emits four correlated damage applications with application indexes 1..4 and shield facings 0..3;
+- reactive PD against actor coordinates consumes Beam hit RNG while preserving normal readiness and command sequence;
+- a non-PD Beam reaction request rejects atomically.
+
+### Checkpoint 4 regression evidence
+
+Passed on the Checkpoint-4 working tree:
+
+- `go test ./internal/battle -run TestSlice176Checkpoint4 -count=1`;
+- `go test ./internal/beam ./internal/battle ./internal/game ./internal/ruleset ./internal/session -count=1`;
+- `npm --prefix web run build`;
+- `git diff --check`.
+
+## Checkpoint 4 close result
+
+Gate 3 checkpoints 1-4 are complete. Checkpoint 5 is released for active Tactical persistence/replay, Observer/public projection and end-to-end Selector -> Save -> Build -> BattleSession -> Tactical evidence. Projectile creation, flight, interception timing/eligibility, durability/evasion, projectile mutation and impact remain Slice 17.7.

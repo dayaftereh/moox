@@ -248,6 +248,41 @@ type FireBeamPayload struct {
 	WeaponSlot   int     `json:"weapon_slot"`
 }
 
+type ReactiveBeamPointDefenseRequest struct {
+	ShipID            core.ID `json:"ship_id"`
+	WeaponSlot        int     `json:"weapon_slot"`
+	TargetX           int     `json:"target_x"`
+	TargetY           int     `json:"target_y"`
+	TargetBeamDefense int     `json:"target_beam_defense"`
+}
+
+type ReactiveBeamPointDefenseShot struct {
+	PhysicalWeaponIndex int  `json:"physical_weapon_index"`
+	PhysicalWeaponCount int  `json:"physical_weapon_count"`
+	BurstShotIndex      int  `json:"burst_shot_index"`
+	BurstShotCount      int  `json:"burst_shot_count"`
+	ShotIndex           int  `json:"shot_index"`
+	ShotCount           int  `json:"shot_count"`
+	RangeIndex          int  `json:"range_index"`
+	RawHitRoll          int  `json:"raw_hit_roll"`
+	EffectiveHitRoll    int  `json:"effective_hit_roll"`
+	Threshold           int  `json:"threshold"`
+	Hit                 bool `json:"hit"`
+	Damage              int  `json:"damage"`
+}
+
+type ReactiveBeamPointDefenseResult struct {
+	ShipID          core.ID                        `json:"ship_id"`
+	WeaponSlot      int                            `json:"weapon_slot"`
+	WeaponID        string                         `json:"weapon_id"`
+	MountType       core.ShipWeaponMountType       `json:"mount_type"`
+	ModifierIDs     []core.ShipWeaponModifierID    `json:"modifier_ids,omitempty"`
+	InnateEffectIDs []string                       `json:"innate_effect_ids,omitempty"`
+	TargetX         int                            `json:"target_x"`
+	TargetY         int                            `json:"target_y"`
+	Shots           []ReactiveBeamPointDefenseShot `json:"shots"`
+}
+
 type EndActivationPayload struct {
 	ShipID core.ID `json:"ship_id"`
 }
@@ -884,6 +919,164 @@ func (s *Session) PrepareCommand(seatID protocol.SeatID, command protocol.Comman
 		prepared.result = &normalized
 	}
 	return prepared, nil
+}
+
+func (s *Session) ResolveReactiveBeamPointDefense(request ReactiveBeamPointDefenseRequest) (ReactiveBeamPointDefenseResult, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.phase != PhaseActive {
+		return ReactiveBeamPointDefenseResult{}, fmt.Errorf("cannot resolve reactive Beam Point Defense in phase %q", s.phase)
+	}
+	if s.spec.Tactical == nil || s.tactical == nil {
+		return ReactiveBeamPointDefenseResult{}, fmt.Errorf("battle %d has no tactical runtime", s.spec.ID)
+	}
+	runtime := cloneTacticalRuntime(*s.tactical)
+	result, err := resolveReactiveBeamPointDefense(s.spec, &runtime, request)
+	if err != nil {
+		return ReactiveBeamPointDefenseResult{}, err
+	}
+	s.tactical = &runtime
+	s.tacticalRevision++
+	return result, nil
+}
+
+func resolveReactiveBeamPointDefense(spec Spec, r *tacticalRuntime, request ReactiveBeamPointDefenseRequest) (ReactiveBeamPointDefenseResult, error) {
+	if request.ShipID == 0 {
+		return ReactiveBeamPointDefenseResult{}, fmt.Errorf("reactive Beam Point Defense ship id must be non-zero")
+	}
+	source := tacticalShipSpec(*spec.Tactical, request.ShipID)
+	if source == nil {
+		return ReactiveBeamPointDefenseResult{}, fmt.Errorf("reactive Beam Point Defense ship %d is missing from spec", request.ShipID)
+	}
+	sourceState := r.shipState(request.ShipID)
+	if sourceState == nil || sourceState.Destroyed {
+		return ReactiveBeamPointDefenseResult{}, fmt.Errorf("reactive Beam Point Defense ship %d is unavailable", request.ShipID)
+	}
+	weapon := weaponSpec(*source, request.WeaponSlot)
+	if weapon == nil {
+		return ReactiveBeamPointDefenseResult{}, fmt.Errorf("reactive Beam Point Defense weapon slot %d is missing", request.WeaponSlot)
+	}
+	if !tacticalBeamFireSupported(*weapon) {
+		return ReactiveBeamPointDefenseResult{}, fmt.Errorf("weapon slot %d is outside the executable Beam firing contract", request.WeaponSlot)
+	}
+	if canonicalTacticalWeaponMountType(weapon.MountType) != core.ShipWeaponMountPointDefense {
+		return ReactiveBeamPointDefenseResult{}, fmt.Errorf("weapon slot %d is not a Point Defense Beam mount", request.WeaponSlot)
+	}
+	configured, err := tacticalBeamConfigured(*weapon)
+	if err != nil {
+		return ReactiveBeamPointDefenseResult{}, err
+	}
+	targetPoint := TacticalShipState{X: request.TargetX, Y: request.TargetY}
+	if !tacticalBeamTargetInArc(*sourceState, targetPoint, weapon.FiringArcID) {
+		return ReactiveBeamPointDefenseResult{}, fmt.Errorf("reactive target coordinate %d,%d is outside weapon slot %d firing arc %q", request.TargetX, request.TargetY, request.WeaponSlot, weapon.FiringArcID)
+	}
+	geometricRangeIndex := tacticalRangeIndex(sourceState.X, sourceState.Y, request.TargetX, request.TargetY)
+	rangeIndex := tacticalBeamEffectiveRangeIndex(geometricRangeIndex, len(spec.Tactical.Rules.BeamToHitRangeModifiers), configured.RangeProfile)
+	if rangeIndex < 0 || rangeIndex >= len(spec.Tactical.Rules.BeamToHitRangeModifiers) {
+		return ReactiveBeamPointDefenseResult{}, fmt.Errorf("reactive Beam range index %d is outside the evidenced table", rangeIndex)
+	}
+	if rangeIndex >= len(spec.Tactical.Rules.BeamDamageRangeModifiers) {
+		return ReactiveBeamPointDefenseResult{}, fmt.Errorf("reactive Beam damage range index %d is outside the evidenced table", rangeIndex)
+	}
+
+	readinessBefore := append([]TacticalWeaponState(nil), sourceState.Weapons...)
+	defer func() {
+		sourceState.Weapons = readinessBefore
+	}()
+
+	rangeHitModifier := spec.Tactical.Rules.BeamToHitRangeModifiers[rangeIndex]
+	if tacticalBeamHasEffect(configured, "doubled_range_to_hit") {
+		rangeHitModifier *= 2
+	}
+	threshold := spec.Tactical.Rules.BeamBaseHitThreshold - rangeHitModifier
+	if threshold > spec.Tactical.Rules.BeamMaxHitThreshold {
+		threshold = spec.Tactical.Rules.BeamMaxHitThreshold
+	}
+	dependencies := neutralTacticalBeamDependencyContext()
+	scaledMinDamage, scaledMaxDamage, damagePercent := beam.EffectiveDamageBounds(
+		configured,
+		spec.Tactical.Rules.BeamDamageRangeModifiers[rangeIndex],
+		dependencies.PlayerLeaderDamagePercent,
+		dependencies.HighEnergyFocusBonus,
+	)
+	attackDifferential := source.BeamOffense - request.TargetBeamDefense + configured.StaticToHitAdjustment
+	alwaysHit := tacticalBeamHasEffect(configured, "always_hit")
+	totalShots := weapon.Count * configured.ShotsPerWeapon
+	result := ReactiveBeamPointDefenseResult{
+		ShipID: request.ShipID, WeaponSlot: request.WeaponSlot, WeaponID: weapon.WeaponID,
+		MountType:       canonicalTacticalWeaponMountType(weapon.MountType),
+		ModifierIDs:     append([]core.ShipWeaponModifierID(nil), weapon.ModifierIDs...),
+		InnateEffectIDs: append([]string(nil), weapon.InnateEffectIDs...),
+		TargetX:         request.TargetX, TargetY: request.TargetY,
+		Shots: make([]ReactiveBeamPointDefenseShot, 0, totalShots),
+	}
+	hitCount := 0
+	totalDamage := 0
+	flatShotIndex := 0
+	for physicalIndex := 0; physicalIndex < weapon.Count; physicalIndex++ {
+		for burstIndex := 0; burstIndex < configured.ShotsPerWeapon; burstIndex++ {
+			flatShotIndex++
+			rawRoll, err := r.random(100, spec.Tactical.Rules)
+			if err != nil {
+				return ReactiveBeamPointDefenseResult{}, err
+			}
+			hitRoll := rawRoll
+			if alwaysHit {
+				hitRoll = 100
+			}
+			effectiveRoll := hitRoll
+			if hitRoll > spec.Tactical.Rules.BeamMaxHitThreshold {
+				effectiveRoll = spec.Tactical.Rules.BeamEffectiveRollCap
+			} else {
+				effectiveRoll += attackDifferential
+				if effectiveRoll > spec.Tactical.Rules.BeamEffectiveRollCap {
+					effectiveRoll = spec.Tactical.Rules.BeamEffectiveRollCap
+				}
+			}
+			hit := effectiveRoll >= threshold
+			damage := 0
+			if hit {
+				hitCount++
+				damage = beam.InterpolateDamage(scaledMinDamage, scaledMaxDamage, effectiveRoll, threshold, spec.Tactical.Rules.BeamEffectiveRollCap)
+				totalDamage += damage
+			}
+			shot := ReactiveBeamPointDefenseShot{
+				PhysicalWeaponIndex: physicalIndex + 1, PhysicalWeaponCount: weapon.Count,
+				BurstShotIndex: burstIndex + 1, BurstShotCount: configured.ShotsPerWeapon,
+				ShotIndex: flatShotIndex, ShotCount: totalShots, RangeIndex: rangeIndex,
+				RawHitRoll: rawRoll, EffectiveHitRoll: effectiveRoll, Threshold: threshold,
+				Hit: hit, Damage: damage,
+			}
+			result.Shots = append(result.Shots, shot)
+			if err := r.appendEvent("beam_fired", source.SeatID, 0, map[string]any{
+				"ship_id": source.ShipID, "target_ship_id": core.ID(0), "target_x": request.TargetX, "target_y": request.TargetY,
+				"weapon_slot": request.WeaponSlot, "weapon_id": weapon.WeaponID, "mount_type": canonicalTacticalWeaponMountType(weapon.MountType),
+				"modifier_ids":          append([]core.ShipWeaponModifierID(nil), weapon.ModifierIDs...),
+				"physical_weapon_index": physicalIndex + 1, "physical_weapon_count": weapon.Count,
+				"burst_shot_index": burstIndex + 1, "burst_shot_count": configured.ShotsPerWeapon,
+				"shot_index": flatShotIndex, "shot_count": totalShots,
+				"range_index": rangeIndex, "raw_hit_roll": rawRoll, "effective_hit_roll": effectiveRoll,
+				"threshold": threshold, "hit": hit, "damage": damage,
+				"damage_percent": damagePercent, "scaled_min_damage": scaledMinDamage, "scaled_max_damage": scaledMaxDamage,
+				"reactive_point_defense": true,
+			}); err != nil {
+				return ReactiveBeamPointDefenseResult{}, err
+			}
+		}
+	}
+	if totalShots > 1 {
+		if err := r.appendEvent("beam_volley_resolved", source.SeatID, 0, map[string]any{
+			"ship_id": source.ShipID, "target_ship_id": core.ID(0), "target_x": request.TargetX, "target_y": request.TargetY,
+			"weapon_slot": request.WeaponSlot, "weapon_id": weapon.WeaponID, "mount_type": canonicalTacticalWeaponMountType(weapon.MountType),
+			"modifier_ids":          append([]core.ShipWeaponModifierID(nil), weapon.ModifierIDs...),
+			"physical_weapon_count": weapon.Count, "burst_shot_count": configured.ShotsPerWeapon,
+			"shot_count": totalShots, "hit_count": hitCount, "total_damage": totalDamage,
+			"reactive_point_defense": true,
+		}); err != nil {
+			return ReactiveBeamPointDefenseResult{}, err
+		}
+	}
+	return result, nil
 }
 
 func decodeBattlePayload(command protocol.Command, dst any) error {
@@ -1605,6 +1798,10 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 			}
 			if err := r.appendEvent("beam_fired", seatID, commandSequence, map[string]any{
 				"ship_id": active.ShipID, "target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
+				"weapon_id": weapon.WeaponID, "mount_type": canonicalTacticalWeaponMountType(weapon.MountType),
+				"modifier_ids":          append([]core.ShipWeaponModifierID(nil), weapon.ModifierIDs...),
+				"physical_weapon_index": physicalIndex + 1, "physical_weapon_count": weapon.Count,
+				"burst_shot_index": burstIndex + 1, "burst_shot_count": configured.ShotsPerWeapon,
 				"shot_index": flatShotIndex, "shot_count": totalShots,
 				"range_index": rangeIndex, "raw_hit_roll": rawRoll, "effective_hit_roll": effectiveRoll,
 				"threshold": threshold, "hit": hit, "damage": damage,
@@ -1615,6 +1812,10 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 			for applicationIndex, damageApplied := range damageApplications {
 				event := map[string]any{
 					"source_ship_id": active.ShipID, "target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
+					"weapon_id": weapon.WeaponID, "mount_type": canonicalTacticalWeaponMountType(weapon.MountType),
+					"modifier_ids":          append([]core.ShipWeaponModifierID(nil), weapon.ModifierIDs...),
+					"physical_weapon_index": physicalIndex + 1, "physical_weapon_count": weapon.Count,
+					"burst_shot_index": burstIndex + 1, "burst_shot_count": configured.ShotsPerWeapon,
 					"shot_index": flatShotIndex, "shot_count": totalShots,
 					"application_index": applicationIndex + 1, "application_count": len(damageApplications),
 					"layer": damageApplied.Layer, "damage": damage, "incoming_damage": damageApplied.IncomingDamage, "selection_roll": selectionRoll,
@@ -1640,6 +1841,9 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	if totalShots > 1 {
 		if err := r.appendEvent("beam_volley_resolved", seatID, commandSequence, map[string]any{
 			"ship_id": active.ShipID, "target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
+			"weapon_id": weapon.WeaponID, "mount_type": canonicalTacticalWeaponMountType(weapon.MountType),
+			"modifier_ids":          append([]core.ShipWeaponModifierID(nil), weapon.ModifierIDs...),
+			"physical_weapon_count": weapon.Count, "burst_shot_count": configured.ShotsPerWeapon,
 			"shot_count": totalShots, "hit_count": hitCount, "total_damage": totalDamage,
 		}); err != nil {
 			return nil, err
