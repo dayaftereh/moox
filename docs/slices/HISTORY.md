@@ -697,3 +697,11 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Minimal Tactical MarineMax/MarineCurrent state is frozen for Neutron Blaster/Death Ray using original hull values 5/8/12/20/30/50; Troop Pods may be consumed only as a passive x2 MarineMax input while active boarding/Special behavior remains Slice 17.8.
 - Beam-side reactive Point Defense is frozen as a 17.6 capability with normal readiness restored after reaction; projectile lifecycle/interception timing remains Slice 17.7.
 - Gate 3 implementation is released against `docs/research/SLICE_17_6_GATE2_TACTICAL_BEAM_CONTRACT_FREEZE_2026-09-30.md`; no production Beam implementation was part of Gate 2.
+
+## 2026-10-01 - Slice 17.6 Tactical Beam Weapons & Beam Modifiers accepted/closed
+
+- Gates 1-4 are complete; Gate-4 acceptance is documented in `docs/research/SLICE_17_6_GATE4_ACCEPTANCE_CLOSE_2026-10-01.md`.
+- All 13 frozen Beam identities project and execute through server-authoritative Tactical actions; Standard/Heavy/Point Defense, supported modifiers/innate effects, deterministic vectors A-E, persistence/replay/Observer and Selector -> Save -> Build -> BattleSession -> Tactical are accepted.
+- Final QA passed focused Slice-17.6/shared Beam regressions, the explicit all-13-Beam Gate-4 matrix, full `go test ./... -count=1`, `go vet ./...`, production web build, fresh Reference-Lab browser smoke and byte-identical live-snapshot roundtrip.
+- Browser Beam presentation remains event-driven; projectile lifecycle remains owned by Slice 17.7 and broader active combat-Special mechanics by Slice 17.8.
+- The Slice-17.6 `_OPEN_` marker is removed. Slice 17.7 is next prepared and remains planned/not open.

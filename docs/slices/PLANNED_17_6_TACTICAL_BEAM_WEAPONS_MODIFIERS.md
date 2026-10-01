@@ -1,6 +1,6 @@
 # Planned Slice 17.6 - Tactical Beam Weapons & Beam Modifiers
 
-Status: **open; Gates 1-3 complete; Gate 4 ready (2026-10-01)**.
+Status: **closed/accepted; Gates 1-4 complete (2026-10-01)**.
 
 ## Objective
 
@@ -81,29 +81,29 @@ Evidence: docs/research/SLICE_17_6_GATE2_TACTICAL_BEAM_CONTRACT_FREEZE_2026-09-3
 
 ## Gate 3 - implementation
 
-- [ ] Implement the frozen Beam Tactical effect rules in server-authoritative code.
-- [ ] Make Tactical consume the existing immutable Beam snapshot without translation hacks.
-- [ ] Implement Standard, Heavy and Point Defense Beam consumers.
-- [ ] Implement supported Beam modifier consumers.
-- [ ] Implement server-authoritative Beam hit and damage rolls with exact frozen ordering.
-- [ ] Feed Weapon Selector configured/effective damage and other changed Tactical preview stats from the same rules.
-- [ ] Preserve raw catalog base damage separately from configured/effective values.
-- [ ] Extend Beam fire/impact/shield/damage event payloads only as required by the frozen contract.
-- [ ] Implement Beam-specific presentation from those authoritative events.
-- [ ] Preserve save/load/replay/Observer behavior for configured Beam rows.
-- [ ] Add deterministic Beam/mount/modifier combinations and repeated/grouped-fire regressions.
+- [x] Implement the frozen Beam Tactical effect rules in server-authoritative code.
+- [x] Make Tactical consume the existing immutable Beam snapshot without translation hacks.
+- [x] Implement Standard, Heavy and Point Defense Beam consumers.
+- [x] Implement supported Beam modifier consumers.
+- [x] Implement server-authoritative Beam hit and damage rolls with exact frozen ordering.
+- [x] Feed Weapon Selector configured/effective damage and other changed Tactical preview stats from the same rules.
+- [x] Preserve raw catalog base damage separately from configured/effective values.
+- [x] Extend Beam fire/impact/shield/damage event payloads only as required by the frozen contract.
+- [x] Implement Beam-specific presentation from those authoritative events.
+- [x] Preserve save/load/replay/Observer behavior for configured Beam rows.
+- [x] Add deterministic Beam/mount/modifier combinations and repeated/grouped-fire regressions.
 
 ## Gate 4 - QA + close
 
-- [ ] Every supported Beam can be selected in Tactical and resolves through server-projected legal actions.
-- [ ] Hit/miss, range and damage rolls match frozen reference vectors.
-- [ ] Heavy and Point Defense produce the correct configured preview and Tactical result.
-- [ ] Supported modifiers produce exact frozen Tactical effects and combinations.
-- [ ] Selector -> Save -> Build -> BattleSession -> Tactical preserves exact configured Beam semantics.
-- [ ] Base/configured damage and affected stats match between Selector and Combat Lab.
-- [ ] Beam/impact/shield/damage animations correspond to authoritative events and remain presentation-only.
-- [ ] Desktop/mobile multi-weapon selection remains usable.
-- [ ] Full Go/vet/web/browser/persistence/replay/reference-game QA passes.
+- [x] Every supported Beam can be selected in Tactical and resolves through server-projected legal actions.
+- [x] Hit/miss, range and damage rolls match frozen reference vectors.
+- [x] Heavy and Point Defense produce the correct configured preview and Tactical result.
+- [x] Supported modifiers produce exact frozen Tactical effects and combinations.
+- [x] Selector -> Save -> Build -> BattleSession -> Tactical preserves exact configured Beam semantics.
+- [x] Base/configured damage and affected stats match between Selector and Combat Lab.
+- [x] Beam/impact/shield/damage animations correspond to authoritative events and remain presentation-only.
+- [x] Desktop/mobile multi-weapon selection remains usable.
+- [x] Full Go/vet/web/browser/persistence/replay/reference-game QA passes.
 
 ## Exit criterion
 
