@@ -424,6 +424,7 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
   const mapRef = useRef<HTMLDivElement | null>(null)
   const [mapSize, setMapSize] = useState({ width: 1, height: 1 })
   const ignoreClickRef = useRef(false)
+  const dragTravelRef = useRef(0)
   const gestureRef = useRef<{
     pointers: Map<number, { x: number; y: number }>
     lastCenter?: { x: number; y: number }
@@ -854,11 +855,11 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
 
   const handlePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.pointerType === 'mouse' && event.button !== 0) return
-    event.currentTarget.setPointerCapture(event.pointerId)
     const point = { x: event.clientX, y: event.clientY }
     const gesture = gestureRef.current
     gesture.pointers.set(event.pointerId, point)
     gesture.dragged = false
+    dragTravelRef.current = 0
     ignoreClickRef.current = false
     if (gesture.pointers.size >= 2) {
       const points = pointerPair()
@@ -868,13 +869,23 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
       gesture.lastCenter = point
       gesture.lastDistance = undefined
     }
-    setDragging(true)
   }
 
   const handlePointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
     const gesture = gestureRef.current
     if (!gesture.pointers.has(event.pointerId)) return
     gesture.pointers.set(event.pointerId, { x: event.clientX, y: event.clientY })
+
+    const activateDrag = () => {
+      if (!gesture.dragged) {
+        gesture.dragged = true
+        ignoreClickRef.current = true
+        setDragging(true)
+      }
+      if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
+        try { event.currentTarget.setPointerCapture(event.pointerId) } catch { /* pointer capture is optional after pointer end */ }
+      }
+    }
 
     if (gesture.pointers.size >= 2) {
       const points = pointerPair()
@@ -885,14 +896,14 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
         const dy = center.y - gesture.lastCenter.y
         if (Math.abs(dx) + Math.abs(dy) > 0.5) {
           setPan((current) => clampPan({ x: current.x + dx, y: current.y + dy }, zoom))
-          gesture.dragged = true
+          activateDrag()
         }
       }
       if (gesture.lastDistance) {
         const ratio = distance / gesture.lastDistance
         if (Math.abs(ratio - 1) > 0.002) {
           setZoom((current) => clampZoom(current * ratio))
-          gesture.dragged = true
+          activateDrag()
         }
       }
       gesture.lastCenter = center
@@ -902,14 +913,14 @@ export function StrategicGalaxyView({ snapshot, selectedSystemID, onSelectSystem
       if (gesture.lastCenter) {
         const dx = point.x - gesture.lastCenter.x
         const dy = point.y - gesture.lastCenter.y
-        if (Math.abs(dx) + Math.abs(dy) > 0.5) {
+        dragTravelRef.current += Math.hypot(dx, dy)
+        if (gesture.dragged || dragTravelRef.current >= 4) {
           setPan((current) => clampPan({ x: current.x + dx, y: current.y + dy }, zoom))
-          gesture.dragged = true
+          activateDrag()
         }
       }
       gesture.lastCenter = point
     }
-    if (gesture.dragged) ignoreClickRef.current = true
   }
 
   const finishPointer = (event: ReactPointerEvent<HTMLDivElement>) => {
