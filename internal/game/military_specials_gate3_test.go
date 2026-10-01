@@ -275,3 +275,25 @@ func TestSlice174ConstructionPreservesSpecialAndFighterSnapshot(t *testing.T) {
 		t.Fatalf("built equipment specials=%+v weapons=%+v want specials=%+v weapons=%+v", built.Spec.Specials, built.Spec.Weapons, queued.Specials, queued.Weapons)
 	}
 }
+
+func TestSlice176Checkpoint3TroopPodsDoubleMarineMax(t *testing.T) {
+	rules := loadColonyShipRules(t)
+	ship := tacticalMetadataShip(51, 1, "nuclear_drive", false)
+
+	base, err := projectTacticalShip(ship, protocol.SeatID(1), 10, 12, 0, rules.TacticalCombat, rules.ShipSpecials)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if base.MarineMax != 5 {
+		t.Fatalf("Frigate MarineMax=%d want 5", base.MarineMax)
+	}
+
+	ship.Spec.Specials = []core.ShipSpecialMount{{Slot: 0, SpecialID: "troop_pods"}}
+	withPods, err := projectTacticalShip(ship, protocol.SeatID(1), 10, 12, 0, rules.TacticalCombat, rules.ShipSpecials)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if withPods.MarineMax != 10 {
+		t.Fatalf("Frigate + Troop Pods MarineMax=%d want 10", withPods.MarineMax)
+	}
+}

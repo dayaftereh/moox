@@ -1,7 +1,7 @@
 # Slice 17.6 Gate 3 - Implementation Checkpoint Plan
 
 Date: 2026-09-30
-Status: **ACTIVE - checkpoints 1-2 complete; checkpoint 3 ready**
+Status: **ACTIVE - checkpoints 1-3 complete; checkpoint 4 ready**
 
 Contract authority:
 
@@ -41,6 +41,8 @@ Deliver:
 Preserve all existing Laser regressions.
 
 ## Checkpoint 3 - Beam effects + minimal Marine state
+
+Status: **COMPLETE - 2026-10-01**
 
 Deliver:
 

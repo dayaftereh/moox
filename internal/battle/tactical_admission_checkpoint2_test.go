@@ -14,7 +14,7 @@ func TestSlice175Checkpoint2BattleValidatorAcceptsBroadDerivedCombatants(t *test
 		HullID: "doom_star", WarpDriveID: "interphased_drive", ComputerID: "moleculartronic_computer",
 		ArmorID: "xentronium_armor", ShieldID: "class_x_shield", FuelCellID: "thorium_fuel_cells",
 		MinimumCombatSpeed: 13, CurrentCombatSpeed: 23, BeamOffense: 125, BeamDefense: 115,
-		ArmorMax: 1500, StructureMax: 150, ShieldStrength: 10, ShieldArcMax: 350,
+		ArmorMax: 1500, StructureMax: 150, MarineMax: 50, ShieldStrength: 10, ShieldArcMax: 350,
 		Weapons: []TacticalWeaponSpec{{Slot: 0, WeaponID: "fighter_bays", Count: 1, TacticalSupport: "metadata_only"}},
 	}
 	spec.Attacker.ShipIDs = []core.ID{100}

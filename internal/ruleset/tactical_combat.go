@@ -89,6 +89,7 @@ type TacticalHullRule struct {
 	Structure        int    `json:"structure"`
 	BaseCombatSpeed  int    `json:"base_combat_speed"`
 	ShieldHullFactor int    `json:"shield_hull_factor"`
+	MarineMax        int    `json:"marine_max"`
 }
 
 type TacticalArmorRule struct {
@@ -323,7 +324,7 @@ func (f *TacticalCombatFile) Validate() error {
 	}
 	seenHull := make(map[string]struct{}, len(f.Hulls))
 	for i, hull := range f.Hulls {
-		if hull.HullID == "" || hull.BaseArmor <= 0 || hull.Structure <= 0 || hull.BaseCombatSpeed <= 0 || hull.ShieldHullFactor <= 0 {
+		if hull.HullID == "" || hull.BaseArmor <= 0 || hull.Structure <= 0 || hull.BaseCombatSpeed <= 0 || hull.ShieldHullFactor <= 0 || hull.MarineMax <= 0 {
 			return fmt.Errorf("invalid tactical hull[%d]", i)
 		}
 		if _, ok := seenHull[hull.HullID]; ok {

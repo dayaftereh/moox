@@ -261,6 +261,7 @@ type tacticalFoundationValues struct {
 	BeamDefense        int
 	ArmorMax           int
 	StructureMax       int
+	MarineMax          int
 	ShieldStrength     int
 	ShieldArcMax       int
 }
@@ -303,6 +304,13 @@ func tacticalFoundationForShip(ship core.Ship, rules *ruleset.TacticalCombatFile
 	minimumSpeed := hull.BaseCombatSpeed + drive.CombatSpeedBonus
 	currentSpeed := minimumSpeed + unusedBonus
 	armorMax := hull.BaseArmor + (hull.BaseArmor*armor.BonusPercent)/100
+	marineMax := hull.MarineMax
+	for _, special := range ship.Spec.Specials {
+		if special.SpecialID == "troop_pods" {
+			marineMax *= 2
+			break
+		}
+	}
 	shieldStrength, shieldArcMax := 0, 0
 	if ship.Spec.ShieldID != "" {
 		shield, ok := rules.ShieldByID(ship.Spec.ShieldID)
@@ -315,7 +323,7 @@ func tacticalFoundationForShip(ship core.Ship, rules *ruleset.TacticalCombatFile
 	return tacticalFoundationValues{
 		MinimumCombatSpeed: minimumSpeed, CurrentCombatSpeed: currentSpeed,
 		BeamOffense: computer.BeamOffense, BeamDefense: currentSpeed * rules.BeamDefensePerCombatSpeed,
-		ArmorMax: armorMax, StructureMax: hull.Structure,
+		ArmorMax: armorMax, StructureMax: hull.Structure, MarineMax: marineMax,
 		ShieldStrength: shieldStrength, ShieldArcMax: shieldArcMax,
 	}, nil
 }
@@ -349,6 +357,7 @@ func projectTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing in
 		BeamDefense:          foundation.BeamDefense,
 		ArmorMax:             foundation.ArmorMax,
 		StructureMax:         foundation.StructureMax,
+		MarineMax:            foundation.MarineMax,
 		ShieldStrength:       foundation.ShieldStrength,
 		ShieldArcMax:         foundation.ShieldArcMax,
 	}

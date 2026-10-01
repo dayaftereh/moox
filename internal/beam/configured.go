@@ -45,6 +45,55 @@ func ScaleDamageBounds(baseMin, baseMax, percent int) (int, int) {
 	return minDamage, maxDamage
 }
 
+func HasEffect(config ConfiguredPreview, effectID string) bool {
+	for _, id := range config.EffectIDs {
+		if id == effectID {
+			return true
+		}
+	}
+	return false
+}
+
+// EffectiveDamageBounds reproduces the frozen Slice-17.6 runtime Beam damage
+// percentage order. playerLeaderPercent is explicit so a later leader model can
+// feed the original dependency without changing this calculation; neutral is
+// 100. highEnergyFocusBonus is the later Slice-17.8 hook and is neutral at 0.
+func EffectiveDamageBounds(config ConfiguredPreview, rangeDamageModifier, playerLeaderPercent, highEnergyFocusBonus int) (minDamage, maxDamage, combinedPercent int) {
+	if playerLeaderPercent == 0 {
+		playerLeaderPercent = 100
+	}
+	beamPercent := 100 + highEnergyFocusBonus
+	if !HasEffect(config, "no_range_dissipation") {
+		beamPercent += rangeDamageModifier
+	}
+	switch config.RangeProfile {
+	case RangeProfileHeavy:
+		beamPercent += 50
+	case RangeProfilePointDefense:
+		beamPercent -= 50
+	}
+	combinedPercent = beamPercent + (playerLeaderPercent - 100)
+	minDamage, maxDamage = ScaleDamageBounds(config.BaseMinDamage, config.BaseMaxDamage, combinedPercent)
+	return minDamage, maxDamage, combinedPercent
+}
+
+func InterpolateDamage(minDamage, maxDamage, effectiveRoll, threshold, rollCap int) int {
+	if maxDamage < minDamage {
+		maxDamage = minDamage
+	}
+	if maxDamage <= minDamage || rollCap <= threshold {
+		return minDamage
+	}
+	damage := minDamage + ((effectiveRoll-threshold)*(maxDamage-minDamage+1))/(rollCap-threshold)
+	if damage > maxDamage {
+		damage = maxDamage
+	}
+	if damage < minDamage {
+		damage = minDamage
+	}
+	return damage
+}
+
 // DeriveConfigured is the shared server-side Beam configuration derivation used
 // by both design-time preview and Tactical execution.
 func DeriveConfigured(weaponID string, baseMin, baseMax int, mountType core.ShipWeaponMountType, modifierIDs []core.ShipWeaponModifierID, innateEffectIDs []string) (ConfiguredPreview, error) {

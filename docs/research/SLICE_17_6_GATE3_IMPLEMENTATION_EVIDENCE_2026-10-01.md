@@ -1,7 +1,7 @@
 # Slice 17.6 Gate 3 - Implementation Evidence
 
 Date: 2026-10-01
-Status: **Checkpoints 1-2 complete; Checkpoint 3 ready**
+Status: **Checkpoints 1-3 complete; Checkpoint 4 ready**
 
 Contract authority:
 
@@ -168,3 +168,57 @@ The authoritative ruleset fingerprint changed only because the 13 frozen Beam ro
 ## Checkpoint 2 close result
 
 Gate 3 checkpoints 1-2 are complete. Checkpoint 3 is released for Beam target effects, exact damage application and minimal Marine state. Projectile lifecycle remains Slice 17.7 and active combat-Special mechanics remain Slice 17.8.
+
+## Checkpoint 3 - Beam effects + minimal Marine state
+
+Checkpoint 3 moves the frozen Gate-2 Beam damage/effect contract into the authoritative Tactical path without pulling reactive projectile Point Defense or broader combat-Special behavior forward.
+
+Implemented:
+
+- shared `internal/beam` runtime damage derivation now applies the frozen percentage order, original nearest-integer scaling, min/max clamps and final hit-damage interpolation;
+- Heavy and Point Defense mounts consume their transformed range profile and live ship-target damage percentages; Point Defense remains a normal ship-target Beam mount here;
+- selected Armor Piercing, Continuous, No Range Dissipation, Shield Piercing, Autofire and Enveloping facts resolve through the shared configured Beam identity;
+- frozen innate effects resolve through canonical runtime facts: natural Shield Piercing, doubled signed range To-Hit, Armor-first bypass, monster/Antaran quarter-damage dependency hook, extra Structure damage, marine kill, Enveloping, Always Hit and Death Ray natural Continuous;
+- Shield, Armor and Structure damage application accepts explicit effect options while preserving the established aggregate damage model;
+- Enveloping applies a fresh copy of the same hit damage to shield facings 0, 1, 2 and 3;
+- `MarineMax` is persisted in Tactical ship specs and `MarineCurrent` is server-owned mutable Tactical state/view;
+- original hull MarineMax values are frozen as Frigate 5, Destroyer 8, Cruiser 12, Battleship 20, Titan 30 and Doom Star 50;
+- passive `troop_pods` doubles initial MarineMax only; boarding/transport actions remain Slice 17.8;
+- Neutron Blaster and Death Ray apply `postShieldDamage / 5` marine loss with integer truncation and saturation at zero;
+- deferred Slice-17.8 dependencies remain explicit neutral hooks when their later consumer is absent.
+
+### Checkpoint 3 deterministic evidence
+
+The frozen A-D calculator vectors are regression-covered:
+
+- A: Laser Standard 1-4 at 90% remains 1-4 and resolves 4 at the frozen roll;
+- B: Particle Beam Heavy uses geometric index 4 -> Heavy index 2, 140%, scaled 14-42 and damage 31 at the frozen roll;
+- C: Mauler Heavy consumes a hit RNG draw, overwrites to Always Hit, doubles signed range To-Hit and resolves 140 damage;
+- D: Laser Point Defense ship target uses geometric index 2 -> PD index 4, 20%, scaled 1-1 and damage 1.
+
+Additional Tactical regressions cover:
+
+- Heavy and Point Defense live range/damage profiles;
+- selected No Range Dissipation and Shield Piercing;
+- innate Ion Pulse Armor-first bypass with neutral monster/Antaran hook;
+- Fusion doubled signed range To-Hit;
+- Mauler low raw-roll consumption followed by Always Hit;
+- Particle natural Shield Piercing;
+- Graviton extra Structure damage;
+- Plasma Enveloping four-facing applications;
+- Neutron and Death Ray marine loss;
+- Troop Pods passive MarineMax x2 projection.
+
+### Checkpoint 3 regression evidence
+
+Passed on the Checkpoint-3 working tree:
+
+- `go test ./internal/beam ./internal/battle ./internal/game ./internal/ruleset ./internal/session -count=1`;
+- `go test ./... -count=1`;
+- `go vet ./...`;
+- `npm --prefix web run build`;
+- `git diff --check`.
+
+## Checkpoint 3 close result
+
+Gate 3 checkpoints 1-3 are complete. Checkpoint 4 is released for reactive Beam Point Defense handoff plus frozen event/VFX identity. Projectile lifecycle remains Slice 17.7, and broader active combat-Special mechanics remain Slice 17.8.

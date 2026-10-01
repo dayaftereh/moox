@@ -78,3 +78,97 @@ func TestDeriveConfiguredPreviewNormalizesFrozenInnateEffects(t *testing.T) {
 		t.Fatalf("Death Ray preview=%+v", deathRay)
 	}
 }
+
+func TestEffectiveDamageReferenceVectorsABCD(t *testing.T) {
+	tests := []struct {
+		name          string
+		weaponID      string
+		baseMin       int
+		baseMax       int
+		mount         core.ShipWeaponMountType
+		innate        []string
+		rangeModifier int
+		effectiveRoll int
+		threshold     int
+		wantPercent   int
+		wantMin       int
+		wantMax       int
+		wantDamage    int
+	}{
+		{
+			name: "A Laser Standard rounding", weaponID: "laser_cannon",
+			baseMin: 1, baseMax: 4, mount: core.ShipWeaponMountStandard,
+			rangeModifier: -10, effectiveRoll: 100, threshold: 50,
+			wantPercent: 90, wantMin: 1, wantMax: 4, wantDamage: 4,
+		},
+		{
+			name: "B Particle Heavy", weaponID: "particle_beam",
+			baseMin: 10, baseMax: 30, mount: core.ShipWeaponMountHeavy,
+			innate:        []string{"natural_shield_piercing"},
+			rangeModifier: -10, effectiveRoll: 80, threshold: 50,
+			wantPercent: 140, wantMin: 14, wantMax: 42, wantDamage: 31,
+		},
+		{
+			name: "C Mauler Heavy", weaponID: "mauler_device",
+			baseMin: 100, baseMax: 100, mount: core.ShipWeaponMountHeavy,
+			innate:        []string{"always_hit", "double_range_dissipation"},
+			rangeModifier: -10, effectiveRoll: 100, threshold: 60,
+			wantPercent: 140, wantMin: 140, wantMax: 140, wantDamage: 140,
+		},
+		{
+			name: "D Laser Point Defense ship target", weaponID: "laser_cannon",
+			baseMin: 1, baseMax: 4, mount: core.ShipWeaponMountPointDefense,
+			rangeModifier: -30, effectiveRoll: 50, threshold: 45,
+			wantPercent: 20, wantMin: 1, wantMax: 1, wantDamage: 1,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			config, err := DeriveConfigured(tc.weaponID, tc.baseMin, tc.baseMax, tc.mount, nil, tc.innate)
+			if err != nil {
+				t.Fatal(err)
+			}
+			minDamage, maxDamage, percent := EffectiveDamageBounds(config, tc.rangeModifier, 100, 0)
+			if percent != tc.wantPercent || minDamage != tc.wantMin || maxDamage != tc.wantMax {
+				t.Fatalf("bounds=%d-%d percent=%d want %d-%d percent=%d", minDamage, maxDamage, percent, tc.wantMin, tc.wantMax, tc.wantPercent)
+			}
+			if got := InterpolateDamage(minDamage, maxDamage, tc.effectiveRoll, tc.threshold, 100); got != tc.wantDamage {
+				t.Fatalf("damage=%d want %d", got, tc.wantDamage)
+			}
+		})
+	}
+}
+
+func TestEffectiveDamageNoRangeDissipationSuppressesRangePenalty(t *testing.T) {
+	config, err := DeriveConfigured("mass_driver", 6, 6, core.ShipWeaponMountStandard, nil, []string{"no_range_dissipation"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	minDamage, maxDamage, percent := EffectiveDamageBounds(config, -65, 100, 0)
+	if percent != 100 || minDamage != 6 || maxDamage != 6 {
+		t.Fatalf("no-range-dissipation bounds=%d-%d percent=%d", minDamage, maxDamage, percent)
+	}
+}
+
+func TestDeriveConfiguredSelectedContinuousAndEnveloping(t *testing.T) {
+	config, err := DeriveConfigured(
+		"fusion_beam",
+		2,
+		6,
+		core.ShipWeaponMountStandard,
+		[]core.ShipWeaponModifierID{
+			core.ShipWeaponModifierContinuous,
+			core.ShipWeaponModifierEnveloping,
+		},
+		nil,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if config.StaticToHitAdjustment != 25 || config.ShotsPerWeapon != 1 {
+		t.Fatalf("Fusion selected modifier config=%+v", config)
+	}
+	if !reflect.DeepEqual(config.EffectIDs, []string{"continuous", "enveloping", "doubled_range_to_hit"}) {
+		t.Fatalf("Fusion selected modifier effects=%v", config.EffectIDs)
+	}
+}

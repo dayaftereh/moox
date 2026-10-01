@@ -68,12 +68,12 @@
       "structure": 4
     },
     "hulls": [
-      {"hull_id":"frigate","base_armor":4,"structure":4,"base_combat_speed":10,"shield_hull_factor":1},
-      {"hull_id":"destroyer","base_armor":10,"structure":10,"base_combat_speed":8,"shield_hull_factor":2},
-      {"hull_id":"cruiser","base_armor":30,"structure":30,"base_combat_speed":6,"shield_hull_factor":3},
-      {"hull_id":"battleship","base_armor":50,"structure":50,"base_combat_speed":5,"shield_hull_factor":4},
-      {"hull_id":"titan","base_armor":80,"structure":80,"base_combat_speed":4,"shield_hull_factor":5},
-      {"hull_id":"doom_star","base_armor":150,"structure":150,"base_combat_speed":3,"shield_hull_factor":7}
+      {"hull_id":"frigate","base_armor":4,"structure":4,"base_combat_speed":10,"shield_hull_factor":1,"marine_max":5},
+      {"hull_id":"destroyer","base_armor":10,"structure":10,"base_combat_speed":8,"shield_hull_factor":2,"marine_max":8},
+      {"hull_id":"cruiser","base_armor":30,"structure":30,"base_combat_speed":6,"shield_hull_factor":3,"marine_max":12},
+      {"hull_id":"battleship","base_armor":50,"structure":50,"base_combat_speed":5,"shield_hull_factor":4,"marine_max":20},
+      {"hull_id":"titan","base_armor":80,"structure":80,"base_combat_speed":4,"shield_hull_factor":5,"marine_max":30},
+      {"hull_id":"doom_star","base_armor":150,"structure":150,"base_combat_speed":3,"shield_hull_factor":7,"marine_max":50}
     ],
     "armors": [
       {"armor_id":"titanium_armor","bonus_percent":0},
