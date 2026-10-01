@@ -3,6 +3,7 @@ package game
 import (
 	"strings"
 
+	"moox/internal/beam"
 	"moox/internal/core"
 )
 
@@ -28,6 +29,7 @@ type MilitaryDesignWeaponRowPreview struct {
 	UnitCostPP           int                         `json:"unit_cost_pp"`
 	RowSpace             int                         `json:"row_space"`
 	RowCostPP            int                         `json:"row_cost_pp"`
+	BeamTactical         *beam.ConfiguredPreview     `json:"beam_tactical,omitempty"`
 }
 
 type MilitaryDesignSpecialRowPreview struct {
@@ -154,6 +156,7 @@ func (r *EconomyRules) PreviewMilitaryDesign(empire *core.Empire, draft Military
 			MiniaturizationLevel: quote.MiniaturizationLevel,
 			UnitSpace:            quote.UnitSpace, UnitCostPP: quote.UnitCostPP,
 			RowSpace: quote.RowSpace, RowCostPP: quote.RowCostPP,
+			BeamTactical: quote.BeamTactical,
 		})
 	}
 

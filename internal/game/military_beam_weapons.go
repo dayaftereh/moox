@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sort"
 
+	"moox/internal/beam"
 	"moox/internal/core"
 	"moox/internal/ruleset"
 )
@@ -35,6 +36,7 @@ type militaryBeamWeaponQuote struct {
 	UnitCostPP           int
 	RowSpace             int
 	RowCostPP            int
+	BeamTactical         *beam.ConfiguredPreview
 }
 
 var frozenBeamWeaponIDs = map[string]struct{}{
@@ -271,6 +273,11 @@ func (r *EconomyRules) quoteBeamWeapon(empire *core.Empire, input core.ShipWeapo
 	unitSpace := miniaturizedComponentSpace(afterSpecialSpace, level, 1)
 	unitCost := miniaturizedComponentCost(afterSpecialCost, level)
 
+	beamTactical, err := beam.DeriveConfiguredPreview(weapon, mount)
+	if err != nil {
+		return militaryBeamWeaponQuote{}, err
+	}
+
 	return militaryBeamWeaponQuote{
 		Mount:                mount,
 		Weapon:               weapon,
@@ -280,5 +287,6 @@ func (r *EconomyRules) quoteBeamWeapon(empire *core.Empire, input core.ShipWeapo
 		UnitCostPP:           unitCost,
 		RowSpace:             unitSpace * mount.Count,
 		RowCostPP:            unitCost * mount.Count,
+		BeamTactical:         &beamTactical,
 	}, nil
 }

@@ -1,6 +1,6 @@
 # OPEN Slice 17.6 - Tactical Beam Weapons & Beam Modifiers
 Date opened: 2026-09-30
-Status: **Gates 1-2 complete; Gate 3 checkpoint 1 shared Beam rules / Selector preview active**
+Status: **Gates 1-2 complete; Gate 3 checkpoint 1 complete; checkpoint 2 ready**
 Plan: docs/slices/PLANNED_17_6_TACTICAL_BEAM_WEAPONS_MODIFIERS.md
 Evidence: docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md
 
@@ -30,4 +30,4 @@ Gate 1 must establish direct/frozen original evidence for:
 
 ## Gate 1 progress
 
-Gate 1 is complete in docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md. Gate 2 is frozen/complete in docs/research/SLICE_17_6_GATE2_TACTICAL_BEAM_CONTRACT_FREEZE_2026-09-30.md, including the shared Beam calculator/preview contract, exact rounding/RNG/readiness/events, minimal Marine state, passive Troop Pods marine-capacity dependency, and the 17.7 Point-Defense handoff. Gate 3 implementation is ready / not started.
+Gate 1 is complete in docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md. Gate 2 is frozen/complete in docs/research/SLICE_17_6_GATE2_TACTICAL_BEAM_CONTRACT_FREEZE_2026-09-30.md. Gate 3 checkpoint 1 is complete in docs/research/SLICE_17_6_GATE3_IMPLEMENTATION_EVIDENCE_2026-10-01.md: shared server Beam configured derivation, original rounding, server-owned MilitaryDesignWeaponRowPreview Beam Tactical preview and Selector presentation are green. Checkpoint 2 generic Beam execution / arcs / Count / Autofire is next.

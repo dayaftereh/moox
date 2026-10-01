@@ -6,7 +6,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 
 - Branch: `main`.
 - Open slice marker: **`docs/slices/_OPEN_TACTICAL_BEAM_WEAPONS_MODIFIERS_2026-09-30.md`**.
-- Active implementation slice: **Slice 17.6 - Tactical Beam Weapons & Beam Modifiers; Gates 1-2 complete, Gate 3 implementation ready / not started.**
+- Active implementation slice: **Slice 17.6 - Tactical Beam Weapons & Beam Modifiers; Gates 1-2 complete, Gate 3 checkpoint 1 complete and checkpoint 2 ready.**
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
@@ -14,9 +14,10 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-16 are closed/accepted at their intended baselines**. Slice 17 is the active 17.0-17.9 Ship Design + Tactical Combat parent program; reserved Slice 18 and Slices 20-23 remain planned only.
-- Current objective: **Slice 17.6 - Tactical Beam Weapons & Beam Modifiers is open. Gates 1-2 are complete; Gate 3 checkpoint 1 shared Beam rules / Selector preview is active. Gate 2 freezes the shared server Beam calculator/preview, exact range/hit/damage/rounding/RNG/readiness/event order, minimal Marine state and Beam-side Point Defense handoff. Slice 17.5 remains closed/accepted.**
+- Current objective: **Slice 17.6 - Tactical Beam Weapons & Beam Modifiers is open. Gates 1-2 are complete; Gate 3 checkpoint 1 shared Beam rules / Selector preview is complete and checkpoint 2 generic Beam execution / arcs / Count / Autofire is next. Slice 17.5 remains closed/accepted.**
 - Slice-17.6 Gate-1 evidence: `docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md` - **Gate 1 complete**. Original Beam identities/mounts/modifiers, exact range/hit/damage/rounding/RNG ordering, PD projectile handoff, Selector/event/VFX audit and deterministic reference vectors are closed.
 - Slice-17.6 Gate-2 contract: `docs/research/SLICE_17_6_GATE2_TACTICAL_BEAM_CONTRACT_FREEZE_2026-09-30.md` - **Gate 2 frozen/complete**. Gate 3 implementation is released against this contract.
+- Slice-17.6 Gate-3 evidence: `docs/research/SLICE_17_6_GATE3_IMPLEMENTATION_EVIDENCE_2026-10-01.md` - **checkpoint 1 complete; checkpoint 2 ready**.
 - Slice-17.2A Gate-1 Beam arc evidence: docs/research/SLICE_17_2A_GATE1_BEAM_FIRING_ARC_AUDIT_2026-09-25.md - **Gate 1 complete**.
 - Slice-17.2A Gate-2 Beam arc contract: docs/research/SLICE_17_2A_GATE2_BEAM_FIRING_ARC_CONTRACT_2026-09-25.md - **Gate 2 complete**.
 - Slice-17.2A Gate-3 Beam arc implementation evidence: docs/research/SLICE_17_2A_GATE3_BEAM_FIRING_ARC_IMPLEMENTATION_2026-09-25.md - **Gate 3 complete**.

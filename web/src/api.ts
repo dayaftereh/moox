@@ -537,6 +537,17 @@ export type MilitaryDesignDraft = {
   specials?: ShipSpecialMount[]
   weapons?: ShipWeaponMount[]
 }
+export type MilitaryDesignBeamTacticalPreview = {
+  family: 'beam'
+  base_min_damage: number
+  base_max_damage: number
+  configured_min_damage: number
+  configured_max_damage: number
+  shots_per_weapon: number
+  range_profile: 'standard' | 'heavy' | 'point_defense'
+  static_to_hit_adjustment: number
+  effect_ids?: string[]
+}
 export type MilitaryDesignWeaponRowPreview = {
   slot: number
   weapon_id: string
@@ -550,6 +561,7 @@ export type MilitaryDesignWeaponRowPreview = {
   unit_cost_pp: number
   row_space: number
   row_cost_pp: number
+  beam_tactical?: MilitaryDesignBeamTacticalPreview
 }
 export type MilitaryDesignSpecialRowPreview = {
   slot: number

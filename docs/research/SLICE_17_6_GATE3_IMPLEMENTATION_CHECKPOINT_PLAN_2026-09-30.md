@@ -1,7 +1,7 @@
 # Slice 17.6 Gate 3 - Implementation Checkpoint Plan
 
 Date: 2026-09-30
-Status: **ACTIVE - checkpoint 1 in progress**
+Status: **ACTIVE - checkpoint 1 complete; checkpoint 2 ready**
 
 Contract authority:
 
@@ -10,6 +10,8 @@ Contract authority:
 Gate 3 is split into five bounded recovery checkpoints. Every checkpoint must leave the repository committed and the affected test surface green.
 
 ## Checkpoint 1 - shared Beam rules + Selector preview
+
+Status: **COMPLETE - 2026-10-01**
 
 Deliver:
 
@@ -23,6 +25,8 @@ Deliver:
 Do not widen Tactical fire execution yet.
 
 ## Checkpoint 2 - generic Beam execution + arcs + Count/Autofire
+
+Status: **READY / next**
 
 Deliver:
 

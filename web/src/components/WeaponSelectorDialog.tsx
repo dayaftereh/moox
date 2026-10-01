@@ -99,6 +99,30 @@ const mountHelpTranslationKeys: Record<ShipWeaponMountType, TranslationKey> = {
   point_defense: 'shipbuilder.mount.pointDefenseHelp',
 }
 
+const beamEffectTranslationKeys: Record<string, TranslationKey> = {
+  armor_piercing: 'shipbuilder.modifier.armorPiercing',
+  continuous: 'shipbuilder.modifier.continuous',
+  no_range_dissipation: 'shipbuilder.modifier.noRangeDissipation',
+  shield_piercing: 'shipbuilder.modifier.shieldPiercing',
+  autofire: 'shipbuilder.modifier.autofire',
+  enveloping: 'shipbuilder.modifier.enveloping',
+  doubled_range_to_hit: 'shipbuilder.beamEffect.doubledRangeToHit',
+  armor_first_bypass: 'shipbuilder.beamEffect.armorFirstBypass',
+  monster_antaran_quarter_damage: 'shipbuilder.beamEffect.monsterAntaranQuarterDamage',
+  extra_structure_damage: 'shipbuilder.beamEffect.extraStructureDamage',
+  marine_kill: 'shipbuilder.beamEffect.marineKill',
+  always_hit: 'shipbuilder.beamEffect.alwaysHit',
+}
+
+function signedNumberLabel(value: number): string {
+  return value > 0 ? '+' + value : String(value)
+}
+
+function beamEffectLabel(t: Translator, id: string): string {
+  const key = beamEffectTranslationKeys[id]
+  return key ? t(key) : id.replaceAll('_', ' ')
+}
+
 const modifierHelpTranslationKeys: Record<ShipWeaponModifierID, TranslationKey> = {
   armor_piercing: 'shipbuilder.modifier.armorPiercingHelp',
   continuous: 'shipbuilder.modifier.continuousHelp',
@@ -569,6 +593,24 @@ export function WeaponSelectorDialog({
                     {previewing && <small>{t('shipbuilder.previewing')}</small>}
                     {!previewing && candidatePreview && (
                       <strong>{t('shipbuilder.currentWeaponTotals', { space: candidatePreview.row_space, cost: candidatePreview.row_cost_pp })}</strong>
+                    )}
+                    {!previewing && candidatePreview?.beam_tactical && (
+                      <>
+                        <small>{t('shipbuilder.configuredDamageRange', {
+                          min: candidatePreview.beam_tactical.configured_min_damage,
+                          max: candidatePreview.beam_tactical.configured_max_damage,
+                        })}</small>
+                        <small>{t('shipbuilder.beamPreviewFacts', {
+                          shots: candidatePreview.beam_tactical.shots_per_weapon,
+                          profile: t(mountTranslationKeys[candidatePreview.beam_tactical.range_profile]),
+                          toHit: signedNumberLabel(candidatePreview.beam_tactical.static_to_hit_adjustment),
+                        })}</small>
+                        {(candidatePreview.beam_tactical.effect_ids?.length ?? 0) > 0 && (
+                          <small>{t('shipbuilder.beamEffects', {
+                            effects: candidatePreview.beam_tactical.effect_ids?.map((id) => beamEffectLabel(t, id)).join(', ') ?? '',
+                          })}</small>
+                        )}
+                      </>
                     )}
                     {!previewing && preview && <small>{preview.remaining_space} {t('shipbuilder.spaceAvailable')}</small>}
                     {!previewing && preview && !preview.save_available && <small className="error">{t('shipbuilder.previewRejected')}</small>}

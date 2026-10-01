@@ -36,6 +36,18 @@ func TestSlice172MilitaryDesignPreviewUsesAuthoritativeBeamQuote(t *testing.T) {
 	if len(row.ModifierIDs) != 2 || row.ModifierIDs[0] != core.ShipWeaponModifierShieldPiercing || row.ModifierIDs[1] != core.ShipWeaponModifierAutofire {
 		t.Fatalf("canonical modifiers=%v", row.ModifierIDs)
 	}
+	if row.BeamTactical == nil {
+		t.Fatal("Beam Tactical preview missing")
+	}
+	if row.BeamTactical.Family != "beam" || row.BeamTactical.BaseMinDamage != 5 || row.BeamTactical.BaseMaxDamage != 20 ||
+		row.BeamTactical.ConfiguredMinDamage != 3 || row.BeamTactical.ConfiguredMaxDamage != 10 ||
+		row.BeamTactical.ShotsPerWeapon != 3 || string(row.BeamTactical.RangeProfile) != "point_defense" ||
+		row.BeamTactical.StaticToHitAdjustment != 5 {
+		t.Fatalf("Beam Tactical preview=%+v", *row.BeamTactical)
+	}
+	if len(row.BeamTactical.EffectIDs) != 2 || row.BeamTactical.EffectIDs[0] != "shield_piercing" || row.BeamTactical.EffectIDs[1] != "autofire" {
+		t.Fatalf("Beam Tactical effects=%v", row.BeamTactical.EffectIDs)
+	}
 	if preview.Spec.SpaceUsed != preview.SpaceUsed || preview.Spec.BaseDesignCostPP != preview.BaseDesignCostPP || preview.Spec.ProductionCostPP != preview.ProductionCostPP {
 		t.Fatalf("projection/spec totals diverged: preview=%+v spec=%+v", preview, *preview.Spec)
 	}

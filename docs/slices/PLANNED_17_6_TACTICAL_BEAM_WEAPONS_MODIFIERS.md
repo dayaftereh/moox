@@ -1,6 +1,6 @@
 # Planned Slice 17.6 - Tactical Beam Weapons & Beam Modifiers
 
-Status: **open; Gates 1-2 complete; Gate 3 implementation active - checkpoint 1 shared Beam rules / Selector preview (2026-09-30)**.
+Status: **open; Gates 1-2 complete; Gate 3 checkpoint 1 complete; checkpoint 2 ready (2026-10-01)**.
 
 ## Objective
 
