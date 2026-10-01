@@ -1,6 +1,6 @@
 # Planned Slice 17.7 - Tactical Missiles / Torpedoes / Bombs
 
-Status: **planned; child of Slice 17; not open**.
+Status: **open; Gate 1 ordnance Tactical audit active (2026-10-01)**.
 
 ## Objective
 
