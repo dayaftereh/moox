@@ -141,6 +141,9 @@ func validateTacticalLiveSnapshot(spec TacticalSpec, snapshot TacticalLiveSnapsh
 		if got.ArmorCurrent < 0 || got.ArmorCurrent > want.ArmorMax || got.StructureDamage < 0 || got.StructureDamage > want.StructureMax {
 			return fmt.Errorf("tactical live snapshot ship %d damage state outside bounds", got.ShipID)
 		}
+		if got.MarineCurrent < 0 || got.MarineCurrent > want.MarineMax {
+			return fmt.Errorf("tactical live snapshot ship %d MarineCurrent %d outside 0..%d", got.ShipID, got.MarineCurrent, want.MarineMax)
+		}
 		for arc, current := range got.ShieldArcCurrent {
 			if current < 0 || current > want.ShieldArcMax {
 				return fmt.Errorf("tactical live snapshot ship %d shield arc %d current %d outside 0..%d", got.ShipID, arc, current, want.ShieldArcMax)

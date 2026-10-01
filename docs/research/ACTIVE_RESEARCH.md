@@ -6,7 +6,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 
 - Branch: `main`.
 - Open slice marker: **`docs/slices/_OPEN_TACTICAL_BEAM_WEAPONS_MODIFIERS_2026-09-30.md`**.
-- Active implementation slice: **Slice 17.6 - Tactical Beam Weapons & Beam Modifiers; Gates 1-2 complete, Gate 3 checkpoints 1-4 complete and checkpoint 5 ready.**
+- Active implementation slice: **Slice 17.6 - Tactical Beam Weapons & Beam Modifiers; Gates 1-3 complete and Gate 4 ready.**
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
@@ -14,10 +14,10 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-16 are closed/accepted at their intended baselines**. Slice 17 is the active 17.0-17.9 Ship Design + Tactical Combat parent program; reserved Slice 18 and Slices 20-23 remain planned only.
-- Current objective: **Slice 17.6 - Tactical Beam Weapons & Beam Modifiers is open. Gates 1-2 are complete; Gate 3 checkpoints 1-4 are complete; checkpoint 5 persistence / replay / Observer / integration evidence is next. Slice 17.5 remains closed/accepted.**
+- Current objective: **Slice 17.6 - Tactical Beam Weapons & Beam Modifiers is open. Gates 1-3 are complete; Gate 4 acceptance/close is next. Slice 17.5 remains closed/accepted.**
 - Slice-17.6 Gate-1 evidence: `docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md` - **Gate 1 complete**. Original Beam identities/mounts/modifiers, exact range/hit/damage/rounding/RNG ordering, PD projectile handoff, Selector/event/VFX audit and deterministic reference vectors are closed.
 - Slice-17.6 Gate-2 contract: `docs/research/SLICE_17_6_GATE2_TACTICAL_BEAM_CONTRACT_FREEZE_2026-09-30.md` - **Gate 2 frozen/complete**. Gate 3 implementation is released against this contract.
-- Slice-17.6 Gate-3 evidence: `docs/research/SLICE_17_6_GATE3_IMPLEMENTATION_EVIDENCE_2026-10-01.md` - **checkpoints 1-4 complete; checkpoint 5 ready**.
+- Slice-17.6 Gate-3 evidence: `docs/research/SLICE_17_6_GATE3_IMPLEMENTATION_EVIDENCE_2026-10-01.md` - **Gate 3 complete; Gate 4 ready**.
 - Slice-17.2A Gate-1 Beam arc evidence: docs/research/SLICE_17_2A_GATE1_BEAM_FIRING_ARC_AUDIT_2026-09-25.md - **Gate 1 complete**.
 - Slice-17.2A Gate-2 Beam arc contract: docs/research/SLICE_17_2A_GATE2_BEAM_FIRING_ARC_CONTRACT_2026-09-25.md - **Gate 2 complete**.
 - Slice-17.2A Gate-3 Beam arc implementation evidence: docs/research/SLICE_17_2A_GATE3_BEAM_FIRING_ARC_IMPLEMENTATION_2026-09-25.md - **Gate 3 complete**.
@@ -85,7 +85,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-16 closure: docs/research/SLICE_16_CLOSE_2026-09-18.md - final supported New Game contract, explicit Advanced deferral and downstream roadmap.
 - Downstream roadmap decision (2026-09-18): Slice 18 = Galaxy Generation / Strategic Navigation Fidelity; Slice 21 = Colony/Buildings/Planet Effects/Pollution fidelity; Slice 22 remains Preset Race Completion + Custom Race Designer; Slice 23 = Full Advanced Starting Civilization parity inheriting Slice-16.7 evidence. Intended order after Slice 16: 17 -> 18 -> 20 -> 21 -> 22 -> 23; Slice 19 remains unassigned.
 - Planned downstream race completion: `docs/slices/PLANNED_22_PRESET_RACE_COMPLETION_CUSTOM_RACE_DESIGNER.md` - finish additional/all preset mechanics as prerequisites mature and build Custom Race Designer on the same authoritative trait/pick pipeline.
-- Slice-17 parent/child program: `docs/slices/PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` has child plans 17.0 through 17.9. Design-side 17.2/17.3/17.4 hand off respectively to 17.6 Tactical Beams, 17.7 Tactical Ordnance and 17.8 Tactical Fighters/Combat Specials. 17.5 is the shared Tactical Combat Foundation / broad ship-combatant admission slice; 17.9 is final Designer+Tactical integration/acceptance. Slices 17.0-17.5 and follow-up 17.2A are closed/accepted; 17.6 is open in Gate 3 implementation with checkpoints 1-4 complete and checkpoint 5 ready; 17.7-17.9 remain planned/not open.
+- Slice-17 parent/child program: `docs/slices/PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md` has child plans 17.0 through 17.9. Design-side 17.2/17.3/17.4 hand off respectively to 17.6 Tactical Beams, 17.7 Tactical Ordnance and 17.8 Tactical Fighters/Combat Specials. 17.5 is the shared Tactical Combat Foundation / broad ship-combatant admission slice; 17.9 is final Designer+Tactical integration/acceptance. Slices 17.0-17.5 and follow-up 17.2A are closed/accepted; 17.6 is open with Gates 1-3 complete and Gate 4 ready; 17.7-17.9 remain planned/not open.
 - Prepared future Galaxy/Navigation fidelity: `docs/slices/PLANNED_18_GALAXY_GENERATION_STRATEGIC_NAVIGATION_FIDELITY.md`.
 - Prepared future Espionage mechanics: `docs/slices/PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md`.
 - Accepted downstream 15.2/15.3 strategic product direction: `docs/research/SLICE_15_2_STRATEGIC_HMI_PRODUCT_DIRECTION_2026-09-04.md` - 2D Galaxy primary view, orbital star-system dialog, legal Colonize confirmation, Colony table + full Colony Detail/build queue, location-grouped Fleets, eight-category Research, first-class Diplomacy and planned Espionage, plus retained OX lettermark / future spacecraft-space icon.

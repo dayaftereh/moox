@@ -1,7 +1,7 @@
 # Slice 17.6 Gate 3 - Implementation Evidence
 
 Date: 2026-10-01
-Status: **Checkpoints 1-4 complete; Checkpoint 5 ready**
+Status: **Gate 3 complete; Gate 4 ready**
 
 Contract authority:
 
@@ -263,3 +263,45 @@ Passed on the Checkpoint-4 working tree:
 ## Checkpoint 4 close result
 
 Gate 3 checkpoints 1-4 are complete. Checkpoint 5 is released for active Tactical persistence/replay, Observer/public projection and end-to-end Selector -> Save -> Build -> BattleSession -> Tactical evidence. Projectile creation, flight, interception timing/eligibility, durability/evasion, projectile mutation and impact remain Slice 17.7.
+
+## Checkpoint 5 - persistence / replay / Observer / integration evidence
+
+Checkpoint 5 closes Gate 3 by proving that configured Beam identity and mutable Beam-era Tactical state survive real save/load/replay and full strategic integration boundaries.
+
+Implemented / hardened:
+
+- Tactical live-snapshot validation now rejects `MarineCurrent` outside `0..MarineMax` instead of accepting corrupt marine state;
+- configured Beam specs, current weapon readiness, `MarineCurrent`, RNG state and Tactical event sequence round-trip byte-identically through `battle.LiveSnapshot` restore;
+- identical continuation commands after restore reproduce identical Beam RNG, damage, marine changes, events and Tactical state;
+- Observer/public projections expose configured Beam and marine facts as detached copies; player projections keep Tactical RNG private and do not grant non-active command authority;
+- all five frozen Gate-1 vectors are encoded as deterministic golden regressions;
+- the Point Defense vector records the runtime range-only threshold plus PD static To-Hit separately; its frozen raw-roll threshold is derived as `70 - 25 = 45`, preserving the Gate-2 hit ordering without changing the already-green runtime semantics;
+- a real All-Tech session path now saves a Phasor Point Defense design with Count 3, Shield Piercing, Autofire and 360-degree arc, builds the Ship, starts a strategic encounter, projects the unchanged configuration into BattleSession/Tactical and executes `battle.fire_beam`;
+- that active configured-Beam GameSession round-trips through the public live-snapshot boundary byte-identically and continues with the same fire command deterministically.
+
+### Frozen golden vectors A-E
+
+- A - Laser / Standard: effective range index 2, 90%, raw 100, scaled 1-4, threshold 50, damage 4;
+- B - Particle Beam / Heavy: geometric 4 -> Heavy 2, 140%, raw 80, scaled 14-42, threshold 50, damage 31, natural Shield Piercing;
+- C - Mauler / Heavy: geometric 4 -> Heavy 2, doubled signed range To-Hit, hit RNG consumed, effective Always Hit, threshold 60, damage 140;
+- D - Laser / Point Defense ship target: geometric 2 -> PD 4, +25 PD To-Hit, 20%, raw 50, frozen raw threshold 45, scaled 1-1, damage 1;
+- E - Count 2 + Autofire: six attempts, -20 attack differential on every normal raw roll, ordered unit1 shots 1/2/3 then unit2 shots 1/2/3.
+
+### Checkpoint 5 regression evidence
+
+Passed on the Checkpoint-5 working tree:
+
+- `go test ./internal/battle -run TestSlice176Checkpoint5 -count=1`;
+- `go test ./internal/session -run TestSlice176Checkpoint5SelectorSaveBuildBattleSessionTacticalIntegration -count=1`;
+- `go test ./internal/beam ./internal/battle ./internal/game ./internal/ruleset ./internal/session -count=1`;
+- `go test ./... -count=1`;
+- `go vet ./...`;
+- `npm --prefix web run build`;
+- fresh reference server on `127.0.0.1:7172` exposed all four reference games at Runde 1 / planning;
+- All-Tech desktop browser smoke loaded the Galaxy and opened the Human Home system dialog;
+- All-Tech HTTP live-snapshot GET -> PUT -> GET round-trip returned status 200 and byte-identical JSON;
+- `git diff --check` and staged diff check.
+
+## Gate 3 close result
+
+All five Gate-3 checkpoints are complete and green. Slice 17.6 Gate 4 is released for acceptance/close only; no new Beam gameplay scope is required by this Gate-3 close. Projectile lifecycle/interception outcome remains Slice 17.7 and broader active combat-Special mechanics remain Slice 17.8.

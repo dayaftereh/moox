@@ -1,7 +1,7 @@
 # Slice 17.6 Gate 3 - Implementation Checkpoint Plan
 
 Date: 2026-09-30
-Status: **ACTIVE - checkpoints 1-4 complete; checkpoint 5 ready**
+Status: **COMPLETE - checkpoints 1-5 complete (2026-10-01); Gate 4 ready**
 
 Contract authority:
 
@@ -60,6 +60,8 @@ Deferred Slice-17.8 hooks remain explicit and neutral when the later consumer is
 
 ## Checkpoint 4 - reactive PD handoff + events/VFX identity
 
+Status: **COMPLETE - 2026-10-01**
+
 Deliver:
 
 - server Beam-PD reactive capability for later 17.7 projectile actors;
@@ -72,6 +74,8 @@ Deliver:
 No projectile lifecycle is implemented here.
 
 ## Checkpoint 5 - persistence / replay / Observer / integration evidence
+
+Status: **COMPLETE - 2026-10-01**
 
 Deliver:
 

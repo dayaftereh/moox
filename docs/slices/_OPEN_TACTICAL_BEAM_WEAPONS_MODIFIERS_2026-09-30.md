@@ -1,6 +1,6 @@
 # OPEN Slice 17.6 - Tactical Beam Weapons & Beam Modifiers
 Date opened: 2026-09-30
-Status: **Gates 1-2 complete; Gate 3 checkpoints 1-4 complete; checkpoint 5 ready**
+Status: **Gates 1-3 complete; Gate 4 ready**
 Plan: docs/slices/PLANNED_17_6_TACTICAL_BEAM_WEAPONS_MODIFIERS.md
 Evidence: docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md
 
@@ -30,4 +30,4 @@ Gate 1 must establish direct/frozen original evidence for:
 
 ## Gate 1 progress
 
-Gate 1 is complete in docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md. Gate 2 is frozen/complete in docs/research/SLICE_17_6_GATE2_TACTICAL_BEAM_CONTRACT_FREEZE_2026-09-30.md. Gate 3 checkpoints 1-4 are complete in docs/research/SLICE_17_6_GATE3_IMPLEMENTATION_EVIDENCE_2026-10-01.md: shared Beam derivation/Selector preview, generic 13-Beam execution/arcs/Count/Autofire, Beam target effects with exact damage scaling plus minimal Marine state, and reactive Beam-PD handoff with frozen event/VFX identity are green. Checkpoint 5 persistence / replay / Observer / integration evidence is next.
+Gate 1 is complete in docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md. Gate 2 is frozen/complete in docs/research/SLICE_17_6_GATE2_TACTICAL_BEAM_CONTRACT_FREEZE_2026-09-30.md. Gate 3 checkpoints 1-5 are complete in docs/research/SLICE_17_6_GATE3_IMPLEMENTATION_EVIDENCE_2026-10-01.md: Beam derivation, full 13-Beam execution/effects, reactive PD/event identity, persistence/replay/Observer projection, Selector-to-Tactical integration and frozen vectors A-E are green. Gate 4 acceptance/close is next.
