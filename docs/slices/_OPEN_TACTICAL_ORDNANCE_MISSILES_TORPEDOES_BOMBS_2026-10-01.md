@@ -1,6 +1,6 @@
 # OPEN Slice 17.7 - Tactical Missiles / Torpedoes / Bombs
 Date opened: 2026-10-01
-Status: **Gate 1 ordnance Tactical audit active**
+Status: **Gate 1 complete; Gate 2 contract freeze ready**
 Plan: `docs/slices/PLANNED_17_7_TACTICAL_ORDNANCE_MISSILES_TORPEDOES_BOMBS.md`
 Evidence: `docs/research/SLICE_17_7_GATE1_ORDNANCE_TACTICAL_AUDIT_2026-10-01.md`
 
@@ -31,4 +31,18 @@ Gate 1 must establish direct/frozen evidence for:
 
 ## Gate 1 progress
 
-Gate 1 is active in `docs/research/SLICE_17_7_GATE1_ORDNANCE_TACTICAL_AUDIT_2026-10-01.md`. No Gate-2 contract or gameplay implementation has started.
+Gate 1 is complete in `docs/research/SLICE_17_7_GATE1_ORDNANCE_TACTICAL_AUDIT_2026-10-01.md`; Gate 2 contract freeze is ready.
+
+Current evidenced progress:
+
+- original Missile/Torpedo projectile lifecycle symbols and callgraph mapped;
+- Missile speed and projectile durability paths revalidated;
+- Beam-vs-missile PD handoff tied directly to `Missile_Dcv_` + `Apply_Damage_To_Missile_`;
+- Anti-Missile-Rockets separate interception path identified;
+- Bombs proven to use planet/colony bombardment ownership rather than ordinary ship-target Tactical actions;
+- current MOOX metadata-only/runtime gap verified by focused regressions;
+- draft deterministic vectors A-E recorded.
+
+Gate-1 closure now directly evidences launch multiplicity and live rack/cooldown state, movement budgets, interceptor DCV, impact Missile Defense/scanner/ECCM ordering, MIRV split timing, Plasma dissipation, reactive Beam-PD placement, relevant interceptor eligibility and bombardment ownership. Active combat-Special effects remain explicit Slice-17.8 hooks.
+
+No Gate-2 contract or gameplay implementation has started.

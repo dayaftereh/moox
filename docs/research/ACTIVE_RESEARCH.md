@@ -6,7 +6,7 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 
 - Branch: `main`.
 - Open slice marker: `docs/slices/_OPEN_TACTICAL_ORDNANCE_MISSILES_TORPEDOES_BOMBS_2026-10-01.md`.
-- Active implementation slice: **Slice 17.7 - Tactical Missiles / Torpedoes / Bombs; Gate 1 ordnance Tactical audit active.**
+- Active implementation slice: **Slice 17.7 - Tactical Missiles / Torpedoes / Bombs; Gate 1 complete, Gate 2 contract freeze ready.**
 - Slices 01-12 are closed.
 - Slice 10 implementation/data/evidence commit: `b91f65e` (`game: add diplomacy war peace baseline`).
 - Core `StateSchemaVersion`: **23**.
@@ -14,12 +14,12 @@ This file is the authoritative **live** handoff for the current Master of Orion 
 - Slice-10 permanent evidence: `docs/research/DIPLOMACY_WAR_PEACE_BASELINE_2026-09-02.md`.
 - Post-Slice-12 audit: docs/research/POST_MILESTONE_FIDELITY_DEPTH_BACKLOG_AUDIT_2026-09-03.md.
 - Slices **13-16 are closed/accepted at their intended baselines**. Slice 17 is the active 17.0-17.9 Ship Design + Tactical Combat parent program; reserved Slice 18 and Slices 20-23 remain planned only.
-- Current objective: **Slice 17.7 Gate 1 - re-audit supported missile/torpedo/bomb Tactical semantics, projectile lifecycle, Point Defense interception ordering, bomb combat context, persistence/replay implications and event-driven presentation before any Gate-2 contract freeze.**
+- Current objective: **Slice 17.7 Gate 2 - freeze the server-authoritative Tactical ordnance contract from the completed Gate-1 evidence before any production implementation.**
 - Slice-17.6 Gate-1 evidence: `docs/research/SLICE_17_6_GATE1_TACTICAL_BEAM_EFFECT_AUDIT_2026-09-30.md` - **Gate 1 complete**. Original Beam identities/mounts/modifiers, exact range/hit/damage/rounding/RNG ordering, PD projectile handoff, Selector/event/VFX audit and deterministic reference vectors are closed.
 - Slice-17.6 Gate-2 contract: `docs/research/SLICE_17_6_GATE2_TACTICAL_BEAM_CONTRACT_FREEZE_2026-09-30.md` - **Gate 2 frozen/complete**; implemented and accepted through Gates 3-4.
 - Slice-17.6 Gate-3 evidence: `docs/research/SLICE_17_6_GATE3_IMPLEMENTATION_EVIDENCE_2026-10-01.md` - **Gate 3 complete**.
 - Slice-17.6 Gate-4 acceptance close: `docs/research/SLICE_17_6_GATE4_ACCEPTANCE_CLOSE_2026-10-01.md` - **accepted/closed; Gates 1-4 complete**.
-- Slice-17.7 Gate-1 audit: `docs/research/SLICE_17_7_GATE1_ORDNANCE_TACTICAL_AUDIT_2026-10-01.md` - **active**; original/reference ordnance Tactical evidence and current runtime gaps are being audited before Gate 2.
+- Slice-17.7 Gate-1 audit: `docs/research/SLICE_17_7_GATE1_ORDNANCE_TACTICAL_AUDIT_2026-10-01.md` - **complete**; original/reference ordnance Tactical semantics, projectile lifecycle/interception, bombardment ownership and deterministic contract inputs are closed; Gate 2 is ready.
 - Slice-17.2A Gate-1 Beam arc evidence: docs/research/SLICE_17_2A_GATE1_BEAM_FIRING_ARC_AUDIT_2026-09-25.md - **Gate 1 complete**.
 - Slice-17.2A Gate-2 Beam arc contract: docs/research/SLICE_17_2A_GATE2_BEAM_FIRING_ARC_CONTRACT_2026-09-25.md - **Gate 2 complete**.
 - Slice-17.2A Gate-3 Beam arc implementation evidence: docs/research/SLICE_17_2A_GATE3_BEAM_FIRING_ARC_IMPLEMENTATION_2026-09-25.md - **Gate 3 complete**.

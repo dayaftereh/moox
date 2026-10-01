@@ -1,6 +1,6 @@
 # Planned Slice 17.7 - Tactical Missiles / Torpedoes / Bombs
 
-Status: **open; Gate 1 ordnance Tactical audit active (2026-10-01)**.
+Status: **open; Gate 1 complete; Gate 2 contract freeze ready (2026-10-01)**.
 
 ## Objective
 
