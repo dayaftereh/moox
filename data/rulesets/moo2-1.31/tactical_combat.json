@@ -130,7 +130,7 @@
                         "innate_effect_ids":  [
                                                   "no_range_dissipation"
                                               ],
-                        "tactical_support":  "metadata_only"
+                        "tactical_support":  "beam"
                     },
                     {
                         "id":  "gauss_cannon",
@@ -146,7 +146,7 @@
                         "innate_effect_ids":  [
                                                   "no_range_dissipation"
                                               ],
-                        "tactical_support":  "metadata_only"
+                        "tactical_support":  "beam"
                     },
                     {
                         "id":  "laser_cannon",
@@ -162,7 +162,7 @@
                         "innate_effect_ids":  [
 
                                               ],
-                        "tactical_support":  "baseline"
+                        "tactical_support":  "beam"
                     },
                     {
                         "id":  "particle_beam",
@@ -178,7 +178,7 @@
                         "innate_effect_ids":  [
                                                   "natural_shield_piercing"
                                               ],
-                        "tactical_support":  "metadata_only"
+                        "tactical_support":  "beam"
                     },
                     {
                         "id":  "fusion_beam",
@@ -194,7 +194,7 @@
                         "innate_effect_ids":  [
 
                                               ],
-                        "tactical_support":  "metadata_only"
+                        "tactical_support":  "beam"
                     },
                     {
                         "id":  "ion_pulse_cannon",
@@ -211,7 +211,7 @@
                                                   "armor_structure_bypass",
                                                   "monster_antaran_immunity_exception"
                                               ],
-                        "tactical_support":  "metadata_only"
+                        "tactical_support":  "beam"
                     },
                     {
                         "id":  "graviton_beam",
@@ -227,7 +227,7 @@
                         "innate_effect_ids":  [
                                                   "extra_structure_damage"
                                               ],
-                        "tactical_support":  "metadata_only"
+                        "tactical_support":  "beam"
                     },
                     {
                         "id":  "neutron_blaster",
@@ -243,7 +243,7 @@
                         "innate_effect_ids":  [
                                                   "marine_kill"
                                               ],
-                        "tactical_support":  "metadata_only"
+                        "tactical_support":  "beam"
                     },
                     {
                         "id":  "phasor",
@@ -259,7 +259,7 @@
                         "innate_effect_ids":  [
 
                                               ],
-                        "tactical_support":  "metadata_only"
+                        "tactical_support":  "beam"
                     },
                     {
                         "id":  "disrupter_cannon",
@@ -275,7 +275,7 @@
                         "innate_effect_ids":  [
                                                   "no_range_dissipation"
                                               ],
-                        "tactical_support":  "metadata_only"
+                        "tactical_support":  "beam"
                     },
                     {
                         "id":  "death_ray",
@@ -291,7 +291,7 @@
                         "innate_effect_ids":  [
                                                   "marine_kill"
                                               ],
-                        "tactical_support":  "metadata_only"
+                        "tactical_support":  "beam"
                     },
                     {
                         "id":  "plasma_cannon",
@@ -308,7 +308,7 @@
                                                   "all_four_shields",
                                                   "double_range_penalty"
                                               ],
-                        "tactical_support":  "metadata_only"
+                        "tactical_support":  "beam"
                     },
                     {
                         "id":  "mauler_device",
@@ -325,7 +325,7 @@
                                                   "always_hit",
                                                   "double_range_dissipation"
                                               ],
-                        "tactical_support":  "metadata_only"
+                        "tactical_support":  "beam"
                     },
                     {
                         "id":  "nuclear_missile",

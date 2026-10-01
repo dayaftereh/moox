@@ -396,7 +396,7 @@ func TestSlice175Checkpoint2ShieldedStrategicEncounterStartsTacticalBattle(t *te
 	}
 }
 
-func TestSlice175Gate4MetadataOnlyOrdnanceModifierReachesTacticalEncounter(t *testing.T) {
+func TestSlice176BeamExecutionPreservesDeferredOrdnanceInTacticalEncounter(t *testing.T) {
 	state, seats, fixture := makeTacticalStrategicFixture(t, 1)
 	attackerID := fixture.attackerShipIDs[0]
 	for i := range state.Ships {
@@ -480,8 +480,17 @@ func TestSlice175Gate4MetadataOnlyOrdnanceModifierReachesTacticalEncounter(t *te
 		t.Fatalf("live All-Tech weapon actions=%+v", view.Tactical.WeaponActions)
 	}
 	for _, action := range view.Tactical.WeaponActions {
-		if action.Available || action.UnavailableReason != battle.TacticalWeaponUnavailableConsumer || len(action.Targets) != 0 {
-			t.Fatalf("metadata-only weapon action must remain visible but unavailable: %+v", action)
+		switch action.WeaponSlot {
+		case 0, 2:
+			if !action.Available || action.CommandKind != battle.CommandFireBeam || len(action.Targets) == 0 {
+				t.Fatalf("Slice 17.6 Beam slot must be executable: %+v", action)
+			}
+		case 1:
+			if action.Available || action.UnavailableReason != battle.TacticalWeaponUnavailableConsumer || len(action.Targets) != 0 {
+				t.Fatalf("deferred Ordnance slot must remain visible but unavailable: %+v", action)
+			}
+		default:
+			t.Fatalf("unexpected weapon action: %+v", action)
 		}
 	}
 }

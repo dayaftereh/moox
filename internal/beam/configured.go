@@ -45,12 +45,9 @@ func ScaleDamageBounds(baseMin, baseMax, percent int) (int, int) {
 	return minDamage, maxDamage
 }
 
-func DeriveConfiguredPreview(weapon ruleset.TacticalWeaponRule, mount core.ShipWeaponMount) (ConfiguredPreview, error) {
-	if weapon.Kind != "beam" {
-		return ConfiguredPreview{}, fmt.Errorf("configured Beam preview requires Beam weapon, got %q", weapon.Kind)
-	}
-
-	mountType := mount.MountType
+// DeriveConfigured is the shared server-side Beam configuration derivation used
+// by both design-time preview and Tactical execution.
+func DeriveConfigured(weaponID string, baseMin, baseMax int, mountType core.ShipWeaponMountType, modifierIDs []core.ShipWeaponModifierID, innateEffectIDs []string) (ConfiguredPreview, error) {
 	if mountType == "" {
 		mountType = core.ShipWeaponMountStandard
 	}
@@ -71,7 +68,7 @@ func DeriveConfiguredPreview(weapon ruleset.TacticalWeaponRule, mount core.ShipW
 		return ConfiguredPreview{}, fmt.Errorf("unsupported Beam mount type %q", mountType)
 	}
 
-	effects := make([]string, 0, len(mount.ModifierIDs)+len(weapon.InnateEffectIDs)+2)
+	effects := make([]string, 0, len(modifierIDs)+len(innateEffectIDs)+2)
 	appendEffect := func(id string) {
 		if id == "" {
 			return
@@ -86,7 +83,7 @@ func DeriveConfiguredPreview(weapon ruleset.TacticalWeaponRule, mount core.ShipW
 
 	autofire := false
 	continuous := false
-	for _, modifierID := range mount.ModifierIDs {
+	for _, modifierID := range modifierIDs {
 		id := string(modifierID)
 		appendEffect(id)
 		switch modifierID {
@@ -97,7 +94,7 @@ func DeriveConfiguredPreview(weapon ruleset.TacticalWeaponRule, mount core.ShipW
 		}
 	}
 
-	for _, innateID := range weapon.InnateEffectIDs {
+	for _, innateID := range innateEffectIDs {
 		switch innateID {
 		case "natural_shield_piercing":
 			appendEffect("shield_piercing")
@@ -116,7 +113,7 @@ func DeriveConfiguredPreview(weapon ruleset.TacticalWeaponRule, mount core.ShipW
 
 	// Two executable-native effects are not fully represented by the older
 	// metadata rows but are frozen by Slice 17.6 Gate 2.
-	switch weapon.ID {
+	switch weaponID {
 	case "fusion_beam":
 		appendEffect("doubled_range_to_hit")
 	case "death_ray":
@@ -133,11 +130,11 @@ func DeriveConfiguredPreview(weapon ruleset.TacticalWeaponRule, mount core.ShipW
 		staticToHit += 25
 	}
 
-	minDamage, maxDamage := ScaleDamageBounds(weapon.MinDamage, weapon.MaxDamage, damagePercent)
+	minDamage, maxDamage := ScaleDamageBounds(baseMin, baseMax, damagePercent)
 	return ConfiguredPreview{
 		Family:                "beam",
-		BaseMinDamage:         weapon.MinDamage,
-		BaseMaxDamage:         weapon.MaxDamage,
+		BaseMinDamage:         baseMin,
+		BaseMaxDamage:         baseMax,
 		ConfiguredMinDamage:   minDamage,
 		ConfiguredMaxDamage:   maxDamage,
 		ShotsPerWeapon:        shots,
@@ -145,4 +142,11 @@ func DeriveConfiguredPreview(weapon ruleset.TacticalWeaponRule, mount core.ShipW
 		StaticToHitAdjustment: staticToHit,
 		EffectIDs:             effects,
 	}, nil
+}
+
+func DeriveConfiguredPreview(weapon ruleset.TacticalWeaponRule, mount core.ShipWeaponMount) (ConfiguredPreview, error) {
+	if weapon.Kind != "beam" {
+		return ConfiguredPreview{}, fmt.Errorf("configured Beam preview requires Beam weapon, got %q", weapon.Kind)
+	}
+	return DeriveConfigured(weapon.ID, weapon.MinDamage, weapon.MaxDamage, mount.MountType, mount.ModifierIDs, weapon.InnateEffectIDs)
 }

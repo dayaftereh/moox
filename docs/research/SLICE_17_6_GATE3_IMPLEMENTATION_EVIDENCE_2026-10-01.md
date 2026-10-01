@@ -1,7 +1,7 @@
 # Slice 17.6 Gate 3 - Implementation Evidence
 
 Date: 2026-10-01
-Status: **Checkpoint 1 complete; Checkpoint 2 ready**
+Status: **Checkpoints 1-2 complete; Checkpoint 3 ready**
 
 Contract authority:
 
@@ -131,3 +131,40 @@ Checkpoint 2 - generic Beam execution + arcs + Count/Autofire:
 - resolve physical Count outer loop and Autofire inner three-shot ordering;
 - preserve zero RNG/readiness/events on rejected actions;
 - keep current Laser regressions green.
+## Checkpoint 2 - generic Beam execution + arcs + Count/Autofire
+
+Checkpoint 2 replaces the Laser-only Tactical fire predicate with the frozen executable Beam consumer while preserving the legacy Laser snapshot path.
+
+Implemented:
+
+- all 13 frozen Beam identities now project with TacticalSupport="beam";
+- internal/battle consumes the shared internal/beam configured derivation rather than duplicating mount/modifier facts;
+- server-side target projection and command preparation enforce the persisted Beam firing arc before RNG/readiness/event mutation;
+- the five Slice-17.2A arcs use the frozen original sectors: Forward 120 degrees, Forward Extended 240 degrees, Back Extended 240 degrees, Rear 120 degrees, and unrestricted 360;
+- pre-17.2A in-memory Laser fixtures with an empty arc remain compatible, while newly projected persisted Beam rows carry canonical non-empty arcs;
+- Heavy / Point Defense effective range-index transformation and configured static To-Hit facts are consumed by the hit path;
+- doubled signed range To-Hit and Always-Hit participate in the generic hit path where present;
+- physical Count is the outer battery loop and Autofire is the inner three-shot loop;
+- flattened shot order is deterministic (unit1 s1/s2/s3, then unit2 ...);
+- one accepted battery command consumes readiness once after the entire battery;
+- rejected out-of-arc commands preserve State/RNG/readiness/events.
+
+Target-side Beam damage effects, exact configured damage scaling against live targets, marine state/loss, and broader Shield/Armor/Structure effect hooks remain Checkpoint 3.
+
+### Checkpoint 2 regression evidence
+
+Passed on the Checkpoint-2 working tree:
+
+- go test ./internal/beam ./internal/battle ./internal/game -count=1
+- focused Slice-17.6 arc-reject and Count=2 x Autofire=3 BattleSession regressions
+- updated live All-Tech game/session regressions proving Beam slots execute while deferred Ordnance remains unavailable
+- go test ./... -count=1
+- go vet ./...
+- npm --prefix web run build
+- git diff --check
+
+The authoritative ruleset fingerprint changed only because the 13 frozen Beam rows moved from baseline / metadata_only to beam; the reviewed test fingerprint was updated accordingly.
+
+## Checkpoint 2 close result
+
+Gate 3 checkpoints 1-2 are complete. Checkpoint 3 is released for Beam target effects, exact damage application and minimal Marine state. Projectile lifecycle remains Slice 17.7 and active combat-Special mechanics remain Slice 17.8.

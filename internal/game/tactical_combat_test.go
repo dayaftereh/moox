@@ -230,7 +230,7 @@ func TestTacticalMetadataPreservesWeaponSlotsAndCounts(t *testing.T) {
 	}
 }
 
-func TestSlice172TacticalMetadataPreservesConfiguredBeamSnapshotWithoutEnablingDeferredFire(t *testing.T) {
+func TestSlice176TacticalConfiguredBeamSnapshotEnablesGenericFire(t *testing.T) {
 	attacker := tacticalMetadataShip(101, 1, "fusion_drive", true)
 	attacker.Spec.Weapons = []core.ShipWeaponMount{
 		{Slot: 0, WeaponID: "laser_cannon", Count: 1, MountType: core.ShipWeaponMountStandard},
@@ -265,7 +265,7 @@ func TestSlice172TacticalMetadataPreservesConfiguredBeamSnapshotWithoutEnablingD
 		t.Fatalf("projected attacker weapons=%+v", projected)
 	}
 	phasor := projected.Weapons[1]
-	if phasor.WeaponID != "phasor" || phasor.MountType != core.ShipWeaponMountHeavy || phasor.FiringArcID != core.ShipWeaponFiringArc360 || phasor.MinDamage != 5 || phasor.MaxDamage != 20 || phasor.TacticalSupport != "metadata_only" {
+	if phasor.WeaponID != "phasor" || phasor.MountType != core.ShipWeaponMountHeavy || phasor.FiringArcID != core.ShipWeaponFiringArc360 || phasor.MinDamage != 5 || phasor.MaxDamage != 20 || phasor.TacticalSupport != "beam" {
 		t.Fatalf("projected Phasor metadata=%+v", phasor)
 	}
 	if len(phasor.ModifierIDs) != 1 || phasor.ModifierIDs[0] != core.ShipWeaponModifierShieldPiercing {
@@ -308,19 +308,23 @@ func TestSlice172TacticalMetadataPreservesConfiguredBeamSnapshotWithoutEnablingD
 		t.Fatalf("BattleSession attacker weapons=%+v", tacticalAttacker)
 	}
 	viewPhasor := tacticalAttacker.Weapons[1]
-	if viewPhasor.WeaponID != "phasor" || viewPhasor.MountType != core.ShipWeaponMountHeavy || viewPhasor.FiringArcID != core.ShipWeaponFiringArc360 || viewPhasor.TacticalSupport != "metadata_only" || viewPhasor.Ready {
+	if viewPhasor.WeaponID != "phasor" || viewPhasor.MountType != core.ShipWeaponMountHeavy || viewPhasor.FiringArcID != core.ShipWeaponFiringArc360 || viewPhasor.TacticalSupport != "beam" || !viewPhasor.Ready {
 		t.Fatalf("BattleSession Phasor view=%+v", viewPhasor)
 	}
 	if len(viewPhasor.ModifierIDs) != 1 || viewPhasor.ModifierIDs[0] != core.ShipWeaponModifierShieldPiercing {
 		t.Fatalf("BattleSession Phasor modifiers=%v", viewPhasor.ModifierIDs)
 	}
+	foundLaser, foundPhasor := false, false
 	for _, action := range view.Tactical.LegalFireActions {
-		if action.WeaponSlot == 1 || action.WeaponID == "phasor" {
-			t.Fatalf("deferred Phasor unexpectedly received fire action: %+v", action)
+		if action.WeaponID == "laser_cannon" {
+			foundLaser = true
+		}
+		if action.WeaponSlot == 1 && action.WeaponID == "phasor" {
+			foundPhasor = true
 		}
 	}
-	if len(view.Tactical.LegalFireActions) == 0 || view.Tactical.LegalFireActions[0].WeaponID != "laser_cannon" {
-		t.Fatalf("standard Laser baseline fire action missing: %+v", view.Tactical.LegalFireActions)
+	if !foundLaser || !foundPhasor {
+		t.Fatalf("generic Beam fire actions missing laser=%v phasor=%v actions=%+v", foundLaser, foundPhasor, view.Tactical.LegalFireActions)
 	}
 
 	view.Spec.Tactical.Ships[0].Weapons[1].ModifierIDs[0] = core.ShipWeaponModifierAutofire

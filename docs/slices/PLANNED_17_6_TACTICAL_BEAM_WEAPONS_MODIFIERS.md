@@ -1,6 +1,6 @@
 # Planned Slice 17.6 - Tactical Beam Weapons & Beam Modifiers
 
-Status: **open; Gates 1-2 complete; Gate 3 checkpoint 1 complete; checkpoint 2 ready (2026-10-01)**.
+Status: **open; Gates 1-2 complete; Gate 3 checkpoints 1-2 complete; checkpoint 3 ready (2026-10-01)**.
 
 ## Objective
 

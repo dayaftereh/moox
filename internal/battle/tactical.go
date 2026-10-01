@@ -7,6 +7,7 @@ import (
 	"math"
 	"sort"
 
+	"moox/internal/beam"
 	"moox/internal/core"
 	"moox/internal/protocol"
 )
@@ -435,7 +436,7 @@ func validateTacticalWeaponSnapshot(w TacticalWeaponSpec) error {
 		previousRank = rank
 	}
 	switch w.TacticalSupport {
-	case "", "baseline", "metadata_only":
+	case "", "baseline", "beam", "metadata_only":
 	default:
 		return fmt.Errorf("tactical weapon %q has invalid support mode %q", w.WeaponID, w.TacticalSupport)
 	}
@@ -445,9 +446,21 @@ func validateTacticalWeaponSnapshot(w TacticalWeaponSpec) error {
 	return nil
 }
 
-func baselineTacticalFireSupported(w TacticalWeaponSpec) bool {
+func tacticalBeamConfigured(w TacticalWeaponSpec) (beam.ConfiguredPreview, error) {
+	if tacticalWeaponFamily(w) != "beam" {
+		return beam.ConfiguredPreview{}, fmt.Errorf("weapon %q is not a Beam weapon", w.WeaponID)
+	}
+	return beam.DeriveConfigured(w.WeaponID, w.MinDamage, w.MaxDamage, canonicalTacticalWeaponMountType(w.MountType), w.ModifierIDs, w.InnateEffectIDs)
+}
+
+func tacticalBeamFireSupported(w TacticalWeaponSpec) bool {
+	if w.Count <= 0 || tacticalWeaponFamily(w) != "beam" {
+		return false
+	}
+	if w.TacticalSupport == "beam" {
+		return true
+	}
 	return w.WeaponID == "laser_cannon" &&
-		w.Count > 0 &&
 		canonicalTacticalWeaponMountType(w.MountType) == core.ShipWeaponMountStandard &&
 		len(w.ModifierIDs) == 0 &&
 		w.MinDamage == 1 &&
@@ -699,7 +712,7 @@ func newTacticalRuntime(spec TacticalSpec) (tacticalRuntime, error) {
 	for i, ship := range spec.Ships {
 		state := TacticalShipState{ShipID: ship.ShipID, X: ship.X, Y: ship.Y, Facing: ship.Facing, MovementCurrent: ship.CurrentCombatSpeed, MovementMax: ship.CurrentCombatSpeed, ArmorCurrent: ship.ArmorMax, ShieldArcCurrent: fullTacticalShieldArcs(ship.ShieldArcMax), Weapons: make([]TacticalWeaponState, len(ship.Weapons))}
 		for j, weapon := range ship.Weapons {
-			state.Weapons[j] = TacticalWeaponState{Slot: weapon.Slot, Ready: baselineTacticalFireSupported(weapon)}
+			state.Weapons[j] = TacticalWeaponState{Slot: weapon.Slot, Ready: tacticalBeamFireSupported(weapon)}
 		}
 		r.state.Ships[i] = state
 	}
@@ -1235,8 +1248,62 @@ func tacticalWeaponFamily(w TacticalWeaponSpec) string {
 	return ""
 }
 
-func tacticalBeamTargets(spec TacticalSpec, r *tacticalRuntime, activeSpec *TacticalShipSpec, activeState *TacticalShipState) []TacticalFireTarget {
+func tacticalBeamHasEffect(config beam.ConfiguredPreview, effectID string) bool {
+	for _, id := range config.EffectIDs {
+		if id == effectID {
+			return true
+		}
+	}
+	return false
+}
+
+func tacticalBeamEffectiveRangeIndex(geometricIndex, tableLen int, profile beam.RangeProfile) int {
+	index := geometricIndex
+	switch profile {
+	case beam.RangeProfileHeavy:
+		index /= 2
+	case beam.RangeProfilePointDefense:
+		index *= 2
+		if tableLen > 0 && index >= tableLen {
+			index = tableLen - 1
+		}
+	}
+	return index
+}
+
+func tacticalBeamTargetInArc(source, target TacticalShipState, arcID core.ShipWeaponFiringArcID) bool {
+	if arcID == "" {
+		// Preserve pre-17.2A tactical snapshots; newly projected Beam rows always persist a canonical arc.
+		return true
+	}
+	if arcID == core.ShipWeaponFiringArc360 {
+		return true
+	}
+	bearing := math.Atan2(float64(target.Y-source.Y), float64(target.X-source.X)) * 180 / math.Pi
+	if bearing < 0 {
+		bearing += 360
+	}
+	relative := math.Mod(bearing-float64(source.Facing)*22.5+360, 360)
+	switch arcID {
+	case core.ShipWeaponFiringArcForward:
+		return relative <= 60 || relative >= 300
+	case core.ShipWeaponFiringArcForwardExtended:
+		return relative <= 120 || relative >= 240
+	case core.ShipWeaponFiringArcBackExtended:
+		return relative >= 60 && relative <= 300
+	case core.ShipWeaponFiringArcRear:
+		return relative >= 120 && relative <= 240
+	default:
+		return false
+	}
+}
+
+func tacticalBeamTargets(spec TacticalSpec, r *tacticalRuntime, activeSpec *TacticalShipSpec, activeState *TacticalShipState, weapon TacticalWeaponSpec) []TacticalFireTarget {
 	if activeSpec == nil || activeState == nil {
+		return nil
+	}
+	configured, err := tacticalBeamConfigured(weapon)
+	if err != nil {
 		return nil
 	}
 	var targets []TacticalFireTarget
@@ -1248,7 +1315,11 @@ func tacticalBeamTargets(spec TacticalSpec, r *tacticalRuntime, activeSpec *Tact
 		if targetState == nil || targetState.Destroyed {
 			continue
 		}
-		rangeIndex := tacticalRangeIndex(activeState.X, activeState.Y, targetState.X, targetState.Y)
+		if !tacticalBeamTargetInArc(*activeState, *targetState, weapon.FiringArcID) {
+			continue
+		}
+		geometricRangeIndex := tacticalRangeIndex(activeState.X, activeState.Y, targetState.X, targetState.Y)
+		rangeIndex := tacticalBeamEffectiveRangeIndex(geometricRangeIndex, len(spec.Rules.BeamToHitRangeModifiers), configured.RangeProfile)
 		if rangeIndex < 0 || rangeIndex >= len(spec.Rules.BeamToHitRangeModifiers) {
 			continue
 		}
@@ -1271,7 +1342,7 @@ func tacticalWeaponActions(spec TacticalSpec, r *tacticalRuntime) []TacticalWeap
 			WeaponID:     weaponSpec.WeaponID,
 			WeaponFamily: tacticalWeaponFamily(weaponSpec),
 		}
-		if !baselineTacticalFireSupported(weaponSpec) {
+		if !tacticalBeamFireSupported(weaponSpec) {
 			action.UnavailableReason = TacticalWeaponUnavailableConsumer
 			out = append(out, action)
 			continue
@@ -1283,7 +1354,7 @@ func tacticalWeaponActions(spec TacticalSpec, r *tacticalRuntime) []TacticalWeap
 			out = append(out, action)
 			continue
 		}
-		targets := tacticalBeamTargets(spec, r, activeSpec, activeState)
+		targets := tacticalBeamTargets(spec, r, activeSpec, activeState, weaponSpec)
 		if len(targets) == 0 {
 			action.UnavailableReason = TacticalWeaponUnavailableNoTargets
 			out = append(out, action)
@@ -1331,6 +1402,7 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	if targetSpec.EmpireID == active.EmpireID {
 		return nil, fmt.Errorf("target ship %d is not an opponent", payload.TargetShipID)
 	}
+
 	weapon := weaponSpec(*active, payload.WeaponSlot)
 	activeState := r.shipState(active.ShipID)
 	ready := weaponState(activeState, payload.WeaponSlot)
@@ -1340,80 +1412,108 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	if !ready.Ready {
 		return nil, fmt.Errorf("ship %d weapon slot %d is not ready", active.ShipID, payload.WeaponSlot)
 	}
-	if !baselineTacticalFireSupported(*weapon) {
-		return nil, fmt.Errorf("weapon slot %d is outside the supported standard-Laser firing baseline", payload.WeaponSlot)
+	if !tacticalBeamFireSupported(*weapon) {
+		return nil, fmt.Errorf("weapon slot %d is outside the executable Beam firing contract", payload.WeaponSlot)
 	}
-
-	activePosition := r.shipState(active.ShipID)
-	if activePosition == nil {
+	if activeState == nil {
 		return nil, fmt.Errorf("active tactical ship %d has no runtime position", active.ShipID)
 	}
-	rangeIndex := tacticalRangeIndex(activePosition.X, activePosition.Y, targetState.X, targetState.Y)
+
+	configured, err := tacticalBeamConfigured(*weapon)
+	if err != nil {
+		return nil, err
+	}
+	if !tacticalBeamTargetInArc(*activeState, *targetState, weapon.FiringArcID) {
+		return nil, fmt.Errorf("target ship %d is outside weapon slot %d firing arc %q", targetSpec.ShipID, payload.WeaponSlot, weapon.FiringArcID)
+	}
+
+	geometricRangeIndex := tacticalRangeIndex(activeState.X, activeState.Y, targetState.X, targetState.Y)
+	rangeIndex := tacticalBeamEffectiveRangeIndex(geometricRangeIndex, len(spec.Tactical.Rules.BeamToHitRangeModifiers), configured.RangeProfile)
 	if rangeIndex < 0 || rangeIndex >= len(spec.Tactical.Rules.BeamToHitRangeModifiers) {
 		return nil, fmt.Errorf("Beam range index %d is outside the evidenced table", rangeIndex)
 	}
+	if rangeIndex >= len(spec.Tactical.Rules.BeamDamageRangeModifiers) {
+		return nil, fmt.Errorf("Beam damage range index %d is outside the evidenced table", rangeIndex)
+	}
+
 	rangeHitModifier := spec.Tactical.Rules.BeamToHitRangeModifiers[rangeIndex]
+	if tacticalBeamHasEffect(configured, "doubled_range_to_hit") {
+		rangeHitModifier *= 2
+	}
 	threshold := spec.Tactical.Rules.BeamBaseHitThreshold - rangeHitModifier
 	if threshold > spec.Tactical.Rules.BeamMaxHitThreshold {
 		threshold = spec.Tactical.Rules.BeamMaxHitThreshold
 	}
+	attackDifferential := active.BeamOffense - targetSpec.BeamDefense + configured.StaticToHitAdjustment
+	alwaysHit := tacticalBeamHasEffect(configured, "always_hit")
+	totalShots := weapon.Count * configured.ShotsPerWeapon
+
 	hitCount := 0
 	totalDamage := 0
-	for shotIndex := 0; shotIndex < weapon.Count; shotIndex++ {
-		rawRoll, err := r.random(100, spec.Tactical.Rules)
-		if err != nil {
-			return nil, err
-		}
-		effectiveRoll := rawRoll
-		if rawRoll > spec.Tactical.Rules.BeamMaxHitThreshold {
-			effectiveRoll = spec.Tactical.Rules.BeamEffectiveRollCap
-		} else {
-			effectiveRoll += active.BeamOffense - targetSpec.BeamDefense
-			if effectiveRoll > spec.Tactical.Rules.BeamEffectiveRollCap {
-				effectiveRoll = spec.Tactical.Rules.BeamEffectiveRollCap
-			}
-		}
-		hit := effectiveRoll >= threshold
-		damage := 0
-		selectionRoll := 0
-		var damageApplied tacticalDamageApplication
-		if hit {
-			hitCount++
-			damage = beamDamage(*weapon, spec.Tactical.Rules.BeamDamageRangeModifiers[rangeIndex], effectiveRoll, threshold, spec.Tactical.Rules.BeamEffectiveRollCap)
-			totalDamage += damage
-			selectionRoll, err = r.random(100, spec.Tactical.Rules)
+	flatShotIndex := 0
+	for physicalIndex := 0; physicalIndex < weapon.Count; physicalIndex++ {
+		for burstIndex := 0; burstIndex < configured.ShotsPerWeapon; burstIndex++ {
+			flatShotIndex++
+			rawRoll, err := r.random(100, spec.Tactical.Rules)
 			if err != nil {
 				return nil, err
 			}
-			damageApplied = applyTacticalDamage(*targetSpec, targetState, *activeState, damage)
-		}
-		if err := r.appendEvent("beam_fired", seatID, commandSequence, map[string]any{
-			"ship_id": active.ShipID, "target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
-			"shot_index": shotIndex + 1, "shot_count": weapon.Count,
-			"range_index": rangeIndex, "raw_hit_roll": rawRoll, "effective_hit_roll": effectiveRoll,
-			"threshold": threshold, "hit": hit, "damage": damage,
-		}); err != nil {
-			return nil, err
-		}
-		if hit {
-			if err := r.appendEvent("battle_damage_applied", seatID, commandSequence, map[string]any{
-				"source_ship_id": active.ShipID, "target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
-				"shot_index": shotIndex + 1, "shot_count": weapon.Count,
-				"layer": damageApplied.Layer, "damage": damage, "incoming_damage": damageApplied.IncomingDamage, "selection_roll": selectionRoll,
-				"shield_arc": damageApplied.ShieldArc, "shield_before": damageApplied.ShieldBefore, "shield_after": damageApplied.ShieldAfter,
-				"post_block_damage": damageApplied.PostBlockDamage, "shield_absorbed": damageApplied.ShieldAbsorbed, "lower_layer_overflow": damageApplied.LowerLayerOverflow,
-				"armor_before": damageApplied.ArmorBefore, "armor_after": damageApplied.ArmorAfter,
-				"structure_damage_before": damageApplied.StructureBefore, "structure_damage_after": damageApplied.StructureAfter,
+			hitRoll := rawRoll
+			if alwaysHit {
+				hitRoll = 100
+			}
+			effectiveRoll := hitRoll
+			if hitRoll > spec.Tactical.Rules.BeamMaxHitThreshold {
+				effectiveRoll = spec.Tactical.Rules.BeamEffectiveRollCap
+			} else {
+				effectiveRoll += attackDifferential
+				if effectiveRoll > spec.Tactical.Rules.BeamEffectiveRollCap {
+					effectiveRoll = spec.Tactical.Rules.BeamEffectiveRollCap
+				}
+			}
+			hit := effectiveRoll >= threshold
+			damage := 0
+			selectionRoll := 0
+			var damageApplied tacticalDamageApplication
+			if hit {
+				hitCount++
+				damage = beamDamage(*weapon, spec.Tactical.Rules.BeamDamageRangeModifiers[rangeIndex], effectiveRoll, threshold, spec.Tactical.Rules.BeamEffectiveRollCap)
+				totalDamage += damage
+				selectionRoll, err = r.random(100, spec.Tactical.Rules)
+				if err != nil {
+					return nil, err
+				}
+				damageApplied = applyTacticalDamage(*targetSpec, targetState, *activeState, damage)
+			}
+			if err := r.appendEvent("beam_fired", seatID, commandSequence, map[string]any{
+				"ship_id": active.ShipID, "target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
+				"shot_index": flatShotIndex, "shot_count": totalShots,
+				"range_index": rangeIndex, "raw_hit_roll": rawRoll, "effective_hit_roll": effectiveRoll,
+				"threshold": threshold, "hit": hit, "damage": damage,
 			}); err != nil {
 				return nil, err
 			}
+			if hit {
+				if err := r.appendEvent("battle_damage_applied", seatID, commandSequence, map[string]any{
+					"source_ship_id": active.ShipID, "target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
+					"shot_index": flatShotIndex, "shot_count": totalShots,
+					"layer": damageApplied.Layer, "damage": damage, "incoming_damage": damageApplied.IncomingDamage, "selection_roll": selectionRoll,
+					"shield_arc": damageApplied.ShieldArc, "shield_before": damageApplied.ShieldBefore, "shield_after": damageApplied.ShieldAfter,
+					"post_block_damage": damageApplied.PostBlockDamage, "shield_absorbed": damageApplied.ShieldAbsorbed, "lower_layer_overflow": damageApplied.LowerLayerOverflow,
+					"armor_before": damageApplied.ArmorBefore, "armor_after": damageApplied.ArmorAfter,
+					"structure_damage_before": damageApplied.StructureBefore, "structure_damage_after": damageApplied.StructureAfter,
+				}); err != nil {
+					return nil, err
+				}
+			}
 		}
 	}
+
 	ready.Ready = false
-	if weapon.Count > 1 {
+	if totalShots > 1 {
 		if err := r.appendEvent("beam_volley_resolved", seatID, commandSequence, map[string]any{
 			"ship_id": active.ShipID, "target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
-			"shot_count": weapon.Count, "hit_count": hitCount, "total_damage": totalDamage,
+			"shot_count": totalShots, "hit_count": hitCount, "total_damage": totalDamage,
 		}); err != nil {
 			return nil, err
 		}
@@ -1433,7 +1533,6 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	}
 	return nil, nil
 }
-
 func waitTargetShipIDs(spec TacticalSpec, r *tacticalRuntime, seatID protocol.SeatID, activeShipID core.ID) []core.ID {
 	if seatID == 0 || len(r.state.InitiativeOrder) < 2 {
 		return nil

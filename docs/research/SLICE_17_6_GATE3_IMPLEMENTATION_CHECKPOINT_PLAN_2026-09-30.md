@@ -1,7 +1,7 @@
 # Slice 17.6 Gate 3 - Implementation Checkpoint Plan
 
 Date: 2026-09-30
-Status: **ACTIVE - checkpoint 1 complete; checkpoint 2 ready**
+Status: **ACTIVE - checkpoints 1-2 complete; checkpoint 3 ready**
 
 Contract authority:
 
@@ -26,7 +26,7 @@ Do not widen Tactical fire execution yet.
 
 ## Checkpoint 2 - generic Beam execution + arcs + Count/Autofire
 
-Status: **READY / next**
+Status: **COMPLETE - 2026-10-01**
 
 Deliver:
 

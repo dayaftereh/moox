@@ -7,7 +7,7 @@ import (
 	"moox/internal/core"
 )
 
-func TestSlice175Gate4AllTechMetadataOnlyModifiersDoNotBlockEncounter(t *testing.T) {
+func TestSlice176AllTechBeamsExecuteWhileDeferredOrdnanceRemainsUnavailable(t *testing.T) {
 	rules := tacticalMetadataRules(t)
 
 	attacker := checkpoint2Ship(
@@ -89,8 +89,17 @@ func TestSlice175Gate4AllTechMetadataOnlyModifiersDoNotBlockEncounter(t *testing
 		t.Fatalf("weapon action projection=%+v", view.Tactical)
 	}
 	for _, action := range view.Tactical.WeaponActions {
-		if action.Available || action.UnavailableReason != battle.TacticalWeaponUnavailableConsumer || len(action.Targets) != 0 {
-			t.Fatalf("metadata-only slot must remain visible but unavailable: %+v", action)
+		switch action.WeaponSlot {
+		case 0, 2:
+			if !action.Available || action.CommandKind != battle.CommandFireBeam || len(action.Targets) == 0 {
+				t.Fatalf("Slice 17.6 Beam slot must be executable: %+v", action)
+			}
+		case 1:
+			if action.Available || action.UnavailableReason != battle.TacticalWeaponUnavailableConsumer || len(action.Targets) != 0 {
+				t.Fatalf("deferred Ordnance slot must remain visible but unavailable: %+v", action)
+			}
+		default:
+			t.Fatalf("unexpected weapon action: %+v", action)
 		}
 	}
 }
