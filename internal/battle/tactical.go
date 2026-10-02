@@ -34,15 +34,16 @@ const (
 )
 
 type TacticalRulesSnapshot struct {
-	SchemaVersion                int    `json:"schema_version"`
-	InitiativeBeamOffenseDivisor int    `json:"initiative_beam_offense_divisor"`
-	RNGMultiplier                uint32 `json:"rng_multiplier"`
-	RNGIncrement                 uint32 `json:"rng_increment"`
-	BeamBaseHitThreshold         int    `json:"beam_base_hit_threshold"`
-	BeamMaxHitThreshold          int    `json:"beam_max_hit_threshold"`
-	BeamEffectiveRollCap         int    `json:"beam_effective_roll_cap"`
-	BeamToHitRangeModifiers      []int  `json:"beam_to_hit_range_modifiers"`
-	BeamDamageRangeModifiers     []int  `json:"beam_damage_range_modifiers"`
+	SchemaVersion                int                            `json:"schema_version"`
+	InitiativeBeamOffenseDivisor int                            `json:"initiative_beam_offense_divisor"`
+	RNGMultiplier                uint32                         `json:"rng_multiplier"`
+	RNGIncrement                 uint32                         `json:"rng_increment"`
+	BeamBaseHitThreshold         int                            `json:"beam_base_hit_threshold"`
+	BeamMaxHitThreshold          int                            `json:"beam_max_hit_threshold"`
+	BeamEffectiveRollCap         int                            `json:"beam_effective_roll_cap"`
+	BeamToHitRangeModifiers      []int                          `json:"beam_to_hit_range_modifiers"`
+	BeamDamageRangeModifiers     []int                          `json:"beam_damage_range_modifiers"`
+	Ordnance                     *TacticalOrdnanceRulesSnapshot `json:"ordnance,omitempty"`
 }
 
 type TacticalWeaponSpec struct {
@@ -67,35 +68,37 @@ type TacticalSpecialSpec struct {
 }
 
 type TacticalShipSpec struct {
-	ShipID               core.ID                `json:"ship_id"`
-	EmpireID             core.ID                `json:"empire_id"`
-	SeatID               protocol.SeatID        `json:"seat_id"`
-	X                    int                    `json:"x"`
-	Y                    int                    `json:"y"`
-	Facing               int                    `json:"facing"`
-	TurningMode          string                 `json:"turning_mode,omitempty"`
-	HullID               string                 `json:"hull_id"`
-	WarpDriveID          string                 `json:"warp_drive_id"`
-	ComputerID           string                 `json:"computer_id"`
-	ArmorID              string                 `json:"armor_id"`
-	ShieldID             string                 `json:"shield_id,omitempty"`
-	FuelCellID           string                 `json:"fuel_cell_id"`
-	SourceDesignID       core.ID                `json:"source_design_id,omitempty"`
-	SourceDesignRevision uint32                 `json:"source_design_revision,omitempty"`
-	StrategicPictureID   int                    `json:"strategic_picture_id,omitempty"`
-	SourceVisualRevision uint32                 `json:"source_visual_revision,omitempty"`
-	VisualGenome         *core.ShipVisualGenome `json:"visual_genome,omitempty"`
-	Weapons              []TacticalWeaponSpec   `json:"weapons,omitempty"`
-	Specials             []TacticalSpecialSpec  `json:"specials,omitempty"`
-	MinimumCombatSpeed   int                    `json:"minimum_combat_speed"`
-	CurrentCombatSpeed   int                    `json:"current_combat_speed"`
-	BeamOffense          int                    `json:"beam_offense"`
-	BeamDefense          int                    `json:"beam_defense"`
-	ArmorMax             int                    `json:"armor_max"`
-	StructureMax         int                    `json:"structure_max"`
-	MarineMax            int                    `json:"marine_max"`
-	ShieldStrength       int                    `json:"shield_strength"`
-	ShieldArcMax         int                    `json:"shield_arc_max"`
+	ShipID                  core.ID                `json:"ship_id"`
+	EmpireID                core.ID                `json:"empire_id"`
+	SeatID                  protocol.SeatID        `json:"seat_id"`
+	X                       int                    `json:"x"`
+	Y                       int                    `json:"y"`
+	Facing                  int                    `json:"facing"`
+	TurningMode             string                 `json:"turning_mode,omitempty"`
+	HullID                  string                 `json:"hull_id"`
+	WarpDriveID             string                 `json:"warp_drive_id"`
+	ComputerID              string                 `json:"computer_id"`
+	ArmorID                 string                 `json:"armor_id"`
+	ShieldID                string                 `json:"shield_id,omitempty"`
+	FuelCellID              string                 `json:"fuel_cell_id"`
+	SourceDesignID          core.ID                `json:"source_design_id,omitempty"`
+	SourceDesignRevision    uint32                 `json:"source_design_revision,omitempty"`
+	StrategicPictureID      int                    `json:"strategic_picture_id,omitempty"`
+	SourceVisualRevision    uint32                 `json:"source_visual_revision,omitempty"`
+	VisualGenome            *core.ShipVisualGenome `json:"visual_genome,omitempty"`
+	Weapons                 []TacticalWeaponSpec   `json:"weapons,omitempty"`
+	Specials                []TacticalSpecialSpec  `json:"specials,omitempty"`
+	MinimumCombatSpeed      int                    `json:"minimum_combat_speed"`
+	CurrentCombatSpeed      int                    `json:"current_combat_speed"`
+	BeamOffense             int                    `json:"beam_offense"`
+	BeamDefense             int                    `json:"beam_defense"`
+	MissileDefense          int                    `json:"missile_defense"`
+	MissileScannerReduction int                    `json:"missile_scanner_reduction"`
+	ArmorMax                int                    `json:"armor_max"`
+	StructureMax            int                    `json:"structure_max"`
+	MarineMax               int                    `json:"marine_max"`
+	ShieldStrength          int                    `json:"shield_strength"`
+	ShieldArcMax            int                    `json:"shield_arc_max"`
 }
 
 type TacticalSpec struct {
@@ -167,38 +170,40 @@ type TacticalWeaponView struct {
 }
 
 type TacticalShipView struct {
-	ShipID               core.ID                `json:"ship_id"`
-	EmpireID             core.ID                `json:"empire_id"`
-	SeatID               protocol.SeatID        `json:"seat_id"`
-	HullID               string                 `json:"hull_id"`
-	WarpDriveID          string                 `json:"warp_drive_id"`
-	ComputerID           string                 `json:"computer_id"`
-	ArmorID              string                 `json:"armor_id"`
-	ShieldID             string                 `json:"shield_id,omitempty"`
-	SourceDesignID       core.ID                `json:"source_design_id,omitempty"`
-	SourceDesignRevision uint32                 `json:"source_design_revision,omitempty"`
-	StrategicPictureID   int                    `json:"strategic_picture_id,omitempty"`
-	SourceVisualRevision uint32                 `json:"source_visual_revision,omitempty"`
-	VisualGenome         *core.ShipVisualGenome `json:"visual_genome,omitempty"`
-	X                    int                    `json:"x"`
-	Y                    int                    `json:"y"`
-	Facing               int                    `json:"facing"`
-	MovementCurrent      int                    `json:"movement_current"`
-	MovementMax          int                    `json:"movement_max"`
-	ActivationComplete   bool                   `json:"activation_complete"`
-	ArmorCurrent         int                    `json:"armor_current"`
-	ArmorMax             int                    `json:"armor_max"`
-	MarineCurrent        int                    `json:"marine_current"`
-	MarineMax            int                    `json:"marine_max"`
-	ShieldStrength       int                    `json:"shield_strength"`
-	ShieldArcCurrent     [4]int                 `json:"shield_arc_current"`
-	ShieldArcMax         int                    `json:"shield_arc_max"`
-	StructureCurrent     int                    `json:"structure_current"`
-	StructureMax         int                    `json:"structure_max"`
-	BeamOffense          int                    `json:"beam_offense"`
-	BeamDefense          int                    `json:"beam_defense"`
-	Weapons              []TacticalWeaponView   `json:"weapons,omitempty"`
-	Destroyed            bool                   `json:"destroyed"`
+	ShipID                  core.ID                `json:"ship_id"`
+	EmpireID                core.ID                `json:"empire_id"`
+	SeatID                  protocol.SeatID        `json:"seat_id"`
+	HullID                  string                 `json:"hull_id"`
+	WarpDriveID             string                 `json:"warp_drive_id"`
+	ComputerID              string                 `json:"computer_id"`
+	ArmorID                 string                 `json:"armor_id"`
+	ShieldID                string                 `json:"shield_id,omitempty"`
+	SourceDesignID          core.ID                `json:"source_design_id,omitempty"`
+	SourceDesignRevision    uint32                 `json:"source_design_revision,omitempty"`
+	StrategicPictureID      int                    `json:"strategic_picture_id,omitempty"`
+	SourceVisualRevision    uint32                 `json:"source_visual_revision,omitempty"`
+	VisualGenome            *core.ShipVisualGenome `json:"visual_genome,omitempty"`
+	X                       int                    `json:"x"`
+	Y                       int                    `json:"y"`
+	Facing                  int                    `json:"facing"`
+	MovementCurrent         int                    `json:"movement_current"`
+	MovementMax             int                    `json:"movement_max"`
+	ActivationComplete      bool                   `json:"activation_complete"`
+	ArmorCurrent            int                    `json:"armor_current"`
+	ArmorMax                int                    `json:"armor_max"`
+	MarineCurrent           int                    `json:"marine_current"`
+	MarineMax               int                    `json:"marine_max"`
+	ShieldStrength          int                    `json:"shield_strength"`
+	ShieldArcCurrent        [4]int                 `json:"shield_arc_current"`
+	ShieldArcMax            int                    `json:"shield_arc_max"`
+	StructureCurrent        int                    `json:"structure_current"`
+	StructureMax            int                    `json:"structure_max"`
+	BeamOffense             int                    `json:"beam_offense"`
+	BeamDefense             int                    `json:"beam_defense"`
+	MissileDefense          int                    `json:"missile_defense"`
+	MissileScannerReduction int                    `json:"missile_scanner_reduction"`
+	Weapons                 []TacticalWeaponView   `json:"weapons,omitempty"`
+	Destroyed               bool                   `json:"destroyed"`
 }
 
 type TacticalFireTarget struct {
@@ -226,6 +231,7 @@ type TacticalWeaponActionAvailability struct {
 
 type TacticalView struct {
 	State             TacticalState                      `json:"state"`
+	Ordnance          TacticalOrdnanceState              `json:"ordnance"`
 	Events            []TacticalEvent                    `json:"events"`
 	Ships             []TacticalShipView                 `json:"ships"`
 	LegalMoves        []TacticalMoveOption               `json:"legal_moves,omitempty"`
@@ -296,6 +302,7 @@ type RetreatPayload struct {
 
 type tacticalRuntime struct {
 	state             TacticalState
+	ordnance          TacticalOrdnanceState
 	events            []TacticalEvent
 	nextEventSequence uint64
 }
@@ -352,6 +359,9 @@ func validateTacticalSpec(spec Spec) error {
 		return fmt.Errorf("Slice 07 tactical fixture requires initial RNG state 0x%08X", BaselineTacticalRNGState)
 	}
 	if err := validateBaselineRules(t.Rules); err != nil {
+		return err
+	}
+	if err := validateTacticalOrdnanceRulesForSpec(*t); err != nil {
 		return err
 	}
 	if len(spec.Attacker.ShipIDs) < 1 || len(spec.Defender.ShipIDs) < 1 {
@@ -475,9 +485,16 @@ func validateTacticalWeaponSnapshot(w TacticalWeaponSpec) error {
 		previousRank = rank
 	}
 	switch w.TacticalSupport {
-	case "", "baseline", "beam", "metadata_only":
+	case "", "baseline", "beam", "ordnance", "bombardment_only", "metadata_only":
 	default:
 		return fmt.Errorf("tactical weapon %q has invalid support mode %q", w.WeaponID, w.TacticalSupport)
+	}
+	family := tacticalWeaponFamily(w)
+	if w.TacticalSupport == "ordnance" && family != "missile" && family != "torpedo" {
+		return fmt.Errorf("tactical weapon %q family %q cannot use ordnance support", w.WeaponID, family)
+	}
+	if w.TacticalSupport == "bombardment_only" && family != "bomb" {
+		return fmt.Errorf("tactical weapon %q family %q cannot use bombardment-only support", w.WeaponID, family)
 	}
 	if w.TacticalSupport == "" && w.WeaponID != "laser_cannon" {
 		return fmt.Errorf("tactical weapon %q is missing support metadata", w.WeaponID)
@@ -667,6 +684,9 @@ func validateTacticalCombatantSnapshot(s TacticalShipSpec) error {
 	if s.BeamDefense != s.CurrentCombatSpeed*5 {
 		return fmt.Errorf("tactical ship %d Beam Defense %d does not match derived %d", s.ShipID, s.BeamDefense, s.CurrentCombatSpeed*5)
 	}
+	if s.MissileDefense < 0 || s.MissileScannerReduction < 0 {
+		return fmt.Errorf("tactical ship %d Missile Defense/scanner values must be non-negative", s.ShipID)
+	}
 	armorMax := hull.BaseArmor + (hull.BaseArmor*armorBonus)/100
 	if s.ArmorMax != armorMax || s.StructureMax != hull.Structure {
 		return fmt.Errorf("tactical ship %d durability %d/%d does not match derived %d/%d", s.ShipID, s.ArmorMax, s.StructureMax, armorMax, hull.Structure)
@@ -734,6 +754,11 @@ func validateBaselineRules(r TacticalRulesSnapshot) error {
 	if !equalInts(r.BeamToHitRangeModifiers, wantHit) || !equalInts(r.BeamDamageRangeModifiers, wantDamage) {
 		return fmt.Errorf("unsupported Slice 07 Beam range tables")
 	}
+	if r.Ordnance != nil {
+		if err := validateTacticalOrdnanceRulesSnapshot(*r.Ordnance); err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
@@ -758,6 +783,7 @@ func newTacticalRuntime(spec TacticalSpec) (tacticalRuntime, error) {
 			Ships:               make([]TacticalShipState, len(spec.Ships)),
 		},
 		nextEventSequence: 1,
+		ordnance:          initialTacticalOrdnanceState(spec),
 	}
 	for i, ship := range spec.Ships {
 		state := TacticalShipState{ShipID: ship.ShipID, X: ship.X, Y: ship.Y, Facing: ship.Facing, MovementCurrent: ship.CurrentCombatSpeed, MovementMax: ship.CurrentCombatSpeed, ArmorCurrent: ship.ArmorMax, ShieldArcCurrent: fullTacticalShieldArcs(ship.ShieldArcMax), MarineCurrent: ship.MarineMax, Weapons: make([]TacticalWeaponState, len(ship.Weapons))}
@@ -1457,7 +1483,7 @@ func rechargeTacticalShields(spec TacticalSpec, r *tacticalRuntime) {
 	}
 }
 func buildTacticalView(spec TacticalSpec, r tacticalRuntime) TacticalView {
-	view := TacticalView{State: cloneTacticalState(r.state), Events: cloneTacticalEvents(r.events), Ships: tacticalShipViews(spec, &r)}
+	view := TacticalView{State: cloneTacticalState(r.state), Ordnance: cloneTacticalOrdnanceState(r.ordnance), Events: cloneTacticalEvents(r.events), Ships: tacticalShipViews(spec, &r)}
 	state := r.shipState(r.state.ActiveShipID)
 	if state != nil && !state.Destroyed && !state.ActivationComplete {
 		view.CanEndActivation = true
@@ -1489,7 +1515,7 @@ func tacticalShipViews(spec TacticalSpec, r *tacticalRuntime) []TacticalShipView
 			MarineCurrent: state.MarineCurrent, MarineMax: shipSpec.MarineMax,
 			ShieldStrength: shipSpec.ShieldStrength, ShieldArcCurrent: state.ShieldArcCurrent, ShieldArcMax: shipSpec.ShieldArcMax,
 			StructureCurrent: shipSpec.StructureMax - state.StructureDamage, StructureMax: shipSpec.StructureMax,
-			BeamOffense: shipSpec.BeamOffense, BeamDefense: shipSpec.BeamDefense, Destroyed: state.Destroyed,
+			BeamOffense: shipSpec.BeamOffense, BeamDefense: shipSpec.BeamDefense, MissileDefense: shipSpec.MissileDefense, MissileScannerReduction: shipSpec.MissileScannerReduction, Destroyed: state.Destroyed,
 			Weapons: make([]TacticalWeaponView, 0, len(shipSpec.Weapons)),
 		}
 		if shipSpec.VisualGenome != nil {
@@ -2125,6 +2151,7 @@ func cloneTacticalSpec(spec TacticalSpec) TacticalSpec {
 	out := spec
 	out.Rules.BeamToHitRangeModifiers = append([]int(nil), spec.Rules.BeamToHitRangeModifiers...)
 	out.Rules.BeamDamageRangeModifiers = append([]int(nil), spec.Rules.BeamDamageRangeModifiers...)
+	out.Rules.Ordnance = cloneTacticalOrdnanceRulesSnapshot(spec.Rules.Ordnance)
 	out.Ships = make([]TacticalShipSpec, len(spec.Ships))
 	for i := range spec.Ships {
 		out.Ships[i] = spec.Ships[i]
@@ -2163,7 +2190,7 @@ func cloneTacticalEvents(events []TacticalEvent) []TacticalEvent {
 }
 
 func cloneTacticalRuntime(r tacticalRuntime) tacticalRuntime {
-	return tacticalRuntime{state: cloneTacticalState(r.state), events: cloneTacticalEvents(r.events), nextEventSequence: r.nextEventSequence}
+	return tacticalRuntime{state: cloneTacticalState(r.state), ordnance: cloneTacticalOrdnanceState(r.ordnance), events: cloneTacticalEvents(r.events), nextEventSequence: r.nextEventSequence}
 }
 
 // CloneTacticalSpec returns a detached immutable tactical battle snapshot.

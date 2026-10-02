@@ -133,6 +133,7 @@ func tacticalMetadataForEncounterWithSpecials(state *core.GameState, encounter E
 			BeamEffectiveRollCap:         rules.Beam.EffectiveRollCap,
 			BeamToHitRangeModifiers:      append([]int(nil), rules.Beam.ToHitRangeModifiers...),
 			BeamDamageRangeModifiers:     append([]int(nil), rules.Beam.DamageRangeModifiers...),
+			Ordnance:                     tacticalOrdnanceRulesSnapshot(rules),
 		},
 		InitiativeEnabled: true,
 		InitialRNGState:   battle.BaselineTacticalRNGState,
@@ -177,6 +178,28 @@ func tacticalMetadataForEncounterWithSpecials(state *core.GameState, encounter E
 	return tactical, "", nil
 }
 
+func tacticalOrdnanceRulesSnapshot(rules *ruleset.TacticalCombatFile) *battle.TacticalOrdnanceRulesSnapshot {
+	if rules == nil {
+		return nil
+	}
+	out := &battle.TacticalOrdnanceRulesSnapshot{
+		MovementUnitsPerField:     rules.Ordnance.MovementUnitsPerField,
+		FastSpeedBonus:            rules.Ordnance.FastSpeedBonus,
+		TorpedoCooldownRounds:     rules.Ordnance.TorpedoCooldownRounds,
+		MIRVMultiplier:            rules.Ordnance.MIRVMultiplier,
+		PlasmaDissipationPerField: rules.Ordnance.PlasmaDissipationPerField,
+	}
+	for _, weapon := range rules.OrdnanceWeapons() {
+		if weapon.TacticalSupport != "ordnance" {
+			continue
+		}
+		out.Weapons = append(out.Weapons, battle.TacticalOrdnanceWeaponRuleSnapshot{
+			WeaponID: weapon.ID, BaseSpeed: weapon.ProjectileSpeed, BaseDurability: weapon.ProjectileDurability, BeamInterceptorDCV: weapon.BeamInterceptorDCV,
+		})
+	}
+	return out
+}
+
 func tacticalDeploymentY(count, index int) int {
 	if count <= 1 {
 		return 10
@@ -212,7 +235,8 @@ func validateTacticalCombatant(ship core.Ship, rules *ruleset.TacticalCombatFile
 		if !ok {
 			return fmt.Errorf("tactical combatant ship %d weapon %q is unknown", ship.ID, canonical.WeaponID)
 		}
-		if weaponRule.Kind == "beam" {
+		switch weaponRule.Kind {
+		case "beam":
 			if mountBit := beamMountBit(canonical.MountType); mountBit != 0 && weaponRule.AllowedModifierMask&mountBit == 0 {
 				return fmt.Errorf("tactical combatant Beam %q does not allow mount %q", canonical.WeaponID, canonical.MountType)
 			}
@@ -222,8 +246,18 @@ func validateTacticalCombatant(ship core.Ship, rules *ruleset.TacticalCombatFile
 					return fmt.Errorf("tactical combatant Beam %q does not allow modifier %q", canonical.WeaponID, modifierID)
 				}
 			}
-		} else if weaponRule.TacticalSupport != "metadata_only" {
-			return fmt.Errorf("tactical combatant later-family weapon %q has invalid tactical support %q", canonical.WeaponID, weaponRule.TacticalSupport)
+		case "missile", "torpedo":
+			if weaponRule.TacticalSupport != "ordnance" {
+				return fmt.Errorf("tactical combatant ordnance weapon %q has invalid tactical support %q", canonical.WeaponID, weaponRule.TacticalSupport)
+			}
+		case "bomb":
+			if weaponRule.TacticalSupport != "bombardment_only" {
+				return fmt.Errorf("tactical combatant Bomb/Bio weapon %q has invalid tactical support %q", canonical.WeaponID, weaponRule.TacticalSupport)
+			}
+		default:
+			if weaponRule.TacticalSupport != "metadata_only" {
+				return fmt.Errorf("tactical combatant later-family weapon %q has invalid tactical support %q", canonical.WeaponID, weaponRule.TacticalSupport)
+			}
 		}
 		previousSlot = weapon.Slot
 	}

@@ -76,7 +76,7 @@ func TestMilitaryDesignerCatalogProjectsOrderedAuthoritativeBaseline(t *testing.
 	if !reflect.DeepEqual(missileChoice.AmmoChoices, []int{2, 5, 10, 15, 20}) || len(missileChoice.MountChoices) != 1 || len(missileChoice.ModifierChoices) != 5 {
 		t.Fatalf("Nuclear Missile config choices=%+v mounts=%+v modifiers=%+v", missileChoice.AmmoChoices, missileChoice.MountChoices, missileChoice.ModifierChoices)
 	}
-	if missileChoice.EffectiveStandardSpace != 20 || missileChoice.EffectiveStandardCostPP != 20 || missileChoice.TacticalSupport != "metadata_only" {
+	if missileChoice.EffectiveStandardSpace != 20 || missileChoice.EffectiveStandardCostPP != 20 || missileChoice.TacticalSupport != "ordnance" {
 		t.Fatalf("Nuclear Missile default quote metadata=%+v", missileChoice)
 	}
 	torpedoChoice, ok := designerWeaponChoiceByID(catalog.Weapons, "anti_matter_torpedoes")
@@ -84,7 +84,7 @@ func TestMilitaryDesignerCatalogProjectsOrderedAuthoritativeBaseline(t *testing.
 		t.Fatalf("Anti-Matter Torpedo catalog choice=%+v ok=%v", torpedoChoice, ok)
 	}
 	bombChoice, ok := designerWeaponChoiceByID(catalog.Weapons, "nuclear_bomb")
-	if !ok || bombChoice.DefaultAmmo != 10 || bombChoice.FixedFiringArcID != core.ShipWeaponFiringArc360 || len(bombChoice.ModifierChoices) != 0 {
+	if !ok || bombChoice.DefaultAmmo != 10 || bombChoice.FixedFiringArcID != core.ShipWeaponFiringArc360 || len(bombChoice.ModifierChoices) != 0 || bombChoice.TacticalSupport != "bombardment_only" {
 		t.Fatalf("Nuclear Bomb catalog choice=%+v ok=%v", bombChoice, ok)
 	}
 	if catalog.ProductionCostNumerator != 1 || catalog.ProductionCostDenominator != 1 {

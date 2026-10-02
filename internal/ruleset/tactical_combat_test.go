@@ -32,6 +32,21 @@ func TestTacticalCombatRulesLoadCanonicalBaseline(t *testing.T) {
 	if got := file.BeamWeapons(); len(got) != 13 {
 		t.Fatalf("Beam weapon count=%d want=13", len(got))
 	}
+	if file.Ordnance.MovementUnitsPerField != 20 || file.Ordnance.FastSpeedBonus != 4 || file.Ordnance.TorpedoCooldownRounds != 2 || file.Ordnance.MIRVMultiplier != 4 || file.Ordnance.PlasmaDissipationPerField != 5 {
+		t.Fatalf("ordnance rules=%+v", file.Ordnance)
+	}
+	nuclear, ok := file.WeaponByID("nuclear_missile")
+	if !ok || nuclear.TacticalSupport != "ordnance" || nuclear.ProjectileSpeed != 12 || nuclear.ProjectileDurability != 4 || nuclear.BeamInterceptorDCV != 50 {
+		t.Fatalf("Nuclear Missile tactical rule=%+v ok=%v", nuclear, ok)
+	}
+	plasma, ok := file.WeaponByID("plasma_torpedoes")
+	if !ok || plasma.TacticalSupport != "ordnance" || plasma.ProjectileSpeed != 24 || plasma.ProjectileDurability != 5 || plasma.BeamInterceptorDCV != 120 {
+		t.Fatalf("Plasma Torpedo tactical rule=%+v ok=%v", plasma, ok)
+	}
+	bomb, ok := file.WeaponByID("nuclear_bomb")
+	if !ok || bomb.TacticalSupport != "bombardment_only" || bomb.ProjectileSpeed != 0 || bomb.ProjectileDurability != 0 || bomb.BeamInterceptorDCV != 0 {
+		t.Fatalf("Nuclear Bomb tactical boundary=%+v ok=%v", bomb, ok)
+	}
 	if got := file.Beam.SpaceMiniaturizationFactors; !reflect.DeepEqual(got, []int{100, 80, 70, 60, 50, 40}) {
 		t.Fatalf("Beam Space miniaturization=%v", got)
 	}

@@ -14,6 +14,7 @@ type TacticalCombatFile struct {
 	Initiative                     TacticalInitiativeRules    `json:"initiative"`
 	RNG                            TacticalRNGRules           `json:"rng"`
 	Beam                           TacticalBeamRules          `json:"beam"`
+	Ordnance                       TacticalOrdnanceRules      `json:"ordnance"`
 	Weapon                         TacticalWeaponRule         `json:"weapon"`
 	Weapons                        []TacticalWeaponRule       `json:"weapons,omitempty"`
 	BeamModifiers                  []TacticalBeamModifierRule `json:"beam_modifiers,omitempty"`
@@ -50,20 +51,31 @@ type TacticalBeamRules struct {
 	CostMiniaturizationFactors  []int `json:"cost_miniaturization_factors,omitempty"`
 }
 
+type TacticalOrdnanceRules struct {
+	MovementUnitsPerField     int `json:"movement_units_per_field"`
+	FastSpeedBonus            int `json:"fast_speed_bonus"`
+	TorpedoCooldownRounds     int `json:"torpedo_cooldown_rounds"`
+	MIRVMultiplier            int `json:"mirv_multiplier"`
+	PlasmaDissipationPerField int `json:"plasma_dissipation_per_field"`
+}
+
 type TacticalWeaponRule struct {
-	ID                  string   `json:"id"`
-	OriginalIndex       int      `json:"original_index,omitempty"`
-	TechnologyID        int      `json:"technology_id"`
-	TechnologyFieldID   int      `json:"technology_field_id,omitempty"`
-	Kind                string   `json:"kind"`
-	BaseSpace           int      `json:"base_space"`
-	BaseCostPP          int      `json:"base_cost_pp"`
-	MinDamage           int      `json:"min_damage"`
-	MaxDamage           int      `json:"max_damage"`
-	AllowedModifierMask int      `json:"allowed_modifier_mask,omitempty"`
-	InnateEffectIDs     []string `json:"innate_effect_ids,omitempty"`
-	TacticalSupport     string   `json:"tactical_support,omitempty"`
-	CraftPerUnit        int      `json:"craft_per_unit,omitempty"`
+	ID                   string   `json:"id"`
+	OriginalIndex        int      `json:"original_index,omitempty"`
+	TechnologyID         int      `json:"technology_id"`
+	TechnologyFieldID    int      `json:"technology_field_id,omitempty"`
+	Kind                 string   `json:"kind"`
+	BaseSpace            int      `json:"base_space"`
+	BaseCostPP           int      `json:"base_cost_pp"`
+	MinDamage            int      `json:"min_damage"`
+	MaxDamage            int      `json:"max_damage"`
+	AllowedModifierMask  int      `json:"allowed_modifier_mask,omitempty"`
+	InnateEffectIDs      []string `json:"innate_effect_ids,omitempty"`
+	TacticalSupport      string   `json:"tactical_support,omitempty"`
+	CraftPerUnit         int      `json:"craft_per_unit,omitempty"`
+	ProjectileSpeed      int      `json:"projectile_speed,omitempty"`
+	ProjectileDurability int      `json:"projectile_durability,omitempty"`
+	BeamInterceptorDCV   int      `json:"beam_interceptor_dcv,omitempty"`
 }
 
 type TacticalBeamModifierRule struct {
@@ -259,6 +271,9 @@ func (f *TacticalCombatFile) Validate() error {
 	if len(f.Beam.ToHitRangeModifiers) != 9 || len(f.Beam.DamageRangeModifiers) != 9 {
 		return fmt.Errorf("Beam range tables must contain exactly 9 entries")
 	}
+	if f.Ordnance.MovementUnitsPerField != 20 || f.Ordnance.FastSpeedBonus != 4 || f.Ordnance.TorpedoCooldownRounds != 2 || f.Ordnance.MIRVMultiplier != 4 || f.Ordnance.PlasmaDissipationPerField != 5 {
+		return fmt.Errorf("invalid tactical ordnance constants")
+	}
 	if f.Weapon.ID == "" || f.Weapon.TechnologyID <= 0 || f.Weapon.Kind != "beam" || f.Weapon.BaseSpace <= 0 || f.Weapon.BaseCostPP <= 0 || f.Weapon.MinDamage <= 0 || f.Weapon.MaxDamage < f.Weapon.MinDamage {
 		return fmt.Errorf("invalid tactical weapon rule")
 	}
@@ -272,12 +287,20 @@ func (f *TacticalCombatFile) Validate() error {
 			return fmt.Errorf("invalid tactical weapon[%d]", i)
 		}
 		switch weapon.Kind {
-		case "beam", "torpedo", "bomb":
-			if weapon.BaseSpace <= 0 || weapon.BaseCostPP <= 0 || weapon.MinDamage <= 0 || weapon.MaxDamage < weapon.MinDamage || weapon.CraftPerUnit != 0 {
-				return fmt.Errorf("invalid %s weapon[%d]", weapon.Kind, i)
+		case "beam":
+			if weapon.BaseSpace <= 0 || weapon.BaseCostPP <= 0 || weapon.MinDamage <= 0 || weapon.MaxDamage < weapon.MinDamage || weapon.CraftPerUnit != 0 || weapon.ProjectileSpeed != 0 || weapon.ProjectileDurability != 0 || weapon.BeamInterceptorDCV != 0 || (weapon.TacticalSupport != "" && weapon.TacticalSupport != "beam") {
+				return fmt.Errorf("invalid Beam weapon[%d]", i)
+			}
+		case "torpedo":
+			if weapon.BaseSpace <= 0 || weapon.BaseCostPP <= 0 || weapon.MinDamage <= 0 || weapon.MaxDamage < weapon.MinDamage || weapon.CraftPerUnit != 0 || weapon.TacticalSupport != "ordnance" || weapon.ProjectileSpeed <= 0 || weapon.ProjectileDurability <= 0 || weapon.BeamInterceptorDCV <= 0 {
+				return fmt.Errorf("invalid Torpedo weapon[%d]", i)
+			}
+		case "bomb":
+			if weapon.BaseSpace <= 0 || weapon.BaseCostPP <= 0 || weapon.MinDamage <= 0 || weapon.MaxDamage < weapon.MinDamage || weapon.CraftPerUnit != 0 || weapon.TacticalSupport != "bombardment_only" || weapon.ProjectileSpeed != 0 || weapon.ProjectileDurability != 0 || weapon.BeamInterceptorDCV != 0 {
+				return fmt.Errorf("invalid Bomb weapon[%d]", i)
 			}
 		case "missile":
-			if weapon.BaseSpace < 0 || weapon.BaseCostPP < 0 || weapon.MinDamage <= 0 || weapon.MaxDamage < weapon.MinDamage || weapon.CraftPerUnit != 0 {
+			if weapon.BaseSpace < 0 || weapon.BaseCostPP < 0 || weapon.MinDamage <= 0 || weapon.MaxDamage < weapon.MinDamage || weapon.CraftPerUnit != 0 || weapon.TacticalSupport != "ordnance" || weapon.ProjectileSpeed <= 0 || weapon.ProjectileDurability <= 0 || weapon.BeamInterceptorDCV <= 0 {
 				return fmt.Errorf("invalid Missile weapon[%d]", i)
 			}
 		case "fighter":

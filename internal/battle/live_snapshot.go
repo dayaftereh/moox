@@ -12,9 +12,10 @@ import (
 const LiveSnapshotSchemaVersion = 1
 
 type TacticalLiveSnapshot struct {
-	State             TacticalState   `json:"state"`
-	Events            []TacticalEvent `json:"events"`
-	NextEventSequence uint64          `json:"next_event_sequence"`
+	State             TacticalState          `json:"state"`
+	Ordnance          *TacticalOrdnanceState `json:"ordnance,omitempty"`
+	Events            []TacticalEvent        `json:"events"`
+	NextEventSequence uint64                 `json:"next_event_sequence"`
 }
 
 type LiveSnapshot struct {
@@ -37,8 +38,10 @@ func (s *Session) LiveSnapshot() LiveSnapshot {
 		TacticalRevision: s.tacticalRevision,
 	}
 	if s.tactical != nil {
+		ordnance := cloneTacticalOrdnanceState(s.tactical.ordnance)
 		out.Tactical = &TacticalLiveSnapshot{
 			State:             cloneTacticalState(s.tactical.state),
+			Ordnance:          &ordnance,
 			Events:            cloneTacticalEvents(s.tactical.events),
 			NextEventSequence: s.tactical.nextEventSequence,
 		}
@@ -61,8 +64,13 @@ func RestoreLiveSnapshot(snapshot LiveSnapshot) (*Session, error) {
 	base.result = cloneLiveResult(snapshot.Result)
 	base.tacticalRevision = snapshot.TacticalRevision
 	if snapshot.Tactical != nil {
+		ordnance := initialTacticalOrdnanceState(*snapshot.Spec.Tactical)
+		if snapshot.Tactical.Ordnance != nil {
+			ordnance = cloneTacticalOrdnanceState(*snapshot.Tactical.Ordnance)
+		}
 		runtime := tacticalRuntime{
 			state:             cloneTacticalState(snapshot.Tactical.State),
+			ordnance:          ordnance,
 			events:            cloneTacticalEvents(snapshot.Tactical.Events),
 			nextEventSequence: snapshot.Tactical.NextEventSequence,
 		}
@@ -161,6 +169,14 @@ func validateTacticalLiveSnapshot(spec TacticalSpec, snapshot TacticalLiveSnapsh
 			}
 		}
 	}
+	if snapshot.Ordnance == nil {
+		if tacticalSpecHasExecutableOrdnance(spec) {
+			return fmt.Errorf("tactical live snapshot with executable ordnance is missing ordnance state")
+		}
+	} else if err := validateTacticalOrdnanceState(spec, *snapshot.Ordnance); err != nil {
+		return fmt.Errorf("tactical live snapshot ordnance state: %w", err)
+	}
+
 	seenInitiative := make(map[core.ID]struct{}, len(state.InitiativeOrder))
 	for _, id := range state.InitiativeOrder {
 		if _, ok := shipIDs[id]; !ok {

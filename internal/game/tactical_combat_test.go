@@ -373,7 +373,7 @@ func TestSlice173TacticalMetadataPreservesOrdnanceSnapshotWithoutEnablingDeferre
 		t.Fatalf("projected ordnance weapons=%+v", projected)
 	}
 	weapon := projected.Weapons[0]
-	if weapon.WeaponID != "nuclear_missile" || weapon.Ammo != 5 || weapon.FiringArcID != core.ShipWeaponFiringArc360 || weapon.TacticalSupport != "metadata_only" {
+	if weapon.WeaponID != "nuclear_missile" || weapon.Ammo != 5 || weapon.FiringArcID != core.ShipWeaponFiringArc360 || weapon.TacticalSupport != "ordnance" {
 		t.Fatalf("projected ordnance metadata=%+v", weapon)
 	}
 
@@ -409,7 +409,7 @@ func TestSlice173TacticalMetadataPreservesOrdnanceSnapshotWithoutEnablingDeferre
 			break
 		}
 	}
-	if viewWeapon == nil || viewWeapon.WeaponID != "nuclear_missile" || viewWeapon.Ammo != 5 || viewWeapon.FiringArcID != core.ShipWeaponFiringArc360 || viewWeapon.TacticalSupport != "metadata_only" || viewWeapon.Ready {
+	if viewWeapon == nil || viewWeapon.WeaponID != "nuclear_missile" || viewWeapon.Ammo != 5 || viewWeapon.FiringArcID != core.ShipWeaponFiringArc360 || viewWeapon.TacticalSupport != "ordnance" || viewWeapon.Ready {
 		t.Fatalf("BattleSession ordnance view=%+v", viewWeapon)
 	}
 	for _, action := range view.Tactical.LegalFireActions {
