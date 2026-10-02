@@ -1,6 +1,6 @@
 # Planned Slice 17.7 - Tactical Missiles / Torpedoes / Bombs
 
-Status: **open; Gate 1 complete; Gate 2 contract freeze ready (2026-10-01)**.
+Status: **open; Gates 1-2 complete; Gate 3 implementation ready / not started (2026-10-02)**.
 
 ## Objective
 
@@ -47,15 +47,19 @@ It does not own fighter/bomber squadron simulation or unrelated ship-special eff
 
 ## Gate 2 - ordnance combat contract freeze
 
-- [ ] Freeze the supported missile/torpedo/bomb Tactical matrix.
-- [ ] Freeze ammo/salvo/readiness rules.
-- [ ] Freeze projectile spawn, movement, target and impact state/event contracts.
-- [ ] Freeze exact hit/damage/interception ordering and RNG consumption.
-- [ ] Freeze Point Defense integration with 17.6 Beam semantics.
-- [ ] Freeze explicit unsupported behavior for any unproven guidance/countermeasure mechanic.
-- [ ] Freeze bomb-vs-planet versus ship-Tactical ownership.
-- [ ] Freeze event-driven projectile/interception/impact/explosion presentation semantics.
-- [ ] Freeze deterministic Combat Lab/replay vectors.
+Status: **COMPLETE / FROZEN - 2026-10-02**
+
+Contract: `docs/research/SLICE_17_7_GATE2_ORDNANCE_CONTRACT_FREEZE_2026-10-02.md`
+
+- [x] Freeze the supported missile/torpedo/bomb Tactical matrix.
+- [x] Freeze ammo/salvo/readiness rules.
+- [x] Freeze projectile spawn, movement, target and impact state/event contracts.
+- [x] Freeze exact hit/damage/interception ordering and RNG consumption.
+- [x] Freeze Point Defense integration with 17.6 Beam semantics.
+- [x] Freeze explicit unsupported behavior for any unproven guidance/countermeasure mechanic.
+- [x] Freeze bomb-vs-planet versus ship-Tactical ownership.
+- [x] Freeze event-driven projectile/interception/impact/explosion presentation semantics.
+- [x] Freeze deterministic Combat Lab/replay vectors.
 
 ## Gate 3 - implementation
 

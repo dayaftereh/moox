@@ -1,6 +1,6 @@
 # Planned Slice 17 - Military Ship Design + Tactical Combat Program
 
-Status: **active parent program; children 17.0-17.6 and follow-up 17.2A closed/accepted; child 17.7 Gate 1 complete / Gate 2 ready; children 17.8-17.9 planned/not open**.
+Status: **active parent program; children 17.0-17.6 and follow-up 17.2A closed/accepted; child 17.7 Gates 1-2 complete / Gate 3 ready; children 17.8-17.9 planned/not open**.
 
 Queue position: **current gameplay program after closed Slice 16**. Slice 18 is reserved downstream for Galaxy/Strategic Navigation fidelity and is not a prerequisite for Slice 17.
 
@@ -54,6 +54,7 @@ Slice 17 is executed in dependency order as:
    - Weapon Selector base-versus-configured/effective preview from the same server rules;
    - authoritative Beam/impact/shield/damage presentation.
 9. **17.7 - Tactical Missiles / Torpedoes / Bombs**
+   - **Gates 1-2 complete; Gate 3 implementation ready / not started (2026-10-02)**;
    - authoritative ordnance launch/ammo/readiness;
    - projectile lifecycle, interception, impact and damage;
    - Beam Point Defense integration;
