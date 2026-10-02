@@ -1,6 +1,6 @@
 # OPEN Slice 17.7 - Tactical Missiles / Torpedoes / Bombs
 Date opened: 2026-10-01
-Status: **Gates 1-2 complete; Gate 3 active; Checkpoints 1-4 complete**
+Status: **Gates 1-3 complete; Gate 4 QA + close next**
 Plan: `docs/slices/PLANNED_17_7_TACTICAL_ORDNANCE_MISSILES_TORPEDOES_BOMBS.md`
 Gate 1 evidence: `docs/research/SLICE_17_7_GATE1_ORDNANCE_TACTICAL_AUDIT_2026-10-01.md`
 Gate 2 contract: `docs/research/SLICE_17_7_GATE2_ORDNANCE_CONTRACT_FREEZE_2026-10-02.md`
@@ -8,6 +8,7 @@ Gate 3 CP1 evidence: `docs/research/SLICE_17_7_GATE3_CHECKPOINT1_FOUNDATION_EVID
 Gate 3 CP2 evidence: `docs/research/SLICE_17_7_GATE3_CHECKPOINT2_LAUNCH_MOVEMENT_READINESS_EVIDENCE_2026-10-02.md`
 Gate 3 CP3 evidence: `docs/research/SLICE_17_7_GATE3_CHECKPOINT3_IMPACT_MODIFIERS_EVIDENCE_2026-10-02.md`
 Gate 3 CP4 evidence: `docs/research/SLICE_17_7_GATE3_CHECKPOINT4_INTERCEPTION_EVIDENCE_2026-10-02.md`
+Gate 3 CP5 evidence: `docs/research/SLICE_17_7_GATE3_CHECKPOINT5_PERSISTENCE_UI_INTEGRATION_EVIDENCE_2026-10-02.md`
 
 ## Scope
 
@@ -36,7 +37,7 @@ Gate 1 must establish direct/frozen evidence for:
 
 ## Gate 1 progress
 
-Gate 1 is complete in `docs/research/SLICE_17_7_GATE1_ORDNANCE_TACTICAL_AUDIT_2026-10-01.md`. Gate 2 is frozen/complete in `docs/research/SLICE_17_7_GATE2_ORDNANCE_CONTRACT_FREEZE_2026-10-02.md`. Gate 3 is active and Checkpoints 1-4 are complete.
+Gate 1 is complete in `docs/research/SLICE_17_7_GATE1_ORDNANCE_TACTICAL_AUDIT_2026-10-01.md`. Gate 2 is frozen/complete in `docs/research/SLICE_17_7_GATE2_ORDNANCE_CONTRACT_FREEZE_2026-10-02.md`. Gate 3 is complete; all five implementation checkpoints are accepted. Gate 4 QA + close is next.
 
 Current evidenced progress:
 
@@ -50,10 +51,10 @@ Current evidenced progress:
 
 Gate-1 closure now directly evidences launch multiplicity and live rack/cooldown state, movement budgets, interceptor DCV, impact Missile Defense/scanner/ECCM ordering, MIRV split timing, Plasma dissipation, reactive Beam-PD placement, relevant interceptor eligibility and bombardment ownership. Active combat-Special effects remain explicit Slice-17.8 hooks.
 
-Gate 2 contract freeze is complete. Gate 3 Checkpoints 1-4 are complete: rules/state/projection/persistence, launch/movement/readiness, impact/modifiers, and manual/reactive Beam interception. Final persistence/UI/integration acceptance remains deferred to Checkpoint 5.
+Gate 2 contract freeze is complete. Gate 3 is **COMPLETE / PASS** across all five checkpoints: rules/state/projection, launch/movement/readiness, impact/modifiers, manual/reactive Beam interception, and persistence/UI/integration. Gate 4 owns final QA + close.
 
 ## Gate 2 progress
 
 Gate 2 is **FROZEN / COMPLETE**. The contract freezes executable Missile/Torpedo support, bombardment-only Bomb/Bio ownership, live ammo/cooldown/projectile state, deterministic movement/impact/interception ordering, manual/reactive Beam interception, event/persistence/projection schemas, Slice-17.8 neutral hooks and deterministic vectors A-G.
 
-Gate 3 is active. Checkpoint 1 is complete with evidence in `docs/research/SLICE_17_7_GATE3_CHECKPOINT1_FOUNDATION_EVIDENCE_2026-10-02.md`. Checkpoint 2 is complete with evidence in `docs/research/SLICE_17_7_GATE3_CHECKPOINT2_LAUNCH_MOVEMENT_READINESS_EVIDENCE_2026-10-02.md`. Checkpoint 3 is complete with evidence in `docs/research/SLICE_17_7_GATE3_CHECKPOINT3_IMPACT_MODIFIERS_EVIDENCE_2026-10-02.md`. Checkpoint 4 is complete with evidence in `docs/research/SLICE_17_7_GATE3_CHECKPOINT4_INTERCEPTION_EVIDENCE_2026-10-02.md`. Checkpoint 5 (persistence / UI / integration acceptance) is next.
+Gate 3 is complete. Checkpoint 1 is complete with evidence in `docs/research/SLICE_17_7_GATE3_CHECKPOINT1_FOUNDATION_EVIDENCE_2026-10-02.md`. Checkpoint 2 is complete with evidence in `docs/research/SLICE_17_7_GATE3_CHECKPOINT2_LAUNCH_MOVEMENT_READINESS_EVIDENCE_2026-10-02.md`. Checkpoint 3 is complete with evidence in `docs/research/SLICE_17_7_GATE3_CHECKPOINT3_IMPACT_MODIFIERS_EVIDENCE_2026-10-02.md`. Checkpoint 4 is complete with evidence in `docs/research/SLICE_17_7_GATE3_CHECKPOINT4_INTERCEPTION_EVIDENCE_2026-10-02.md`. Checkpoint 5 is complete with evidence in `docs/research/SLICE_17_7_GATE3_CHECKPOINT5_PERSISTENCE_UI_INTEGRATION_EVIDENCE_2026-10-02.md`. Gate 3 is complete; Gate 4 QA + close is next.

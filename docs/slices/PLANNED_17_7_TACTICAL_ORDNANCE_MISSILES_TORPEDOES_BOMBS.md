@@ -1,6 +1,6 @@
 # Planned Slice 17.7 - Tactical Missiles / Torpedoes / Bombs
 
-Status: **open; Gates 1-2 complete; Gate 3 implementation ready / not started (2026-10-02)**.
+Status: **open; Gates 1-3 complete; Gate 4 QA + close next (2026-10-02)**.
 
 ## Objective
 
@@ -63,17 +63,19 @@ Contract: `docs/research/SLICE_17_7_GATE2_ORDNANCE_CONTRACT_FREEZE_2026-10-02.md
 
 ## Gate 3 - implementation
 
-- [ ] Implement supported ordnance Tactical consumers in server-authoritative code.
-- [ ] Materialize authoritative projectile state where the frozen contract requires it.
-- [ ] Implement ammo/salvo/readiness consumption.
-- [ ] Implement projectile movement/targeting and deterministic event sequencing.
-- [ ] Implement missile/torpedo hit and damage resolution.
-- [ ] Implement Point Defense/interceptor resolution using the frozen 17.6 contract.
-- [ ] Implement bomb combat behavior in the verified context.
-- [ ] Extend participant-safe Tactical projections with required projectile/action state.
-- [ ] Implement projectile/interception/impact/explosion presentation from authoritative events only.
-- [ ] Preserve save/load/replay/Observer state and event ordering.
-- [ ] Add deterministic projectile, interception, impact and exhaustion regressions.
+Status: **COMPLETE / PASS - 2026-10-02**
+
+- [x] Implement supported ordnance Tactical consumers in server-authoritative code.
+- [x] Materialize authoritative projectile state where the frozen contract requires it.
+- [x] Implement ammo/salvo/readiness consumption.
+- [x] Implement projectile movement/targeting and deterministic event sequencing.
+- [x] Implement missile/torpedo hit and damage resolution.
+- [x] Implement Point Defense/interceptor resolution using the frozen 17.6 contract.
+- [x] Implement bomb combat behavior in the verified context.
+- [x] Extend participant-safe Tactical projections with required projectile/action state.
+- [x] Implement projectile/interception/impact/explosion presentation from authoritative events only.
+- [x] Preserve save/load/replay/Observer state and event ordering.
+- [x] Add deterministic projectile, interception, impact and exhaustion regressions.
 
 ## Gate 4 - QA + close
 

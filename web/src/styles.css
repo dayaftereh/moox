@@ -7722,3 +7722,62 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Slice 17.7 Gate 3 CP5: authoritative tactical ordnance presentation. */
+.tactical-projectile { cursor: default; outline: none; }
+.tactical-projectile.legal-target { cursor: pointer; }
+.tactical-projectile-hit-cell { fill: transparent; stroke: none; pointer-events: all; }
+.tactical-projectile-vector { stroke-width: .07; vector-effect: non-scaling-stroke; }
+.tactical-projectile.own .tactical-projectile-vector { fill: rgba(116, 207, 223, .82); stroke: #d1f8ff; }
+.tactical-projectile.enemy .tactical-projectile-vector { fill: rgba(212, 121, 118, .84); stroke: #ffd4cf; }
+.tactical-projectile.legal-target .tactical-projectile-vector {
+  filter: drop-shadow(0 0 3px rgba(255, 218, 105, .95));
+  stroke: #ffe58e;
+  stroke-width: .11;
+}
+.tactical-projectile-count {
+  fill: #eef8ff;
+  font-size: .42px;
+  font-weight: 900;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, .94);
+  stroke-width: .12px;
+}
+.tactical-projectile-event-trail {
+  stroke: rgba(255, 192, 105, .88);
+  stroke-width: .11;
+  stroke-linecap: round;
+  stroke-dasharray: .35 .18;
+  vector-effect: non-scaling-stroke;
+  animation: tactical-projectile-event-trail .9s ease-out both;
+}
+.tactical-projectile-event-pulse {
+  fill: rgba(255, 186, 88, .16);
+  stroke: rgba(255, 227, 171, .98);
+  stroke-width: .09;
+  vector-effect: non-scaling-stroke;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: tactical-projectile-event-pulse .9s ease-out both;
+}
+.tactical-projectile-animation.is-projectile_interception_resolved .tactical-projectile-event-pulse {
+  stroke: #ff8b7a;
+  fill: rgba(255, 91, 73, .18);
+}
+.tactical-projectile-animation.is-projectile_mirv_split .tactical-projectile-event-pulse {
+  stroke: #d7b3ff;
+  fill: rgba(174, 114, 238, .2);
+}
+.tactical-damage-number.is-projectile { fill: #ff9f69; }
+@keyframes tactical-projectile-event-trail {
+  0% { opacity: 0; stroke-dashoffset: 1.2; }
+  18% { opacity: 1; }
+  100% { opacity: 0; stroke-dashoffset: 0; }
+}
+@keyframes tactical-projectile-event-pulse {
+  0% { opacity: 0; transform: scale(.25); }
+  24% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.9); }
+}
