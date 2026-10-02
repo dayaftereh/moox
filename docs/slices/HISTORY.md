@@ -705,3 +705,21 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Final QA passed focused Slice-17.6/shared Beam regressions, the explicit all-13-Beam Gate-4 matrix, full `go test ./... -count=1`, `go vet ./...`, production web build, fresh Reference-Lab browser smoke and byte-identical live-snapshot roundtrip.
 - Browser Beam presentation remains event-driven; projectile lifecycle remains owned by Slice 17.7 and broader active combat-Special mechanics by Slice 17.8.
 - The Slice-17.6 `_OPEN_` marker is removed. Slice 17.7 is next prepared and remains planned/not open.
+
+
+## 2026-10-02 - Slice 19 reserved for Orbital / Planetary Combat
+
+- Product decision assigns the previously unassigned Slice 19 to `PLANNED_19_ORBITAL_PLANETARY_COMBAT.md`.
+- Slice 19 is reserved/planned only and is **not open**; the current active Slice/Open-marker state is unchanged.
+- Intended downstream order is now **17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23**.
+- Slice 19 owns the future authoritative defended-colony combat layer: Star Base/Battlestation/Star Fortress combatants, planetary missile/ground defenses and shields, Fighter Garrison combat, the frozen Slice-17.7 `bombardment_only` Bomb/Bio handoff, and the transition into the existing Slice-11 invasion/conquest resolver.
+- Architecture direction is reuse, not duplication: stations and planet defenses consume the shared Slice-17 Beam/ordnance/fighter mechanics where original evidence permits; Slice 21 remains the owner of broad Colony/Building/Economy effect fidelity.
+- A provisional 19.0-19.6 decomposition is reserved for audit/reference harness, orbital stations, planetary defensive fire/shields, fighter operations, bombardment, assault-to-invasion integration and full acceptance.
+## 2026-10-02 - Slice 17.7 Tactical Missiles / Torpedoes / Bombs accepted/closed
+
+- Gates 1-4 are complete; Gate-4 acceptance is documented in `docs/research/SLICE_17_7_GATE4_ACCEPTANCE_CLOSE_2026-10-02.md`.
+- Supported missiles/torpedoes now launch through server-authoritative Tactical actions, persist as projectile actors, move/intercept/impact deterministically, reconcile Shield/Armor/Structure damage and survive live-snapshot/persistence/replay boundaries.
+- Gate-4 live QA hardened original 30-field fleet deployment, Built-in AI approach movement and ordnance action selection, strategic AI planning preflight/deadlock prevention, and event-driven missile/exhaust presentation.
+- Bomb/Bio rows remain explicitly `bombardment_only`; their planetary consumer is reserved in Slice 19 rather than being forced into ship Tactical.
+- Final QA passed `go test ./... -count=1`, `go vet ./...`, production web build including `check:tactical-ordnance`, HTTP/session/persistence regressions and `git diff --check`.
+- The Slice-17.7 `_OPEN_` marker is removed. Slice 17.8 Tactical Fighters / Bombers / Combat Specials is next prepared and remains planned/not open.

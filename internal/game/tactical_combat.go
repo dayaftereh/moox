@@ -162,11 +162,11 @@ func tacticalMetadataForEncounterWithSpecials(state *core.GameState, encounter E
 		return "", nil
 	}
 
-	multiShip := len(encounter.Attacker.ShipIDs) > 1 || len(encounter.Defender.ShipIDs) > 1
-	attackerX, defenderX := 10, 11
-	if multiShip {
-		defenderX = 14
-	}
+	// Original MOO2 Deploy_Ships_ anchors opposing fleets at X=25 and X=55.
+	// Keep the absolute Y origin simplified, but preserve the original 30-field
+	// separation so missiles can exist as in-flight actors and ships must close
+	// before short-range Beam fire.
+	attackerX, defenderX := 25, 55
 	if reason, err := appendSide(encounter.Attacker, attackerX, 0); err != nil || reason != "" {
 		return nil, reason, err
 	}

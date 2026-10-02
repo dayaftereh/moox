@@ -24,6 +24,7 @@ func TestSlice175Checkpoint4MixedWeaponProjectionCarriesAuthoritativeFamilies(t 
 	if reason != "" || tactical == nil {
 		t.Fatalf("mixed weapon design blocked encounter: tactical=%+v reason=%q", tactical, reason)
 	}
+	placeTacticalShipsForBeamTest(t, tactical, attacker.ID, defender.ID)
 	if len(tactical.Ships) == 0 || len(tactical.Ships[0].Weapons) != 3 {
 		t.Fatalf("mixed weapon snapshot missing: %+v", tactical.Ships)
 	}

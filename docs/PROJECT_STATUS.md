@@ -45,9 +45,9 @@ Slices 01-14 are closed. Slice 14 Live GameSession save/resume passed independen
    - 15.5 **prepared** - interactive 2D Tactical Combat: authoritative movement/legal targets plus mouse/touch battlefield on the Slice-07 combat baseline.
    - 15.6 **prepared** - full browser vertical slice / polish / complete-game QA.
 9. Slice 16 - **closed** - broader deterministic New Game/preset-race baseline; full Advanced implementation explicitly deferred to Slice 23.
-10. Slice 17 - **active parent program** - military ship design + Tactical Combat breadth; children 17.0-17.5 and follow-up 17.2A are closed/accepted at Gates 1-4. Slice 17.6 has Gates 1-2 complete; Gate 3 checkpoint 1 is complete and checkpoint 2 is ready; Slices 17.7-17.9 remain planned/not open.
+10. Slice 17 - **active parent program** - military ship design + Tactical Combat breadth; children 17.0-17.7 and follow-up 17.2A are closed/accepted at Gates 1-4; Slices 17.8-17.9 remain planned/not open.
 
-Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. The browser-playability Slice-15 family and New Game Slice-16 family are closed at their accepted baselines. The shell is mobile-first, desktop-adaptive, bilingual DE/EN and remains available over the LLO Desktop NetBird interface for review. **Slices 17.0-17.5 and follow-up 17.2A are closed/accepted at Gates 1-4.** Slice 17.6 has Gates 1-2 complete; Gate 3 checkpoint 1 is complete and checkpoint 2 is ready; Slices 17.7-17.9 remain planned/not open. Slice 20 Espionage/Intelligence and Slices 21-23 remain reserved/planned downstream.
+Application direction is accepted in `docs/architecture/ADR-0004-authoritative-server-web-client.md`. The browser-playability Slice-15 family and New Game Slice-16 family are closed at their accepted baselines. The shell is mobile-first, desktop-adaptive, bilingual DE/EN and remains available over the LLO Desktop NetBird interface for review. **Slices 17.0-17.7 and follow-up 17.2A are closed/accepted at Gates 1-4.** Slices 17.8-17.9 remain planned/not open. Slices 18-23 are reserved/planned downstream, including Slice 19 Orbital / Planetary Combat.
 
 Important recent checkpoints:
 
@@ -203,19 +203,20 @@ The project now has a complete supported headless conquest lifecycle, so the rem
 
 ### Prepared / reserved roadmap
 
-1. **Slice 17 - Military Ship Design + Tactical Combat parent program:** active parent program, decomposed into 17.0 Reference/Test Harness, 17.1 Hulls/mandatory systems, 17.2 Beam design/mount metadata, 17.3 Ordnance design, follow-up 17.2A Beam Weapon Firing Arcs, 17.4 Specials/Fighters design, 17.5 Tactical Combat Foundation, 17.6 Tactical Beams/Modifiers, 17.7 Tactical Ordnance, 17.8 Tactical Fighters/Combat Specials and 17.9 Full Ship Designer + Tactical Integration; 17.0-17.5 and follow-up 17.2A are closed/accepted at Gates 1-4; 17.6 has Gates 1-2 complete; Gate 3 checkpoint 1 is complete and checkpoint 2 is ready; 17.7-17.9 remain planned/not open.
+1. **Slice 17 - Military Ship Design + Tactical Combat parent program:** active parent program, decomposed into 17.0 Reference/Test Harness, 17.1 Hulls/mandatory systems, 17.2 Beam design/mount metadata, 17.3 Ordnance design, follow-up 17.2A Beam Weapon Firing Arcs, 17.4 Specials/Fighters design, 17.5 Tactical Combat Foundation, 17.6 Tactical Beams/Modifiers, 17.7 Tactical Ordnance, 17.8 Tactical Fighters/Combat Specials and 17.9 Full Ship Designer + Tactical Integration; 17.0-17.7 and follow-up 17.2A are closed/accepted at Gates 1-4; 17.8-17.9 remain planned/not open.
 2. **Slice 18 - Galaxy Generation / Strategic Navigation Fidelity:** reserved correction of galaxy scale/density, homeworld reachability, black-hole placement and authoritative strategic route blocking; planned, not open.
-3. **Slice 20 - Espionage / intelligence baseline:** authoritative Spies, Espionage/Sabotage, race/technology modifiers, safe projection and AI; Slice 19 remains intentionally unassigned.
-4. **Slice 21 - Colony / Buildings / Planet Effects / Pollution fidelity:** complete the strategic building/planet effect foundation and make Pollution a server-authoritative Economy loop.
-5. **Slice 22 - Preset race completion + Custom Race Designer:** finish race-dependent mechanics and expose presets/custom races through one authoritative trait system.
-6. **Slice 23 - Full Advanced Starting Civilization parity:** reuse mature Galaxy/Navigation, Building/Planet/Pollution, Race and Ship systems plus inherited Slice-16.7 research.
+3. **Slice 19 - Orbital / Planetary Combat:** reserved defended-colony combat pass for orbital stations, planetary missile/fighter defenses, verified Bomb/Bio bombardment and handoff into the existing invasion/conquest path; planned, not open.
+4. **Slice 20 - Espionage / intelligence baseline:** authoritative Spies, Espionage/Sabotage, race/technology modifiers, safe projection and AI.
+5. **Slice 21 - Colony / Buildings / Planet Effects / Pollution fidelity:** complete the strategic building/planet effect foundation and make Pollution a server-authoritative Economy loop.
+6. **Slice 22 - Preset race completion + Custom Race Designer:** finish race-dependent mechanics and expose presets/custom races through one authoritative trait system.
+7. **Slice 23 - Full Advanced Starting Civilization parity:** reuse mature Galaxy/Navigation, Building/Planet/Pollution, Race and Ship systems plus inherited Slice-16.7 research.
 
-Intended downstream order after Slice 16: **17 -> 18 -> 20 -> 21 -> 22 -> 23**. Every slice still requires a fresh Gate-1 dependency audit before opening.
+Intended downstream order after Slice 16: **17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23**. Every slice still requires a fresh Gate-1 dependency audit before opening.
 
 
 ### Numbering policy
 
-Slice 19 remains intentionally unassigned. Additional Tactical breadth, treaty/trade diplomacy, Leaders, Council/Orion/Antaran victories, random events, multiplayer/external-AI transports and packaging remain unnumbered until a product decision assigns them.
+Slice 19 is reserved for Orbital / Planetary Combat. Treaty/trade diplomacy, Leaders, Council/Orion/Antaran victories, random events, multiplayer/external-AI transports and packaging remain unnumbered until a product decision assigns them.
 
 No prepared slice is active until a fresh Gate 1 creates the corresponding `_OPEN_*.md` marker.
 

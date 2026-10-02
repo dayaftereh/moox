@@ -482,47 +482,45 @@ func diplomacyDecisionCatalog(state *core.GameState, empireID core.ID) []Diploma
 func (s *GameSession) battleDecisionCatalogLocked(seatID protocol.SeatID) []BattleDecision {
 	var out []BattleDecision
 	for _, child := range s.battles {
-		view := child.View()
-		if view.Phase != battle.PhaseActive || view.Tactical == nil {
-			continue
-		}
-		side := view.Spec.Attacker
-		enemy := view.Spec.Defender
-		if view.Spec.Defender.SeatID == seatID {
-			side, enemy = view.Spec.Defender, view.Spec.Attacker
-		} else if view.Spec.Attacker.SeatID != seatID {
+		view, err := child.PlayerView(seatID)
+		if err != nil || view.Phase != battle.PhaseActive || view.Tactical == nil {
 			continue
 		}
 		active := view.Tactical.State.ActiveShipID
-		ownsActive := false
-		for _, id := range side.ShipIDs {
-			if id == active {
-				ownsActive = true
-				break
-			}
-		}
-		if !ownsActive {
-			continue
-		}
-		var activeState *battle.TacticalShipState
-		for i := range view.Tactical.State.Ships {
-			if view.Tactical.State.Ships[i].ShipID == active {
-				activeState = &view.Tactical.State.Ships[i]
-				break
-			}
-		}
-		if activeState == nil || activeState.Destroyed {
+		if active == 0 {
 			continue
 		}
 		decision := BattleDecision{BattleID: view.Spec.ID}
 		sequence := view.Tactical.State.NextCommandSequence
-		for _, weapon := range activeState.Weapons {
-			if !weapon.Ready {
+
+		for _, action := range view.Tactical.WeaponActions {
+			if !action.Available {
 				continue
 			}
-			for _, target := range enemy.ShipIDs {
-				cmd, err := battle.NewFireBeamCommand(sequence, battle.FireBeamPayload{ShipID: active, TargetShipID: target, WeaponSlot: weapon.Slot})
-				if err != nil {
+			for _, target := range action.Targets {
+				var cmd protocol.Command
+				var buildErr error
+				switch action.CommandKind {
+				case battle.CommandFireBeam:
+					cmd, buildErr = battle.NewFireBeamCommand(sequence, battle.FireBeamPayload{
+						ShipID:             active,
+						TargetShipID:       target.TargetShipID,
+						TargetProjectileID: target.TargetProjectileID,
+						WeaponSlot:         action.WeaponSlot,
+					})
+				case battle.CommandFireOrdnance:
+					if target.TargetShipID == 0 {
+						continue
+					}
+					cmd, buildErr = battle.NewFireOrdnanceCommand(sequence, battle.FireOrdnancePayload{
+						ShipID:       active,
+						TargetShipID: target.TargetShipID,
+						WeaponSlot:   action.WeaponSlot,
+					})
+				default:
+					continue
+				}
+				if buildErr != nil {
 					continue
 				}
 				if _, err := child.PrepareCommand(seatID, cmd); err == nil {
@@ -530,10 +528,24 @@ func (s *GameSession) battleDecisionCatalogLocked(seatID protocol.SeatID) []Batt
 				}
 			}
 		}
-		end, err := battle.NewEndActivationCommand(sequence, battle.EndActivationPayload{ShipID: active})
-		if err == nil {
-			if _, err := child.PrepareCommand(seatID, end); err == nil {
-				decision.Actions = append(decision.Actions, end)
+
+		if len(decision.Actions) == 0 && len(view.Tactical.LegalMoves) != 0 {
+			if move, ok := bestTacticalApproachMove(view); ok {
+				cmd, err := battle.NewMoveShipCommand(sequence, battle.MoveShipPayload{ShipID: active, X: move.X, Y: move.Y})
+				if err == nil {
+					if _, err := child.PrepareCommand(seatID, cmd); err == nil {
+						decision.Actions = append(decision.Actions, cmd)
+					}
+				}
+			}
+		}
+
+		if view.Tactical.CanEndActivation {
+			end, err := battle.NewEndActivationCommand(sequence, battle.EndActivationPayload{ShipID: active})
+			if err == nil {
+				if _, err := child.PrepareCommand(seatID, end); err == nil {
+					decision.Actions = append(decision.Actions, end)
+				}
 			}
 		}
 		if len(decision.Actions) != 0 {
@@ -544,6 +556,66 @@ func (s *GameSession) battleDecisionCatalogLocked(seatID protocol.SeatID) []Batt
 	return out
 }
 
+func bestTacticalApproachMove(view battle.View) (battle.TacticalMoveOption, bool) {
+	if view.Tactical == nil || len(view.Tactical.LegalMoves) == 0 {
+		return battle.TacticalMoveOption{}, false
+	}
+	activeID := view.Tactical.State.ActiveShipID
+	var active *battle.TacticalShipView
+	for i := range view.Tactical.Ships {
+		if view.Tactical.Ships[i].ShipID == activeID {
+			active = &view.Tactical.Ships[i]
+			break
+		}
+	}
+	if active == nil || active.Destroyed {
+		return battle.TacticalMoveOption{}, false
+	}
+	enemies := make([]battle.TacticalShipView, 0, len(view.Tactical.Ships))
+	for _, ship := range view.Tactical.Ships {
+		if ship.Destroyed || ship.EmpireID == active.EmpireID {
+			continue
+		}
+		enemies = append(enemies, ship)
+	}
+	if len(enemies) == 0 {
+		return battle.TacticalMoveOption{}, false
+	}
+	minDistance := func(x, y int) int64 {
+		best := int64(1 << 62)
+		for _, enemy := range enemies {
+			dx := int64(enemy.X - x)
+			dy := int64(enemy.Y - y)
+			distance := dx*dx + dy*dy
+			if distance < best {
+				best = distance
+			}
+		}
+		return best
+	}
+	currentDistance := minDistance(active.X, active.Y)
+	bestDistance := currentDistance
+	var best battle.TacticalMoveOption
+	found := false
+	for _, option := range view.Tactical.LegalMoves {
+		distance := minDistance(option.X, option.Y)
+		if distance > bestDistance {
+			continue
+		}
+		if distance < bestDistance ||
+			(!found && distance == bestDistance) ||
+			(found && distance == bestDistance && (option.MoveCost < best.MoveCost ||
+				(option.MoveCost == best.MoveCost && (option.Y < best.Y || (option.Y == best.Y && option.X < best.X))))) {
+			bestDistance = distance
+			best = option
+			found = true
+		}
+	}
+	if !found || bestDistance >= currentDistance {
+		return battle.TacticalMoveOption{}, false
+	}
+	return best, true
+}
 func (s *GameSession) SeatController(seatID protocol.SeatID) (ControllerType, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()

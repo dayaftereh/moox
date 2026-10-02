@@ -1,6 +1,6 @@
 # Planned Slice 17.7 - Tactical Missiles / Torpedoes / Bombs
 
-Status: **open; Gates 1-3 complete; Gate 4 QA + close next (2026-10-02)**.
+Status: **closed/accepted; Gates 1-4 complete (2026-10-02)**.
 
 ## Objective
 
@@ -35,15 +35,15 @@ It does not own fighter/bomber squadron simulation or unrelated ship-special eff
 
 ## Gate 1 - ordnance Tactical audit
 
-- [ ] Re-audit every supported 17.3 missile/torpedo/bomb identity against direct original evidence.
-- [ ] Re-audit ammo, salvo, range, travel, guidance, hit and damage semantics.
-- [ ] Determine exact projectile lifecycle/state requirements rather than approximating flight in the browser.
-- [ ] Re-audit Point Defense/interceptor interactions, target eligibility and ordering.
-- [ ] Re-audit defensive countermeasures relevant to missiles/torpedoes where represented by current design snapshots.
-- [ ] Determine each bomb's correct combat context and planetary-bombardment ownership.
-- [ ] Audit current BattleSession/event model for persistent projectiles and replay/save implications.
-- [ ] Audit Tactical UI requirements for projectile markers, flight paths, interception and impact feedback.
-- [ ] Produce deterministic original/reference vectors for representative missile, torpedo and bomb cases.
+- [x] Re-audit every supported 17.3 missile/torpedo/bomb identity against direct original evidence.
+- [x] Re-audit ammo, salvo, range, travel, guidance, hit and damage semantics.
+- [x] Determine exact projectile lifecycle/state requirements rather than approximating flight in the browser.
+- [x] Re-audit Point Defense/interceptor interactions, target eligibility and ordering.
+- [x] Re-audit defensive countermeasures relevant to missiles/torpedoes where represented by current design snapshots.
+- [x] Determine each bomb's correct combat context and planetary-bombardment ownership.
+- [x] Audit current BattleSession/event model for persistent projectiles and replay/save implications.
+- [x] Audit Tactical UI requirements for projectile markers, flight paths, interception and impact feedback.
+- [x] Produce deterministic original/reference vectors for representative missile, torpedo and bomb cases.
 
 ## Gate 2 - ordnance combat contract freeze
 
@@ -79,18 +79,24 @@ Status: **COMPLETE / PASS - 2026-10-02**
 
 ## Gate 4 - QA + close
 
-- [ ] Supported missile/torpedo weapons can be selected and launched from normal Tactical UI.
-- [ ] Ammo/readiness/salvo state remains authoritative and visible.
-- [ ] Projectile flight/state matches frozen reference vectors.
-- [ ] Point Defense interception and non-interception outcomes match frozen ordering/RNG.
-- [ ] Impacts apply correct Shield/Armor/Structure damage.
-- [ ] Bomb behavior is available only in its verified combat context.
-- [ ] Projectile/interception/explosion animations reproduce authoritative outcomes without client-side simulation.
-- [ ] Save/load/replay during active projectile state remains deterministic where supported.
-- [ ] Full Go/vet/web/browser/persistence/replay/reference-game QA passes.
+Status: **ACCEPTED / CLOSED - 2026-10-02**
+
+Gate 4 evidence: `docs/research/SLICE_17_7_GATE4_ACCEPTANCE_CLOSE_2026-10-02.md`
+
+- [x] Supported missile/torpedo weapons can be selected and launched from normal Tactical UI.
+- [x] Ammo/readiness/salvo state remains authoritative and visible.
+- [x] Projectile flight/state matches frozen reference vectors.
+- [x] Point Defense interception and non-interception outcomes match frozen ordering/RNG.
+- [x] Impacts apply correct Shield/Armor/Structure damage.
+- [x] Bomb behavior is available only in its verified combat context.
+- [x] Projectile/interception/explosion animations reproduce authoritative outcomes without client-side simulation.
+- [x] Save/load/replay during active projectile state remains deterministic where supported.
+- [x] Full Go/vet/web/browser/persistence/replay/reference-game QA passes.
 
 ## Exit criterion
 
 Slice 17.7 closes when the supported ordnance matrix is no longer merely design metadata: missiles/torpedoes can launch, travel/interact/impact according to frozen server rules, Point Defense works end to end, verified bomb behavior resolves in the correct combat context, and Tactical presentation reflects authoritative projectile events.
+
+For this closeout, the evidenced Bomb/Bio combat context is planetary bombardment: Slice 17.7 accepts their explicit `bombardment_only` exclusion/handoff rather than inventing ship-Tactical behavior. The executable planetary bombardment consumer is reserved for Slice 19.
 
 After 17.7 closes, Slice 17.8 adds Fighter/Bomber/Interceptor combat and the remaining supported combat-special consumers.

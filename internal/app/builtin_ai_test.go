@@ -3,6 +3,7 @@ package app
 import (
 	"bytes"
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"moox/internal/core"
@@ -310,5 +311,74 @@ func TestTriangleLaserScoutQueueDoesNotStallStrategicResolution(t *testing.T) {
 	}
 	if humanColony == nil || humanColony.Construction == nil || humanColony.Construction.ProjectKind != core.ConstructionProjectMilitaryShip || humanColony.Construction.ShipDesignID != revised.ID || humanColony.Construction.ShipDesignRevision != revised.Revision {
 		t.Fatalf("Laser Scout construction not committed after turn: colony=%+v", humanColony)
+	}
+}
+
+func TestSubmitBuiltinAITurnPreflightsInvalidConstructionBeforeSubmission(t *testing.T) {
+	host := loadNewGameHost(t)
+	generated, err := host.newGameRules.NewReferenceTriangleGame(game.ReferenceTriangleSeed)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := host.newGameRules.ApplyReferenceTriangleTechnologyProfile(generated.State, game.ReferenceTriangleProfileAllTech); err != nil {
+		t.Fatal(err)
+	}
+	if len(generated.Players) < 2 {
+		t.Fatalf("players=%d", len(generated.Players))
+	}
+	aiPlayer := generated.Players[1]
+	var colony *core.Colony
+	for i := range generated.State.Colonies {
+		if generated.State.Colonies[i].EmpireID == aiPlayer.EmpireID {
+			colony = &generated.State.Colonies[i]
+			break
+		}
+	}
+	if colony == nil {
+		t.Fatalf("AI empire %d has no colony", aiPlayer.EmpireID)
+	}
+	colony.Construction = &core.ConstructionState{
+		ProjectKind: core.ConstructionProjectOutpostShip,
+		ProjectID:   game.OutpostShipProjectID,
+		ProgressPP:  5.573463255772801,
+	}
+
+	seats := make([]session.Seat, len(generated.Players))
+	for i, player := range generated.Players {
+		controller := session.ControllerLocalHuman
+		if player.SeatID == aiPlayer.SeatID {
+			controller = session.ControllerBuiltinAI
+		}
+		seats[i] = session.Seat{ID: player.SeatID, EmpireID: player.EmpireID, Name: player.Name, Controller: controller}
+	}
+	gameSession, err := session.NewGameSession("builtin-ai-preflight", generated.State, seats)
+	if err != nil {
+		t.Fatal(err)
+	}
+	hosted := &hostedGame{session: gameSession, immediateResolver: host.newGameImmediateResolver}
+
+	legacy, err := game.NewQueueMilitaryShipCommand(1, game.QueueMilitaryShipPayload{ColonyID: colony.ID, ShipDesignID: 21})
+	if err != nil {
+		t.Fatal(err)
+	}
+	status := gameSession.Status()
+	batch := protocol.CommandBatch{
+		SchemaVersion: protocol.CommandSchemaVersion,
+		GameID:        status.GameID, SeatID: aiPlayer.SeatID, Turn: status.Turn, BaseRevision: status.Revision,
+		Commands: []protocol.Command{legacy},
+	}
+	err = hosted.submitBuiltinAITurn(aiPlayer.SeatID, batch)
+	if err == nil || !strings.Contains(err.Error(), "already constructs outpost_ship") {
+		t.Fatalf("preflight err=%v", err)
+	}
+	view, err := gameSession.PlayerView(aiPlayer.SeatID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if view.Seat.Submitted {
+		t.Fatal("invalid AI batch was stored despite failed planning preflight")
+	}
+	if gameSession.Status().Phase != session.PhasePlanning {
+		t.Fatalf("invalid AI batch changed phase to %q", gameSession.Status().Phase)
 	}
 }

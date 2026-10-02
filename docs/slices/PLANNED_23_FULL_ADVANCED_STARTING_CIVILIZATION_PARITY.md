@@ -50,15 +50,16 @@ Before Slice 23 moves beyond Gate 1, re-audit at least:
 
 - **Slice 17** - ship/component/weapon breadth relevant to any chosen Advanced fleet contract;
 - **Slice 18** - corrected galaxy scale/density, homeworld reachability and authoritative black-hole strategic navigation required by Advanced territory/navigation fixtures;
+- **Slice 19** - Orbital / Planetary Combat, including defended-colony assault consumers and verified bombardment/invasion handoff where Advanced fixtures depend on those mechanics;
 - **Slice 20** - Espionage/intelligence and spying-dependent race behavior used by downstream race completion;
 - **Slice 21** - Colony / Buildings / Planet Effects / Pollution fidelity;
 - **Slice 22** - Preset Race Completion + Custom Race Designer, including final authoritative race-modifier breadth.
 
 The intended product order is:
 
-**17 -> 18 -> 20 -> 21 -> 22 -> 23**
+**17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23**
 
-Slice 19 remains intentionally unassigned unless a separate product decision fills it.
+Slice 19 is reserved for Orbital / Planetary Combat by the 2026-10-02 product decision.
 
 Slice 23 must still perform a fresh Gate-1 dependency check; completion of an earlier slice is not permission to assume every Advanced dependency is solved.
 

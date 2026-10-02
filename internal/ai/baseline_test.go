@@ -176,3 +176,33 @@ func TestBaselinePlannerOmitsTechnologyIDForAllApplicationsResearch(t *testing.T
 		t.Fatalf("all-applications payload=%+v, technology_id must be omitted", payload)
 	}
 }
+
+func TestConstructionCommandUsesQueueContractForStrategicReplacement(t *testing.T) {
+	selected := constructionSelection{
+		ColonyID: 18,
+		Choice: game.ConstructionChoice{
+			ProjectKind:        core.ConstructionProjectMilitaryShip,
+			ProjectID:          game.MilitaryShipProjectID,
+			ShipDesignID:       21,
+			ShipDesignRevision: 3,
+		},
+	}
+	command, err := constructionCommand(2, selected)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if command.Kind != game.CommandSetConstructionQueue {
+		t.Fatalf("construction command kind=%q want %q", command.Kind, game.CommandSetConstructionQueue)
+	}
+	var payload game.SetConstructionQueuePayload
+	if err := json.Unmarshal(command.Payload, &payload); err != nil {
+		t.Fatal(err)
+	}
+	if payload.ColonyID != 18 || len(payload.Items) != 1 {
+		t.Fatalf("construction queue payload=%+v", payload)
+	}
+	item := payload.Items[0]
+	if item.ProjectKind != core.ConstructionProjectMilitaryShip || item.ProjectID != game.MilitaryShipProjectID || item.ShipDesignID != 21 || item.ShipDesignRevision != 3 {
+		t.Fatalf("construction queue item=%+v", item)
+	}
+}

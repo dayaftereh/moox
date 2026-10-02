@@ -206,13 +206,25 @@ func TestDecisionViewCatalogsSupportedTacticalActions(t *testing.T) {
 	if len(view.Decisions.Battles) != 1 || len(view.Decisions.Battles[0].Actions) == 0 {
 		t.Fatalf("battle decision catalog=%+v", view.Decisions.Battles)
 	}
-	if view.Decisions.Battles[0].Actions[0].Kind != battle.CommandFireBeam {
-		t.Fatalf("first tactical AI action kind=%q", view.Decisions.Battles[0].Actions[0].Kind)
+	afterCatalog := s.Status()
+	if afterCatalog.Revision != status.Revision {
+		t.Fatalf("building battle catalog mutated session revision: before=%d after=%d", status.Revision, afterCatalog.Revision)
 	}
-	before := s.Status()
-	if before.Revision != status.Revision {
-		t.Fatalf("building battle catalog mutated session revision: before=%d after=%d", status.Revision, before.Revision)
+	first := view.Decisions.Battles[0].Actions[0]
+	if first.Kind != battle.CommandMoveShip {
+		t.Fatalf("first tactical AI action kind=%q want approach move at 30-field deployment", first.Kind)
 	}
+	if err := s.SubmitBattleCommand(view.Decisions.Battles[0].BattleID, 1, first); err != nil {
+		t.Fatalf("submit tactical AI approach move: %v", err)
+	}
+	afterMove, err := s.DecisionView(1, resolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(afterMove.Decisions.Battles) != 1 || len(afterMove.Decisions.Battles[0].Actions) == 0 || afterMove.Decisions.Battles[0].Actions[0].Kind != battle.CommandFireBeam {
+		t.Fatalf("tactical AI did not expose Beam fire after approach move: %+v", afterMove.Decisions.Battles)
+	}
+
 }
 func TestDecisionViewRevealsEmpireOnlyAfterFirstContact(t *testing.T) {
 	rules, err := game.LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))

@@ -627,6 +627,17 @@ func (g *hostedGame) driveToInteractiveBoundary() error {
 	return fmt.Errorf("automatic phase driver exceeded step limit")
 }
 
+func (g *hostedGame) submitBuiltinAITurn(seatID protocol.SeatID, batch protocol.CommandBatch) error {
+	if g.immediateResolver != nil {
+		if _, err := g.session.PlanningPreview(batch, g.immediateResolver); err != nil {
+			return fmt.Errorf("builtin AI seat %d planning preview: %w", seatID, err)
+		}
+	}
+	if err := g.session.SubmitTurn(batch); err != nil {
+		return fmt.Errorf("builtin AI seat %d submit turn: %w", seatID, err)
+	}
+	return nil
+}
 func (g *hostedGame) drivePlanningControllers(status session.Status) (bool, bool, error) {
 	humanPending := false
 	for _, seatID := range g.seats {
@@ -662,8 +673,8 @@ func (g *hostedGame) drivePlanningControllers(status session.Status) (bool, bool
 			if decision.Batch == nil {
 				return false, false, fmt.Errorf("builtin AI seat %d returned nil turn batch", seatID)
 			}
-			if err := g.session.SubmitTurn(*decision.Batch); err != nil {
-				return false, false, fmt.Errorf("builtin AI seat %d submit turn: %w", seatID, err)
+			if err := g.submitBuiltinAITurn(seatID, *decision.Batch); err != nil {
+				return false, false, err
 			}
 			return true, false, nil
 		default:

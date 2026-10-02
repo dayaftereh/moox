@@ -65,6 +65,7 @@ func TestSlice176Gate4AllSupportedBeamsProjectAndExecute(t *testing.T) {
 			if reason != "" || tactical == nil {
 				t.Fatalf("Beam %q failed Tactical projection: tactical=%+v reason=%q", weaponID, tactical, reason)
 			}
+			placeTacticalShipsForBeamTest(t, tactical, attacker.ID, defender.ID)
 			if len(tactical.Ships) == 0 || len(tactical.Ships[0].Weapons) != 1 {
 				t.Fatalf("Beam %q Tactical snapshot=%+v", weaponID, tactical.Ships)
 			}

@@ -2,7 +2,7 @@
 
 Status: **planned / queued; not open**.
 
-Queue position: **reserved future Slice 18 by product decision**. Slice 18 follows Slice 17 and owns the galaxy-scale / strategic-route fidelity gaps found immediately after Slice 16. Slice 19 remains intentionally unassigned.
+Queue position: **reserved future Slice 18 by product decision**. Slice 18 follows Slice 17 and owns the galaxy-scale / strategic-route fidelity gaps found immediately after Slice 16. Slice 19 is now reserved downstream for Orbital / Planetary Combat.
 
 ## Objective
 

@@ -164,6 +164,14 @@ func TestSlice177Gate3Checkpoint5SelectorSaveBuildBattleSessionOrdnanceIntegrati
 		len(action.Targets) != 1 || action.Targets[0].TargetShipID != defenderShipID {
 		t.Fatalf("Tactical ordnance action=%+v", action)
 	}
+	decision, err := s.DecisionView(child.Spec.Attacker.SeatID, resolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(decision.Decisions.Battles) != 1 || len(decision.Decisions.Battles[0].Actions) == 0 ||
+		decision.Decisions.Battles[0].Actions[0].Kind != battle.CommandFireOrdnance {
+		t.Fatalf("Tactical AI ordnance catalog=%+v", decision.Decisions.Battles)
+	}
 	if len(child.Tactical.Ordnance.WeaponStates) != 1 ||
 		child.Tactical.Ordnance.WeaponStates[0].ShipID != built.ID ||
 		child.Tactical.Ordnance.WeaponStates[0].AmmoRemaining != 5 {

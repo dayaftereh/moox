@@ -586,26 +586,19 @@ type constructionSelection struct {
 }
 
 func constructionCommand(sequence uint32, selected constructionSelection) (protocol.Command, error) {
-	switch selected.Choice.ProjectKind {
-	case core.ConstructionProjectBuilding:
-		return game.NewQueueBuildingCommand(sequence, game.QueueBuildingPayload{ColonyID: selected.ColonyID, BuildingID: selected.Choice.ProjectID})
-	case core.ConstructionProjectColonyShip:
-		return game.NewQueueColonyShipCommand(sequence, game.QueueColonyShipPayload{ColonyID: selected.ColonyID})
-	case core.ConstructionProjectOutpostShip:
-		return game.NewQueueOutpostShipCommand(sequence, game.QueueOutpostShipPayload{ColonyID: selected.ColonyID})
-	case core.ConstructionProjectTroopTransport:
-		return game.NewQueueTroopTransportCommand(sequence, game.QueueTroopTransportPayload{ColonyID: selected.ColonyID})
-	case core.ConstructionProjectMilitaryShip:
-		return game.NewQueueMilitaryShipCommand(sequence, game.QueueMilitaryShipPayload{ColonyID: selected.ColonyID, ShipDesignID: selected.Choice.ShipDesignID})
-	case core.ConstructionProjectFreighterFleet:
-		return game.NewQueueFreighterFleetCommand(sequence, game.QueueFreighterFleetPayload{ColonyID: selected.ColonyID})
-	case core.ConstructionProjectHousing:
-		return game.NewQueueHousingCommand(sequence, game.QueueHousingPayload{ColonyID: selected.ColonyID})
-	case core.ConstructionProjectPlanetaryTransformation:
-		return game.NewQueuePlanetaryTransformationCommand(sequence, game.QueuePlanetaryTransformationPayload{ColonyID: selected.ColonyID, ProjectID: selected.Choice.ProjectID})
-	default:
+	if selected.Choice.ProjectKind == "" {
 		return protocol.Command{}, fmt.Errorf("unsupported construction project %q", selected.Choice.ProjectKind)
 	}
+	item := game.ConstructionQueueItem{
+		ProjectKind:        selected.Choice.ProjectKind,
+		ProjectID:          selected.Choice.ProjectID,
+		ShipDesignID:       selected.Choice.ShipDesignID,
+		ShipDesignRevision: selected.Choice.ShipDesignRevision,
+	}
+	return game.NewSetConstructionQueueCommand(sequence, game.SetConstructionQueuePayload{
+		ColonyID: selected.ColonyID,
+		Items:    []game.ConstructionQueueItem{item},
+	})
 }
 
 func empireKnows(empire core.Empire, tech int) bool {

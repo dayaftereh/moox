@@ -42,7 +42,7 @@ Do not mark Gate 1 complete merely because a `PLANNED_` checklist exists. Gate 1
 
 Active:
 
-- **Slice 17.7 is open with Gates 1-2 complete and Gate 3 ready / not started.** Slices 17.0-17.6 and follow-up 17.2A are closed/accepted; Slice 17.7 is the only active Slice-17 child; Slices 17.8-17.9 remain planned/not open.
+- **No Slice-17 child is currently open.** Slices 17.0-17.7 and follow-up 17.2A are closed/accepted; Slice 17.8 is next prepared and remains planned/not open; Slice 17.9 remains planned/not open.
 
 Closed/parked Slice-15 state:
 
@@ -54,14 +54,15 @@ Closed/parked Slice-15 state:
 
 Prepared queue:
 
-1. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - active parent program; child order 17.0 -> 17.1 -> 17.2 -> 17.3 -> 17.2A -> 17.4 -> 17.5 -> 17.6 -> 17.7 -> 17.8 -> 17.9; 17.0-17.6 and follow-up 17.2A are closed/accepted at Gates 1-4; 17.7 has Gates 1-2 complete and Gate 3 ready / not started; 17.8-17.9 remain planned/not open.
+1. PLANNED_17_MILITARY_SHIP_DESIGN_COMPONENT_WEAPON_BREADTH.md - active parent program; child order 17.0 -> 17.1 -> 17.2 -> 17.3 -> 17.2A -> 17.4 -> 17.5 -> 17.6 -> 17.7 -> 17.8 -> 17.9; 17.0-17.7 and follow-up 17.2A are closed/accepted at Gates 1-4; 17.8-17.9 remain planned/not open.
 2. PLANNED_18_GALAXY_GENERATION_STRATEGIC_NAVIGATION_FIDELITY.md - reserved Galaxy Generation / Strategic Navigation fidelity pass; planned, not open.
-3. PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md - dedicated authoritative Spy/intelligence mechanics; Slice 19 remains intentionally unassigned.
-4. PLANNED_21_COLONY_BUILDINGS_PLANET_EFFECTS_POLLUTION_FIDELITY.md - authoritative Colony/Building/Planet effects including Pollution.
-5. PLANNED_22_PRESET_RACE_COMPLETION_CUSTOM_RACE_DESIGNER.md - preset-race completion plus Custom Race Designer.
-6. PLANNED_23_FULL_ADVANCED_STARTING_CIVILIZATION_PARITY.md - full Advanced parity inheriting Slice-16.7 evidence.
+3. PLANNED_19_ORBITAL_PLANETARY_COMBAT.md - reserved Orbital / Planetary Combat pass connecting station/base/fighter defenses, verified bombardment and the existing invasion/conquest handoff; planned, not open.
+4. PLANNED_20_ESPIONAGE_INTELLIGENCE_BASELINE.md - dedicated authoritative Spy/intelligence mechanics.
+5. PLANNED_21_COLONY_BUILDINGS_PLANET_EFFECTS_POLLUTION_FIDELITY.md - authoritative Colony/Building/Planet effects including Pollution.
+6. PLANNED_22_PRESET_RACE_COMPLETION_CUSTOM_RACE_DESIGNER.md - preset-race completion plus Custom Race Designer.
+7. PLANNED_23_FULL_ADVANCED_STARTING_CIVILIZATION_PARITY.md - full Advanced parity inheriting Slice-16.7 evidence.
 
-Planned downstream order: **17 -> 18 -> 20 -> 21 -> 22 -> 23**. Slice 19 remains intentionally unassigned. No downstream slice is opened merely by being reserved.
+Planned downstream order: **17 -> 18 -> 19 -> 20 -> 21 -> 22 -> 23**. Slice 19 is reserved for Orbital / Planetary Combat and remains planned/not open. No downstream slice is opened merely by being reserved.
 
 ### Binding Slice-17 decomposition
 

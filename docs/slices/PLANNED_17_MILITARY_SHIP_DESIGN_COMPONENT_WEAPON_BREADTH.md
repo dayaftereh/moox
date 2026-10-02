@@ -1,6 +1,6 @@
 # Planned Slice 17 - Military Ship Design + Tactical Combat Program
 
-Status: **active parent program; children 17.0-17.6 and follow-up 17.2A closed/accepted; child 17.7 Gates 1-2 complete / Gate 3 ready; children 17.8-17.9 planned/not open**.
+Status: **active parent program; children 17.0-17.7 and follow-up 17.2A closed/accepted; children 17.8-17.9 planned/not open**.
 
 Queue position: **current gameplay program after closed Slice 16**. Slice 18 is reserved downstream for Galaxy/Strategic Navigation fidelity and is not a prerequisite for Slice 17.
 
@@ -123,7 +123,7 @@ Before opening 17.0 Gate 1:
 - [x] 17.4 closed: supported specials/fighter design breadth is complete.
 - [x] 17.5 closed: broad Tactical combatant admission/shared combat foundation replaces the old fixture-only path.
 - [x] 17.6 closed: supported Beam weapons/mounts/modifiers resolve authoritatively and Selector preview matches Tactical rules.
-- [ ] 17.7 closed: supported missiles/torpedoes/bombs resolve authoritatively, including projectile/interception/impact behavior.
+- [x] 17.7 closed: supported missiles/torpedoes resolve authoritatively, including projectile/interception/impact behavior; Bomb/Bio remain explicit bombardment-only handoffs.
 - [ ] 17.8 closed: supported Fighter/Bomber/Interceptor systems and accepted combat specials resolve authoritatively.
 - [ ] 17.9 closed: unified Designer -> Construction -> Fleet -> Encounter -> Tactical -> strategic reconciliation acceptance passes.
 - [ ] Every remaining intentionally unsupported mechanic has an explicit owner/reason and is not represented as already working.

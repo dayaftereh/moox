@@ -449,11 +449,11 @@ func TestBattleCommandEndpointAcceptsParticipantTacticalCommand(t *testing.T) {
 	if tactical.State.RNGState != 0 || snapshot.Battles[0].Spec.Tactical.InitialRNGState != 0 {
 		t.Fatal("player snapshot leaked Tactical RNG authority")
 	}
-	if len(tactical.Ships) != 2 || len(tactical.LegalMoves) == 0 || len(tactical.WeaponActions) != 1 || len(tactical.LegalFireActions) != 1 || !tactical.CanEndActivation {
+	if len(tactical.Ships) != 2 || len(tactical.LegalMoves) == 0 || len(tactical.WeaponActions) != 1 || len(tactical.LegalFireActions) != 0 || !tactical.CanEndActivation {
 		t.Fatalf("participant Tactical projection incomplete: %+v", tactical)
 	}
 	weaponAction := tactical.WeaponActions[0]
-	if weaponAction.WeaponID != "laser_cannon" || weaponAction.WeaponFamily != "beam" || weaponAction.CommandKind != battle.CommandFireBeam || !weaponAction.Available || weaponAction.UnavailableReason != "" || len(weaponAction.Targets) != 1 || weaponAction.Targets[0].TargetShipID != defenderShipID {
+	if weaponAction.WeaponID != "laser_cannon" || weaponAction.WeaponFamily != "beam" || weaponAction.CommandKind != battle.CommandFireBeam || weaponAction.Available || weaponAction.UnavailableReason != battle.TacticalWeaponUnavailableNoTargets || len(weaponAction.Targets) != 0 {
 		t.Fatalf("participant generic weapon projection=%+v", weaponAction)
 	}
 	var nonActiveSnapshot app.PlayerSnapshot
@@ -462,6 +462,11 @@ func TestBattleCommandEndpointAcceptsParticipantTacticalCommand(t *testing.T) {
 		t.Fatalf("non-active HTTP snapshot leaked weapon command authority: %+v", nonActiveSnapshot.Battles)
 	}
 	moveOption := tactical.LegalMoves[0]
+	for _, option := range tactical.LegalMoves[1:] {
+		if option.X > moveOption.X {
+			moveOption = option
+		}
+	}
 	move, err := battle.NewMoveShipCommand(1, battle.MoveShipPayload{ShipID: attackerShipID, X: moveOption.X, Y: moveOption.Y})
 	if err != nil {
 		t.Fatal(err)
@@ -566,7 +571,7 @@ func TestBattleCommandEndpointRejectsStaleAndIllegalWithoutMutation(t *testing.T
 	}
 	apiErr = apiErrorEnvelope{}
 	postJSON(t, server.URL+"/api/v1/games/battle-demo/battles/1/commands", commandRequest{SchemaVersion: 1, SeatID: 1, Command: illegalMove}, "", http.StatusConflict, &apiErr)
-	if apiErr.Error.Code != "session_rejected" || !strings.Contains(apiErr.Error.Message, "is occupied by ship") {
+	if apiErr.Error.Code != "session_rejected" || !strings.Contains(apiErr.Error.Message, "exceeds ship") {
 		t.Fatalf("illegal move error=%+v", apiErr)
 	}
 	assertUnchanged("illegal move")

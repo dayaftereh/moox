@@ -273,13 +273,22 @@ func TestLiveSnapshotActiveTacticalSessionRoundTripAndContinuation(t *testing.T)
 		t.Fatalf("tactical boundary=%+v", started.Battles)
 	}
 	child := started.Battles[0]
-	fire1, err := battle.NewFireBeamCommand(1, battle.FireBeamPayload{ShipID: fixture.attackerShipIDs[0], TargetShipID: fixture.defenderShipIDs[0], WeaponSlot: 0})
+
+	move1, err := goldenApproachMove(child, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.SubmitBattleCommand(child.Spec.ID, child.Spec.Attacker.SeatID, move1); err != nil {
+		t.Fatal(err)
+	}
+	fire1, err := battle.NewFireBeamCommand(2, battle.FireBeamPayload{ShipID: fixture.attackerShipIDs[0], TargetShipID: fixture.defenderShipIDs[0], WeaponSlot: 0})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if err := s.SubmitBattleCommand(child.Spec.ID, child.Spec.Attacker.SeatID, fire1); err != nil {
 		t.Fatal(err)
 	}
+
 	encoded, err := s.MarshalLiveSnapshot(resolver.Rules)
 	if err != nil {
 		t.Fatal(err)
@@ -297,21 +306,41 @@ func TestLiveSnapshotActiveTacticalSessionRoundTripAndContinuation(t *testing.T)
 	}
 
 	continueTactical := func(target *GameSession) {
-		endAttacker, _ := battle.NewEndActivationCommand(2, battle.EndActivationPayload{ShipID: fixture.attackerShipIDs[0]})
-		if err := target.SubmitBattleCommand(child.Spec.ID, child.Spec.Attacker.SeatID, endAttacker); err != nil {
+		endDefender1, _ := battle.NewEndActivationCommand(3, battle.EndActivationPayload{ShipID: fixture.defenderShipIDs[0]})
+		if err := target.SubmitBattleCommand(child.Spec.ID, child.Spec.Defender.SeatID, endDefender1); err != nil {
 			t.Fatal(err)
 		}
-		endDefender, _ := battle.NewEndActivationCommand(3, battle.EndActivationPayload{ShipID: fixture.defenderShipIDs[0]})
-		if err := target.SubmitBattleCommand(child.Spec.ID, child.Spec.Defender.SeatID, endDefender); err != nil {
+		current, err := observerBattleView(target, child.Spec.ID)
+		if err != nil {
 			t.Fatal(err)
 		}
-		fire2, _ := battle.NewFireBeamCommand(4, battle.FireBeamPayload{ShipID: fixture.attackerShipIDs[0], TargetShipID: fixture.defenderShipIDs[0], WeaponSlot: 0})
+		move2, err := goldenApproachMove(current, 4)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := target.SubmitBattleCommand(child.Spec.ID, child.Spec.Attacker.SeatID, move2); err != nil {
+			t.Fatal(err)
+		}
+		fire2, _ := battle.NewFireBeamCommand(5, battle.FireBeamPayload{ShipID: fixture.attackerShipIDs[0], TargetShipID: fixture.defenderShipIDs[0], WeaponSlot: 0})
 		if err := target.SubmitBattleCommand(child.Spec.ID, child.Spec.Attacker.SeatID, fire2); err != nil {
+			t.Fatal(err)
+		}
+		endAttacker2, _ := battle.NewEndActivationCommand(6, battle.EndActivationPayload{ShipID: fixture.attackerShipIDs[0]})
+		if err := target.SubmitBattleCommand(child.Spec.ID, child.Spec.Attacker.SeatID, endAttacker2); err != nil {
+			t.Fatal(err)
+		}
+		endDefender2, _ := battle.NewEndActivationCommand(7, battle.EndActivationPayload{ShipID: fixture.defenderShipIDs[0]})
+		if err := target.SubmitBattleCommand(child.Spec.ID, child.Spec.Defender.SeatID, endDefender2); err != nil {
+			t.Fatal(err)
+		}
+		fire3, _ := battle.NewFireBeamCommand(8, battle.FireBeamPayload{ShipID: fixture.attackerShipIDs[0], TargetShipID: fixture.defenderShipIDs[0], WeaponSlot: 0})
+		if err := target.SubmitBattleCommand(child.Spec.ID, child.Spec.Attacker.SeatID, fire3); err != nil {
 			t.Fatal(err)
 		}
 	}
 	continueTactical(s)
 	continueTactical(restored)
+
 	leftObserver, _ := s.ObserverView()
 	rightObserver, _ := restored.ObserverView()
 	leftJSON, _ := json.Marshal(leftObserver)

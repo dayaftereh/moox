@@ -129,7 +129,8 @@ Gate 1 must distinguish data already represented in core.Planet, normalized data
 Before Slice 21 moves beyond Gate 1, verify:
 
 - current Economy/Population/Morale/Construction baselines;
-- Slice 17 where orbital/defensive buildings need ship/Tactical consumers;
+- Slice 17 as the shared Beam/ordnance/fighter/Tactical combat foundation;
+- Slice 19 as the owner of orbital/planetary combat consumers for Star Base/Battlestation/Star Fortress, Planetary Missile Base, Fighter Garrison, Ground Batteries, planetary shields and verified bombardment;
 - current planet-generation and persistence schema;
 - exact original Pollution ordering and rounding;
 - exact building-effect provenance.

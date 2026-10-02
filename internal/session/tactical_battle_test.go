@@ -3,6 +3,7 @@ package session
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"path/filepath"
 	"reflect"
 	"testing"
@@ -87,36 +88,124 @@ func makeTacticalStrategicFixture(t *testing.T, systemCount int) (*core.GameStat
 	return state, seats, fixture
 }
 
+func goldenApproachMove(view battle.View, sequence uint32) (protocol.Command, error) {
+	if view.Tactical == nil {
+		return protocol.Command{}, errors.New("golden Tactical view is missing")
+	}
+	attackerShipID := view.Spec.Attacker.ShipIDs[0]
+	defenderShipID := view.Spec.Defender.ShipIDs[0]
+	var attacker, defender *battle.TacticalShipState
+	for i := range view.Tactical.State.Ships {
+		state := &view.Tactical.State.Ships[i]
+		switch state.ShipID {
+		case attackerShipID:
+			attacker = state
+		case defenderShipID:
+			defender = state
+		}
+	}
+	if attacker == nil || defender == nil {
+		return protocol.Command{}, errors.New("golden Tactical ship state is missing")
+	}
+	if len(view.Tactical.LegalMoves) == 0 {
+		return protocol.Command{}, errors.New("golden Tactical attacker has no legal approach move")
+	}
+	distanceSquared := func(x, y int) int64 {
+		dx := int64(defender.X - x)
+		dy := int64(defender.Y - y)
+		return dx*dx + dy*dy
+	}
+	best := view.Tactical.LegalMoves[0]
+	bestDistance := distanceSquared(best.X, best.Y)
+	for _, option := range view.Tactical.LegalMoves[1:] {
+		distance := distanceSquared(option.X, option.Y)
+		if distance < bestDistance ||
+			(distance == bestDistance && (option.MoveCost < best.MoveCost ||
+				(option.MoveCost == best.MoveCost && (option.Y < best.Y || (option.Y == best.Y && option.X < best.X))))) {
+			best = option
+			bestDistance = distance
+		}
+	}
+	return battle.NewMoveShipCommand(sequence, battle.MoveShipPayload{ShipID: attackerShipID, X: best.X, Y: best.Y})
+}
+
+func observerBattleView(s *GameSession, battleID uint64) (battle.View, error) {
+	view, err := s.ObserverView()
+	if err != nil {
+		return battle.View{}, err
+	}
+	for _, child := range view.Battles {
+		if child.Spec.ID == battleID {
+			return child, nil
+		}
+	}
+	return battle.View{}, fmt.Errorf("battle %d is missing from Observer view", battleID)
+}
+
 func submitGoldenBattleCommands(t *testing.T, s *GameSession, view battle.View) error {
 	t.Helper()
 	attackerShipID := view.Spec.Attacker.ShipIDs[0]
 	defenderShipID := view.Spec.Defender.ShipIDs[0]
-	fire1, err := battle.NewFireBeamCommand(1, battle.FireBeamPayload{ShipID: attackerShipID, TargetShipID: defenderShipID, WeaponSlot: 0})
+
+	move1, err := goldenApproachMove(view, 1)
+	if err != nil {
+		return err
+	}
+	if err := s.SubmitBattleCommand(view.Spec.ID, view.Spec.Attacker.SeatID, move1); err != nil {
+		return err
+	}
+	fire1, err := battle.NewFireBeamCommand(2, battle.FireBeamPayload{ShipID: attackerShipID, TargetShipID: defenderShipID, WeaponSlot: 0})
 	if err != nil {
 		return err
 	}
 	if err := s.SubmitBattleCommand(view.Spec.ID, view.Spec.Attacker.SeatID, fire1); err != nil {
 		return err
 	}
-	endAttacker, err := battle.NewEndActivationCommand(2, battle.EndActivationPayload{ShipID: attackerShipID})
+	endDefender1, err := battle.NewEndActivationCommand(3, battle.EndActivationPayload{ShipID: defenderShipID})
 	if err != nil {
 		return err
 	}
-	if err := s.SubmitBattleCommand(view.Spec.ID, view.Spec.Attacker.SeatID, endAttacker); err != nil {
+	if err := s.SubmitBattleCommand(view.Spec.ID, view.Spec.Defender.SeatID, endDefender1); err != nil {
 		return err
 	}
-	endDefender, err := battle.NewEndActivationCommand(3, battle.EndActivationPayload{ShipID: defenderShipID})
+
+	current, err := observerBattleView(s, view.Spec.ID)
 	if err != nil {
 		return err
 	}
-	if err := s.SubmitBattleCommand(view.Spec.ID, view.Spec.Defender.SeatID, endDefender); err != nil {
-		return err
-	}
-	fire2, err := battle.NewFireBeamCommand(4, battle.FireBeamPayload{ShipID: attackerShipID, TargetShipID: defenderShipID, WeaponSlot: 0})
+	move2, err := goldenApproachMove(current, 4)
 	if err != nil {
 		return err
 	}
-	return s.SubmitBattleCommand(view.Spec.ID, view.Spec.Attacker.SeatID, fire2)
+	if err := s.SubmitBattleCommand(view.Spec.ID, view.Spec.Attacker.SeatID, move2); err != nil {
+		return err
+	}
+	fire2, err := battle.NewFireBeamCommand(5, battle.FireBeamPayload{ShipID: attackerShipID, TargetShipID: defenderShipID, WeaponSlot: 0})
+	if err != nil {
+		return err
+	}
+	if err := s.SubmitBattleCommand(view.Spec.ID, view.Spec.Attacker.SeatID, fire2); err != nil {
+		return err
+	}
+	endAttacker2, err := battle.NewEndActivationCommand(6, battle.EndActivationPayload{ShipID: attackerShipID})
+	if err != nil {
+		return err
+	}
+	if err := s.SubmitBattleCommand(view.Spec.ID, view.Spec.Attacker.SeatID, endAttacker2); err != nil {
+		return err
+	}
+	endDefender2, err := battle.NewEndActivationCommand(7, battle.EndActivationPayload{ShipID: defenderShipID})
+	if err != nil {
+		return err
+	}
+	if err := s.SubmitBattleCommand(view.Spec.ID, view.Spec.Defender.SeatID, endDefender2); err != nil {
+		return err
+	}
+	fire3, err := battle.NewFireBeamCommand(8, battle.FireBeamPayload{ShipID: attackerShipID, TargetShipID: defenderShipID, WeaponSlot: 0})
+	if err != nil {
+		return err
+	}
+	return s.SubmitBattleCommand(view.Spec.ID, view.Spec.Attacker.SeatID, fire3)
 }
 
 func TestEconomyResolverTacticalBattleCompletesThroughStrategicHandoff(t *testing.T) {
@@ -154,7 +243,7 @@ func TestEconomyResolverTacticalBattleCompletesThroughStrategicHandoff(t *testin
 	if finished.Battles[0].Result == nil || finished.Battles[0].Result.WinnerSeat != 1 || finished.Battles[0].Result.Outcome != battle.TacticalOutcomeVictory || !reflect.DeepEqual(finished.Battles[0].Result.DestroyedShipIDs, fixture.defenderShipIDs) {
 		t.Fatalf("tactical result=%+v", finished.Battles[0].Result)
 	}
-	if finished.Battles[0].Tactical == nil || finished.Battles[0].Tactical.State.RNGState != 0xFD95EBB9 || len(finished.Battles[0].Tactical.Events) != 10 {
+	if finished.Battles[0].Tactical == nil || finished.Battles[0].Tactical.State.RNGState != 0x63390F5F || len(finished.Battles[0].Tactical.Events) != 17 {
 		t.Fatalf("completed tactical view=%+v", finished.Battles[0].Tactical)
 	}
 	for _, ship := range finished.State.Ships {
@@ -210,20 +299,50 @@ func TestTerminalTacticalCommandStrategicContinuationFailureIsAtomicAndRetryable
 	started, _ := s.ObserverView()
 	child := started.Battles[0]
 	attackerShipID, defenderShipID := child.Spec.Attacker.ShipIDs[0], child.Spec.Defender.ShipIDs[0]
-	fire1, _ := battle.NewFireBeamCommand(1, battle.FireBeamPayload{ShipID: attackerShipID, TargetShipID: defenderShipID, WeaponSlot: 0})
-	endA, _ := battle.NewEndActivationCommand(2, battle.EndActivationPayload{ShipID: attackerShipID})
-	endD, _ := battle.NewEndActivationCommand(3, battle.EndActivationPayload{ShipID: defenderShipID})
+
+	move1, err := goldenApproachMove(child, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fire1, _ := battle.NewFireBeamCommand(2, battle.FireBeamPayload{ShipID: attackerShipID, TargetShipID: defenderShipID, WeaponSlot: 0})
+	endDefender1, _ := battle.NewEndActivationCommand(3, battle.EndActivationPayload{ShipID: defenderShipID})
 	for _, step := range []struct {
 		seat protocol.SeatID
 		cmd  protocol.Command
-	}{{child.Spec.Attacker.SeatID, fire1}, {child.Spec.Attacker.SeatID, endA}, {child.Spec.Defender.SeatID, endD}} {
+	}{{child.Spec.Attacker.SeatID, move1}, {child.Spec.Attacker.SeatID, fire1}, {child.Spec.Defender.SeatID, endDefender1}} {
 		if err := s.SubmitBattleCommand(child.Spec.ID, step.seat, step.cmd); err != nil {
 			t.Fatal(err)
 		}
 	}
+
+	current, err := observerBattleView(s, child.Spec.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	move2, err := goldenApproachMove(current, 4)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fire2, _ := battle.NewFireBeamCommand(5, battle.FireBeamPayload{ShipID: attackerShipID, TargetShipID: defenderShipID, WeaponSlot: 0})
+	endAttacker2, _ := battle.NewEndActivationCommand(6, battle.EndActivationPayload{ShipID: attackerShipID})
+	endDefender2, _ := battle.NewEndActivationCommand(7, battle.EndActivationPayload{ShipID: defenderShipID})
+	for _, step := range []struct {
+		seat protocol.SeatID
+		cmd  protocol.Command
+	}{
+		{child.Spec.Attacker.SeatID, move2},
+		{child.Spec.Attacker.SeatID, fire2},
+		{child.Spec.Attacker.SeatID, endAttacker2},
+		{child.Spec.Defender.SeatID, endDefender2},
+	} {
+		if err := s.SubmitBattleCommand(child.Spec.ID, step.seat, step.cmd); err != nil {
+			t.Fatal(err)
+		}
+	}
+
 	before, _ := s.ObserverView()
-	fire2, _ := battle.NewFireBeamCommand(4, battle.FireBeamPayload{ShipID: attackerShipID, TargetShipID: defenderShipID, WeaponSlot: 0})
-	if err := s.SubmitBattleCommand(child.Spec.ID, child.Spec.Attacker.SeatID, fire2); err == nil {
+	fire3, _ := battle.NewFireBeamCommand(8, battle.FireBeamPayload{ShipID: attackerShipID, TargetShipID: defenderShipID, WeaponSlot: 0})
+	if err := s.SubmitBattleCommand(child.Spec.ID, child.Spec.Attacker.SeatID, fire3); err == nil {
 		t.Fatal("expected terminal tactical continuation failure")
 	}
 	afterFailure, _ := s.ObserverView()
@@ -231,7 +350,7 @@ func TestTerminalTacticalCommandStrategicContinuationFailureIsAtomicAndRetryable
 		t.Fatalf("failed terminal command mutated session:\nbefore=%+v\nafter=%+v", before, afterFailure)
 	}
 	resolver.resumeErr = nil
-	if err := s.SubmitBattleCommand(child.Spec.ID, child.Spec.Attacker.SeatID, fire2); err != nil {
+	if err := s.SubmitBattleCommand(child.Spec.ID, child.Spec.Attacker.SeatID, fire3); err != nil {
 		t.Fatal(err)
 	}
 	finished, _ := s.ObserverView()
@@ -350,7 +469,7 @@ func TestParallelTacticalBattlesKeepLocalEventsAndGlobalStableCompletionOrder(t 
 				t.Fatal(err)
 			}
 			completedIDs = append(completedIDs, completed.Spec.ID)
-			if completed.Tactical == nil || len(completed.Tactical.Events) != 10 {
+			if completed.Tactical == nil || len(completed.Tactical.Events) != 17 {
 				t.Fatalf("completed Battle %d lost local tactical events", completed.Spec.ID)
 			}
 		}

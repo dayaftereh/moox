@@ -30,6 +30,27 @@ func tacticalMetadataShip(id, empireID core.ID, drive string, armed bool) core.S
 	return core.Ship{ID: id, EmpireID: empireID, Name: "Tactical Test", Spec: spec}
 }
 
+func placeTacticalShipsForBeamTest(t *testing.T, tactical *battle.TacticalSpec, attackerID, defenderID core.ID) {
+	t.Helper()
+	if tactical == nil {
+		t.Fatal("tactical spec missing")
+	}
+	var attacker, defender *battle.TacticalShipSpec
+	for i := range tactical.Ships {
+		switch tactical.Ships[i].ShipID {
+		case attackerID:
+			attacker = &tactical.Ships[i]
+		case defenderID:
+			defender = &tactical.Ships[i]
+		}
+	}
+	if attacker == nil || defender == nil {
+		t.Fatalf("Beam fixture ships missing attacker=%d defender=%d", attackerID, defenderID)
+	}
+	defender.X = attacker.X + 1
+	defender.Y = attacker.Y
+}
+
 func TestTacticalMetadataSupportsTwoByTwoWithOpenFieldDeployment(t *testing.T) {
 	state := &core.GameState{Ships: []core.Ship{
 		tacticalMetadataShip(101, 1, "fusion_drive", true),
@@ -54,10 +75,10 @@ func TestTacticalMetadataSupportsTwoByTwoWithOpenFieldDeployment(t *testing.T) {
 		t.Fatalf("tactical ships=%d want 4", len(tactical.Ships))
 	}
 	want := map[core.ID]struct{ x, y, facing, speed int }{
-		101: {10, 9, 0, 22},
-		102: {10, 11, 0, 22},
-		201: {14, 9, 8, 20},
-		202: {14, 11, 8, 20},
+		101: {25, 9, 0, 22},
+		102: {25, 11, 0, 22},
+		201: {55, 9, 8, 20},
+		202: {55, 11, 8, 20},
 	}
 	occupied := map[[2]int]core.ID{}
 	for _, ship := range tactical.Ships {
@@ -76,6 +97,44 @@ func TestTacticalMetadataSupportsTwoByTwoWithOpenFieldDeployment(t *testing.T) {
 			t.Fatalf("ships %d and %d share deployment %v", prior, ship.ShipID, key)
 		}
 		occupied[key] = ship.ShipID
+	}
+}
+
+func TestTacticalMetadataUsesOriginalThirtyFieldFleetSeparation(t *testing.T) {
+	state := &core.GameState{Ships: []core.Ship{
+		tacticalMetadataShip(101, 1, "fusion_drive", true),
+		tacticalMetadataShip(201, 2, "nuclear_drive", false),
+	}}
+	encounter := Encounter{
+		SystemID:     7,
+		Attacker:     EncounterSide{EmpireID: 1, SeatID: 1, CombatFleetIDs: []core.ID{11}, ShipIDs: []core.ID{101}},
+		Defender:     EncounterSide{EmpireID: 2, SeatID: 2, CombatFleetIDs: []core.ID{22}, ShipIDs: []core.ID{201}},
+		Participants: []protocol.SeatID{1, 2},
+	}
+	tactical, reason, err := tacticalMetadataForEncounter(state, encounter, tacticalMetadataRules(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reason != "" || tactical == nil || len(tactical.Ships) != 2 {
+		t.Fatalf("1v1 tactical metadata unsupported: tactical=%+v reason=%q", tactical, reason)
+	}
+	var attacker, defender *battle.TacticalShipSpec
+	for i := range tactical.Ships {
+		switch tactical.Ships[i].ShipID {
+		case 101:
+			attacker = &tactical.Ships[i]
+		case 201:
+			defender = &tactical.Ships[i]
+		}
+	}
+	if attacker == nil || defender == nil {
+		t.Fatalf("deployment ships missing: %+v", tactical.Ships)
+	}
+	if attacker.X != 25 || defender.X != 55 || defender.X-attacker.X != 30 {
+		t.Fatalf("deployment attackerX=%d defenderX=%d separation=%d want 25/55/30", attacker.X, defender.X, defender.X-attacker.X)
+	}
+	if attacker.Facing != 0 || defender.Facing != 8 {
+		t.Fatalf("deployment facings attacker=%d defender=%d want 0/8", attacker.Facing, defender.Facing)
 	}
 }
 
@@ -254,6 +313,7 @@ func TestSlice176TacticalConfiguredBeamSnapshotEnablesGenericFire(t *testing.T) 
 	if reason != "" || tactical == nil {
 		t.Fatalf("configured Beam tactical metadata unsupported: tactical=%+v reason=%q", tactical, reason)
 	}
+	placeTacticalShipsForBeamTest(t, tactical, attacker.ID, defender.ID)
 	var projected *battle.TacticalShipSpec
 	for i := range tactical.Ships {
 		if tactical.Ships[i].ShipID == attacker.ID {

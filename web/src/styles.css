@@ -7781,3 +7781,83 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   24% { opacity: 1; transform: scale(1); }
   100% { opacity: 0; transform: scale(1.9); }
 }
+
+
+.tactical-projectile-flight {
+  pointer-events: none;
+}
+.tactical-projectile-flight-body {
+  fill: #ffd56f;
+  stroke: #fff4bd;
+  stroke-width: .07;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 3px rgba(255, 190, 83, .95));
+}
+.tactical-projectile-flight-exhaust {
+  stroke: #ff8b3d;
+  stroke-width: .12;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 2px rgba(255, 109, 47, .95));
+}
+
+
+/* Slice 17.7 post-Gate-3 ordnance visual polish: render grouped projectile actors as visible salvos. */
+.tactical-projectile-body {
+  fill: #dcecff;
+  stroke: #8ecbff;
+  stroke-width: .045;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 2px rgba(115, 199, 255, .72));
+}
+.tactical-projectile-fin,
+.tactical-projectile-flight-fin {
+  fill: #7188a8;
+  stroke: #b7cae0;
+  stroke-width: .035;
+  vector-effect: non-scaling-stroke;
+}
+.tactical-projectile-static-exhaust {
+  stroke: #ff9a45;
+  stroke-width: .09;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 2px rgba(255, 126, 49, .8));
+}
+.tactical-projectile-flight-body {
+  fill: #eef8ff;
+  stroke: #8ddcff;
+  stroke-width: .05;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 3px rgba(79, 199, 255, .95));
+}
+.tactical-projectile-flight-exhaust {
+  fill: rgba(255, 118, 37, .9);
+  stroke: #ffd06b;
+  stroke-width: .035;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 3px rgba(255, 102, 30, .95));
+  animation: tactical-projectile-exhaust 140ms ease-in-out infinite alternate;
+}
+.tactical-projectile-flight-flame {
+  fill: #fff0a2;
+  filter: drop-shadow(0 0 3px rgba(255, 168, 46, 1));
+  animation: tactical-projectile-flame 110ms ease-in-out infinite alternate;
+}
+.tactical-projectile-flight-count {
+  fill: #fff6ce;
+  stroke: rgba(20, 28, 40, .9);
+  stroke-width: .035;
+  paint-order: stroke;
+  font-size: .34px;
+  font-weight: 800;
+  text-anchor: start;
+}
+@keyframes tactical-projectile-exhaust {
+  from { opacity: .55; }
+  to { opacity: 1; }
+}
+@keyframes tactical-projectile-flame {
+  from { opacity: .6; transform: scale(.72); transform-origin: center; }
+  to { opacity: 1; transform: scale(1.22); transform-origin: center; }
+}

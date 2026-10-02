@@ -42,5 +42,11 @@ requireFragment(battlefield, "battlefield.ammoRemaining", 'Missile ammo presenta
 requireFragment(battlefield, "battlefield.cooldownRemaining", 'Torpedo cooldown presentation')
 requireFragment(styles, '.tactical-projectile', 'projectile marker style')
 requireFragment(styles, '.tactical-projectile-animation', 'projectile event animation style')
+requireFragment(battlefield, '<animateTransform', 'projectile flight animation')
+requireFragment(battlefield, 'tactical-projectile-flight-body', 'moving projectile glyph')
+requireFragment(styles, '.tactical-projectile-flight-body', 'moving projectile style')
+requireFragment(battlefield, 'projectileSalvoOffsets', 'multiplicity-aware projectile salvo rendering')
+requireFragment(battlefield, 'data-multiplicity={projectileAnimation.multiplicity}', 'animated salvo multiplicity')
+requireFragment(styles, '.tactical-projectile-flight-flame', 'missile exhaust flame style')
 
 console.log('Tactical ordnance browser contract passed: authoritative projectiles, server-projected targets, launch/interception event presentation, ammo and cooldown wiring.')

@@ -40,8 +40,14 @@ type TacticalDamageLayerKind = 'shield' | 'armor' | 'structure' | 'projectile'
 type TacticalDamageLayer = { kind: TacticalDamageLayerKind; amount: number }
 type TacticalBeamAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number; shotCount: number; shotHits: boolean[]; weaponID: string; physicalWeaponCount: number; burstShotCount: number; layers: TacticalDamageLayer[] }
 type TacticalMoveAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number }
-type TacticalProjectileAnimation = { sequence: number; projectileID: number; kind: string; fromX?: number; fromY?: number; toX: number; toY: number }
+type TacticalProjectileAnimation = { sequence: number; projectileID: number; kind: string; fromX?: number; fromY?: number; toX: number; toY: number; multiplicity: number }
 
+function projectileSalvoOffsets(multiplicity: number): number[] {
+  const visible = Math.max(1, Math.min(5, Math.trunc(multiplicity) || 1))
+  const spacing = 0.22
+  const start = -((visible - 1) * spacing) / 2
+  return Array.from({ length: visible }, (_, index) => start + index * spacing)
+}
 function weaponUnavailableLabel(reason: string | undefined, t: Translator): string {
   switch (reason) {
     case 'tactical_consumer_unavailable':
@@ -376,6 +382,12 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         const projectileID = eventNumber(event.data, 'projectile_id')
         const position = projectileEventPosition(events, event, projectiles, ships)
         if (projectileID != null && position) {
+          const liveProjectile = projectiles.find((projectile) => projectile.projectile_id === projectileID)
+          const multiplicity = eventNumber(event.data, 'multiplicity_after')
+            ?? eventNumber(event.data, 'multiplicity_before')
+            ?? eventNumber(event.data, 'multiplicity')
+            ?? liveProjectile?.multiplicity
+            ?? 1
           setProjectileAnimation({
             sequence: event.sequence,
             projectileID,
@@ -384,6 +396,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             fromY: eventNumber(event.data, 'from_y'),
             toX: position.x,
             toY: position.y,
+            multiplicity: Math.max(1, Math.trunc(multiplicity)),
           })
         }
       }
@@ -597,13 +610,18 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                 aria-label={t('battlefield.projectileMarker', { id: projectile.projectile_id, weapon: humanize(projectile.weapon_id), count: projectile.multiplicity, x: projectile.x, y: projectile.y })}
                 onKeyDown={(event) => { if (isLegalTarget && (event.key === 'Enter' || event.key === ' ')) selectProjectile(projectile) }}
               >
-                <circle r={0.42} className="tactical-projectile-hit-cell" />
+                <circle r={0.48 + Math.min(4, projectileSalvoOffsets(projectile.multiplicity).length - 1) * 0.07} className="tactical-projectile-hit-cell" />
                 <g transform={`rotate(${angle})`} pointerEvents="none">
-                  <path d="M -0.34 -0.16 L 0.38 0 L -0.34 0.16 L -0.16 0 Z" className="tactical-projectile-vector" />
+                  {projectileSalvoOffsets(projectile.multiplicity).map((offset, index) => (
+                    <g key={`projectile-glyph:${projectile.projectile_id}:${index}`} transform={`translate(${-Math.abs(offset) * 0.08} ${offset})`}>
+                      <path d="M -0.34 -0.085 L 0.18 -0.085 L 0.42 0 L 0.18 0.085 L -0.34 0.085 Z" className="tactical-projectile-vector tactical-projectile-body" />
+                      <path d="M -0.24 -0.085 L -0.38 -0.19 L -0.08 -0.085 Z M -0.24 0.085 L -0.38 0.19 L -0.08 0.085 Z" className="tactical-projectile-fin" />
+                       <line x1={-0.36} y1={0} x2={-0.58} y2={0} className="tactical-projectile-static-exhaust" />
+                    </g>
+                  ))}
                 </g>
-                {projectile.multiplicity > 1 && <text x={0.32} y={-0.28} className="tactical-projectile-count" pointerEvents="none">×{projectile.multiplicity}</text>}
-              </g>
-            )
+                {projectile.multiplicity > 5 && <text x={0.38} y={-0.34} className="tactical-projectile-count" pointerEvents="none">×{projectile.multiplicity}</text>}
+              </g>            )
           })}
 
           {ships.map((ship) => {
@@ -657,7 +675,38 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
           {projectileAnimation && (
             <g className={`tactical-projectile-animation is-${projectileAnimation.kind}`} data-sequence={projectileAnimation.sequence} data-projectile-id={projectileAnimation.projectileID} pointerEvents="none">
               {projectileAnimation.fromX != null && projectileAnimation.fromY != null && (
-                <line x1={projectileAnimation.fromX} y1={projectileAnimation.fromY} x2={projectileAnimation.toX} y2={projectileAnimation.toY} className="tactical-projectile-event-trail" />
+                <>
+                  <line x1={projectileAnimation.fromX} y1={projectileAnimation.fromY} x2={projectileAnimation.toX} y2={projectileAnimation.toY} className="tactical-projectile-event-trail" />
+                  {projectileAnimation.kind === 'projectile_moved' && (
+                    <g className="tactical-projectile-flight" data-multiplicity={projectileAnimation.multiplicity}>
+                      <animateTransform
+                        attributeName="transform"
+                        type="translate"
+                        from={projectileAnimation.fromX + ' ' + projectileAnimation.fromY}
+                        to={projectileAnimation.toX + ' ' + projectileAnimation.toY}
+                        dur="820ms"
+                        fill="freeze"
+                      />
+                      <g transform={'rotate(' + (Math.atan2(projectileAnimation.toY - projectileAnimation.fromY, projectileAnimation.toX - projectileAnimation.fromX) * 180 / Math.PI) + ')'}>
+                        {projectileSalvoOffsets(projectileAnimation.multiplicity).map((offset, index) => (
+                          <g key={`flight-projectile:${projectileAnimation.projectileID}:${index}`} transform={`translate(${-Math.abs(offset) * 0.1} ${offset})`}>
+                            <path d="M -0.46 -0.1 L 0.2 -0.1 L 0.48 0 L 0.2 0.1 L -0.46 0.1 Z" className="tactical-projectile-flight-body" />
+                            <path d="M -0.28 -0.1 L -0.46 -0.24 L -0.08 -0.1 Z M -0.28 0.1 L -0.46 0.24 L -0.08 0.1 Z" className="tactical-projectile-flight-fin" />
+                            <path d="M -0.47 -0.07 L -0.96 0 L -0.47 0.07 Z" className="tactical-projectile-flight-exhaust" />
+                            <circle cx={-0.56} cy={0} r={0.05} className="tactical-projectile-flight-flame">
+                              <animate attributeName="cx" values="-0.56;-0.92" dur="180ms" repeatCount="indefinite" />
+                              <animate attributeName="r" values="0.055;0.018" dur="180ms" repeatCount="indefinite" />
+                              <animate attributeName="opacity" values="1;0" dur="180ms" repeatCount="indefinite" />
+                            </circle>
+                          </g>
+                        ))}
+                      </g>
+                      {projectileAnimation.multiplicity > 5 && (
+                        <text x={0.54} y={-0.4} className="tactical-projectile-flight-count">×{projectileAnimation.multiplicity}</text>
+                      )}
+                    </g>
+                  )}
+                </>
               )}
               <circle cx={projectileAnimation.toX} cy={projectileAnimation.toY} r={0.34} className="tactical-projectile-event-pulse" />
             </g>
