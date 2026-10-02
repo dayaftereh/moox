@@ -723,3 +723,10 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Bomb/Bio rows remain explicitly `bombardment_only`; their planetary consumer is reserved in Slice 19 rather than being forced into ship Tactical.
 - Final QA passed `go test ./... -count=1`, `go vet ./...`, production web build including `check:tactical-ordnance`, HTTP/session/persistence regressions and `git diff --check`.
 - The Slice-17.7 `_OPEN_` marker is removed. Slice 17.8 Tactical Fighters / Bombers / Combat Specials is next prepared and remains planned/not open.
+## 2026-10-02 - Slice 17.8 Tactical Fighters / Bombers / Combat Specials opened
+
+- Slice 17.8 opens as the sole active Slice-17 child in Gate 1 fighter/special Tactical audit.
+- Opening baseline: `main` at `0a3c325`, clean Working Tree, `0 ahead / 0 behind` versus `origin/main`, and zero pre-existing `_OPEN_` markers.
+- Gate-1 evidence starts in `docs/research/SLICE_17_8_GATE1_FIGHTERS_SPECIALS_TACTICAL_AUDIT_2026-10-02.md`; no 17.8 production implementation is allowed before Gate 2 freezes the contract.
+- The audit consumes the frozen Slice-17.4 handoff: Fighter/Bomber/Heavy-Fighter bays plus deferred Class-3 Special consumers, explicitly including repair/regeneration, cloak/phasing, boarding/transport/security, ECM/anti-missile, shield/damage-field, teleport/time/area and remaining Beam-support effects.
+- Planetary Fighter Garrison remains Slice 19 ownership; Slice 17.8 is intended to freeze the reusable ship-Tactical fighter runtime that Slice 19 can consume later.

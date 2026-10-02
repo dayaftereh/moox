@@ -1,6 +1,6 @@
 # Planned Slice 17.8 - Tactical Fighters / Bombers / Combat Specials
 
-Status: **planned; child of Slice 17; not open**.
+Status: **open; Gate 1 fighter/special Tactical audit in progress (2026-10-02)**.
 
 ## Objective
 
@@ -35,6 +35,10 @@ Turn the authoritative Fighter/Bomber/Interceptor bay and combat-special snapsho
 Strategic-only specials remain strategic. Any special whose original behavior is not directly evidenced remains explicitly unsupported/deferred rather than guessed.
 
 ## Gate 1 - fighter/special Tactical audit
+
+Status: **IN PROGRESS - 2026-10-02**
+
+Gate 1 evidence: `docs/research/SLICE_17_8_GATE1_FIGHTERS_SPECIALS_TACTICAL_AUDIT_2026-10-02.md`
 
 - [ ] Re-audit Fighter/Bomber/Interceptor bay identities and capacity/readiness semantics.
 - [ ] Re-audit fighter actor/group representation, launch, movement, targeting, attack and loss behavior.
