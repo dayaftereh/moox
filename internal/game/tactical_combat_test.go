@@ -341,7 +341,7 @@ func TestSlice176TacticalConfiguredBeamSnapshotEnablesGenericFire(t *testing.T) 
 	}
 }
 
-func TestSlice173TacticalMetadataPreservesOrdnanceSnapshotWithoutEnablingDeferredFire(t *testing.T) {
+func TestSlice177Checkpoint2TacticalMetadataProjectsExecutableOrdnance(t *testing.T) {
 	attacker := tacticalMetadataShip(101, 1, "fusion_drive", true)
 	attacker.Spec.Weapons = []core.ShipWeaponMount{{
 		Slot: 0, WeaponID: "nuclear_missile", Count: 2, MountType: core.ShipWeaponMountStandard,
@@ -409,12 +409,12 @@ func TestSlice173TacticalMetadataPreservesOrdnanceSnapshotWithoutEnablingDeferre
 			break
 		}
 	}
-	if viewWeapon == nil || viewWeapon.WeaponID != "nuclear_missile" || viewWeapon.Ammo != 5 || viewWeapon.FiringArcID != core.ShipWeaponFiringArc360 || viewWeapon.TacticalSupport != "ordnance" || viewWeapon.Ready {
+	if viewWeapon == nil || viewWeapon.WeaponID != "nuclear_missile" || viewWeapon.Ammo != 5 || viewWeapon.FiringArcID != core.ShipWeaponFiringArc360 || viewWeapon.TacticalSupport != "ordnance" || !viewWeapon.Ready {
 		t.Fatalf("BattleSession ordnance view=%+v", viewWeapon)
 	}
 	for _, action := range view.Tactical.LegalFireActions {
 		if action.WeaponID == "nuclear_missile" || action.WeaponSlot == 0 {
-			t.Fatalf("deferred ordnance unexpectedly received fire action: %+v", action)
+			t.Fatalf("ordnance leaked into legacy Beam fire-action surface: %+v", action)
 		}
 	}
 }

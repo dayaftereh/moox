@@ -51,14 +51,6 @@ func TestSlice177Gate3Checkpoint1InitializesDetachedOrdnanceProjection(t *testin
 	if got := ordnance.WeaponStates[1]; got.ShipID != 100 || got.WeaponSlot != 1 || got.AmmoRemaining != 0 || got.CooldownRounds != 0 {
 		t.Fatalf("Torpedo state=%+v", got)
 	}
-	if len(view.Tactical.WeaponActions) != 2 {
-		t.Fatalf("weapon actions=%+v", view.Tactical.WeaponActions)
-	}
-	for _, action := range view.Tactical.WeaponActions {
-		if action.Available || action.CommandKind != "" || action.UnavailableReason != TacticalWeaponUnavailableConsumer {
-			t.Fatalf("checkpoint 1 unexpectedly enabled ordnance action: %+v", action)
-		}
-	}
 	if view.Spec.Tactical == nil || view.Spec.Tactical.Rules.Ordnance == nil || len(view.Spec.Tactical.Rules.Ordnance.Weapons) != 7 {
 		t.Fatalf("ordnance rule snapshot=%+v", view.Spec.Tactical)
 	}

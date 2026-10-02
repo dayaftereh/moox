@@ -56,9 +56,10 @@ func TestSlice175Checkpoint4MixedWeaponProjectionCarriesAuthoritativeFamilies(t 
 	if !view.Tactical.WeaponActions[0].Available || view.Tactical.WeaponActions[0].CommandKind != battle.CommandFireBeam {
 		t.Fatalf("Laser action not executable: %+v", view.Tactical.WeaponActions[0])
 	}
-	for _, action := range view.Tactical.WeaponActions[1:] {
-		if action.Available || action.UnavailableReason != battle.TacticalWeaponUnavailableConsumer || len(action.Targets) != 0 {
-			t.Fatalf("later-family slot not explicitly unavailable: %+v", action)
-		}
+	if action := view.Tactical.WeaponActions[1]; !action.Available || action.CommandKind != battle.CommandFireOrdnance || len(action.Targets) == 0 {
+		t.Fatalf("Missile action not executable after Slice 17.7 CP2: %+v", action)
+	}
+	if action := view.Tactical.WeaponActions[2]; action.Available || action.UnavailableReason != battle.TacticalWeaponUnavailableConsumer || len(action.Targets) != 0 {
+		t.Fatalf("Fighter slot not explicitly unavailable: %+v", action)
 	}
 }

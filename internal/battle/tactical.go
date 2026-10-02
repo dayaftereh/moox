@@ -792,6 +792,7 @@ func newTacticalRuntime(spec TacticalSpec) (tacticalRuntime, error) {
 		}
 		r.state.Ships[i] = state
 	}
+	refreshTacticalOrdnanceReadiness(spec, &r)
 	r.recomputeInitiative(spec)
 	if len(r.state.InitiativeOrder) == 0 {
 		return tacticalRuntime{}, fmt.Errorf("tactical battle has no live ships")
@@ -910,6 +911,11 @@ func (s *Session) PrepareCommand(seatID protocol.SeatID, command protocol.Comman
 		if err = decodeBattlePayload(command, &payload); err == nil {
 			result, err = prepareFireBeam(s.spec, &prepared.runtime, seatID, command.Sequence, payload)
 		}
+	case CommandFireOrdnance:
+		var payload FireOrdnancePayload
+		if err = decodeBattlePayload(command, &payload); err == nil {
+			err = prepareFireOrdnance(s.spec, &prepared.runtime, seatID, command.Sequence, payload)
+		}
 	case CommandEndActivation:
 		var payload EndActivationPayload
 		if err = decodeBattlePayload(command, &payload); err == nil {
@@ -931,7 +937,7 @@ func (s *Session) PrepareCommand(seatID protocol.SeatID, command protocol.Comman
 	if err != nil {
 		return nil, err
 	}
-	if result == nil && (command.Kind == CommandMoveShip || command.Kind == CommandFireBeam) {
+	if result == nil && (command.Kind == CommandMoveShip || command.Kind == CommandFireBeam || command.Kind == CommandFireOrdnance) {
 		if err := autoCompleteExhaustedActiveShip(s.spec, &prepared.runtime, command.Sequence); err != nil {
 			return nil, err
 		}
@@ -1635,6 +1641,10 @@ func tacticalWeaponActions(spec TacticalSpec, r *tacticalRuntime) []TacticalWeap
 	}
 	out := make([]TacticalWeaponActionAvailability, 0, len(activeSpec.Weapons))
 	for _, weaponSpec := range activeSpec.Weapons {
+		if weaponSpec.TacticalSupport == "ordnance" {
+			out = append(out, tacticalOrdnanceWeaponAction(spec, r, activeSpec, activeState, weaponSpec))
+			continue
+		}
 		action := TacticalWeaponActionAvailability{
 			ShipID:       activeSpec.ShipID,
 			WeaponSlot:   weaponSpec.Slot,
@@ -2025,6 +2035,9 @@ func advanceAfterActivationCompletion(spec Spec, r *tacticalRuntime) error {
 		for j := range r.state.Ships[i].Weapons {
 			r.state.Ships[i].Weapons[j].Ready = true
 		}
+	}
+	if err := advanceTacticalOrdnanceRound(*spec.Tactical, r); err != nil {
+		return err
 	}
 	r.recomputeInitiative(*spec.Tactical)
 	if len(r.state.InitiativeOrder) == 0 {
