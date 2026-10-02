@@ -207,8 +207,9 @@ type TacticalShipView struct {
 }
 
 type TacticalFireTarget struct {
-	TargetShipID core.ID `json:"target_ship_id"`
-	RangeIndex   int     `json:"range_index"`
+	TargetShipID       core.ID `json:"target_ship_id,omitempty"`
+	TargetProjectileID uint64  `json:"target_projectile_id,omitempty"`
+	RangeIndex         int     `json:"range_index"`
 }
 
 type TacticalFireAction struct {
@@ -249,9 +250,10 @@ type MoveShipPayload struct {
 }
 
 type FireBeamPayload struct {
-	ShipID       core.ID `json:"ship_id"`
-	TargetShipID core.ID `json:"target_ship_id"`
-	WeaponSlot   int     `json:"weapon_slot"`
+	ShipID             core.ID `json:"ship_id"`
+	TargetShipID       core.ID `json:"target_ship_id,omitempty"`
+	TargetProjectileID uint64  `json:"target_projectile_id,omitempty"`
+	WeaponSlot         int     `json:"weapon_slot"`
 }
 
 type ReactiveBeamPointDefenseRequest struct {
@@ -1654,6 +1656,7 @@ func tacticalBeamTargets(spec TacticalSpec, r *tacticalRuntime, activeSpec *Tact
 		}
 		targets = append(targets, TacticalFireTarget{TargetShipID: targetSpec.ShipID, RangeIndex: rangeIndex})
 	}
+	targets = append(targets, tacticalBeamProjectileTargets(spec, r, activeSpec, activeState, weapon)...)
 	return targets
 }
 
@@ -1726,6 +1729,12 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	}
 	if payload.ShipID != r.state.ActiveShipID {
 		return nil, fmt.Errorf("fire ship %d is not active ship %d", payload.ShipID, r.state.ActiveShipID)
+	}
+	if (payload.TargetShipID == 0) == (payload.TargetProjectileID == 0) {
+		return nil, fmt.Errorf("Beam fire requires exactly one ship or projectile target")
+	}
+	if payload.TargetProjectileID != 0 {
+		return prepareFireBeamAtProjectile(spec, r, seatID, commandSequence, payload)
 	}
 	targetSpec := tacticalShipSpec(*spec.Tactical, payload.TargetShipID)
 	targetState := r.shipState(payload.TargetShipID)

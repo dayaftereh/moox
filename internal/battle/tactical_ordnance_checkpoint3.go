@@ -137,12 +137,12 @@ func resolveTacticalProjectileImpact(spec TacticalSpec, r *tacticalRuntime, proj
 	if source == nil || target == nil || targetState == nil || targetState.Destroyed {
 		return tacticalProjectileQuantumOutcome{}, fmt.Errorf("projectile %d impact target/source is unavailable", projectile.ProjectileID)
 	}
-	impactWarhead, dissipated, err := tacticalProjectileImpactWarhead(spec, *projectile)
+	intercepted, err := resolveReactiveProjectilePointDefense(spec, r, projectile, target)
 	if err != nil {
 		return tacticalProjectileQuantumOutcome{}, err
 	}
-	if dissipated {
-		return tacticalProjectileQuantumOutcome{DestroyReason: "dissipated"}, nil
+	if intercepted {
+		return tacticalProjectileQuantumOutcome{DestroyReason: "intercepted"}, nil
 	}
 
 	weapon := weaponSpec(*source, projectile.WeaponSlot)
@@ -164,6 +164,14 @@ func resolveTacticalProjectileImpact(spec TacticalSpec, r *tacticalRuntime, proj
 		}); err != nil {
 			return tacticalProjectileQuantumOutcome{}, err
 		}
+	}
+
+	impactWarhead, dissipated, err := tacticalProjectileImpactWarhead(spec, *projectile)
+	if err != nil {
+		return tacticalProjectileQuantumOutcome{}, err
+	}
+	if dissipated {
+		return tacticalProjectileQuantumOutcome{DestroyReason: "dissipated"}, nil
 	}
 
 	effectiveDefense := tacticalProjectileEffectiveMissileDefense(*source, *target, *projectile)
