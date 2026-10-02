@@ -180,3 +180,234 @@ Gate 1 may close only when:
 4. recover exact fighter craft stats/lifecycle and boarding/Marine formulas;
 5. build the full per-row support/effect matrix;
 6. freeze deterministic vectors only after the above evidence converges.
+
+
+## 8. Checkpoint A - current MOOX runtime inventory
+
+### 8.1 Fighter rows are still metadata-only
+
+The accepted ruleset currently carries:
+
+- `heavy_fighter_bays` - original weapon row 29, kind `fighter`, 4 craft per unit, `tactical_support=metadata_only`;
+- `bomber_bays` - original weapon row 30, kind `fighter`, 4 craft per unit, `tactical_support=metadata_only`;
+- `fighter_bays` - original weapon row 31, kind `fighter`, 4 craft per unit, `tactical_support=metadata_only`.
+
+This is consistent with the Slice-17.4 freeze: Bay count is stored in the normal Weapon mount count and no launch/runtime claim exists yet.
+
+### 8.2 Tactical ship state already has the boarding foundation
+
+Current `battle.TacticalShipSpec` already projects:
+
+- `Specials []TacticalSpecialSpec` with canonical `SpecialID` and `TacticalSupport`;
+- `MarineMax`.
+
+Current `battle.TacticalShipState` already persists:
+
+- `MarineCurrent`.
+
+This means Slice 17.8 does not need to invent Marine capacity/state transport. It does need commands, legality, casualty/capture resolution, temporary per-battle flags and reconciliation.
+
+### 8.3 Slice-17.7 actor infrastructure is a candidate shared foundation
+
+Current Slice-17.7 runtime owns a persistent `TacticalOrdnanceState` containing `Projectiles []TacticalProjectileState`. Projectile state already has:
+
+- stable actor identity;
+- source seat/ship/weapon slot;
+- target ship;
+- position/facing/speed/movement remainder;
+- multiplicity;
+- per-unit durability/intercept damage remainder;
+- deterministic persistence/replay/projection.
+
+Gate 1 does **not** yet freeze fighters as `TacticalProjectileState`; fighter state needs additional lifecycle fields. However, the original-code audit below demonstrates that original fighters reuse substantial missile-actor infrastructure, so Gate 2 should prefer a shared moving-combat-actor layer or a fighter extension over a second unrelated flight simulation.
+
+## 9. Checkpoint A - direct original 1.31 Fighter evidence
+
+Audit source: local `C:\ASH\Installation\mastori2\Orion2.exe`, using the same LE-object/symbol/disassembly tooling used by prior Slice-17 audits. Audit helpers are kept outside the repository under `C:\ASH\Temp\moox-s178-g1-*`.
+
+### 9.1 Original fighter functions recovered
+
+Direct symbols include:
+
+- `Check_For_Launched_Fighters_` at `0x019480`;
+- `Fire_Fighter_Bomb_` at `0x02AC20`;
+- `Fire_Fighter_Beam_` at `0x02AD57`;
+- `Fighter_Ocv_` at `0x02DF8D`;
+- `Draw_Fighter_` at `0x02DBD1`;
+- `Fighter_Combat_SFX_` at `0x02E1A4`;
+- `Draw_Fighter_Beam_` at `0x099033`.
+
+The earlier 17.4 original audit remains valid for carrier payload identity/economics: 4 craft per Bay; Fighter, Bomber and Heavy Fighter are distinct original Weapon rows.
+
+### 9.2 Fighters share the original moving-missile actor substrate
+
+`Check_For_Launched_Fighters_` iterates the original combat moving-actor array in 0x1A-byte records and identifies records whose underlying weapon/type table row has class byte `4`.
+
+More importantly, `Fire_Fighter_Beam_` directly calls original missile-actor helpers:
+
+- `Missile_Dcv_`;
+- `Apply_Damage_To_Missile_`;
+- `Is_Missile_Target_Alive_`;
+- `Retarget_Missile_`;
+- `Kill_Missile_`.
+
+Therefore original Fighter Beam fire can engage both ship targets and compatible moving missile/fighter actors through shared combat-actor code. This is direct architectural evidence against implementing MOOX fighters as an unrelated client-side or isolated simulation.
+
+### 9.3 Fighter groups carry multiplicity
+
+`Fire_Fighter_Bomb_` loops against the launched actor record's count field at offset `+0x0F`. The routine performs per-member RNG/damage work and calls `Apply_Ship_Damage_`.
+
+This aligns with the previously audited 4-craft-per-Bay semantics and supports an authoritative group actor with explicit remaining multiplicity rather than four browser-only sprites.
+
+### 9.4 Fighter Beam accuracy uses the normal combat offensive stack
+
+`Fighter_Ocv_` directly composes:
+
+- `Fleet_Offensive_Bonus_`;
+- the best-computer offensive value;
+- a player/crew-dependent bonus for the relevant case;
+- `Get_Fleet_Pilot_Bonus_`;
+- a fixed +50 baseline.
+
+`Fire_Fighter_Beam_` then compares that result against ship Beam Defense for ship targets, or against `Missile_Dcv_` for moving-actor targets, and consumes the normal original RNG/damage paths.
+
+Exact signed/rounding semantics for every Fighter/Heavy-Fighter Beam shot remain to be converted into deterministic Gate-2 vectors before Gate 1 closes.
+
+### 9.5 Inherited payload facts still requiring lifecycle confirmation
+
+The 17.4 direct HELP/table audit established:
+
+- normal Fighters: best point-defense-capable Beam, four firings before return;
+- Bombers: one best available bomb, speed 10;
+- Heavy Fighters: two best point-defense Beams plus two best bombs, 5 base hits modified by best armor, speed 12.
+
+Gate 1 now needs to trace the launch/move/return/reload state transitions that consume those payloads. No separate named `Launch_Fighter_` symbol exists; this further suggests launch/movement is embedded in the common missile/moving-actor path.
+
+## 10. Checkpoint A - direct original 1.31 Boarding evidence
+
+### 10.1 Original boarding/capture function graph recovered
+
+Direct symbols include:
+
+- `Initiate_Boarding_Action_` at `0x0359E7`;
+- `Init_Boarding_Action_` at `0x0272BD`;
+- `Resolve_Raid_` at `0x027308`;
+- `Resolve_Capture_` at `0x027DA8`;
+- `Capture_Ship_` at `0x028312`;
+- `Select_Raid_Internal_` at `0x0284A8`;
+- `Resolve_Ai_Boarding_` at `0x01BF73`;
+- `Crew_Boarding_Combat_Bonus_` at `0x025CAD`;
+- `Get_Fleet_Security_Bonus_` / `Security_Bonus_`;
+- `Used_Teleporter_` / `Set_Teleporter_Used_`;
+- `Already_Boarded_` / `Set_Boarded_Flag_`;
+- `Being_Captured_`.
+
+Boarding is therefore an explicit Tactical subsystem, not a reuse of the strategic planet-invasion resolver.
+
+### 10.2 Normal boarding versus Transporters
+
+`Initiate_Boarding_Action_` checks Special ID 35 (`transporters`):
+
+- without Transporters, permitted boarding range is 1;
+- with Transporters, permitted range is 4.
+
+For the non-Transporter path, the original code additionally calls `Calc_Current_Speed_` and rejects a target that is still moving. This supports the classic disabled/immobile-target requirement for physical boarding.
+
+The Transporter path bypasses that immobility requirement but has additional shield/special restrictions.
+
+### 10.3 Marine availability and selected boarding force
+
+The combat ship record stores current Marines in the byte used by `Init_Boarding_Action_`. The original popup maximum is calculated as:
+
+`(MarineCurrent + 1) / 2`
+
+before the player selects the boarding party. `Initiate_Boarding_Action_` subtracts the selected Marine count from the attacking ship before resolution.
+
+Gate 2 therefore needs an explicit boarding-party count in the command/event contract and must treat MarineCurrent mutation atomically with raid/capture resolution.
+
+### 10.4 Transporter shield restrictions
+
+For Transporter boarding, the original action path:
+
+- resolves relative bearing and the target's facing Shield arc;
+- rejects when the relevant Shield arc remains active;
+- explicitly checks Special ID 13 (`hard_shields`) and rejects Transporter boarding when present.
+
+This matches the original technology text previously normalized into repository rules and is now backed by a direct Tactical call path.
+
+### 10.5 Damper Field interaction exists in the boarding path
+
+The same Transporter branch explicitly checks Special ID 7 (`damper_field`). In the evidenced branch, the selected boarding Marine count is integer-divided by 3 before resolution.
+
+The surrounding branch conditions still need final semantic labeling in the Gate-2 vector (distance/shield-state context) before freezing the exact rule, but the divisor and direct Damper-Field consumer are no longer speculative.
+
+### 10.6 Boarding has per-combat usage flags
+
+The original combat-ship bit field exposes explicit helpers:
+
+- `Used_Teleporter_` / `Set_Teleporter_Used_`;
+- `Already_Boarded_` / `Set_Boarded_Flag_`;
+- `Being_Captured_`.
+
+MOOX therefore needs persisted/replay-safe temporary boarding flags; `MarineCurrent` alone is insufficient.
+
+### 10.7 Raid/capture consumes crew/security modifiers and RNG
+
+`Resolve_Raid_` directly calls:
+
+- `Crew_Boarding_Combat_Bonus_`;
+- `Get_Fleet_Security_Bonus_`;
+- `Random_`.
+
+The capture path also consumes fleet security state before `Capture_Ship_`.
+
+Exact casualty arithmetic remains open, but Gate 1 has now established the authoritative dependency set: Marine counts, crew boarding combat bonus, fleet/security bonus and original deterministic RNG order.
+
+### 10.8 Quantum Detonator is a capture hook
+
+`Capture_Ship_` checks Special ID 24 (`quantum_detonator`), calls `Random_(10)`, and destroys the ship when the result is below 6.
+
+That is a direct 6/10 capture-time self-destruction branch. Gate 2 must freeze its RNG position relative to capture ownership/reconciliation and event emission.
+
+## 11. Checkpoint A - direct combat-Special consumer anchors
+
+The symbol/disassembly audit has recovered direct original Tactical consumers for several previously metadata-only families:
+
+- Automated Repair Unit: `Repair_All_Combat_Ships_` checks Special ID 3 and feeds `Repair_Combat_Ship_`; fleet Engineer bonus participates in the repair amount.
+- Shield Capacitors: `Recharge_Shields_` checks Special ID 30.
+- Anti-Missile Rockets: dedicated `Anti_Missile_Rockets_` combat function.
+- Lightning Field: dedicated `Lightning_Field_` combat function.
+- Energy Absorber: dedicated `Energy_Absorber_Attack_` plus display path.
+- Sub-Space Teleporter/teleport effects: `Teleport_Enemy_Ship_` selects a legal destination through combat-grid/legal-move authority and then updates ship coordinates.
+- Reflection Field: dedicated reflection-field hit/display subsystem exists.
+- Damper Field: direct `Has_Damper_Field_` plus the evidenced boarding interaction above.
+- Cloak/phasing state is directly manipulated during boarding and has a dedicated `Draw_Cloak_` presentation path.
+- Security Stations/Transporters/Troop Pods are part of the explicit boarding subsystem rather than passive metadata.
+
+This does not yet mean every formula is frozen. It establishes that these systems have original Tactical consumers that Slice 17.8 must either implement exactly or explicitly defer after the remaining disassembly audit.
+
+## 12. Preliminary architecture consequences
+
+The evidence currently supports these Gate-2 directions, subject to completion of Gate 1:
+
+1. **Shared moving actor substrate:** factor/reuse the 17.7 authoritative moving-actor/projectile lifecycle for fighter groups rather than creating independent browser physics.
+2. **Distinct fighter state:** fighters need payload/shot/return/role fields beyond the existing missile `TacticalProjectileState`; do not overload ordnance semantics blindly.
+3. **Group multiplicity is authoritative:** Bay payloads should result in server-owned group multiplicity/losses.
+4. **Boarding is a first-class Tactical command family:** command legality must cover range/mobility/shields/specials/usage flags/Marine count and resolve atomically.
+5. **Temporary Special state must persist:** teleporter/boarded/capture and other per-round/per-battle states belong in save/replay-authoritative state.
+6. **Existing 17.6/17.7 resolvers stay shared:** Fighter Beam versus ships and moving actors should use frozen Beam/defense/damage semantics where the original path demonstrably shares them.
+7. **Slice 19 reuse boundary remains intact:** planetary Fighter Garrison should consume the 17.8 fighter runtime later; 17.8 does not implement planetary combat.
+
+## 13. Remaining Gate-1 blockers after Checkpoint A
+
+Still required before Gate 1 can close:
+
+- trace fighter launch/movement/return/reload state transitions in the common moving-actor path;
+- freeze Fighter/Bomber/Heavy-Fighter speed, durability, payload and firing-count fields from direct binary/table evidence into deterministic vectors;
+- finish `Resolve_Raid_` / `Resolve_Capture_` casualty arithmetic and capture ownership/reconciliation ordering;
+- map Security Stations, crew/fleet bonus exact numeric tables and Troop-Pod interaction into boarding vectors;
+- complete the per-row Class-3 Special support/effect matrix;
+- recover exact formulas/order for repair, shield recharge, anti-missile rockets, Lightning Field, Energy Absorber, Reflection/Damper fields, cloak/phasing, teleporter/time effects and Beam-support Specials;
+- map command/event/projection/UI and built-in-AI requirements;
+- define persistence migration for new fighter/special temporary state;
+- produce deterministic reference vectors for fighter, bomber, boarding and representative active/passive Special cases.
