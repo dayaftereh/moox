@@ -208,10 +208,13 @@ func prepareFireOrdnance(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, 
 	if targetState == nil || targetState.Destroyed {
 		return fmt.Errorf("target ship %d is not a live tactical ship", payload.TargetShipID)
 	}
-	rule := tacticalOrdnanceRule(*spec.Tactical, weapon.WeaponID)
+	configured, err := deriveConfiguredTacticalProjectile(*spec.Tactical, *weapon)
+	if err != nil {
+		return err
+	}
 	live := tacticalOrdnanceWeaponState(&r.ordnance, active.ShipID, weapon.Slot)
 	ready := weaponState(activeState, weapon.Slot)
-	if rule == nil || live == nil || ready == nil {
+	if live == nil || ready == nil {
 		return fmt.Errorf("ordnance runtime state missing for ship %d slot %d", active.ShipID, weapon.Slot)
 	}
 
@@ -232,11 +235,11 @@ func prepareFireOrdnance(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, 
 		X:                 activeState.X,
 		Y:                 activeState.Y,
 		Facing:            facing,
-		Speed:             rule.BaseSpeed,
-		MovementRemaining: rule.BaseSpeed * spec.Tactical.Rules.Ordnance.MovementUnitsPerField,
+		Speed:             configured.Speed,
+		MovementRemaining: configured.Speed * spec.Tactical.Rules.Ordnance.MovementUnitsPerField,
 		Multiplicity:      weapon.Count,
-		UnitDurability:    rule.BaseDurability,
-		WarheadStrength:   weapon.MaxDamage,
+		UnitDurability:    configured.UnitDurability,
+		WarheadStrength:   configured.WarheadStrength,
 	}
 
 	switch projectile.WeaponFamily {
@@ -266,7 +269,7 @@ func prepareFireOrdnance(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, 
 		"speed":                projectile.Speed,
 		"multiplicity":         projectile.Multiplicity,
 		"unit_durability":      projectile.UnitDurability,
-		"beam_interceptor_dcv": rule.BeamInterceptorDCV,
+		"beam_interceptor_dcv": configured.BeamInterceptorDCV,
 		"warhead_strength":     projectile.WarheadStrength,
 	}
 	if projectile.WeaponFamily == "missile" {
@@ -301,18 +304,22 @@ func processTacticalProjectiles(spec TacticalSpec, r *tacticalRuntime, eventSeat
 	})
 	for i := 0; i < len(r.ordnance.Projectiles); {
 		projectileID := r.ordnance.Projectiles[i].ProjectileID
-		keep, err := moveTacticalProjectileQuantum(spec, r, i, eventSeat, commandSequence)
+		outcome, err := moveTacticalProjectileQuantum(spec, r, i, eventSeat, commandSequence)
 		if err != nil {
 			return err
 		}
-		if keep {
+		if outcome.Keep {
 			i++
 			continue
 		}
 		r.ordnance.Projectiles = append(r.ordnance.Projectiles[:i], r.ordnance.Projectiles[i+1:]...)
+		reason := outcome.DestroyReason
+		if reason == "" {
+			reason = "no_target"
+		}
 		if err := r.appendEvent("projectile_destroyed", eventSeat, commandSequence, map[string]any{
 			"projectile_id": projectileID,
-			"reason":        "no_target",
+			"reason":        reason,
 		}); err != nil {
 			return err
 		}
@@ -325,37 +332,41 @@ func processTacticalProjectileByID(spec TacticalSpec, r *tacticalRuntime, projec
 		if r.ordnance.Projectiles[i].ProjectileID != projectileID {
 			continue
 		}
-		keep, err := moveTacticalProjectileQuantum(spec, r, i, eventSeat, commandSequence)
+		outcome, err := moveTacticalProjectileQuantum(spec, r, i, eventSeat, commandSequence)
 		if err != nil {
 			return err
 		}
-		if keep {
+		if outcome.Keep {
 			return nil
 		}
 		r.ordnance.Projectiles = append(r.ordnance.Projectiles[:i], r.ordnance.Projectiles[i+1:]...)
+		reason := outcome.DestroyReason
+		if reason == "" {
+			reason = "no_target"
+		}
 		return r.appendEvent("projectile_destroyed", eventSeat, commandSequence, map[string]any{
 			"projectile_id": projectileID,
-			"reason":        "no_target",
+			"reason":        reason,
 		})
 	}
 	return fmt.Errorf("tactical projectile %d is missing", projectileID)
 }
 
-func moveTacticalProjectileQuantum(spec TacticalSpec, r *tacticalRuntime, index int, eventSeat protocol.SeatID, commandSequence uint32) (bool, error) {
+func moveTacticalProjectileQuantum(spec TacticalSpec, r *tacticalRuntime, index int, eventSeat protocol.SeatID, commandSequence uint32) (tacticalProjectileQuantumOutcome, error) {
 	if index < 0 || index >= len(r.ordnance.Projectiles) {
-		return false, fmt.Errorf("tactical projectile index %d is out of range", index)
+		return tacticalProjectileQuantumOutcome{}, fmt.Errorf("tactical projectile index %d is out of range", index)
 	}
 	projectile := &r.ordnance.Projectiles[index]
 	source := tacticalShipSpec(spec, projectile.SourceShipID)
 	if source == nil {
-		return false, fmt.Errorf("tactical projectile %d source ship is missing", projectile.ProjectileID)
+		return tacticalProjectileQuantumOutcome{}, fmt.Errorf("tactical projectile %d source ship is missing", projectile.ProjectileID)
 	}
 	targetState := r.shipState(projectile.TargetShipID)
 	targetSpec := tacticalShipSpec(spec, projectile.TargetShipID)
 	if targetSpec == nil || targetState == nil || targetState.Destroyed || targetSpec.EmpireID == source.EmpireID {
 		targets := tacticalOrdnanceRetargetIDs(spec, r, source.EmpireID)
 		if len(targets) == 0 {
-			return false, nil
+			return tacticalProjectileQuantumOutcome{DestroyReason: "no_target"}, nil
 		}
 		previous := projectile.TargetShipID
 		projectile.TargetShipID = targets[0]
@@ -366,27 +377,27 @@ func moveTacticalProjectileQuantum(spec TacticalSpec, r *tacticalRuntime, index 
 			"new_target_ship_id":      projectile.TargetShipID,
 			"reason":                  "target_invalid",
 		}); err != nil {
-			return false, err
+			return tacticalProjectileQuantumOutcome{}, err
 		}
 	}
 
 	if spec.Rules.Ordnance == nil {
-		return false, fmt.Errorf("tactical projectile %d has no ordnance rules", projectile.ProjectileID)
+		return tacticalProjectileQuantumOutcome{}, fmt.Errorf("tactical projectile %d has no ordnance rules", projectile.ProjectileID)
 	}
 	budget := projectile.Speed * spec.Rules.Ordnance.MovementUnitsPerField
 	projectile.MovementRemaining = budget
 	if targetState.X == projectile.X && targetState.Y == projectile.Y {
 		projectile.MovementRemaining = 0
-		return true, nil
+		return resolveTacticalProjectileImpact(spec, r, projectile, commandSequence)
 	}
 	fromX, fromY := projectile.X, projectile.Y
 	toX, toY, movedFields := tacticalProjectileDestination(fromX, fromY, targetState.X, targetState.Y, projectile.Speed)
 	if movedFields <= 0 {
-		return false, fmt.Errorf("tactical projectile %d could not advance toward target %d", projectile.ProjectileID, projectile.TargetShipID)
+		return tacticalProjectileQuantumOutcome{}, fmt.Errorf("tactical projectile %d could not advance toward target %d", projectile.ProjectileID, projectile.TargetShipID)
 	}
 	movementUsed := movedFields * spec.Rules.Ordnance.MovementUnitsPerField
 	if movementUsed > projectile.MovementRemaining {
-		return false, fmt.Errorf("tactical projectile %d movement %d exceeds budget %d", projectile.ProjectileID, movementUsed, projectile.MovementRemaining)
+		return tacticalProjectileQuantumOutcome{}, fmt.Errorf("tactical projectile %d movement %d exceeds budget %d", projectile.ProjectileID, movementUsed, projectile.MovementRemaining)
 	}
 	projectile.X = toX
 	projectile.Y = toY
@@ -405,9 +416,12 @@ func moveTacticalProjectileQuantum(spec TacticalSpec, r *tacticalRuntime, index 
 		"distance_traveled":  projectile.DistanceTraveled,
 		"target_ship_id":     projectile.TargetShipID,
 	}); err != nil {
-		return false, err
+		return tacticalProjectileQuantumOutcome{}, err
 	}
-	return true, nil
+	if projectile.X == targetState.X && projectile.Y == targetState.Y {
+		return resolveTacticalProjectileImpact(spec, r, projectile, commandSequence)
+	}
+	return tacticalProjectileQuantumOutcome{Keep: true}, nil
 }
 
 func tacticalOrdnanceRetargetIDs(spec TacticalSpec, r *tacticalRuntime, sourceEmpireID core.ID) []core.ID {

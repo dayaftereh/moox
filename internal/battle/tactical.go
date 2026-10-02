@@ -937,8 +937,18 @@ func (s *Session) PrepareCommand(seatID protocol.SeatID, command protocol.Comman
 	if err != nil {
 		return nil, err
 	}
+	if result == nil {
+		result, err = tacticalTerminalResultAfterMutation(s.spec, &prepared.runtime, seatID, command.Sequence)
+		if err != nil {
+			return nil, err
+		}
+	}
 	if result == nil && (command.Kind == CommandMoveShip || command.Kind == CommandFireBeam || command.Kind == CommandFireOrdnance) {
 		if err := autoCompleteExhaustedActiveShip(s.spec, &prepared.runtime, command.Sequence); err != nil {
+			return nil, err
+		}
+		result, err = tacticalTerminalResultAfterMutation(s.spec, &prepared.runtime, seatID, command.Sequence)
+		if err != nil {
 			return nil, err
 		}
 	}
@@ -951,6 +961,20 @@ func (s *Session) PrepareCommand(seatID protocol.SeatID, command protocol.Comman
 		prepared.result = &normalized
 	}
 	return prepared, nil
+}
+func tacticalTerminalResultAfterMutation(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, commandSequence uint32) (*Result, error) {
+	winner := remainingWinner(spec, r)
+	if winner == 0 {
+		return nil, nil
+	}
+	if err := r.appendEvent("winner_determined", seatID, commandSequence, map[string]any{"winner_seat": winner}); err != nil {
+		return nil, err
+	}
+	return &Result{
+		WinnerSeat:       winner,
+		Outcome:          TacticalOutcomeVictory,
+		DestroyedShipIDs: destroyedShipIDs(r),
+	}, nil
 }
 
 func (s *Session) ResolveReactiveBeamPointDefense(request ReactiveBeamPointDefenseRequest) (ReactiveBeamPointDefenseResult, error) {
