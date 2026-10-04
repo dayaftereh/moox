@@ -80,3 +80,27 @@ The Fighter-Beam vector blocker is closed. Gate 1 remains open for the full Clas
 ## Next
 
 Continue Gate 1 with the full Class-3 Special support/effect/order matrix and authoritative command/event/UI/persistence/AI contracts before any Gate-2 freeze.
+
+
+### Checkpoint F update
+
+The full deferred Class-3 row list is now classified per row with an explicit evidence level:
+
+- **FROZEN** where direct executable arithmetic/order is sufficient;
+- **PROVEN / formula open** where a Tactical consumer is directly evidenced but final arithmetic/order is not yet closed;
+- **HELP-classified / consumer open** where effect family is source-backed but an executable consumer still needs recovery.
+
+New directly frozen/advanced items include:
+
+- Automated Repair Unit: base combat repair contribution 20 plus Fleet Engineer bonus; stasis/post-capture suppression is explicit.
+- Shield Capacitors: shield-recharge budget changes from 30% to 100% per invocation and is distributed pointwise across deficient facings.
+- Heavy Armor: original repair capacity path directly checks ID 14 and triples the computed armor capacity.
+- Displacement Device: a direct special-attack path consumes ID 8 and authoritative RNG; generic all-weapon ordering remains open.
+- Achilles / Structural Analyzer: shared ship-damage resolver receives their presence flags; exact 17.6 damage-order semantics remain to be cross-checked.
+- Warp Dissipator: frozen original row 37 exists, but the current generated `ship_specials.json` lacks the named row; Gate 2 must resolve this projection gap explicitly.
+
+Per-row classification is no longer a Gate-1 blocker. Exact formulas/order for the remaining open rows plus active command/event/persistence/AI contracts are still required.
+
+## Next
+
+Recover the remaining executable placement/order for Beam-support, ECM/jamming, cloak/phasing, active teleport/time, Lightning/Reflection/Energy-Absorber and retreat-control effects; then freeze the server command/event/projection/persistence/AI contract before Gate 1 closure.

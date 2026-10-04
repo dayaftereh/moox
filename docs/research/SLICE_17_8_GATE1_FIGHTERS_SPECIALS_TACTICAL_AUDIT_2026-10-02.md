@@ -888,3 +888,93 @@ These vectors are resolver references, not claims about a particular named Beam 
 Fighter and Heavy-Fighter Beam fire should not gain a parallel accuracy/damage model. The server-authoritative Fighter actor needs to feed the recovered Fighter OCV and per-member RNG into the existing Slice-17.6 Beam-defense/damage primitives, while moving-actor targets continue through the shared missile/fighter actor defense/damage path.
 
 The Fighter-Beam RNG/vector blocker from Checkpoint D is therefore closed.
+
+
+## 18. Checkpoint F - Class-3 per-row support/effect matrix
+
+This checkpoint classifies every deferred 17.4 Class-3 row by original effect family and by current evidence strength. A row can be **consumer-proven** while its exact formula/order remains **OPEN**; that distinction is intentional.
+
+Evidence levels used here:
+
+- **FROZEN**: direct executable path is sufficient to freeze the listed effect/order now;
+- **PROVEN / formula open**: an original Tactical consumer is directly identified, but further callsite/arithmetic recovery is required;
+- **HELP-classified / consumer open**: original HELP and the 17.4 row audit define the effect family, but Gate 1 has not yet accepted an executable consumer/formula;
+- **existing MOOX snapshot**: the state projection already exists, but this is not itself proof of original Tactical resolution.
+
+| ID | Special | Classification | Direct Gate-1 status |
+|---:|---|---|---|
+| 1 | Achilles Targeting Unit | Beam-related / Tactical-common | **PROVEN / formula open**: shared ship-damage resolution receives the Achilles presence flag; exact subsystem/armor ordering still needs the 17.6 damage-call contract cross-check. |
+| 2 | Augmented Engines | Tactical-common / mobility | **HELP-classified / consumer open**: +5 combat speed is source-backed; exact original speed derivation/ordering remains to be recovered. |
+| 3 | Automated Repair Unit | Tactical-common / repair | **FROZEN core rate**: `Repair_All_Combat_Ships_` gives the Special a base repair amount of 20 and adds the side Fleet Engineer bonus before `Repair_Combat_Ship_`; stasis and post-capture state suppress this repair pass. Detailed allocation order inside `Repair_Combat_Ship_` is directly recovered but field naming still needs mapping. |
+| 5 | Battle Scanner | Beam-related plus strategic scan | **HELP-classified / consumer open**: +50 Beam hit and +2 parsec scan are source-backed; Tactical hit-stack insertion point remains open. |
+| 6 | Cloaking Device | Tactical-common / defense/state plus strategic stealth | **PROVEN / formula open**: original cloak state/presentation exists and boarding explicitly manipulates cloak/phasing state; exact +Beam-defense/missile-miss/recloak turn ordering remains open. |
+| 7 | Damper Field | Tactical-common / damage plus boarding-related | **FROZEN boarding hook**: Transporter boarding party is integer-divided by 3 in the evidenced Damper branch. General 3/4 damage reduction ordering remains open. |
+| 8 | Displacement Device | Tactical-common / defense | **PROVEN / partial formula**: `Energy_Absorber_Attack_` checks ID 8 and zeros that attack when `Random_(100) > 30`; generic all-weapon placement/order remains open and HELP must not override executable off-by-one semantics. |
+| 9 | ECM Jammer | ordnance-related / Tactical-common | **HELP-classified / consumer open**: +70 missile evasion source-backed; exact `Missile_Dcv_` contribution remains to be recovered. |
+| 10 | Energy Absorber | Tactical-common / stored-damage active effect | **PROVEN / formula open**: dedicated `Energy_Absorber_Attack_` and presentation path exist; storage fraction, expiry and activation ordering still require callsite audit. |
+| 12 | Fast Missile Racks | ordnance-related / readiness | **HELP-classified / consumer open**: two-volley/reload behavior source-backed; exact weapon-row readiness state transition remains open. |
+| 13 | Hard Shields | Tactical-common / shield plus boarding-related | **FROZEN boarding hook**: Transporter boarding is rejected when ID 13 is present. General -3 damage, nebula and shield-piercing ordering remains open. |
+| 14 | Heavy Armor | Tactical-common / survivability | **PROVEN / partial formula**: `Repair_Combat_Ship_` checks ID 14 and triples the computed armor capacity used by repair; HELP independently states triple armor and armor-piercing negation. Damage-path ordering still needs cross-check. |
+| 15 | High Energy Focus | Beam-related | **HELP-classified / consumer open**: +50% energy-weapon damage source-backed; exact pre/post-range placement remains open. |
+| 16 | Hyper-X Capacitors | Beam-related / readiness | **HELP-classified / consumer open**: two Beam volleys then reload-turn behavior source-backed; exact readiness state machine remains open. |
+| 19 | Lightning Field | ordnance/fighter-related area defense | **PROVEN / formula open**: dedicated `Lightning_Field_` presentation routine exists, but the recovered body is animation/geometry; the actual 50% destroy resolver and target-loop/RNG position still need the caller. |
+| 20 | Multi-Phased Shields | Tactical-common / shield | **HELP-classified / consumer open**: +50% max shield strength source-backed; exact max-shield derivation hook remains open. |
+| 21 | Multi-Wave ECM Jammer | ordnance-related / Tactical-common | **HELP-classified / consumer open**: +100 missile evasion source-backed; exact defense-stack insertion remains open. |
+| 22 | Phase Shifter | Tactical-common / active mobility | **PROVEN / formula open**: teleport family has direct combat-grid consumers; Phase Shifter's self/other 18-square command legality and once-per-turn state still require the exact caller. |
+| 23 | Phasing Cloak | Tactical-common / defense/state | **PROVEN / formula open**: cloak/phasing state is directly present; 10-turn phase lifetime and transition to ordinary cloak remain to be recovered from executable state consumers. |
+| 24 | Quantum Detonator | Tactical-common / capture/destruction | **FROZEN capture hook**: `Capture_Ship_` calls `Random_(10)`; results 0..5 self-destruct, 6..9 continue capture. HELP's prose percentage is therefore not used as the executable contract. Explosion-power hook remains open. |
+| 25 | Rangemaster Unit | Beam-related | **HELP-classified / consumer open**: range/3 for to-hit is source-backed; exact range-to-hit helper insertion remains open. |
+| 26 | Reflection Field | Beam-related / Tactical-common defense | **PROVEN / formula open**: dedicated reflection-field hit/display subsystem exists; exact reflection chance/damage return resolver remains open. |
+| 27 | Reinforced Hull | Tactical-common / survivability | **HELP-classified / consumer open**: triple structure and drive protection source-backed; exact snapshot/damage-component derivation hook remains to be proven in the original path. |
+| 29 | Security Stations | boarding-related | **FROZEN**: +20 is included in defender boarding combat rolls through the recovered security-bonus path. |
+| 30 | Shield Capacitors | Tactical-common / shield recharge | **FROZEN**: `Recharge_Shields_` uses factor 3 normally and factor 10 with ID 30, so recharge budget changes from 30% to 100% of the base per-facing shield value per invocation; budget is distributed one point at a time across deficient facings until exhausted or all four are full. |
+| 32 | Structural Analyzer | Beam-related / Tactical-common damage | **PROVEN / formula open**: shared `Apply_Ship_Damage_` call receives ID 32 presence; HELP says penetrating damage doubles. Exact shield-boundary/order remains to be cross-checked against the 17.6 damage contract. |
+| 33 | Sub-Space Teleporter | Tactical-common / active mobility | **PROVEN / formula open**: `Teleport_Enemy_Ship_` uses combat-grid/legal-move authority and updates coordinates; the own-ship 20-square command/use-state path still needs exact caller/order. |
+| 34 | Time Warp Facilitator | Tactical-common / turn economy | **HELP-classified / consumer open**: additional end-of-round turn is source-backed; exact scheduler insertion and action/readiness reset semantics remain open. |
+| 35 | Transporters | boarding-related / active | **FROZEN core legality**: direct boarding subsystem owns the action; 12-square HELP range, facing-shield condition, Hard-Shield rejection and Damper interaction are now all part of the Gate-1 evidence. Planet bomb-drop remains Slice-19 boundary. |
+| 36 | Troop Pods | boarding-related / Tactical-common state | **FROZEN snapshot effect**: doubles `MarineMax` in the current Tactical snapshot and original HELP; boarding consumes the resulting Marine state normally. |
+| 37 | Warp Dissipator | Tactical-common / retreat control | **HELP-classified / consumer open**: prevents enemy retreat while functioning; exact retreat legality hook remains open. The current generated `ship_specials.json` does not expose this named row even though the frozen 17.4 original table has selectable row 37, so Gate 2 must resolve that data-projection gap explicitly rather than silently omitting the row. |
+| 38 | Wide Area Jammer | ordnance-related / fleet defense | **HELP-classified / consumer open**: +130 self / +70 fleet missile evasion and best-only fleet stacking are source-backed; exact fleet-defense helper and ordering remain open. |
+
+### 18.1 Automated Repair direct arithmetic
+
+`Repair_All_Combat_Ships_` obtains each side's `Get_Fleet_Engineer_Bonus_`. A directly checked player flag at player-record `+0x8B0` adds another +10 for that side; the identity of that player attribute is not named here until its race/leader mapping is independently confirmed.
+
+For each eligible ship:
+
+- destroyed/inactive state is skipped;
+- `post_capture_state` is skipped;
+- stasis is skipped;
+- Automated Repair Unit (ID 3) contributes **20**;
+- the side Engineer bonus is added;
+- only a positive total calls `Repair_Combat_Ship_(ship, repair_percent)`.
+
+`Repair_Combat_Ship_` then converts the supplied percentage into bounded repairs against original maximum values. The recovered body includes armor/structure/internal-system pools and minimum-one behavior in the early special branches. Field labels and the exact pool priority will be mapped before Gate 1 closure instead of guessed from offsets.
+
+### 18.2 Shield Capacitor direct arithmetic
+
+`Recharge_Shields_`:
+
+- skips ships without shields;
+- skips stasis;
+- requires the original recharge-eligible state at ship `+0x134`;
+- uses recharge factor **3** normally and **10** with Shield Capacitors (ID 30);
+- computes budget as `base_shield_value * factor / 10`;
+- repeatedly scans the four shield facings in index order, adding one point to a deficient facing and decrementing budget;
+- stops when budget is exhausted or a complete pass changes nothing.
+
+Thus Shield Capacitors do not merely add an abstract +70 modifier after recharge: they replace the per-invocation budget factor from 30% to 100%, preserving the original pointwise facing distribution order.
+
+### 18.3 Anti-Missile Rockets supporting evidence
+
+Although Anti-Missile Rockets is outside the user's deferred Class-3 list, its direct resolver constrains the shared ordnance-defense architecture:
+
+- one `Random_(100)` is consumed per rocket attempt;
+- an attempt consumes the ship's rocket count/ammunition state whether it succeeds or fails;
+- success decrements the target moving-actor multiplicity and kills the actor when that count reaches zero.
+
+The exact success threshold is executable but depends on an unresolved call argument. Gate 1 therefore does not yet name that argument or freeze the final threshold formula.
+
+### 18.4 Matrix consequence
+
+The **per-row classification** blocker is now closed. Gate 1 still cannot close because rows marked formula/order open need executable placement, and active-special command/event/persistence/AI contracts remain unfinished.
