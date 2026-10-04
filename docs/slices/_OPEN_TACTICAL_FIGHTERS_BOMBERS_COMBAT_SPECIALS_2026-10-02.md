@@ -50,16 +50,16 @@ No Slice-17.8 production implementation is allowed before Gate 1 closes and Gate
 
 ## Current audit checkpoint
 
-Checkpoint B now directly proves:
+Checkpoint C now directly freezes the Fighter actor vector basis:
 
-- launched Fighter-class groups remain authoritative carrier state;
-- exhausted Fighter/Bomber/Heavy-Fighter groups return to a functional source carrier through the common moving-actor path;
-- return converts surviving craft back to complete four-craft Bay groups; carrier loss prevents recovery;
-- Raid and Capture have distinct original combat formulas;
-- Security Stations contribute +20 to boarding defense;
-- Crew boarding quality is 0/5/10/15; fleet Commando/Security officer bonuses use 2x/3x level formulas and maximum-fleet selection;
-- original Tactical AI evaluates and resolves boarding.
+- 4 craft per Bay; attack stock 1/2/1/4 for Assault Shuttle/Heavy Fighter/Bomber/Fighter;
+- dynamic speed = role base + drive bonus + Trans-Dimensional bonus;
+- executable hits = role base hits * normal armor durability multiple;
+- Heavy Fighter performs two Beam+Bomb cycles; Bomber one Bomb cycle; Fighter four Beam cycles;
+- Beam and Bomb passes resolve once per surviving craft;
+- return recovers only complete four-craft Bay groups;
+- HELP Fighter armor multipliers are not used where they disagree with the executable.
 
 ## Next
 
-Continue Gate 1 with deterministic Fighter/Bomber vectors, final Capture survivor/reconciliation mapping, the full Class-3 Special effect/order matrix, and authoritative command/event/UI/persistence contracts before any Gate-2 freeze.
+Continue Gate 1 with a representative Fighter Beam RNG vector, final Capture survivor/reconciliation vectors, the full Class-3 Special effect/order matrix, and authoritative command/event/UI/persistence contracts before any Gate-2 freeze.

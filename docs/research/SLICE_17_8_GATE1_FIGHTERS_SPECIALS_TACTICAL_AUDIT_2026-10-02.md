@@ -547,15 +547,158 @@ Current direct evidence supports the following boundary:
 
 This is sufficient to freeze the state-machine ownership in Gate 2 without inventing client-side recovery behavior.
 
-## 14. Remaining Gate-1 blockers after Checkpoint B
+## 14. Checkpoint C - deterministic Fighter/Bomber/Heavy-Fighter vectors
+
+This checkpoint converts the direct Fighter actor formulas into explicit Gate-2-ready reference vectors. Executable formulas take precedence over HELP prose where the two differ.
+
+### 14.1 Original actor identities and per-launch multiplicity
+
+The common moving-actor type IDs are:
+
+| Original type | Role | Launch multiplicity per Bay | Attack stock |
+|---:|---|---:|---:|
+| `0x1C` | Assault Shuttle | 4 | 1 |
+| `0x1D` | Heavy Fighter | 4 | 2 |
+| `0x1E` | Bomber | 4 | 1 |
+| `0x1F` | Fighter / Interceptor | 4 | 4 |
+
+`Fire_Missile_` initializes Fighter-class multiplicity from `BayCount * 4`. Losses operate against this authoritative craft multiplicity and return/recovery later converts surviving craft back to complete groups with integer `remaining / 4`.
+
+### 14.2 Speed formula
+
+`Missile_Speed_` uses these Fighter-class base speeds:
+
+| Role | Base speed |
+|---|---:|
+| Assault Shuttle | 6 |
+| Heavy Fighter | 8 |
+| Bomber | 8 |
+| Fighter / Interceptor | 10 |
+
+For supported Fighter actors the executable formula is:
+
+`speed = base_speed + 2 * (BestWarpDriveIndex - 1) + (TransDimensional ? 4 : 0)`
+
+The generic moving-actor helper also adds the already-audited `Fast` actor modifier bonus `+4` when that modifier bit is present. Slice-17.4 Fighter rows expose no weapon modifiers, so normal Fighter/Bomber/Heavy-Fighter Gate-2 vectors must **not** silently add or expose Fast.
+
+The MOOX drive component order already matches the original progression:
+
+| Drive index | Drive | Fighter speed bonus |
+|---:|---|---:|
+| 1 | Nuclear Drive | 0 |
+| 2 | Fusion Drive | +2 |
+| 3 | Ion Drive | +4 |
+| 4 | Anti-Matter Drive | +6 |
+| 5 | Hyper Drive | +8 |
+| 6 | Interphased Drive | +10 |
+
+Direct prior race reverse engineering identifies original player byte `+0x8BC` as `trans_dimensional`; `Missile_Speed_` adds +4 for that player trait.
+
+This dynamic formula explains why HELP examples such as Bomber speed 10 or Heavy Fighter speed 12 are not universal constants: actual combat speed also depends on the empire's best current drive.
+
+### 14.3 Durability formula and executable-vs-HELP difference
+
+`Get_Missile_Hits_` assigns Fighter-class base hits:
+
+| Role | Base hits |
+|---|---:|
+| Assault Shuttle | 3 |
+| Heavy Fighter | 5 |
+| Bomber | 4 |
+| Fighter / Interceptor | 2 |
+
+The original Armor data field read by `Get_Missile_Hits_` is the same durability progression already represented by MOOX armor component indices:
+
+| Armor index | Armor | Executable durability multiple |
+|---:|---|---:|
+| 1 | Titanium | 1x |
+| 2 | Tritanium | 2x |
+| 3 | Zortrium | 4x |
+| 4 | Neutronium | 6x |
+| 5 | Adamantium | 8x |
+| 6 | Xentronium | 10x |
+
+For the supported Fighter rows:
+
+`fighter_hits = base_hits * armor_durability_multiple`
+
+This is direct executable behavior. Some HELP descriptions claim different Fighter-only armor multipliers (for example Tritanium 1.5x and later armors 2x/4x/5x). Gate 2 must preserve the executable formula above rather than replacing it with those HELP values.
+
+### 14.4 Deterministic baseline vector - Nuclear Drive + Titanium
+
+For a non-Trans-Dimensional empire using Nuclear Drive and Titanium Armor:
+
+| Role | Speed | Hits per craft | Attack stock | Per-stock action |
+|---|---:|---:|---:|---|
+| Assault Shuttle | 6 | 3 | 1 | boarding/capture attempt |
+| Heavy Fighter | 8 | 5 | 2 | one Fighter Beam pass **and** one Fighter Bomb pass |
+| Bomber | 8 | 4 | 1 | one Fighter Bomb pass |
+| Fighter / Interceptor | 10 | 2 | 4 | one Fighter Beam pass |
+
+Each Bay launches 4 craft. A two-Bay Fighter row therefore launches multiplicity 8, with each surviving craft participating in each Beam/Bomb pass.
+
+### 14.5 Deterministic late-game vector - Interphased + Xentronium + Trans-Dimensional
+
+For a Trans-Dimensional empire using Interphased Drive and Xentronium Armor:
+
+| Role | Speed | Hits per craft | Attack stock |
+|---|---:|---:|---:|
+| Assault Shuttle | 20 | 30 | 1 |
+| Heavy Fighter | 22 | 50 | 2 |
+| Bomber | 22 | 40 | 1 |
+| Fighter / Interceptor | 24 | 20 | 4 |
+
+These values follow only from the direct binary formula: drive bonus +10, Trans-Dimensional +4, and Xentronium durability multiple 10x.
+
+### 14.6 Fighter payload selection is player-authoritative
+
+`Fire_Fighter_Beam_` reads the player's precomputed best Fighter Beam from the original table at `0x21254`; `Fire_Fighter_Bomb_` reads the player's precomputed best Bomb from `0x21242`.
+
+The earlier 17.4 HELP audit remains semantically correct about payload roles:
+
+- Fighter / Interceptor: best Beam that supports Point Defense;
+- Bomber: best available Bomb;
+- Heavy Fighter: both the best Fighter Beam and the best Bomb;
+- Assault Shuttle: boarding Marine payload rather than Beam/Bomb fire.
+
+17.8 should therefore snapshot or derive the authoritative payload identity at launch/server resolution; the browser must not choose a weapon dynamically.
+
+### 14.7 Beam and Bomb passes resolve per surviving craft
+
+`Fire_Fighter_Beam_` loops from zero to the actor's current multiplicity at `+0x0F`. Each surviving craft performs its own hit/damage resolution. Against moving actors it uses `Missile_Dcv_` / `Apply_Damage_To_Missile_`; against ships it uses the normal ship-damage path.
+
+`Fire_Fighter_Bomb_` likewise loops over current actor multiplicity and performs a separate `Random(100)` / damage application for every surviving craft.
+
+The Heavy Fighter branch in `Resolve_Missile_` directly proves its paired payload cadence:
+
+1. fire Fighter Beam pass;
+2. do **not** decrement stock yet for Heavy Fighter;
+3. if stock remains, fire Fighter Bomb pass;
+4. decrement stock once.
+
+With initial stock 2, a surviving Heavy Fighter group therefore gets two Beam+Bomb attack cycles before return. A Bomber skips the Beam path and consumes its single stock on Bomb; a Fighter skips Bomb and consumes one stock after each Beam pass, for four Beam passes.
+
+### 14.8 Return-loss vector
+
+The return rule from Checkpoint B gives a deterministic loss/recovery vector:
+
+- launch 2 Bays -> 8 craft;
+- if 8 survive -> `8 / 4 = 2` complete Bay groups recovered;
+- if 7 survive -> `7 / 4 = 1` complete Bay group recovered;
+- if 4 survive -> `4 / 4 = 1` complete Bay group recovered;
+- if 3 survive -> `3 / 4 = 0` Bay groups recovered.
+
+The incomplete remainder is not restored as fractional Bay availability.
+
+## 15. Remaining Gate-1 blockers after Checkpoint C
 
 Still required before Gate 1 can close:
 
-- turn the already recovered Fighter/Bomber/Heavy-Fighter speed, durability, payload and attack-stock formulas into explicit deterministic reference vectors;
-- finish the exact survivor-to-captured-ship Marine assignment and capture ownership/reconciliation event ordering around `Capture_Ship_`;
+- freeze a representative Fighter Beam hit/damage/RNG vector using the already recovered `Fighter_Ocv_` and existing 17.6 Beam primitives;
+- finish the exact survivor-to-captured-ship Marine assignment and capture ownership/reconciliation event ordering around `Capture_Ship_`, then write deterministic Raid/Capture vectors;
 - complete the per-row Class-3 Special support/effect matrix;
 - recover exact formulas/order for repair, shield recharge, anti-missile rockets, Lightning Field, Energy Absorber, Reflection/Damper fields, cloak/phasing, teleporter/time effects and Beam-support Specials;
 - map command/event/projection/UI requirements for Fighter, boarding and active-Special actions;
 - map built-in-AI decisions beyond the now-proven boarding ownership;
 - define persistence migration for Fighter actors, return state and temporary Special/boarding state;
-- produce deterministic reference vectors for Fighter, Bomber, boarding and representative active/passive Special cases.
+- produce deterministic representative active/passive Special vectors.
