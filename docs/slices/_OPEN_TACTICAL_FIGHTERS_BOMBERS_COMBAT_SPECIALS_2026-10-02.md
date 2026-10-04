@@ -104,3 +104,22 @@ Per-row classification is no longer a Gate-1 blocker. Exact formulas/order for t
 ## Next
 
 Recover the remaining executable placement/order for Beam-support, ECM/jamming, cloak/phasing, active teleport/time, Lightning/Reflection/Energy-Absorber and retreat-control effects; then freeze the server command/event/projection/persistence/AI contract before Gate 1 closure.
+
+
+### Checkpoint G update
+
+Cross-slice reconciliation with the accepted 17.6 original Beam audit has upgraded several Class-3 rows from HELP-only/partial evidence to executable Beam hooks:
+
+- Rangemaster Unit: range input /3 before Beam To-Hit lookup.
+- High Energy Focus: +50 to Beam damage multiplier.
+- Structural Analyzer: x2 downstream post-Shield damage.
+- Hard Shields: cancels Shield Piercing in addition to its frozen Transporter rejection.
+- Heavy Armor: participates in Armor-Piercing resistance in addition to its recovered armor-capacity hook.
+- Damper Field: suppresses the Beam Marine-kill hook in addition to its boarding interaction.
+- Achilles Targeting Unit: executable deeper-internal damage-selection hook confirmed; exact subsystem weighting remains open.
+
+17.8 must reuse the frozen 17.6 Beam resolver hooks instead of duplicating Beam formulas.
+
+## Next
+
+Continue non-Beam Special placement/order: ECM/jammers and Lightning against moving actors; cloak/phasing state machine; Reflection/Energy Absorber; teleport/time active commands; Warp Dissipator retreat legality; then command/event/projection/persistence/AI contract.

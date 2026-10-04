@@ -978,3 +978,42 @@ The exact success threshold is executable but depends on an unresolved call argu
 ### 18.4 Matrix consequence
 
 The **per-row classification** blocker is now closed. Gate 1 still cannot close because rows marked formula/order open need executable placement, and active-special command/event/persistence/AI contracts remain unfinished.
+
+
+## 19. Checkpoint G - cross-slice Beam Special reconciliation
+
+The accepted Slice-17.6 original Beam audit already recovered executable consumers that 17.8 must now consume rather than re-audit from HELP prose. These findings supersede the weaker evidence labels in the Checkpoint-F table where applicable.
+
+### 19.1 Beam-support effects already directly observed in 17.6
+
+The original Beam path directly established:
+
+- **Rangemaster Unit (ID 25):** divide the range input by **3** before the Beam range-To-Hit lookup.
+- **High Energy Focus (ID 15):** add **+50** to the Beam damage multiplier.
+- **Structural Analyzer (ID 32):** double a downstream **post-Shield** damage value.
+- **Hard Shields (ID 13):** neutralize the Shield-Piercing bypass behavior.
+- **Heavy Armor (ID 14):** participates in Armor-Piercing resistance.
+- **Damper Field (ID 7):** suppresses the Neutron/Death-Ray Marine-kill hook.
+- **Achilles Targeting Unit (ID 1):** can force the deeper-internal damage-selection path; the exact subsystem weighting remains owned by 17.8 but the consumer itself is proven.
+
+These are executable dependencies recorded by the frozen 17.6 contract, not new approximations.
+
+### 19.2 Updated matrix status
+
+Accordingly:
+
+| Special | Checkpoint-F label | Superseding Gate-1 status |
+|---|---|---|
+| High Energy Focus | HELP-classified / consumer open | **FROZEN Beam hook:** +50 damage multiplier. |
+| Rangemaster Unit | HELP-classified / consumer open | **FROZEN Beam hook:** range input /3 for To-Hit lookup. |
+| Structural Analyzer | PROVEN / formula open | **FROZEN Beam hook:** x2 downstream post-Shield damage; broader non-Beam applicability remains open. |
+| Hard Shields | FROZEN boarding hook; general Beam open | **FROZEN Beam + boarding hooks:** cancels Shield Piercing and rejects Transporter boarding. Other -3/nebula semantics remain open. |
+| Heavy Armor | PROVEN / partial formula | **FROZEN Beam resistance + repair-capacity hook:** participates in Armor-Piercing defense and triples recovered armor capacity. |
+| Damper Field | FROZEN boarding hook; damage open | **FROZEN Beam-marine + boarding hooks:** suppresses Beam Marine-kill hook and reduces Transporter boarding party through the recovered /3 branch. General incoming-damage reduction remains open. |
+| Achilles Targeting Unit | PROVEN / formula open | **PROVEN executable Beam damage-selection hook:** exact internal subsystem weighting still open. |
+
+### 19.3 Ownership consequence
+
+Gate 2 must expose these as shared Tactical resolver hooks rather than duplicate Beam formulas inside the 17.8 Special subsystem. Slice 17.8 owns Special state/effect activation; Slice 17.6's already-frozen Beam resolver remains the consumer for Beam-specific range, damage, shield-piercing, armor-piercing and Marine-kill behavior.
+
+This closes the Beam-support placement blocker for High Energy Focus and Rangemaster and narrows Structural Analyzer, Hard Shields, Heavy Armor, Damper Field and Achilles to their remaining non-Beam or detailed-selection questions.
