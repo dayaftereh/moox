@@ -1017,3 +1017,191 @@ Accordingly:
 Gate 2 must expose these as shared Tactical resolver hooks rather than duplicate Beam formulas inside the 17.8 Special subsystem. Slice 17.8 owns Special state/effect activation; Slice 17.6's already-frozen Beam resolver remains the consumer for Beam-specific range, damage, shield-piercing, armor-piercing and Marine-kill behavior.
 
 This closes the Beam-support placement blocker for High Energy Focus and Rangemaster and narrows Structural Analyzer, Hard Shields, Heavy Armor, Damper Field and Achilles to their remaining non-Beam or detailed-selection questions.
+
+## 20. Checkpoint H - non-Beam defensive/readiness Special executable order
+
+This checkpoint continues the direct Orion2.exe audit and reconciles the Slice-17.7 neutral hook positions with their original Slice-17.8 Special consumers. Executable behavior takes precedence over HELP prose where the two differ.
+
+### 20.1 Lightning Field - exact pre-impact grouped-actor loop
+
+`Resolve_Missile_` checks Special ID 19 on the target ship before `Final_Fire_` / reactive Beam-PD and before MIRV expansion.
+
+When Lightning Field is present, the original loop:
+
+1. initializes an iteration index to zero;
+2. calls `Random_(100)`;
+3. when the roll is `< 50`, decrements the moving actor's live multiplicity at `+0x0F`;
+4. increments the iteration index;
+5. compares that index against the **mutated current multiplicity**, not the launch-time multiplicity;
+6. repeats while the index is still lower than the current multiplicity.
+
+Therefore the exact original contract is not 'roll once for every originally launched child.' Destruction during the loop shortens the same loop.
+
+Representative grouped-actor vector, initial multiplicity 4:
+
+- rolls `<50,<50` -> multiplicity 4 -> 3 -> 2, then stop because iteration index 2 is no longer below live multiplicity 2;
+- rolls `<50,>=50,>=50` -> multiplicity 4 -> 3 and stop after three attempts;
+- all rolls `>=50` -> four attempts, multiplicity remains 4.
+
+The optional `Lightning_Field_` routine recovered earlier is the presentation/animation consumer; the authoritative destruction RNG and multiplicity mutation live in `Resolve_Missile_`.
+
+This directly fills Slice 17.7's frozen `pre_impact_defense` hook and preserves its ordering before reactive PD and MIRV split.
+
+### 20.2 Displacement Device - target-path executable branches
+
+For ordinary ordnance impact in `Resolve_Missile_`:
+
+- Special ID 8 triggers one additional `Random_(100)`;
+- roll `< 30` forces the impact comparison into the miss branch;
+- roll `>= 30` continues normal impact resolution.
+
+For Beam fire in `Fire_Beam_Weapon_`:
+
+- Special ID 8 again consumes a separate `Random_(100)`;
+- the direct branch forces the Beam miss when the roll is **`<= 30`**;
+- the normal path continues only when the roll is `> 30`.
+
+That Beam off-by-one difference is executable evidence and must not be normalized to HELP's prose percentage.
+
+The Energy-Absorber active attack also contains an ID-8 branch, but its surrounding special-attack semantics remain separately open; Gate 1 does not generalize the ordinary Beam/ordnance branch into that active-special path.
+
+### 20.3 ECM / jammer composition and fleet stacking
+
+`Ship_Specials_Defensive_Bonus_` directly applies:
+
+- active Cloaking Device state: **+80 Beam Defense**;
+- ECM Jammer ID 9: **+70 Missile Defense**;
+- Multi-Wave ECM Jammer ID 21: **+100 Missile Defense**;
+- Wide Area Jammer ID 38: **+130 Missile Defense** to the equipped ship.
+
+For Wide Area Jammer, `Fleet_Defensive_Bonus_` scans functional friendly ships and contributes **+70 Missile Defense** to other friendly ships when an active friendly ID-38 carrier exists.
+
+`Defensive_Combat_Bonus_` receives both the equipped ship's jammer magnitude and the fleet jammer magnitude and explicitly removes the weaker overlapping jammer contribution. The original therefore implements **best-only jammer stacking**, not additive ECM + Multi-Wave + Wide-Area accumulation.
+
+These values now fill Slice 17.7's frozen `impact_defense` Special hook.
+### 20.4 Cloaking Device / Phasing Cloak state machine - directly evidenced portion
+
+`Init_Special_Devices_` initializes:
+
+- Cloaking Device ID 6 -> ship cloak state `+0x40 = 1`;
+- Phasing Cloak ID 23 -> ship cloak state `+0x40 = 4` and byte `+0x41 = 10`.
+
+Direct consumers prove:
+
+- state 1 -> +80 Beam Defense through `Ship_Specials_Defensive_Bonus_`;
+- state 1 -> an additional `Random_(100)` in `Resolve_Missile_`, with roll `<50` forcing the missile impact to miss;
+- state 4 -> untargetable/excluded by multiple target-selection, retarget, defensive-fire, movement/boarding eligibility paths;
+- weapon fire breaks state 1 -> 2 and state 4 -> 6;
+- initiating/performing boarding likewise breaks 1 -> 2 and 4 -> 6;
+- next-turn initialization advances 2 -> 3 and 6 -> 7;
+- firing while in 3/7 moves those states back to 2/6.
+
+A whole-code direct-field scan found the `+0x41 = 10` initialization but no accepted Tactical decrement/expiry consumer yet, and no direct `3 -> 1` / `7 -> 4` writer. Gate 1 therefore **does not yet freeze** HELP's ten-turn Phasing-Cloak expiry or the exact ordinary recloak transition. Those lifecycle transitions remain OPEN rather than inferred.
+
+### 20.5 Energy Absorber - incoming storage and pre-weapon discharge
+
+`Apply_Ship_Damage_` checks Energy Absorber ID 10 before Damper Field and before the later shield/internal application:
+
+1. compute signed incoming damage /4 using original integer semantics;
+2. clamp the absorbed amount to at least 1;
+3. subtract that amount from the current incoming-damage value;
+4. add exactly that amount to ship word `+0x45`;
+5. only then apply the Damper Field ID-7 reduction to the remaining damage.
+
+Thus Energy Absorber storage precedes Damper Field.
+
+`Pre_Weapon_Specials_` later sees stored energy `+0x45 > 0` and, for a ship target at range `< 8` while the Special is active, dispatches `Energy_Absorber_Attack_` **before** ordinary weapon resolution. The attack consumes the stored value and clears `+0x45 = 0` after resolution.
+
+A direct writer scan finds initialization, damage-time accumulation and attack-time clear, but no accepted turn-expiry writer. HELP's 'fire next turn or it is lost' lifetime therefore remains OPEN until an indirect consumer is recovered; MOOX must not invent that expiry yet.
+
+### 20.6 Damper Field general damage ordering is now direct
+
+Immediately after Energy Absorber handling, `Apply_Ship_Damage_` checks Damper Field ID 7 and reduces the remaining incoming damage to one quarter with original signed shift/division semantics before subsequent shield/internal handling.
+
+Together with earlier checkpoints, Damper Field now has three distinct direct consumers:
+
+- general incoming-damage quartering;
+- Beam Marine-kill suppression;
+- Transporter-boarding party reduction.
+
+### 20.7 Reflection Field - executable Beam reflection branch
+
+`Fire_Beam_Weapon_` checks Reflection Field ID 26 on the target before ordinary `Apply_Ship_Damage_`.
+
+For current Beam hit damage `D`:
+
+- call `Random_(D + 15)`;
+- compare the roll with `D`;
+- if the roll is strictly greater than `D`, move the entire current hit damage `D` into the reflection output and set target damage to zero;
+- otherwise continue normal target damage.
+
+The caller then applies the reflected amount back to the firing ship through `Apply_Ship_Damage_`.
+
+This exact `Random_(D+15) > D` executable branch supersedes HELP's differently worded ratio formula for original-parity purposes.
+### 20.8 Hyper-X Capacitors / Fast Missile Racks - shared weapon-slot state
+
+`Init_Special_Devices_` initializes weapon-slot byte `+0x5C = 1`:
+
+- for Beam rows when Hyper-X Capacitors ID 16 is present;
+- for Missile rows when Fast Missile Racks ID 12 is present.
+
+At turn start, `Init_Ship_For_Start_Of_Turn_`:
+
+- restores the live per-turn weapon count;
+- for an eligible Hyper-X/FMR row whose `+0x5C != 1`, writes state `2`.
+
+`Fire_Ship_` directly uses the state:
+
+- when the current per-turn weapon count is empty and `+0x5C == 1`, it refills the live count from the installed/base count and clears `+0x5C` to 0, permitting the extra initial volley;
+- after a firing action, state `2` is cleared to 0.
+
+A whole Tactical-code writer scan found no other normal writer that restores `+0x5C = 1` after combat initialization. `Init_Special_Devices_` is called from combat/setup/load contexts, not as the ordinary per-turn reset.
+
+Therefore the directly observed Orion2.exe state machine provides an **initial second-volley capability**, followed by the ordinary per-turn state transitions above. The HELP claim that one full non-firing turn re-arms another double volley is **not yet supported by the recovered executable writer graph**. Gate 1 records this as an executable-vs-HELP discrepancy rather than fabricating a re-arm writer.
+
+### 20.9 Anti-Missile Rockets - 17.7/17.8 ownership reconciliation
+
+The accepted Slice-17.7 original audit already froze the neutral projectile-interceptor hook and direct original facts needed by 17.8:
+
+- active dispatch through `Fire_Special_Weapon_`;
+- valid ordinary Missile actor targeting plus the separate original compatible actor class;
+- max range 15;
+- hit chance `85% - 5% per square`;
+- projectile durability/multiplicity damage and `Kill_Missile_` at zero.
+
+The current `Fire_Special_Weapon_` disassembly reconfirms the moving-actor legality/owner checks and dispatch to `Anti_Missile_Rockets_`. 17.8 should consume the frozen 17.7 `projectile_interceptor` hook rather than creating a second projectile model.
+
+### 20.10 Warp Dissipator - player and AI retreat legality
+
+`Enemy_Dissipator_Exists_` checks Special ID 37 across the combat ship list and returns true only for an opposing ship that:
+
+- carries Warp Dissipator;
+- is not in the normal post-capture state;
+- is not destroyed/retreated/inactive;
+- belongs to the opposing combat side.
+
+Direct callers prove three consumers:
+
+- `Do_Auto_Ship_Turn_` will not set the AI retreat state while an enemy Dissipator exists;
+- `Retreat_Check_` aborts retreat evaluation when an enemy Dissipator exists;
+- the manual Tactical command path in `Do_Combat_Turn_` calls `Enemy_Dissipator_Exists_` before normal retreat eligibility and branches directly to its rejection/message path when true.
+
+Warp Dissipator is therefore an authoritative Tactical retreat-legality rule for both human commands and AI, not a browser/UI-only restriction.
+
+The previously identified data gap remains: original selectable row 37 exists, but the current generated MOOX `ship_specials.json` omits the named row. Gate 2 must repair that projection explicitly before implementation.
+
+### 20.11 Remaining blockers after Checkpoint H
+
+The following remain open before Gate 1 can close:
+
+- exact ordinary recloak transition and Phasing-Cloak ten-turn lifetime, if an executable indirect consumer exists;
+- exact Energy-Absorber stored-energy lifetime/expiry, if any;
+- Phase Shifter / Sub-Space Teleporter active command legality, range/use-state and persistence;
+- Time Warp Facilitator scheduler/action-reset semantics;
+- Achilles exact internal subsystem weighting;
+- remaining active-special command/event/rejection/projection/UI contracts;
+- built-in AI ownership for active Special commands beyond the already-proven retreat/boarding consumers;
+- persistence/replay schema for cloak/phasing, stored energy, active-special use state and fighter return state;
+- deterministic representative vectors for the remaining active Specials.
+
+Gate 1 remains **IN PROGRESS**. No Slice-17.8 production implementation is authorized yet.

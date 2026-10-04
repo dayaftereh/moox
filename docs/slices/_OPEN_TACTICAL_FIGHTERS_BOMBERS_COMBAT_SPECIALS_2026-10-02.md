@@ -123,3 +123,25 @@ Cross-slice reconciliation with the accepted 17.6 original Beam audit has upgrad
 ## Next
 
 Continue non-Beam Special placement/order: ECM/jammers and Lightning against moving actors; cloak/phasing state machine; Reflection/Energy Absorber; teleport/time active commands; Warp Dissipator retreat legality; then command/event/projection/persistence/AI contract.
+
+### Checkpoint H update
+
+The non-Beam defensive/readiness Special audit now has direct executable ordering for:
+
+- Lightning Field pre-impact grouped-actor RNG/multiplicity mutation before reactive PD/MIRV;
+- Displacement Device's distinct ordnance and Beam forced-miss branches;
+- ECM / Multi-Wave ECM / Wide Area Jammer self and fleet values with best-only stacking;
+- Cloaking Device active +80 Beam Defense and 50% missile forced-miss hook;
+- directly evidenced Cloak/Phasing state transitions, with unresolved recloak/10-turn lifetime kept OPEN;
+- Energy Absorber 1/4 incoming-damage storage before Damper Field plus automatic pre-weapon discharge;
+- Damper Field quartering of remaining incoming damage;
+- Reflection Field's direct `Random_(D+15) > D` full-reflection branch;
+- Hyper-X Capacitors / Fast Missile Racks shared weapon-slot readiness state and executable-vs-HELP re-arm discrepancy;
+- Anti-Missile Rockets ownership through the frozen 17.7 projectile-interceptor hook;
+- Warp Dissipator ID37 blocking both AI and manual Tactical retreat while a functional enemy carrier exists.
+
+Gate 1 remains open for active teleport/time mechanics, unresolved cloak/absorber lifetimes, Achilles internal weighting, command/event/UI/persistence/AI contracts and remaining deterministic Special vectors.
+
+## Next
+
+Audit Phase Shifter / Sub-Space Teleporter command legality and use state, then Time Warp Facilitator scheduler semantics. Afterwards close the remaining lifecycle/persistence/event/AI blockers before any Gate-2 freeze.
