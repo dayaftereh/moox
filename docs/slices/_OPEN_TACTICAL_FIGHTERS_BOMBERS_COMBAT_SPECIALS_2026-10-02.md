@@ -145,3 +145,19 @@ Gate 1 remains open for active teleport/time mechanics, unresolved cloak/absorbe
 ## Next
 
 Audit Phase Shifter / Sub-Space Teleporter command legality and use state, then Time Warp Facilitator scheduler semantics. Afterwards close the remaining lifecycle/persistence/event/AI blockers before any Gate-2 freeze.
+
+### Checkpoint I correction/update
+
+Full `Do_Combat_Turn_` recovery supersedes several provisional Checkpoint-H OPEN statements:
+
+- Hyper-X Capacitors / Fast Missile Racks **do** re-arm after one complete non-firing turn: end-pass changes surviving readiness state 2 -> 1.
+- ordinary Cloaking state 3 -> 1 at end-pass; firing during the waiting turn sends 3 -> 2 and prevents recloak.
+- Phasing Cloak state 4 decrements its initialized counter 10; zero converts to ordinary Cloaking state 1; broken state 7 returns to state 4 and retargets relevant incoming actors.
+- Energy Absorber stored energy is cleared at the end of the acting side's pass if not discharged.
+- IDs 22/33 share once-per-turn self-teleport state; direct executable range is <=20, teleporter use avoids ordinary movement-cost subtraction and preserves facing.
+- Phase-Shifter other-ship teleport remains unproven despite the presence of an unreferenced named `Teleport_Enemy_Ship_` routine.
+- Time Warp Facilitator ID34 is implemented as a second `Do_Combat_Turn_(side,1)` pass for each side after both normal passes; only ID34 ships participate, they receive normal start-turn initialization, Seeking Missiles is skipped in the extra pass, and shield recharge/Automated Repair remain once-per-round global bookkeeping.
+
+## Next
+
+Recover Achilles exact internal-selection weighting if possible, then freeze the authoritative command/rejection/event/projection/persistence/AI contract and final deterministic vectors required to close Gate 1.

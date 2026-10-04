@@ -1205,3 +1205,137 @@ The following remain open before Gate 1 can close:
 - deterministic representative vectors for the remaining active Specials.
 
 Gate 1 remains **IN PROGRESS**. No Slice-17.8 production implementation is authorized yet.
+
+## 21. Checkpoint I - lifecycle correction, teleporter use and Time-Warp scheduler
+
+This checkpoint extends the disassembly window through the full `Do_Combat_Turn_` body. It **supersedes** the provisional OPEN conclusions in Checkpoint H for Hyper-X/FMR re-arm, Cloak/Phasing lifecycle and Energy-Absorber expiry: the missing writers were located late in the large turn-cleanup body.
+
+### 21.1 Hyper-X Capacitors / Fast Missile Racks re-arm is now closed
+
+At the end-of-pass cleanup inside `Do_Combat_Turn_`, every functional weapon slot whose special-readiness byte is `+0x5C == 2` is changed to `1`.
+
+Combined with Checkpoint H:
+
+- combat initialization gives eligible Beam/Missile rows state 1;
+- state 1 permits the immediate extra volley and is consumed to 0;
+- a later turn start changes non-1 state to 2;
+- firing during that turn consumes 2 -> 0;
+- **not firing** leaves state 2 intact;
+- end-of-pass cleanup changes surviving state 2 -> 1;
+- the next turn therefore regains the double-volley opportunity.
+
+This directly proves HELP's 'spend one full turn without firing to reload the double volley' behavior. The earlier Checkpoint-H statement that no re-arm writer existed is superseded by this full-function recovery.
+
+### 21.2 Cloaking Device recloak and Phasing-Cloak lifetime are now closed
+
+The same `Do_Combat_Turn_` cleanup resolves the previously missing state transitions:
+
+- Cloaking state 3 -> draw recloak transition -> state 1;
+- Phasing state 4 -> decrement `ship+0x41` by 1;
+- while that counter remains non-zero, state 4 persists;
+- when the counter reaches zero, the executable transitions from Phasing presentation to ordinary Cloaking state 1;
+- state 7 -> state 4 and the resolver retargets relevant incoming moving actors/missiles away from the newly phased ship.
+
+Together with the already frozen start/fire transitions, the ordinary Cloaking cycle is therefore:
+
+`1 (cloaked) -> fire/board -> 2 -> next-turn start -> 3 -> no further fire during that turn -> end-pass -> 1`.
+
+For Phasing Cloak:
+
+- combat init: state 4, counter 10;
+- active state 4 is untargetable;
+- each recovered active-state cleanup decrements the counter;
+- fire/board breaks 4 -> 6;
+- next-turn start advances 6 -> 7;
+- end-pass 7 -> 4 and retargets relevant incoming actors;
+- when the active counter reaches zero, Phasing converts to ordinary Cloaking state 1.
+
+The current Orion2.exe cleanup loop processes functional combat ships at each `Do_Combat_Turn_` pass; the owner-comparison bytes in this loop are patched to NOPs in the audited 1.31 executable. Gate 2 must therefore model the recovered pass ordering explicitly rather than assuming a generic once-per-round Phasing decrement.
+
+### 21.3 Energy Absorber expiry is now direct
+
+Late in `Do_Combat_Turn_`, before the remaining end-pass Special cleanup, the original clears stored Energy-Absorber word `ship+0x45 = 0` for the acting side's eligible functional ships in the ordinary local-combat path.
+
+Combined with the damage-time store and pre-weapon discharge:
+
+- damage received during the opponent's pass stores one quarter before Damper Field;
+- the ship can discharge that stored energy through `Pre_Weapon_Specials_` during its next own pass;
+- if not discharged, the value is cleared at the end of that own pass.
+
+This closes the HELP lifetime semantics without inventing a timer field.
+
+### 21.4 Teleporter used-state and self-teleport contract
+
+`Used_Teleporter_` tests bit 0 of ship bitfield `+0x48`; `Set_Teleporter_Used_` sets the same bit. `Init_Ship_For_Start_Of_Turn_` clears `ship+0x48` before restoring any boarding/capture flag, so the teleporter-use bit is reset at the start of each eligible ship turn.
+
+`Move_Ship_` directly checks for either:
+
+- Sub-Space Teleporter ID 33, or
+- Phase Shifter ID 22.
+
+If one is present, the teleporter has not already been used, and `Range_To_XY_ <= 20`, the original:
+
+1. sets the teleporter-used bit;
+2. runs the teleport presentation;
+3. jumps directly to the destination coordinate update;
+4. does not traverse the normal movement path.
+
+The caller compares teleporter-used state before and after `Move_Ship_`; when the bit changed, it skips subtraction of ordinary movement cost. The coordinate update changes the ship grid position without a facing-change step, matching the Sub-Space Teleporter direction-preservation rule.
+
+`Draw_Legal_Boxes_` also allows ships with ID 33 or ID 22 and unused teleporter state to expose teleport movement even when ordinary movement points are exhausted. `Set_Legal_Moves_` expands the relevant legal-move radius to 20 for either special; its explicit Sub-Space-Teleporter special-cell marking also requires the Special to be turned on.
+
+Thus the directly evidenced self-teleport range is **20 original Range units for both IDs 22 and 33**. The Phase-Shifter HELP value 18 is not used to override the executable self-move check.
+
+### 21.5 Phase Shifter other-ship teleport remains unproven
+
+A named `Teleport_Enemy_Ship_` routine exists and can choose a legal nearby destination and update another ship's coordinates, but a whole code-object scan found no direct CALL/JMP or immediate code reference to its entry point in the audited executable.
+
+Gate 1 therefore does **not** yet claim that this routine is the reachable Phase-Shifter user action. The directly evidenced ID-22 self-teleport is frozen; other-ship teleport remains OPEN until a dispatch-table/data-reference or live command path is recovered.
+
+### 21.6 Time Warp Facilitator is a second authoritative turn pass
+
+`Tactical_Combat_` calls `Do_Combat_Turn_` in this round order:
+
+1. normal pass for the first combat side with mode 0;
+2. winner/effect checks;
+3. normal pass for the second combat side with mode 0;
+4. winner/effect checks;
+5. extra pass for the first side with mode 1;
+6. winner check;
+7. extra pass for the second side with mode 1;
+8. winner check;
+9. increment the combat round and run global `End_Of_Turn_Bookeeping_`.
+
+Inside `Do_Combat_Turn_(side, 1)`:
+
+- only functional/non-stasis ships carrying Time Warp Facilitator ID 34 are initialized for turn start;
+- only ID-34 ships are inserted into that pass's ship turn order;
+- `Init_Ship_For_Start_Of_Turn_` is called, so movement/action/weapon and per-turn Special state receive the normal start-turn reset for the extra pass;
+- end-pass cleanup still runs;
+- the normal end-pass `Seeking_Missiles_` call is skipped for mode 1.
+
+Global shield recharge and Automated Repair remain in `End_Of_Turn_Bookeeping_` after both normal and Time-Warp passes, so Time Warp does **not** independently double the once-per-round shield-recharge/repair bookkeeping.
+
+A Time-Warp ship that also carries a teleporter receives a fresh teleporter-used reset through the extra pass's `Init_Ship_For_Start_Of_Turn_`, consistent with the extra pass being a real additional ship turn rather than a partial action token.
+
+### 21.7 Corrected remaining blockers
+
+Closed by this checkpoint:
+
+- Hyper-X / Fast Missile Racks full-turn re-arm;
+- ordinary Cloak recloak;
+- Phasing-Cloak counter decrement and transition to ordinary cloak;
+- Energy-Absorber stored-energy expiry;
+- Time Warp Facilitator pass scheduling and major reset/bookkeeping boundaries;
+- self-teleporter range, used-state reset and no-normal-movement-cost behavior.
+
+Still open before Gate 1 closure:
+
+- reachable Phase-Shifter other-ship teleport dispatch, if present in the 1.31 executable;
+- Achilles Targeting Unit exact subsystem-selection weighting;
+- authoritative MOOX command/rejection/event/projection/UI names and payloads for fighter/boarding/active-Special actions;
+- persistence/replay migration for fighter actors, cloak/phasing counters/states, stored energy, teleporter-used state and temporary boarding/capture state;
+- built-in AI choices for active Specials beyond the already recovered boarding, retreat and generic movement consumers;
+- final deterministic active-Special reference vectors and Gate-1 closure checklist.
+
+Gate 1 remains **IN PROGRESS**; no production implementation starts here.
