@@ -1339,3 +1339,77 @@ Still open before Gate 1 closure:
 - final deterministic active-Special reference vectors and Gate-1 closure checklist.
 
 Gate 1 remains **IN PROGRESS**; no production implementation starts here.
+
+## 22. Checkpoint J - Achilles Targeting Unit internal-selection formula
+
+The remaining Achilles Targeting Unit blocker is now closed from the shared Beam -> `Apply_Ship_Damage_` -> `Select_Internal_` path.
+
+### 22.1 Attacker Special is passed explicitly into ship damage
+
+`Fire_Beam_Weapon_` checks the firing ship for:
+
+- Special ID 1 = Achilles Targeting Unit;
+- Special ID 32 = Structural Analyzer.
+
+The resulting booleans are passed explicitly into `Apply_Ship_Damage_`; Achilles is therefore an attacker-side damage-selection modifier, not a target metadata flag.
+
+### 22.2 Achilles forces the armor-bypass internal path
+
+Before internal selection, `Apply_Ship_Damage_` derives an armor-bypass control value.
+
+- when Achilles is present, that control is forced to 1 immediately;
+- otherwise ordinary Armor-Piercing weapon bit `0x0008` can request the bypass;
+- the ordinary Armor-Piercing request is cancelled by Heavy Armor ID 14 or Xentronium armor;
+- the Achilles branch occurs before those cancellation checks and jumps directly to the enabled-bypass state.
+
+Therefore Achilles completely bypasses the target Armor layer even when ordinary Armor Piercing would have been neutralized by Heavy Armor/Xentronium. This directly matches the qualitative HELP statement, but is now executable evidence.
+
+### 22.3 Exact weighted-choice transform
+
+`Select_Internal_` builds a 19-entry weighted choice from current surviving internal pools.
+
+The recovered choice mapping includes:
+
+- two fixed leading internal categories;
+- eight Weapon-slot categories sourced from ship fields `+0x104 .. +0x112`;
+- eight additional internal/Special-slot categories sourced from `+0x124 .. +0x132`;
+- the Shield-generator/internal shield-system category sourced from `+0x134`.
+
+When the Achilles boolean is non-zero, the executable modifies the weighted-choice input before `Get_Weighted_Choice_Short_`:
+
+- each of the **eight Weapon-slot weights is multiplied by 3**;
+- the **Shield-generator weight is multiplied by 3**;
+- the other recovered internal-category weights are left at their normal values.
+
+The selected weighted index is then mapped back to the existing internal type/index representation and damaged through `Apply_Internal_Damage_`.
+
+Thus Achilles does not perform a separate second hit roll and does not multiply final damage. It changes internal-selection probability by a precise 3x weight transform for Weapon systems and the Shield generator after forcing Armor bypass.
+
+### 22.4 Deterministic weight reference vector
+
+For a normalized internal-choice state with:
+
+- Weapon-slot A weight = 10;
+- Weapon-slot B weight = 4;
+- Shield-generator weight = 20;
+- another non-targeted internal category weight = 12;
+
+the Achilles pre-choice transform is:
+
+- Weapon A: 10 -> 30;
+- Weapon B: 4 -> 12;
+- Shield generator: 20 -> 60;
+- other category: 12 -> 12.
+
+`Get_Weighted_Choice_Short_` then consumes the transformed array through the existing shared internal-choice RNG path. Gate 2 must preserve the transformed weights and existing RNG ordering rather than inventing a separate Achilles RNG event.
+
+### 22.5 Gate consequence
+
+The last open Beam-side Achilles formula is closed. Slice 17.8 should activate the already-frozen Slice-17.6 damage hook by supplying:
+
+- `armor_bypass = true` for Achilles;
+- `internal_weapon_weight_multiplier = 3`;
+- `internal_shield_generator_weight_multiplier = 3`;
+- neutral multiplier 1 for other internal categories.
+
+No parallel Achilles damage resolver is required.

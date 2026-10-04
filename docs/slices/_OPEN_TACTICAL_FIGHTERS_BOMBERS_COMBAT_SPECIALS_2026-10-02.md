@@ -161,3 +161,19 @@ Full `Do_Combat_Turn_` recovery supersedes several provisional Checkpoint-H OPEN
 ## Next
 
 Recover Achilles exact internal-selection weighting if possible, then freeze the authoritative command/rejection/event/projection/persistence/AI contract and final deterministic vectors required to close Gate 1.
+
+### Checkpoint J update
+
+Achilles Targeting Unit is now fully recovered from the executable Beam/internal-damage path:
+
+- attacker Achilles forces Armor bypass before Heavy-Armor/Xentronium cancellation logic;
+- `Select_Internal_` multiplies all eight Weapon-slot selection weights by 3;
+- the Shield-generator selection weight is multiplied by 3;
+- other recovered internal-category weights remain unchanged;
+- the existing shared weighted-choice RNG is reused; Achilles adds no separate hit/damage RNG.
+
+The Achilles formula blocker is closed.
+
+## Next
+
+Resolve the remaining Phase-Shifter other-ship dispatch question, then freeze Gate-1 command/rejection/event/projection/persistence/AI requirements and final closure vectors.
