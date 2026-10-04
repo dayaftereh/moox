@@ -797,3 +797,94 @@ Still required before Gate 1 can close:
 - map built-in-AI decisions beyond the now-proven boarding ownership;
 - define persistence migration for Fighter actors, return state and temporary Special/boarding state;
 - produce deterministic representative active/passive Special vectors.
+
+
+## 17. Checkpoint E - Fighter Beam RNG/damage vector
+
+Direct disassembly of `Fighter_Ocv_` (`0x02DF8D..0x02DFE0`) and `Fire_Fighter_Beam_` (`0x02AD57..0x02AFB3`) closes the representative Fighter-Beam RNG blocker.
+
+### 17.1 Fighter OCV
+
+For the normal player index path (`player < 8`), the original computes:
+
+`fighter_ocv = Fleet_Offensive_Bonus + Best_Computer.offense + player_crew_bonus + Get_Fleet_Pilot_Bonus + 50`
+
+For the non-player/special index path, the direct player crew byte is skipped. All arithmetic reaches the firing path as signed integer state.
+
+Target defense is then:
+
+- ship target: ship Beam Defense;
+- moving missile/fighter actor: `Missile_Dcv_`.
+
+Define `delta = fighter_ocv - target_defense`.
+
+### 17.2 Effective hit roll
+
+For every surviving member of the launched Fighter group, `Fire_Fighter_Beam_` calls `Random_(100)` once for the accuracy roll.
+
+- if raw RNG is `96..99`, effective roll is forced to `100`;
+- otherwise effective roll is `min(100, raw_rng + delta)`;
+- the shot misses when effective roll is strictly below `40`;
+- therefore `40` is the inclusive hit threshold.
+
+This is the original Fighter-Beam accuracy gate and must use authoritative combat RNG in MOOX.
+
+### 17.3 Damage interpolation
+
+Let the selected Fighter Beam's original damage endpoints be `min_damage` and `max_damage`.
+
+For a hit:
+
+- `spread = max_damage - min_damage`;
+- if `spread <= 0`, raw damage is `min_damage`;
+- otherwise raw damage is
+  `min_damage + ((effective_roll - 40) * (spread + 1)) / 60`
+  using original integer division semantics.
+
+The resulting damage then enters the existing shared target path:
+
+- ship target -> `Apply_Ship_Damage_`;
+- moving actor -> `Apply_Damage_To_Missile_`.
+
+The already-audited retarget/kill path remains shared for moving actors.
+
+A directly visible weapon-flag branch (`flag & 0x04`) adds `+25` to the accuracy delta and halves both damage endpoints with upward integer rounding before the hit/damage calculation. Gate 2 must preserve that ordering rather than folding it into post-hit damage.
+
+### 17.4 Deterministic representative vectors
+
+Normalized constant-damage vector, chosen to isolate the accuracy gate:
+
+- `Fleet_Offensive_Bonus = 10`
+- best-computer offense = `20`
+- player crew bonus = `5`
+- fleet pilot bonus = `15`
+- therefore `fighter_ocv = 100`
+- beam damage endpoints = `5..5`
+
+Against target defense `120`, `delta = -20`:
+
+| raw `Random_(100)` | effective roll | result | raw damage |
+|---:|---:|---|---:|
+| 59 | 39 | miss | 0 |
+| 60 | 40 | hit | 5 |
+| 95 | 75 | hit | 5 |
+| 96 | 100 | hit via forced-100 branch | 5 |
+
+Against target defense `40`, `delta = +60`:
+
+- raw RNG `0` -> effective `60` -> hit;
+- raw RNG `40` -> effective `100` after clamp -> hit.
+
+Interpolation vector:
+
+- `min_damage = 4`, `max_damage = 8`, effective roll `64`;
+- `spread = 4`;
+- raw damage = `4 + ((64 - 40) * 5) / 60 = 6`.
+
+These vectors are resolver references, not claims about a particular named Beam technology.
+
+### 17.5 Gate-2 consequence
+
+Fighter and Heavy-Fighter Beam fire should not gain a parallel accuracy/damage model. The server-authoritative Fighter actor needs to feed the recovered Fighter OCV and per-member RNG into the existing Slice-17.6 Beam-defense/damage primitives, while moving-actor targets continue through the shared missile/fighter actor defense/damage path.
+
+The Fighter-Beam RNG/vector blocker from Checkpoint D is therefore closed.

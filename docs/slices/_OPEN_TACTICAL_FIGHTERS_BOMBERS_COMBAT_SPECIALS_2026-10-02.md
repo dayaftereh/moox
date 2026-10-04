@@ -63,3 +63,20 @@ Checkpoint D now also freezes Capture reconciliation:
 ## Next
 
 Continue Gate 1 with a representative Fighter Beam RNG vector, then the full Class-3 Special effect/order matrix and authoritative command/event/UI/persistence contracts before any Gate-2 freeze.
+
+
+### Checkpoint E update
+
+The representative Fighter-Beam RNG/damage vector is now frozen from direct `Fighter_Ocv_` / `Fire_Fighter_Beam_` disassembly:
+
+- Fighter OCV composition is explicit;
+- ship Beam Defense vs moving-actor `Missile_Dcv_` target-defense split is explicit;
+- `Random_(100)` accuracy order, forced-`100` branch for 96..99, clamp and inclusive hit threshold 40 are explicit;
+- integer damage interpolation and the visible `flag & 0x04` pre-hit modifier ordering are explicit;
+- representative deterministic hit/miss/damage vectors are recorded in Gate-1 evidence.
+
+The Fighter-Beam vector blocker is closed. Gate 1 remains open for the full Class-3 Special effect/order matrix plus command/event/UI/persistence/AI contracts.
+
+## Next
+
+Continue Gate 1 with the full Class-3 Special support/effect/order matrix and authoritative command/event/UI/persistence/AI contracts before any Gate-2 freeze.
