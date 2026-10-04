@@ -690,12 +690,107 @@ The return rule from Checkpoint B gives a deterministic loss/recovery vector:
 
 The incomplete remainder is not restored as fractional Bay availability.
 
-## 15. Remaining Gate-1 blockers after Checkpoint C
+## 15. Checkpoint D - Capture survivor transfer and reconciliation ordering
+
+This checkpoint closes the remaining ownership/Marine ambiguity around successful ship capture and freezes the directly evidenced post-capture reconciliation order.
+
+### 15.1 Successful Capture transfers surviving attacking Marines
+
+`Resolve_Capture_` keeps the attacking boarding-party total in one mutable local and the defending Marine total in a separate local. `Ground_Combat_Round_` casualty markers decrement those two totals until one side reaches zero.
+
+At the outcome branch:
+
+- if attacker survivors are greater than zero, `Resolve_Capture_` writes the surviving **attacker** count to target ship `MarineCurrent` (`ship+0xAF`) and then calls `Capture_Ship_`;
+- if attacker survivors are zero, no ownership transfer occurs and the target ship receives the surviving **defender** Marine count.
+
+Therefore a successful capture does not refill Marines from hull capacity and does not retain the defeated defending Marines. The captured ship begins under new ownership with exactly the surviving boarding Marines.
+
+### 15.2 Capture reconciliation order
+
+`Capture_Ship_` performs the following authoritative sequence:
+
+1. if the target ship has an attached officer, call `Kill_Officer_`, clear the ship officer ID and clear the officer's ship assignment;
+2. clear the captured ship's temporary boarding-related bit-field state at ship field `+0x48`, bit/index 4;
+3. test Special ID `0x18` = `quantum_detonator`;
+4. if Quantum Detonator is installed, call `Random(10)` and self-destruct the captured ship through `Destroy_Ship_` when the result is `< 6` - an exact **60%** capture-time detonation chance;
+5. if the ship survives, change `ship+0x20` to the opposite combat-side owner;
+6. call `Retarget_Missiles_Aimed_At_` for the captured ship;
+7. call `Remove_Continuing_Effect_Specials_`;
+8. apply the normal post-capture ship state unless the new owner is Telepathic;
+9. clear additional ship turn/action fields (`+0x4B = 0`, `+0x42 = 0xFF`);
+10. reconcile the original combat ship/list counters.
+
+The Marine survivor write happens **before** this sequence. Quantum Detonator therefore tests after attacker Marines have won the boarding action but before durable ownership reconciliation completes.
+
+### 15.3 Telepathic capture exception is direct
+
+Prior race reverse engineering maps original player byte `+0x8B8` to `telepathic`.
+
+`Capture_Ship_` sets ship byte `+0xB0 = 1` for a normal non-Telepathic new owner. When the new owner is Telepathic, that assignment is skipped.
+
+`Start_Turn_For_Ship_` later explicitly checks `ship+0xB0 == 1`. In that branch it:
+
+- clears/initializes ship movement/action fields;
+- sets a dedicated turn-state value;
+- clears or recomputes per-weapon turn-state bytes before continuing the normal start-turn path.
+
+The audited `Start_Turn_For_Ship_` body reads this flag but does not itself clear it. Gate 2 should therefore model it conservatively as an authoritative `post_capture_state` with the directly evidenced start-turn consequences; its eventual clearing lifetime must not be guessed unless a later original consumer is recovered.
+
+Telepathic ownership bypasses that normal post-capture state, matching the already-known original Telepathic captured-ship exception.
+
+### 15.4 Deterministic Raid reference vectors
+
+Given equal static attacker/defender bonuses:
+
+| Attacker Random(100) | Defender Random(100) | `diff` | Result |
+|---:|---:|---:|---|
+| 80 | 20 | +60 | internal raid damage branch (`>20`) and defender Marine loss (`>50`) |
+| 60 | 30 | +30 | internal raid damage branch only |
+| 50 | 50 | 0 | no threshold effect |
+| 20 | 80 | -60 | attacking boarding party loses one Marine/party unit (`<-50`) |
+
+With non-zero static modifiers, add attacker static bonuses and subtract defender static bonuses before applying the same strict thresholds.
+
+### 15.5 Capture result vector
+
+A deterministic ownership vector now follows independently of the internal Ground-Combat tier values:
+
+- initial attacker boarding party: 8 Marines;
+- Ground-Combat resolution leaves attacker 3, defender 0;
+- target `MarineCurrent` is written to **3**;
+- `Capture_Ship_` removes the target officer if present;
+- Quantum Detonator absent -> ownership flips to the attacker side;
+- inbound missiles are retargeted and continuing effects removed;
+- normal non-Telepathic owner receives `post_capture_state`;
+- Telepathic owner skips that state.
+
+Quantum Detonator variant:
+
+- same 3 surviving attackers are written first;
+- `Random(10)` in `0..5` -> captured ship self-destructs instead of completing normal ownership reconciliation;
+- `Random(10)` in `6..9` -> ship survives and normal capture reconciliation proceeds.
+
+### 15.6 Gate-2 implications
+
+The server-authoritative capture result must preserve at least:
+
+- attacker and defender Marine survivor counts;
+- target `MarineCurrent` transfer;
+- officer removal;
+- Quantum Detonator RNG/result;
+- owner change;
+- missile retargeting;
+- continuing-effect cleanup;
+- Telepathic versus normal post-capture state;
+- event/replay ordering matching the sequence above.
+
+These are state transitions, not browser presentation decisions.
+
+## 16. Remaining Gate-1 blockers after Checkpoint D
 
 Still required before Gate 1 can close:
 
 - freeze a representative Fighter Beam hit/damage/RNG vector using the already recovered `Fighter_Ocv_` and existing 17.6 Beam primitives;
-- finish the exact survivor-to-captured-ship Marine assignment and capture ownership/reconciliation event ordering around `Capture_Ship_`, then write deterministic Raid/Capture vectors;
 - complete the per-row Class-3 Special support/effect matrix;
 - recover exact formulas/order for repair, shield recharge, anti-missile rockets, Lightning Field, Energy Absorber, Reflection/Damper fields, cloak/phasing, teleporter/time effects and Beam-support Specials;
 - map command/event/projection/UI requirements for Fighter, boarding and active-Special actions;

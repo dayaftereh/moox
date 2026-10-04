@@ -50,16 +50,16 @@ No Slice-17.8 production implementation is allowed before Gate 1 closes and Gate
 
 ## Current audit checkpoint
 
-Checkpoint C now directly freezes the Fighter actor vector basis:
+Checkpoint D now also freezes Capture reconciliation:
 
-- 4 craft per Bay; attack stock 1/2/1/4 for Assault Shuttle/Heavy Fighter/Bomber/Fighter;
-- dynamic speed = role base + drive bonus + Trans-Dimensional bonus;
-- executable hits = role base hits * normal armor durability multiple;
-- Heavy Fighter performs two Beam+Bomb cycles; Bomber one Bomb cycle; Fighter four Beam cycles;
-- Beam and Bomb passes resolve once per surviving craft;
-- return recovers only complete four-craft Bay groups;
-- HELP Fighter armor multipliers are not used where they disagree with the executable.
+- successful Capture transfers surviving attacking Marines into target `MarineCurrent` before owner change;
+- failed Capture leaves surviving defenders and does not change owner;
+- target officer is removed before Capture reconciliation;
+- Quantum Detonator has an exact 60% capture-time self-destruction chance;
+- surviving captured ships change owner, retarget inbound missiles and remove continuing effects;
+- non-Telepathic owners receive the original `post_capture_state`; Telepathic owners bypass it;
+- original Tactical AI owns boarding decisions.
 
 ## Next
 
-Continue Gate 1 with a representative Fighter Beam RNG vector, final Capture survivor/reconciliation vectors, the full Class-3 Special effect/order matrix, and authoritative command/event/UI/persistence contracts before any Gate-2 freeze.
+Continue Gate 1 with a representative Fighter Beam RNG vector, then the full Class-3 Special effect/order matrix and authoritative command/event/UI/persistence contracts before any Gate-2 freeze.
