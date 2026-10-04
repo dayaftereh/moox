@@ -48,27 +48,18 @@ No Slice-17.8 production implementation is allowed before Gate 1 closes and Gate
 - Unsupported/unproven behavior stays explicit rather than approximated.
 - Planetary Fighter Garrison / orbital-planetary combat remains reserved for Slice 19; Slice 17.8 builds the reusable ship-Tactical fighter/combat-special runtime.
 
+## Current audit checkpoint
+
+Checkpoint B now directly proves:
+
+- launched Fighter-class groups remain authoritative carrier state;
+- exhausted Fighter/Bomber/Heavy-Fighter groups return to a functional source carrier through the common moving-actor path;
+- return converts surviving craft back to complete four-craft Bay groups; carrier loss prevents recovery;
+- Raid and Capture have distinct original combat formulas;
+- Security Stations contribute +20 to boarding defense;
+- Crew boarding quality is 0/5/10/15; fleet Commando/Security officer bonuses use 2x/3x level formulas and maximum-fleet selection;
+- original Tactical AI evaluates and resolves boarding.
+
 ## Next
 
-Continue Gate 1 with direct original-evidence review and current-runtime inventory, then produce the complete support/effect/ordering matrix and deterministic reference vectors before any Gate-2 freeze.
-
-
-## Gate-1 progress - Checkpoint A
-
-Direct original/runtime audit now establishes:
-
-- original fighters share substantial missile/moving-actor infrastructure; Fighter Beam can target ships and moving missile/fighter actors through shared damage/retarget/kill paths;
-- MOOX already has MarineMax/MarineCurrent and immutable Special metadata, while active fighter lifecycle state is still absent;
-- normal boarding range is 1; Transporters extend it to 4 and add shield/Hard-Shield restrictions;
-- the original boarding path has explicit Marine-party selection/mutation, Already-Boarded/Teleporter-used temporary flags, crew/security modifiers, Raid/Capture branches and Quantum-Detonator capture handling;
-- direct original Tactical consumers are located for repair, Shield Capacitors/recharge, Anti-Missile Rockets, Lightning Field, Energy Absorber, teleporter effects, Reflection/Damper fields and boarding/security systems;
-- architectural direction is to reuse/factor the authoritative Slice-17.7 moving-actor foundation for fighter groups while keeping fighter payload/lifecycle state distinct.
-
-Gate 1 remains **IN PROGRESS**. No production implementation is authorized yet.
-
-Next audit focus:
-
-1. fighter launch/move/return/reload state transitions and exact payload/durability/speed vectors;
-2. exact Raid/Capture casualty arithmetic and ownership reconciliation;
-3. full per-Class-3-Special effect/support matrix and exact formulas/order;
-4. persistence/event/UI/AI contracts and deterministic reference vectors.
+Continue Gate 1 with deterministic Fighter/Bomber vectors, final Capture survivor/reconciliation mapping, the full Class-3 Special effect/order matrix, and authoritative command/event/UI/persistence contracts before any Gate-2 freeze.

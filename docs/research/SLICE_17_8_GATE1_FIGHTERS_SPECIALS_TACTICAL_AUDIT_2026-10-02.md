@@ -398,16 +398,164 @@ The evidence currently supports these Gate-2 directions, subject to completion o
 6. **Existing 17.6/17.7 resolvers stay shared:** Fighter Beam versus ships and moving actors should use frozen Beam/defense/damage semantics where the original path demonstrably shares them.
 7. **Slice 19 reuse boundary remains intact:** planetary Fighter Garrison should consume the 17.8 fighter runtime later; 17.8 does not implement planetary combat.
 
-## 13. Remaining Gate-1 blockers after Checkpoint A
+## 13. Checkpoint B - Fighter return/recovery and Boarding resolution arithmetic
+
+This checkpoint continues the direct Orion2.exe audit from Checkpoint A. It closes the previously open fighter return/recovery path and resolves the core Raid/Capture casualty machinery far enough to constrain the Gate-2 state machine.
+
+### 13.1 Launched fighters remain authoritative carrier state
+
+`Is_Ship_Out_Of_Ammo_` has a dedicated Fighter-class branch. When the carrier's Fighter weapon row is otherwise exhausted, it calls `Check_For_Launched_Fighters_`.
+
+`Check_For_Launched_Fighters_` scans the common 300-entry moving-actor array, matches records whose source ship is the carrier and whose original weapon class is Fighter (`class = 4`).
+
+Therefore a carrier is **not** considered out of ammunition while one of its launched Fighter-class actors still exists. Launched groups are persistent authoritative combat state, not instant visual effects.
+
+### 13.2 Exhausted Fighter groups explicitly return to the carrier
+
+The previously truncated tail of `Resolve_Missile_` contains the return state transition.
+
+For a Fighter-class moving actor after its attack-stock byte at `+0x17` reaches zero:
+
+1. recover the source/launching ship from actor field `+0x04`;
+2. verify owner compatibility;
+3. require the source ship to remain functional via `Combat_Ship_Is_Functional_`;
+4. exclude Assault Shuttle type `0x1C` from the normal Fighter-return branch;
+5. change the actor target mode back to a ship target;
+6. set actor target ship `+0x06` to its source carrier;
+7. set the actor active state and let the common moving-actor path fly it home.
+
+If the launching carrier is no longer functional when that return transition is attempted, the actor follows the `Kill_Missile_` cleanup path instead.
+
+`Destroy_Ship_` itself does not immediately delete Fighter actors launched by that ship. The original therefore allows an already-launched group to remain an independent moving actor until its own lifecycle reaches the return/cleanup decision.
+
+### 13.3 Return converts surviving craft back into Bay availability
+
+When a Fighter-class actor resolves against its own source carrier, `Resolve_Missile_` enters a distinct recovery branch before killing the moving actor:
+
+- surviving actor multiplicity at `+0x0F` is integer-divided by **4**;
+- the source ship's matching weapon rows are found by original weapon ID;
+- the matching combat weapon-row state is re-enabled/updated;
+- the row's returned count is capped by the original row count;
+- any remaining full returned groups can spill into another matching row;
+- after the carrier state is reconciled, the moving actor is removed through `Kill_Missile_`.
+
+Because original launch multiplicity is `BayCount * 4`, return recovers only complete four-craft groups. A damaged remainder below four craft does not recreate a complete Bay group.
+
+This directly freezes the lifecycle shape required by MOOX:
+
+`Bay available -> launched group -> attacks/losses -> return flight -> full-group recovery or carrier-loss cleanup`.
+
+The exact MOOX field names remain Gate-2 work, but this lifecycle must be server-authoritative and persistence/replay safe.
+
+### 13.4 Raid bonus stack and RNG differential are now direct
+
+`Resolve_Raid_` builds separate attacker and defender modifiers.
+
+Attacker modifier:
+
+- `Get_Fleet_Commando_Bonus_(attacker empire)`;
+- plus `Crew_Boarding_Combat_Bonus_(attacking ship)`.
+
+Defender modifier:
+
+- `Get_Fleet_Commando_Bonus_(defender empire)`;
+- plus `Get_Fleet_Security_Bonus_(defender empire)`;
+- plus **20** when Special ID 29 `security_stations` is installed;
+- plus `Crew_Boarding_Combat_Bonus_(defending ship)`.
+
+For each boarding-party iteration the core comparison is:
+
+`diff = attacker_modifier + Random(100) - defender_modifier - Random(100)`
+
+Direct branches then show:
+
+- `diff > 20`: select an internal raid target and apply **two** internal-damage selections through `Select_Raid_Internal_` / `Apply_Internal_Damage_`;
+- `diff > 50` and defending Marines remain: decrement defending Marine count by one;
+- `diff < -50`: decrement the attacking boarding-party count by one.
+
+This distinguishes Raid from Capture: Raid can damage internal systems and may kill Marines without transferring ship ownership.
+
+### 13.5 Crew, Commando and Security bonus tables
+
+`Crew_Boarding_Combat_Bonus_` indexes the original crew-quality table. The already extracted original values are:
+
+| Crew quality | Boarding bonus |
+|---:|---:|
+| 0 | 0 |
+| 1 | 5 |
+| 2 | 10 |
+| 3 | 15 |
+
+`Commando_Bonus_` and `Security_Bonus_` each expose two officer-skill strengths:
+
+- one skill flag yields `2 * (OfficerLevel + 1)`;
+- the stronger flag yields `3 * (OfficerLevel + 1)`.
+
+`Get_Fleet_Commando_Bonus_` and `Get_Fleet_Security_Bonus_` scan eligible ships of the empire and return the **maximum** applicable attached-officer bonus rather than summing all officers.
+
+Gate 2 should preserve these as separate fleet bonuses; it must not fold them into crew quality or Security Stations.
+
+### 13.6 Capture uses the original Ground-Combat engine
+
+`Resolve_Capture_` constructs the boarding sides through `Get_Boarding_Info_`.
+
+The directly passed Capture modifiers are:
+
+- attacker: Fleet Commando bonus;
+- defender: Fleet Commando bonus + Fleet Security bonus + Security Stations `+20`.
+
+Unlike `Resolve_Raid_`, `Resolve_Capture_` does **not** directly call `Crew_Boarding_Combat_Bonus_`. This corrects the broader wording from the earlier working checkpoint.
+
+`Get_Boarding_Info_` additionally calls `Compute_Player_Ground_Combat_Bonuses_` and `Compute_Ground_Combat_Info_`, so Capture uses the original player-wide ground-combat technology/racial equipment stack plus the explicit boarding modifiers above.
+
+`Resolve_Capture_` then loops `Ground_Combat_Round_` while both sides still have Marines.
+
+For each ground-combat round:
+
+1. each side computes `current_tier_combat_value + Random(100)`;
+2. if attacker roll is less than or equal to defender roll, attacker casualty-progress advances;
+3. if attacker roll is greater than or equal to defender roll, defender casualty-progress advances;
+4. therefore a tie advances casualty-progress on **both** sides;
+5. reaching the current tier's casualty threshold decrements one Marine from that tier, records a casualty marker, resets its progress and advances to the next non-empty tier when required.
+
+`Resolve_Capture_` observes those casualty markers and decrements its local attacker/defender Marine totals until one side reaches zero.
+
+The captured ship's Marine state is updated before `Capture_Ship_`; the final survivor-to-captured-ship local-variable mapping remains to be labeled precisely for the deterministic Gate-2 vector.
+
+### 13.7 Original Tactical AI owns boarding decisions
+
+Object-1 cross references place both:
+
+- `Boarding_Action_Type_`;
+- `Resolve_Ai_Boarding_`
+
+inside `Do_Auto_Ship_Turn_`.
+
+The original built-in Tactical AI therefore evaluates boarding legality/value and executes either Raid or Capture, including the temporary boarded/capturing flags.
+
+MOOX Gate 2 must consequently include boarding in the server-projected Tactical AI action catalog; boarding cannot be a player-only UI command.
+
+### 13.8 Carrier-loss and return semantics for Gate 2
+
+Current direct evidence supports the following boundary:
+
+- carrier death does not synchronously erase already-launched Fighter groups;
+- a group can continue to exist as a moving actor;
+- once its attack stock is exhausted, a functional source carrier is required for the normal return/recovery transition;
+- if that carrier is no longer functional, the group is cleaned up instead of being recovered;
+- Assault Shuttles are explicitly excluded from the normal Fighter-return branch and remain owned by the boarding/capture lifecycle.
+
+This is sufficient to freeze the state-machine ownership in Gate 2 without inventing client-side recovery behavior.
+
+## 14. Remaining Gate-1 blockers after Checkpoint B
 
 Still required before Gate 1 can close:
 
-- trace fighter launch/movement/return/reload state transitions in the common moving-actor path;
-- freeze Fighter/Bomber/Heavy-Fighter speed, durability, payload and firing-count fields from direct binary/table evidence into deterministic vectors;
-- finish `Resolve_Raid_` / `Resolve_Capture_` casualty arithmetic and capture ownership/reconciliation ordering;
-- map Security Stations, crew/fleet bonus exact numeric tables and Troop-Pod interaction into boarding vectors;
+- turn the already recovered Fighter/Bomber/Heavy-Fighter speed, durability, payload and attack-stock formulas into explicit deterministic reference vectors;
+- finish the exact survivor-to-captured-ship Marine assignment and capture ownership/reconciliation event ordering around `Capture_Ship_`;
 - complete the per-row Class-3 Special support/effect matrix;
 - recover exact formulas/order for repair, shield recharge, anti-missile rockets, Lightning Field, Energy Absorber, Reflection/Damper fields, cloak/phasing, teleporter/time effects and Beam-support Specials;
-- map command/event/projection/UI and built-in-AI requirements;
-- define persistence migration for new fighter/special temporary state;
-- produce deterministic reference vectors for fighter, bomber, boarding and representative active/passive Special cases.
+- map command/event/projection/UI requirements for Fighter, boarding and active-Special actions;
+- map built-in-AI decisions beyond the now-proven boarding ownership;
+- define persistence migration for Fighter actors, return state and temporary Special/boarding state;
+- produce deterministic reference vectors for Fighter, Bomber, boarding and representative active/passive Special cases.
