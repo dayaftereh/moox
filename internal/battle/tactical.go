@@ -83,6 +83,10 @@ type TacticalBoardingRulesSnapshot struct {
 type TacticalSpecialRulesSnapshot struct {
 	AugmentedEnginesSpeedBonus        int `json:"augmented_engines_speed_bonus"`
 	BattleScannerOffenseBonus         int `json:"battle_scanner_offense_bonus"`
+	ECMJammerDefenseBonus             int `json:"ecm_jammer_defense_bonus"`
+	MultiWaveECMJammerDefenseBonus    int `json:"multi_wave_ecm_jammer_defense_bonus"`
+	WideAreaJammerSelfDefenseBonus    int `json:"wide_area_jammer_self_defense_bonus"`
+	WideAreaJammerFleetDefenseBonus   int `json:"wide_area_jammer_fleet_defense_bonus"`
 	CloakBeamDefenseBonus             int `json:"cloak_beam_defense_bonus"`
 	CloakMissileForcedMissThreshold   int `json:"cloak_missile_forced_miss_threshold"`
 	PhasingInitialLifetime            int `json:"phasing_initial_lifetime"`
@@ -203,8 +207,9 @@ type TacticalSpec struct {
 }
 
 type TacticalWeaponState struct {
-	Slot  int  `json:"slot"`
-	Ready bool `json:"ready"`
+	Slot         int  `json:"slot"`
+	Ready        bool `json:"ready"`
+	CountCurrent int  `json:"count_current"`
 }
 
 type TacticalShipState struct {
@@ -212,6 +217,7 @@ type TacticalShipState struct {
 	X                  int                   `json:"x"`
 	Y                  int                   `json:"y"`
 	Facing             int                   `json:"facing"`
+	CurrentCombatSpeed int                   `json:"current_combat_speed"`
 	MovementCurrent    int                   `json:"movement_current"`
 	MovementMax        int                   `json:"movement_max"`
 	ActivationComplete bool                  `json:"activation_complete"`
@@ -220,6 +226,7 @@ type TacticalShipState struct {
 	StructureDamage    int                   `json:"structure_damage"`
 	MarineCurrent      int                   `json:"marine_current"`
 	Weapons            []TacticalWeaponState `json:"weapons,omitempty"`
+	Internal           TacticalInternalState `json:"internal"`
 	Destroyed          bool                  `json:"destroyed"`
 }
 
@@ -280,6 +287,7 @@ type TacticalShipView struct {
 	X                       int                    `json:"x"`
 	Y                       int                    `json:"y"`
 	Facing                  int                    `json:"facing"`
+	CurrentCombatSpeed      int                    `json:"current_combat_speed"`
 	MovementCurrent         int                    `json:"movement_current"`
 	MovementMax             int                    `json:"movement_max"`
 	ActivationComplete      bool                   `json:"activation_complete"`
@@ -297,6 +305,7 @@ type TacticalShipView struct {
 	MissileDefense          int                    `json:"missile_defense"`
 	MissileScannerReduction int                    `json:"missile_scanner_reduction"`
 	Weapons                 []TacticalWeaponView   `json:"weapons,omitempty"`
+	Internal                TacticalInternalView   `json:"internal"`
 	Destroyed               bool                   `json:"destroyed"`
 }
 
@@ -501,7 +510,7 @@ func validateTacticalSpec(spec Spec) error {
 				return fmt.Errorf("tactical ship %d visual_genome: %w", ship.ShipID, err)
 			}
 		}
-		if err := validateTacticalCombatantSnapshot(ship); err != nil {
+		if err := validateTacticalCombatantSnapshot(ship, t.Rules); err != nil {
 			return err
 		}
 		byID[ship.ShipID] = ship
@@ -692,27 +701,30 @@ func tacticalBeamFireSupported(w TacticalWeaponSpec) bool {
 }
 
 type tacticalHullValidationRule struct {
-	BaseArmor       int
-	Structure       int
-	BaseCombatSpeed int
-	ShieldFactor    int
-	MarineMax       int
+	BaseArmor                  int
+	Structure                  int
+	BaseCombatSpeed            int
+	ShieldFactor               int
+	MarineMax                  int
+	InternalEngineMax          int
+	InternalSecondaryMax       int
+	InternalShieldGeneratorMax int
 }
 
 func tacticalHullValidationRuleFor(id string) (tacticalHullValidationRule, bool) {
 	switch id {
 	case "frigate":
-		return tacticalHullValidationRule{BaseArmor: 4, Structure: 4, BaseCombatSpeed: 10, ShieldFactor: 1, MarineMax: 5}, true
+		return tacticalHullValidationRule{BaseArmor: 4, Structure: 4, BaseCombatSpeed: 10, ShieldFactor: 1, MarineMax: 5, InternalEngineMax: 2, InternalSecondaryMax: 1, InternalShieldGeneratorMax: 1}, true
 	case "destroyer":
-		return tacticalHullValidationRule{BaseArmor: 10, Structure: 10, BaseCombatSpeed: 8, ShieldFactor: 2, MarineMax: 8}, true
+		return tacticalHullValidationRule{BaseArmor: 10, Structure: 10, BaseCombatSpeed: 8, ShieldFactor: 2, MarineMax: 8, InternalEngineMax: 5, InternalSecondaryMax: 2, InternalShieldGeneratorMax: 2}, true
 	case "cruiser":
-		return tacticalHullValidationRule{BaseArmor: 30, Structure: 30, BaseCombatSpeed: 6, ShieldFactor: 3, MarineMax: 12}, true
+		return tacticalHullValidationRule{BaseArmor: 30, Structure: 30, BaseCombatSpeed: 6, ShieldFactor: 3, MarineMax: 12, InternalEngineMax: 10, InternalSecondaryMax: 5, InternalShieldGeneratorMax: 6}, true
 	case "battleship":
-		return tacticalHullValidationRule{BaseArmor: 50, Structure: 50, BaseCombatSpeed: 5, ShieldFactor: 4, MarineMax: 20}, true
+		return tacticalHullValidationRule{BaseArmor: 50, Structure: 50, BaseCombatSpeed: 5, ShieldFactor: 4, MarineMax: 20, InternalEngineMax: 15, InternalSecondaryMax: 7, InternalShieldGeneratorMax: 7}, true
 	case "titan":
-		return tacticalHullValidationRule{BaseArmor: 80, Structure: 80, BaseCombatSpeed: 4, ShieldFactor: 5, MarineMax: 30}, true
+		return tacticalHullValidationRule{BaseArmor: 80, Structure: 80, BaseCombatSpeed: 4, ShieldFactor: 5, MarineMax: 30, InternalEngineMax: 20, InternalSecondaryMax: 10, InternalShieldGeneratorMax: 10}, true
 	case "doom_star":
-		return tacticalHullValidationRule{BaseArmor: 150, Structure: 150, BaseCombatSpeed: 3, ShieldFactor: 7, MarineMax: 50}, true
+		return tacticalHullValidationRule{BaseArmor: 150, Structure: 150, BaseCombatSpeed: 3, ShieldFactor: 7, MarineMax: 50, InternalEngineMax: 40, InternalSecondaryMax: 20, InternalShieldGeneratorMax: 20}, true
 	default:
 		return tacticalHullValidationRule{}, false
 	}
@@ -837,7 +849,7 @@ func validateTacticalInternalSpec(in *TacticalInternalSpec) error {
 	return nil
 }
 
-func validateTacticalCombatantSnapshot(s TacticalShipSpec) error {
+func validateTacticalCombatantSnapshot(s TacticalShipSpec, rules TacticalRulesSnapshot) error {
 	hull, ok := tacticalHullValidationRuleFor(s.HullID)
 	if !ok {
 		return fmt.Errorf("tactical ship %d has unknown hull %q", s.ShipID, s.HullID)
@@ -866,8 +878,22 @@ func validateTacticalCombatantSnapshot(s TacticalShipSpec) error {
 	if s.MinimumCombatSpeed != minimumSpeed {
 		return fmt.Errorf("tactical ship %d minimum combat speed %d does not match derived %d", s.ShipID, s.MinimumCombatSpeed, minimumSpeed)
 	}
-	if s.CurrentCombatSpeed < minimumSpeed || s.CurrentCombatSpeed > minimumSpeed+10 {
-		return fmt.Errorf("tactical ship %d current combat speed %d is outside derived %d..%d", s.ShipID, s.CurrentCombatSpeed, minimumSpeed, minimumSpeed+10)
+	minCurrentSpeed, maxCurrentSpeed := minimumSpeed, minimumSpeed+10
+	if hasTacticalSpecial(s, "augmented_engines") {
+		if rules.Specials == nil {
+			return fmt.Errorf("tactical ship %d Augmented Engines requires Special rules", s.ShipID)
+		}
+		minCurrentSpeed += rules.Specials.AugmentedEnginesSpeedBonus
+		maxCurrentSpeed += rules.Specials.AugmentedEnginesSpeedBonus
+	}
+	if s.CurrentCombatSpeed < minCurrentSpeed || s.CurrentCombatSpeed > maxCurrentSpeed {
+		return fmt.Errorf("tactical ship %d current combat speed %d is outside derived %d..%d", s.ShipID, s.CurrentCombatSpeed, minCurrentSpeed, maxCurrentSpeed)
+	}
+	if hasTacticalSpecial(s, "battle_scanner") {
+		if rules.Specials == nil {
+			return fmt.Errorf("tactical ship %d Battle Scanner requires Special rules", s.ShipID)
+		}
+		beamOffense += rules.Specials.BattleScannerOffenseBonus
 	}
 	if s.BeamOffense != beamOffense {
 		return fmt.Errorf("tactical ship %d Beam Offense %d does not match derived %d", s.ShipID, s.BeamOffense, beamOffense)
@@ -879,8 +905,15 @@ func validateTacticalCombatantSnapshot(s TacticalShipSpec) error {
 		return fmt.Errorf("tactical ship %d Missile Defense/scanner values must be non-negative", s.ShipID)
 	}
 	armorMax := hull.BaseArmor + (hull.BaseArmor*armorBonus)/100
-	if s.ArmorMax != armorMax || s.StructureMax != hull.Structure {
-		return fmt.Errorf("tactical ship %d durability %d/%d does not match derived %d/%d", s.ShipID, s.ArmorMax, s.StructureMax, armorMax, hull.Structure)
+	if hasTacticalSpecial(s, "heavy_armor") {
+		armorMax *= 3
+	}
+	structureMax := hull.Structure
+	if hasTacticalSpecial(s, "reinforced_hull") {
+		structureMax *= 3
+	}
+	if s.ArmorMax != armorMax || s.StructureMax != structureMax {
+		return fmt.Errorf("tactical ship %d durability %d/%d does not match derived %d/%d", s.ShipID, s.ArmorMax, s.StructureMax, armorMax, structureMax)
 	}
 	marineMax := hull.MarineMax
 	for _, special := range s.Specials {
@@ -893,6 +926,12 @@ func validateTacticalCombatantSnapshot(s TacticalShipSpec) error {
 		return fmt.Errorf("tactical ship %d MarineMax %d does not match derived %d", s.ShipID, s.MarineMax, marineMax)
 	}
 	shieldArcMax := shieldStrength * 5 * hull.ShieldFactor
+	if hasTacticalSpecial(s, "multi_phased_shields") && shieldArcMax > 0 {
+		if rules.Specials == nil || rules.Specials.MultiPhasedShieldDenominator <= 0 {
+			return fmt.Errorf("tactical ship %d Multi-Phased Shields requires valid Special rules", s.ShipID)
+		}
+		shieldArcMax = (shieldArcMax * rules.Specials.MultiPhasedShieldNumerator) / rules.Specials.MultiPhasedShieldDenominator
+	}
 	if s.ShieldStrength != shieldStrength || s.ShieldArcMax != shieldArcMax {
 		return fmt.Errorf("tactical ship %d shield strength/arc %d/%d does not match derived %d/%d", s.ShipID, s.ShieldStrength, s.ShieldArcMax, shieldStrength, shieldArcMax)
 	}
@@ -936,6 +975,43 @@ func validateTacticalCombatantSnapshot(s TacticalShipSpec) error {
 	if err := validateTacticalInternalSpec(s.Internal); err != nil {
 		return fmt.Errorf("tactical ship %d internal snapshot: %w", s.ShipID, err)
 	}
+	if s.Internal == nil {
+		return nil
+	}
+	expectedEngineMax := hull.InternalEngineMax
+	if hasTacticalSpecial(s, "reinforced_hull") {
+		expectedEngineMax *= 3
+	}
+	expectedShieldGeneratorMax := 0
+	if s.ShieldID != "" {
+		expectedShieldGeneratorMax = hull.InternalShieldGeneratorMax
+	}
+	if s.Internal.EngineMax != expectedEngineMax || s.Internal.SecondaryMax != hull.InternalSecondaryMax || s.Internal.ShieldGeneratorMax != expectedShieldGeneratorMax {
+		return fmt.Errorf("tactical ship %d fixed internal maxima %d/%d/%d do not match derived %d/%d/%d", s.ShipID, s.Internal.EngineMax, s.Internal.SecondaryMax, s.Internal.ShieldGeneratorMax, expectedEngineMax, hull.InternalSecondaryMax, expectedShieldGeneratorMax)
+	}
+	if len(s.Internal.Weapons) != len(s.Weapons) {
+		return fmt.Errorf("tactical ship %d internal weapon-pool count %d does not match mounts %d", s.ShipID, len(s.Internal.Weapons), len(s.Weapons))
+	}
+	for i, weapon := range s.Weapons {
+		pool := s.Internal.Weapons[i]
+		if pool.Slot != weapon.Slot || pool.Max != weapon.Count*pool.UnitSize {
+			return fmt.Errorf("tactical ship %d internal weapon pool %d does not match weapon slot %d/count", s.ShipID, pool.Slot, weapon.Slot)
+		}
+	}
+	wantSpecialPools := make(map[int]struct{})
+	for _, special := range s.Specials {
+		if !tacticalNonDamageableSpecial(special.SpecialID) {
+			wantSpecialPools[special.Slot] = struct{}{}
+		}
+	}
+	if len(s.Internal.Specials) != len(wantSpecialPools) {
+		return fmt.Errorf("tactical ship %d internal Special-pool count %d does not match damageable installed Specials %d", s.ShipID, len(s.Internal.Specials), len(wantSpecialPools))
+	}
+	for _, pool := range s.Internal.Specials {
+		if _, ok := wantSpecialPools[pool.Slot]; !ok || pool.Max <= 0 {
+			return fmt.Errorf("tactical ship %d internal Special pool slot %d is not a damageable installed Special", s.ShipID, pool.Slot)
+		}
+	}
 	return nil
 }
 
@@ -977,6 +1053,8 @@ func validateBaselineRules(r TacticalRulesSnapshot) error {
 	if r.Specials != nil {
 		x := r.Specials
 		if x.AugmentedEnginesSpeedBonus != 5 || x.BattleScannerOffenseBonus != 50 ||
+			x.ECMJammerDefenseBonus != 70 || x.MultiWaveECMJammerDefenseBonus != 100 ||
+			x.WideAreaJammerSelfDefenseBonus != 130 || x.WideAreaJammerFleetDefenseBonus != 70 ||
 			x.CloakBeamDefenseBonus != 80 || x.CloakMissileForcedMissThreshold != 50 ||
 			x.PhasingInitialLifetime != 10 || x.EnergyAbsorberDivisor != 4 || x.DamperDamageDivisor != 4 ||
 			x.DisplacementOrdnanceMissThreshold != 30 || x.DisplacementBeamMissThreshold != 30 ||
@@ -1016,9 +1094,9 @@ func newTacticalRuntime(spec TacticalSpec) (tacticalRuntime, error) {
 		ordnance:             initialTacticalOrdnanceState(spec),
 	}
 	for i, ship := range spec.Ships {
-		state := TacticalShipState{ShipID: ship.ShipID, X: ship.X, Y: ship.Y, Facing: ship.Facing, MovementCurrent: ship.CurrentCombatSpeed, MovementMax: ship.CurrentCombatSpeed, ArmorCurrent: ship.ArmorMax, ShieldArcCurrent: fullTacticalShieldArcs(ship.ShieldArcMax), MarineCurrent: ship.MarineMax, Weapons: make([]TacticalWeaponState, len(ship.Weapons))}
+		state := TacticalShipState{ShipID: ship.ShipID, X: ship.X, Y: ship.Y, Facing: ship.Facing, CurrentCombatSpeed: ship.CurrentCombatSpeed, MovementCurrent: ship.CurrentCombatSpeed, MovementMax: ship.CurrentCombatSpeed, ArmorCurrent: ship.ArmorMax, ShieldArcCurrent: fullTacticalShieldArcs(ship.ShieldArcMax), MarineCurrent: ship.MarineMax, Weapons: make([]TacticalWeaponState, len(ship.Weapons)), Internal: initialTacticalInternalState(ship.Internal)}
 		for j, weapon := range ship.Weapons {
-			state.Weapons[j] = TacticalWeaponState{Slot: weapon.Slot, Ready: tacticalBeamFireSupported(weapon)}
+			state.Weapons[j] = TacticalWeaponState{Slot: weapon.Slot, Ready: tacticalBeamFireSupported(weapon), CountCurrent: weapon.Count}
 		}
 		r.state.Ships[i] = state
 	}
@@ -1045,7 +1123,7 @@ func (r *tacticalRuntime) recomputeInitiative(spec TacticalSpec) {
 		if state == nil || state.Destroyed {
 			continue
 		}
-		items = append(items, item{id: ship.ShipID, value: ship.CurrentCombatSpeed + ship.BeamOffense/spec.Rules.InitiativeBeamOffenseDivisor})
+		items = append(items, item{id: ship.ShipID, value: state.CurrentCombatSpeed + tacticalBeamOffenseForState(spec, ship, *state, r.legacy17_8Disabled)/spec.Rules.InitiativeBeamOffenseDivisor})
 	}
 	sort.Slice(items, func(i, j int) bool {
 		if items[i].value != items[j].value {
@@ -1285,9 +1363,10 @@ func resolveReactiveBeamPointDefense(spec Spec, r *tacticalRuntime, request Reac
 		dependencies.PlayerLeaderDamagePercent,
 		dependencies.HighEnergyFocusBonus,
 	)
-	attackDifferential := source.BeamOffense - request.TargetBeamDefense + configured.StaticToHitAdjustment
+	attackDifferential := tacticalBeamOffenseForState(*spec.Tactical, *source, *sourceState, r.legacy17_8Disabled) - request.TargetBeamDefense + configured.StaticToHitAdjustment
 	alwaysHit := tacticalBeamHasEffect(configured, "always_hit")
-	totalShots := weapon.Count * configured.ShotsPerWeapon
+	liveWeaponCount := tacticalCurrentWeaponCount(*source, *sourceState, weapon.Slot)
+	totalShots := liveWeaponCount * configured.ShotsPerWeapon
 	result := ReactiveBeamPointDefenseResult{
 		ShipID: request.ShipID, WeaponSlot: request.WeaponSlot, WeaponID: weapon.WeaponID,
 		MountType:       canonicalTacticalWeaponMountType(weapon.MountType),
@@ -1299,7 +1378,7 @@ func resolveReactiveBeamPointDefense(spec Spec, r *tacticalRuntime, request Reac
 	hitCount := 0
 	totalDamage := 0
 	flatShotIndex := 0
-	for physicalIndex := 0; physicalIndex < weapon.Count; physicalIndex++ {
+	for physicalIndex := 0; physicalIndex < liveWeaponCount; physicalIndex++ {
 		for burstIndex := 0; burstIndex < configured.ShotsPerWeapon; burstIndex++ {
 			flatShotIndex++
 			rawRoll, err := r.random(100, spec.Tactical.Rules)
@@ -1327,7 +1406,7 @@ func resolveReactiveBeamPointDefense(spec Spec, r *tacticalRuntime, request Reac
 				totalDamage += damage
 			}
 			shot := ReactiveBeamPointDefenseShot{
-				PhysicalWeaponIndex: physicalIndex + 1, PhysicalWeaponCount: weapon.Count,
+				PhysicalWeaponIndex: physicalIndex + 1, PhysicalWeaponCount: liveWeaponCount,
 				BurstShotIndex: burstIndex + 1, BurstShotCount: configured.ShotsPerWeapon,
 				ShotIndex: flatShotIndex, ShotCount: totalShots, RangeIndex: rangeIndex,
 				RawHitRoll: rawRoll, EffectiveHitRoll: effectiveRoll, Threshold: threshold,
@@ -1338,7 +1417,7 @@ func resolveReactiveBeamPointDefense(spec Spec, r *tacticalRuntime, request Reac
 				"ship_id": source.ShipID, "target_ship_id": core.ID(0), "target_x": request.TargetX, "target_y": request.TargetY,
 				"weapon_slot": request.WeaponSlot, "weapon_id": weapon.WeaponID, "mount_type": canonicalTacticalWeaponMountType(weapon.MountType),
 				"modifier_ids":          append([]core.ShipWeaponModifierID(nil), weapon.ModifierIDs...),
-				"physical_weapon_index": physicalIndex + 1, "physical_weapon_count": weapon.Count,
+				"physical_weapon_index": physicalIndex + 1, "physical_weapon_count": liveWeaponCount,
 				"burst_shot_index": burstIndex + 1, "burst_shot_count": configured.ShotsPerWeapon,
 				"shot_index": flatShotIndex, "shot_count": totalShots,
 				"range_index": rangeIndex, "raw_hit_roll": rawRoll, "effective_hit_roll": effectiveRoll,
@@ -1355,7 +1434,7 @@ func resolveReactiveBeamPointDefense(spec Spec, r *tacticalRuntime, request Reac
 			"ship_id": source.ShipID, "target_ship_id": core.ID(0), "target_x": request.TargetX, "target_y": request.TargetY,
 			"weapon_slot": request.WeaponSlot, "weapon_id": weapon.WeaponID, "mount_type": canonicalTacticalWeaponMountType(weapon.MountType),
 			"modifier_ids":          append([]core.ShipWeaponModifierID(nil), weapon.ModifierIDs...),
-			"physical_weapon_count": weapon.Count, "burst_shot_count": configured.ShotsPerWeapon,
+			"physical_weapon_count": liveWeaponCount, "burst_shot_count": configured.ShotsPerWeapon,
 			"shot_count": totalShots, "hit_count": hitCount, "total_damage": totalDamage,
 			"reactive_point_defense": true,
 		}); err != nil {
@@ -1557,13 +1636,14 @@ func neutralTacticalBeamDependencyContext() tacticalBeamDependencyContext {
 }
 
 type tacticalDamageOptions struct {
-	ShieldPiercing       bool
-	ArmorFirstBypass     bool
-	ExtraStructureDamage bool
-	MarineKill           bool
-	MarineKillSuppressed bool
-	ShieldArcOverride    int
-	HasShieldArcOverride bool
+	ShieldPiercing        bool
+	ArmorFirstBypass      bool
+	ExtraStructureDamage  bool
+	MarineKill            bool
+	MarineKillSuppressed  bool
+	ShieldArcOverride     int
+	HasShieldArcOverride  bool
+	ShieldAdditionalBlock int
 }
 
 func fullTacticalShieldArcs(max int) [4]int {
@@ -1616,7 +1696,11 @@ func applyTacticalDamageWithOptions(targetSpec TacticalShipSpec, targetState *Ta
 	if options.ShieldPiercing {
 		result.PostBlockDamage = incomingDamage
 	} else {
-		result.PostBlockDamage = incomingDamage - targetSpec.ShieldStrength
+		shieldBlock := targetSpec.ShieldStrength
+		if targetState.ShieldArcCurrent[result.ShieldArc] > 0 {
+			shieldBlock += options.ShieldAdditionalBlock
+		}
+		result.PostBlockDamage = incomingDamage - shieldBlock
 		if result.PostBlockDamage < 0 {
 			result.PostBlockDamage = 0
 		}
@@ -1770,13 +1854,14 @@ func tacticalShipViews(spec TacticalSpec, r *tacticalRuntime) []TacticalShipView
 			HullID: shipSpec.HullID, WarpDriveID: shipSpec.WarpDriveID, ComputerID: shipSpec.ComputerID, ArmorID: shipSpec.ArmorID, ShieldID: shipSpec.ShieldID,
 			SourceDesignID: shipSpec.SourceDesignID, SourceDesignRevision: shipSpec.SourceDesignRevision, StrategicPictureID: shipSpec.StrategicPictureID,
 			SourceVisualRevision: shipSpec.SourceVisualRevision,
-			X:                    state.X, Y: state.Y, Facing: state.Facing, MovementCurrent: state.MovementCurrent, MovementMax: state.MovementMax,
+			X:                    state.X, Y: state.Y, Facing: state.Facing, CurrentCombatSpeed: state.CurrentCombatSpeed, MovementCurrent: state.MovementCurrent, MovementMax: state.MovementMax,
 			ActivationComplete: state.ActivationComplete, ArmorCurrent: state.ArmorCurrent, ArmorMax: shipSpec.ArmorMax,
 			MarineCurrent: state.MarineCurrent, MarineMax: shipSpec.MarineMax,
-			ShieldStrength: shipSpec.ShieldStrength, ShieldArcCurrent: state.ShieldArcCurrent, ShieldArcMax: shipSpec.ShieldArcMax,
+			ShieldStrength: shipSpec.ShieldStrength, ShieldArcCurrent: state.ShieldArcCurrent, ShieldArcMax: tacticalShieldArcMaxForState(spec, shipSpec, *state, r.legacy17_8Disabled),
 			StructureCurrent: shipSpec.StructureMax - state.StructureDamage, StructureMax: shipSpec.StructureMax,
-			BeamOffense: shipSpec.BeamOffense, BeamDefense: shipSpec.BeamDefense, MissileDefense: shipSpec.MissileDefense, MissileScannerReduction: shipSpec.MissileScannerReduction, Destroyed: state.Destroyed,
-			Weapons: make([]TacticalWeaponView, 0, len(shipSpec.Weapons)),
+			BeamOffense: tacticalBeamOffenseForState(spec, shipSpec, *state, r.legacy17_8Disabled), BeamDefense: tacticalBeamDefenseForState(spec, shipSpec, *state, r.legacy17_8Disabled), MissileDefense: tacticalMissileDefenseForState(spec, r, shipSpec, *state), MissileScannerReduction: shipSpec.MissileScannerReduction, Destroyed: state.Destroyed,
+			Weapons:  make([]TacticalWeaponView, 0, len(shipSpec.Weapons)),
+			Internal: tacticalInternalView(shipSpec.Internal, state.Internal),
 		}
 		if shipSpec.VisualGenome != nil {
 			genome := core.CloneShipVisualGenome(*shipSpec.VisualGenome)
@@ -1790,7 +1875,7 @@ func tacticalShipViews(spec TacticalSpec, r *tacticalRuntime) []TacticalShipView
 			if weapon := weaponState(state, weaponSpec.Slot); weapon != nil {
 				ready = weapon.Ready
 			}
-			view.Weapons = append(view.Weapons, TacticalWeaponView{Slot: weaponSpec.Slot, WeaponID: weaponSpec.WeaponID, Count: weaponSpec.Count, MountType: weaponSpec.MountType, ModifierIDs: append([]core.ShipWeaponModifierID(nil), weaponSpec.ModifierIDs...), Ammo: weaponSpec.Ammo, FiringArcID: weaponSpec.FiringArcID, MinDamage: weaponSpec.MinDamage, MaxDamage: weaponSpec.MaxDamage, InnateEffectIDs: append([]string(nil), weaponSpec.InnateEffectIDs...), TacticalSupport: weaponSpec.TacticalSupport, Ready: ready})
+			view.Weapons = append(view.Weapons, TacticalWeaponView{Slot: weaponSpec.Slot, WeaponID: weaponSpec.WeaponID, Count: tacticalCurrentWeaponCount(shipSpec, *state, weaponSpec.Slot), MountType: weaponSpec.MountType, ModifierIDs: append([]core.ShipWeaponModifierID(nil), weaponSpec.ModifierIDs...), Ammo: weaponSpec.Ammo, FiringArcID: weaponSpec.FiringArcID, MinDamage: weaponSpec.MinDamage, MaxDamage: weaponSpec.MaxDamage, InnateEffectIDs: append([]string(nil), weaponSpec.InnateEffectIDs...), TacticalSupport: weaponSpec.TacticalSupport, Ready: ready})
 		}
 		out = append(out, view)
 	}
@@ -2016,6 +2101,8 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	}
 
 	dependencies := neutralTacticalBeamDependencyContext()
+	dependencies.HardShields = TacticalSpecialFunctional(*targetSpec, *targetState, r.legacy17_8Disabled, "hard_shields")
+	dependencies.ArmorBypassNeutralized = targetSpec.ArmorID == "xentronium_armor" || TacticalSpecialFunctional(*targetSpec, *targetState, r.legacy17_8Disabled, "heavy_armor")
 	rangeDamageModifier := spec.Tactical.Rules.BeamDamageRangeModifiers[rangeIndex]
 	scaledMinDamage, scaledMaxDamage, damagePercent := beam.EffectiveDamageBounds(
 		configured,
@@ -2024,7 +2111,7 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 		dependencies.HighEnergyFocusBonus,
 	)
 
-	attackDifferential := active.BeamOffense - targetSpec.BeamDefense + configured.StaticToHitAdjustment
+	attackDifferential := tacticalBeamOffenseForState(*spec.Tactical, *active, *activeState, r.legacy17_8Disabled) - tacticalBeamDefenseForState(*spec.Tactical, *targetSpec, *targetState, r.legacy17_8Disabled) + configured.StaticToHitAdjustment
 	alwaysHit := tacticalBeamHasEffect(configured, "always_hit")
 	shieldPiercing := tacticalBeamHasEffect(configured, "shield_piercing") && !dependencies.HardShields
 	armorFirstBypass := (tacticalBeamHasEffect(configured, "armor_piercing") || tacticalBeamHasEffect(configured, "armor_first_bypass")) && !dependencies.ArmorBypassNeutralized
@@ -2032,12 +2119,13 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	marineKill := tacticalBeamHasEffect(configured, "marine_kill")
 	enveloping := tacticalBeamHasEffect(configured, "enveloping")
 	monsterAntaranQuarter := tacticalBeamHasEffect(configured, "monster_antaran_quarter_damage") && dependencies.TargetMonsterAntaranBand
-	totalShots := weapon.Count * configured.ShotsPerWeapon
+	liveWeaponCount := tacticalCurrentWeaponCount(*active, *activeState, weapon.Slot)
+	totalShots := liveWeaponCount * configured.ShotsPerWeapon
 
 	hitCount := 0
 	totalDamage := 0
 	flatShotIndex := 0
-	for physicalIndex := 0; physicalIndex < weapon.Count; physicalIndex++ {
+	for physicalIndex := 0; physicalIndex < liveWeaponCount; physicalIndex++ {
 		for burstIndex := 0; burstIndex < configured.ShotsPerWeapon; burstIndex++ {
 			flatShotIndex++
 			rawRoll, err := r.random(100, spec.Tactical.Rules)
@@ -2086,6 +2174,9 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 						MarineKill:           marineKill,
 						MarineKillSuppressed: dependencies.MarineKillSuppressed,
 					}
+					if dependencies.HardShields && spec.Tactical.Rules.Specials != nil {
+						options.ShieldAdditionalBlock = spec.Tactical.Rules.Specials.HardShieldsAdditionalAbsorption
+					}
 					if enveloping {
 						options.HasShieldArcOverride = true
 						options.ShieldArcOverride = applicationIndex
@@ -2097,7 +2188,7 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 				"ship_id": active.ShipID, "target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
 				"weapon_id": weapon.WeaponID, "mount_type": canonicalTacticalWeaponMountType(weapon.MountType),
 				"modifier_ids":          append([]core.ShipWeaponModifierID(nil), weapon.ModifierIDs...),
-				"physical_weapon_index": physicalIndex + 1, "physical_weapon_count": weapon.Count,
+				"physical_weapon_index": physicalIndex + 1, "physical_weapon_count": liveWeaponCount,
 				"burst_shot_index": burstIndex + 1, "burst_shot_count": configured.ShotsPerWeapon,
 				"shot_index": flatShotIndex, "shot_count": totalShots,
 				"range_index": rangeIndex, "raw_hit_roll": rawRoll, "effective_hit_roll": effectiveRoll,
@@ -2111,7 +2202,7 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 					"source_ship_id": active.ShipID, "target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
 					"weapon_id": weapon.WeaponID, "mount_type": canonicalTacticalWeaponMountType(weapon.MountType),
 					"modifier_ids":          append([]core.ShipWeaponModifierID(nil), weapon.ModifierIDs...),
-					"physical_weapon_index": physicalIndex + 1, "physical_weapon_count": weapon.Count,
+					"physical_weapon_index": physicalIndex + 1, "physical_weapon_count": liveWeaponCount,
 					"burst_shot_index": burstIndex + 1, "burst_shot_count": configured.ShotsPerWeapon,
 					"shot_index": flatShotIndex, "shot_count": totalShots,
 					"application_index": applicationIndex + 1, "application_count": len(damageApplications),
@@ -2140,7 +2231,7 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 			"ship_id": active.ShipID, "target_ship_id": targetSpec.ShipID, "weapon_slot": payload.WeaponSlot,
 			"weapon_id": weapon.WeaponID, "mount_type": canonicalTacticalWeaponMountType(weapon.MountType),
 			"modifier_ids":          append([]core.ShipWeaponModifierID(nil), weapon.ModifierIDs...),
-			"physical_weapon_count": weapon.Count, "burst_shot_count": configured.ShotsPerWeapon,
+			"physical_weapon_count": liveWeaponCount, "burst_shot_count": configured.ShotsPerWeapon,
 			"shot_count": totalShots, "hit_count": hitCount, "total_damage": totalDamage,
 		}); err != nil {
 			return nil, err
@@ -2485,6 +2576,7 @@ func cloneTacticalState(state TacticalState) TacticalState {
 	for i := range state.Ships {
 		out.Ships[i] = state.Ships[i]
 		out.Ships[i].Weapons = append([]TacticalWeaponState(nil), state.Ships[i].Weapons...)
+		out.Ships[i].Internal = cloneTacticalInternalState(state.Ships[i].Internal)
 	}
 	return out
 }

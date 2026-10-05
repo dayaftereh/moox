@@ -91,8 +91,8 @@ func tacticalProjectileImpactSource(projectile TacticalProjectileState, target T
 	return TacticalShipState{X: target.X - dx, Y: target.Y - dy}
 }
 
-func tacticalProjectileEffectiveMissileDefense(source, target TacticalShipSpec, projectile TacticalProjectileState) int {
-	defense := target.MissileDefense - source.MissileScannerReduction
+func tacticalProjectileEffectiveMissileDefense(spec TacticalSpec, r *tacticalRuntime, source, target TacticalShipSpec, targetState TacticalShipState, projectile TacticalProjectileState) int {
+	defense := tacticalMissileDefenseForState(spec, r, target, targetState) - source.MissileScannerReduction
 	if defense < 0 {
 		defense = 0
 	}
@@ -174,7 +174,7 @@ func resolveTacticalProjectileImpact(spec TacticalSpec, r *tacticalRuntime, proj
 		return tacticalProjectileQuantumOutcome{DestroyReason: "dissipated"}, nil
 	}
 
-	effectiveDefense := tacticalProjectileEffectiveMissileDefense(*source, *target, *projectile)
+	effectiveDefense := tacticalProjectileEffectiveMissileDefense(spec, r, *source, *target, *targetState, *projectile)
 	impactCount := projectile.Multiplicity
 	targetWasDestroyed := targetState.Destroyed
 	damageSource := tacticalProjectileImpactSource(*projectile, *targetState)
@@ -195,6 +195,9 @@ func resolveTacticalProjectileImpact(spec TacticalSpec, r *tacticalRuntime, proj
 			applications = make([]tacticalDamageApplication, 0, applicationCount)
 			for applicationIndex := 0; applicationIndex < applicationCount; applicationIndex++ {
 				options := tacticalDamageOptions{}
+				if TacticalSpecialFunctional(*target, *targetState, r.legacy17_8Disabled, "hard_shields") && spec.Rules.Specials != nil {
+					options.ShieldAdditionalBlock = spec.Rules.Specials.HardShieldsAdditionalAbsorption
+				}
 				if configured.Enveloping {
 					options.HasShieldArcOverride = true
 					options.ShieldArcOverride = applicationIndex

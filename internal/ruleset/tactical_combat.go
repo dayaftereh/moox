@@ -95,6 +95,10 @@ type TacticalBoardingRules struct {
 type TacticalSpecialRules struct {
 	AugmentedEnginesSpeedBonus        int `json:"augmented_engines_speed_bonus"`
 	BattleScannerOffenseBonus         int `json:"battle_scanner_offense_bonus"`
+	ECMJammerDefenseBonus             int `json:"ecm_jammer_defense_bonus"`
+	MultiWaveECMJammerDefenseBonus    int `json:"multi_wave_ecm_jammer_defense_bonus"`
+	WideAreaJammerSelfDefenseBonus    int `json:"wide_area_jammer_self_defense_bonus"`
+	WideAreaJammerFleetDefenseBonus   int `json:"wide_area_jammer_fleet_defense_bonus"`
 	CloakBeamDefenseBonus             int `json:"cloak_beam_defense_bonus"`
 	CloakMissileForcedMissThreshold   int `json:"cloak_missile_forced_miss_threshold"`
 	PhasingInitialLifetime            int `json:"phasing_initial_lifetime"`
@@ -150,12 +154,15 @@ type TacticalFrigateRule struct {
 }
 
 type TacticalHullRule struct {
-	HullID           string `json:"hull_id"`
-	BaseArmor        int    `json:"base_armor"`
-	Structure        int    `json:"structure"`
-	BaseCombatSpeed  int    `json:"base_combat_speed"`
-	ShieldHullFactor int    `json:"shield_hull_factor"`
-	MarineMax        int    `json:"marine_max"`
+	HullID                     string `json:"hull_id"`
+	BaseArmor                  int    `json:"base_armor"`
+	Structure                  int    `json:"structure"`
+	BaseCombatSpeed            int    `json:"base_combat_speed"`
+	ShieldHullFactor           int    `json:"shield_hull_factor"`
+	MarineMax                  int    `json:"marine_max"`
+	InternalEngineMax          int    `json:"internal_engine_max"`
+	InternalSecondaryMax       int    `json:"internal_secondary_max"`
+	InternalShieldGeneratorMax int    `json:"internal_shield_generator_max"`
 }
 
 type TacticalArmorRule struct {
@@ -344,6 +351,8 @@ func (f *TacticalCombatFile) Validate() error {
 		return fmt.Errorf("invalid tactical Boarding constants")
 	}
 	if f.Specials.AugmentedEnginesSpeedBonus != 5 || f.Specials.BattleScannerOffenseBonus != 50 ||
+		f.Specials.ECMJammerDefenseBonus != 70 || f.Specials.MultiWaveECMJammerDefenseBonus != 100 ||
+		f.Specials.WideAreaJammerSelfDefenseBonus != 130 || f.Specials.WideAreaJammerFleetDefenseBonus != 70 ||
 		f.Specials.CloakBeamDefenseBonus != 80 || f.Specials.CloakMissileForcedMissThreshold != 50 ||
 		f.Specials.PhasingInitialLifetime != 10 || f.Specials.EnergyAbsorberDivisor != 4 ||
 		f.Specials.DamperDamageDivisor != 4 || f.Specials.DisplacementOrdnanceMissThreshold != 30 ||
@@ -427,13 +436,17 @@ func (f *TacticalCombatFile) Validate() error {
 	}
 	seenHull := make(map[string]struct{}, len(f.Hulls))
 	for i, hull := range f.Hulls {
-		if hull.HullID == "" || hull.BaseArmor <= 0 || hull.Structure <= 0 || hull.BaseCombatSpeed <= 0 || hull.ShieldHullFactor <= 0 || hull.MarineMax <= 0 {
+		if hull.HullID == "" || hull.BaseArmor <= 0 || hull.Structure <= 0 || hull.BaseCombatSpeed <= 0 || hull.ShieldHullFactor <= 0 || hull.MarineMax <= 0 || hull.InternalEngineMax <= 0 || hull.InternalSecondaryMax <= 0 || hull.InternalShieldGeneratorMax <= 0 {
 			return fmt.Errorf("invalid tactical hull[%d]", i)
 		}
 		if _, ok := seenHull[hull.HullID]; ok {
 			return fmt.Errorf("duplicate tactical hull %q", hull.HullID)
 		}
 		seenHull[hull.HullID] = struct{}{}
+		wantInternal := [][3]int{{2, 1, 1}, {5, 2, 2}, {10, 5, 6}, {15, 7, 7}, {20, 10, 10}, {40, 20, 20}}
+		if hull.InternalEngineMax != wantInternal[i][0] || hull.InternalSecondaryMax != wantInternal[i][1] || hull.InternalShieldGeneratorMax != wantInternal[i][2] {
+			return fmt.Errorf("invalid tactical hull[%d] internal constants", i)
+		}
 	}
 	if len(f.Armors) != 6 {
 		return fmt.Errorf("expected exactly 6 tactical armor rules, got %d", len(f.Armors))

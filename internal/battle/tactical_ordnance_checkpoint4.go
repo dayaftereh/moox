@@ -201,15 +201,16 @@ func prepareFireBeamAtProjectile(spec Spec, r *tacticalRuntime, seatID protocol.
 		dependencies.PlayerLeaderDamagePercent,
 		dependencies.HighEnergyFocusBonus,
 	)
-	attackDifferential := active.BeamOffense - targetBeamDefense + configured.StaticToHitAdjustment
+	attackDifferential := tacticalBeamOffenseForState(*spec.Tactical, *active, *activeState, r.legacy17_8Disabled) - targetBeamDefense + configured.StaticToHitAdjustment
 	alwaysHit := tacticalBeamHasEffect(configured, "always_hit")
-	totalShots := weapon.Count * configured.ShotsPerWeapon
+	liveWeaponCount := tacticalCurrentWeaponCount(*active, *activeState, weapon.Slot)
+	totalShots := liveWeaponCount * configured.ShotsPerWeapon
 	hitCount := 0
 	totalDamage := 0
 	flatShotIndex := 0
 	projectileDestroyed := false
 
-	for physicalIndex := 0; physicalIndex < weapon.Count; physicalIndex++ {
+	for physicalIndex := 0; physicalIndex < liveWeaponCount; physicalIndex++ {
 		for burstIndex := 0; burstIndex < configured.ShotsPerWeapon; burstIndex++ {
 			flatShotIndex++
 			rawRoll, err := r.random(100, spec.Tactical.Rules)
@@ -241,7 +242,7 @@ func prepareFireBeamAtProjectile(spec Spec, r *tacticalRuntime, seatID protocol.
 				"target_x": projectile.X, "target_y": projectile.Y,
 				"weapon_slot": payload.WeaponSlot, "weapon_id": weapon.WeaponID, "mount_type": canonicalTacticalWeaponMountType(weapon.MountType),
 				"modifier_ids":          append([]core.ShipWeaponModifierID(nil), weapon.ModifierIDs...),
-				"physical_weapon_index": physicalIndex + 1, "physical_weapon_count": weapon.Count,
+				"physical_weapon_index": physicalIndex + 1, "physical_weapon_count": liveWeaponCount,
 				"burst_shot_index": burstIndex + 1, "burst_shot_count": configured.ShotsPerWeapon,
 				"shot_index": flatShotIndex, "shot_count": totalShots,
 				"range_index": rangeIndex, "raw_hit_roll": rawRoll, "effective_hit_roll": effectiveRoll,
@@ -269,7 +270,7 @@ func prepareFireBeamAtProjectile(spec Spec, r *tacticalRuntime, seatID protocol.
 			"target_x": projectile.X, "target_y": projectile.Y,
 			"weapon_slot": payload.WeaponSlot, "weapon_id": weapon.WeaponID, "mount_type": canonicalTacticalWeaponMountType(weapon.MountType),
 			"modifier_ids":          append([]core.ShipWeaponModifierID(nil), weapon.ModifierIDs...),
-			"physical_weapon_count": weapon.Count, "burst_shot_count": configured.ShotsPerWeapon,
+			"physical_weapon_count": liveWeaponCount, "burst_shot_count": configured.ShotsPerWeapon,
 			"shot_count": totalShots, "hit_count": hitCount, "total_damage": totalDamage,
 		}); err != nil {
 			return nil, err

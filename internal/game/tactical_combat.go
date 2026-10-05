@@ -299,6 +299,8 @@ func tacticalSpecialRulesSnapshot(rules *ruleset.TacticalCombatFile) *battle.Tac
 	x := rules.Specials
 	return &battle.TacticalSpecialRulesSnapshot{
 		AugmentedEnginesSpeedBonus: x.AugmentedEnginesSpeedBonus, BattleScannerOffenseBonus: x.BattleScannerOffenseBonus,
+		ECMJammerDefenseBonus: x.ECMJammerDefenseBonus, MultiWaveECMJammerDefenseBonus: x.MultiWaveECMJammerDefenseBonus,
+		WideAreaJammerSelfDefenseBonus: x.WideAreaJammerSelfDefenseBonus, WideAreaJammerFleetDefenseBonus: x.WideAreaJammerFleetDefenseBonus,
 		CloakBeamDefenseBonus: x.CloakBeamDefenseBonus, CloakMissileForcedMissThreshold: x.CloakMissileForcedMissThreshold,
 		PhasingInitialLifetime: x.PhasingInitialLifetime, EnergyAbsorberDivisor: x.EnergyAbsorberDivisor, DamperDamageDivisor: x.DamperDamageDivisor,
 		DisplacementOrdnanceMissThreshold: x.DisplacementOrdnanceMissThreshold, DisplacementBeamMissThreshold: x.DisplacementBeamMissThreshold,
@@ -468,12 +470,13 @@ func tacticalFoundationForShip(ship core.Ship, rules *ruleset.TacticalCombatFile
 		shieldStrength = shield.Strength
 		shieldArcMax = shield.Strength * rules.ShieldCapacityPerStrength * hull.ShieldHullFactor
 	}
-	return tacticalFoundationValues{
+	foundation := tacticalFoundationValues{
 		MinimumCombatSpeed: minimumSpeed, CurrentCombatSpeed: currentSpeed,
 		BeamOffense: computer.BeamOffense, BeamDefense: currentSpeed * rules.BeamDefensePerCombatSpeed,
 		ArmorMax: armorMax, StructureMax: hull.Structure, MarineMax: marineMax,
 		ShieldStrength: shieldStrength, ShieldArcMax: shieldArcMax,
-	}, nil
+	}
+	return applySlice178PassiveFoundation(ship, rules, foundation), nil
 }
 
 func projectTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing int, rules *ruleset.TacticalCombatFile, specialRules *ruleset.ShipSpecialsFile) (battle.TacticalShipSpec, error) {
@@ -542,5 +545,10 @@ func projectTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing in
 			out.TurningMode = battle.TacticalTurningInertialNullifier
 		}
 	}
+	internal, err := tacticalInternalSpecForShip(ship, rules, specialRules)
+	if err != nil {
+		return battle.TacticalShipSpec{}, err
+	}
+	out.Internal = internal
 	return out, nil
 }

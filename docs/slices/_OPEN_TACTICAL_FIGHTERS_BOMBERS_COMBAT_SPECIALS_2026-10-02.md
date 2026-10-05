@@ -292,3 +292,32 @@ Gate 3 Checkpoint 2 - **Internal systems / passive derivation**:
 - internal-damage event foundation.
 
 Do not advance to Checkpoint 3 before Checkpoint 2 is independently reviewed and green.
+
+### Gate 3 Checkpoint 2 - complete
+
+Checkpoint 2 is **PASS / COMPLETE**.
+
+Implemented:
+
+- immutable/current Internal pools and live physical Weapon counts;
+- mutable current combat speed with Engine/Augmented-Engine reconciliation;
+- shared `TacticalSpecialFunctional(...)` authority;
+- Reinforced Hull / Heavy Armor / Hard Shields / Multi-Phased Shields;
+- Augmented Engines / Battle Scanner / ECM-family live derivations;
+- `internal_damage_applied` event foundation;
+- Beam / reactive PD / Ordnance consumers now use live Weapon counts and functional passive state;
+- Slice-17.8 live-state migration/versioning for pre-CP2 snapshots.
+
+Final reviewed ruleset SHA:
+
+`68c06a57bb9fdc18c0ff8045b54241e51cc9cba41298898fbfb535b6a338bd46`
+
+Validation:
+
+- `go test ./internal/ruleset` PASS
+- `go test ./internal/battle` PASS
+- `go test ./internal/game` PASS
+- `go test ./...` PASS
+- `git diff --check` PASS
+
+Next: Gate 3 Checkpoint 3 - Fighter actor lifecycle / Fighter combat resolution.

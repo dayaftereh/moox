@@ -218,6 +218,10 @@ func prepareFireOrdnance(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, 
 		return fmt.Errorf("ordnance runtime state missing for ship %d slot %d", active.ShipID, weapon.Slot)
 	}
 
+	liveWeaponCount := tacticalCurrentWeaponCount(*active, *activeState, weapon.Slot)
+	if liveWeaponCount <= 0 {
+		return fmt.Errorf("ordnance weapon slot %d has no live physical weapons", weapon.Slot)
+	}
 	facing := activeState.Facing
 	if targetState.X != activeState.X || targetState.Y != activeState.Y {
 		facing = tacticalFacing(targetState.X-activeState.X, targetState.Y-activeState.Y)
@@ -239,7 +243,7 @@ func prepareFireOrdnance(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, 
 		Facing:            facing,
 		Speed:             configured.Speed,
 		MovementRemaining: configured.Speed * spec.Tactical.Rules.Ordnance.MovementUnitsPerField,
-		Multiplicity:      weapon.Count,
+		Multiplicity:      liveWeaponCount,
 		UnitDurability:    configured.UnitDurability,
 		WarheadStrength:   configured.WarheadStrength,
 	}
