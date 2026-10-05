@@ -177,3 +177,21 @@ The Achilles formula blocker is closed.
 ## Next
 
 Resolve the remaining Phase-Shifter other-ship dispatch question, then freeze Gate-1 command/rejection/event/projection/persistence/AI requirements and final closure vectors.
+### Checkpoint K update
+
+The remaining original-Special formula/reachability audit is now closed:
+
+- Phase Shifter ID22 has a proven once-per-turn self-teleport at executable range <=20; the named `Teleport_Enemy_Ship_` routine has no accepted CALL/JMP/instruction-pointer/LE-fixup reachability in the audited 1.31 executable, so other-ship teleport is unsupported/deferred rather than inferred.
+- Augmented Engines adds +5 combat speed when installed and functional.
+- Battle Scanner contributes +50 to the Tactical offensive-combat bonus stack.
+- Multi-Phased Shields applies a 3/2 max-shield transform after Hard-Shields/nebula survival.
+- Hard Shields preserves shields through the nebula-suppression branch and subtracts an additional 3 damage during active shield absorption, in addition to the already frozen Shield-Piercing and boarding hooks.
+- Reinforced Hull triples the final normal Structure pool.
+- Quantum Detonator triples normal ship-explosion power in addition to its already frozen 60% capture-time self-destruction branch.
+- Automated Repair now has exact durability/internal repair budgets and deterministic pool order.
+
+The original-formula/reachability blocker is closed. Gate 1 remains open only for the MOOX command/event/projection/persistence/UI/AI contract mapping and final closure vectors/checklist.
+
+## Next
+
+Map the current BattleSession command/view/live-snapshot/AI gaps into the Gate-2 requirements, add final representative vectors, then evaluate Gate-1 completion without starting production implementation.

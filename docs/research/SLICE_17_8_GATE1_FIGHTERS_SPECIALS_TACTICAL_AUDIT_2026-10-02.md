@@ -1413,3 +1413,102 @@ The last open Beam-side Achilles formula is closed. Slice 17.8 should activate t
 - neutral multiplier 1 for other internal categories.
 
 No parallel Achilles damage resolver is required.
+## 23. Checkpoint K - remaining original Special closure
+
+This checkpoint closes the remaining original-executable Special questions that were still weaker or open after Checkpoints I/J. It also resolves the Phase-Shifter other-ship dispatch question conservatively from the audited 1.31 executable.
+
+### 23.1 Phase Shifter other-ship teleport is not an accepted reachable 1.31 action
+
+The named routine `Teleport_Enemy_Ship_` exists at code offset `0x09BFF3` and can choose a nearby legal destination, animate and overwrite another ship's coordinates. Presence of that routine alone is not sufficient to accept a gameplay command.
+
+A direct reachability audit found:
+
+- no relative `CALL` to `0x09BFF3` in the code object;
+- no relative `JMP` to `0x09BFF3`;
+- no decoded instruction operand that references `0x09BFF3`;
+- no valid absolute code/data pointer to the function entry;
+- no matching internal target in the LE fixup-record region.
+
+One raw byte-pattern hit inside `Redraw_Main_Screen_` was disassembled and proved to be bytes spanning an unrelated instruction sequence, not a reference.
+
+Gate 1 therefore freezes **only the directly reachable ID-22 self-teleport** already recovered in Checkpoint I: once per eligible ship turn, executable range `<= 20`, no ordinary movement-cost subtraction and facing preserved. Other-ship teleport is **unsupported/deferred for original-parity Slice 17.8** unless new executable evidence is later found. HELP prose or the orphaned routine must not create an unproven command.
+
+### 23.2 Augmented Engines - exact speed insertion
+
+`Calc_Current_Speed_` reads the ship's Special bitfield directly. When Special ID 2 is installed and its matching damage/disabled bit is clear, it adds exactly **+5** to the working combat-speed value before the later engine-damage scaling and other recovered speed modifiers.
+
+Thus Augmented Engines is a passive Tactical-common speed derivation hook, not an active command or presentation-only effect.
+
+### 23.3 Battle Scanner - exact Tactical offensive bonus
+
+`Offensive_Combat_Bonus_` checks Battle Scanner ID 5. Presence contributes exactly **+50** to the shared offensive-combat bonus stack alongside computer, fleet and crew/player contributions.
+
+This is the executable Tactical hit-stack insertion required by the earlier Class-3 matrix. The separate strategic scan-range effect remains strategic and does not belong in BattleSession combat arithmetic.
+
+### 23.4 Multi-Phased Shields and Hard Shields - shield-max / nebula order
+
+`Calc_Combat_Shield_Max_` establishes this order:
+
+1. derive the normal per-facing combat shield maximum;
+2. when the combat nebula/global shield-suppression flag is active, zero that shield maximum unless Hard Shields ID 13 is present;
+3. then test Multi-Phased Shields ID 20;
+4. with ID 20, replace the surviving maximum with signed integer `(3 * base) / 2` semantics.
+
+For positive shield values this is exactly **+50% max shield strength**. Therefore Multi-Phased Shields multiplies the value only after the Hard-Shields/nebula survival decision.
+
+`Apply_Ship_Damage_` also directly proves the general Hard-Shields absorption hook: when shield absorption is active, the normal shield-strength subtraction is followed by an additional **3 damage** subtraction for ID 13, then damage is clamped at zero. Together with the already frozen Shield-Piercing cancellation and Transporter rejection, Hard Shields now has a complete accepted Tactical hook set for Slice 17.8.
+
+### 23.5 Reinforced Hull - exact structure derivation
+
+`Get_Design_Structure_` tests Reinforced Hull ID 27 in the source design Special bitfield. It first derives the normal final structure value, including the ordinary hull/material percentage path, then multiplies that result by **3** when Reinforced Hull is present.
+
+`Get_Ship_Structure_` delegates ordinary ship structure to that derivation and `Load_Combat_Ship_` stores the result as the combat ship's structure maximum. Reinforced Hull therefore triples the final normal structure pool before Tactical damage begins.
+
+### 23.6 Quantum Detonator - explosion power in addition to capture self-destruction
+
+`Damage_From_Ship_Exploding_` derives the normal ship-explosion power as:
+
+`base_explosion_damage = 5 * hull_explosion_value`
+
+and multiplies that value by **3** when Quantum Detonator ID 24 is present.
+
+`Destroy_Ship_FX_` passes this returned value into the shared spherical ship-explosion damage/effect path. `Is_Combat_Ship_Dead_` also gives a dead ID-24 carrier the dedicated detonator death state. This complements the already frozen capture-time `Random_(10)` branch where 0..5 self-destruct and 6..9 continue capture.
+
+Gate 2 therefore needs one shared ship-explosion consumer with a Quantum multiplier; it must not represent the Detonator as only a capture hook.
+
+### 23.7 Automated Repair - exact outer and internal repair budgets/order
+
+`Repair_All_Combat_Ships_` supplies the already frozen repair percentage: Automated Repair Unit ID 3 contributes **20**, then the side Fleet Engineer bonus is added. Destroyed/inactive, post-capture and stasis ships are skipped.
+
+`Repair_Combat_Ship_` uses that percentage in two deterministic passes.
+
+**Durability pass**
+
+- derive the ship's maximum Structure plus maximum Armor pool; Heavy Armor ID 14 is already included by tripling the Armor maximum;
+- compute `repair_percent * (structure_max + armor_max) / 100`, with minimum one;
+- apply that repair first against accumulated Structure damage;
+- if the repair overflows past zero Structure damage, carry the remainder into current Armor, capped at Armor maximum.
+
+**Internal-system pass**
+
+- derive `Max_Total_Internal_Space_`;
+- compute `repair_percent * max_internal_space / 200`, with minimum one;
+- consume that budget in fixed order:
+  1. fixed internal pool `+0x100` (the engine/drive-related pool; damage to this pool immediately triggers `Calc_Current_Speed_`);
+  2. fixed internal pool `+0x102`;
+  3. Weapon-slot pools `+0x104 .. +0x112`, ascending slot 0..7;
+  4. Shield-generator/internal shield pool `+0x134`;
+  5. Special/internal-slot pools `+0x124 .. +0x132`, ascending slot 0..7.
+
+Each pool is bounded by its original maximum and consumes only the amount needed before the remaining budget proceeds to the next pool.
+
+This closes the earlier Repair allocation-order note without inventing a parallel percentage or random selection.
+
+### 23.8 Checkpoint-K consequence
+
+The remaining original-formula blockers from the deferred Class-3 matrix are now either:
+
+- directly frozen with executable arithmetic/order; or
+- explicitly unsupported/deferred where the audited 1.31 executable does not expose a reachable consumer (Phase-Shifter other-ship teleport).
+
+No accepted Slice-17.8 Tactical behavior now depends solely on HELP prose for its core combat formula. The remaining Gate-1 work is MOOX runtime-contract mapping, persistence/projection/AI requirements and final representative closure vectors.
