@@ -58,6 +58,55 @@
       "mirv_multiplier": 4,
       "plasma_dissipation_per_field": 5
     },
+    "fighter": {
+      "movement_units_per_field": 20,
+      "craft_per_bay": 4,
+      "fighter_base_speed": 10,
+      "bomber_base_speed": 8,
+      "heavy_fighter_base_speed": 8,
+      "fighter_base_hits": 2,
+      "bomber_base_hits": 4,
+      "heavy_fighter_base_hits": 5,
+      "fighter_attack_stock": 4,
+      "bomber_attack_stock": 1,
+      "heavy_fighter_attack_stock": 2,
+      "warp_drive_speed_step": 2,
+      "trans_dimensional_speed_bonus": 4,
+      "armor_durability_multiples": [1, 2, 4, 6, 8, 10],
+      "recovery_divisor": 4
+    },
+    "boarding": {
+      "physical_range": 1,
+      "transporter_range": 4,
+      "damper_transporter_divisor": 3,
+      "security_stations_defense_bonus": 20,
+      "raid_internal_damage_threshold": 20,
+      "raid_defender_loss_threshold": 50,
+      "raid_attacker_loss_threshold": -50,
+      "capture_quantum_random_bound": 10,
+      "capture_quantum_destroy_max": 5,
+      "crew_quality_bonuses": [0, 5, 10, 15]
+    },
+    "specials": {
+      "augmented_engines_speed_bonus": 5,
+      "battle_scanner_offense_bonus": 50,
+      "cloak_beam_defense_bonus": 80,
+      "cloak_missile_forced_miss_threshold": 50,
+      "phasing_initial_lifetime": 10,
+      "energy_absorber_divisor": 4,
+      "damper_damage_divisor": 4,
+      "displacement_ordnance_miss_threshold": 30,
+      "displacement_beam_miss_threshold": 30,
+      "shield_recharge_normal_factor": 3,
+      "shield_recharge_capacitor_factor": 10,
+      "hard_shields_additional_absorption": 3,
+      "multi_phased_shield_numerator": 3,
+      "multi_phased_shield_denominator": 2,
+      "lightning_destroy_threshold": 50,
+      "quantum_explosion_multiplier": 3,
+      "automated_repair_base_percent": 20,
+      "self_teleport_max_range": 20
+    },
     "weapon":  {
                    "id":  "laser_cannon",
                    "technology_id":  100,
@@ -535,7 +584,7 @@
                         "min_damage":  0,
                         "max_damage":  0,
                         "craft_per_unit":  4,
-                        "tactical_support":  "metadata_only"
+                        "tactical_support":  "fighter"
                     },
                     {
                         "id":  "bomber_bays",
@@ -548,7 +597,7 @@
                         "min_damage":  0,
                         "max_damage":  0,
                         "craft_per_unit":  4,
-                        "tactical_support":  "metadata_only"
+                        "tactical_support":  "fighter"
                     },
                     {
                         "id":  "fighter_bays",
@@ -561,7 +610,7 @@
                         "min_damage":  0,
                         "max_damage":  0,
                         "craft_per_unit":  4,
-                        "tactical_support":  "metadata_only"
+                        "tactical_support":  "fighter"
                     }
                 ],
     "beam_modifiers":  [

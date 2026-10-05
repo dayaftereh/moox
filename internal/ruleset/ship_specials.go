@@ -116,8 +116,38 @@ func (f *ShipSpecialsFile) Validate() error {
 		if !selfExcluded {
 			return fmt.Errorf("ship special %q must self-exclude", special.ID)
 		}
+		expectedSupport, ok := expectedShipSpecialTacticalSupport(special.ID)
+		if !ok {
+			return fmt.Errorf("ship special %q has no frozen tactical support classification", special.ID)
+		}
+		if special.TacticalSupport != expectedSupport {
+			return fmt.Errorf("ship special %q tactical support=%q want=%q", special.ID, special.TacticalSupport, expectedSupport)
+		}
 	}
 	return nil
+}
+
+func expectedShipSpecialTacticalSupport(id string) (string, bool) {
+	switch id {
+	case "battle_pods", "extended_fuel_tanks":
+		return "strategic_only", true
+	case "inertial_nullifier", "inertial_stabilizer":
+		return "turning_mode", true
+	case "phase_shifter", "sub_space_teleporter":
+		return "tactical_active", true
+	case "achilles_targeting_unit", "augmented_engines", "automated_repair_unit", "battle_scanner",
+		"cloaking_device", "damper_field", "displacement_device", "ecm_jammer", "energy_absorber",
+		"fast_missile_racks", "hard_shields", "heavy_armor", "high_energy_focus", "hyper_x_capacitors",
+		"lightning_field", "multi_phased_shields", "multi_wave_ecm_jammer", "phasing_cloak",
+		"quantum_detonator", "rangemaster_unit", "reflection_field", "reinforced_hull",
+		"security_stations", "shield_capacitors", "structural_analyzer", "time_warp_facilitator",
+		"transporters", "troop_pods", "warp_dissipator", "wide_area_jammer":
+		return "tactical_passive", true
+	case "scout_lab", "stealth_field":
+		return "metadata_only", true
+	default:
+		return "", false
+	}
 }
 
 func (f *ShipSpecialsFile) ByID(id string) (ShipSpecialRule, bool) {

@@ -15,6 +15,9 @@ type TacticalCombatFile struct {
 	RNG                            TacticalRNGRules           `json:"rng"`
 	Beam                           TacticalBeamRules          `json:"beam"`
 	Ordnance                       TacticalOrdnanceRules      `json:"ordnance"`
+	Fighter                        TacticalFighterRules       `json:"fighter"`
+	Boarding                       TacticalBoardingRules      `json:"boarding"`
+	Specials                       TacticalSpecialRules       `json:"specials"`
 	Weapon                         TacticalWeaponRule         `json:"weapon"`
 	Weapons                        []TacticalWeaponRule       `json:"weapons,omitempty"`
 	BeamModifiers                  []TacticalBeamModifierRule `json:"beam_modifiers,omitempty"`
@@ -57,6 +60,57 @@ type TacticalOrdnanceRules struct {
 	TorpedoCooldownRounds     int `json:"torpedo_cooldown_rounds"`
 	MIRVMultiplier            int `json:"mirv_multiplier"`
 	PlasmaDissipationPerField int `json:"plasma_dissipation_per_field"`
+}
+type TacticalFighterRules struct {
+	MovementUnitsPerField      int   `json:"movement_units_per_field"`
+	CraftPerBay                int   `json:"craft_per_bay"`
+	FighterBaseSpeed           int   `json:"fighter_base_speed"`
+	BomberBaseSpeed            int   `json:"bomber_base_speed"`
+	HeavyFighterBaseSpeed      int   `json:"heavy_fighter_base_speed"`
+	FighterBaseHits            int   `json:"fighter_base_hits"`
+	BomberBaseHits             int   `json:"bomber_base_hits"`
+	HeavyFighterBaseHits       int   `json:"heavy_fighter_base_hits"`
+	FighterAttackStock         int   `json:"fighter_attack_stock"`
+	BomberAttackStock          int   `json:"bomber_attack_stock"`
+	HeavyFighterAttackStock    int   `json:"heavy_fighter_attack_stock"`
+	WarpDriveSpeedStep         int   `json:"warp_drive_speed_step"`
+	TransDimensionalSpeedBonus int   `json:"trans_dimensional_speed_bonus"`
+	ArmorDurabilityMultiples   []int `json:"armor_durability_multiples"`
+	RecoveryDivisor            int   `json:"recovery_divisor"`
+}
+
+type TacticalBoardingRules struct {
+	PhysicalRange                int   `json:"physical_range"`
+	TransporterRange             int   `json:"transporter_range"`
+	DamperTransporterDivisor     int   `json:"damper_transporter_divisor"`
+	SecurityStationsDefenseBonus int   `json:"security_stations_defense_bonus"`
+	RaidInternalDamageThreshold  int   `json:"raid_internal_damage_threshold"`
+	RaidDefenderLossThreshold    int   `json:"raid_defender_loss_threshold"`
+	RaidAttackerLossThreshold    int   `json:"raid_attacker_loss_threshold"`
+	CaptureQuantumRandomBound    int   `json:"capture_quantum_random_bound"`
+	CaptureQuantumDestroyMax     int   `json:"capture_quantum_destroy_max"`
+	CrewQualityBonuses           []int `json:"crew_quality_bonuses"`
+}
+
+type TacticalSpecialRules struct {
+	AugmentedEnginesSpeedBonus        int `json:"augmented_engines_speed_bonus"`
+	BattleScannerOffenseBonus         int `json:"battle_scanner_offense_bonus"`
+	CloakBeamDefenseBonus             int `json:"cloak_beam_defense_bonus"`
+	CloakMissileForcedMissThreshold   int `json:"cloak_missile_forced_miss_threshold"`
+	PhasingInitialLifetime            int `json:"phasing_initial_lifetime"`
+	EnergyAbsorberDivisor             int `json:"energy_absorber_divisor"`
+	DamperDamageDivisor               int `json:"damper_damage_divisor"`
+	DisplacementOrdnanceMissThreshold int `json:"displacement_ordnance_miss_threshold"`
+	DisplacementBeamMissThreshold     int `json:"displacement_beam_miss_threshold"`
+	ShieldRechargeNormalFactor        int `json:"shield_recharge_normal_factor"`
+	ShieldRechargeCapacitorFactor     int `json:"shield_recharge_capacitor_factor"`
+	HardShieldsAdditionalAbsorption   int `json:"hard_shields_additional_absorption"`
+	MultiPhasedShieldNumerator        int `json:"multi_phased_shield_numerator"`
+	MultiPhasedShieldDenominator      int `json:"multi_phased_shield_denominator"`
+	LightningDestroyThreshold         int `json:"lightning_destroy_threshold"`
+	QuantumExplosionMultiplier        int `json:"quantum_explosion_multiplier"`
+	AutomatedRepairBasePercent        int `json:"automated_repair_base_percent"`
+	SelfTeleportMaxRange              int `json:"self_teleport_max_range"`
 }
 
 type TacticalWeaponRule struct {
@@ -274,6 +328,32 @@ func (f *TacticalCombatFile) Validate() error {
 	if f.Ordnance.MovementUnitsPerField != 20 || f.Ordnance.FastSpeedBonus != 4 || f.Ordnance.TorpedoCooldownRounds != 2 || f.Ordnance.MIRVMultiplier != 4 || f.Ordnance.PlasmaDissipationPerField != 5 {
 		return fmt.Errorf("invalid tactical ordnance constants")
 	}
+	if f.Fighter.MovementUnitsPerField != 20 || f.Fighter.CraftPerBay != 4 ||
+		f.Fighter.FighterBaseSpeed != 10 || f.Fighter.BomberBaseSpeed != 8 || f.Fighter.HeavyFighterBaseSpeed != 8 ||
+		f.Fighter.FighterBaseHits != 2 || f.Fighter.BomberBaseHits != 4 || f.Fighter.HeavyFighterBaseHits != 5 ||
+		f.Fighter.FighterAttackStock != 4 || f.Fighter.BomberAttackStock != 1 || f.Fighter.HeavyFighterAttackStock != 2 ||
+		f.Fighter.WarpDriveSpeedStep != 2 || f.Fighter.TransDimensionalSpeedBonus != 4 ||
+		f.Fighter.RecoveryDivisor != 4 || !equalRuleInts(f.Fighter.ArmorDurabilityMultiples, []int{1, 2, 4, 6, 8, 10}) {
+		return fmt.Errorf("invalid tactical Fighter constants")
+	}
+	if f.Boarding.PhysicalRange != 1 || f.Boarding.TransporterRange != 4 || f.Boarding.DamperTransporterDivisor != 3 ||
+		f.Boarding.SecurityStationsDefenseBonus != 20 || f.Boarding.RaidInternalDamageThreshold != 20 ||
+		f.Boarding.RaidDefenderLossThreshold != 50 || f.Boarding.RaidAttackerLossThreshold != -50 ||
+		f.Boarding.CaptureQuantumRandomBound != 10 || f.Boarding.CaptureQuantumDestroyMax != 5 ||
+		!equalRuleInts(f.Boarding.CrewQualityBonuses, []int{0, 5, 10, 15}) {
+		return fmt.Errorf("invalid tactical Boarding constants")
+	}
+	if f.Specials.AugmentedEnginesSpeedBonus != 5 || f.Specials.BattleScannerOffenseBonus != 50 ||
+		f.Specials.CloakBeamDefenseBonus != 80 || f.Specials.CloakMissileForcedMissThreshold != 50 ||
+		f.Specials.PhasingInitialLifetime != 10 || f.Specials.EnergyAbsorberDivisor != 4 ||
+		f.Specials.DamperDamageDivisor != 4 || f.Specials.DisplacementOrdnanceMissThreshold != 30 ||
+		f.Specials.DisplacementBeamMissThreshold != 30 || f.Specials.ShieldRechargeNormalFactor != 3 ||
+		f.Specials.ShieldRechargeCapacitorFactor != 10 || f.Specials.HardShieldsAdditionalAbsorption != 3 ||
+		f.Specials.MultiPhasedShieldNumerator != 3 || f.Specials.MultiPhasedShieldDenominator != 2 ||
+		f.Specials.LightningDestroyThreshold != 50 || f.Specials.QuantumExplosionMultiplier != 3 ||
+		f.Specials.AutomatedRepairBasePercent != 20 || f.Specials.SelfTeleportMaxRange != 20 {
+		return fmt.Errorf("invalid tactical Special constants")
+	}
 	if f.Weapon.ID == "" || f.Weapon.TechnologyID <= 0 || f.Weapon.Kind != "beam" || f.Weapon.BaseSpace <= 0 || f.Weapon.BaseCostPP <= 0 || f.Weapon.MinDamage <= 0 || f.Weapon.MaxDamage < f.Weapon.MinDamage {
 		return fmt.Errorf("invalid tactical weapon rule")
 	}
@@ -304,7 +384,7 @@ func (f *TacticalCombatFile) Validate() error {
 				return fmt.Errorf("invalid Missile weapon[%d]", i)
 			}
 		case "fighter":
-			if weapon.BaseSpace <= 0 || weapon.BaseCostPP <= 0 || weapon.MinDamage != 0 || weapon.MaxDamage != 0 || weapon.CraftPerUnit <= 0 || weapon.TacticalSupport != "metadata_only" {
+			if weapon.BaseSpace <= 0 || weapon.BaseCostPP <= 0 || weapon.MinDamage != 0 || weapon.MaxDamage != 0 || weapon.CraftPerUnit <= 0 || weapon.TacticalSupport != "fighter" {
 				return fmt.Errorf("invalid Fighter weapon[%d]", i)
 			}
 		default:
@@ -424,4 +504,15 @@ func (f *TacticalCombatFile) Validate() error {
 		seenFuel[fuel.FuelCellID] = struct{}{}
 	}
 	return nil
+}
+func equalRuleInts(a, b []int) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
 }

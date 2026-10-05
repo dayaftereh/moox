@@ -223,8 +223,10 @@ func prepareFireOrdnance(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, 
 		facing = tacticalFacing(targetState.X-activeState.X, targetState.Y-activeState.Y)
 	}
 	projectileID := r.ordnance.NextProjectileID
+	spawnOrder := r.nextMovingActorOrder
 	projectile := TacticalProjectileState{
 		ProjectileID:      projectileID,
+		SpawnOrder:        spawnOrder,
 		SourceSeatID:      active.SeatID,
 		SourceShipID:      active.ShipID,
 		WeaponSlot:        weapon.Slot,
@@ -252,6 +254,7 @@ func prepareFireOrdnance(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, 
 	}
 	ready.Ready = false
 	r.ordnance.NextProjectileID++
+	r.nextMovingActorOrder++
 	r.ordnance.Projectiles = append(r.ordnance.Projectiles, projectile)
 
 	launchData := map[string]any{

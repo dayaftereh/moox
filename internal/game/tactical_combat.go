@@ -111,7 +111,7 @@ func tacticalMetadataForEncounter(state *core.GameState, encounter Encounter, ru
 	return tacticalMetadataForEncounterWithSpecials(state, encounter, rules, nil)
 }
 
-func tacticalMetadataForEncounterWithSpecials(state *core.GameState, encounter Encounter, rules *ruleset.TacticalCombatFile, specialRules *ruleset.ShipSpecialsFile) (*battle.TacticalSpec, string, error) {
+func tacticalMetadataForEncounterWithSpecials(state *core.GameState, encounter Encounter, rules *ruleset.TacticalCombatFile, specialRules *ruleset.ShipSpecialsFile, economyRules ...*EconomyRules) (*battle.TacticalSpec, string, error) {
 	if state == nil {
 		return nil, "", fmt.Errorf("tactical encounter state is nil")
 	}
@@ -120,6 +120,10 @@ func tacticalMetadataForEncounterWithSpecials(state *core.GameState, encounter E
 	}
 	if len(encounter.Attacker.ShipIDs) < 1 || len(encounter.Defender.ShipIDs) < 1 {
 		return nil, "tactical combat requires at least one combat Ship per side", nil
+	}
+	var economy *EconomyRules
+	if len(economyRules) > 0 {
+		economy = economyRules[0]
 	}
 
 	tactical := &battle.TacticalSpec{
@@ -134,6 +138,9 @@ func tacticalMetadataForEncounterWithSpecials(state *core.GameState, encounter E
 			BeamToHitRangeModifiers:      append([]int(nil), rules.Beam.ToHitRangeModifiers...),
 			BeamDamageRangeModifiers:     append([]int(nil), rules.Beam.DamageRangeModifiers...),
 			Ordnance:                     tacticalOrdnanceRulesSnapshot(rules),
+			Fighter:                      tacticalFighterRulesSnapshot(rules),
+			Boarding:                     tacticalBoardingRulesSnapshot(rules),
+			Specials:                     tacticalSpecialRulesSnapshot(rules),
 		},
 		InitiativeEnabled: true,
 		InitialRNGState:   battle.BaselineTacticalRNGState,
@@ -174,8 +181,66 @@ func tacticalMetadataForEncounterWithSpecials(state *core.GameState, encounter E
 		return nil, reason, err
 	}
 
+	if economy != nil {
+		doctrines, err := tacticalFighterDoctrinesForEncounter(state, encounter, tactical.Ships, economy)
+		if err != nil {
+			return nil, "", err
+		}
+		tactical.FighterDoctrines = doctrines
+	}
 	sort.Slice(tactical.Ships, func(i, j int) bool { return tactical.Ships[i].ShipID < tactical.Ships[j].ShipID })
 	return tactical, "", nil
+}
+
+func tacticalFighterDoctrinesForEncounter(state *core.GameState, encounter Encounter, ships []battle.TacticalShipSpec, economy *EconomyRules) ([]battle.TacticalFighterDoctrineSpec, error) {
+	if state == nil || economy == nil {
+		return nil, nil
+	}
+	needsSeat := func(seat protocol.SeatID) bool {
+		for _, ship := range ships {
+			if ship.SeatID != seat {
+				continue
+			}
+			for _, weapon := range ship.Weapons {
+				if weapon.TacticalSupport == "fighter" {
+					return true
+				}
+			}
+		}
+		return false
+	}
+	out := make([]battle.TacticalFighterDoctrineSpec, 0, 2)
+	for _, side := range []EncounterSide{encounter.Attacker, encounter.Defender} {
+		if !needsSeat(side.SeatID) {
+			continue
+		}
+		empire := empireByID(state, side.EmpireID)
+		if empire == nil {
+			return nil, fmt.Errorf("Fighter doctrine empire %d is missing", side.EmpireID)
+		}
+		drive, ok := bestKnownShipDrive(economy.ShipDrives, empire)
+		if !ok || drive.ComponentIndex < 1 || drive.ComponentIndex > 6 {
+			return nil, fmt.Errorf("Fighter doctrine empire %d has no supported Warp Drive", side.EmpireID)
+		}
+		armor, ok := bestKnownShipArmor(economy.ShipArmors, empire)
+		if !ok {
+			return nil, fmt.Errorf("Fighter doctrine empire %d has no supported Armor", side.EmpireID)
+		}
+		durability := shipArmorDurabilityMultiple(armor.ComponentIndex)
+		if durability == 0 {
+			return nil, fmt.Errorf("Fighter doctrine empire %d has unsupported Armor index %d", side.EmpireID, armor.ComponentIndex)
+		}
+		transDimensional := false
+		if modifiers, ok := economy.RaceModifiers[empire.RaceID]; ok {
+			transDimensional = modifiers.TransDimensional
+		}
+		out = append(out, battle.TacticalFighterDoctrineSpec{
+			SeatID: side.SeatID, EmpireID: side.EmpireID, BestWarpDriveIndex: drive.ComponentIndex,
+			ArmorDurabilityMultiple: durability, TransDimensional: transDimensional,
+		})
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].SeatID < out[j].SeatID })
+	return out, nil
 }
 
 func tacticalOrdnanceRulesSnapshot(rules *ruleset.TacticalCombatFile) *battle.TacticalOrdnanceRulesSnapshot {
@@ -198,6 +263,51 @@ func tacticalOrdnanceRulesSnapshot(rules *ruleset.TacticalCombatFile) *battle.Ta
 		})
 	}
 	return out
+}
+
+func tacticalFighterRulesSnapshot(rules *ruleset.TacticalCombatFile) *battle.TacticalFighterRulesSnapshot {
+	if rules == nil {
+		return nil
+	}
+	return &battle.TacticalFighterRulesSnapshot{
+		MovementUnitsPerField: rules.Fighter.MovementUnitsPerField, CraftPerBay: rules.Fighter.CraftPerBay,
+		FighterBaseSpeed: rules.Fighter.FighterBaseSpeed, BomberBaseSpeed: rules.Fighter.BomberBaseSpeed, HeavyFighterBaseSpeed: rules.Fighter.HeavyFighterBaseSpeed,
+		FighterBaseHits: rules.Fighter.FighterBaseHits, BomberBaseHits: rules.Fighter.BomberBaseHits, HeavyFighterBaseHits: rules.Fighter.HeavyFighterBaseHits,
+		FighterAttackStock: rules.Fighter.FighterAttackStock, BomberAttackStock: rules.Fighter.BomberAttackStock, HeavyFighterAttackStock: rules.Fighter.HeavyFighterAttackStock,
+		WarpDriveSpeedStep: rules.Fighter.WarpDriveSpeedStep, TransDimensionalSpeedBonus: rules.Fighter.TransDimensionalSpeedBonus,
+		ArmorDurabilityMultiples: append([]int(nil), rules.Fighter.ArmorDurabilityMultiples...), RecoveryDivisor: rules.Fighter.RecoveryDivisor,
+	}
+}
+
+func tacticalBoardingRulesSnapshot(rules *ruleset.TacticalCombatFile) *battle.TacticalBoardingRulesSnapshot {
+	if rules == nil {
+		return nil
+	}
+	return &battle.TacticalBoardingRulesSnapshot{
+		PhysicalRange: rules.Boarding.PhysicalRange, TransporterRange: rules.Boarding.TransporterRange,
+		DamperTransporterDivisor: rules.Boarding.DamperTransporterDivisor, SecurityStationsDefenseBonus: rules.Boarding.SecurityStationsDefenseBonus,
+		RaidInternalDamageThreshold: rules.Boarding.RaidInternalDamageThreshold, RaidDefenderLossThreshold: rules.Boarding.RaidDefenderLossThreshold,
+		RaidAttackerLossThreshold: rules.Boarding.RaidAttackerLossThreshold, CaptureQuantumRandomBound: rules.Boarding.CaptureQuantumRandomBound,
+		CaptureQuantumDestroyMax: rules.Boarding.CaptureQuantumDestroyMax, CrewQualityBonuses: append([]int(nil), rules.Boarding.CrewQualityBonuses...),
+	}
+}
+
+func tacticalSpecialRulesSnapshot(rules *ruleset.TacticalCombatFile) *battle.TacticalSpecialRulesSnapshot {
+	if rules == nil {
+		return nil
+	}
+	x := rules.Specials
+	return &battle.TacticalSpecialRulesSnapshot{
+		AugmentedEnginesSpeedBonus: x.AugmentedEnginesSpeedBonus, BattleScannerOffenseBonus: x.BattleScannerOffenseBonus,
+		CloakBeamDefenseBonus: x.CloakBeamDefenseBonus, CloakMissileForcedMissThreshold: x.CloakMissileForcedMissThreshold,
+		PhasingInitialLifetime: x.PhasingInitialLifetime, EnergyAbsorberDivisor: x.EnergyAbsorberDivisor, DamperDamageDivisor: x.DamperDamageDivisor,
+		DisplacementOrdnanceMissThreshold: x.DisplacementOrdnanceMissThreshold, DisplacementBeamMissThreshold: x.DisplacementBeamMissThreshold,
+		ShieldRechargeNormalFactor: x.ShieldRechargeNormalFactor, ShieldRechargeCapacitorFactor: x.ShieldRechargeCapacitorFactor,
+		HardShieldsAdditionalAbsorption: x.HardShieldsAdditionalAbsorption, MultiPhasedShieldNumerator: x.MultiPhasedShieldNumerator,
+		MultiPhasedShieldDenominator: x.MultiPhasedShieldDenominator, LightningDestroyThreshold: x.LightningDestroyThreshold,
+		QuantumExplosionMultiplier: x.QuantumExplosionMultiplier, AutomatedRepairBasePercent: x.AutomatedRepairBasePercent,
+		SelfTeleportMaxRange: x.SelfTeleportMaxRange,
+	}
 }
 
 func tacticalDeploymentY(count, index int) int {
@@ -253,6 +363,10 @@ func validateTacticalCombatant(ship core.Ship, rules *ruleset.TacticalCombatFile
 		case "bomb":
 			if weaponRule.TacticalSupport != "bombardment_only" {
 				return fmt.Errorf("tactical combatant Bomb/Bio weapon %q has invalid tactical support %q", canonical.WeaponID, weaponRule.TacticalSupport)
+			}
+		case "fighter":
+			if weaponRule.TacticalSupport != "fighter" || weaponRule.CraftPerUnit != 4 {
+				return fmt.Errorf("tactical combatant Fighter weapon %q has invalid tactical support %q/craft %d", canonical.WeaponID, weaponRule.TacticalSupport, weaponRule.CraftPerUnit)
 			}
 		default:
 			if weaponRule.TacticalSupport != "metadata_only" {
@@ -408,7 +522,7 @@ func projectTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing in
 			Ammo: canonical.Ammo, FiringArcID: canonical.FiringArcID,
 			MinDamage: weaponRule.MinDamage, MaxDamage: weaponRule.MaxDamage,
 			InnateEffectIDs: append([]string(nil), weaponRule.InnateEffectIDs...),
-			TacticalSupport: weaponRule.TacticalSupport,
+			TacticalSupport: weaponRule.TacticalSupport, CraftPerUnit: weaponRule.CraftPerUnit,
 		})
 	}
 	for _, special := range ship.Spec.Specials {

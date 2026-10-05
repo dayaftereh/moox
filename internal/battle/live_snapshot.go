@@ -9,13 +9,18 @@ import (
 	"moox/internal/protocol"
 )
 
-const LiveSnapshotSchemaVersion = 1
+const (
+	LiveSnapshotSchemaVersion       = 2
+	legacyLiveSnapshotSchemaVersion = 1
+)
 
 type TacticalLiveSnapshot struct {
-	State             TacticalState          `json:"state"`
-	Ordnance          *TacticalOrdnanceState `json:"ordnance,omitempty"`
-	Events            []TacticalEvent        `json:"events"`
-	NextEventSequence uint64                 `json:"next_event_sequence"`
+	State                TacticalState          `json:"state"`
+	Ordnance             *TacticalOrdnanceState `json:"ordnance,omitempty"`
+	Events               []TacticalEvent        `json:"events"`
+	NextEventSequence    uint64                 `json:"next_event_sequence"`
+	NextMovingActorOrder uint64                 `json:"next_moving_actor_order,omitempty"`
+	Legacy17_8Disabled   bool                   `json:"legacy_17_8_disabled,omitempty"`
 }
 
 type LiveSnapshot struct {
@@ -40,19 +45,23 @@ func (s *Session) LiveSnapshot() LiveSnapshot {
 	if s.tactical != nil {
 		ordnance := cloneTacticalOrdnanceState(s.tactical.ordnance)
 		out.Tactical = &TacticalLiveSnapshot{
-			State:             cloneTacticalState(s.tactical.state),
-			Ordnance:          &ordnance,
-			Events:            cloneTacticalEvents(s.tactical.events),
-			NextEventSequence: s.tactical.nextEventSequence,
+			State:                cloneTacticalState(s.tactical.state),
+			Ordnance:             &ordnance,
+			Events:               cloneTacticalEvents(s.tactical.events),
+			NextEventSequence:    s.tactical.nextEventSequence,
+			NextMovingActorOrder: s.tactical.nextMovingActorOrder,
+			Legacy17_8Disabled:   s.tactical.legacy17_8Disabled,
 		}
 	}
 	return out
 }
 
 func RestoreLiveSnapshot(snapshot LiveSnapshot) (*Session, error) {
-	if snapshot.SchemaVersion != LiveSnapshotSchemaVersion {
-		return nil, fmt.Errorf("battle live snapshot schema %d, expected %d", snapshot.SchemaVersion, LiveSnapshotSchemaVersion)
+	migrated, err := migrateLiveSnapshot(snapshot)
+	if err != nil {
+		return nil, err
 	}
+	snapshot = migrated
 	base, err := NewSession(snapshot.Spec)
 	if err != nil {
 		return nil, fmt.Errorf("restore battle spec: %w", err)
@@ -69,14 +78,55 @@ func RestoreLiveSnapshot(snapshot LiveSnapshot) (*Session, error) {
 			ordnance = cloneTacticalOrdnanceState(*snapshot.Tactical.Ordnance)
 		}
 		runtime := tacticalRuntime{
-			state:             cloneTacticalState(snapshot.Tactical.State),
-			ordnance:          ordnance,
-			events:            cloneTacticalEvents(snapshot.Tactical.Events),
-			nextEventSequence: snapshot.Tactical.NextEventSequence,
+			state:                cloneTacticalState(snapshot.Tactical.State),
+			ordnance:             ordnance,
+			events:               cloneTacticalEvents(snapshot.Tactical.Events),
+			nextEventSequence:    snapshot.Tactical.NextEventSequence,
+			nextMovingActorOrder: snapshot.Tactical.NextMovingActorOrder,
+			legacy17_8Disabled:   snapshot.Tactical.Legacy17_8Disabled,
 		}
 		base.tactical = &runtime
 	}
 	return base, nil
+}
+
+func migrateLiveSnapshot(snapshot LiveSnapshot) (LiveSnapshot, error) {
+	switch snapshot.SchemaVersion {
+	case LiveSnapshotSchemaVersion:
+		return snapshot, nil
+	case legacyLiveSnapshotSchemaVersion:
+		snapshot.SchemaVersion = LiveSnapshotSchemaVersion
+		if snapshot.Tactical == nil {
+			return snapshot, nil
+		}
+		tactical := *snapshot.Tactical
+		tactical.State = cloneTacticalState(snapshot.Tactical.State)
+		tactical.Events = cloneTacticalEvents(snapshot.Tactical.Events)
+		if snapshot.Tactical.Ordnance != nil {
+			ordnance := cloneTacticalOrdnanceState(*snapshot.Tactical.Ordnance)
+			tactical.Ordnance = &ordnance
+		}
+		snapshot.Tactical = &tactical
+		snapshot.Tactical.Legacy17_8Disabled = true
+		var maxSpawnOrder uint64
+		if snapshot.Tactical.Ordnance != nil {
+			for i := range snapshot.Tactical.Ordnance.Projectiles {
+				projectile := &snapshot.Tactical.Ordnance.Projectiles[i]
+				projectile.SpawnOrder = projectile.ProjectileID
+				if projectile.SpawnOrder > maxSpawnOrder {
+					maxSpawnOrder = projectile.SpawnOrder
+				}
+			}
+		}
+		nextOrder := maxSpawnOrder + 1
+		if snapshot.Tactical.Ordnance != nil && snapshot.Tactical.Ordnance.NextProjectileID > nextOrder {
+			nextOrder = snapshot.Tactical.Ordnance.NextProjectileID
+		}
+		snapshot.Tactical.NextMovingActorOrder = nextOrder
+		return snapshot, nil
+	default:
+		return LiveSnapshot{}, fmt.Errorf("battle live snapshot schema %d, expected %d or %d", snapshot.SchemaVersion, legacyLiveSnapshotSchemaVersion, LiveSnapshotSchemaVersion)
+	}
 }
 
 func validateLiveSnapshot(snapshot LiveSnapshot) error {
@@ -175,6 +225,21 @@ func validateTacticalLiveSnapshot(spec TacticalSpec, snapshot TacticalLiveSnapsh
 		}
 	} else if err := validateTacticalOrdnanceState(spec, *snapshot.Ordnance); err != nil {
 		return fmt.Errorf("tactical live snapshot ordnance state: %w", err)
+	}
+	if snapshot.NextMovingActorOrder == 0 {
+		return fmt.Errorf("tactical live snapshot next moving-actor order must be non-zero")
+	}
+	seenSpawnOrders := make(map[uint64]struct{})
+	if snapshot.Ordnance != nil {
+		for i, projectile := range snapshot.Ordnance.Projectiles {
+			if projectile.SpawnOrder == 0 || projectile.SpawnOrder >= snapshot.NextMovingActorOrder {
+				return fmt.Errorf("tactical projectile[%d] spawn order %d is outside 1..%d", i, projectile.SpawnOrder, snapshot.NextMovingActorOrder-1)
+			}
+			if _, exists := seenSpawnOrders[projectile.SpawnOrder]; exists {
+				return fmt.Errorf("tactical projectile[%d] duplicates spawn order %d", i, projectile.SpawnOrder)
+			}
+			seenSpawnOrders[projectile.SpawnOrder] = struct{}{}
+		}
 	}
 
 	seenInitiative := make(map[core.ID]struct{}, len(state.InitiativeOrder))

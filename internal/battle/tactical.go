@@ -44,6 +44,61 @@ type TacticalRulesSnapshot struct {
 	BeamToHitRangeModifiers      []int                          `json:"beam_to_hit_range_modifiers"`
 	BeamDamageRangeModifiers     []int                          `json:"beam_damage_range_modifiers"`
 	Ordnance                     *TacticalOrdnanceRulesSnapshot `json:"ordnance,omitempty"`
+	Fighter                      *TacticalFighterRulesSnapshot  `json:"fighter,omitempty"`
+	Boarding                     *TacticalBoardingRulesSnapshot `json:"boarding,omitempty"`
+	Specials                     *TacticalSpecialRulesSnapshot  `json:"specials,omitempty"`
+}
+
+type TacticalFighterRulesSnapshot struct {
+	MovementUnitsPerField      int   `json:"movement_units_per_field"`
+	CraftPerBay                int   `json:"craft_per_bay"`
+	FighterBaseSpeed           int   `json:"fighter_base_speed"`
+	BomberBaseSpeed            int   `json:"bomber_base_speed"`
+	HeavyFighterBaseSpeed      int   `json:"heavy_fighter_base_speed"`
+	FighterBaseHits            int   `json:"fighter_base_hits"`
+	BomberBaseHits             int   `json:"bomber_base_hits"`
+	HeavyFighterBaseHits       int   `json:"heavy_fighter_base_hits"`
+	FighterAttackStock         int   `json:"fighter_attack_stock"`
+	BomberAttackStock          int   `json:"bomber_attack_stock"`
+	HeavyFighterAttackStock    int   `json:"heavy_fighter_attack_stock"`
+	WarpDriveSpeedStep         int   `json:"warp_drive_speed_step"`
+	TransDimensionalSpeedBonus int   `json:"trans_dimensional_speed_bonus"`
+	ArmorDurabilityMultiples   []int `json:"armor_durability_multiples"`
+	RecoveryDivisor            int   `json:"recovery_divisor"`
+}
+
+type TacticalBoardingRulesSnapshot struct {
+	PhysicalRange                int   `json:"physical_range"`
+	TransporterRange             int   `json:"transporter_range"`
+	DamperTransporterDivisor     int   `json:"damper_transporter_divisor"`
+	SecurityStationsDefenseBonus int   `json:"security_stations_defense_bonus"`
+	RaidInternalDamageThreshold  int   `json:"raid_internal_damage_threshold"`
+	RaidDefenderLossThreshold    int   `json:"raid_defender_loss_threshold"`
+	RaidAttackerLossThreshold    int   `json:"raid_attacker_loss_threshold"`
+	CaptureQuantumRandomBound    int   `json:"capture_quantum_random_bound"`
+	CaptureQuantumDestroyMax     int   `json:"capture_quantum_destroy_max"`
+	CrewQualityBonuses           []int `json:"crew_quality_bonuses"`
+}
+
+type TacticalSpecialRulesSnapshot struct {
+	AugmentedEnginesSpeedBonus        int `json:"augmented_engines_speed_bonus"`
+	BattleScannerOffenseBonus         int `json:"battle_scanner_offense_bonus"`
+	CloakBeamDefenseBonus             int `json:"cloak_beam_defense_bonus"`
+	CloakMissileForcedMissThreshold   int `json:"cloak_missile_forced_miss_threshold"`
+	PhasingInitialLifetime            int `json:"phasing_initial_lifetime"`
+	EnergyAbsorberDivisor             int `json:"energy_absorber_divisor"`
+	DamperDamageDivisor               int `json:"damper_damage_divisor"`
+	DisplacementOrdnanceMissThreshold int `json:"displacement_ordnance_miss_threshold"`
+	DisplacementBeamMissThreshold     int `json:"displacement_beam_miss_threshold"`
+	ShieldRechargeNormalFactor        int `json:"shield_recharge_normal_factor"`
+	ShieldRechargeCapacitorFactor     int `json:"shield_recharge_capacitor_factor"`
+	HardShieldsAdditionalAbsorption   int `json:"hard_shields_additional_absorption"`
+	MultiPhasedShieldNumerator        int `json:"multi_phased_shield_numerator"`
+	MultiPhasedShieldDenominator      int `json:"multi_phased_shield_denominator"`
+	LightningDestroyThreshold         int `json:"lightning_destroy_threshold"`
+	QuantumExplosionMultiplier        int `json:"quantum_explosion_multiplier"`
+	AutomatedRepairBasePercent        int `json:"automated_repair_base_percent"`
+	SelfTeleportMaxRange              int `json:"self_teleport_max_range"`
 }
 
 type TacticalWeaponSpec struct {
@@ -59,12 +114,49 @@ type TacticalWeaponSpec struct {
 	MaxDamage       int                         `json:"max_damage"`
 	InnateEffectIDs []string                    `json:"innate_effect_ids,omitempty"`
 	TacticalSupport string                      `json:"tactical_support,omitempty"`
+	CraftPerUnit    int                         `json:"craft_per_unit,omitempty"`
 }
 
 type TacticalSpecialSpec struct {
 	Slot            int    `json:"slot"`
 	SpecialID       string `json:"special_id"`
 	TacticalSupport string `json:"tactical_support"`
+}
+
+type TacticalFighterPayloadSpec struct {
+	WeaponID        string   `json:"weapon_id"`
+	MinDamage       int      `json:"min_damage"`
+	MaxDamage       int      `json:"max_damage"`
+	InnateEffectIDs []string `json:"innate_effect_ids,omitempty"`
+}
+
+type TacticalFighterDoctrineSpec struct {
+	SeatID                  protocol.SeatID             `json:"seat_id"`
+	EmpireID                core.ID                     `json:"empire_id"`
+	BestWarpDriveIndex      int                         `json:"best_warp_drive_index"`
+	ArmorDurabilityMultiple int                         `json:"armor_durability_multiple"`
+	TransDimensional        bool                        `json:"trans_dimensional,omitempty"`
+	BeamPayload             *TacticalFighterPayloadSpec `json:"beam_payload,omitempty"`
+	BombPayload             *TacticalFighterPayloadSpec `json:"bomb_payload,omitempty"`
+}
+
+type TacticalInternalWeaponSpec struct {
+	Slot     int `json:"slot"`
+	Max      int `json:"max"`
+	UnitSize int `json:"unit_size"`
+}
+
+type TacticalInternalSpecialSpec struct {
+	Slot int `json:"slot"`
+	Max  int `json:"max"`
+}
+
+type TacticalInternalSpec struct {
+	EngineMax          int                           `json:"engine_max"`
+	SecondaryMax       int                           `json:"secondary_max"`
+	Weapons            []TacticalInternalWeaponSpec  `json:"weapons,omitempty"`
+	Specials           []TacticalInternalSpecialSpec `json:"specials,omitempty"`
+	ShieldGeneratorMax int                           `json:"shield_generator_max"`
 }
 
 type TacticalShipSpec struct {
@@ -88,6 +180,7 @@ type TacticalShipSpec struct {
 	VisualGenome            *core.ShipVisualGenome `json:"visual_genome,omitempty"`
 	Weapons                 []TacticalWeaponSpec   `json:"weapons,omitempty"`
 	Specials                []TacticalSpecialSpec  `json:"specials,omitempty"`
+	Internal                *TacticalInternalSpec  `json:"internal,omitempty"`
 	MinimumCombatSpeed      int                    `json:"minimum_combat_speed"`
 	CurrentCombatSpeed      int                    `json:"current_combat_speed"`
 	BeamOffense             int                    `json:"beam_offense"`
@@ -102,10 +195,11 @@ type TacticalShipSpec struct {
 }
 
 type TacticalSpec struct {
-	Rules             TacticalRulesSnapshot `json:"rules"`
-	InitiativeEnabled bool                  `json:"initiative_enabled"`
-	InitialRNGState   uint32                `json:"initial_rng_state,omitempty"`
-	Ships             []TacticalShipSpec    `json:"ships"`
+	Rules             TacticalRulesSnapshot         `json:"rules"`
+	InitiativeEnabled bool                          `json:"initiative_enabled"`
+	InitialRNGState   uint32                        `json:"initial_rng_state,omitempty"`
+	Ships             []TacticalShipSpec            `json:"ships"`
+	FighterDoctrines  []TacticalFighterDoctrineSpec `json:"fighter_doctrines,omitempty"`
 }
 
 type TacticalWeaponState struct {
@@ -303,10 +397,12 @@ type RetreatPayload struct {
 }
 
 type tacticalRuntime struct {
-	state             TacticalState
-	ordnance          TacticalOrdnanceState
-	events            []TacticalEvent
-	nextEventSequence uint64
+	state                TacticalState
+	ordnance             TacticalOrdnanceState
+	events               []TacticalEvent
+	nextEventSequence    uint64
+	nextMovingActorOrder uint64
+	legacy17_8Disabled   bool
 }
 
 type PreparedCommand struct {
@@ -364,6 +460,9 @@ func validateTacticalSpec(spec Spec) error {
 		return err
 	}
 	if err := validateTacticalOrdnanceRulesForSpec(*t); err != nil {
+		return err
+	}
+	if err := validateTacticalFighterDoctrines(*t); err != nil {
 		return err
 	}
 	if len(spec.Attacker.ShipIDs) < 1 || len(spec.Defender.ShipIDs) < 1 {
@@ -428,6 +527,65 @@ func validateTacticalSpec(spec Spec) error {
 	return nil
 }
 
+func validateTacticalFighterDoctrines(spec TacticalSpec) error {
+	expected := make(map[protocol.SeatID]core.ID)
+	for _, ship := range spec.Ships {
+		hasFighters := false
+		for _, weapon := range ship.Weapons {
+			if weapon.TacticalSupport == "fighter" {
+				hasFighters = true
+				break
+			}
+		}
+		if !hasFighters {
+			continue
+		}
+		if prior, ok := expected[ship.SeatID]; ok && prior != ship.EmpireID {
+			return fmt.Errorf("tactical Fighter doctrine seat %d maps to multiple empires", ship.SeatID)
+		}
+		expected[ship.SeatID] = ship.EmpireID
+	}
+	if len(spec.FighterDoctrines) != len(expected) {
+		return fmt.Errorf("tactical Fighter doctrine count %d, expected %d", len(spec.FighterDoctrines), len(expected))
+	}
+	var previousSeat protocol.SeatID
+	for i, doctrine := range spec.FighterDoctrines {
+		if doctrine.SeatID == 0 || doctrine.EmpireID == 0 || (i > 0 && doctrine.SeatID <= previousSeat) {
+			return fmt.Errorf("tactical Fighter doctrines must use non-zero identity and ascending unique seat ids")
+		}
+		expectedEmpire, ok := expected[doctrine.SeatID]
+		if !ok || expectedEmpire != doctrine.EmpireID {
+			return fmt.Errorf("tactical Fighter doctrine seat %d empire %d does not match Fighter carrier authority", doctrine.SeatID, doctrine.EmpireID)
+		}
+		if doctrine.BestWarpDriveIndex < 1 || doctrine.BestWarpDriveIndex > 6 {
+			return fmt.Errorf("tactical Fighter doctrine seat %d has invalid drive index %d", doctrine.SeatID, doctrine.BestWarpDriveIndex)
+		}
+		switch doctrine.ArmorDurabilityMultiple {
+		case 1, 2, 4, 6, 8, 10:
+		default:
+			return fmt.Errorf("tactical Fighter doctrine seat %d has invalid armor durability multiple %d", doctrine.SeatID, doctrine.ArmorDurabilityMultiple)
+		}
+		if err := validateTacticalFighterPayload(doctrine.BeamPayload); err != nil {
+			return fmt.Errorf("tactical Fighter doctrine seat %d Beam payload: %w", doctrine.SeatID, err)
+		}
+		if err := validateTacticalFighterPayload(doctrine.BombPayload); err != nil {
+			return fmt.Errorf("tactical Fighter doctrine seat %d Bomb payload: %w", doctrine.SeatID, err)
+		}
+		previousSeat = doctrine.SeatID
+	}
+	return nil
+}
+
+func validateTacticalFighterPayload(payload *TacticalFighterPayloadSpec) error {
+	if payload == nil {
+		return nil
+	}
+	if payload.WeaponID == "" || payload.MinDamage < 0 || payload.MaxDamage < payload.MinDamage {
+		return fmt.Errorf("invalid Fighter payload")
+	}
+	return nil
+}
+
 func canonicalTacticalWeaponMountType(value core.ShipWeaponMountType) core.ShipWeaponMountType {
 	if value == "" {
 		return core.ShipWeaponMountStandard
@@ -470,7 +628,7 @@ func validateTacticalWeaponSnapshot(w TacticalWeaponSpec) error {
 	if w.WeaponID == "" || w.Count <= 0 || w.MinDamage < 0 || w.MaxDamage < w.MinDamage {
 		return fmt.Errorf("invalid tactical weapon snapshot %q", w.WeaponID)
 	}
-	if w.MinDamage == 0 && (w.MaxDamage != 0 || w.TacticalSupport != "metadata_only") {
+	if w.MinDamage == 0 && (w.MaxDamage != 0 || (w.TacticalSupport != "metadata_only" && w.TacticalSupport != "fighter")) {
 		return fmt.Errorf("tactical weapon %q has invalid zero-damage metadata", w.WeaponID)
 	}
 	switch canonicalTacticalWeaponMountType(w.MountType) {
@@ -487,11 +645,18 @@ func validateTacticalWeaponSnapshot(w TacticalWeaponSpec) error {
 		previousRank = rank
 	}
 	switch w.TacticalSupport {
-	case "", "baseline", "beam", "ordnance", "bombardment_only", "metadata_only":
+	case "", "baseline", "beam", "ordnance", "bombardment_only", "metadata_only", "fighter":
 	default:
 		return fmt.Errorf("tactical weapon %q has invalid support mode %q", w.WeaponID, w.TacticalSupport)
 	}
 	family := tacticalWeaponFamily(w)
+	if w.TacticalSupport == "fighter" {
+		if family != "fighter" || w.CraftPerUnit != 4 || w.MinDamage != 0 || w.MaxDamage != 0 {
+			return fmt.Errorf("tactical weapon %q has invalid Fighter support metadata", w.WeaponID)
+		}
+	} else if w.CraftPerUnit != 0 {
+		return fmt.Errorf("tactical weapon %q carries craft_per_unit outside Fighter support", w.WeaponID)
+	}
 	if w.TacticalSupport == "ordnance" && family != "missile" && family != "torpedo" {
 		return fmt.Errorf("tactical weapon %q family %q cannot use ordnance support", w.WeaponID, family)
 	}
@@ -641,11 +806,35 @@ func validateTacticalSpecialSnapshot(s TacticalSpecialSpec) error {
 		return fmt.Errorf("tactical special requires special_id")
 	}
 	switch s.TacticalSupport {
-	case "metadata_only", "strategic_only", "turning_mode":
+	case "metadata_only", "strategic_only", "turning_mode", "tactical_passive", "tactical_active":
 		return nil
 	default:
 		return fmt.Errorf("tactical special %q has invalid support mode %q", s.SpecialID, s.TacticalSupport)
 	}
+}
+
+func validateTacticalInternalSpec(in *TacticalInternalSpec) error {
+	if in == nil {
+		return nil
+	}
+	if in.EngineMax < 0 || in.SecondaryMax < 0 || in.ShieldGeneratorMax < 0 || len(in.Weapons) > 8 || len(in.Specials) > 8 {
+		return fmt.Errorf("invalid tactical internal maxima")
+	}
+	previous := -1
+	for _, item := range in.Weapons {
+		if item.Slot < 0 || item.Slot > 7 || item.Slot <= previous || item.Max < 0 || item.UnitSize <= 0 {
+			return fmt.Errorf("invalid tactical internal weapon pool")
+		}
+		previous = item.Slot
+	}
+	previous = -1
+	for _, item := range in.Specials {
+		if item.Slot < 0 || item.Slot > 7 || item.Slot <= previous || item.Max < 0 {
+			return fmt.Errorf("invalid tactical internal special pool")
+		}
+		previous = item.Slot
+	}
+	return nil
 }
 
 func validateTacticalCombatantSnapshot(s TacticalShipSpec) error {
@@ -744,6 +933,9 @@ func validateTacticalCombatantSnapshot(s TacticalShipSpec) error {
 		seenSpecialIDs[special.SpecialID] = struct{}{}
 		previousSpecialSlot = special.Slot
 	}
+	if err := validateTacticalInternalSpec(s.Internal); err != nil {
+		return fmt.Errorf("tactical ship %d internal snapshot: %w", s.ShipID, err)
+	}
 	return nil
 }
 
@@ -759,6 +951,41 @@ func validateBaselineRules(r TacticalRulesSnapshot) error {
 	if r.Ordnance != nil {
 		if err := validateTacticalOrdnanceRulesSnapshot(*r.Ordnance); err != nil {
 			return err
+		}
+	}
+	if r.Fighter != nil {
+		f := r.Fighter
+		if f.MovementUnitsPerField != 20 || f.CraftPerBay != 4 ||
+			f.FighterBaseSpeed != 10 || f.BomberBaseSpeed != 8 || f.HeavyFighterBaseSpeed != 8 ||
+			f.FighterBaseHits != 2 || f.BomberBaseHits != 4 || f.HeavyFighterBaseHits != 5 ||
+			f.FighterAttackStock != 4 || f.BomberAttackStock != 1 || f.HeavyFighterAttackStock != 2 ||
+			f.WarpDriveSpeedStep != 2 || f.TransDimensionalSpeedBonus != 4 ||
+			f.RecoveryDivisor != 4 || !equalInts(f.ArmorDurabilityMultiples, []int{1, 2, 4, 6, 8, 10}) {
+			return fmt.Errorf("unsupported Slice 17.8 Fighter rule constants")
+		}
+	}
+	if r.Boarding != nil {
+		b := r.Boarding
+		if b.PhysicalRange != 1 || b.TransporterRange != 4 || b.DamperTransporterDivisor != 3 ||
+			b.SecurityStationsDefenseBonus != 20 || b.RaidInternalDamageThreshold != 20 ||
+			b.RaidDefenderLossThreshold != 50 || b.RaidAttackerLossThreshold != -50 ||
+			b.CaptureQuantumRandomBound != 10 || b.CaptureQuantumDestroyMax != 5 ||
+			!equalInts(b.CrewQualityBonuses, []int{0, 5, 10, 15}) {
+			return fmt.Errorf("unsupported Slice 17.8 Boarding rule constants")
+		}
+	}
+	if r.Specials != nil {
+		x := r.Specials
+		if x.AugmentedEnginesSpeedBonus != 5 || x.BattleScannerOffenseBonus != 50 ||
+			x.CloakBeamDefenseBonus != 80 || x.CloakMissileForcedMissThreshold != 50 ||
+			x.PhasingInitialLifetime != 10 || x.EnergyAbsorberDivisor != 4 || x.DamperDamageDivisor != 4 ||
+			x.DisplacementOrdnanceMissThreshold != 30 || x.DisplacementBeamMissThreshold != 30 ||
+			x.ShieldRechargeNormalFactor != 3 || x.ShieldRechargeCapacitorFactor != 10 ||
+			x.HardShieldsAdditionalAbsorption != 3 || x.MultiPhasedShieldNumerator != 3 ||
+			x.MultiPhasedShieldDenominator != 2 || x.LightningDestroyThreshold != 50 ||
+			x.QuantumExplosionMultiplier != 3 || x.AutomatedRepairBasePercent != 20 ||
+			x.SelfTeleportMaxRange != 20 {
+			return fmt.Errorf("unsupported Slice 17.8 Special rule constants")
 		}
 	}
 	return nil
@@ -784,8 +1011,9 @@ func newTacticalRuntime(spec TacticalSpec) (tacticalRuntime, error) {
 			RNGState:            spec.InitialRNGState,
 			Ships:               make([]TacticalShipState, len(spec.Ships)),
 		},
-		nextEventSequence: 1,
-		ordnance:          initialTacticalOrdnanceState(spec),
+		nextEventSequence:    1,
+		nextMovingActorOrder: 1,
+		ordnance:             initialTacticalOrdnanceState(spec),
 	}
 	for i, ship := range spec.Ships {
 		state := TacticalShipState{ShipID: ship.ShipID, X: ship.X, Y: ship.Y, Facing: ship.Facing, MovementCurrent: ship.CurrentCombatSpeed, MovementMax: ship.CurrentCombatSpeed, ArmorCurrent: ship.ArmorMax, ShieldArcCurrent: fullTacticalShieldArcs(ship.ShieldArcMax), MarineCurrent: ship.MarineMax, Weapons: make([]TacticalWeaponState, len(ship.Weapons))}
@@ -2198,6 +2426,26 @@ func cloneTacticalSpec(spec TacticalSpec) TacticalSpec {
 	out.Rules.BeamToHitRangeModifiers = append([]int(nil), spec.Rules.BeamToHitRangeModifiers...)
 	out.Rules.BeamDamageRangeModifiers = append([]int(nil), spec.Rules.BeamDamageRangeModifiers...)
 	out.Rules.Ordnance = cloneTacticalOrdnanceRulesSnapshot(spec.Rules.Ordnance)
+	if spec.Rules.Fighter != nil {
+		fighter := *spec.Rules.Fighter
+		fighter.ArmorDurabilityMultiples = append([]int(nil), spec.Rules.Fighter.ArmorDurabilityMultiples...)
+		out.Rules.Fighter = &fighter
+	}
+	if spec.Rules.Boarding != nil {
+		boarding := *spec.Rules.Boarding
+		boarding.CrewQualityBonuses = append([]int(nil), spec.Rules.Boarding.CrewQualityBonuses...)
+		out.Rules.Boarding = &boarding
+	}
+	if spec.Rules.Specials != nil {
+		specials := *spec.Rules.Specials
+		out.Rules.Specials = &specials
+	}
+	out.FighterDoctrines = make([]TacticalFighterDoctrineSpec, len(spec.FighterDoctrines))
+	for i := range spec.FighterDoctrines {
+		out.FighterDoctrines[i] = spec.FighterDoctrines[i]
+		out.FighterDoctrines[i].BeamPayload = cloneTacticalFighterPayload(spec.FighterDoctrines[i].BeamPayload)
+		out.FighterDoctrines[i].BombPayload = cloneTacticalFighterPayload(spec.FighterDoctrines[i].BombPayload)
+	}
 	out.Ships = make([]TacticalShipSpec, len(spec.Ships))
 	for i := range spec.Ships {
 		out.Ships[i] = spec.Ships[i]
@@ -2211,8 +2459,23 @@ func cloneTacticalSpec(spec TacticalSpec) TacticalSpec {
 			genome := core.CloneShipVisualGenome(*spec.Ships[i].VisualGenome)
 			out.Ships[i].VisualGenome = &genome
 		}
+		if spec.Ships[i].Internal != nil {
+			internal := *spec.Ships[i].Internal
+			internal.Weapons = append([]TacticalInternalWeaponSpec(nil), spec.Ships[i].Internal.Weapons...)
+			internal.Specials = append([]TacticalInternalSpecialSpec(nil), spec.Ships[i].Internal.Specials...)
+			out.Ships[i].Internal = &internal
+		}
 	}
 	return out
+}
+
+func cloneTacticalFighterPayload(in *TacticalFighterPayloadSpec) *TacticalFighterPayloadSpec {
+	if in == nil {
+		return nil
+	}
+	out := *in
+	out.InnateEffectIDs = append([]string(nil), in.InnateEffectIDs...)
+	return &out
 }
 
 func cloneTacticalState(state TacticalState) TacticalState {
@@ -2236,7 +2499,7 @@ func cloneTacticalEvents(events []TacticalEvent) []TacticalEvent {
 }
 
 func cloneTacticalRuntime(r tacticalRuntime) tacticalRuntime {
-	return tacticalRuntime{state: cloneTacticalState(r.state), ordnance: cloneTacticalOrdnanceState(r.ordnance), events: cloneTacticalEvents(r.events), nextEventSequence: r.nextEventSequence}
+	return tacticalRuntime{state: cloneTacticalState(r.state), ordnance: cloneTacticalOrdnanceState(r.ordnance), events: cloneTacticalEvents(r.events), nextEventSequence: r.nextEventSequence, nextMovingActorOrder: r.nextMovingActorOrder, legacy17_8Disabled: r.legacy17_8Disabled}
 }
 
 // CloneTacticalSpec returns a detached immutable tactical battle snapshot.

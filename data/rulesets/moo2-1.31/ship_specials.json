@@ -33,7 +33,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "augmented_engines",
@@ -62,7 +62,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "automated_repair_unit",
@@ -91,7 +91,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "battle_pods",
@@ -149,7 +149,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "cloaking_device",
@@ -179,7 +179,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "damper_field",
@@ -211,7 +211,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "displacement_device",
@@ -240,7 +240,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "ecm_jammer",
@@ -271,7 +271,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "energy_absorber",
@@ -300,7 +300,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "extended_fuel_tanks",
@@ -358,7 +358,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "hard_shields",
@@ -388,7 +388,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "heavy_armor",
@@ -417,7 +417,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "high_energy_focus",
@@ -446,7 +446,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "hyper_x_capacitors",
@@ -475,7 +475,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "inertial_nullifier",
@@ -564,7 +564,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "multi_phased_shields",
@@ -594,7 +594,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "multi_wave_ecm_jammer",
@@ -625,7 +625,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "phase_shifter",
@@ -655,7 +655,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_active"
     },
     {
       "id": "phasing_cloak",
@@ -685,7 +685,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "quantum_detonator",
@@ -714,7 +714,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "rangemaster_unit",
@@ -743,7 +743,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "reflection_field",
@@ -772,7 +772,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "reinforced_hull",
@@ -801,7 +801,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "scout_lab",
@@ -859,7 +859,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "shield_capacitors",
@@ -889,7 +889,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "stealth_field",
@@ -947,7 +947,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "sub_space_teleporter",
@@ -977,7 +977,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_active"
     },
     {
       "id": "time_warp_facilitator",
@@ -1006,7 +1006,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "transporters",
@@ -1035,7 +1035,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "troop_pods",
@@ -1064,10 +1064,10 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
-      "id": "warp_dissipater",
+      "id": "warp_dissipator",
       "original_id": 37,
       "technology_id": 196,
       "base_space_by_hull": [
@@ -1093,7 +1093,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     },
     {
       "id": "wide_area_jammer",
@@ -1124,7 +1124,7 @@
       "miniaturization_class": 1,
       "miniaturizes": true,
       "support_class": 3,
-      "tactical_support": "metadata_only"
+      "tactical_support": "tactical_passive"
     }
   ]
 }

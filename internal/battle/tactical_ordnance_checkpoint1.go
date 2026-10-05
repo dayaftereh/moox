@@ -33,6 +33,7 @@ type TacticalOrdnanceWeaponState struct {
 
 type TacticalProjectileState struct {
 	ProjectileID             uint64                      `json:"projectile_id"`
+	SpawnOrder               uint64                      `json:"spawn_order,omitempty"`
 	SourceSeatID             protocol.SeatID             `json:"source_seat_id"`
 	SourceShipID             core.ID                     `json:"source_ship_id"`
 	WeaponSlot               int                         `json:"weapon_slot"`

@@ -250,3 +250,45 @@ Gate-2 validation also refined Raid persistence: `Resolve_Raid_` restores target
 ## Next
 
 Begin Gate 3 only from the frozen six-checkpoint implementation plan: (1) rules/data/schema, (2) internal systems/passive derivation, (3) Fighter lifecycle, (4) Boarding/Capture, (5) Special lifecycle/scheduler, (6) persistence/AI/UI/integration.
+
+### Gate 3 Checkpoint 1 - complete
+
+Implementation evidence:
+
+`docs/research/SLICE_17_8_GATE3_IMPLEMENTATION_EVIDENCE_2026-10-05.md`
+
+Checkpoint-1 result: **PASS / COMPLETE**.
+
+Implemented foundation:
+
+- Fighter/Bomber/Heavy-Fighter support identity is now `fighter` with four craft per Bay unit;
+- frozen Combat-Special support classes are projected and strictly validated;
+- original Special row 37 is canonicalized to `warp_dissipator`;
+- frozen Fighter/Boarding/Special rule blocks are in rules data and immutable Tactical snapshots;
+- Fighter doctrine snapshots derive best-known Empire drive/armor plus Trans-Dimensional state;
+- immutable Internal-system DTO/validation/clone shape is reserved for Checkpoint 2 consumers;
+- LiveSnapshot v2 migration scaffolding is active with `legacy_17_8_disabled`, shared moving-actor ordering and deterministic schema-v1 projectile migration;
+- reviewed ruleset SHA is `800c8813437503390d2420f8ee50eeb6e528b9bf960fce725f88448b966fda3a`.
+
+Validation passed:
+
+- `go test ./internal/ruleset`
+- `go test ./internal/battle`
+- `go test ./internal/game`
+- `go test ./...`
+- `git diff --check`
+
+No Fighter actor lifecycle, Boarding resolver or Combat-Special effect consumer has been implemented yet.
+
+### Next
+
+Gate 3 Checkpoint 2 - **Internal systems / passive derivation**:
+
+- immutable/current internal pools;
+- mutable current combat speed;
+- shared Special-functionality helper;
+- Reinforced Hull / Heavy Armor / Hard Shields / Multi-Phased Shields;
+- Augmented Engines / Battle Scanner / ECM derivations;
+- internal-damage event foundation.
+
+Do not advance to Checkpoint 3 before Checkpoint 2 is independently reviewed and green.

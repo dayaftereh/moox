@@ -164,6 +164,11 @@ func TestSlice175Checkpoint2LaterFamilyWeaponsDoNotBlockAdmission(t *testing.T) 
 			if reason != "" || tactical == nil {
 				t.Fatalf("later-family weapon blocked encounter: tactical=%+v reason=%q", tactical, reason)
 			}
+			if weaponID == "fighter_bays" {
+				tactical.FighterDoctrines = []battle.TacticalFighterDoctrineSpec{{
+					SeatID: 1, EmpireID: 1, BestWarpDriveIndex: 1, ArmorDurabilityMultiple: 1,
+				}}
+			}
 			session, err := battle.NewSession(checkpoint2BattleSpec(encounter, tactical))
 			if err != nil {
 				t.Fatalf("BattleSession rejected later-family metadata: %v", err)
