@@ -1512,3 +1512,396 @@ The remaining original-formula blockers from the deferred Class-3 matrix are now
 - explicitly unsupported/deferred where the audited 1.31 executable does not expose a reachable consumer (Phase-Shifter other-ship teleport).
 
 No accepted Slice-17.8 Tactical behavior now depends solely on HELP prose for its core combat formula. The remaining Gate-1 work is MOOX runtime-contract mapping, persistence/projection/AI requirements and final representative closure vectors.
+
+## 24. Checkpoint L - MOOX runtime contract mapping
+
+Checkpoint K closes the remaining original-executable formula/reachability questions. This checkpoint maps those audited mechanics onto the current MOOX BattleSession architecture without implementing them.
+
+### 24.1 Existing authority surfaces that 17.8 must extend
+
+Current MOOX already has the correct authority boundaries:
+
+- immutable ship combat identity is carried by `TacticalShipSpec`;
+- installed Specials are already projected as ordered `TacticalSpecialSpec{Slot, SpecialID, TacticalSupport}`;
+- mutable ship combat state is owned by `TacticalShipState`;
+- command sequencing and RNG live in `TacticalState`;
+- authoritative mutations emit ordered `TacticalEvent` records;
+- `PrepareCommand` validates against the current command sequence and works on a cloned runtime before commit;
+- `CommitPreparedCommand` rejects stale prepared revisions;
+- player views redact RNG state and expose actions only to the active controlling seat;
+- `LiveSnapshot` round-trips Tactical state, ordnance state, events and next-event sequence;
+- built-in AI consumes the same projected legal-action catalog used by normal BattleSession authority.
+
+17.8 must extend those surfaces. It must not create a second fighter/special simulation beside BattleSession.
+
+### 24.2 Current gaps are explicit
+
+At this checkpoint the current runtime still has these deliberate gaps:
+
+- Fighter/Bomber/Heavy-Fighter weapon rows remain `metadata_only`; no fighter actor state is projected or persisted.
+- `TacticalSpecialSpec` is immutable metadata only. Current Tactical support validation accepts only `metadata_only`, `strategic_only` and `turning_mode`.
+- `TacticalShipState` has no mutable cloak/phasing counter, Energy-Absorber store, active-Special used flag, automated-repair temporary state, boarding-used flag or captured-owner/control field.
+- `TacticalShipView` exposes weapons and ship durability/Marine state but not installed Special state/action availability.
+- `TacticalView` has no fighter actor collection, boarding action catalog or active-Special action catalog.
+- `PrepareCommand` currently dispatches Move, Beam, Ordnance, End, Wait and Retreat only; it has no Fighter-launch, Boarding or active-Special command.
+- `TacticalLiveSnapshot` carries Tactical state, ordnance, events and event sequence only; there is no 17.8 fighter/special transient state to validate or restore.
+- the built-in AI battle catalog currently consumes `WeaponActions`, approach Move and End Activation; it has no projected Boarding/Fighter/active-Special decision surface.
+- the browser Tactical client consumes projected weapon actions/events and therefore likewise has no authoritative 17.8 action surface yet.
+
+These are implementation gaps, not evidence gaps.
+
+### 24.3 Gate-2 state ownership requirements
+
+Gate 2 should freeze one server-owned 17.8 runtime extension with the following state categories.
+
+**Fighter actor/group state**
+
+Must persist enough information to continue deterministically after save/reconnect:
+
+- stable actor/group ID;
+- owner seat/empire;
+- carrier ship ID and source weapon slot;
+- fighter kind: Fighter / Bomber / Heavy Fighter;
+- live craft multiplicity;
+- Tactical position/target/return state;
+- speed and durability inputs frozen from the launch snapshot;
+- payload identity needed by the recovered Beam/Bomb passes;
+- lifecycle phase sufficient to distinguish outbound/engaged/returning/recovered/destroyed;
+- authoritative RNG/order remains in the shared BattleSession RNG, not actor-local RNG.
+
+The existing Slice-17.7 moving-actor/ordnance substrate should be reused where representation is compatible, but Fighter groups must retain carrier-return/recovery semantics rather than masquerading as disposable missiles.
+
+**Per-ship Special state**
+
+Only transient state proven necessary by the audit should be mutable:
+
+- cloak/phasing state and Phasing lifetime counter;
+- Energy Absorber stored energy;
+- once-per-turn active-Special used flags for reachable teleport use;
+- Hyper-X / Fast-Missile-Rack readiness/rearm state on the relevant weapon row;
+- any shield-recharge/repair state that cannot be derived from ordinary ship state at the authoritative phase boundary.
+
+Pure passive Specials such as Augmented Engines, Battle Scanner, Reinforced Hull, Heavy Armor, Hard Shields, Multi-Phased Shields, ECM families, Rangemaster and High Energy Focus should be derived from immutable Special presence plus existing ship state, not duplicated as mutable booleans.
+
+**Boarding/capture state**
+
+Reuse existing `MarineCurrent` / `MarineMax`. Add only what the original lifecycle requires:
+
+- per-combat boarding-used/eligibility state;
+- authoritative current owner/control identity if capture changes command ownership in-place;
+- post-capture state required by repair/retreat/Special eligibility;
+- any capture reconciliation field that cannot be derived from the transferred owner and current Marine state.
+
+### 24.4 Command/action projection requirements
+
+Gate 2 should preserve the current rule that the browser and AI consume **projected legal actions** and never calculate combat legality themselves.
+
+17.8 therefore requires server-projected action catalogs for three semantic families:
+
+1. **Fighter launch/action**
+   - only active ship / correct seat;
+   - source Fighter weapon row must be executable and ready;
+   - legal target must come from server projection;
+   - rejection consumes no RNG/readiness;
+   - accepted launch creates authoritative actor/group state and consumes the Bay row's launch/readiness state.
+
+2. **Boarding**
+   - only active ship / correct seat;
+   - enough Marines and unused boarding capability;
+   - original normal/Transporter range and facing-shield/Hard-Shield/Damper rules;
+   - target must be enemy and capture-eligible;
+   - rejection consumes no Marines/RNG;
+   - accepted command owns all raid/capture RNG, casualties, ownership transfer and post-capture reconciliation.
+
+3. **Active Special**
+   - only Specials with a directly reachable active command are projected;
+   - Phase-Shifter self-teleport is eligible; orphaned other-ship teleport is not;
+   - legal destination/range/use-state comes from server projection;
+   - passive/reactive Specials never appear as fake player commands.
+
+Exact protocol command strings belong to Gate 2; Gate 1 freezes the semantic separation and authority rules.
+
+### 24.5 Rejection contract
+
+17.8 must keep the already accepted Tactical rejection invariant:
+
+- malformed/stale/wrong-seat/wrong-active-ship/unsupported/not-ready/no-target/out-of-range/already-used actions reject before authoritative mutation;
+- rejected commands consume zero combat RNG;
+- rejected commands do not consume Marines, Bay craft, weapon readiness, Special use state or movement;
+- rejected commands do not append success/resolution events;
+- a failed prepared-command commit because of revision staleness cannot overwrite newer Tactical state.
+
+Where an unavailable action is useful to the UI, it should be projected with a stable unavailable reason instead of requiring the browser to rediscover legality.
+
+### 24.6 Event vocabulary requirements
+
+17.8 events must describe authoritative mutations, not animation instructions. At minimum the contract needs semantically distinct events for:
+
+**Fighters**
+- group launched;
+- group moved/retargeted when needed for deterministic replay/presentation;
+- fighter attack resolved with enough aggregate/per-craft detail to explain losses/damage;
+- fighter group damaged/destroyed;
+- return/recovery completed or failed because the carrier no longer exists.
+
+**Boarding**
+- boarding action started/resolved;
+- attacker/defender Marine casualties;
+- raid effect when no capture occurs;
+- capture success/repel result;
+- ship owner/control transfer;
+- Quantum-Detonator capture destruction when triggered.
+
+**Specials**
+- active teleport resolved;
+- stored Energy-Absorber attack resolved;
+- reactive projectile-defense mutation should reuse the existing Slice-17.7 projectile/interception event family where the affected object is the same shared moving actor;
+- repair/shield-recharge/passive modifiers need events only when they cause an externally visible mutable change not already represented by an existing generic damage/ship-state event.
+
+Event payloads must contain stable IDs and before/after values sufficient for observer/browser explanation; presentation timing remains client-side.
+
+### 24.7 Player / observer projection
+
+Projection should remain state-first and server-authoritative:
+
+- active seat receives legal 17.8 action catalogs;
+- inactive players and observers receive state/events but no executable action catalog for ships they do not control;
+- RNG state remains redacted exactly as today;
+- installed Special identities needed by the Tactical scan/UI must be projected from the immutable ship spec or an explicit Special view;
+- mutable cloak/phasing/Absorber/use-state is projected only to the visibility level required by the original Tactical information model; Gate 2 must make this explicit rather than leaking internal RNG/counters by default;
+- Fighter actors/groups require stable public identity, owner, position, multiplicity and lifecycle state sufficient for rendering and target selection.
+
+### 24.8 Persistence / replay / reconnect contract
+
+The existing Battle `LiveSnapshot` is the mandatory persistence boundary.
+
+Gate 2 must extend it so that a save taken at any accepted command boundary round-trips:
+
+- fighter actor/group collection and next actor ID;
+- Bay launch/readiness state;
+- Fighter target/return/carrier linkage;
+- cloak/phasing state and counter;
+- Energy Absorber stored energy;
+- active-Special used state;
+- boarding-used/post-capture/owner-control state;
+- existing Marines, shield arcs, weapon readiness, ordnance, RNG state and events.
+
+Restore validation must reject impossible state, including:
+
+- unknown carrier/target/owner IDs;
+- Fighter multiplicity outside the frozen launch/survivor bounds;
+- recovered/destroyed actors still targetable;
+- active Special state on a ship that does not carry the Special;
+- Phasing/Absorber/use counters outside their frozen domains;
+- Marine counts outside `0..MarineMax`;
+- captured ownership/control inconsistent with the authoritative ship state;
+- event/command sequence mismatches.
+
+A restored session given the same next legal command must produce byte-equivalent authoritative state/events to the un-restored session.
+
+### 24.9 Built-in AI contract
+
+The built-in AI must not receive a private resolver.
+
+Its Battle decision catalog must consume the same new server-projected actions as a human seat:
+
+- legal Fighter launch/target choices;
+- legal Boarding choices;
+- legal active-Special choices;
+- existing Beam/Ordnance/Move/End choices.
+
+The baseline policy may remain simple, but it must be capable of selecting each supported action family and must never bypass server legality. Original AI evidence already proves Boarding ownership and Warp-Dissipator retreat interaction; Gate 2/3 implementation may choose deterministic baseline priorities without changing the recovered combat formula.
+
+### 24.10 Browser/UI contract
+
+The browser remains presentation-only for combat math.
+
+It may:
+
+- render projected Fighter groups and multiplicity;
+- offer projected Fighter/Boarding/active-Special actions;
+- display stable unavailable reasons;
+- animate from Tactical events;
+- show Marine/capture/Special/Fighter state exposed by the server.
+
+It must not:
+
+- calculate Fighter hit/damage/loss RNG;
+- decide transporter/shield boarding legality;
+- derive Special ranges/cooldowns;
+- mutate owner/control locally;
+- emulate fighter return/recovery;
+- predict hidden RNG to decide availability.
+
+This keeps Slice 17.8 consistent with the accepted 17.5-17.7 authority model.
+
+## 25. Checkpoint M - deterministic closure vectors
+
+These vectors are implementation references assembled only from formulas/order already frozen in Checkpoints A-K. They are not new mechanics.
+
+### 25.1 Passive shield stack vector
+
+Assume normal per-facing shield maximum = 40.
+
+**Nebula/global shield suppression, no Hard Shields**
+- suppression reduces max to 0;
+- Multi-Phased Shields then applies to the surviving value;
+- result remains 0.
+
+**Same ship with Hard Shields**
+- Hard Shields preserves the normal 40 through suppression;
+- Multi-Phased Shields applies `(3 * 40) / 2 = 60`;
+- final per-facing maximum = 60.
+
+For an incoming shielded hit whose current damage has already reached the normal shield-absorption step with 10 damage and shield strength 5:
+
+- normal shield subtraction -> 5;
+- Hard Shields additional subtraction -> 2;
+- final value continues from 2, clamped at zero if the extra subtraction would underflow.
+
+### 25.2 Energy Absorber -> Damper ordering vector
+
+Incoming current damage = 20.
+
+Energy Absorber:
+- absorbed store increment = `20 / 4 = 5`;
+- remaining current damage = 15.
+
+Damper Field then quarters the remaining damage:
+- `15 / 4 = 3` with the recovered positive integer semantics.
+
+Therefore the combined ordered result is:
+- stored Energy Absorber energy +5;
+- downstream current damage 3.
+
+Applying Damper first would produce a different result and is therefore invalid.
+
+### 25.3 Reflection Field vector
+
+Current Beam hit damage `D = 20`.
+
+Original reflection bound:
+- `Random_(D + 15) = Random_(35)`.
+
+Representative rolls:
+- roll 20 -> not strictly greater than D -> no reflection, target continues with 20;
+- roll 21 -> strictly greater than D -> target damage becomes 0 and reflected output becomes 20.
+
+The reflected 20 then re-enters the shared ship-damage resolver against the firing ship.
+
+### 25.4 Lightning Field grouped-actor vector
+
+Initial moving-actor multiplicity = 4.
+
+Roll sequence: success, success where success means `<50`.
+
+- attempt 0 succeeds: multiplicity 4 -> 3;
+- iteration index becomes 1; 1 < 3, continue;
+- attempt 1 succeeds: multiplicity 3 -> 2;
+- iteration index becomes 2; 2 < 2 is false, stop.
+
+Result:
+- exactly two RNG draws;
+- final multiplicity = 2.
+
+An implementation that rolls four times from the original launch count is not original parity.
+
+### 25.5 Shield Capacitor distribution vector
+
+Assume base per-facing shield value = 20 and all four facings are currently 4 points below maximum.
+
+Normal recharge factor 3:
+- budget = `20 * 3 / 10 = 6`;
+- pointwise scan order yields six one-point repairs;
+- with equal deficits this produces increments `[2,2,1,1]`.
+
+Shield Capacitors factor 10:
+- budget = `20 * 10 / 10 = 20`;
+- only 16 total points are missing;
+- all facings reach maximum and the pass stops with unused budget.
+### 25.6 Quantum Detonator explosion vector
+
+Assume `hull_explosion_value = 8`.
+
+Normal:
+- `5 * 8 = 40` explosion power.
+
+Quantum Detonator:
+- `40 * 3 = 120` explosion power.
+
+This is separate from the capture-time `Random_(10)` self-destruction branch.
+
+### 25.7 Automated Repair durability vector
+
+Assume:
+- Structure max = 100;
+- Armor max = 200;
+- effective repair percent = 20;
+- current Structure damage = 50;
+- current Armor is 180/200.
+
+Durability budget:
+- `20 * (100 + 200) / 100 = 60`.
+
+Application:
+- first 50 removes all Structure damage;
+- 10 remains;
+- remaining 10 restores Armor 180 -> 190.
+
+The durability pass does not randomly choose a pool.
+
+For internal repair, if `Max_Total_Internal_Space = 300`:
+- internal budget = `20 * 300 / 200 = 30`;
+- those 30 points are consumed in the recovered fixed pool order until exhausted.
+
+### 25.8 Augmented Engines / Battle Scanner derivation vector
+
+Assume the normal working combat speed before engine-damage scaling is 8 and both Specials are functional.
+
+Augmented Engines:
+- working speed becomes 13 before the later recovered scaling/modifier stages.
+
+Battle Scanner:
+- shared offensive-combat bonus receives +50.
+
+Neither effect consumes a command, use-state or RNG.
+
+### 25.9 Fighter / Boarding references
+
+The dedicated earlier vectors remain authoritative and are not duplicated:
+
+- Fighter/Bomber/Heavy-Fighter launch multiplicity, speed, durability, payload and return/loss vectors: Checkpoint C;
+- Fighter Beam hit/damage/RNG vectors: Checkpoint E;
+- Boarding raid/capture differential, casualty and survivor-transfer vectors: Checkpoints B-D.
+
+Together with Sections 25.1-25.8 these satisfy the representative Fighter, Bomber, Boarding and passive/active/reactive Special vector requirement.
+
+## 26. Gate-1 completion review
+
+Re-evaluating the Gate-1 criteria from Section 6:
+
+- **Fighter/Bomber/Heavy-Fighter identity and lifecycle:** COMPLETE from direct actor substrate, multiplicity, speed/durability, payload, target, loss, return/recovery and carrier-loss evidence.
+- **Class-3 per-row classification:** COMPLETE; every deferred row is classified and its ownership/support state is explicit.
+- **Accepted Tactical Special formula/order/RNG/target semantics:** COMPLETE for accepted 17.8 behavior. Unreachable Phase-Shifter other-ship teleport is explicitly unsupported/deferred rather than guessed.
+- **Boarding/Marine semantics:** COMPLETE, including normal/Transporter legality, shields/Hard Shields/Damper, force selection, RNG differential, casualties, raid/capture, Security Stations, Quantum Detonator, survivor transfer and capture reconciliation.
+- **Persistence/replay/Observer/UI/AI requirements:** COMPLETE as MOOX runtime-contract mapping in Checkpoint L.
+- **Deterministic representative vectors:** COMPLETE across Fighter/Bomber, Fighter Beam, Boarding, Lightning, Reflection, shield stack/recharge, Absorber/Damper, Quantum, repair and passive derivation.
+- **Unsupported behavior guessed:** NONE. HELP/executable discrepancies are retained explicitly and unreachable behavior is deferred.
+
+### 26.1 Gate-1 result
+
+**Slice 17.8 Gate 1 is COMPLETE.**
+
+Gate 1 closes as an audit/evidence gate only. No production implementation has been started.
+
+The next allowed step is **Gate 2 - contract freeze**, which must translate this evidence into exact MOOX schemas, protocol names, state domains, event payloads, ordering hooks, persistence validation and implementation checkpoints before any 17.8 production mechanics are added.
+
+Gate 2 must in particular preserve:
+
+- reuse of 17.6 Beam and 17.7 moving-actor/ordnance authority;
+- one BattleSession RNG/order stream;
+- no client-side combat authority;
+- no second parallel Special representation;
+- explicit Warp-Dissipator row-37 data projection repair;
+- explicit unsupported/deferred Phase-Shifter other-ship teleport;
+- save/restore determinism for every new mutable 17.8 field.

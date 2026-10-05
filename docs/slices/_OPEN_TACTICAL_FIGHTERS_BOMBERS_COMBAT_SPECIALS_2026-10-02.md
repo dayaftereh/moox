@@ -195,3 +195,29 @@ The original-formula/reachability blocker is closed. Gate 1 remains open only fo
 ## Next
 
 Map the current BattleSession command/view/live-snapshot/AI gaps into the Gate-2 requirements, add final representative vectors, then evaluate Gate-1 completion without starting production implementation.
+### Checkpoint L/M update
+
+The current MOOX BattleSession/runtime gap is now mapped into explicit Gate-2 requirements without implementing production mechanics:
+
+- extend the existing TacticalShipSpec/TacticalShipState/TacticalEvent/LiveSnapshot architecture rather than creating a parallel fighter/special engine;
+- persist authoritative Fighter group lifecycle, carrier linkage, multiplicity/target/return state and shared BattleSession RNG ordering;
+- keep only proven transient Special state mutable (cloak/phasing, Absorber store, teleport use-state, Hyper-X/FMR readiness/rearm); derive passive Specials from immutable installed identity;
+- reuse MarineCurrent/MarineMax and add only boarding-used/post-capture/owner-control state required by the original lifecycle;
+- add server-projected legal action families for Fighter launch, Boarding and directly reachable active Specials; rejection consumes zero RNG/state;
+- add authoritative Fighter/Boarding/Special events with stable IDs and before/after mutation detail;
+- extend LiveSnapshot restore validation so save/reconnect/replay is deterministic for every new mutable 17.8 field;
+- expose the same projected actions to built-in AI; browser remains presentation-only.
+
+Final deterministic closure vectors are now recorded for shield stack/Hard Shields, Energy Absorber -> Damper order, Reflection, Lightning grouped multiplicity, Shield Capacitor distribution, Quantum explosion, Automated Repair, Augmented Engines/Battle Scanner, with the earlier Fighter/Bomber/Boarding vectors retained as authoritative references.
+
+## Gate 1 result
+
+**Slice 17.8 Gate 1 is COMPLETE.**
+
+All original formula/reachability questions accepted for 17.8 are frozen or explicitly unsupported/deferred, runtime/persistence/UI/AI requirements are mapped, and representative deterministic vectors exist.
+
+No Slice-17.8 production implementation has started.
+
+## Next
+
+Start **Gate 2 - contract freeze** only: define exact MOOX state schemas, protocol/action names, event payloads, validation domains, persistence migration and implementation checkpoints from the Gate-1 evidence. Do not begin production mechanics until that Gate-2 contract is frozen.
