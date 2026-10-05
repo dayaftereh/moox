@@ -1905,3 +1905,25 @@ Gate 2 must in particular preserve:
 - explicit Warp-Dissipator row-37 data projection repair;
 - explicit unsupported/deferred Phase-Shifter other-ship teleport;
 - save/restore determinism for every new mutable 17.8 field.
+## 27. Gate-2 validation correction - Raid Marine persistence
+
+During Gate-2 contract validation, the direct caller/tail path around `Resolve_Raid_` was traced one level farther than the Gate-1 summary.
+
+This **refines persistence only**; it does not change the already-frozen Raid RNG thresholds or internal-damage behavior.
+
+Direct sequence:
+
+1. `Initiate_Boarding_Action_` subtracts the selected boarding party from the source Ship's `MarineCurrent` before calling the resolver;
+2. `Resolve_Raid_` uses temporary attacker/defender Marine totals while evaluating the frozen Raid differential and internal-damage branches;
+3. before returning, `Resolve_Raid_` restores the target Ship's `MarineCurrent` to its saved pre-Raid value and writes the surviving/returned party value through the caller-owned party pointer;
+4. the caller then adds that returned party value back to the source Ship's `MarineCurrent`.
+
+Therefore the original Raid contract for Slice 17.8 is:
+
+- Raid Marine losses shown/used inside the resolver are **temporary resolution accounting**, not durable Tactical Marine casualties;
+- the target Ship's persistent `MarineCurrent` is unchanged by a completed Raid;
+- the returned boarding party is reconciled back to the source Ship;
+- persistent Raid output is the selected internal-system damage/state mutation;
+- Capture remains the Boarding mode that can persist Marine survivor transfer and ownership change.
+
+This correction supersedes any earlier Gate-1 wording that could be read as Raid permanently killing source/target Marines. Gate-1 completion remains valid; Gate 2 freezes the corrected persistence semantics.
