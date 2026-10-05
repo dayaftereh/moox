@@ -221,3 +221,32 @@ No Slice-17.8 production implementation has started.
 ## Next
 
 Start **Gate 2 - contract freeze** only: define exact MOOX state schemas, protocol/action names, event payloads, validation domains, persistence migration and implementation checkpoints from the Gate-1 evidence. Do not begin production mechanics until that Gate-2 contract is frozen.
+### Gate 2 contract-freeze update
+
+Gate 2 is now frozen in:
+
+`docs/research/SLICE_17_8_GATE2_TACTICAL_FIGHTERS_SPECIALS_CONTRACT_FREEZE_2026-10-05.md`
+
+Frozen contract highlights:
+
+- Fighter/Bomber/Heavy-Fighter rows become `TacticalSupport="fighter"` with server-owned Bay/group lifecycle and shared moving-actor ordering;
+- Fighter doctrine snapshots freeze best-drive, armor-durability, Trans-Dimensional and Fighter Beam/Bomb payload identity per participant;
+- real internal-system state is introduced for Achilles, Raid damage and Automated Repair rather than faking subsystem effects;
+- Boarding freezes `battle.board_ship` with immediate physical/Transporter resolution, temporary Raid Marine accounting, persistent Capture survivor/owner transfer, and server-projected legality;
+- self-teleport reuses `battle.move_ship` with `movement_kind=teleport`; no generic client Special command is invented;
+- mutable owner/controller, cloak/phasing, Absorber, teleporter, Boarding and weapon Special-readiness state are server-owned;
+- LiveSnapshot v2 freezes all new mutable state; schema-1 active battles restore compatibly with 17.8 execution disabled rather than guessed hidden state;
+- built-in AI and browser consume the same server-projected action/state/event surfaces;
+- Warp Dissipator original row 37 must be restored to rules data before its Tactical consumer is enabled;
+- Phase-Shifter other-ship teleport remains unsupported/deferred;
+- Anti-Missile Rockets remain deferred until their original consumable live-count source can be represented without invention.
+
+Gate-2 validation also refined Raid persistence: `Resolve_Raid_` restores target Marines and returns the temporary boarding party to the source; persistent Raid output is internal-system damage, while Capture owns durable Marine/ownership transfer.
+
+## Gate 2 result
+
+**Slice 17.8 Gate 2 is FROZEN / COMPLETE. Gate 3 implementation is ready but has not started.**
+
+## Next
+
+Begin Gate 3 only from the frozen six-checkpoint implementation plan: (1) rules/data/schema, (2) internal systems/passive derivation, (3) Fighter lifecycle, (4) Boarding/Capture, (5) Special lifecycle/scheduler, (6) persistence/AI/UI/integration.
