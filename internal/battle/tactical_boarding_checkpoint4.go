@@ -120,6 +120,26 @@ func tacticalControllerSeat(ship TacticalShipSpec, state *TacticalShipState) pro
 	return ship.SeatID
 }
 
+func tacticalRetreatBlockedByWarpDissipator(spec TacticalSpec, r *tacticalRuntime, retreatOwner core.ID) bool {
+	if r == nil || retreatOwner == 0 || r.legacy17_8Disabled {
+		return false
+	}
+	for i := range spec.Ships {
+		ship := spec.Ships[i]
+		state := r.shipState(ship.ShipID)
+		if state == nil || state.Destroyed || state.PostCaptureState {
+			continue
+		}
+		if tacticalOwnerEmpire(ship, state) == retreatOwner {
+			continue
+		}
+		if TacticalSpecialFunctional(ship, *state, r.legacy17_8Disabled, "warp_dissipator") {
+			return true
+		}
+	}
+	return false
+}
+
 func tacticalBoardingActions(spec TacticalSpec, r *tacticalRuntime, source *TacticalShipSpec, sourceState *TacticalShipState) []TacticalBoardingActionAvailability {
 	if r == nil || source == nil || sourceState == nil || r.legacy17_8Disabled || sourceState.Destroyed || sourceState.ActivationComplete {
 		return nil
@@ -404,6 +424,86 @@ func resolveTacticalRaid(spec TacticalSpec, r *tacticalRuntime, seatID protocol.
 	})
 }
 
+func reconcileTacticalCaptureMovingActors(spec TacticalSpec, r *tacticalRuntime, capturedShipID core.ID, newOwner core.ID, eventSeat protocol.SeatID, commandSequence uint32) error {
+	for i := 0; i < len(r.ordnance.Projectiles); {
+		projectile := &r.ordnance.Projectiles[i]
+		if projectile.TargetShipID != capturedShipID {
+			i++
+			continue
+		}
+		sourceEmpire := tacticalEmpireForSeat(spec, projectile.SourceSeatID)
+		if sourceEmpire == 0 {
+			return fmt.Errorf("projectile %d source seat %d is invalid during capture reconciliation", projectile.ProjectileID, projectile.SourceSeatID)
+		}
+		if sourceEmpire != newOwner {
+			i++
+			continue
+		}
+		targets := tacticalOrdnanceRetargetIDs(spec, r, sourceEmpire)
+		if len(targets) == 0 {
+			projectileID := projectile.ProjectileID
+			r.ordnance.Projectiles = append(r.ordnance.Projectiles[:i], r.ordnance.Projectiles[i+1:]...)
+			if err := r.appendEvent("projectile_destroyed", eventSeat, commandSequence, map[string]any{
+				"projectile_id": projectileID, "reason": "no_target",
+			}); err != nil {
+				return err
+			}
+			continue
+		}
+		previous := projectile.TargetShipID
+		projectile.TargetShipID = targets[0]
+		if err := r.appendEvent("projectile_retargeted", eventSeat, commandSequence, map[string]any{
+			"projectile_id":           projectile.ProjectileID,
+			"previous_target_ship_id": previous,
+			"new_target_ship_id":      projectile.TargetShipID,
+			"reason":                  "target_invalid",
+		}); err != nil {
+			return err
+		}
+		i++
+	}
+
+	for i := 0; i < len(r.fighters.Groups); {
+		group := &r.fighters.Groups[i]
+		if group.Phase != TacticalFighterPhaseOutbound || group.TargetShipID != capturedShipID {
+			i++
+			continue
+		}
+		sourceEmpire, ok := tacticalFighterSourceEmpire(spec, *group)
+		if !ok {
+			return fmt.Errorf("Fighter group %d source identity is invalid during capture reconciliation", group.GroupID)
+		}
+		if sourceEmpire != newOwner {
+			i++
+			continue
+		}
+		retargeted, err := tacticalFighterRetarget(spec, r, group, eventSeat, commandSequence)
+		if err != nil {
+			return err
+		}
+		if retargeted {
+			i++
+			continue
+		}
+		if tacticalFighterCarrierFunctional(spec, r, *group) {
+			if err := tacticalFighterBeginReturn(spec, r, group, "no_target", eventSeat, commandSequence); err != nil {
+				return err
+			}
+			i++
+			continue
+		}
+		groupID := group.GroupID
+		multiplicity := group.Multiplicity
+		r.fighters.Groups = append(r.fighters.Groups[:i], r.fighters.Groups[i+1:]...)
+		if err := r.appendEvent("fighter_group_destroyed", eventSeat, commandSequence, map[string]any{
+			"group_id": groupID, "reason": "carrier_unavailable", "multiplicity_before": multiplicity,
+		}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func resolveTacticalCapture(spec TacticalSpec, r *tacticalRuntime, seatID protocol.SeatID, commandSequence uint32, source TacticalShipSpec, sourceState *TacticalShipState, target TacticalShipSpec, targetState *TacticalShipState, effectiveParty int, delivery string) error {
 	targetMarineBefore := targetState.MarineCurrent
 	previousOwner := tacticalOwnerEmpire(target, targetState)
@@ -460,6 +560,8 @@ func resolveTacticalCapture(spec TacticalSpec, r *tacticalRuntime, seatID protoc
 	}
 
 	targetState.MarineCurrent = attackerSurvivors
+	targetState.TeleporterUsed = false
+	targetState.AlreadyBoarded = false
 	targetState.BeingCaptured = false
 
 	if TacticalSpecialFunctional(target, *targetState, r.legacy17_8Disabled, "quantum_detonator") {
@@ -501,6 +603,9 @@ func resolveTacticalCapture(spec TacticalSpec, r *tacticalRuntime, seatID protoc
 	newController := tacticalControllerSeat(source, sourceState)
 	targetState.OwnerEmpireID = newOwner
 	targetState.ControllerSeatID = newController
+	if err := reconcileTacticalCaptureMovingActors(spec, r, target.ShipID, newOwner, seatID, commandSequence); err != nil {
+		return err
+	}
 	newDoctrine := tacticalBoardingDoctrine(spec, newController)
 	telepathicBypass := newDoctrine != nil && newDoctrine.Telepathic
 	targetState.PostCaptureState = !telepathicBypass
@@ -586,6 +691,9 @@ func prepareBoardShip(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, com
 	sourceMarineBefore := activeState.MarineCurrent
 	activeState.MarineCurrent -= payload.MarineCount
 	activeState.AlreadyBoarded = true
+	if action.DeliveryMode == TacticalBoardingDeliveryTransporter {
+		activeState.TeleporterUsed = true
+	}
 	if payload.Mode == TacticalBoardingModeCapture {
 		targetState.BeingCaptured = true
 	}

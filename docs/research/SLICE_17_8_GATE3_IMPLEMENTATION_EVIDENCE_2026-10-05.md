@@ -356,3 +356,66 @@ No rules-data file changes are required by Checkpoint 3, so the reviewed `moo2-1
 Next authorized work:
 
 **Gate 3 Checkpoint 4 - Boarding / Capture.**
+
+
+## Checkpoint 4 - Boarding / Capture
+
+Status: **COMPLETE / PASS**
+
+### Boarding / Raid / Capture
+
+Checkpoint 4 implements the frozen `battle.board_ship` contract as BattleSession-owned Tactical state:
+
+- server-projected physical/Transporter Boarding legality and bounded Marine selection;
+- persisted Boarding/Transporter use flags;
+- Raid temporary Marine accounting with persistent internal damage (Vector C);
+- Capture Ground Combat, survivor transfer, Quantum-before-owner-transfer, mutable owner/controller and Telepathic post-capture handling (Vector D);
+- immediate reconciliation of inbound projectiles/Fighter groups after ownership transfer.
+
+Current MOOX has no authoritative fleet-officer or per-ship crew-quality runtime, so those original terms remain explicit frozen zero inputs. Ground-Combat and Telepathic race/research state are projected authoritatively.
+
+### Mutable authority / moving actors
+
+Post-Capture command, targeting, action-projection and winner authority now use mutable `OwnerEmpireID` / `ControllerSeatID`.
+
+Already-launched Fighter/projectile actors retain their frozen launch `SourceSeatID`; new launches from a captured ship use its current controller. Fighter recovery requires the carrier's current controller to remain compatible with the frozen launch seat.
+
+Capture immediately retargets inbound actors that become friendly after ownership transfer. Projectiles without a remaining hostile target use the existing `no_target` destruction path; Fighters use the existing retarget / return / carrier-unavailable lifecycle.
+
+### Warp Dissipator
+
+A functional enemy `warp_dissipator` now suppresses server `battle.retreat` and projected `CanRetreat`.
+
+Destroyed, post-capture-invalid, damaged/non-functional, or newly friendly carriers do not block retreat. Built-in AI common action-catalog work remains reserved for Checkpoint 6; no separate current retreat mutation bypasses the server command path.
+
+### LiveSnapshot v3
+
+Restore validation now checks:
+
+- valid mutable ship owner/controller pairs;
+- frozen actor source-side identity from `SourceSeatID`;
+- current ship-target hostility against mutable ownership;
+- actor-vs-actor hostility using frozen launch-side identity.
+
+### Regression evidence
+
+Passed on the final reviewed Checkpoint-4 working tree:
+
+- dedicated `TestSlice178Gate3Checkpoint4*` regressions, including Vectors C/D, mutable authority, actor reconciliation and Warp Dissipator;
+- `go test ./internal/battle`;
+- `go test ./internal/game`;
+- `go test ./internal/ruleset`;
+- `go test ./...`;
+- `git diff --check`.
+
+No rules-data files changed in Checkpoint 4. The reviewed `moo2-1.31` ruleset fingerprint remains:
+
+`68c06a57bb9fdc18c0ff8045b54241e51cc9cba41298898fbfb535b6a338bd46`
+
+## Checkpoint 4 result
+
+**Checkpoint 4 COMPLETE / PASS.**
+
+Next authorized work:
+
+**Gate 3 Checkpoint 5 - Special lifecycle / scheduler.**

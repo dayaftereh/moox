@@ -286,11 +286,21 @@ func (s *Session) PlayerView(seatID protocol.SeatID) (View, error) {
 	}
 	if view.Tactical != nil {
 		view.Tactical.State.RNGState = 0
-		active := tacticalShipSpec(*view.Spec.Tactical, view.Tactical.State.ActiveShipID)
-		if active == nil || active.SeatID != seatID || view.Phase != PhaseActive {
+		activeSeat := protocol.SeatID(0)
+		for _, ship := range view.Tactical.Ships {
+			if ship.ShipID == view.Tactical.State.ActiveShipID {
+				activeSeat = ship.SeatID
+				break
+			}
+		}
+		if activeSeat != seatID || view.Phase != PhaseActive {
 			view.Tactical.LegalMoves = nil
 			view.Tactical.WeaponActions = nil
 			view.Tactical.LegalFireActions = nil
+			view.Tactical.BoardingActions = nil
+			view.Tactical.CanRetreat = false
+			view.Tactical.CanWaitActivation = false
+			view.Tactical.WaitTargetShipIDs = nil
 			view.Tactical.CanEndActivation = false
 		}
 	}
@@ -313,6 +323,8 @@ func (s *Session) View() View {
 			tactical.LegalMoves = nil
 			tactical.WeaponActions = nil
 			tactical.LegalFireActions = nil
+			tactical.BoardingActions = nil
+			tactical.CanRetreat = false
 			tactical.CanEndActivation = false
 			tactical.CanWaitActivation = false
 			tactical.WaitTargetShipIDs = nil

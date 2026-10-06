@@ -360,6 +360,7 @@ type TacticalView struct {
 	LegalFireActions  []TacticalFireAction                 `json:"legal_fire_actions,omitempty"`
 	BoardingActions   []TacticalBoardingActionAvailability `json:"boarding_actions,omitempty"`
 	CanEndActivation  bool                                 `json:"can_end_activation"`
+	CanRetreat        bool                                 `json:"can_retreat"`
 	CanWaitActivation bool                                 `json:"can_wait_activation"`
 	WaitTargetShipIDs []core.ID                            `json:"wait_target_ship_ids,omitempty"`
 }
@@ -1531,7 +1532,7 @@ func prepareRetreat(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comma
 	if activeSpec == nil || activeState == nil {
 		return nil, fmt.Errorf("active tactical ship %d is missing", r.state.ActiveShipID)
 	}
-	if seatID == 0 || activeSpec.SeatID != seatID {
+	if seatID == 0 || tacticalControllerSeat(*activeSpec, activeState) != seatID {
 		return nil, fmt.Errorf("seat %d does not control active ship %d", seatID, r.state.ActiveShipID)
 	}
 	if payload.ShipID != r.state.ActiveShipID {
@@ -1539,6 +1540,10 @@ func prepareRetreat(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comma
 	}
 	if activeState.Destroyed || activeState.ActivationComplete {
 		return nil, fmt.Errorf("active ship %d cannot retreat", payload.ShipID)
+	}
+	activeOwner := tacticalOwnerEmpire(*activeSpec, activeState)
+	if tacticalRetreatBlockedByWarpDissipator(*spec.Tactical, r, activeOwner) {
+		return nil, fmt.Errorf("retreat is blocked by an enemy Warp Dissipator")
 	}
 	winner := protocol.SeatID(0)
 	for _, participant := range spec.Participants {
@@ -1561,7 +1566,7 @@ func prepareMoveShip(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	if activeSpec == nil || activeState == nil {
 		return fmt.Errorf("active tactical ship %d is missing", r.state.ActiveShipID)
 	}
-	if seatID == 0 || activeSpec.SeatID != seatID {
+	if seatID == 0 || tacticalControllerSeat(*activeSpec, activeState) != seatID {
 		return fmt.Errorf("seat %d does not control active ship %d", seatID, r.state.ActiveShipID)
 	}
 	if payload.ShipID != r.state.ActiveShipID {
@@ -1898,8 +1903,10 @@ func buildTacticalView(spec TacticalSpec, r tacticalRuntime) TacticalView {
 	if state != nil && !state.Destroyed && !state.ActivationComplete {
 		view.CanEndActivation = true
 		if activeSpec := tacticalShipSpec(spec, r.state.ActiveShipID); activeSpec != nil {
-			view.WaitTargetShipIDs = waitTargetShipIDs(spec, &r, tacticalControllerSeat(*activeSpec, state), r.state.ActiveShipID)
+			controller := tacticalControllerSeat(*activeSpec, state)
+			view.WaitTargetShipIDs = waitTargetShipIDs(spec, &r, controller, r.state.ActiveShipID)
 			view.CanWaitActivation = len(view.WaitTargetShipIDs) != 0
+			view.CanRetreat = !tacticalRetreatBlockedByWarpDissipator(spec, &r, tacticalOwnerEmpire(*activeSpec, state))
 		}
 		view.LegalMoves = legalMoves(spec, &r)
 		view.WeaponActions = tacticalWeaponActions(spec, &r)
@@ -2021,12 +2028,13 @@ func tacticalBeamTargets(spec TacticalSpec, r *tacticalRuntime, activeSpec *Tact
 		return nil
 	}
 	var targets []TacticalFireTarget
+	sourceOwner := tacticalOwnerEmpire(*activeSpec, activeState)
 	for _, targetSpec := range spec.Ships {
-		if targetSpec.EmpireID == activeSpec.EmpireID {
-			continue
-		}
 		targetState := r.shipState(targetSpec.ShipID)
 		if targetState == nil || targetState.Destroyed {
+			continue
+		}
+		if tacticalOwnerEmpire(targetSpec, targetState) == sourceOwner {
 			continue
 		}
 		if !tacticalBeamTargetInArc(*activeState, *targetState, weapon.FiringArcID) {
@@ -2112,7 +2120,8 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	if active == nil {
 		return nil, fmt.Errorf("active tactical ship %d is missing from spec", r.state.ActiveShipID)
 	}
-	if seatID == 0 || active.SeatID != seatID {
+	activeState := r.shipState(active.ShipID)
+	if activeState == nil || seatID == 0 || tacticalControllerSeat(*active, activeState) != seatID {
 		return nil, fmt.Errorf("seat %d does not control active ship %d", seatID, r.state.ActiveShipID)
 	}
 	if payload.ShipID != r.state.ActiveShipID {
@@ -2142,12 +2151,11 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	if targetSpec == nil || targetState == nil || targetState.Destroyed {
 		return nil, fmt.Errorf("target ship %d is not a live tactical ship", payload.TargetShipID)
 	}
-	if targetSpec.EmpireID == active.EmpireID {
+	if tacticalOwnerEmpire(*targetSpec, targetState) == tacticalOwnerEmpire(*active, activeState) {
 		return nil, fmt.Errorf("target ship %d is not an opponent", payload.TargetShipID)
 	}
 
 	weapon := weaponSpec(*active, payload.WeaponSlot)
-	activeState := r.shipState(active.ShipID)
 	ready := weaponState(activeState, payload.WeaponSlot)
 	if weapon == nil || ready == nil {
 		return nil, fmt.Errorf("ship %d has no weapon slot %d", active.ShipID, payload.WeaponSlot)
@@ -2359,7 +2367,7 @@ func waitTargetShipIDs(spec TacticalSpec, r *tacticalRuntime, seatID protocol.Se
 		}
 		state := r.shipState(id)
 		ship := tacticalShipSpec(spec, id)
-		if state == nil || ship == nil || state.Destroyed || state.ActivationComplete || ship.SeatID != seatID {
+		if state == nil || ship == nil || state.Destroyed || state.ActivationComplete || tacticalControllerSeat(*ship, state) != seatID {
 			continue
 		}
 		out = append(out, id)
@@ -2396,16 +2404,16 @@ func prepareWaitActivation(spec Spec, r *tacticalRuntime, seatID protocol.SeatID
 		return fmt.Errorf("battle has no tactical spec")
 	}
 	active := tacticalShipSpec(*spec.Tactical, r.state.ActiveShipID)
-	if active == nil {
+	activeState := r.shipState(r.state.ActiveShipID)
+	if active == nil || activeState == nil {
 		return fmt.Errorf("active tactical ship %d is missing from spec", r.state.ActiveShipID)
 	}
-	if seatID == 0 || active.SeatID != seatID {
+	if seatID == 0 || tacticalControllerSeat(*active, activeState) != seatID {
 		return fmt.Errorf("seat %d does not control active ship %d", seatID, r.state.ActiveShipID)
 	}
 	if payload.ShipID != r.state.ActiveShipID {
 		return fmt.Errorf("wait ship %d is not active ship %d", payload.ShipID, r.state.ActiveShipID)
 	}
-	activeState := r.shipState(payload.ShipID)
 	if activeState == nil || activeState.Destroyed || activeState.ActivationComplete {
 		return fmt.Errorf("ship %d cannot wait", payload.ShipID)
 	}
@@ -2451,7 +2459,8 @@ func autoCompleteExhaustedActiveShip(spec Spec, r *tacticalRuntime, commandSeque
 		return nil
 	}
 	activeState.ActivationComplete = true
-	if err := r.appendEvent("activation_auto_ended", active.SeatID, commandSequence, map[string]any{
+	eventSeat := tacticalControllerSeat(*active, activeState)
+	if err := r.appendEvent("activation_auto_ended", eventSeat, commandSequence, map[string]any{
 		"ship_id": active.ShipID, "round": r.state.Round, "reason": "resources_exhausted",
 	}); err != nil {
 		return err
@@ -2489,16 +2498,16 @@ func advanceAfterActivationCompletion(spec Spec, r *tacticalRuntime) error {
 
 func prepareEndActivation(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, commandSequence uint32, payload EndActivationPayload) error {
 	active := tacticalShipSpec(*spec.Tactical, r.state.ActiveShipID)
-	if active == nil {
+	activeState := r.shipState(r.state.ActiveShipID)
+	if active == nil || activeState == nil {
 		return fmt.Errorf("active tactical ship %d is missing from spec", r.state.ActiveShipID)
 	}
-	if seatID == 0 || active.SeatID != seatID {
+	if seatID == 0 || tacticalControllerSeat(*active, activeState) != seatID {
 		return fmt.Errorf("seat %d does not control active ship %d", seatID, r.state.ActiveShipID)
 	}
 	if payload.ShipID != r.state.ActiveShipID {
 		return fmt.Errorf("end-activation ship %d is not active ship %d", payload.ShipID, r.state.ActiveShipID)
 	}
-	activeState := r.shipState(payload.ShipID)
 	if activeState == nil || activeState.Destroyed || activeState.ActivationComplete {
 		return fmt.Errorf("ship %d cannot end activation", payload.ShipID)
 	}
@@ -2560,7 +2569,7 @@ func remainingWinner(spec Spec, r *tacticalRuntime) protocol.SeatID {
 	for _, ship := range spec.Tactical.Ships {
 		state := r.shipState(ship.ShipID)
 		if state != nil && !state.Destroyed {
-			seatAlive[ship.SeatID] = true
+			seatAlive[tacticalControllerSeat(ship, state)] = true
 		}
 	}
 	if len(seatAlive) != 1 {

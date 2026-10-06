@@ -358,3 +358,31 @@ Ruleset SHA remains unchanged from Checkpoint 2:
 `68c06a57bb9fdc18c0ff8045b54241e51cc9cba41298898fbfb535b6a338bd46`
 
 Next: Gate 3 Checkpoint 4 - **Boarding / Capture**. Do not begin Checkpoint 5 Special lifecycle before Checkpoint 4 is independently reviewed and green.
+
+
+### Gate 3 Checkpoint 4 - complete
+
+Checkpoint 4 is **PASS / COMPLETE**.
+
+Implemented:
+
+- authoritative `battle.board_ship` action/command and physical/Transporter legality;
+- Raid temporary Marine reconciliation with persistent internal damage (Vector C);
+- Capture Ground Combat, Quantum-before-owner-transfer, survivor/owner/control transfer and post-capture state (Vector D);
+- mutable ship authority across Tactical commands, targeting, action projection and winner determination;
+- frozen launch identity plus immediate Capture retarget/recovery for Fighter/projectile actors;
+- Warp-Dissipator server retreat legality;
+- LiveSnapshot v3 mutable-authority / actor-hostility validation.
+
+Validation:
+
+- focused `TestSlice178Gate3Checkpoint4*` PASS;
+- `go test ./internal/battle` PASS;
+- `go test ./internal/game` PASS;
+- `go test ./internal/ruleset` PASS;
+- `go test ./...` PASS;
+- `git diff --check` PASS.
+
+Ruleset SHA remains `68c06a57bb9fdc18c0ff8045b54241e51cc9cba41298898fbfb535b6a338bd46`.
+
+Next: Gate 3 Checkpoint 5 - **Special lifecycle / scheduler**. Do not begin Checkpoint 6 before Checkpoint 5 is independently reviewed and green.

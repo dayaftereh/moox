@@ -132,7 +132,7 @@ func tacticalFighterKind(weapon TacticalWeaponSpec) string {
 	}
 }
 
-func tacticalFighterStats(spec TacticalSpec, carrier TacticalShipSpec, weapon TacticalWeaponSpec) (kind string, speed, durability, stock int, doctrine *TacticalFighterDoctrineSpec, err error) {
+func tacticalFighterStats(spec TacticalSpec, carrier TacticalShipSpec, seatID protocol.SeatID, weapon TacticalWeaponSpec) (kind string, speed, durability, stock int, doctrine *TacticalFighterDoctrineSpec, err error) {
 	if spec.Rules.Fighter == nil {
 		return "", 0, 0, 0, nil, fmt.Errorf("tactical Fighter rules are missing")
 	}
@@ -140,9 +140,9 @@ func tacticalFighterStats(spec TacticalSpec, carrier TacticalShipSpec, weapon Ta
 	if kind == "" {
 		return "", 0, 0, 0, nil, fmt.Errorf("weapon %q is not an executable Fighter row", weapon.WeaponID)
 	}
-	doctrine = tacticalFighterDoctrine(spec, carrier.SeatID)
+	doctrine = tacticalFighterDoctrine(spec, seatID)
 	if doctrine == nil {
-		return "", 0, 0, 0, nil, fmt.Errorf("seat %d has no Fighter doctrine", carrier.SeatID)
+		return "", 0, 0, 0, nil, fmt.Errorf("seat %d has no Fighter doctrine", seatID)
 	}
 	rules := spec.Rules.Fighter
 	baseSpeed, baseHits := 0, 0
@@ -150,17 +150,17 @@ func tacticalFighterStats(spec TacticalSpec, carrier TacticalShipSpec, weapon Ta
 	case "fighter":
 		baseSpeed, baseHits, stock = rules.FighterBaseSpeed, rules.FighterBaseHits, rules.FighterAttackStock
 		if doctrine.BeamPayload == nil {
-			return "", 0, 0, 0, nil, fmt.Errorf("Fighter doctrine for seat %d has no Beam payload", carrier.SeatID)
+			return "", 0, 0, 0, nil, fmt.Errorf("Fighter doctrine for seat %d has no Beam payload", seatID)
 		}
 	case "bomber":
 		baseSpeed, baseHits, stock = rules.BomberBaseSpeed, rules.BomberBaseHits, rules.BomberAttackStock
 		if doctrine.BombPayload == nil {
-			return "", 0, 0, 0, nil, fmt.Errorf("Fighter doctrine for seat %d has no Bomb payload", carrier.SeatID)
+			return "", 0, 0, 0, nil, fmt.Errorf("Fighter doctrine for seat %d has no Bomb payload", seatID)
 		}
 	case "heavy_fighter":
 		baseSpeed, baseHits, stock = rules.HeavyFighterBaseSpeed, rules.HeavyFighterBaseHits, rules.HeavyFighterAttackStock
 		if doctrine.BeamPayload == nil || doctrine.BombPayload == nil {
-			return "", 0, 0, 0, nil, fmt.Errorf("Heavy Fighter doctrine for seat %d requires Beam and Bomb payloads", carrier.SeatID)
+			return "", 0, 0, 0, nil, fmt.Errorf("Heavy Fighter doctrine for seat %d requires Beam and Bomb payloads", seatID)
 		}
 	}
 	speed = baseSpeed + rules.WarpDriveSpeedStep*(doctrine.BestWarpDriveIndex-1)
@@ -186,16 +186,18 @@ func fighterTargetCount(payload LaunchFightersPayload) int {
 }
 
 func tacticalFighterShipTargets(spec TacticalSpec, r *tacticalRuntime, source TacticalShipSpec) []TacticalFireTarget {
+	sourceState := r.shipState(source.ShipID)
+	if sourceState == nil {
+		return nil
+	}
+	sourceOwner := tacticalOwnerEmpire(source, sourceState)
 	var targets []TacticalFireTarget
 	for _, target := range spec.Ships {
-		if target.EmpireID == source.EmpireID {
-			continue
-		}
 		state := r.shipState(target.ShipID)
-		if state == nil || state.Destroyed {
+		if state == nil || state.Destroyed || tacticalOwnerEmpire(target, state) == sourceOwner {
 			continue
 		}
-		targets = append(targets, TacticalFireTarget{TargetShipID: target.ShipID, RangeIndex: tacticalRangeIndex(r.shipState(source.ShipID).X, r.shipState(source.ShipID).Y, state.X, state.Y)})
+		targets = append(targets, TacticalFireTarget{TargetShipID: target.ShipID, RangeIndex: tacticalRangeIndex(sourceState.X, sourceState.Y, state.X, state.Y)})
 	}
 	return targets
 }
@@ -219,7 +221,7 @@ func tacticalFighterWeaponAction(spec TacticalSpec, r *tacticalRuntime, activeSp
 		action.UnavailableReason = TacticalWeaponUnavailableNotReady
 		return action
 	}
-	if _, _, _, _, _, err := tacticalFighterStats(spec, *activeSpec, weapon); err != nil {
+	if _, _, _, _, _, err := tacticalFighterStats(spec, *activeSpec, tacticalControllerSeat(*activeSpec, activeState), weapon); err != nil {
 		action.UnavailableReason = TacticalWeaponUnavailableConsumer
 		return action
 	}
@@ -266,7 +268,7 @@ func prepareLaunchFighters(spec Spec, r *tacticalRuntime, seatID protocol.SeatID
 	if active == nil || activeState == nil || activeState.Destroyed || activeState.ActivationComplete {
 		return fmt.Errorf("active tactical ship %d is unavailable", r.state.ActiveShipID)
 	}
-	if seatID == 0 || active.SeatID != seatID {
+	if seatID == 0 || tacticalControllerSeat(*active, activeState) != seatID {
 		return fmt.Errorf("seat %d does not control active ship %d", seatID, r.state.ActiveShipID)
 	}
 	if payload.ShipID != active.ShipID {
@@ -302,7 +304,7 @@ func prepareLaunchFighters(spec Spec, r *tacticalRuntime, seatID protocol.SeatID
 	if bay == nil || ready == nil || bay.ReadyGroups <= 0 || !ready.Ready {
 		return fmt.Errorf("Fighter Bay runtime state is unavailable")
 	}
-	kind, speed, durability, stock, doctrine, err := tacticalFighterStats(*spec.Tactical, *active, *weapon)
+	kind, speed, durability, stock, doctrine, err := tacticalFighterStats(*spec.Tactical, *active, tacticalControllerSeat(*active, activeState), *weapon)
 	if err != nil {
 		return err
 	}
@@ -312,7 +314,7 @@ func prepareLaunchFighters(spec Spec, r *tacticalRuntime, seatID protocol.SeatID
 	}
 	group := TacticalFighterGroupState{
 		GroupID: r.fighters.NextGroupID, SpawnOrder: r.nextMovingActorOrder,
-		SourceSeatID: active.SeatID, SourceShipID: active.ShipID, SourceWeaponSlot: weapon.Slot,
+		SourceSeatID: tacticalControllerSeat(*active, activeState), SourceShipID: active.ShipID, SourceWeaponSlot: weapon.Slot,
 		Kind: kind, TargetShipID: payload.TargetShipID, TargetProjectileID: payload.TargetProjectileID, TargetFighterGroupID: payload.TargetFighterGroupID,
 		X: activeState.X, Y: activeState.Y, Facing: activeState.Facing,
 		Speed: speed, MovementRemaining: speed * spec.Tactical.Rules.Fighter.MovementUnitsPerField,
@@ -538,7 +540,8 @@ func tacticalBeamFighterTargets(spec TacticalSpec, r *tacticalRuntime, activeSpe
 	targetPoint := TacticalShipState{}
 	out := make([]TacticalFireTarget, 0, len(r.fighters.Groups))
 	for _, group := range r.fighters.Groups {
-		if group.SourceSeatID == activeSpec.SeatID || group.Multiplicity <= 0 {
+		groupEmpire := tacticalEmpireForSeat(spec, group.SourceSeatID)
+		if groupEmpire == 0 || groupEmpire == tacticalOwnerEmpire(*activeSpec, activeState) || group.Multiplicity <= 0 {
 			continue
 		}
 		targetPoint.X = group.X
@@ -617,7 +620,8 @@ func prepareFireBeamAtFighterGroup(spec Spec, r *tacticalRuntime, seatID protoco
 	if active == nil {
 		return nil, fmt.Errorf("active tactical ship %d is missing from spec", r.state.ActiveShipID)
 	}
-	if seatID == 0 || active.SeatID != seatID {
+	activeState := r.shipState(active.ShipID)
+	if activeState == nil || seatID == 0 || tacticalControllerSeat(*active, activeState) != seatID {
 		return nil, fmt.Errorf("seat %d does not control active ship %d", seatID, r.state.ActiveShipID)
 	}
 	if payload.ShipID != r.state.ActiveShipID {
@@ -628,12 +632,12 @@ func prepareFireBeamAtFighterGroup(spec Spec, r *tacticalRuntime, seatID protoco
 		return nil, fmt.Errorf("target Fighter group %d is not active", payload.TargetFighterGroupID)
 	}
 	group := &r.fighters.Groups[groupIndex]
-	if group.SourceSeatID == active.SeatID {
+	groupEmpire := tacticalEmpireForSeat(*spec.Tactical, group.SourceSeatID)
+	if groupEmpire == 0 || groupEmpire == tacticalOwnerEmpire(*active, activeState) {
 		return nil, fmt.Errorf("target Fighter group %d is not an opponent", payload.TargetFighterGroupID)
 	}
 
 	weapon := weaponSpec(*active, payload.WeaponSlot)
-	activeState := r.shipState(active.ShipID)
 	ready := weaponState(activeState, payload.WeaponSlot)
 	if weapon == nil || ready == nil {
 		return nil, fmt.Errorf("ship %d has no weapon slot %d", active.ShipID, payload.WeaponSlot)
@@ -643,9 +647,6 @@ func prepareFireBeamAtFighterGroup(spec Spec, r *tacticalRuntime, seatID protoco
 	}
 	if !tacticalBeamFireSupported(*weapon) {
 		return nil, fmt.Errorf("weapon slot %d is outside the executable Beam firing contract", payload.WeaponSlot)
-	}
-	if activeState == nil {
-		return nil, fmt.Errorf("active tactical ship %d has no runtime position", active.ShipID)
 	}
 	if canonicalTacticalWeaponMountType(weapon.MountType) == core.ShipWeaponMountHeavy {
 		return nil, fmt.Errorf("Heavy Beam weapon slot %d cannot target Fighter groups", payload.WeaponSlot)
@@ -856,10 +857,10 @@ func validateTacticalFighterState(spec TacticalSpec, state TacticalFighterState,
 			return fmt.Errorf("tactical Fighter group %d references missing source ship %d", group.GroupID, group.SourceShipID)
 		}
 		weapon := weaponSpec(*carrier, group.SourceWeaponSlot)
-		if weapon == nil || weapon.TacticalSupport != "fighter" || group.SourceSeatID != carrier.SeatID {
+		if weapon == nil || weapon.TacticalSupport != "fighter" || tacticalEmpireForSeat(spec, group.SourceSeatID) == 0 {
 			return fmt.Errorf("tactical Fighter group %d source identity mismatch", group.GroupID)
 		}
-		kind, speed, durability, maxStock, doctrine, err := tacticalFighterStats(spec, *carrier, *weapon)
+		kind, speed, durability, maxStock, doctrine, err := tacticalFighterStats(spec, *carrier, group.SourceSeatID, *weapon)
 		if err != nil {
 			return fmt.Errorf("tactical Fighter group %d source doctrine: %w", group.GroupID, err)
 		}
@@ -920,7 +921,7 @@ func validateTacticalFighterState(spec TacticalSpec, state TacticalFighterState,
 		case TacticalFighterPhaseOutbound:
 			if group.TargetShipID != 0 {
 				target := tacticalShipSpec(spec, group.TargetShipID)
-				if target == nil || target.SeatID == group.SourceSeatID {
+				if target == nil {
 					return fmt.Errorf("tactical Fighter group %d has invalid target ship %d", group.GroupID, group.TargetShipID)
 				}
 			}

@@ -9,26 +9,34 @@ import (
 )
 
 func tacticalFighterSourceEmpire(spec TacticalSpec, group TacticalFighterGroupState) (core.ID, bool) {
-	source := tacticalShipSpec(spec, group.SourceShipID)
-	if source == nil || source.SeatID != group.SourceSeatID {
+	if tacticalShipSpec(spec, group.SourceShipID) == nil {
 		return 0, false
 	}
-	return source.EmpireID, true
+	empireID := tacticalEmpireForSeat(spec, group.SourceSeatID)
+	if empireID == 0 {
+		return 0, false
+	}
+	return empireID, true
 }
 
 func tacticalFighterLegalTargets(spec TacticalSpec, r *tacticalRuntime, source TacticalShipSpec, kind string) []TacticalFireTarget {
-	out := make([]TacticalFireTarget, 0)
 	sourceState := r.shipState(source.ShipID)
 	if sourceState == nil {
 		return nil
 	}
+	return tacticalFighterLegalTargetsForEmpire(spec, r, source, tacticalOwnerEmpire(source, sourceState), kind)
+}
+
+func tacticalFighterLegalTargetsForEmpire(spec TacticalSpec, r *tacticalRuntime, source TacticalShipSpec, sourceEmpire core.ID, kind string) []TacticalFireTarget {
+	out := make([]TacticalFireTarget, 0)
+	sourceState := r.shipState(source.ShipID)
+	if sourceState == nil || sourceEmpire == 0 {
+		return nil
+	}
 	ships := make([]TacticalFireTarget, 0, len(spec.Ships))
 	for _, target := range spec.Ships {
-		if target.EmpireID == source.EmpireID {
-			continue
-		}
 		state := r.shipState(target.ShipID)
-		if state == nil || state.Destroyed {
+		if state == nil || state.Destroyed || tacticalOwnerEmpire(target, state) == sourceEmpire {
 			continue
 		}
 		ships = append(ships, TacticalFireTarget{
@@ -43,8 +51,8 @@ func tacticalFighterLegalTargets(spec TacticalSpec, r *tacticalRuntime, source T
 	}
 	projectiles := make([]TacticalFireTarget, 0, len(r.ordnance.Projectiles))
 	for _, projectile := range r.ordnance.Projectiles {
-		targetSource := tacticalShipSpec(spec, projectile.SourceShipID)
-		if targetSource == nil || targetSource.EmpireID == source.EmpireID {
+		targetEmpire := tacticalEmpireForSeat(spec, projectile.SourceSeatID)
+		if targetEmpire == 0 || targetEmpire == sourceEmpire {
 			continue
 		}
 		projectiles = append(projectiles, TacticalFireTarget{
@@ -57,7 +65,7 @@ func tacticalFighterLegalTargets(spec TacticalSpec, r *tacticalRuntime, source T
 	groups := make([]TacticalFireTarget, 0, len(r.fighters.Groups))
 	for _, group := range r.fighters.Groups {
 		targetEmpire, ok := tacticalFighterSourceEmpire(spec, group)
-		if !ok || targetEmpire == source.EmpireID || group.Multiplicity <= 0 {
+		if !ok || targetEmpire == sourceEmpire || group.Multiplicity <= 0 {
 			continue
 		}
 		groups = append(groups, TacticalFireTarget{
@@ -78,7 +86,7 @@ func tacticalFighterTargetPosition(spec TacticalSpec, r *tacticalRuntime, group 
 	if group.Phase == TacticalFighterPhaseReturning {
 		carrier := tacticalShipSpec(spec, group.SourceShipID)
 		state := r.shipState(group.SourceShipID)
-		if carrier == nil || state == nil || state.Destroyed || carrier.SeatID != group.SourceSeatID {
+		if carrier == nil || state == nil || state.Destroyed || tacticalControllerSeat(*carrier, state) != group.SourceSeatID {
 			return 0, 0, false
 		}
 		return state.X, state.Y, true
@@ -86,7 +94,7 @@ func tacticalFighterTargetPosition(spec TacticalSpec, r *tacticalRuntime, group 
 	if group.TargetShipID != 0 {
 		targetSpec := tacticalShipSpec(spec, group.TargetShipID)
 		state := r.shipState(group.TargetShipID)
-		if targetSpec == nil || state == nil || state.Destroyed || targetSpec.EmpireID == sourceEmpire {
+		if targetSpec == nil || state == nil || state.Destroyed || tacticalOwnerEmpire(*targetSpec, state) == sourceEmpire {
 			return 0, 0, false
 		}
 		return state.X, state.Y, true
@@ -101,7 +109,7 @@ func tacticalFighterTargetPosition(spec TacticalSpec, r *tacticalRuntime, group 
 		}
 		projectile := r.ordnance.Projectiles[index]
 		targetSource := tacticalShipSpec(spec, projectile.SourceShipID)
-		if targetSource == nil || targetSource.EmpireID == sourceEmpire {
+		if targetSource == nil || tacticalEmpireForSeat(spec, projectile.SourceSeatID) == sourceEmpire {
 			return 0, 0, false
 		}
 		return projectile.X, projectile.Y, true
@@ -146,7 +154,11 @@ func tacticalFighterRetarget(spec TacticalSpec, r *tacticalRuntime, group *Tacti
 	if source == nil {
 		return false, fmt.Errorf("Fighter group %d source carrier is missing", group.GroupID)
 	}
-	targets := tacticalFighterLegalTargets(spec, r, *source, group.Kind)
+	sourceEmpire, ok := tacticalFighterSourceEmpire(spec, *group)
+	if !ok {
+		return false, fmt.Errorf("Fighter group %d source seat %d is invalid", group.GroupID, group.SourceSeatID)
+	}
+	targets := tacticalFighterLegalTargetsForEmpire(spec, r, *source, sourceEmpire, group.Kind)
 	if len(targets) == 0 {
 		return false, nil
 	}
@@ -171,7 +183,7 @@ func tacticalFighterRetarget(spec TacticalSpec, r *tacticalRuntime, group *Tacti
 func tacticalFighterCarrierFunctional(spec TacticalSpec, r *tacticalRuntime, group TacticalFighterGroupState) bool {
 	carrier := tacticalShipSpec(spec, group.SourceShipID)
 	state := r.shipState(group.SourceShipID)
-	return carrier != nil && state != nil && !state.Destroyed && carrier.SeatID == group.SourceSeatID
+	return carrier != nil && state != nil && !state.Destroyed && tacticalControllerSeat(*carrier, state) == group.SourceSeatID
 }
 
 func tacticalFighterBeginReturn(spec TacticalSpec, r *tacticalRuntime, group *TacticalFighterGroupState, reason string, eventSeat protocol.SeatID, commandSequence uint32) error {

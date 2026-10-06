@@ -269,6 +269,7 @@ func validateTacticalLiveSnapshot(spec TacticalSpec, snapshot TacticalLiveSnapsh
 		return fmt.Errorf("tactical live snapshot ship count %d, expected %d", len(state.Ships), len(spec.Ships))
 	}
 	shipIDs := make(map[core.ID]struct{}, len(spec.Ships))
+	shipStatesByID := make(map[core.ID]TacticalShipState, len(spec.Ships))
 	for i := range spec.Ships {
 		want := spec.Ships[i]
 		got := state.Ships[i]
@@ -276,6 +277,10 @@ func validateTacticalLiveSnapshot(spec TacticalSpec, snapshot TacticalLiveSnapsh
 			return fmt.Errorf("tactical live snapshot ship[%d] id %d, expected %d", i, got.ShipID, want.ShipID)
 		}
 		shipIDs[got.ShipID] = struct{}{}
+		shipStatesByID[got.ShipID] = got
+		if got.OwnerEmpireID == 0 || got.ControllerSeatID == 0 || tacticalEmpireForSeat(spec, got.ControllerSeatID) != got.OwnerEmpireID {
+			return fmt.Errorf("tactical live snapshot ship %d mutable authority is invalid", got.ShipID)
+		}
 		expectedSpeed := tacticalCurrentCombatSpeed(spec, want, got, snapshot.Legacy17_8Disabled)
 		if got.CurrentCombatSpeed != expectedSpeed || got.MovementMax != expectedSpeed || got.MovementCurrent < 0 || got.MovementCurrent > got.MovementMax {
 			return fmt.Errorf("tactical live snapshot ship %d combat-speed/movement state disagrees with derived speed %d", got.ShipID, expectedSpeed)
@@ -349,6 +354,12 @@ func validateTacticalLiveSnapshot(spec TacticalSpec, snapshot TacticalLiveSnapsh
 			}
 			seenSpawnOrders[projectile.SpawnOrder] = struct{}{}
 			projectilesByID[projectile.ProjectileID] = projectile
+			sourceEmpire := tacticalEmpireForSeat(spec, projectile.SourceSeatID)
+			targetSpec := tacticalShipSpec(spec, projectile.TargetShipID)
+			targetState, targetOK := shipStatesByID[projectile.TargetShipID]
+			if sourceEmpire == 0 || targetSpec == nil || !targetOK || tacticalOwnerEmpire(*targetSpec, &targetState) == sourceEmpire {
+				return fmt.Errorf("tactical projectile %d target is not hostile to frozen source seat", projectile.ProjectileID)
+			}
 		}
 	}
 	fighterGroupsByID := make(map[uint64]TacticalFighterGroupState)
@@ -364,14 +375,21 @@ func validateTacticalLiveSnapshot(spec TacticalSpec, snapshot TacticalLiveSnapsh
 			fighterGroupsByID[group.GroupID] = group
 		}
 		for _, group := range snapshot.Fighters.Groups {
-			source := tacticalShipSpec(spec, group.SourceShipID)
+			sourceEmpire := tacticalEmpireForSeat(spec, group.SourceSeatID)
+			if group.Phase == TacticalFighterPhaseOutbound && group.TargetShipID != 0 {
+				targetSpec := tacticalShipSpec(spec, group.TargetShipID)
+				targetState, targetOK := shipStatesByID[group.TargetShipID]
+				if sourceEmpire == 0 || targetSpec == nil || !targetOK || tacticalOwnerEmpire(*targetSpec, &targetState) == sourceEmpire {
+					return fmt.Errorf("tactical Fighter group %d target ship is not hostile to frozen source seat", group.GroupID)
+				}
+			}
 			if group.TargetProjectileID != 0 {
 				target, ok := projectilesByID[group.TargetProjectileID]
 				if !ok {
 					return fmt.Errorf("tactical Fighter group %d references missing target projectile %d", group.GroupID, group.TargetProjectileID)
 				}
-				targetSource := tacticalShipSpec(spec, target.SourceShipID)
-				if source == nil || targetSource == nil || source.EmpireID == targetSource.EmpireID {
+				targetEmpire := tacticalEmpireForSeat(spec, target.SourceSeatID)
+				if sourceEmpire == 0 || targetEmpire == 0 || sourceEmpire == targetEmpire {
 					return fmt.Errorf("tactical Fighter group %d target projectile %d is not hostile", group.GroupID, group.TargetProjectileID)
 				}
 			}
@@ -380,7 +398,7 @@ func validateTacticalLiveSnapshot(spec TacticalSpec, snapshot TacticalLiveSnapsh
 				if !ok {
 					return fmt.Errorf("tactical Fighter group %d references missing target Fighter group %d", group.GroupID, group.TargetFighterGroupID)
 				}
-				if target.GroupID == group.GroupID || target.SourceSeatID == group.SourceSeatID {
+				if target.GroupID == group.GroupID || tacticalEmpireForSeat(spec, target.SourceSeatID) == tacticalEmpireForSeat(spec, group.SourceSeatID) {
 					return fmt.Errorf("tactical Fighter group %d target Fighter group %d is not hostile", group.GroupID, group.TargetFighterGroupID)
 				}
 			}

@@ -205,11 +205,11 @@ func validateTacticalOrdnanceState(spec TacticalSpec, state TacticalOrdnanceStat
 		if source == nil || weapon == nil {
 			return fmt.Errorf("tactical projectile %d references missing source weapon", projectile.ProjectileID)
 		}
-		if projectile.SourceSeatID != source.SeatID || projectile.WeaponID != weapon.WeaponID || projectile.WeaponFamily != tacticalWeaponFamily(*weapon) {
+		if tacticalEmpireForSeat(spec, projectile.SourceSeatID) == 0 || projectile.WeaponID != weapon.WeaponID || projectile.WeaponFamily != tacticalWeaponFamily(*weapon) {
 			return fmt.Errorf("tactical projectile %d source identity mismatch", projectile.ProjectileID)
 		}
 		target := tacticalShipSpec(spec, projectile.TargetShipID)
-		if target == nil || target.SeatID == source.SeatID {
+		if target == nil {
 			return fmt.Errorf("tactical projectile %d has invalid target ship %d", projectile.ProjectileID, projectile.TargetShipID)
 		}
 		if projectile.Facing < 0 || projectile.Facing > 15 || absInt(projectile.X) > TacticalCoordinateSafetyLimit || absInt(projectile.Y) > TacticalCoordinateSafetyLimit {

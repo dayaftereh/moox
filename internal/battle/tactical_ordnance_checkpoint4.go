@@ -46,8 +46,8 @@ func tacticalBeamProjectileTargets(spec TacticalSpec, r *tacticalRuntime, active
 	targetPoint := TacticalShipState{}
 	out := make([]TacticalFireTarget, 0, len(r.ordnance.Projectiles))
 	for _, projectile := range r.ordnance.Projectiles {
-		source := tacticalShipSpec(spec, projectile.SourceShipID)
-		if source == nil || source.EmpireID == activeSpec.EmpireID {
+		projectileEmpire := tacticalEmpireForSeat(spec, projectile.SourceSeatID)
+		if projectileEmpire == 0 || projectileEmpire == tacticalOwnerEmpire(*activeSpec, activeState) {
 			continue
 		}
 		targetPoint.X = projectile.X
@@ -129,7 +129,8 @@ func prepareFireBeamAtProjectile(spec Spec, r *tacticalRuntime, seatID protocol.
 	if active == nil {
 		return nil, fmt.Errorf("active tactical ship %d is missing from spec", r.state.ActiveShipID)
 	}
-	if seatID == 0 || active.SeatID != seatID {
+	activeState := r.shipState(active.ShipID)
+	if activeState == nil || seatID == 0 || tacticalControllerSeat(*active, activeState) != seatID {
 		return nil, fmt.Errorf("seat %d does not control active ship %d", seatID, r.state.ActiveShipID)
 	}
 	if payload.ShipID != r.state.ActiveShipID {
@@ -140,13 +141,12 @@ func prepareFireBeamAtProjectile(spec Spec, r *tacticalRuntime, seatID protocol.
 		return nil, fmt.Errorf("target projectile %d is not active", payload.TargetProjectileID)
 	}
 	projectile := &r.ordnance.Projectiles[projectileIndex]
-	projectileSource := tacticalShipSpec(*spec.Tactical, projectile.SourceShipID)
-	if projectileSource == nil || projectileSource.EmpireID == active.EmpireID {
+	projectileEmpire := tacticalEmpireForSeat(*spec.Tactical, projectile.SourceSeatID)
+	if projectileEmpire == 0 || projectileEmpire == tacticalOwnerEmpire(*active, activeState) {
 		return nil, fmt.Errorf("target projectile %d is not an opponent", payload.TargetProjectileID)
 	}
 
 	weapon := weaponSpec(*active, payload.WeaponSlot)
-	activeState := r.shipState(active.ShipID)
 	ready := weaponState(activeState, payload.WeaponSlot)
 	if weapon == nil || ready == nil {
 		return nil, fmt.Errorf("ship %d has no weapon slot %d", active.ShipID, payload.WeaponSlot)

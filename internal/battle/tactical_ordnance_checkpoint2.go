@@ -102,13 +102,11 @@ func tacticalOrdnanceTargets(spec TacticalSpec, r *tacticalRuntime, source *Tact
 	if sourceState == nil || sourceState.Destroyed {
 		return nil
 	}
+	sourceOwner := tacticalOwnerEmpire(*source, sourceState)
 	targets := make([]TacticalFireTarget, 0, len(spec.Ships))
 	for _, target := range spec.Ships {
-		if target.EmpireID == source.EmpireID {
-			continue
-		}
 		state := r.shipState(target.ShipID)
-		if state == nil || state.Destroyed {
+		if state == nil || state.Destroyed || tacticalOwnerEmpire(target, state) == sourceOwner {
 			continue
 		}
 		targets = append(targets, TacticalFireTarget{
@@ -177,7 +175,7 @@ func prepareFireOrdnance(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, 
 	if active == nil || activeState == nil {
 		return fmt.Errorf("active tactical ship %d is missing", r.state.ActiveShipID)
 	}
-	if seatID == 0 || active.SeatID != seatID {
+	if seatID == 0 || tacticalControllerSeat(*active, activeState) != seatID {
 		return fmt.Errorf("seat %d does not control active ship %d", seatID, r.state.ActiveShipID)
 	}
 	if payload.ShipID != r.state.ActiveShipID {
@@ -231,7 +229,7 @@ func prepareFireOrdnance(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, 
 	projectile := TacticalProjectileState{
 		ProjectileID:      projectileID,
 		SpawnOrder:        spawnOrder,
-		SourceSeatID:      active.SeatID,
+		SourceSeatID:      tacticalControllerSeat(*active, activeState),
 		SourceShipID:      active.ShipID,
 		WeaponSlot:        weapon.Slot,
 		TargetShipID:      payload.TargetShipID,
@@ -369,10 +367,14 @@ func moveTacticalProjectileQuantum(spec TacticalSpec, r *tacticalRuntime, index 
 	if source == nil {
 		return tacticalProjectileQuantumOutcome{}, fmt.Errorf("tactical projectile %d source ship is missing", projectile.ProjectileID)
 	}
+	sourceEmpire := tacticalEmpireForSeat(spec, projectile.SourceSeatID)
+	if sourceEmpire == 0 {
+		return tacticalProjectileQuantumOutcome{}, fmt.Errorf("tactical projectile %d source seat %d is invalid", projectile.ProjectileID, projectile.SourceSeatID)
+	}
 	targetState := r.shipState(projectile.TargetShipID)
 	targetSpec := tacticalShipSpec(spec, projectile.TargetShipID)
-	if targetSpec == nil || targetState == nil || targetState.Destroyed || targetSpec.EmpireID == source.EmpireID {
-		targets := tacticalOrdnanceRetargetIDs(spec, r, source.EmpireID)
+	if targetSpec == nil || targetState == nil || targetState.Destroyed || tacticalOwnerEmpire(*targetSpec, targetState) == sourceEmpire {
+		targets := tacticalOrdnanceRetargetIDs(spec, r, sourceEmpire)
 		if len(targets) == 0 {
 			return tacticalProjectileQuantumOutcome{DestroyReason: "no_target"}, nil
 		}
@@ -435,11 +437,8 @@ func moveTacticalProjectileQuantum(spec TacticalSpec, r *tacticalRuntime, index 
 func tacticalOrdnanceRetargetIDs(spec TacticalSpec, r *tacticalRuntime, sourceEmpireID core.ID) []core.ID {
 	ids := make([]core.ID, 0, len(spec.Ships))
 	for _, ship := range spec.Ships {
-		if ship.EmpireID == sourceEmpireID {
-			continue
-		}
 		state := r.shipState(ship.ShipID)
-		if state == nil || state.Destroyed {
+		if state == nil || state.Destroyed || tacticalOwnerEmpire(ship, state) == sourceEmpireID {
 			continue
 		}
 		ids = append(ids, ship.ShipID)
