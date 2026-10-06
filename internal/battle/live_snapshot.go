@@ -55,7 +55,7 @@ func (s *Session) LiveSnapshot() LiveSnapshot {
 			NextEventSequence:    s.tactical.nextEventSequence,
 			NextMovingActorOrder: s.tactical.nextMovingActorOrder,
 			Legacy17_8Disabled:   s.tactical.legacy17_8Disabled,
-			Slice178StateVersion: 2,
+			Slice178StateVersion: 3,
 		}
 	}
 	return out
@@ -115,6 +115,11 @@ func migrateLiveSnapshot(snapshot LiveSnapshot) (LiveSnapshot, error) {
 				return LiveSnapshot{}, err
 			}
 		}
+		if snapshot.Tactical != nil && snapshot.Tactical.Slice178StateVersion == 2 {
+			if err := migrateSlice178Checkpoint4State(&snapshot); err != nil {
+				return LiveSnapshot{}, err
+			}
+		}
 		return snapshot, nil
 	case legacyLiveSnapshotSchemaVersion:
 		snapshot.SchemaVersion = LiveSnapshotSchemaVersion
@@ -149,6 +154,9 @@ func migrateLiveSnapshot(snapshot LiveSnapshot) (LiveSnapshot, error) {
 			return LiveSnapshot{}, err
 		}
 		if err := migrateSlice178Checkpoint3State(&snapshot, true); err != nil {
+			return LiveSnapshot{}, err
+		}
+		if err := migrateSlice178Checkpoint4State(&snapshot); err != nil {
 			return LiveSnapshot{}, err
 		}
 		return snapshot, nil
@@ -248,7 +256,7 @@ func validateLiveSnapshot(snapshot LiveSnapshot) error {
 
 func validateTacticalLiveSnapshot(spec TacticalSpec, snapshot TacticalLiveSnapshot, revision uint64) error {
 	state := snapshot.State
-	if snapshot.Slice178StateVersion != 2 {
+	if snapshot.Slice178StateVersion != 3 {
 		return fmt.Errorf("tactical live snapshot has unsupported Slice-17.8 state version %d", snapshot.Slice178StateVersion)
 	}
 	if state.Round == 0 || state.NextCommandSequence == 0 {
@@ -478,6 +486,36 @@ func migrateSlice178Checkpoint3State(snapshot *LiveSnapshot, legacyDisabled bool
 	tactical.Fighters = &fighters
 	tactical.Legacy17_8Disabled = legacyDisabled || tactical.Legacy17_8Disabled
 	tactical.Slice178StateVersion = 2
+	snapshot.Tactical = &tactical
+	return nil
+}
+
+func migrateSlice178Checkpoint4State(snapshot *LiveSnapshot) error {
+	if snapshot == nil || snapshot.Tactical == nil || snapshot.Spec.Tactical == nil {
+		return nil
+	}
+	if snapshot.Tactical.Slice178StateVersion != 2 {
+		return nil
+	}
+	tactical := *snapshot.Tactical
+	tactical.State = cloneTacticalState(snapshot.Tactical.State)
+	if len(tactical.State.Ships) != len(snapshot.Spec.Tactical.Ships) {
+		return fmt.Errorf("Slice 17.8 checkpoint-4 migration ship count mismatch")
+	}
+	for i := range tactical.State.Ships {
+		state := &tactical.State.Ships[i]
+		spec := snapshot.Spec.Tactical.Ships[i]
+		if state.ShipID != spec.ShipID {
+			return fmt.Errorf("Slice 17.8 checkpoint-4 migration ship[%d] id mismatch", i)
+		}
+		state.OwnerEmpireID = spec.EmpireID
+		state.ControllerSeatID = spec.SeatID
+		state.TeleporterUsed = false
+		state.AlreadyBoarded = false
+		state.BeingCaptured = false
+		state.PostCaptureState = false
+	}
+	tactical.Slice178StateVersion = 3
 	snapshot.Tactical = &tactical
 	return nil
 }

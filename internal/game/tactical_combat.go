@@ -187,9 +187,37 @@ func tacticalMetadataForEncounterWithSpecials(state *core.GameState, encounter E
 			return nil, "", err
 		}
 		tactical.FighterDoctrines = doctrines
+		boarders, err := tacticalBoardingDoctrinesForEncounter(state, encounter, economy)
+		if err != nil {
+			return nil, "", err
+		}
+		tactical.BoardingDoctrines = boarders
 	}
 	sort.Slice(tactical.Ships, func(i, j int) bool { return tactical.Ships[i].ShipID < tactical.Ships[j].ShipID })
 	return tactical, "", nil
+}
+
+func tacticalBoardingDoctrinesForEncounter(state *core.GameState, encounter Encounter, economy *EconomyRules) ([]battle.TacticalBoardingDoctrineSpec, error) {
+	if state == nil || economy == nil {
+		return nil, nil
+	}
+	out := make([]battle.TacticalBoardingDoctrineSpec, 0, 2)
+	for _, side := range []EncounterSide{encounter.Attacker, encounter.Defender} {
+		empire := empireByID(state, side.EmpireID)
+		if empire == nil {
+			return nil, fmt.Errorf("Boarding doctrine empire %d is missing", side.EmpireID)
+		}
+		modifiers := economy.RaceResearchModifiers[empire.RaceID]
+		// MOOX does not yet have an authoritative tactical officer runtime, so the
+		// original fleet Commando/Security terms are frozen as zero rather than guessed.
+		out = append(out, battle.TacticalBoardingDoctrineSpec{
+			SeatID: side.SeatID, EmpireID: side.EmpireID,
+			GroundCombatBonus: modifiers.GroundCombatBonus,
+			Telepathic:        modifiers.Telepathic,
+		})
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].SeatID < out[j].SeatID })
+	return out, nil
 }
 
 func bestKnownFighterBeamPayload(economy *EconomyRules, empire *core.Empire) *battle.TacticalFighterPayloadSpec {
@@ -599,8 +627,11 @@ func projectTacticalShip(ship core.Ship, seatID protocol.SeatID, x, y, facing in
 		ArmorMax:             foundation.ArmorMax,
 		StructureMax:         foundation.StructureMax,
 		MarineMax:            foundation.MarineMax,
-		ShieldStrength:       foundation.ShieldStrength,
-		ShieldArcMax:         foundation.ShieldArcMax,
+		// MOOX has no authoritative per-ship crew-quality runtime yet. Freeze the
+		// original Crew_Boarding_Combat_Bonus term as zero rather than infer it.
+		CrewBoardingBonus: 0,
+		ShieldStrength:    foundation.ShieldStrength,
+		ShieldArcMax:      foundation.ShieldArcMax,
 	}
 	if ship.VisualGenome != nil {
 		genome := core.CloneShipVisualGenome(*ship.VisualGenome)
