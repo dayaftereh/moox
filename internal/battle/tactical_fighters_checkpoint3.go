@@ -194,7 +194,7 @@ func tacticalFighterShipTargets(spec TacticalSpec, r *tacticalRuntime, source Ta
 	var targets []TacticalFireTarget
 	for _, target := range spec.Ships {
 		state := r.shipState(target.ShipID)
-		if state == nil || state.Destroyed || tacticalOwnerEmpire(target, state) == sourceOwner {
+		if !tacticalShipTargetable(state) || tacticalOwnerEmpire(target, state) == sourceOwner {
 			continue
 		}
 		targets = append(targets, TacticalFireTarget{TargetShipID: target.ShipID, RangeIndex: tacticalRangeIndex(sourceState.X, sourceState.Y, state.X, state.Y)})
@@ -312,6 +312,20 @@ func prepareLaunchFighters(spec Spec, r *tacticalRuntime, seatID protocol.SeatID
 	if craftPerUnit <= 0 {
 		craftPerUnit = spec.Tactical.Rules.Fighter.CraftPerBay
 	}
+	if payload.TargetShipID != 0 {
+		targetSpec := tacticalShipSpec(*spec.Tactical, payload.TargetShipID)
+		targetState := r.shipState(payload.TargetShipID)
+		if targetSpec == nil || !tacticalShipTargetable(targetState) {
+			return fmt.Errorf("Fighter target ship %d is unavailable", payload.TargetShipID)
+		}
+		if destroyedByAbsorber, err := tacticalResolveEnergyAbsorberPreWeapon(*spec.Tactical, r, *active, activeState, *targetSpec, targetState, seatID, commandSequence); err != nil {
+			return err
+		} else if destroyedByAbsorber {
+			tacticalBreakCloakOnAction(activeState)
+			return nil
+		}
+	}
+	tacticalBreakCloakOnAction(activeState)
 	group := TacticalFighterGroupState{
 		GroupID: r.fighters.NextGroupID, SpawnOrder: r.nextMovingActorOrder,
 		SourceSeatID: tacticalControllerSeat(*active, activeState), SourceShipID: active.ShipID, SourceWeaponSlot: weapon.Slot,
@@ -703,6 +717,7 @@ func prepareFireBeamAtFighterGroup(spec Spec, r *tacticalRuntime, seatID protoco
 	for physicalIndex := 0; physicalIndex < liveWeaponCount; physicalIndex++ {
 		for burstIndex := 0; burstIndex < configured.ShotsPerWeapon; burstIndex++ {
 			flatShotIndex++
+			tacticalBreakCloakOnAction(activeState)
 			rawRoll, err := r.random(100, spec.Tactical.Rules)
 			if err != nil {
 				return nil, err
@@ -756,7 +771,7 @@ func prepareFireBeamAtFighterGroup(spec Spec, r *tacticalRuntime, seatID protoco
 		}
 	}
 
-	ready.Ready = false
+	tacticalCompleteWeaponFire(*active, activeState, *weapon, ready)
 	if totalShots > 1 {
 		if err := r.appendEvent("beam_volley_resolved", seatID, commandSequence, map[string]any{
 			"ship_id": active.ShipID, "target_ship_id": core.ID(0), "target_projectile_id": uint64(0), "target_fighter_group_id": groupID,

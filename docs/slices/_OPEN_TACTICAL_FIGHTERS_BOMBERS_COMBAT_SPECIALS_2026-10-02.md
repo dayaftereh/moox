@@ -386,3 +386,35 @@ Validation:
 Ruleset SHA remains `68c06a57bb9fdc18c0ff8045b54241e51cc9cba41298898fbfb535b6a338bd46`.
 
 Next: Gate 3 Checkpoint 5 - **Special lifecycle / scheduler**. Do not begin Checkpoint 6 before Checkpoint 5 is independently reviewed and green.
+
+### Gate 3 Checkpoint 5 - complete
+
+Checkpoint 5 is **PASS / COMPLETE**.
+
+Implemented:
+
+- LiveSnapshot v4 Special-lifecycle state and strict restore/migration validation;
+- Cloaking / Phasing break-recover-recloak lifecycle, active Phasing untargetability and incoming-actor retarget on re-entry;
+- Energy Absorber store -> pre-weapon discharge / expiry and frozen Displacement special branch;
+- Energy Absorber -> Damper ordering (Vector E), Reflection (Vector F), Displacement/Cloak RNG boundaries;
+- Hyper-X Capacitors / Fast Missile Racks initial extra volley and full non-firing-turn re-arm;
+- Shield Capacitor pointwise recharge (Vector H);
+- Automated Repair with original repair-pool order;
+- Phase Shifter / Sub-Space Teleporter self-move authority and range/use state (Vector I);
+- Time-Warp side-pass scheduler with persisted pass/queue state and exactly-once end-of-round recharge/repair (Vector J);
+- shared Special-aware Fighter/projectile damage and targetability hooks.
+
+Vector G remains authoritative in the already-green Checkpoint-3 Lightning regression.
+
+Validation:
+
+- focused `TestSlice178Gate3Checkpoint5*` PASS;
+- `go test ./internal/ruleset` PASS;
+- `go test ./internal/battle` PASS;
+- `go test ./internal/game` PASS;
+- `go test ./...` PASS;
+- `git diff --check` PASS.
+
+Ruleset SHA remains `68c06a57bb9fdc18c0ff8045b54241e51cc9cba41298898fbfb535b6a338bd46`.
+
+Next: Gate 3 Checkpoint 6 - **persistence / AI / UI / integration**. Checkpoint 6 may begin only after the bounded Checkpoint-5 diff is committed green.

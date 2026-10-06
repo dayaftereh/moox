@@ -106,7 +106,7 @@ func tacticalOrdnanceTargets(spec TacticalSpec, r *tacticalRuntime, source *Tact
 	targets := make([]TacticalFireTarget, 0, len(spec.Ships))
 	for _, target := range spec.Ships {
 		state := r.shipState(target.ShipID)
-		if state == nil || state.Destroyed || tacticalOwnerEmpire(target, state) == sourceOwner {
+		if !tacticalShipTargetable(state) || tacticalOwnerEmpire(target, state) == sourceOwner {
 			continue
 		}
 		targets = append(targets, TacticalFireTarget{
@@ -202,8 +202,9 @@ func prepareFireOrdnance(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, 
 	if !targetAllowed {
 		return fmt.Errorf("target ship %d is not a legal ordnance target", payload.TargetShipID)
 	}
+	targetSpec := tacticalShipSpec(*spec.Tactical, payload.TargetShipID)
 	targetState := r.shipState(payload.TargetShipID)
-	if targetState == nil || targetState.Destroyed {
+	if targetSpec == nil || !tacticalShipTargetable(targetState) {
 		return fmt.Errorf("target ship %d is not a live tactical ship", payload.TargetShipID)
 	}
 	configured, err := deriveConfiguredTacticalProjectile(*spec.Tactical, *weapon)
@@ -220,12 +221,19 @@ func prepareFireOrdnance(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, 
 	if liveWeaponCount <= 0 {
 		return fmt.Errorf("ordnance weapon slot %d has no live physical weapons", weapon.Slot)
 	}
+	if destroyedByAbsorber, err := tacticalResolveEnergyAbsorberPreWeapon(*spec.Tactical, r, *active, activeState, *targetSpec, targetState, seatID, commandSequence); err != nil {
+		return err
+	} else if destroyedByAbsorber {
+		tacticalBreakCloakOnAction(activeState)
+		return nil
+	}
 	facing := activeState.Facing
 	if targetState.X != activeState.X || targetState.Y != activeState.Y {
 		facing = tacticalFacing(targetState.X-activeState.X, targetState.Y-activeState.Y)
 	}
 	projectileID := r.ordnance.NextProjectileID
 	spawnOrder := r.nextMovingActorOrder
+	tacticalBreakCloakOnAction(activeState)
 	projectile := TacticalProjectileState{
 		ProjectileID:      projectileID,
 		SpawnOrder:        spawnOrder,
@@ -373,7 +381,7 @@ func moveTacticalProjectileQuantum(spec TacticalSpec, r *tacticalRuntime, index 
 	}
 	targetState := r.shipState(projectile.TargetShipID)
 	targetSpec := tacticalShipSpec(spec, projectile.TargetShipID)
-	if targetSpec == nil || targetState == nil || targetState.Destroyed || tacticalOwnerEmpire(*targetSpec, targetState) == sourceEmpire {
+	if targetSpec == nil || !tacticalShipTargetable(targetState) || tacticalOwnerEmpire(*targetSpec, targetState) == sourceEmpire {
 		targets := tacticalOrdnanceRetargetIDs(spec, r, sourceEmpire)
 		if len(targets) == 0 {
 			return tacticalProjectileQuantumOutcome{DestroyReason: "no_target"}, nil

@@ -203,7 +203,12 @@ func tacticalBeamDefenseForState(spec TacticalSpec, shipSpec TacticalShipSpec, s
 	if shipSpec.CurrentCombatSpeed <= 0 {
 		return 0
 	}
-	return (shipSpec.BeamDefense * speed) / shipSpec.CurrentCombatSpeed
+	defense := (shipSpec.BeamDefense * speed) / shipSpec.CurrentCombatSpeed
+	if !legacy17_8Disabled && shipState.CloakState == TacticalCloakStateCloaked && spec.Rules.Specials != nil &&
+		(TacticalSpecialFunctional(shipSpec, shipState, false, "cloaking_device") || TacticalSpecialFunctional(shipSpec, shipState, false, "phasing_cloak")) {
+		defense += spec.Rules.Specials.CloakBeamDefenseBonus
+	}
+	return defense
 }
 
 func tacticalShieldArcMaxForState(spec TacticalSpec, shipSpec TacticalShipSpec, shipState TacticalShipState, legacy17_8Disabled bool) int {

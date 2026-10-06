@@ -1,7 +1,7 @@
 # Slice 17.8 Gate 3 - Implementation Evidence
 
 Date: 2026-10-05
-Status: **Gate 3 in progress - Checkpoints 1-3 complete; Checkpoint 4 next**
+Status: **Gate 3 in progress - Checkpoints 1-5 complete; Checkpoint 6 next**
 
 Contract authority:
 
@@ -419,3 +419,111 @@ No rules-data files changed in Checkpoint 4. The reviewed `moo2-1.31` ruleset fi
 Next authorized work:
 
 **Gate 3 Checkpoint 5 - Special lifecycle / scheduler.**
+
+## Checkpoint 5 - Special lifecycle / scheduler
+
+Status: **COMPLETE / PASS**
+
+### Authoritative Special lifecycle state
+
+Checkpoint 5 advances the Slice-17.8 live state to version 4 and adds replay-stable server authority for:
+
+- Cloaking / Phasing lifecycle state plus remaining Phasing lifetime;
+- Energy-Absorber stored damage;
+- per-weapon Hyper-X / Fast-Missile-Racks `special_readiness`;
+- self-teleporter per-turn use;
+- Tactical pass kind, Time-Warp side and deterministic Time-Warp queue.
+
+Restore/migration rejects invalid or unowned Special state, including Phasing counters outside the frozen 0..10 domain, Absorber store on a ship without the device, and Special readiness on non-eligible weapon rows. Pre-Checkpoint-5 snapshots migrate deterministically without inventing hidden legacy state.
+
+### Cloaking / Phasing
+
+The frozen original lifecycle is implemented as authoritative ship state:
+
+- Cloaking Device starts cloaked; fire/Boarding breaks cloak; next turn enters recovering; a non-firing pass recloaks at own-pass cleanup;
+- Phasing Cloak starts phased with lifetime 10 and is untargetable while actively phased;
+- fire/Boarding breaks Phasing; next turn enters phase-recovery; own-pass cleanup restores Phasing and immediately retargets inbound projectile/Fighter actors away from the newly untargetable ship;
+- each active phased cleanup decrements the lifetime and zero converts to ordinary Cloaking.
+
+Beam defense and ordnance forced-miss consumers use the frozen Cloak state without browser authority.
+
+### Damage / defensive Special ordering
+
+Checkpoint 5 wires the frozen Special hook ordering into the shared damage and attack paths:
+
+- Energy Absorber stores one quarter before Damper Field reduction (Vector E);
+- stored Absorber energy auto-discharges before a normal weapon attack against a ship at Tactical range < 8 and expires at the owning side pass boundary;
+- the direct `Energy_Absorber_Attack_` Displacement branch preserves the audited `Random_(100) > 30` miss behavior;
+- Reflection Field uses the recovered `Random_(D+15) > D` boundary (Vector F);
+- generic Beam Displacement preserves `<= 30`, ordnance Displacement preserves `< 30`, and Cloak missile forced-miss preserves `< 50` boundaries;
+- Fighter / projectile impacts share the same Special-aware damage authority.
+
+Vector G remains the already-green Checkpoint-3 Lightning grouped-actor regression and is intentionally not duplicated.
+
+### Weapon readiness
+
+Hyper-X Capacitors and Fast Missile Racks use the recovered shared weapon-row state machine:
+
+- combat initialization: `extra_volley_ready`;
+- first exhausted volley consumes the extra-volley state and immediately reloads one extra volley;
+- later turn start converts non-ready state to `rearm_pending`;
+- firing while pending consumes it and prevents re-arm;
+- a full non-firing turn leaves `rearm_pending` intact so own-pass cleanup restores `extra_volley_ready`.
+
+The same completion helper is used by ship Beam fire and reactive Beam fire against projectile/Fighter actors.
+
+### Shield recharge / repair / teleport
+
+- Shield recharge keeps the original pointwise distribution; normal factor 3 and Shield-Capacitor factor 10 are regression-covered by Vector H.
+- Automated Repair applies the frozen base 20 percent plus any authoritative frozen Fleet-Engineer term, repairs Structure then Armor, then internal Engine -> Secondary -> Weapons -> Shield -> Specials, and skips destroyed/post-capture ships.
+- Phase Shifter / Sub-Space Teleporter self-movement reuses `battle.move_ship`, projects `movement_kind=teleport`, preserves facing/movement, consumes the once-per-turn teleporter use flag and accepts the frozen max range 20 / rejects 21 (Vector I).
+- the ordinary movement rejection order is preserved so legacy command/error semantics remain stable.
+
+### Time-Warp scheduler
+
+Time-Warp is implemented as an additive BattleSession scheduler pass rather than a second combat authority:
+
+1. ordinary initiative/Wait activation flow remains unchanged;
+2. each side finishes its ordinary pass and own-pass Special cleanup;
+3. eligible Time-Warp ships receive deterministic side-ordered extra-pass queues;
+4. Time-Warp pass completion runs the same own-pass cleanup for the participating ships;
+5. after all Time-Warp side passes, shield recharge and Automated Repair run exactly once and the next ordinary round begins.
+
+Pass kind, side and queue are persisted and restore-validated. Vector J covers deterministic pass ordering and one-shot end-of-round maintenance.
+
+### Frozen vectors / regression evidence
+
+Dedicated Checkpoint-5 coverage includes:
+
+- Vector E - Energy Absorber before Damper;
+- Vector F - Reflection boundary;
+- Vector G - Lightning grouped multiplicity via the existing Checkpoint-3 regression;
+- Vector H - Shield-Capacitor pointwise recharge;
+- Vector I - self-teleport range/use semantics;
+- Vector J - Time-Warp scheduling / maintenance ordering;
+- Cloak / Phasing lifecycle and forced-miss boundaries;
+- Hyper-X / Fast-Missile-Racks extra-volley and full-turn re-arm;
+- Automated Repair pool order;
+- Energy-Absorber pre-weapon discharge / expiry;
+- LiveSnapshot v4 migration and restore hardening.
+
+Passed on the final reviewed Checkpoint-5 working tree:
+
+- focused `TestSlice178Gate3Checkpoint5*` regressions;
+- `go test ./internal/ruleset`;
+- `go test ./internal/battle`;
+- `go test ./internal/game`;
+- `go test ./...`;
+- `git diff --check`.
+
+No rules-data file changes are required by Checkpoint 5, so the reviewed `moo2-1.31` ruleset fingerprint remains:
+
+`68c06a57bb9fdc18c0ff8045b54241e51cc9cba41298898fbfb535b6a338bd46`
+
+## Checkpoint 5 result
+
+**Checkpoint 5 COMPLETE / PASS.**
+
+Next authorized work:
+
+**Gate 3 Checkpoint 6 - persistence / AI / UI / integration.**

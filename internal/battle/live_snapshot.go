@@ -55,7 +55,7 @@ func (s *Session) LiveSnapshot() LiveSnapshot {
 			NextEventSequence:    s.tactical.nextEventSequence,
 			NextMovingActorOrder: s.tactical.nextMovingActorOrder,
 			Legacy17_8Disabled:   s.tactical.legacy17_8Disabled,
-			Slice178StateVersion: 3,
+			Slice178StateVersion: 4,
 		}
 	}
 	return out
@@ -120,6 +120,11 @@ func migrateLiveSnapshot(snapshot LiveSnapshot) (LiveSnapshot, error) {
 				return LiveSnapshot{}, err
 			}
 		}
+		if snapshot.Tactical != nil && snapshot.Tactical.Slice178StateVersion == 3 {
+			if err := migrateSlice178Checkpoint5State(&snapshot, snapshot.Tactical.Legacy17_8Disabled); err != nil {
+				return LiveSnapshot{}, err
+			}
+		}
 		return snapshot, nil
 	case legacyLiveSnapshotSchemaVersion:
 		snapshot.SchemaVersion = LiveSnapshotSchemaVersion
@@ -157,6 +162,9 @@ func migrateLiveSnapshot(snapshot LiveSnapshot) (LiveSnapshot, error) {
 			return LiveSnapshot{}, err
 		}
 		if err := migrateSlice178Checkpoint4State(&snapshot); err != nil {
+			return LiveSnapshot{}, err
+		}
+		if err := migrateSlice178Checkpoint5State(&snapshot, true); err != nil {
 			return LiveSnapshot{}, err
 		}
 		return snapshot, nil
@@ -256,7 +264,7 @@ func validateLiveSnapshot(snapshot LiveSnapshot) error {
 
 func validateTacticalLiveSnapshot(spec TacticalSpec, snapshot TacticalLiveSnapshot, revision uint64) error {
 	state := snapshot.State
-	if snapshot.Slice178StateVersion != 3 {
+	if snapshot.Slice178StateVersion != 4 {
 		return fmt.Errorf("tactical live snapshot has unsupported Slice-17.8 state version %d", snapshot.Slice178StateVersion)
 	}
 	if state.Round == 0 || state.NextCommandSequence == 0 {
@@ -264,6 +272,15 @@ func validateTacticalLiveSnapshot(spec TacticalSpec, snapshot TacticalLiveSnapsh
 	}
 	if uint64(state.NextCommandSequence-1) != revision {
 		return fmt.Errorf("tactical live snapshot revision %d disagrees with next command sequence %d", revision, state.NextCommandSequence)
+	}
+	if state.PassKind != TacticalPassKindNormal && state.PassKind != TacticalPassKindTimeWarp {
+		return fmt.Errorf("tactical live snapshot has invalid pass kind %q", state.PassKind)
+	}
+	if state.PassKind == TacticalPassKindNormal && (state.TimeWarpSeatID != 0 || len(state.TimeWarpQueue) != 0) {
+		return fmt.Errorf("tactical live snapshot normal pass carries Time-Warp state")
+	}
+	if state.PassKind == TacticalPassKindTimeWarp && (state.TimeWarpSeatID == 0 || len(state.TimeWarpQueue) == 0) {
+		return fmt.Errorf("tactical live snapshot Time-Warp pass is missing side/queue state")
 	}
 	if len(state.Ships) != len(spec.Ships) {
 		return fmt.Errorf("tactical live snapshot ship count %d, expected %d", len(state.Ships), len(spec.Ships))
@@ -280,6 +297,29 @@ func validateTacticalLiveSnapshot(spec TacticalSpec, snapshot TacticalLiveSnapsh
 		shipStatesByID[got.ShipID] = got
 		if got.OwnerEmpireID == 0 || got.ControllerSeatID == 0 || tacticalEmpireForSeat(spec, got.ControllerSeatID) != got.OwnerEmpireID {
 			return fmt.Errorf("tactical live snapshot ship %d mutable authority is invalid", got.ShipID)
+		}
+		if !tacticalSpecialStateValid(got) {
+			return fmt.Errorf("tactical live snapshot ship %d Special lifecycle state is invalid", got.ShipID)
+		}
+		phasingMax := 0
+		if spec.Rules.Specials != nil {
+			phasingMax = spec.Rules.Specials.PhasingInitialLifetime
+		}
+		if got.PhasingTurnsRemaining > phasingMax {
+			return fmt.Errorf("tactical live snapshot ship %d phasing counter %d outside 0..%d", got.ShipID, got.PhasingTurnsRemaining, phasingMax)
+		}
+		switch got.CloakState {
+		case TacticalCloakStatePhased, TacticalCloakStatePhaseBroken, TacticalCloakStatePhaseRecovering:
+			if !tacticalSpecialHasID(want, "phasing_cloak") {
+				return fmt.Errorf("tactical live snapshot ship %d carries Phasing-Cloak state without installed phasing_cloak", got.ShipID)
+			}
+		case TacticalCloakStateCloaked, TacticalCloakStateBroken, TacticalCloakStateRecovering:
+			if !tacticalSpecialHasID(want, "cloaking_device") && !tacticalSpecialHasID(want, "phasing_cloak") {
+				return fmt.Errorf("tactical live snapshot ship %d carries cloak state without installed cloak Special", got.ShipID)
+			}
+		}
+		if got.EnergyAbsorberStored > 0 && !tacticalSpecialHasID(want, "energy_absorber") {
+			return fmt.Errorf("tactical live snapshot ship %d carries Energy-Absorber store without installed energy_absorber", got.ShipID)
 		}
 		expectedSpeed := tacticalCurrentCombatSpeed(spec, want, got, snapshot.Legacy17_8Disabled)
 		if got.CurrentCombatSpeed != expectedSpeed || got.MovementMax != expectedSpeed || got.MovementCurrent < 0 || got.MovementCurrent > got.MovementMax {
@@ -307,6 +347,19 @@ func validateTacticalLiveSnapshot(spec TacticalSpec, snapshot TacticalLiveSnapsh
 			if got.Weapons[j].Slot != want.Weapons[j].Slot || got.Weapons[j].CountCurrent < 0 || got.Weapons[j].CountCurrent > want.Weapons[j].Count {
 				return fmt.Errorf("tactical live snapshot ship %d weapon slot mismatch", got.ShipID)
 			}
+			if !tacticalSpecialReadinessValid(got.Weapons[j].SpecialReadiness) {
+				return fmt.Errorf("tactical live snapshot ship %d weapon slot %d special readiness %q is invalid", got.ShipID, got.Weapons[j].Slot, got.Weapons[j].SpecialReadiness)
+			}
+			if got.Weapons[j].SpecialReadiness != TacticalSpecialReadinessNone {
+				weapon := want.Weapons[j]
+				eligibleRow := tacticalBeamFireSupported(weapon) && tacticalSpecialHasID(want, "hyper_x_capacitors")
+				if tacticalWeaponFamily(weapon) == "missile" && tacticalSpecialHasID(want, "fast_missile_racks") {
+					eligibleRow = true
+				}
+				if !eligibleRow {
+					return fmt.Errorf("tactical live snapshot ship %d weapon slot %d carries special readiness on a non-eligible row", got.ShipID, got.Weapons[j].Slot)
+				}
+			}
 		}
 		if !snapshot.Legacy17_8Disabled {
 			if err := validateTacticalInternalState(want.Internal, got.Internal); err != nil {
@@ -323,6 +376,37 @@ func validateTacticalLiveSnapshot(spec TacticalSpec, snapshot TacticalLiveSnapsh
 					}
 				}
 			}
+		}
+	}
+	if state.PassKind == TacticalPassKindTimeWarp {
+		positions := make(map[core.ID]int, len(state.InitiativeOrder))
+		for i, shipID := range state.InitiativeOrder {
+			positions[shipID] = i
+		}
+		seen := make(map[core.ID]bool, len(state.TimeWarpQueue))
+		activeSeen := false
+		previousPosition := -1
+		for _, shipID := range state.TimeWarpQueue {
+			if seen[shipID] {
+				return fmt.Errorf("tactical live snapshot Time-Warp queue contains duplicate ship %d", shipID)
+			}
+			seen[shipID] = true
+			pos, ok := positions[shipID]
+			if !ok || pos <= previousPosition {
+				return fmt.Errorf("tactical live snapshot Time-Warp queue is not an ordered initiative subset")
+			}
+			previousPosition = pos
+			ship := tacticalShipSpec(spec, shipID)
+			shipState, ok := shipStatesByID[shipID]
+			if ship == nil || !ok || shipState.Destroyed || tacticalControllerSeat(*ship, &shipState) != state.TimeWarpSeatID || !TacticalSpecialFunctional(*ship, shipState, snapshot.Legacy17_8Disabled, "time_warp_facilitator") {
+				return fmt.Errorf("tactical live snapshot Time-Warp queue ship %d is not eligible", shipID)
+			}
+			if shipID == state.ActiveShipID {
+				activeSeen = true
+			}
+		}
+		if !activeSeen {
+			return fmt.Errorf("tactical live snapshot active ship %d is outside Time-Warp queue", state.ActiveShipID)
 		}
 	}
 	if snapshot.Ordnance == nil {
@@ -534,6 +618,53 @@ func migrateSlice178Checkpoint4State(snapshot *LiveSnapshot) error {
 		state.PostCaptureState = false
 	}
 	tactical.Slice178StateVersion = 3
+	snapshot.Tactical = &tactical
+	return nil
+}
+
+func migrateSlice178Checkpoint5State(snapshot *LiveSnapshot, legacyDisabled bool) error {
+	if snapshot == nil || snapshot.Tactical == nil || snapshot.Spec.Tactical == nil {
+		return nil
+	}
+	if snapshot.Tactical.Slice178StateVersion != 3 {
+		return nil
+	}
+	tactical := *snapshot.Tactical
+	tactical.State = cloneTacticalState(snapshot.Tactical.State)
+	tactical.State.PassKind = TacticalPassKindNormal
+	tactical.State.TimeWarpSeatID = 0
+	tactical.State.TimeWarpQueue = nil
+	if len(tactical.State.Ships) != len(snapshot.Spec.Tactical.Ships) {
+		return fmt.Errorf("Slice 17.8 checkpoint-5 migration ship count mismatch")
+	}
+	for i := range tactical.State.Ships {
+		state := &tactical.State.Ships[i]
+		ship := snapshot.Spec.Tactical.Ships[i]
+		if state.ShipID != ship.ShipID {
+			return fmt.Errorf("Slice 17.8 checkpoint-5 migration ship[%d] id mismatch", i)
+		}
+		if len(state.Weapons) != len(ship.Weapons) {
+			return fmt.Errorf("Slice 17.8 checkpoint-5 migration ship %d weapon count mismatch", state.ShipID)
+		}
+		state.EnergyAbsorberStored = 0
+		if legacyDisabled {
+			state.CloakState = TacticalCloakStateNone
+			state.PhasingTurnsRemaining = 0
+			for j := range state.Weapons {
+				state.Weapons[j].SpecialReadiness = TacticalSpecialReadinessNone
+			}
+			continue
+		}
+		state.CloakState, state.PhasingTurnsRemaining = tacticalInitialCloakState(*snapshot.Spec.Tactical, ship, *state)
+		for j := range state.Weapons {
+			if state.Weapons[j].Slot != ship.Weapons[j].Slot {
+				return fmt.Errorf("Slice 17.8 checkpoint-5 migration ship %d weapon slot mismatch", state.ShipID)
+			}
+			state.Weapons[j].SpecialReadiness = tacticalInitialSpecialReadiness(ship, *state, ship.Weapons[j])
+		}
+	}
+	tactical.Legacy17_8Disabled = legacyDisabled || tactical.Legacy17_8Disabled
+	tactical.Slice178StateVersion = 4
 	snapshot.Tactical = &tactical
 	return nil
 }

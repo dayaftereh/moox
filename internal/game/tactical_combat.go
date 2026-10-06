@@ -209,7 +209,7 @@ func tacticalBoardingDoctrinesForEncounter(state *core.GameState, encounter Enco
 		}
 		modifiers := economy.RaceResearchModifiers[empire.RaceID]
 		// MOOX does not yet have an authoritative tactical officer runtime, so the
-		// original fleet Commando/Security terms are frozen as zero rather than guessed.
+		// original fleet Commando/Security/Engineer terms are frozen as zero rather than guessed.
 		out = append(out, battle.TacticalBoardingDoctrineSpec{
 			SeatID: side.SeatID, EmpireID: side.EmpireID,
 			GroundCombatBonus: modifiers.GroundCombatBonus,

@@ -32,6 +32,7 @@ type TacticalBoardingDoctrineSpec struct {
 	GroundCombatBonus  int             `json:"ground_combat_bonus"`
 	FleetCommandoBonus int             `json:"fleet_commando_bonus"`
 	FleetSecurityBonus int             `json:"fleet_security_bonus"`
+	FleetEngineerBonus int             `json:"fleet_engineer_bonus"`
 	Telepathic         bool            `json:"telepathic,omitempty"`
 }
 
@@ -75,7 +76,7 @@ func validateTacticalBoardingDoctrines(spec TacticalSpec) error {
 		if expected[doctrine.SeatID] != doctrine.EmpireID {
 			return fmt.Errorf("tactical Boarding doctrine seat %d empire %d does not match battle authority", doctrine.SeatID, doctrine.EmpireID)
 		}
-		if doctrine.FleetCommandoBonus < 0 || doctrine.FleetSecurityBonus < 0 {
+		if doctrine.FleetCommandoBonus < 0 || doctrine.FleetSecurityBonus < 0 || doctrine.FleetEngineerBonus < 0 {
 			return fmt.Errorf("tactical Boarding doctrine seat %d has negative fleet bonus", doctrine.SeatID)
 		}
 		previous = doctrine.SeatID
@@ -167,7 +168,7 @@ func tacticalBoardingActions(spec TacticalSpec, r *tacticalRuntime, source *Tact
 			Available: true,
 		}
 		switch {
-		case targetState.Destroyed || targetState.BeingCaptured:
+		case !tacticalShipTargetable(targetState) || targetState.BeingCaptured:
 			action.Available = false
 			action.UnavailableReason = TacticalBoardingUnavailableTarget
 		case sourceState.AlreadyBoarded || (transporters && sourceState.TeleporterUsed):
@@ -688,6 +689,7 @@ func prepareBoardShip(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, com
 		effectiveParty /= spec.Tactical.Rules.Boarding.DamperTransporterDivisor
 	}
 
+	tacticalBreakCloakOnAction(activeState)
 	sourceMarineBefore := activeState.MarineCurrent
 	activeState.MarineCurrent -= payload.MarineCount
 	activeState.AlreadyBoarded = true

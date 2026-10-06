@@ -184,7 +184,11 @@ func resolveTacticalProjectileImpact(spec TacticalSpec, r *tacticalRuntime, proj
 		if err != nil {
 			return tacticalProjectileQuantumOutcome{}, err
 		}
-		hit := rawRoll > effectiveDefense
+		forcedMiss, displacementRoll, cloakRoll, err := tacticalOrdnanceForcedMiss(spec, r, *target, *targetState)
+		if err != nil {
+			return tacticalProjectileQuantumOutcome{}, err
+		}
+		hit := !forcedMiss && rawRoll > effectiveDefense
 		damageApplied := 0
 		var applications []tacticalDamageApplication
 		if hit {
@@ -202,7 +206,7 @@ func resolveTacticalProjectileImpact(spec TacticalSpec, r *tacticalRuntime, proj
 					options.HasShieldArcOverride = true
 					options.ShieldArcOverride = applicationIndex
 				}
-				applied := applyTacticalDamageWithOptions(*target, targetState, damageSource, impactWarhead, options)
+				applied := applyTacticalDamageWithSpecials(spec, r, *target, targetState, damageSource, impactWarhead, options)
 				applications = append(applications, applied)
 				damageApplied += impactWarhead
 			}
@@ -216,8 +220,9 @@ func resolveTacticalProjectileImpact(spec TacticalSpec, r *tacticalRuntime, proj
 			"effective_missile_defense": effectiveDefense,
 			"raw_hit_roll":              rawRoll,
 			"hit":                       hit,
-			"warhead_strength":          impactWarhead,
-			"damage_applied":            damageApplied,
+			"forced_miss":               forcedMiss, "displacement_roll": displacementRoll, "cloak_roll": cloakRoll,
+			"warhead_strength": impactWarhead,
+			"damage_applied":   damageApplied,
 		}); err != nil {
 			return tacticalProjectileQuantumOutcome{}, err
 		}

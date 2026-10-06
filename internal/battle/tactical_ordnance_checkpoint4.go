@@ -213,6 +213,7 @@ func prepareFireBeamAtProjectile(spec Spec, r *tacticalRuntime, seatID protocol.
 	for physicalIndex := 0; physicalIndex < liveWeaponCount; physicalIndex++ {
 		for burstIndex := 0; burstIndex < configured.ShotsPerWeapon; burstIndex++ {
 			flatShotIndex++
+			tacticalBreakCloakOnAction(activeState)
 			rawRoll, err := r.random(100, spec.Tactical.Rules)
 			if err != nil {
 				return nil, err
@@ -263,7 +264,7 @@ func prepareFireBeamAtProjectile(spec Spec, r *tacticalRuntime, seatID protocol.
 		}
 	}
 
-	ready.Ready = false
+	tacticalCompleteWeaponFire(*active, activeState, *weapon, ready)
 	if totalShots > 1 {
 		if err := r.appendEvent("beam_volley_resolved", seatID, commandSequence, map[string]any{
 			"ship_id": active.ShipID, "target_ship_id": core.ID(0), "target_projectile_id": projectile.ProjectileID,

@@ -36,7 +36,7 @@ func tacticalFighterLegalTargetsForEmpire(spec TacticalSpec, r *tacticalRuntime,
 	ships := make([]TacticalFireTarget, 0, len(spec.Ships))
 	for _, target := range spec.Ships {
 		state := r.shipState(target.ShipID)
-		if state == nil || state.Destroyed || tacticalOwnerEmpire(target, state) == sourceEmpire {
+		if !tacticalShipTargetable(state) || tacticalOwnerEmpire(target, state) == sourceEmpire {
 			continue
 		}
 		ships = append(ships, TacticalFireTarget{
@@ -94,7 +94,7 @@ func tacticalFighterTargetPosition(spec TacticalSpec, r *tacticalRuntime, group 
 	if group.TargetShipID != 0 {
 		targetSpec := tacticalShipSpec(spec, group.TargetShipID)
 		state := r.shipState(group.TargetShipID)
-		if targetSpec == nil || state == nil || state.Destroyed || tacticalOwnerEmpire(*targetSpec, state) == sourceEmpire {
+		if targetSpec == nil || !tacticalShipTargetable(state) || tacticalOwnerEmpire(*targetSpec, state) == sourceEmpire {
 			return 0, 0, false
 		}
 		return state.X, state.Y, true
@@ -451,7 +451,7 @@ func tacticalFighterApplyShipDamage(spec TacticalSpec, r *tacticalRuntime, group
 	wasDestroyed := targetState.Destroyed
 	options := tacticalFighterDamageOptions(spec, r, *targetSpec, *targetState, payload)
 	sourceState := tacticalFighterImpactSource(group, *targetState)
-	applied := applyTacticalDamageWithOptions(*targetSpec, targetState, sourceState, damage, options)
+	applied := applyTacticalDamageWithSpecials(spec, r, *targetSpec, targetState, sourceState, damage, options)
 	event := map[string]any{
 		"source_ship_id": group.SourceShipID, "target_ship_id": targetSpec.ShipID,
 		"fighter_group_id": group.GroupID, "craft_index": craftIndex, "payload_kind": payloadKind,
