@@ -503,10 +503,11 @@ func (s *GameSession) battleDecisionCatalogLocked(seatID protocol.SeatID) []Batt
 				switch action.CommandKind {
 				case battle.CommandFireBeam:
 					cmd, buildErr = battle.NewFireBeamCommand(sequence, battle.FireBeamPayload{
-						ShipID:             active,
-						TargetShipID:       target.TargetShipID,
-						TargetProjectileID: target.TargetProjectileID,
-						WeaponSlot:         action.WeaponSlot,
+						ShipID:               active,
+						TargetShipID:         target.TargetShipID,
+						TargetProjectileID:   target.TargetProjectileID,
+						TargetFighterGroupID: target.TargetFighterGroupID,
+						WeaponSlot:           action.WeaponSlot,
 					})
 				case battle.CommandFireOrdnance:
 					if target.TargetShipID == 0 {
@@ -517,12 +518,63 @@ func (s *GameSession) battleDecisionCatalogLocked(seatID protocol.SeatID) []Batt
 						TargetShipID: target.TargetShipID,
 						WeaponSlot:   action.WeaponSlot,
 					})
+				case battle.CommandLaunchFighters:
+					cmd, buildErr = battle.NewLaunchFightersCommand(sequence, battle.LaunchFightersPayload{
+						ShipID:               active,
+						WeaponSlot:           action.WeaponSlot,
+						TargetShipID:         target.TargetShipID,
+						TargetProjectileID:   target.TargetProjectileID,
+						TargetFighterGroupID: target.TargetFighterGroupID,
+					})
 				default:
 					continue
 				}
 				if buildErr != nil {
 					continue
 				}
+				if _, err := child.PrepareCommand(seatID, cmd); err == nil {
+					decision.Actions = append(decision.Actions, cmd)
+				}
+			}
+		}
+
+		type boardingCandidate struct {
+			targetShipID core.ID
+			marineCount  int
+			mode         string
+		}
+		var boarding []boardingCandidate
+		seenBoarding := make(map[string]struct{})
+		for _, action := range view.Tactical.BoardingActions {
+			if !action.Available || action.MaxMarineCount <= 0 {
+				continue
+			}
+			for _, mode := range action.AllowedModes {
+				if mode != battle.TacticalBoardingModeRaid && mode != battle.TacticalBoardingModeCapture {
+					continue
+				}
+				key := fmt.Sprintf("%d:%s", action.TargetShipID, mode)
+				if _, exists := seenBoarding[key]; exists {
+					continue
+				}
+				seenBoarding[key] = struct{}{}
+				boarding = append(boarding, boardingCandidate{targetShipID: action.TargetShipID, marineCount: action.MaxMarineCount, mode: mode})
+			}
+		}
+		sort.SliceStable(boarding, func(i, j int) bool {
+			if boarding[i].targetShipID != boarding[j].targetShipID {
+				return boarding[i].targetShipID < boarding[j].targetShipID
+			}
+			if boarding[i].mode == boarding[j].mode {
+				return false
+			}
+			return boarding[i].mode == battle.TacticalBoardingModeRaid
+		})
+		for _, candidate := range boarding {
+			cmd, err := battle.NewBoardShipCommand(sequence, battle.BoardShipPayload{
+				ShipID: active, TargetShipID: candidate.targetShipID, MarineCount: candidate.marineCount, Mode: candidate.mode,
+			})
+			if err == nil {
 				if _, err := child.PrepareCommand(seatID, cmd); err == nil {
 					decision.Actions = append(decision.Actions, cmd)
 				}
@@ -545,6 +597,26 @@ func (s *GameSession) battleDecisionCatalogLocked(seatID protocol.SeatID) []Batt
 			if err == nil {
 				if _, err := child.PrepareCommand(seatID, end); err == nil {
 					decision.Actions = append(decision.Actions, end)
+				}
+			}
+		}
+		if view.Tactical.CanWaitActivation {
+			targetShipID := core.ID(0)
+			if len(view.Tactical.WaitTargetShipIDs) != 0 {
+				targetShipID = view.Tactical.WaitTargetShipIDs[0]
+			}
+			wait, err := battle.NewWaitActivationCommand(sequence, battle.WaitActivationPayload{ShipID: active, TargetShipID: targetShipID})
+			if err == nil {
+				if _, err := child.PrepareCommand(seatID, wait); err == nil {
+					decision.Actions = append(decision.Actions, wait)
+				}
+			}
+		}
+		if view.Tactical.CanRetreat {
+			retreat, err := battle.NewRetreatCommand(sequence, battle.RetreatPayload{ShipID: active})
+			if err == nil {
+				if _, err := child.PrepareCommand(seatID, retreat); err == nil {
+					decision.Actions = append(decision.Actions, retreat)
 				}
 			}
 		}

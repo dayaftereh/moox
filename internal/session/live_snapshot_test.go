@@ -305,42 +305,25 @@ func TestLiveSnapshotActiveTacticalSessionRoundTripAndContinuation(t *testing.T)
 		t.Fatal("active tactical GameSession snapshot changed on roundtrip")
 	}
 
-	continueTactical := func(target *GameSession) {
-		endDefender1, _ := battle.NewEndActivationCommand(3, battle.EndActivationPayload{ShipID: fixture.defenderShipIDs[0]})
-		if err := target.SubmitBattleCommand(child.Spec.ID, child.Spec.Defender.SeatID, endDefender1); err != nil {
-			t.Fatal(err)
-		}
-		current, err := observerBattleView(target, child.Spec.ID)
+	for step := 0; step < 512; step++ {
+		current, err := observerBattleView(s, child.Spec.ID)
 		if err != nil {
 			t.Fatal(err)
 		}
-		move2, err := goldenApproachMove(current, 4)
+		if current.Phase == battle.PhaseCompleted {
+			break
+		}
+		seat, cmd, err := nextGoldenBattleCommand(current)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if err := target.SubmitBattleCommand(child.Spec.ID, child.Spec.Attacker.SeatID, move2); err != nil {
+		if err := s.SubmitBattleCommand(child.Spec.ID, seat, cmd); err != nil {
 			t.Fatal(err)
 		}
-		fire2, _ := battle.NewFireBeamCommand(5, battle.FireBeamPayload{ShipID: fixture.attackerShipIDs[0], TargetShipID: fixture.defenderShipIDs[0], WeaponSlot: 0})
-		if err := target.SubmitBattleCommand(child.Spec.ID, child.Spec.Attacker.SeatID, fire2); err != nil {
-			t.Fatal(err)
-		}
-		endAttacker2, _ := battle.NewEndActivationCommand(6, battle.EndActivationPayload{ShipID: fixture.attackerShipIDs[0]})
-		if err := target.SubmitBattleCommand(child.Spec.ID, child.Spec.Attacker.SeatID, endAttacker2); err != nil {
-			t.Fatal(err)
-		}
-		endDefender2, _ := battle.NewEndActivationCommand(7, battle.EndActivationPayload{ShipID: fixture.defenderShipIDs[0]})
-		if err := target.SubmitBattleCommand(child.Spec.ID, child.Spec.Defender.SeatID, endDefender2); err != nil {
-			t.Fatal(err)
-		}
-		fire3, _ := battle.NewFireBeamCommand(8, battle.FireBeamPayload{ShipID: fixture.attackerShipIDs[0], TargetShipID: fixture.defenderShipIDs[0], WeaponSlot: 0})
-		if err := target.SubmitBattleCommand(child.Spec.ID, child.Spec.Attacker.SeatID, fire3); err != nil {
+		if err := restored.SubmitBattleCommand(child.Spec.ID, seat, cmd); err != nil {
 			t.Fatal(err)
 		}
 	}
-	continueTactical(s)
-	continueTactical(restored)
-
 	leftObserver, _ := s.ObserverView()
 	rightObserver, _ := restored.ObserverView()
 	leftJSON, _ := json.Marshal(leftObserver)

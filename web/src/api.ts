@@ -790,37 +790,67 @@ export type BattleSide = {
 }
 export type TacticalWeaponSpec = {
   slot: number; weapon_id: string; weapon_family: string; count: number; min_damage: number; max_damage: number
-  mount_type?: string; modifier_ids?: string[]; ammo?: number; firing_arc_id?: string; tactical_support?: string
+  mount_type?: string; modifier_ids?: string[]; ammo?: number; firing_arc_id?: string; innate_effect_ids?: string[]; tactical_support?: string; craft_per_unit?: number
+}
+export type TacticalSpecialSpec = { slot: number; special_id: string; tactical_support: string }
+export type TacticalInternalWeaponSpec = { slot: number; max: number; unit_size: number }
+export type TacticalInternalSpecialSpec = { slot: number; max: number }
+export type TacticalInternalSpec = {
+  engine_max: number; secondary_max: number; weapons?: TacticalInternalWeaponSpec[]; specials?: TacticalInternalSpecialSpec[]; shield_generator_max: number
 }
 export type TacticalShipSpec = {
   ship_id: number; empire_id: number; seat_id: number; x: number; y: number; facing: number; turning_mode?: string
-  hull_id: string; warp_drive_id: string; computer_id: string; armor_id: string
-  current_combat_speed: number; beam_offense: number; beam_defense: number; armor_max: number; structure_max: number
-  weapons?: TacticalWeaponSpec[]
+  hull_id: string; warp_drive_id: string; computer_id: string; armor_id: string; shield_id?: string; fuel_cell_id?: string
+  source_design_id?: number; source_design_revision?: number; strategic_picture_id?: number; source_visual_revision?: number; visual_genome?: ShipVisualGenomeWire
+  weapons?: TacticalWeaponSpec[]; specials?: TacticalSpecialSpec[]; internal?: TacticalInternalSpec
+  minimum_combat_speed?: number; current_combat_speed: number; beam_offense: number; beam_defense: number; missile_defense?: number; missile_scanner_reduction?: number
+  armor_max: number; structure_max: number; marine_max?: number; crew_boarding_bonus?: number; shield_strength?: number; shield_arc_max?: number
 }
 export type TacticalSpec = {
   rules: Record<string, unknown>; initiative_enabled: boolean; initial_rng_state?: number; ships: TacticalShipSpec[]
+  fighter_doctrines?: Array<Record<string, unknown>>; boarding_doctrines?: Array<Record<string, unknown>>
 }
 export type TacticalWeaponView = {
   slot: number; weapon_id: string; count: number; min_damage: number; max_damage: number; ready: boolean
-  mount_type?: string; modifier_ids?: string[]; ammo?: number; firing_arc_id?: string; tactical_support?: string
+  mount_type?: string; modifier_ids?: string[]; ammo?: number; firing_arc_id?: string; innate_effect_ids?: string[]; tactical_support?: string; special_readiness?: string
 }
+export type TacticalInternalWeaponView = { slot: number; current: number; max: number; unit_size: number }
+export type TacticalInternalSpecialView = { slot: number; current: number; max: number }
+export type TacticalInternalView = {
+  engine_current: number; engine_max: number; secondary_current: number; secondary_max: number
+  weapons?: TacticalInternalWeaponView[]; specials?: TacticalInternalSpecialView[]
+  shield_generator_current: number; shield_generator_max: number
+}
+export type TacticalSpecialView = { slot: number; special_id: string; tactical_support: string; functional: boolean }
 export type TacticalShipView = {
-  ship_id: number; empire_id: number; seat_id: number; hull_id: string; warp_drive_id: string; computer_id: string; armor_id: string
+  ship_id: number; empire_id: number; seat_id: number; hull_id: string; warp_drive_id: string; computer_id: string; armor_id: string; shield_id?: string
   source_design_id?: number; source_design_revision?: number; strategic_picture_id?: number
   source_visual_revision?: number; visual_genome?: ShipVisualGenomeWire
-  x: number; y: number; facing: number; movement_current: number; movement_max: number; activation_complete: boolean
-  armor_current: number; armor_max: number; structure_current: number; structure_max: number
-  beam_offense: number; beam_defense: number; weapons?: TacticalWeaponView[]; destroyed: boolean
+  x: number; y: number; facing: number; current_combat_speed: number; movement_current: number; movement_max: number; activation_complete: boolean
+  armor_current: number; armor_max: number; marine_current: number; marine_max: number
+  teleporter_used?: boolean; already_boarded?: boolean; being_captured?: boolean; post_capture_state?: boolean
+  cloak_state: string; phasing_turns_remaining?: number
+  shield_strength: number; shield_arc_current: [number, number, number, number]; shield_arc_max: number
+  structure_current: number; structure_max: number; beam_offense: number; beam_defense: number; missile_defense: number; missile_scanner_reduction: number
+  weapons?: TacticalWeaponView[]; specials?: TacticalSpecialView[]; internal: TacticalInternalView; destroyed: boolean
+}
+export type TacticalWeaponState = { slot: number; ready: boolean; count_current: number; special_readiness?: string }
+export type TacticalInternalState = {
+  engine_current: number; secondary_current: number
+  weapons?: Array<{ slot: number; current: number }>; specials?: Array<{ slot: number; current: number }>; shield_generator_current: number
 }
 export type TacticalShipState = {
-  ship_id: number; x: number; y: number; facing: number; movement_current: number; movement_max: number; activation_complete: boolean
-  armor_current: number; structure_damage: number; weapons?: { slot: number; ready: boolean }[]; destroyed: boolean
+  ship_id: number; x: number; y: number; facing: number; current_combat_speed: number; movement_current: number; movement_max: number; activation_complete: boolean
+  armor_current: number; shield_arc_current: [number, number, number, number]; structure_damage: number; marine_current: number
+  owner_empire_id: number; controller_seat_id: number; cloak_state: string; phasing_turns_remaining?: number; energy_absorber_stored?: number
+  teleporter_used?: boolean; already_boarded?: boolean; being_captured?: boolean; post_capture_state?: boolean
+  weapons?: TacticalWeaponState[]; internal: TacticalInternalState; destroyed: boolean
 }
 export type TacticalState = {
-  round: number; initiative_order: number[]; active_ship_id: number; next_command_sequence: number; rng_state?: number; ships: TacticalShipState[]
+  round: number; initiative_order: number[]; active_ship_id: number; next_command_sequence: number; rng_state?: number
+  pass_kind?: string; time_warp_seat_id?: number; time_warp_queue?: number[]; ships: TacticalShipState[]
 }
-export type TacticalMoveOption = { x: number; y: number; move_cost: number; resulting_facing: number; movement_remaining_after: number }
+export type TacticalMoveOption = { movement_kind: string; x: number; y: number; move_cost: number; resulting_facing: number; movement_remaining_after: number }
 export type TacticalOrdnanceWeaponState = { ship_id: number; weapon_slot: number; ammo_remaining: number; cooldown_rounds: number }
 export type TacticalProjectileState = {
   projectile_id: number; source_seat_id: number; source_ship_id: number; weapon_slot: number; target_ship_id: number
@@ -831,19 +861,35 @@ export type TacticalProjectileState = {
 export type TacticalOrdnanceState = {
   next_projectile_id: number; weapon_states?: TacticalOrdnanceWeaponState[]; projectiles?: TacticalProjectileState[]
 }
-export type TacticalFireTarget = { target_ship_id?: number; target_projectile_id?: number; range_index: number }
+export type TacticalFighterPayloadSpec = {
+  weapon_id: string; min_damage: number; max_damage: number; innate_effect_ids?: string[]; point_defense_mode?: boolean
+}
+export type TacticalFighterBayState = { ship_id: number; weapon_slot: number; ready_groups: number }
+export type TacticalFighterGroupState = {
+  group_id: number; spawn_order: number; source_seat_id: number; source_ship_id: number; source_weapon_slot: number; kind: string
+  target_ship_id?: number; target_projectile_id?: number; target_fighter_group_id?: number
+  x: number; y: number; facing: number; speed: number; movement_remaining: number; distance_traveled: number
+  multiplicity: number; unit_durability: number; intercept_damage_remainder: number; attack_stock: number; phase: string
+  beam_payload?: TacticalFighterPayloadSpec; bomb_payload?: TacticalFighterPayloadSpec
+}
+export type TacticalFighterView = { bay_states?: TacticalFighterBayState[]; groups?: TacticalFighterGroupState[] }
+export type TacticalFireTarget = { target_ship_id?: number; target_projectile_id?: number; target_fighter_group_id?: number; range_index: number }
 export type TacticalFireAction = { ship_id: number; weapon_slot: number; weapon_id: string; targets: TacticalFireTarget[] }
 export type TacticalWeaponActionAvailability = {
   ship_id: number; weapon_slot: number; weapon_id: string; weapon_family: string
   command_kind?: string; available: boolean; unavailable_reason?: string; targets?: TacticalFireTarget[]
 }
+export type TacticalBoardingActionAvailability = {
+  ship_id: number; target_ship_id: number; delivery_mode: string; max_marine_count: number; allowed_modes?: string[]
+  available: boolean; unavailable_reason?: string
+}
 export type TacticalEvent = { sequence: number; kind: string; seat_id?: number; command_sequence?: number; data?: Record<string, unknown> }
 export type TacticalView = {
-  state: TacticalState; ordnance: TacticalOrdnanceState; events: TacticalEvent[]; ships: TacticalShipView[]
-  legal_moves?: TacticalMoveOption[]; weapon_actions?: TacticalWeaponActionAvailability[]; legal_fire_actions?: TacticalFireAction[]; can_end_activation: boolean
+  state: TacticalState; ordnance: TacticalOrdnanceState; fighters: TacticalFighterView; events: TacticalEvent[]; ships: TacticalShipView[]
+  legal_moves?: TacticalMoveOption[]; weapon_actions?: TacticalWeaponActionAvailability[]; legal_fire_actions?: TacticalFireAction[]
+  boarding_actions?: TacticalBoardingActionAvailability[]; can_end_activation: boolean; can_retreat: boolean
   can_wait_activation?: boolean; wait_target_ship_ids?: number[]
 }
-
 export type BattleSpec = {
   id: number
   game_id: string
@@ -1202,6 +1248,26 @@ export function tacticalFireOrdnanceCommand(tactical: TacticalView, shipID: numb
   return { schema_version: 1, sequence: tactical.state.next_command_sequence, kind: 'battle.fire_ordnance', payload: { ship_id: shipID, target_ship_id: targetShipID, weapon_slot: weaponSlot } }
 }
 
+export function tacticalFireBeamFighterCommand(tactical: TacticalView, shipID: number, targetFighterGroupID: number, weaponSlot: number): ProtocolCommand {
+  return { schema_version: 1, sequence: tactical.state.next_command_sequence, kind: 'battle.fire_beam', payload: { ship_id: shipID, target_fighter_group_id: targetFighterGroupID, weapon_slot: weaponSlot } }
+}
+export function tacticalLaunchFightersCommand(tactical: TacticalView, shipID: number, weaponSlot: number, target: TacticalFireTarget): ProtocolCommand {
+  return {
+    schema_version: 1,
+    sequence: tactical.state.next_command_sequence,
+    kind: 'battle.launch_fighters',
+    payload: {
+      ship_id: shipID,
+      weapon_slot: weaponSlot,
+      ...(target.target_ship_id ? { target_ship_id: target.target_ship_id } : {}),
+      ...(target.target_projectile_id ? { target_projectile_id: target.target_projectile_id } : {}),
+      ...(target.target_fighter_group_id ? { target_fighter_group_id: target.target_fighter_group_id } : {}),
+    },
+  }
+}
+export function tacticalBoardShipCommand(tactical: TacticalView, shipID: number, targetShipID: number, marineCount: number, mode: string): ProtocolCommand {
+  return { schema_version: 1, sequence: tactical.state.next_command_sequence, kind: 'battle.board_ship', payload: { ship_id: shipID, target_ship_id: targetShipID, marine_count: marineCount, mode } }
+}
 export function tacticalEndActivationCommand(tactical: TacticalView, shipID: number): ProtocolCommand {
   return { schema_version: 1, sequence: tactical.state.next_command_sequence, kind: 'battle.end_activation', payload: { ship_id: shipID } }
 }

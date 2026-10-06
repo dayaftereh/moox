@@ -439,3 +439,227 @@ func TestDecisionViewProjectsKnownForeignFleetCompositionOnlyAtVisitedSystem(t *
 		}
 	}
 }
+
+func TestDecisionViewCatalogsSlice178FighterWaitRetreatActions(t *testing.T) {
+	state, seats, fixture := makeTacticalStrategicFixture(t, 1)
+	attackerID := fixture.attackerShipIDs[0]
+	attackerIndex := -1
+	for i := range state.Ships {
+		if state.Ships[i].ID == attackerID {
+			attackerIndex = i
+			state.Ships[i].Spec.Weapons = append(state.Ships[i].Spec.Weapons, core.ShipWeaponMount{Slot: 1, WeaponID: "fighter_bays", Count: 1})
+			break
+		}
+	}
+	if attackerIndex < 0 {
+		t.Fatal("attacker ship missing")
+	}
+	for i := range state.ShipDesigns {
+		if state.ShipDesigns[i].ID == state.Ships[attackerIndex].SourceDesignID {
+			state.ShipDesigns[i].Spec = state.Ships[attackerIndex].Spec
+		}
+	}
+	escort := state.Ships[attackerIndex]
+	escort.ID = state.NewID()
+	escort.Name = "Fighter Escort"
+	state.Ships = append(state.Ships, escort)
+	for i := range state.StrategicFleets {
+		if state.StrategicFleets[i].ID == fixture.attackerFleetIDs[0] {
+			state.StrategicFleets[i].ShipIDs = append(state.StrategicFleets[i].ShipIDs, escort.ID)
+		}
+	}
+	rules, err := game.LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := rules.ApplyReferenceTriangleTechnologyProfile(state, game.ReferenceTriangleProfileAllTech); err != nil {
+		t.Fatal(err)
+	}
+	if err := state.Validate(); err != nil {
+		t.Fatal(err)
+	}
+
+	resolver := loadTacticalEconomyResolver(t)
+	s, err := NewGameSession("decision-s178-fighter", state, seats)
+	if err != nil {
+		t.Fatal(err)
+	}
+	submitStubTurn(t, s, "decision-s178-fighter")
+	if err := s.ResolveStrategic(resolver); err != nil {
+		t.Fatal(err)
+	}
+	view, err := s.DecisionView(1, resolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(view.Decisions.Battles) != 1 {
+		t.Fatalf("battle decisions=%+v", view.Decisions.Battles)
+	}
+	actions := view.Decisions.Battles[0].Actions
+	if len(actions) < 4 {
+		t.Fatalf("Slice 17.8 tactical action catalog too small: %+v", actions)
+	}
+	kinds := make([]string, len(actions))
+	for i := range actions {
+		kinds[i] = actions[i].Kind
+	}
+	if kinds[0] != battle.CommandLaunchFighters {
+		t.Fatalf("first executable Slice 17.8 weapon action=%q want=%q; all=%v", kinds[0], battle.CommandLaunchFighters, kinds)
+	}
+	for _, want := range []string{battle.CommandEndActivation, battle.CommandWaitActivation, battle.CommandRetreat} {
+		found := false
+		for _, got := range kinds {
+			if got == want {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Fatalf("Slice 17.8 action %q missing from common catalog: %v", want, kinds)
+		}
+	}
+	for _, got := range kinds {
+		if got == battle.CommandMoveShip {
+			t.Fatalf("movement fallback must not be emitted while Fighter action is executable: %v", kinds)
+		}
+	}
+}
+
+func TestDecisionViewCatalogsSlice178BoardingRaidBeforeCapture(t *testing.T) {
+	state, seats, fixture := makeTacticalStrategicFixture(t, 1)
+	attackerID := fixture.attackerShipIDs[0]
+	for i := range state.Ships {
+		if state.Ships[i].ID != attackerID {
+			continue
+		}
+		state.Ships[i].Spec.Weapons = nil
+		state.Ships[i].Spec.Specials = []core.ShipSpecialMount{{Slot: 0, SpecialID: "transporters"}}
+		for j := range state.ShipDesigns {
+			if state.ShipDesigns[j].ID == state.Ships[i].SourceDesignID {
+				state.ShipDesigns[j].Spec = state.Ships[i].Spec
+			}
+		}
+		break
+	}
+	rules, err := game.LoadEconomyRules(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := rules.ApplyReferenceTriangleTechnologyProfile(state, game.ReferenceTriangleProfileAllTech); err != nil {
+		t.Fatal(err)
+	}
+	if err := state.Validate(); err != nil {
+		t.Fatal(err)
+	}
+
+	resolver := loadTacticalEconomyResolver(t)
+	s, err := NewGameSession("decision-s178-boarding", state, seats)
+	if err != nil {
+		t.Fatal(err)
+	}
+	submitStubTurn(t, s, "decision-s178-boarding")
+	if err := s.ResolveStrategic(resolver); err != nil {
+		t.Fatal(err)
+	}
+	if len(s.battles) != 1 {
+		t.Fatalf("child battles=%d", len(s.battles))
+	}
+	child := s.battles[0]
+	var projectedMax int
+	for step := 0; step < 12; step++ {
+		attackerView, err := child.PlayerView(1)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, action := range attackerView.Tactical.BoardingActions {
+			if action.Available {
+				projectedMax = action.MaxMarineCount
+				break
+			}
+		}
+		if projectedMax > 0 {
+			break
+		}
+		active := attackerView.Tactical.State.ActiveShipID
+		activeSeat := protocol.SeatID(0)
+		for _, ship := range attackerView.Tactical.Ships {
+			if ship.ShipID == active {
+				activeSeat = ship.SeatID
+				break
+			}
+		}
+		if activeSeat == 1 && len(attackerView.Tactical.LegalMoves) != 0 {
+			move, ok := bestTacticalApproachMove(attackerView)
+			if !ok {
+				t.Fatal("attacker has legal moves but no best approach")
+			}
+			cmd, err := battle.NewMoveShipCommand(attackerView.Tactical.State.NextCommandSequence, battle.MoveShipPayload{ShipID: active, X: move.X, Y: move.Y})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err := s.SubmitBattleCommand(attackerView.Spec.ID, activeSeat, cmd); err != nil {
+				t.Fatal(err)
+			}
+			attackerView, err = child.PlayerView(1)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, action := range attackerView.Tactical.BoardingActions {
+				if action.Available {
+					projectedMax = action.MaxMarineCount
+					break
+				}
+			}
+			if projectedMax > 0 {
+				break
+			}
+		}
+		observer := child.View()
+		active = observer.Tactical.State.ActiveShipID
+		activeSeat = 0
+		for _, ship := range observer.Tactical.Ships {
+			if ship.ShipID == active {
+				activeSeat = ship.SeatID
+				break
+			}
+		}
+		if activeSeat == 0 {
+			t.Fatal("active tactical seat missing")
+		}
+		end, err := battle.NewEndActivationCommand(observer.Tactical.State.NextCommandSequence, battle.EndActivationPayload{ShipID: active})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := s.SubmitBattleCommand(observer.Spec.ID, activeSeat, end); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if projectedMax <= 0 {
+		t.Fatal("failed to reach server-projected Transporter Boarding range")
+	}
+
+	view, err := s.DecisionView(1, resolver)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(view.Decisions.Battles) != 1 || len(view.Decisions.Battles[0].Actions) < 2 {
+		t.Fatalf("boarding decision catalog=%+v", view.Decisions.Battles)
+	}
+	actions := view.Decisions.Battles[0].Actions
+	if actions[0].Kind != battle.CommandBoardShip || actions[1].Kind != battle.CommandBoardShip {
+		t.Fatalf("boarding actions are not first: %q %q", actions[0].Kind, actions[1].Kind)
+	}
+	var raid, capture battle.BoardShipPayload
+	if err := json.Unmarshal(actions[0].Payload, &raid); err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(actions[1].Payload, &capture); err != nil {
+		t.Fatal(err)
+	}
+	if raid.Mode != battle.TacticalBoardingModeRaid || capture.Mode != battle.TacticalBoardingModeCapture {
+		t.Fatalf("boarding mode order raid=%q capture=%q", raid.Mode, capture.Mode)
+	}
+	if raid.TargetShipID != capture.TargetShipID || raid.MarineCount != projectedMax || capture.MarineCount != projectedMax {
+		t.Fatalf("boarding payloads raid=%+v capture=%+v projected_max=%d", raid, capture, projectedMax)
+	}
+}

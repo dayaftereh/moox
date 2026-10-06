@@ -418,3 +418,35 @@ Validation:
 Ruleset SHA remains `68c06a57bb9fdc18c0ff8045b54241e51cc9cba41298898fbfb535b6a338bd46`.
 
 Next: Gate 3 Checkpoint 6 - **persistence / AI / UI / integration**. Checkpoint 6 may begin only after the bounded Checkpoint-5 diff is committed green.
+
+### Gate 3 Checkpoint 6 - complete
+
+Checkpoint 6 is **PASS / COMPLETE**.
+
+Implemented / accepted:
+
+- combined Slice-17.8 LiveSnapshot save/load/replay/reconnect coverage and detached Observer/Player projections;
+- common AI action catalog for Fighter launch, Beam-vs-Fighter, Boarding, Wait and Retreat using server-projected legality only;
+- current Tactical browser/API projection for Fighters, Boarding, teleport movement, Retreat, Internal state and server-owned Special functionality;
+- Vector K Achilles Beam/Internal selection, including Armor bypass, original threshold/19-entry selection and Weapon/Shield x3 weights on the shared RNG path;
+- Vector L schema-v1 compatibility with no synthetic 17.8 hidden state, reusing the accepted shared moving-actor migration ordering;
+- configured Selector/Save/Build -> BattleSession integration through a real Fighter launch;
+- Session golden harnesses reconciled with authoritative Internal-selection RNG while retaining atomic retry, save/load continuation and stable parallel-completion assertions.
+
+Validation:
+
+- focused `TestSlice178Gate3Checkpoint6*` PASS;
+- focused Slice-17.8 DecisionView/AI regressions PASS;
+- configured Selector/Save/Build -> BattleSession integration PASS;
+- `go test ./internal/session` PASS;
+- `go test ./...` PASS;
+- `npm run build` under `web` PASS;
+- `git diff --check` PASS.
+
+No rules-data changes were required. Ruleset SHA remains `68c06a57bb9fdc18c0ff8045b54241e51cc9cba41298898fbfb535b6a338bd46`.
+
+### Gate 3 - complete
+
+Gate 3 is **PASS / COMPLETE**. Checkpoints 1-6 are green and implementation-complete against the frozen Gate-2 contract.
+
+Next: **Gate 4 - acceptance close**. Keep this OPEN marker until the acceptance-close evidence is complete and the slice is formally closed.

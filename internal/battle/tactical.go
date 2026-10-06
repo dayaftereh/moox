@@ -290,6 +290,12 @@ type TacticalWeaponView struct {
 	SpecialReadiness string                      `json:"special_readiness,omitempty"`
 }
 
+type TacticalSpecialView struct {
+	Slot            int    `json:"slot"`
+	SpecialID       string `json:"special_id"`
+	TacticalSupport string `json:"tactical_support"`
+	Functional      bool   `json:"functional"`
+}
 type TacticalShipView struct {
 	ShipID                  core.ID                `json:"ship_id"`
 	EmpireID                core.ID                `json:"empire_id"`
@@ -331,6 +337,7 @@ type TacticalShipView struct {
 	MissileDefense          int                    `json:"missile_defense"`
 	MissileScannerReduction int                    `json:"missile_scanner_reduction"`
 	Weapons                 []TacticalWeaponView   `json:"weapons,omitempty"`
+	Specials                []TacticalSpecialView  `json:"specials,omitempty"`
 	Internal                TacticalInternalView   `json:"internal"`
 	Destroyed               bool                   `json:"destroyed"`
 }
@@ -1734,6 +1741,7 @@ type tacticalBeamDependencyContext struct {
 	ArmorBypassNeutralized    bool
 	MarineKillSuppressed      bool
 	TargetMonsterAntaranBand  bool
+	Achilles                  bool
 }
 
 func neutralTacticalBeamDependencyContext() tacticalBeamDependencyContext {
@@ -1749,6 +1757,7 @@ type tacticalDamageOptions struct {
 	ShieldArcOverride     int
 	HasShieldArcOverride  bool
 	ShieldAdditionalBlock int
+	DeferLowerLayer       bool
 }
 
 func fullTacticalShieldArcs(max int) [4]int {
@@ -1823,21 +1832,23 @@ func applyTacticalDamageWithOptions(targetSpec TacticalShipSpec, targetState *Ta
 	}
 	result.LowerLayerOverflow = remainingDamage
 
-	if !options.ArmorFirstBypass && remainingDamage > 0 && targetState.ArmorCurrent > 0 {
-		absorbed := remainingDamage
-		if absorbed > targetState.ArmorCurrent {
-			absorbed = targetState.ArmorCurrent
+	if !options.DeferLowerLayer {
+		if !options.ArmorFirstBypass && remainingDamage > 0 && targetState.ArmorCurrent > 0 {
+			absorbed := remainingDamage
+			if absorbed > targetState.ArmorCurrent {
+				absorbed = targetState.ArmorCurrent
+			}
+			targetState.ArmorCurrent -= absorbed
+			remainingDamage -= absorbed
+			result.ArmorAfter = targetState.ArmorCurrent
 		}
-		targetState.ArmorCurrent -= absorbed
-		remainingDamage -= absorbed
-		result.ArmorAfter = targetState.ArmorCurrent
-	}
-	if remainingDamage > 0 {
-		targetState.StructureDamage += remainingDamage
-		if targetState.StructureDamage > targetSpec.StructureMax {
-			targetState.StructureDamage = targetSpec.StructureMax
+		if remainingDamage > 0 {
+			targetState.StructureDamage += remainingDamage
+			if targetState.StructureDamage > targetSpec.StructureMax {
+				targetState.StructureDamage = targetSpec.StructureMax
+			}
+			result.StructureAfter = targetState.StructureDamage
 		}
-		result.StructureAfter = targetState.StructureDamage
 	}
 
 	if options.ExtraStructureDamage && result.LowerLayerOverflow > 0 && targetState.StructureDamage < targetSpec.StructureMax {
@@ -1866,29 +1877,8 @@ func applyTacticalDamageWithOptions(targetSpec TacticalShipSpec, targetState *Ta
 		targetState.Destroyed = true
 	}
 
-	shieldChanged := result.ShieldBefore > result.ShieldAfter
-	armorChanged := result.ArmorBefore > result.ArmorAfter
-	structureChanged := result.StructureAfter > result.StructureBefore
-	switch {
-	case shieldChanged && armorChanged && structureChanged:
-		result.Layer = "shield_armor_structure"
-	case shieldChanged && armorChanged:
-		result.Layer = "shield_armor"
-	case shieldChanged && structureChanged:
-		result.Layer = "shield_structure"
-	case shieldChanged:
-		result.Layer = "shield"
-	case targetSpec.ShieldStrength > 0 && incomingDamage > 0 && result.PostBlockDamage == 0:
-		result.Layer = "shield_block"
-	case armorChanged && structureChanged:
-		result.Layer = "armor_structure"
-	case armorChanged:
-		result.Layer = "armor"
-	case structureChanged:
-		result.Layer = "structure"
-	case targetState.StructureDamage >= targetSpec.StructureMax && incomingDamage > 0:
-		result.Layer = "structure_overkill"
-	}
+	classifyTacticalDamageLayer(targetSpec, *targetState, &result)
+
 	return result
 }
 
@@ -1967,6 +1957,7 @@ func tacticalShipViews(spec TacticalSpec, r *tacticalRuntime) []TacticalShipView
 			StructureCurrent: shipSpec.StructureMax - state.StructureDamage, StructureMax: shipSpec.StructureMax,
 			BeamOffense: tacticalBeamOffenseForState(spec, shipSpec, *state, r.legacy17_8Disabled), BeamDefense: tacticalBeamDefenseForState(spec, shipSpec, *state, r.legacy17_8Disabled), MissileDefense: tacticalMissileDefenseForState(spec, r, shipSpec, *state), MissileScannerReduction: shipSpec.MissileScannerReduction, Destroyed: state.Destroyed,
 			Weapons:  make([]TacticalWeaponView, 0, len(shipSpec.Weapons)),
+			Specials: make([]TacticalSpecialView, 0, len(shipSpec.Specials)),
 			Internal: tacticalInternalView(shipSpec.Internal, state.Internal),
 		}
 		if shipSpec.VisualGenome != nil {
@@ -1975,6 +1966,12 @@ func tacticalShipViews(spec TacticalSpec, r *tacticalRuntime) []TacticalShipView
 		}
 		if view.StructureCurrent < 0 {
 			view.StructureCurrent = 0
+		}
+		for _, specialSpec := range shipSpec.Specials {
+			view.Specials = append(view.Specials, TacticalSpecialView{
+				Slot: specialSpec.Slot, SpecialID: specialSpec.SpecialID, TacticalSupport: specialSpec.TacticalSupport,
+				Functional: TacticalSpecialFunctional(shipSpec, *state, r.legacy17_8Disabled, specialSpec.SpecialID),
+			})
 		}
 		for _, weaponSpec := range shipSpec.Weapons {
 			ready := false
@@ -2237,6 +2234,7 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	dependencies.HardShields = TacticalSpecialFunctional(*targetSpec, *targetState, r.legacy17_8Disabled, "hard_shields")
 	dependencies.MarineKillSuppressed = TacticalSpecialFunctional(*targetSpec, *targetState, r.legacy17_8Disabled, "damper_field")
 	dependencies.ArmorBypassNeutralized = targetSpec.ArmorID == "xentronium_armor" || TacticalSpecialFunctional(*targetSpec, *targetState, r.legacy17_8Disabled, "heavy_armor")
+	dependencies.Achilles = TacticalSpecialFunctional(*active, *activeState, r.legacy17_8Disabled, "achilles_targeting_unit")
 	rangeDamageModifier := spec.Tactical.Rules.BeamDamageRangeModifiers[rangeIndex]
 	scaledMinDamage, scaledMaxDamage, damagePercent := beam.EffectiveDamageBounds(
 		configured,
@@ -2248,7 +2246,7 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	attackDifferential := tacticalBeamOffenseForState(*spec.Tactical, *active, *activeState, r.legacy17_8Disabled) - tacticalBeamDefenseForState(*spec.Tactical, *targetSpec, *targetState, r.legacy17_8Disabled) + configured.StaticToHitAdjustment
 	alwaysHit := tacticalBeamHasEffect(configured, "always_hit")
 	shieldPiercing := tacticalBeamHasEffect(configured, "shield_piercing") && !dependencies.HardShields
-	armorFirstBypass := (tacticalBeamHasEffect(configured, "armor_piercing") || tacticalBeamHasEffect(configured, "armor_first_bypass")) && !dependencies.ArmorBypassNeutralized
+	armorFirstBypass := dependencies.Achilles || ((tacticalBeamHasEffect(configured, "armor_piercing") || tacticalBeamHasEffect(configured, "armor_first_bypass")) && !dependencies.ArmorBypassNeutralized)
 	extraStructureDamage := tacticalBeamHasEffect(configured, "extra_structure_damage")
 	marineKill := tacticalBeamHasEffect(configured, "marine_kill")
 	enveloping := tacticalBeamHasEffect(configured, "enveloping")
@@ -2336,7 +2334,11 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 							options.HasShieldArcOverride = true
 							options.ShieldArcOverride = applicationIndex
 						}
-						damageApplications = append(damageApplications, applyTacticalDamageWithSpecials(*spec.Tactical, r, *targetSpec, targetState, *activeState, damage, options))
+						applied, err := applyTacticalBeamDamageWithSpecials(*spec.Tactical, r, *targetSpec, targetState, *activeState, damage, options, selectionRoll, dependencies.Achilles, dependencies.TargetMonsterAntaranBand)
+						if err != nil {
+							return nil, err
+						}
+						damageApplications = append(damageApplications, applied)
 					}
 				}
 			}

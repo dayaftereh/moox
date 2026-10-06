@@ -7861,3 +7861,21 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   from { opacity: .6; transform: scale(.72); transform-origin: center; }
   to { opacity: 1; transform: scale(1.22); transform-origin: center; }
 }
+
+/* Slice 17.8 tactical actor/integration projection */
+.tactical-teleport-node { fill: rgba(180, 120, 255, .14); stroke: rgba(214, 183, 255, .9); stroke-width: .08; vector-effect: non-scaling-stroke; }
+.tactical-move-animation.is-teleport .tactical-move-trail { stroke-dasharray: .22 .18; }
+.tactical-move-animation.is-teleport .tactical-move-arrival { fill: rgba(205, 166, 255, .8); }
+.tactical-fighter-group { cursor: default; outline: none; }
+.tactical-fighter-group.legal-target { cursor: pointer; }
+.tactical-fighter-hit-cell { fill: transparent; stroke: none; pointer-events: all; }
+.tactical-fighter-vector { stroke-width: .07; vector-effect: non-scaling-stroke; }
+.tactical-fighter-group.own .tactical-fighter-vector { fill: rgba(116, 207, 223, .86); stroke: #d1f8ff; }
+.tactical-fighter-group.enemy .tactical-fighter-vector { fill: rgba(212, 121, 118, .88); stroke: #ffd4cf; }
+.tactical-fighter-group.legal-target .tactical-fighter-vector { filter: drop-shadow(0 0 3px rgba(255,255,255,.95)); }
+.tactical-fighter-count { fill: #f4fbff; font-size: .42px; font-weight: 900; paint-order: stroke; stroke: rgba(0,0,0,.9); stroke-width: .1px; pointer-events: none; }
+.tactical-boarding-strip { display: flex; flex-wrap: wrap; align-items: end; gap: 6px; width: 100%; }
+.tactical-boarding-strip label { display: grid; gap: 2px; font-size: .58rem; font-weight: 800; }
+.tactical-boarding-strip select, .tactical-boarding-strip input { min-height: 30px; border-radius: 6px; }
+.tactical-boarding-strip input { width: 72px; }
+.tactical-boarding-strip button { min-height: 30px; }

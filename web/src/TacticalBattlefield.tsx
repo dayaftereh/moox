@@ -1,16 +1,20 @@
 import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
 import {
   decodeShipVisualGenome,
+  tacticalBoardShipCommand,
   tacticalEndActivationCommand,
   tacticalFireBeamCommand,
+  tacticalFireBeamFighterCommand,
   tacticalFireBeamProjectileCommand,
   tacticalFireOrdnanceCommand,
+  tacticalLaunchFightersCommand,
   tacticalMoveCommand,
   tacticalRetreatCommand,
   tacticalWaitActivationCommand,
   type BattleView,
   type ProtocolCommand,
   type TacticalEvent,
+  type TacticalFighterGroupState,
   type TacticalProjectileState,
   type TacticalShipView,
 } from './api'
@@ -39,7 +43,7 @@ type GestureSnapshot = { x: number; y: number; distance: number }
 type TacticalDamageLayerKind = 'shield' | 'armor' | 'structure' | 'projectile'
 type TacticalDamageLayer = { kind: TacticalDamageLayerKind; amount: number }
 type TacticalBeamAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number; shotCount: number; shotHits: boolean[]; weaponID: string; physicalWeaponCount: number; burstShotCount: number; layers: TacticalDamageLayer[] }
-type TacticalMoveAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number }
+type TacticalMoveAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; movementKind: string }
 type TacticalProjectileAnimation = { sequence: number; projectileID: number; kind: string; fromX?: number; fromY?: number; toX: number; toY: number; multiplicity: number }
 
 function projectileSalvoOffsets(multiplicity: number): number[] {
@@ -102,6 +106,10 @@ function eventNumber(data: Record<string, unknown> | undefined, key: string): nu
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined
 }
 
+function eventString(data: Record<string, unknown> | undefined, key: string): string | undefined {
+  const value = data?.[key]
+  return typeof value === 'string' ? value : undefined
+}
 function damageLayersForBeam(events: TacticalEvent[], beam: TacticalEvent): TacticalDamageLayer[] {
   const isVolley = beam.kind === 'beam_volley_resolved'
   const hit = isVolley ? (eventNumber(beam.data, 'hit_count') ?? 0) > 0 : beam.data?.hit === true
@@ -201,11 +209,15 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
 
   const ships = tactical.ships ?? []
   const projectiles = tactical.ordnance?.projectiles ?? []
+  const fighterGroups = tactical.fighters?.groups ?? []
+  const fighterBayStates = tactical.fighters?.bay_states ?? []
   const ordnanceWeaponStates = tactical.ordnance?.weapon_states ?? []
   const ownShips = ships.filter((ship) => ship.seat_id === ownSeatID)
   const remainingOwnShips = ownShips.filter((ship) => !ship.destroyed && !ship.activation_complete)
   const legalMoves = tactical.legal_moves ?? []
   const weaponActions = tactical.weapon_actions ?? []
+  const boardingActions = tactical.boarding_actions ?? []
+  const availableBoardingActions = boardingActions.filter((action) => action.available && action.max_marine_count > 0)
   const waitTargetShipIDs = tactical.wait_target_ship_ids ?? []
   const waitTargetShipIDSet = useMemo(() => new Set(waitTargetShipIDs), [waitTargetShipIDs])
   const activeShip = ships.find((ship) => ship.ship_id === tactical.state.active_ship_id)
@@ -220,13 +232,17 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const [busy, setBusy] = useState(false)
   const [retreatConfirmOpen, setRetreatConfirmOpen] = useState(false)
   const [commandError, setCommandError] = useState('')
+  const [selectedBoardingTargetID, setSelectedBoardingTargetID] = useState<number | null>(() => availableBoardingActions[0]?.target_ship_id ?? null)
+  const [boardingMarineCount, setBoardingMarineCount] = useState(() => availableBoardingActions[0]?.max_marine_count ?? 1)
+  const [boardingMode, setBoardingMode] = useState(() => availableBoardingActions[0]?.allowed_modes?.[0] ?? 'raid')
 
   const points = useMemo(() => {
     const shipPoints = ships.map((ship) => ({ x: ship.x, y: ship.y }))
     const projectilePoints = projectiles.map((projectile) => ({ x: projectile.x, y: projectile.y }))
+    const fighterPoints = fighterGroups.map((fighter) => ({ x: fighter.x, y: fighter.y }))
     const movePoints = legalMoves.map((move) => ({ x: move.x, y: move.y }))
-    return shipPoints.concat(projectilePoints, movePoints)
-  }, [ships, projectiles, legalMoves])
+    return shipPoints.concat(projectilePoints, fighterPoints, movePoints)
+  }, [ships, projectiles, fighterGroups, legalMoves])
 
   const bounds = useMemo(() => {
     if (points.length === 0) return { minX: -16, maxX: 16, minY: -10, maxY: 10, cx: 0, cy: 0, width: 44, height: 28 }
@@ -292,6 +308,11 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
       .filter((state) => state.ship_id === activeShip?.ship_id)
       .map((state) => [state.weapon_slot, state]),
   ), [ordnanceWeaponStates, activeShip?.ship_id])
+  const fighterBayStateBySlot = useMemo(() => new Map(
+    fighterBayStates
+      .filter((state) => state.ship_id === activeShip?.ship_id)
+      .map((state) => [state.weapon_slot, state]),
+  ), [fighterBayStates, activeShip?.ship_id])
   const activeWeapons = ownActivation ? (activeShip?.weapons ?? []) : []
   const selectedTargets = selectedWeaponAction?.available ? selectedWeaponAction.targets ?? [] : []
   const legalShipTargetByID = useMemo(() => new Map(
@@ -300,11 +321,28 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const legalProjectileTargetByID = useMemo(() => new Map(
     selectedTargets.filter((target) => target.target_projectile_id != null).map((target) => [target.target_projectile_id as number, target]),
   ), [selectedTargets])
+  const legalFighterTargetByID = useMemo(() => new Map(
+    selectedTargets.filter((target) => target.target_fighter_group_id != null).map((target) => [target.target_fighter_group_id as number, target]),
+  ), [selectedTargets])
+  const selectedBoardingAction = availableBoardingActions.find((action) => action.target_ship_id === selectedBoardingTargetID) ?? availableBoardingActions[0]
   const legalMoveByCell = useMemo(() => new Map(legalMoves.map((move) => [`${move.x}:${move.y}`, move])), [legalMoves])
   const reachableGridD = useMemo(() => reachableGridPath(legalMoves), [legalMoves])
   const scannedShip = ships.find((ship) => ship.ship_id === scannedShipID)
   const selectedShip = ships.find((ship) => ship.ship_id === selectedShipID && ship.seat_id === ownSeatID)
   const movementSelectionActive = mode !== 'scan' && ownActivation && !!activeShip && selectedShipID === activeShip.ship_id
+  const boardingSelectionKey = availableBoardingActions.map((action) => `${action.target_ship_id}:${action.max_marine_count}:${(action.allowed_modes ?? []).join(',')}`).join('|')
+  useEffect(() => {
+    const action = availableBoardingActions.find((candidate) => candidate.target_ship_id === selectedBoardingTargetID) ?? availableBoardingActions[0]
+    if (!action) {
+      setSelectedBoardingTargetID(null)
+      setBoardingMarineCount(1)
+      setBoardingMode('raid')
+      return
+    }
+    if (selectedBoardingTargetID !== action.target_ship_id) setSelectedBoardingTargetID(action.target_ship_id)
+    setBoardingMarineCount((current) => clamp(current, 1, action.max_marine_count))
+    if (!(action.allowed_modes ?? []).includes(boardingMode)) setBoardingMode(action.allowed_modes?.[0] ?? 'raid')
+  }, [boardingSelectionKey, selectedBoardingTargetID, boardingMode])
   const viewWidth = bounds.width / camera.zoom
   const viewHeight = bounds.height / camera.zoom
   const viewX = camera.cx - viewWidth / 2
@@ -370,7 +408,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         const toX = eventNumber(event.data, 'to_x')
         const toY = eventNumber(event.data, 'to_y')
         if (fromX != null && fromY != null && toX != null && toY != null) {
-          setMoveAnimation({ sequence: event.sequence, fromX, fromY, toX, toY })
+          setMoveAnimation({ sequence: event.sequence, fromX, fromY, toX, toY, movementKind: eventString(event.data, 'movement_kind') ?? 'normal' })
         }
       } else if (event.kind === 'ordnance_launched'
         || event.kind === 'projectile_moved'
@@ -465,17 +503,42 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
       return
     }
     if (controlsDisabled || !activeShip || !selectedWeaponAction?.available) return
-    if (!legalShipTargetByID.has(ship.ship_id)) return
+    const target = legalShipTargetByID.get(ship.ship_id)
+    if (!target) return
     if (selectedWeaponAction.command_kind === 'battle.fire_beam') {
       void runCommand(tacticalFireBeamCommand(tactical, activeShip.ship_id, ship.ship_id, selectedWeaponAction.weapon_slot))
     } else if (selectedWeaponAction.command_kind === 'battle.fire_ordnance') {
       void runCommand(tacticalFireOrdnanceCommand(tactical, activeShip.ship_id, ship.ship_id, selectedWeaponAction.weapon_slot))
+    } else if (selectedWeaponAction.command_kind === 'battle.launch_fighters') {
+      void runCommand(tacticalLaunchFightersCommand(tactical, activeShip.ship_id, selectedWeaponAction.weapon_slot, target))
     }
   }
   const selectProjectile = (projectile: TacticalProjectileState) => {
     if (ignoreClickRef.current || controlsDisabled || !activeShip || !selectedWeaponAction?.available) return
-    if (selectedWeaponAction.command_kind !== 'battle.fire_beam' || !legalProjectileTargetByID.has(projectile.projectile_id)) return
-    void runCommand(tacticalFireBeamProjectileCommand(tactical, activeShip.ship_id, projectile.projectile_id, selectedWeaponAction.weapon_slot))
+    const target = legalProjectileTargetByID.get(projectile.projectile_id)
+    if (!target) return
+    if (selectedWeaponAction.command_kind === 'battle.fire_beam') {
+      void runCommand(tacticalFireBeamProjectileCommand(tactical, activeShip.ship_id, projectile.projectile_id, selectedWeaponAction.weapon_slot))
+    } else if (selectedWeaponAction.command_kind === 'battle.launch_fighters') {
+      void runCommand(tacticalLaunchFightersCommand(tactical, activeShip.ship_id, selectedWeaponAction.weapon_slot, target))
+    }
+  }
+  const selectFighterGroup = (fighter: TacticalFighterGroupState) => {
+    if (ignoreClickRef.current || controlsDisabled || !activeShip || !selectedWeaponAction?.available) return
+    const target = legalFighterTargetByID.get(fighter.group_id)
+    if (!target) return
+    if (selectedWeaponAction.command_kind === 'battle.fire_beam') {
+      void runCommand(tacticalFireBeamFighterCommand(tactical, activeShip.ship_id, fighter.group_id, selectedWeaponAction.weapon_slot))
+    } else if (selectedWeaponAction.command_kind === 'battle.launch_fighters') {
+      void runCommand(tacticalLaunchFightersCommand(tactical, activeShip.ship_id, selectedWeaponAction.weapon_slot, target))
+    }
+  }
+  const boardSelectedTarget = () => {
+    if (controlsDisabled || !activeShip || !selectedBoardingAction) return
+    const max = selectedBoardingAction.max_marine_count
+    const count = clamp(Math.trunc(boardingMarineCount), 1, max)
+    if (!(selectedBoardingAction.allowed_modes ?? []).includes(boardingMode)) return
+    void runCommand(tacticalBoardShipCommand(tactical, activeShip.ship_id, selectedBoardingAction.target_ship_id, count, boardingMode))
   }
 
   const waitActivation = () => {
@@ -594,7 +657,9 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
 
           {movementSelectionActive && reachableGridD && (
             <path d={reachableGridD} className="tactical-reachable-grid" pointerEvents="none" />
-          )}
+          )}          {movementSelectionActive && legalMoves.filter((move) => move.movement_kind === 'teleport').map((move) => (
+            <circle key={`teleport:${move.x}:${move.y}`} cx={move.x} cy={move.y} r={0.32} className="tactical-teleport-node" pointerEvents="none" />
+          ))}
           {projectiles.map((projectile) => {
             const isOwn = projectile.source_seat_id === ownSeatID
             const isLegalTarget = mode !== 'scan' && legalProjectileTargetByID.has(projectile.projectile_id)
@@ -624,6 +689,29 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
               </g>            )
           })}
 
+          {fighterGroups.map((fighter) => {
+            const isOwn = fighter.source_seat_id === ownSeatID
+            const isLegalTarget = mode !== 'scan' && legalFighterTargetByID.has(fighter.group_id)
+            const angle = fighter.facing * 22.5
+            return (
+              <g
+                key={`fighter-group:${fighter.group_id}`}
+                className={`tactical-fighter-group ${isOwn ? 'own' : 'enemy'} ${isLegalTarget ? 'legal-target' : ''} is-${fighter.phase}`}
+                transform={`translate(${fighter.x} ${fighter.y})`}
+                onClick={(event) => { event.stopPropagation(); selectFighterGroup(fighter) }}
+                role="button"
+                tabIndex={isLegalTarget ? 0 : -1}
+                aria-label={t('battlefield.fighterGroupMarker', { id: fighter.group_id, count: fighter.multiplicity, x: fighter.x, y: fighter.y })}
+                onKeyDown={(event) => { if (isLegalTarget && (event.key === 'Enter' || event.key === ' ')) selectFighterGroup(fighter) }}
+              >
+                <circle r={0.46} className="tactical-fighter-hit-cell" />
+                <g transform={`rotate(${angle})`} pointerEvents="none">
+                  <path d="M .34 0 L -.24 -.2 L -.12 0 L -.24 .2 Z" className="tactical-fighter-vector" />
+                </g>
+                <text x={0.3} y={-0.28} className="tactical-fighter-count" pointerEvents="none">×{fighter.multiplicity}</text>
+              </g>
+            )
+          })}
           {ships.map((ship) => {
             const isActive = ship.ship_id === tactical.state.active_ship_id
             const isOwn = ship.seat_id === ownSeatID
@@ -666,7 +754,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
           })}
 
           {moveAnimation && (
-            <g className="tactical-move-animation" data-sequence={moveAnimation.sequence} pointerEvents="none">
+            <g className={`tactical-move-animation is-${moveAnimation.movementKind}`} data-sequence={moveAnimation.sequence} data-movement-kind={moveAnimation.movementKind} pointerEvents="none">
               <line x1={moveAnimation.fromX} y1={moveAnimation.fromY} x2={moveAnimation.toX} y2={moveAnimation.toY} className="tactical-move-trail" />
               <circle cx={moveAnimation.toX} cy={moveAnimation.toY} r={0.22} className="tactical-move-arrival" />
             </g>
@@ -794,6 +882,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                 {activeWeapons.map((weapon) => {
                   const action = weaponActionBySlot.get(weapon.slot)
                   const ordnanceState = ordnanceWeaponStateBySlot.get(weapon.slot)
+                  const fighterBayState = fighterBayStateBySlot.get(weapon.slot)
                   const isSelected = selectedWeaponSlot === weapon.slot
                   const canSelect = !!action?.available && !controlsDisabled
                   const ordnanceStatus = action?.weapon_family === 'missile' && ordnanceState
@@ -821,7 +910,27 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
               </div>
             </div>
           )}
-          <div className="tactical-control-commit">
+          {selectedBoardingAction && (
+            <div className="tactical-boarding-strip" aria-label={t('battlefield.boarding')}>
+              <label>
+                <span>{t('battlefield.boardingTarget')}</span>
+                <select value={selectedBoardingAction.target_ship_id} disabled={controlsDisabled} onChange={(event) => setSelectedBoardingTargetID(Number(event.target.value))}>
+                  {availableBoardingActions.map((action) => <option key={action.target_ship_id} value={action.target_ship_id}>{shipName(action.target_ship_id)}</option>)}
+                </select>
+              </label>
+              <label>
+                <span>{t('battlefield.boardingMode')}</span>
+                <select value={boardingMode} disabled={controlsDisabled} onChange={(event) => setBoardingMode(event.target.value)}>
+                  {(selectedBoardingAction.allowed_modes ?? []).map((boardingModeID) => <option key={boardingModeID} value={boardingModeID}>{humanize(boardingModeID)}</option>)}
+                </select>
+              </label>
+              <label>
+                <span>{t('battlefield.boardingMarines')}</span>
+                <input type="number" min={1} max={selectedBoardingAction.max_marine_count} value={boardingMarineCount} disabled={controlsDisabled} onChange={(event) => setBoardingMarineCount(clamp(Number(event.target.value) || 1, 1, selectedBoardingAction.max_marine_count))} />
+              </label>
+              <button type="button" disabled={controlsDisabled} onClick={boardSelectedTarget}><GameIcon name="command" />{t('battlefield.boardingAction')}</button>
+            </div>
+          )}          <div className="tactical-control-commit">
             <button
               type="button"
               className={`tactical-scan-toggle ${mode === 'scan' ? 'is-active' : ''}`}
@@ -834,7 +943,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             </button>
             <button type="button" className="tactical-wait-ship" disabled={!ownActivation || !tactical.can_wait_activation || controlsDisabled} onClick={waitActivation}><GameIcon name="command" />{t('battlefield.waitActivation')}</button>
             <button type="button" className="tactical-next-ship" disabled={!tactical.can_end_activation || controlsDisabled} onClick={endActivation}><GameIcon name="check" />{busy ? t('battlefield.commandBusy') : t('battlefield.finishActivation')}</button>
-            <button type="button" className="tactical-retreat" disabled={controlsDisabled} onClick={requestRetreat}><GameIcon name="flag" />{t('battlefield.retreat')}</button>
+            <button type="button" className="tactical-retreat" disabled={controlsDisabled || !tactical.can_retreat} onClick={requestRetreat}><GameIcon name="flag" />{t('battlefield.retreat')}</button>
           </div>
         </section>
       </footer>
@@ -849,7 +958,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             <p>{t('battlefield.retreatConfirmWarning')}</p>
             <div className="tactical-confirm-actions">
               <button type="button" className="tactical-confirm-cancel" autoFocus onClick={cancelRetreat}>{t('common.cancel')}</button>
-              <button type="button" className="tactical-confirm-danger" disabled={controlsDisabled} onClick={confirmRetreat}>{t('battlefield.retreatConfirmAction')}</button>
+              <button type="button" className="tactical-confirm-danger" disabled={controlsDisabled || !tactical.can_retreat} onClick={confirmRetreat}>{t('battlefield.retreatConfirmAction')}</button>
             </div>
           </section>
         </div>
@@ -870,7 +979,9 @@ function TacticalScanDetails({ ship, shipName, empireName, t }: { ship: Tactical
         <div><dt>{t('battlefield.facing')}</dt><dd>{ship.facing}/15</dd></div>
         <div><dt>{t('battlefield.movement')}</dt><dd>{ship.movement_current}/{ship.movement_max}</dd></div>
         <div><dt>{t('battlefield.beamOffense')}</dt><dd>{ship.beam_offense}</dd></div>
-        <div><dt>{t('battlefield.beamDefense')}</dt><dd>{ship.beam_defense}</dd></div>
+        <div><dt>{t('battlefield.beamDefense')}</dt><dd>{ship.beam_defense}</dd></div>        <div><dt>{t('battlefield.marines')}</dt><dd>{ship.marine_current}/{ship.marine_max}</dd></div>
+        <div><dt>{t('battlefield.shields')}</dt><dd>{ship.shield_arc_current.reduce((sum, value) => sum + value, 0)}/{ship.shield_arc_max * 4}</dd></div>
+        <div><dt>{t('battlefield.cloakState')}</dt><dd>{humanize(ship.cloak_state)}</dd></div>
       </dl>
       <div className="tactical-health-row">
         <span>{t('battlefield.armor')}</span><strong>{ship.armor_current}/{ship.armor_max}</strong>
@@ -880,7 +991,22 @@ function TacticalScanDetails({ ship, shipName, empireName, t }: { ship: Tactical
         <span>{t('battlefield.structure')}</span><strong>{ship.structure_current}/{ship.structure_max}</strong>
         <div className="tactical-health-meter"><span style={{ width: `${meterPercent(ship.structure_current, ship.structure_max)}%` }} /></div>
       </div>
-      <div className="tactical-scan-weapons galaxy-fleet-info-weapons">
+      <div className="tactical-scan-internal galaxy-fleet-info-weapons">
+        <strong>{t('battlefield.internalSystems')}</strong>
+        <div className="tactical-weapon-row"><span>Engine</span><span>{ship.internal.engine_current}/{ship.internal.engine_max}</span></div>
+        <div className="tactical-weapon-row"><span>Secondary</span><span>{ship.internal.secondary_current}/{ship.internal.secondary_max}</span></div>
+        <div className="tactical-weapon-row"><span>Shield Generator</span><span>{ship.internal.shield_generator_current}/{ship.internal.shield_generator_max}</span></div>
+      </div>
+      <div className="tactical-scan-specials galaxy-fleet-info-weapons">
+        <strong>{t('battlefield.specials')}</strong>
+        {ship.specials?.length ? ship.specials.map((special) => (
+          <div className="tactical-weapon-row" key={special.slot}>
+            <span>{humanize(special.special_id)}</span>
+            <span>{humanize(special.tactical_support)}</span>
+            <span className={`badge ${special.functional ? '' : 'danger'}`}>{special.functional ? t('battlefield.functional') : t('battlefield.disabled')}</span>
+          </div>
+        )) : <p className="muted">—</p>}
+      </div>      <div className="tactical-scan-weapons galaxy-fleet-info-weapons">
         <strong>{t('battlefield.weapons')}</strong>
         {ship.weapons?.length ? ship.weapons.map((weapon) => (
           <div className="tactical-weapon-row" key={weapon.slot}>

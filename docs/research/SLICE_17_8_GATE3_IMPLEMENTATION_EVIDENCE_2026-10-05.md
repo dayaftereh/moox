@@ -527,3 +527,108 @@ No rules-data file changes are required by Checkpoint 5, so the reviewed `moo2-1
 Next authorized work:
 
 **Gate 3 Checkpoint 6 - persistence / AI / UI / integration.**
+
+## Checkpoint 6 - persistence / AI / UI / integration
+
+Status: **COMPLETE / PASS**
+
+### Persistence / replay / reconnect / detached projection
+
+Checkpoint 6 closes the combined modern Slice-17.8 runtime boundary rather than adding a second combat authority:
+
+- LiveSnapshot v4 round-trips active Fighter groups, Time-Warp pass/queue state, mutable Capture owner/controller state, post-capture state, Internal pools and Special lifecycle state;
+- JSON transport -> restore -> re-export remains byte-stable for the combined state;
+- restored and original BattleSessions accept the same next authoritative command and remain byte-identical after continuation;
+- Observer and Player projections are detached from BattleSession authority for Fighter slices, Time-Warp queues, Internal slices and Special views;
+- schema-v1 migration remains `legacy_17_8_disabled=true` and does not synthesize Fighter, Internal or Special runtime state.
+
+Vector L is therefore closed by the compatibility regression plus the already-green shared moving-actor migration vectors (legacy projectile spawn orders `2/5`, next shared moving-actor order `6`).
+
+### Built-in AI common action catalog
+
+The common Battle decision catalog now consumes only server-projected Tactical legality for:
+
+- Beam targets including Fighter groups;
+- Ordnance fire;
+- Fighter launch against Ship / projectile / Fighter-group targets;
+- Boarding, deterministically ordered by target and `raid` before `capture`;
+- Move fallback only when no executable weapon/Boarding action is available;
+- End Activation, Wait and Retreat.
+
+Boarding uses the server-projected `max_marine_count` and allowed modes and each candidate is revalidated through the child BattleSession before entering the catalog. No AI-side range, damage or Special rule copy was introduced.
+
+### Browser / API integration
+
+The browser Tactical contract is aligned with the authoritative server view:
+
+- Fighter Bay/group state and Fighter-group targets;
+- Boarding actions and server-projected Marine limits/modes;
+- `movement_kind` including teleport presentation;
+- `can_retreat` gating;
+- mutable owner/controller, Marines, cloak/phasing, Internal pools and weapon Special readiness;
+- installed Special projection with server-computed `functional` state.
+
+`TacticalBattlefield` renders Fighter groups as authoritative actors, sends Beam/Fighter/Boarding commands from projected targets/actions, marks teleport movement, gates Retreat from `can_retreat`, and exposes Internal/Special state in Scan. It does not advance Fighter actors, compute Boarding, Capture, RNG, readiness or Special legality locally.
+
+### Vector K - Achilles Targeting Unit
+
+Checkpoint 6 activates the frozen Slice-17.6 Beam damage hook from the firing ship's functional `achilles_targeting_unit`.
+
+The implementation was checked against the original `Select_Internal_` / `Apply_Internal_Damage_` path and preserves:
+
+- normal Internal threshold `internal_total * 100 / (remaining_structure + internal_total)`;
+- `internal_total = Engine/2 + Secondary + Weapons + Specials + Shield Generator`;
+- Achilles forcing the deeper Internal path / Armor bypass;
+- the common 19-entry Internal weight array: Engine, Secondary, eight Weapon slots, eight Special slots, Shield Generator;
+- Achilles Weapon weights x3 and Shield-Generator weight x3, other categories unchanged;
+- the existing shared weighted-choice RNG rather than an Achilles-specific RNG event;
+- overflow re-selection until the current damage remainder is consumed.
+
+A direct Beam regression proves a functional attacker Achilles leaves target Armor untouched and drives the hit into authoritative Internal state. The deterministic Gate-1 weight vector (`10/4/20/12 -> 30/12/60/12`) is also regression-covered.
+
+### Selector / Save / Build -> BattleSession integration
+
+A full configured-loadout integration now covers:
+
+1. All-Tech Cruiser design save;
+2. `fighter_bays` plus `achilles_targeting_unit`, `time_warp_facilitator` and `transporters`;
+3. legal Star-Base-backed construction;
+4. built strategic Ship snapshot;
+5. encounter preparation / BattleSession projection;
+6. Fighter doctrine + Internal Weapon/Special pools + server `functional` Special projection;
+7. projected `battle.launch_fighters` legality;
+8. successful launch and `fighter_group_launched` event.
+
+This closes the design/loadout -> built Ship -> Tactical authority seam without browser-side reconstruction.
+
+### Existing Session golden-harness reconciliation
+
+The new Internal-selection RNG is intentionally part of the historical Beam RNG order. Older Session tests that assumed a fixed command-8 Structure-only kill were updated to choose deterministic commands from authoritative `ActiveShipID`, `WeaponActions`, `LegalMoves`, `CanEndActivation` and `NextCommandSequence` until the BattleSession actually completes. Atomic strategic-continuation retry, save/load continuation and parallel completion ordering retain their original assertions while no longer depending on the superseded aggregate-Structure damage model.
+
+### Validation
+
+Passed on the final reviewed Checkpoint-6 working tree:
+
+- focused `TestSlice178Gate3Checkpoint6*` Battle regressions;
+- focused Slice-17.8 AI decision-catalog regressions;
+- configured Selector/Save/Build -> BattleSession integration;
+- full `go test ./internal/session`;
+- full `go test ./...`;
+- full `web` production build including TypeScript and browser contract checks;
+- `git diff --check`.
+
+No rules-data files changed in Checkpoint 6. The reviewed `moo2-1.31` ruleset fingerprint remains:
+
+`68c06a57bb9fdc18c0ff8045b54241e51cc9cba41298898fbfb535b6a338bd46`
+
+## Checkpoint 6 result
+
+**Checkpoint 6 COMPLETE / PASS.**
+
+## Gate 3 result
+
+**Gate 3 COMPLETE / PASS.** All six bounded implementation checkpoints are complete.
+
+Next authorized work:
+
+**Gate 4 - acceptance close.**
