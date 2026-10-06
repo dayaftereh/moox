@@ -1,6 +1,6 @@
 # Planned Slice 17.8 - Tactical Fighters / Bombers / Combat Specials
 
-Status: **open; Gate 1 fighter/special Tactical audit in progress (2026-10-02)**.
+Status: **closed/accepted; Gates 1-4 complete (2026-10-06)**.
 
 ## Objective
 
@@ -36,55 +36,67 @@ Strategic-only specials remain strategic. Any special whose original behavior is
 
 ## Gate 1 - fighter/special Tactical audit
 
-Status: **IN PROGRESS - 2026-10-02**
+Status: **COMPLETE - 2026-10-02**
 
 Gate 1 evidence: `docs/research/SLICE_17_8_GATE1_FIGHTERS_SPECIALS_TACTICAL_AUDIT_2026-10-02.md`
 
-- [ ] Re-audit Fighter/Bomber/Interceptor bay identities and capacity/readiness semantics.
-- [ ] Re-audit fighter actor/group representation, launch, movement, targeting, attack and loss behavior.
-- [ ] Re-audit Bomber target eligibility and damage context.
-- [ ] Re-audit Point Defense/Beam/ordnance interactions with fighters where applicable.
-- [ ] Classify every supported 17.4 special as strategic-only, Tactical-common, Beam-related, ordnance-related, fighter-related or unsupported.
-- [ ] Re-audit exact Tactical effects and interaction ordering for every special accepted into this slice.
-- [ ] Audit BattleSession/replay/save requirements for launched craft and temporary special states.
-- [ ] Audit Tactical UI/action/presentation requirements for bays, fighter actors and specials.
-- [ ] Produce deterministic original/reference vectors for representative carrier and special-effect cases.
+- [x] Re-audit Fighter/Bomber/Interceptor bay identities and capacity/readiness semantics.
+- [x] Re-audit fighter actor/group representation, launch, movement, targeting, attack and loss behavior.
+- [x] Re-audit Bomber target eligibility and damage context.
+- [x] Re-audit Point Defense/Beam/ordnance interactions with fighters where applicable.
+- [x] Classify every supported 17.4 special as strategic-only, Tactical-common, Beam-related, ordnance-related, fighter-related or unsupported.
+- [x] Re-audit exact Tactical effects and interaction ordering for every special accepted into this slice.
+- [x] Audit BattleSession/replay/save requirements for launched craft and temporary special states.
+- [x] Audit Tactical UI/action/presentation requirements for bays, fighter actors and specials.
+- [x] Produce deterministic original/reference vectors for representative carrier and special-effect cases.
 
 ## Gate 2 - fighter/special combat contract freeze
 
-- [ ] Freeze the supported Fighter/Bomber/Interceptor Tactical matrix.
-- [ ] Freeze launch/capacity/readiness/recovery/loss semantics.
-- [ ] Freeze fighter movement/target/attack and defense interaction rules.
-- [ ] Freeze Bomber combat-context rules.
-- [ ] Freeze every accepted combat-special consumer, interaction order and RNG use.
-- [ ] Freeze temporary Tactical state/event/replay schema required by fighters/specials.
-- [ ] Freeze participant-safe UI/action projection contracts.
-- [ ] Freeze event-driven fighter/special presentation semantics.
-- [ ] Freeze explicit unsupported behavior for unproven specials.
+Status: **COMPLETE / FROZEN - 2026-10-05**
+
+Gate 2 evidence: `docs/research/SLICE_17_8_GATE2_TACTICAL_FIGHTERS_SPECIALS_CONTRACT_FREEZE_2026-10-05.md`
+
+- [x] Freeze the supported Fighter/Bomber/Interceptor Tactical matrix.
+- [x] Freeze launch/capacity/readiness/recovery/loss semantics.
+- [x] Freeze fighter movement/target/attack and defense interaction rules.
+- [x] Freeze Bomber combat-context rules.
+- [x] Freeze every accepted combat-special consumer, interaction order and RNG use.
+- [x] Freeze temporary Tactical state/event/replay schema required by fighters/specials.
+- [x] Freeze participant-safe UI/action projection contracts.
+- [x] Freeze event-driven fighter/special presentation semantics.
+- [x] Freeze explicit unsupported behavior for unproven specials.
 
 ## Gate 3 - implementation
 
-- [ ] Implement authoritative fighter/bomber/interceptor actors or groups according to the frozen contract.
-- [ ] Implement launch, movement, targeting, attack, losses and remaining-craft readiness.
-- [ ] Implement Beam Point Defense/ordnance/defensive interactions with fighter actors where frozen.
-- [ ] Implement verified Bomber behavior.
-- [ ] Implement every accepted Tactical combat-special consumer.
-- [ ] Extend Tactical action projection/UI for carrier and special actions without browser authority.
-- [ ] Implement fighter/special presentation from authoritative events only.
-- [ ] Preserve save/load/replay/Observer behavior for launched craft and temporary special state.
-- [ ] Add deterministic carrier, fighter-loss and special-interaction regressions.
+Status: **COMPLETE / PASS - 2026-10-06**
+
+Gate 3 evidence: `docs/research/SLICE_17_8_GATE3_IMPLEMENTATION_EVIDENCE_2026-10-05.md`
+
+- [x] Implement authoritative fighter/bomber/interceptor actors or groups according to the frozen contract.
+- [x] Implement launch, movement, targeting, attack, losses and remaining-craft readiness.
+- [x] Implement Beam Point Defense/ordnance/defensive interactions with fighter actors where frozen.
+- [x] Implement verified Bomber behavior.
+- [x] Implement every accepted Tactical combat-special consumer.
+- [x] Extend Tactical action projection/UI for carrier and special actions without browser authority.
+- [x] Implement fighter/special presentation from authoritative events only.
+- [x] Preserve save/load/replay/Observer behavior for launched craft and temporary special state.
+- [x] Add deterministic carrier, fighter-loss and special-interaction regressions.
 
 ## Gate 4 - QA + close
 
-- [ ] Supported fighter/bomber/interceptor systems can be used through normal Tactical UI.
-- [ ] Launch/readiness/capacity/loss state matches frozen vectors.
-- [ ] Fighter/Beam/Point-Defense/ordnance interactions match frozen ordering.
-- [ ] Every accepted combat special produces its exact authoritative effect.
-- [ ] Strategic-only or unsupported specials are not falsely presented as Tactical-working.
-- [ ] Fighter/special animations correspond to authoritative actors/events and remain presentation-only.
-- [ ] Save/load/replay remains deterministic with active fighter/special state.
-- [ ] Desktop/mobile carrier/action controls remain usable.
-- [ ] Full Go/vet/web/browser/persistence/replay/reference-game QA passes.
+Status: **ACCEPTED / CLOSED - 2026-10-06**
+
+Gate 4 evidence: `docs/research/SLICE_17_8_GATE4_ACCEPTANCE_CLOSE_2026-10-06.md`
+
+- [x] Supported fighter/bomber/interceptor systems can be used through normal Tactical UI.
+- [x] Launch/readiness/capacity/loss state matches frozen vectors.
+- [x] Fighter/Beam/Point-Defense/ordnance interactions match frozen ordering.
+- [x] Every accepted combat special produces its exact authoritative effect.
+- [x] Strategic-only or unsupported specials are not falsely presented as Tactical-working.
+- [x] Fighter/special animations correspond to authoritative actors/events and remain presentation-only.
+- [x] Save/load/replay remains deterministic with active fighter/special state.
+- [x] Desktop/mobile carrier/action controls remain usable.
+- [x] Full Go/vet/web/browser/persistence/replay/reference-game QA passes.
 
 ## Exit criterion
 

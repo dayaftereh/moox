@@ -730,3 +730,13 @@ A row belongs here only after implementation/documentation/QA has been closed. A
 - Gate-1 evidence starts in `docs/research/SLICE_17_8_GATE1_FIGHTERS_SPECIALS_TACTICAL_AUDIT_2026-10-02.md`; no 17.8 production implementation is allowed before Gate 2 freezes the contract.
 - The audit consumes the frozen Slice-17.4 handoff: Fighter/Bomber/Heavy-Fighter bays plus deferred Class-3 Special consumers, explicitly including repair/regeneration, cloak/phasing, boarding/transport/security, ECM/anti-missile, shield/damage-field, teleport/time/area and remaining Beam-support effects.
 - Planetary Fighter Garrison remains Slice 19 ownership; Slice 17.8 is intended to freeze the reusable ship-Tactical fighter runtime that Slice 19 can consume later.
+
+## 2026-10-06 - Slice 17.8 Tactical Fighters / Bombers / Combat Specials accepted/closed
+
+- Gates 1-4 are complete; Gate-4 acceptance is documented in `docs/research/SLICE_17_8_GATE4_ACCEPTANCE_CLOSE_2026-10-06.md`.
+- Fighter/Bomber/Heavy-Fighter bays now launch and resolve as server-authoritative moving actors with deterministic targeting, interception, attack, loss, return and recovery.
+- Boarding/Raid/Capture, mutable Tactical authority, Internal-system damage and the accepted combat-Special lifecycle/scheduler consumers are authoritative and persistence-safe.
+- Gate-3 final review closed the Achilles integration seam before commit: functional attacker Achilles now drives the original-compatible Armor-bypass/Internal-selection path and 3x Weapon/Shield weighting.
+- AI and browser consume server-projected Tactical legality/state; configured Selector -> Save -> Build -> BattleSession integration is regression-covered through a real Fighter launch.
+- Final Gate-4 QA passed `go test ./... -count=1`, `go vet ./...`, production web build, `git diff --check` and a fresh current-HEAD All-Tech Reference/Game Chrome smoke on isolated port 7172.
+- The Slice-17.8 `_OPEN_` marker is removed. Slice 17.9 Full Ship Designer + Tactical Integration and Acceptance is next prepared and remains planned/not open.
