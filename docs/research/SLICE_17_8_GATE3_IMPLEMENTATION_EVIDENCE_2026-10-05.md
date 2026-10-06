@@ -1,7 +1,7 @@
 # Slice 17.8 Gate 3 - Implementation Evidence
 
 Date: 2026-10-05
-Status: **Gate 3 in progress - Checkpoint 1 complete; Checkpoint 2 ready**
+Status: **Gate 3 in progress - Checkpoints 1-3 complete; Checkpoint 4 next**
 
 Contract authority:
 
@@ -233,3 +233,126 @@ Full-suite log:
 Next authorized work:
 
 **Gate 3 Checkpoint 3 - Fighter actor lifecycle / Fighter combat resolution.**
+
+
+## Checkpoint 3 - Fighter actor lifecycle / Fighter combat resolution
+
+Status: **COMPLETE / PASS**
+
+### Authoritative Fighter runtime
+
+Checkpoint 3 adds BattleSession-owned Fighter/Bomber/Heavy-Fighter actors rather than browser-side craft simulation:
+
+- per-Bay `ready_groups` state;
+- battle-local monotone Fighter `group_id`;
+- shared non-zero `spawn_order` allocated from the same `next_moving_actor_order` counter as ordnance;
+- immutable source seat/carrier/slot identity and Fighter kind;
+- server-owned target identity, position/facing, speed/movement, multiplicity/durability/remainder, attack stock and outbound/returning phase;
+- immutable embedded Beam/Bomb payload snapshots.
+
+Projectiles and Fighter groups are processed together in ascending shared `spawn_order`.
+
+### Launch command and action projection
+
+Fighter-family rows now project through the existing Tactical WeaponAction surface with:
+
+- `weapon_family = "fighter"`;
+- `command_kind = "battle.launch_fighters"`;
+- server-projected legal ship / projectile / Fighter-group targets according to Fighter kind;
+- strict exactly-one-target validation;
+- explicit `fighter_bays_empty`, ordinary readiness and no-target rejection paths.
+
+Rejected launch does not allocate a group, consume readiness or advance Fighter/moving-actor counters.
+
+Accepted launch consumes the complete ready Bay groups, freezes doctrine/payload state, emits `fighter_group_launched` and executes the frozen immediate movement quantum.
+
+### Movement, retarget, attack and recovery
+
+The Fighter lifecycle now covers:
+
+- deterministic movement quanta using the existing 20-units-per-field Tactical geometry;
+- target validation and deterministic retargeting across supported ship/projectile/Fighter targets;
+- `fighter_group_retargeted`, returning/destroyed/recovered lifecycle events;
+- carrier-availability and ownership-compatible recovery checks;
+- integer recovery by the frozen divisor with incomplete craft discarded;
+- Fighter Beam and Fighter Bomb passes per surviving craft;
+- Heavy-Fighter paired Beam-then-Bomb cadence with one stock decrement per paired cycle;
+- shared ship-damage and moving-actor interception application.
+
+### Fighter Beam OCV/DCV contract correction
+
+Implementation review found a real Gate-2 snapshot omission, now recorded as binding clarification 25.7 in the Gate-2 freeze.
+
+Re-disassembly proves:
+
+- `Fighter_Ocv_`: `Fleet_Offensive_Bonus + Best_Computer.offense + player Ship Attack (+0x8A6) + Get_Fleet_Pilot_Bonus + 50`;
+- Fighter-class `Missile_Dcv_`: `speed * 5 + Get_Fleet_Pilot_Bonus + player Ship Defense (+0x8A5)` for normal players.
+
+The immutable Fighter doctrine therefore freezes:
+
+- `fighter_beam_offense`;
+- `moving_actor_defense_bonus`.
+
+Current MOOX can authoritatively project best-known Computer plus race Ship Attack/Ship Defense. It does not yet have authoritative fleet-officer / pilot runtime, so those unavailable original terms are explicitly frozen as zero rather than inferred. This limitation is visible and replay-stable; a later leader/officer slice can populate the same frozen scalars without changing BattleSession replay semantics.
+
+The earlier Gate-1 wording that called `+0x8A6` a crew-dependent term was corrected to its verified Ship Attack meaning.
+
+### Lightning Field and reactive Point Defense
+
+Fighter arrival uses the frozen ordering:
+
+1. validate/retarget;
+2. Lightning Field grouped-actor loop;
+3. reactive Point Defense;
+4. surviving payload resolution.
+
+The Lightning loop uses the live mutated multiplicity as its loop bound. Vector G therefore performs exactly two sub-50 destruction draws for the frozen 4 -> 3 -> 2 case before reactive PD.
+
+### LiveSnapshot / restore validation
+
+Tactical live state now persists the Fighter runtime and advances `slice_17_8_state_version` to 2 for the Checkpoint-3 state shape.
+
+Restore/migration and validation cover:
+
+- Fighter next-group ID, Bay state and active group state;
+- no synthesized active Fighter state for legacy compatibility-disabled battles;
+- shared projectile/Fighter `spawn_order` uniqueness and bounds;
+- source carrier/slot/Fighter-row identity;
+- ready-group, multiplicity, durability/remainder, stock, movement and phase bounds;
+- immutable payload equality with the source doctrine;
+- target existence and hostility for ship/projectile/Fighter targets;
+- valid returning-carrier linkage.
+
+### Frozen vectors and focused regressions
+
+Dedicated Checkpoint-3 coverage includes:
+
+- Vector A - Fighter launch / loss / return / recovery;
+- Vector B - Heavy-Fighter paired Beam/Bomb cadence;
+- Vector G - Lightning mutable-multiplicity loop before PD;
+- Fighter moving-actor DCV = `speed * 5 + frozen moving_actor_defense_bonus`;
+- production Fighter-doctrine projection from best-known equipment/race state.
+
+### Regression evidence
+
+Passed on the final reviewed Checkpoint-3 working tree before commit:
+
+- dedicated `TestSlice178Gate3Checkpoint3*` Battle regressions;
+- focused Fighter-doctrine Game projection regression;
+- `go test ./internal/ruleset`;
+- `go test ./internal/battle`;
+- `go test ./internal/game`;
+- `go test ./...`;
+- `git diff --check`.
+
+No rules-data file changes are required by Checkpoint 3, so the reviewed `moo2-1.31` ruleset fingerprint remains the Checkpoint-2 value:
+
+`68c06a57bb9fdc18c0ff8045b54241e51cc9cba41298898fbfb535b6a338bd46`
+
+## Checkpoint 3 result
+
+**Checkpoint 3 COMPLETE / PASS.**
+
+Next authorized work:
+
+**Gate 3 Checkpoint 4 - Boarding / Capture.**

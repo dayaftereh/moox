@@ -265,7 +265,7 @@ This aligns with the previously audited 4-craft-per-Bay semantics and supports a
 
 - `Fleet_Offensive_Bonus_`;
 - the best-computer offensive value;
-- a player/crew-dependent bonus for the relevant case;
+- the normal-player race Ship Attack byte (`player+0x8A6`) for the relevant case;
 - `Get_Fleet_Pilot_Bonus_`;
 - a fixed +50 baseline.
 
@@ -807,14 +807,16 @@ Direct disassembly of `Fighter_Ocv_` (`0x02DF8D..0x02DFE0`) and `Fire_Fighter_Be
 
 For the normal player index path (`player < 8`), the original computes:
 
-`fighter_ocv = Fleet_Offensive_Bonus + Best_Computer.offense + player_crew_bonus + Get_Fleet_Pilot_Bonus + 50`
+`fighter_ocv = Fleet_Offensive_Bonus + Best_Computer.offense + player_ship_attack_bonus(+0x8A6) + Get_Fleet_Pilot_Bonus + 50`
 
-For the non-player/special index path, the direct player crew byte is skipped. All arithmetic reaches the firing path as signed integer state.
+For the non-player/special index path, the direct player Ship Attack byte is skipped. All arithmetic reaches the firing path as signed integer state.
 
 Target defense is then:
 
 - ship target: ship Beam Defense;
 - moving missile/fighter actor: `Missile_Dcv_`.
+
+Checkpoint-3 re-disassembly additionally confirms the Fighter-class `Missile_Dcv_` branch as `speed * 5 + Get_Fleet_Pilot_Bonus + player Ship Defense (+0x8A5)` for normal players. The `+0x8A5/+0x8A6` semantics are independently mapped in `ADVANCED_START_RESEARCH_2026-08-28.md`.
 
 Define `delta = fighter_ocv - target_defense`.
 
@@ -856,7 +858,7 @@ Normalized constant-damage vector, chosen to isolate the accuracy gate:
 
 - `Fleet_Offensive_Bonus = 10`
 - best-computer offense = `20`
-- player crew bonus = `5`
+- player Ship Attack bonus (`+0x8A6`) = `5`
 - fleet pilot bonus = `15`
 - therefore `fighter_ocv = 100`
 - beam damage endpoints = `5..5`

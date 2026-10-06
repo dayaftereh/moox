@@ -128,10 +128,11 @@ type TacticalSpecialSpec struct {
 }
 
 type TacticalFighterPayloadSpec struct {
-	WeaponID        string   `json:"weapon_id"`
-	MinDamage       int      `json:"min_damage"`
-	MaxDamage       int      `json:"max_damage"`
-	InnateEffectIDs []string `json:"innate_effect_ids,omitempty"`
+	WeaponID         string   `json:"weapon_id"`
+	MinDamage        int      `json:"min_damage"`
+	MaxDamage        int      `json:"max_damage"`
+	InnateEffectIDs  []string `json:"innate_effect_ids,omitempty"`
+	PointDefenseMode bool     `json:"point_defense_mode,omitempty"`
 }
 
 type TacticalFighterDoctrineSpec struct {
@@ -142,6 +143,8 @@ type TacticalFighterDoctrineSpec struct {
 	TransDimensional        bool                        `json:"trans_dimensional,omitempty"`
 	BeamPayload             *TacticalFighterPayloadSpec `json:"beam_payload,omitempty"`
 	BombPayload             *TacticalFighterPayloadSpec `json:"bomb_payload,omitempty"`
+	FighterBeamOffense      int                         `json:"fighter_beam_offense"`
+	MovingActorDefenseBonus int                         `json:"moving_actor_defense_bonus"`
 }
 
 type TacticalInternalWeaponSpec struct {
@@ -310,9 +313,10 @@ type TacticalShipView struct {
 }
 
 type TacticalFireTarget struct {
-	TargetShipID       core.ID `json:"target_ship_id,omitempty"`
-	TargetProjectileID uint64  `json:"target_projectile_id,omitempty"`
-	RangeIndex         int     `json:"range_index"`
+	TargetShipID         core.ID `json:"target_ship_id,omitempty"`
+	TargetProjectileID   uint64  `json:"target_projectile_id,omitempty"`
+	TargetFighterGroupID uint64  `json:"target_fighter_group_id,omitempty"`
+	RangeIndex           int     `json:"range_index"`
 }
 
 type TacticalFireAction struct {
@@ -336,6 +340,7 @@ type TacticalWeaponActionAvailability struct {
 type TacticalView struct {
 	State             TacticalState                      `json:"state"`
 	Ordnance          TacticalOrdnanceState              `json:"ordnance"`
+	Fighters          TacticalFighterView                `json:"fighters"`
 	Events            []TacticalEvent                    `json:"events"`
 	Ships             []TacticalShipView                 `json:"ships"`
 	LegalMoves        []TacticalMoveOption               `json:"legal_moves,omitempty"`
@@ -353,10 +358,11 @@ type MoveShipPayload struct {
 }
 
 type FireBeamPayload struct {
-	ShipID             core.ID `json:"ship_id"`
-	TargetShipID       core.ID `json:"target_ship_id,omitempty"`
-	TargetProjectileID uint64  `json:"target_projectile_id,omitempty"`
-	WeaponSlot         int     `json:"weapon_slot"`
+	ShipID               core.ID `json:"ship_id"`
+	TargetShipID         core.ID `json:"target_ship_id,omitempty"`
+	TargetProjectileID   uint64  `json:"target_projectile_id,omitempty"`
+	TargetFighterGroupID uint64  `json:"target_fighter_group_id,omitempty"`
+	WeaponSlot           int     `json:"weapon_slot"`
 }
 
 type ReactiveBeamPointDefenseRequest struct {
@@ -408,6 +414,7 @@ type RetreatPayload struct {
 type tacticalRuntime struct {
 	state                TacticalState
 	ordnance             TacticalOrdnanceState
+	fighters             TacticalFighterState
 	events               []TacticalEvent
 	nextEventSequence    uint64
 	nextMovingActorOrder uint64
@@ -436,6 +443,10 @@ func NewMoveShipCommand(sequence uint32, payload MoveShipPayload) (protocol.Comm
 
 func NewFireBeamCommand(sequence uint32, payload FireBeamPayload) (protocol.Command, error) {
 	return protocol.NewCommand(sequence, CommandFireBeam, payload)
+}
+
+func NewLaunchFightersCommand(sequence uint32, payload LaunchFightersPayload) (protocol.Command, error) {
+	return protocol.NewCommand(sequence, CommandLaunchFighters, payload)
 }
 
 func NewEndActivationCommand(sequence uint32, payload EndActivationPayload) (protocol.Command, error) {
@@ -538,12 +549,25 @@ func validateTacticalSpec(spec Spec) error {
 
 func validateTacticalFighterDoctrines(spec TacticalSpec) error {
 	expected := make(map[protocol.SeatID]core.ID)
+	requiredBeam := make(map[protocol.SeatID]bool)
+	requiredBomb := make(map[protocol.SeatID]bool)
 	for _, ship := range spec.Ships {
 		hasFighters := false
 		for _, weapon := range ship.Weapons {
-			if weapon.TacticalSupport == "fighter" {
-				hasFighters = true
-				break
+			if weapon.TacticalSupport != "fighter" {
+				continue
+			}
+			hasFighters = true
+			switch weapon.WeaponID {
+			case "fighter_bays":
+				requiredBeam[ship.SeatID] = true
+			case "bomber_bays":
+				requiredBomb[ship.SeatID] = true
+			case "heavy_fighter_bays":
+				requiredBeam[ship.SeatID] = true
+				requiredBomb[ship.SeatID] = true
+			default:
+				return fmt.Errorf("tactical Fighter doctrine carrier ship %d has unsupported Fighter row %q", ship.ShipID, weapon.WeaponID)
 			}
 		}
 		if !hasFighters {
@@ -579,6 +603,17 @@ func validateTacticalFighterDoctrines(spec TacticalSpec) error {
 		}
 		if err := validateTacticalFighterPayload(doctrine.BombPayload); err != nil {
 			return fmt.Errorf("tactical Fighter doctrine seat %d Bomb payload: %w", doctrine.SeatID, err)
+		}
+		if requiredBeam[doctrine.SeatID] {
+			if doctrine.BeamPayload == nil {
+				return fmt.Errorf("tactical Fighter doctrine seat %d requires a Beam payload", doctrine.SeatID)
+			}
+			if !doctrine.BeamPayload.PointDefenseMode {
+				return fmt.Errorf("tactical Fighter doctrine seat %d Beam payload must freeze Point-Defense mode", doctrine.SeatID)
+			}
+		}
+		if requiredBomb[doctrine.SeatID] && doctrine.BombPayload == nil {
+			return fmt.Errorf("tactical Fighter doctrine seat %d requires a Bomb payload", doctrine.SeatID)
 		}
 		previousSeat = doctrine.SeatID
 	}
@@ -1092,6 +1127,7 @@ func newTacticalRuntime(spec TacticalSpec) (tacticalRuntime, error) {
 		nextEventSequence:    1,
 		nextMovingActorOrder: 1,
 		ordnance:             initialTacticalOrdnanceState(spec),
+		fighters:             initialTacticalFighterState(spec),
 	}
 	for i, ship := range spec.Ships {
 		state := TacticalShipState{ShipID: ship.ShipID, X: ship.X, Y: ship.Y, Facing: ship.Facing, CurrentCombatSpeed: ship.CurrentCombatSpeed, MovementCurrent: ship.CurrentCombatSpeed, MovementMax: ship.CurrentCombatSpeed, ArmorCurrent: ship.ArmorMax, ShieldArcCurrent: fullTacticalShieldArcs(ship.ShieldArcMax), MarineCurrent: ship.MarineMax, Weapons: make([]TacticalWeaponState, len(ship.Weapons)), Internal: initialTacticalInternalState(ship.Internal)}
@@ -1101,6 +1137,7 @@ func newTacticalRuntime(spec TacticalSpec) (tacticalRuntime, error) {
 		r.state.Ships[i] = state
 	}
 	refreshTacticalOrdnanceReadiness(spec, &r)
+	refreshTacticalFighterReadiness(spec, &r)
 	r.recomputeInitiative(spec)
 	if len(r.state.InitiativeOrder) == 0 {
 		return tacticalRuntime{}, fmt.Errorf("tactical battle has no live ships")
@@ -1224,6 +1261,12 @@ func (s *Session) PrepareCommand(seatID protocol.SeatID, command protocol.Comman
 		if err = decodeBattlePayload(command, &payload); err == nil {
 			err = prepareFireOrdnance(s.spec, &prepared.runtime, seatID, command.Sequence, payload)
 		}
+	case CommandLaunchFighters:
+		var payload LaunchFightersPayload
+		if err = decodeBattlePayload(command, &payload); err == nil {
+			err = prepareLaunchFighters(s.spec, &prepared.runtime, seatID, command.Sequence, payload)
+		}
+
 	case CommandEndActivation:
 		var payload EndActivationPayload
 		if err = decodeBattlePayload(command, &payload); err == nil {
@@ -1251,7 +1294,7 @@ func (s *Session) PrepareCommand(seatID protocol.SeatID, command protocol.Comman
 			return nil, err
 		}
 	}
-	if result == nil && (command.Kind == CommandMoveShip || command.Kind == CommandFireBeam || command.Kind == CommandFireOrdnance) {
+	if result == nil && (command.Kind == CommandMoveShip || command.Kind == CommandFireBeam || command.Kind == CommandFireOrdnance || command.Kind == CommandLaunchFighters) {
 		if err := autoCompleteExhaustedActiveShip(s.spec, &prepared.runtime, command.Sequence); err != nil {
 			return nil, err
 		}
@@ -1827,7 +1870,8 @@ func rechargeTacticalShields(spec TacticalSpec, r *tacticalRuntime) {
 	}
 }
 func buildTacticalView(spec TacticalSpec, r tacticalRuntime) TacticalView {
-	view := TacticalView{State: cloneTacticalState(r.state), Ordnance: cloneTacticalOrdnanceState(r.ordnance), Events: cloneTacticalEvents(r.events), Ships: tacticalShipViews(spec, &r)}
+	fighters := cloneTacticalFighterState(r.fighters)
+	view := TacticalView{State: cloneTacticalState(r.state), Ordnance: cloneTacticalOrdnanceState(r.ordnance), Fighters: TacticalFighterView{BayStates: fighters.BayStates, Groups: fighters.Groups}, Events: cloneTacticalEvents(r.events), Ships: tacticalShipViews(spec, &r)}
 	state := r.shipState(r.state.ActiveShipID)
 	if state != nil && !state.Destroyed && !state.ActivationComplete {
 		view.CanEndActivation = true
@@ -1970,6 +2014,7 @@ func tacticalBeamTargets(spec TacticalSpec, r *tacticalRuntime, activeSpec *Tact
 		targets = append(targets, TacticalFireTarget{TargetShipID: targetSpec.ShipID, RangeIndex: rangeIndex})
 	}
 	targets = append(targets, tacticalBeamProjectileTargets(spec, r, activeSpec, activeState, weapon)...)
+	targets = append(targets, tacticalBeamFighterTargets(spec, r, activeSpec, activeState, weapon)...)
 	return targets
 }
 
@@ -1983,6 +2028,10 @@ func tacticalWeaponActions(spec TacticalSpec, r *tacticalRuntime) []TacticalWeap
 	for _, weaponSpec := range activeSpec.Weapons {
 		if weaponSpec.TacticalSupport == "ordnance" {
 			out = append(out, tacticalOrdnanceWeaponAction(spec, r, activeSpec, activeState, weaponSpec))
+			continue
+		}
+		if weaponSpec.TacticalSupport == "fighter" {
+			out = append(out, tacticalFighterWeaponAction(spec, r, activeSpec, activeState, weaponSpec))
 			continue
 		}
 		action := TacticalWeaponActionAvailability{
@@ -2043,11 +2092,24 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	if payload.ShipID != r.state.ActiveShipID {
 		return nil, fmt.Errorf("fire ship %d is not active ship %d", payload.ShipID, r.state.ActiveShipID)
 	}
-	if (payload.TargetShipID == 0) == (payload.TargetProjectileID == 0) {
-		return nil, fmt.Errorf("Beam fire requires exactly one ship or projectile target")
+	targetCount := 0
+	if payload.TargetShipID != 0 {
+		targetCount++
+	}
+	if payload.TargetProjectileID != 0 {
+		targetCount++
+	}
+	if payload.TargetFighterGroupID != 0 {
+		targetCount++
+	}
+	if targetCount != 1 {
+		return nil, fmt.Errorf("Beam fire requires exactly one ship, projectile or Fighter-group target")
 	}
 	if payload.TargetProjectileID != 0 {
 		return prepareFireBeamAtProjectile(spec, r, seatID, commandSequence, payload)
+	}
+	if payload.TargetFighterGroupID != 0 {
+		return prepareFireBeamAtFighterGroup(spec, r, seatID, commandSequence, payload)
 	}
 	targetSpec := tacticalShipSpec(*spec.Tactical, payload.TargetShipID)
 	targetState := r.shipState(payload.TargetShipID)
@@ -2591,7 +2653,7 @@ func cloneTacticalEvents(events []TacticalEvent) []TacticalEvent {
 }
 
 func cloneTacticalRuntime(r tacticalRuntime) tacticalRuntime {
-	return tacticalRuntime{state: cloneTacticalState(r.state), ordnance: cloneTacticalOrdnanceState(r.ordnance), events: cloneTacticalEvents(r.events), nextEventSequence: r.nextEventSequence, nextMovingActorOrder: r.nextMovingActorOrder, legacy17_8Disabled: r.legacy17_8Disabled}
+	return tacticalRuntime{state: cloneTacticalState(r.state), ordnance: cloneTacticalOrdnanceState(r.ordnance), fighters: cloneTacticalFighterState(r.fighters), events: cloneTacticalEvents(r.events), nextEventSequence: r.nextEventSequence, nextMovingActorOrder: r.nextMovingActorOrder, legacy17_8Disabled: r.legacy17_8Disabled}
 }
 
 // CloneTacticalSpec returns a detached immutable tactical battle snapshot.

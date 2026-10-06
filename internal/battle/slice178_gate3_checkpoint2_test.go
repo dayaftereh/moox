@@ -187,7 +187,7 @@ func TestSlice178Gate3Checkpoint2MigratesPreCheckpoint2Schema2State(t *testing.T
 		t.Fatal(err)
 	}
 	got := restored.LiveSnapshot()
-	if got.Tactical == nil || got.Tactical.Slice178StateVersion != 1 {
+	if got.Tactical == nil || got.Tactical.Slice178StateVersion != 2 {
 		t.Fatalf("migrated Slice-17.8 state version=%+v", got.Tactical)
 	}
 	state := got.Tactical.State.Ships[0]

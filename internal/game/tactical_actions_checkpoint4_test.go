@@ -26,7 +26,8 @@ func TestSlice175Checkpoint4MixedWeaponProjectionCarriesAuthoritativeFamilies(t 
 	}
 	placeTacticalShipsForBeamTest(t, tactical, attacker.ID, defender.ID)
 	tactical.FighterDoctrines = []battle.TacticalFighterDoctrineSpec{{
-		SeatID: 1, EmpireID: 1, BestWarpDriveIndex: 1, ArmorDurabilityMultiple: 1,
+		SeatID: 1, EmpireID: 1, BestWarpDriveIndex: 1, ArmorDurabilityMultiple: 1, FighterBeamOffense: 50,
+		BeamPayload: &battle.TacticalFighterPayloadSpec{WeaponID: "laser_cannon", MinDamage: 1, MaxDamage: 4, PointDefenseMode: true},
 	}}
 	if len(tactical.Ships) == 0 || len(tactical.Ships[0].Weapons) != 3 {
 		t.Fatalf("mixed weapon snapshot missing: %+v", tactical.Ships)
@@ -63,7 +64,7 @@ func TestSlice175Checkpoint4MixedWeaponProjectionCarriesAuthoritativeFamilies(t 
 	if action := view.Tactical.WeaponActions[1]; !action.Available || action.CommandKind != battle.CommandFireOrdnance || len(action.Targets) == 0 {
 		t.Fatalf("Missile action not executable after Slice 17.7 CP2: %+v", action)
 	}
-	if action := view.Tactical.WeaponActions[2]; action.Available || action.UnavailableReason != battle.TacticalWeaponUnavailableConsumer || len(action.Targets) != 0 {
-		t.Fatalf("Fighter slot not explicitly unavailable: %+v", action)
+	if action := view.Tactical.WeaponActions[2]; !action.Available || action.CommandKind != battle.CommandLaunchFighters || len(action.Targets) == 0 {
+		t.Fatalf("Fighter action not executable after Slice 17.8 CP3: %+v", action)
 	}
 }

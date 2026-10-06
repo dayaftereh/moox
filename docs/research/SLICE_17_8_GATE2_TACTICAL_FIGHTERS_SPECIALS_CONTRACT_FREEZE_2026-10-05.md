@@ -186,6 +186,8 @@ Each record freezes:
 - `best_warp_drive_index` (1..6);
 - `armor_durability_multiple` (1,2,4,6,8,10);
 - `trans_dimensional`;
+- `fighter_beam_offense` - immutable fully projected Fighter OCV scalar consumed by Fighter Beam replay;
+- `moving_actor_defense_bonus` - immutable additive Fighter moving-actor DCV term applied after `speed * 5`;
 - optional Fighter Beam payload identity plus base min/max damage;
 - optional Fighter Bomb payload identity plus base min/max damage.
 
@@ -1339,3 +1341,18 @@ No unsupported clear transition is invented.
 A normal non-Telepathic Capture sets `post_capture_state`; Gate 3 applies every directly frozen start-turn/eligibility consequence while the flag is set. In the absence of a frozen original clear transition, the implementation does not spontaneously clear it. Telepathic Capture does not set it.
 
 Any future change to that lifetime requires new original evidence and a later contract revision.
+
+### 25.7 Fighter OCV / moving-actor DCV snapshot correction (2026-10-06)
+
+Checkpoint-3 implementation review exposed one Gate-2 snapshot omission. Direct re-disassembly of original `Fighter_Ocv_` and `Missile_Dcv_` proves that future Fighter Beam RNG depends on values beyond payload identity, drive and armor, so those values must be frozen in the Tactical doctrine rather than re-derived from mutable strategic state during replay.
+
+Binding correction:
+
+- `fighter_beam_offense` is the immutable Fighter OCV scalar used by Fighter Beam resolution;
+- for normal players the evidenced original stack is `Fleet_Offensive_Bonus + Best_Computer.offense + player Ship Attack (+0x8A6) + Get_Fleet_Pilot_Bonus + 50`;
+- `moving_actor_defense_bonus` is the immutable additive term paired with Fighter `speed * 5` for Fighter-class `Missile_Dcv_`; the evidenced normal-player additions are `Get_Fleet_Pilot_Bonus + player Ship Defense (+0x8A5)`;
+- the existing Fighter payload snapshots remain immutable and self-contained as already frozen.
+
+Current MOOX has authoritative best-known Computer and race Ship Attack/Ship Defense state, but no authoritative fleet-officer / pilot runtime. Therefore Battle creation freezes the representable terms now (`+50 + best Computer offense + race Ship Attack` and race Ship Defense respectively); unavailable fleet-offensive/pilot terms are explicitly `0`, not inferred. A later leader/officer slice may populate those terms at Battle creation without changing Fighter replay semantics, because the BattleSession continues consuming only the frozen scalars.
+
+This is a contract correction required by already accepted Gate-1 executable evidence, not a new mechanic.

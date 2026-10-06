@@ -12,6 +12,7 @@ func TestSlice178Gate3Checkpoint1RequiresDoctrineForFighterCarrier(t *testing.T)
 	}
 	spec.FighterDoctrines = []TacticalFighterDoctrineSpec{{
 		SeatID: 1, EmpireID: 10, BestWarpDriveIndex: 1, ArmorDurabilityMultiple: 1,
+		BeamPayload: &TacticalFighterPayloadSpec{WeaponID: "laser_cannon", MinDamage: 1, MaxDamage: 4, PointDefenseMode: true},
 	}}
 	if err := validateTacticalFighterDoctrines(spec); err != nil {
 		t.Fatalf("valid Fighter doctrine rejected: %v", err)

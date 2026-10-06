@@ -192,26 +192,91 @@ func tacticalMetadataForEncounterWithSpecials(state *core.GameState, encounter E
 	return tactical, "", nil
 }
 
-func tacticalFighterDoctrinesForEncounter(state *core.GameState, encounter Encounter, ships []battle.TacticalShipSpec, economy *EconomyRules) ([]battle.TacticalFighterDoctrineSpec, error) {
-	if state == nil || economy == nil {
-		return nil, nil
+func bestKnownFighterBeamPayload(economy *EconomyRules, empire *core.Empire) *battle.TacticalFighterPayloadSpec {
+	if economy == nil || economy.TacticalCombat == nil || empire == nil {
+		return nil
 	}
-	needsSeat := func(seat protocol.SeatID) bool {
-		for _, ship := range ships {
-			if ship.SeatID != seat {
+	var best *ruleset.TacticalWeaponRule
+	for _, weapon := range economy.TacticalCombat.BeamWeapons() {
+		if weapon.AllowedModifierMask&0x04 == 0 || !empireKnowsTechnology(empire, weapon.TechnologyID) {
+			continue
+		}
+		if best == nil || weapon.OriginalIndex > best.OriginalIndex {
+			copy := weapon
+			best = &copy
+		}
+	}
+	if best == nil {
+		return nil
+	}
+	return &battle.TacticalFighterPayloadSpec{
+		WeaponID: best.ID, MinDamage: best.MinDamage, MaxDamage: best.MaxDamage,
+		InnateEffectIDs: append([]string(nil), best.InnateEffectIDs...), PointDefenseMode: true,
+	}
+}
+
+func bestKnownFighterBombPayload(economy *EconomyRules, empire *core.Empire) *battle.TacticalFighterPayloadSpec {
+	if economy == nil || economy.TacticalCombat == nil || empire == nil {
+		return nil
+	}
+	var best *ruleset.TacticalWeaponRule
+	for _, weapon := range economy.TacticalCombat.AllWeapons() {
+		// Original Fighter_Bomb uses the ordinary Bomb table. Bio weapons are a
+		// distinct bombardment family and are not Fighter payload candidates.
+		if weapon.Kind != "bomb" || weapon.OriginalIndex < 21 || weapon.OriginalIndex > 24 ||
+			!empireKnowsTechnology(empire, weapon.TechnologyID) {
+			continue
+		}
+		if best == nil || weapon.OriginalIndex > best.OriginalIndex {
+			copy := weapon
+			best = &copy
+		}
+	}
+	if best == nil {
+		return nil
+	}
+	return &battle.TacticalFighterPayloadSpec{
+		WeaponID: best.ID, MinDamage: best.MinDamage, MaxDamage: best.MaxDamage,
+		InnateEffectIDs: append([]string(nil), best.InnateEffectIDs...),
+	}
+}
+
+type tacticalFighterDoctrineNeeds struct {
+	beam bool
+	bomb bool
+}
+
+func tacticalFighterDoctrineNeedsForSeat(ships []battle.TacticalShipSpec, seat protocol.SeatID) tacticalFighterDoctrineNeeds {
+	var out tacticalFighterDoctrineNeeds
+	for _, ship := range ships {
+		if ship.SeatID != seat {
+			continue
+		}
+		for _, weapon := range ship.Weapons {
+			if weapon.TacticalSupport != "fighter" {
 				continue
 			}
-			for _, weapon := range ship.Weapons {
-				if weapon.TacticalSupport == "fighter" {
-					return true
-				}
+			switch weapon.WeaponID {
+			case "fighter_bays":
+				out.beam = true
+			case "bomber_bays":
+				out.bomb = true
+			case "heavy_fighter_bays":
+				out.beam, out.bomb = true, true
 			}
 		}
-		return false
+	}
+	return out
+}
+
+func tacticalFighterDoctrinesForEncounter(state *core.GameState, encounter Encounter, ships []battle.TacticalShipSpec, economy *EconomyRules) ([]battle.TacticalFighterDoctrineSpec, error) {
+	if state == nil || economy == nil || economy.TacticalCombat == nil {
+		return nil, nil
 	}
 	out := make([]battle.TacticalFighterDoctrineSpec, 0, 2)
 	for _, side := range []EncounterSide{encounter.Attacker, encounter.Defender} {
-		if !needsSeat(side.SeatID) {
+		needs := tacticalFighterDoctrineNeedsForSeat(ships, side.SeatID)
+		if !needs.beam && !needs.bomb {
 			continue
 		}
 		empire := empireByID(state, side.EmpireID)
@@ -230,13 +295,38 @@ func tacticalFighterDoctrinesForEncounter(state *core.GameState, encounter Encou
 		if durability == 0 {
 			return nil, fmt.Errorf("Fighter doctrine empire %d has unsupported Armor index %d", side.EmpireID, armor.ComponentIndex)
 		}
+		computer, ok := bestKnownShipComputer(economy.ShipComputers, empire)
+		if !ok {
+			return nil, fmt.Errorf("Fighter doctrine empire %d has no supported Computer", side.EmpireID)
+		}
+		computerRule, ok := economy.TacticalCombat.ComputerByID(computer.ID)
+		if !ok {
+			return nil, fmt.Errorf("Fighter doctrine empire %d computer %q has no Tactical offense rule", side.EmpireID, computer.ID)
+		}
 		transDimensional := false
 		if modifiers, ok := economy.RaceModifiers[empire.RaceID]; ok {
 			transDimensional = modifiers.TransDimensional
 		}
+		researchModifiers := economy.RaceResearchModifiers[empire.RaceID]
+		beamPayload := bestKnownFighterBeamPayload(economy, empire)
+		bombPayload := bestKnownFighterBombPayload(economy, empire)
+		if needs.beam && beamPayload == nil {
+			return nil, fmt.Errorf("Fighter doctrine empire %d has no Point-Defense-capable Fighter Beam", side.EmpireID)
+		}
+		if needs.bomb && bombPayload == nil {
+			return nil, fmt.Errorf("Fighter doctrine empire %d has no supported Fighter Bomb", side.EmpireID)
+		}
+
+		// The Original also adds fleet-offensive and fleet-pilot leader bonuses.
+		// MOOX has no authoritative leader/officer runtime yet, so only currently
+		// represented immutable inputs are frozen here; absent leader terms are 0.
 		out = append(out, battle.TacticalFighterDoctrineSpec{
 			SeatID: side.SeatID, EmpireID: side.EmpireID, BestWarpDriveIndex: drive.ComponentIndex,
 			ArmorDurabilityMultiple: durability, TransDimensional: transDimensional,
+			FighterBeamOffense:      50 + computerRule.BeamOffense + researchModifiers.ShipAttackBonus,
+			MovingActorDefenseBonus: researchModifiers.ShipDefenseBonus,
+			BeamPayload:             beamPayload,
+			BombPayload:             bombPayload,
 		})
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].SeatID < out[j].SeatID })

@@ -2,6 +2,7 @@ package game
 
 import (
 	"path/filepath"
+	"sort"
 	"testing"
 
 	"moox/internal/battle"
@@ -484,12 +485,22 @@ func TestSlice178Gate3Checkpoint1ProjectsFighterDoctrineFromEmpireBestEquipment(
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(rules.ShipDrives) == 0 || len(rules.ShipArmors) == 0 {
-		t.Fatal("ship drive/armor rules missing")
-	}
 	bestDrive := rules.ShipDrives[len(rules.ShipDrives)-1]
 	bestArmor := rules.ShipArmors[len(rules.ShipArmors)-1]
-
+	bestComputer := rules.ShipComputers[len(rules.ShipComputers)-1]
+	computerRule, ok := rules.TacticalCombat.ComputerByID(bestComputer.ID)
+	if !ok {
+		t.Fatalf("missing Tactical computer rule for %q", bestComputer.ID)
+	}
+	var bestBeam ruleset.TacticalWeaponRule
+	for _, weapon := range rules.TacticalCombat.BeamWeapons() {
+		if weapon.AllowedModifierMask&0x04 != 0 && weapon.OriginalIndex > bestBeam.OriginalIndex {
+			bestBeam = weapon
+		}
+	}
+	if bestBeam.ID == "" {
+		t.Fatal("test rules have no Point-Defense-capable Fighter Beam")
+	}
 	raceID := ""
 	for id, modifiers := range rules.RaceModifiers {
 		if modifiers.TransDimensional {
@@ -500,27 +511,14 @@ func TestSlice178Gate3Checkpoint1ProjectsFighterDoctrineFromEmpireBestEquipment(
 	if raceID == "" {
 		t.Fatal("test rules have no Trans-Dimensional race modifier")
 	}
-	known := []int{bestDrive.TechnologyID, bestArmor.TechnologyID}
-	if known[0] > known[1] {
-		known[0], known[1] = known[1], known[0]
-	}
-
+	research := rules.RaceResearchModifiers[raceID]
+	known := []int{bestDrive.TechnologyID, bestArmor.TechnologyID, bestComputer.TechnologyID, bestBeam.TechnologyID}
+	sort.Ints(known)
 	attacker := tacticalMetadataShip(101, 1, "nuclear_drive", false)
 	attacker.Spec.Weapons = []core.ShipWeaponMount{{Slot: 0, WeaponID: "fighter_bays", Count: 2}}
 	defender := tacticalMetadataShip(201, 2, "nuclear_drive", true)
-	state := &core.GameState{
-		Empires: []core.Empire{
-			{ID: 1, RaceID: raceID, KnownTechnologyIDs: known},
-			{ID: 2},
-		},
-		Ships: []core.Ship{attacker, defender},
-	}
-	encounter := Encounter{
-		SystemID:     7,
-		Attacker:     EncounterSide{EmpireID: 1, SeatID: 1, CombatFleetIDs: []core.ID{11}, ShipIDs: []core.ID{101}},
-		Defender:     EncounterSide{EmpireID: 2, SeatID: 2, CombatFleetIDs: []core.ID{22}, ShipIDs: []core.ID{201}},
-		Participants: []protocol.SeatID{1, 2},
-	}
+	state := &core.GameState{Empires: []core.Empire{{ID: 1, RaceID: raceID, KnownTechnologyIDs: known}, {ID: 2}}, Ships: []core.Ship{attacker, defender}}
+	encounter := Encounter{SystemID: 7, Attacker: EncounterSide{EmpireID: 1, SeatID: 1, CombatFleetIDs: []core.ID{11}, ShipIDs: []core.ID{101}}, Defender: EncounterSide{EmpireID: 2, SeatID: 2, CombatFleetIDs: []core.ID{22}, ShipIDs: []core.ID{201}}, Participants: []protocol.SeatID{1, 2}}
 	tactical, reason, err := tacticalMetadataForEncounterWithSpecials(state, encounter, rules.TacticalCombat, rules.ShipSpecials, rules)
 	if err != nil {
 		t.Fatal(err)
@@ -532,10 +530,10 @@ func TestSlice178Gate3Checkpoint1ProjectsFighterDoctrineFromEmpireBestEquipment(
 		t.Fatalf("Fighter doctrines=%+v", tactical.FighterDoctrines)
 	}
 	doctrine := tactical.FighterDoctrines[0]
-	if doctrine.SeatID != 1 || doctrine.EmpireID != 1 ||
-		doctrine.BestWarpDriveIndex != bestDrive.ComponentIndex ||
-		doctrine.ArmorDurabilityMultiple != shipArmorDurabilityMultiple(bestArmor.ComponentIndex) ||
-		!doctrine.TransDimensional {
+	if doctrine.SeatID != 1 || doctrine.EmpireID != 1 || doctrine.BestWarpDriveIndex != bestDrive.ComponentIndex || doctrine.ArmorDurabilityMultiple != shipArmorDurabilityMultiple(bestArmor.ComponentIndex) || !doctrine.TransDimensional || doctrine.FighterBeamOffense != 50+computerRule.BeamOffense+research.ShipAttackBonus || doctrine.MovingActorDefenseBonus != research.ShipDefenseBonus {
 		t.Fatalf("Fighter doctrine=%+v drive=%+v armor=%+v", doctrine, bestDrive, bestArmor)
+	}
+	if doctrine.BeamPayload == nil || doctrine.BeamPayload.WeaponID != bestBeam.ID || doctrine.BeamPayload.MinDamage != bestBeam.MinDamage || doctrine.BeamPayload.MaxDamage != bestBeam.MaxDamage || !doctrine.BeamPayload.PointDefenseMode {
+		t.Fatalf("Fighter Beam payload=%+v best=%+v", doctrine.BeamPayload, bestBeam)
 	}
 }

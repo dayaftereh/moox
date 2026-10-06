@@ -17,6 +17,7 @@ const (
 type TacticalLiveSnapshot struct {
 	State                TacticalState          `json:"state"`
 	Ordnance             *TacticalOrdnanceState `json:"ordnance,omitempty"`
+	Fighters             *TacticalFighterState  `json:"fighters,omitempty"`
 	Events               []TacticalEvent        `json:"events"`
 	NextEventSequence    uint64                 `json:"next_event_sequence"`
 	NextMovingActorOrder uint64                 `json:"next_moving_actor_order,omitempty"`
@@ -45,14 +46,16 @@ func (s *Session) LiveSnapshot() LiveSnapshot {
 	}
 	if s.tactical != nil {
 		ordnance := cloneTacticalOrdnanceState(s.tactical.ordnance)
+		fighters := cloneTacticalFighterState(s.tactical.fighters)
 		out.Tactical = &TacticalLiveSnapshot{
 			State:                cloneTacticalState(s.tactical.state),
 			Ordnance:             &ordnance,
+			Fighters:             &fighters,
 			Events:               cloneTacticalEvents(s.tactical.events),
 			NextEventSequence:    s.tactical.nextEventSequence,
 			NextMovingActorOrder: s.tactical.nextMovingActorOrder,
 			Legacy17_8Disabled:   s.tactical.legacy17_8Disabled,
-			Slice178StateVersion: 1,
+			Slice178StateVersion: 2,
 		}
 	}
 	return out
@@ -79,9 +82,16 @@ func RestoreLiveSnapshot(snapshot LiveSnapshot) (*Session, error) {
 		if snapshot.Tactical.Ordnance != nil {
 			ordnance = cloneTacticalOrdnanceState(*snapshot.Tactical.Ordnance)
 		}
+		fighters := TacticalFighterState{NextGroupID: 1}
+		if snapshot.Tactical.Fighters != nil {
+			fighters = cloneTacticalFighterState(*snapshot.Tactical.Fighters)
+		} else if !snapshot.Tactical.Legacy17_8Disabled {
+			fighters = initialTacticalFighterState(*snapshot.Spec.Tactical)
+		}
 		runtime := tacticalRuntime{
 			state:                cloneTacticalState(snapshot.Tactical.State),
 			ordnance:             ordnance,
+			fighters:             fighters,
 			events:               cloneTacticalEvents(snapshot.Tactical.Events),
 			nextEventSequence:    snapshot.Tactical.NextEventSequence,
 			nextMovingActorOrder: snapshot.Tactical.NextMovingActorOrder,
@@ -97,6 +107,11 @@ func migrateLiveSnapshot(snapshot LiveSnapshot) (LiveSnapshot, error) {
 	case LiveSnapshotSchemaVersion:
 		if snapshot.Tactical != nil && snapshot.Tactical.Slice178StateVersion == 0 {
 			if err := migrateSlice178Checkpoint2State(&snapshot, false); err != nil {
+				return LiveSnapshot{}, err
+			}
+		}
+		if snapshot.Tactical != nil && snapshot.Tactical.Slice178StateVersion == 1 {
+			if err := migrateSlice178Checkpoint3State(&snapshot, snapshot.Tactical.Legacy17_8Disabled); err != nil {
 				return LiveSnapshot{}, err
 			}
 		}
@@ -131,6 +146,9 @@ func migrateLiveSnapshot(snapshot LiveSnapshot) (LiveSnapshot, error) {
 		}
 		snapshot.Tactical.NextMovingActorOrder = nextOrder
 		if err := migrateSlice178Checkpoint2State(&snapshot, true); err != nil {
+			return LiveSnapshot{}, err
+		}
+		if err := migrateSlice178Checkpoint3State(&snapshot, true); err != nil {
 			return LiveSnapshot{}, err
 		}
 		return snapshot, nil
@@ -230,7 +248,7 @@ func validateLiveSnapshot(snapshot LiveSnapshot) error {
 
 func validateTacticalLiveSnapshot(spec TacticalSpec, snapshot TacticalLiveSnapshot, revision uint64) error {
 	state := snapshot.State
-	if snapshot.Slice178StateVersion != 1 {
+	if snapshot.Slice178StateVersion != 2 {
 		return fmt.Errorf("tactical live snapshot has unsupported Slice-17.8 state version %d", snapshot.Slice178StateVersion)
 	}
 	if state.Round == 0 || state.NextCommandSequence == 0 {
@@ -301,10 +319,18 @@ func validateTacticalLiveSnapshot(spec TacticalSpec, snapshot TacticalLiveSnapsh
 	} else if err := validateTacticalOrdnanceState(spec, *snapshot.Ordnance); err != nil {
 		return fmt.Errorf("tactical live snapshot ordnance state: %w", err)
 	}
+	if snapshot.Fighters == nil {
+		if !snapshot.Legacy17_8Disabled && tacticalSpecHasExecutableFighters(spec) {
+			return fmt.Errorf("tactical live snapshot with executable Fighters is missing Fighter state")
+		}
+	} else if err := validateTacticalFighterState(spec, *snapshot.Fighters, snapshot.Legacy17_8Disabled); err != nil {
+		return fmt.Errorf("tactical live snapshot Fighter state: %w", err)
+	}
 	if snapshot.NextMovingActorOrder == 0 {
 		return fmt.Errorf("tactical live snapshot next moving-actor order must be non-zero")
 	}
 	seenSpawnOrders := make(map[uint64]struct{})
+	projectilesByID := make(map[uint64]TacticalProjectileState)
 	if snapshot.Ordnance != nil {
 		for i, projectile := range snapshot.Ordnance.Projectiles {
 			if projectile.SpawnOrder == 0 || projectile.SpawnOrder >= snapshot.NextMovingActorOrder {
@@ -314,6 +340,42 @@ func validateTacticalLiveSnapshot(spec TacticalSpec, snapshot TacticalLiveSnapsh
 				return fmt.Errorf("tactical projectile[%d] duplicates spawn order %d", i, projectile.SpawnOrder)
 			}
 			seenSpawnOrders[projectile.SpawnOrder] = struct{}{}
+			projectilesByID[projectile.ProjectileID] = projectile
+		}
+	}
+	fighterGroupsByID := make(map[uint64]TacticalFighterGroupState)
+	if snapshot.Fighters != nil {
+		for i, group := range snapshot.Fighters.Groups {
+			if group.SpawnOrder == 0 || group.SpawnOrder >= snapshot.NextMovingActorOrder {
+				return fmt.Errorf("tactical Fighter group[%d] spawn order %d is outside 1..%d", i, group.SpawnOrder, snapshot.NextMovingActorOrder-1)
+			}
+			if _, exists := seenSpawnOrders[group.SpawnOrder]; exists {
+				return fmt.Errorf("tactical Fighter group[%d] duplicates moving-actor spawn order %d", i, group.SpawnOrder)
+			}
+			seenSpawnOrders[group.SpawnOrder] = struct{}{}
+			fighterGroupsByID[group.GroupID] = group
+		}
+		for _, group := range snapshot.Fighters.Groups {
+			source := tacticalShipSpec(spec, group.SourceShipID)
+			if group.TargetProjectileID != 0 {
+				target, ok := projectilesByID[group.TargetProjectileID]
+				if !ok {
+					return fmt.Errorf("tactical Fighter group %d references missing target projectile %d", group.GroupID, group.TargetProjectileID)
+				}
+				targetSource := tacticalShipSpec(spec, target.SourceShipID)
+				if source == nil || targetSource == nil || source.EmpireID == targetSource.EmpireID {
+					return fmt.Errorf("tactical Fighter group %d target projectile %d is not hostile", group.GroupID, group.TargetProjectileID)
+				}
+			}
+			if group.TargetFighterGroupID != 0 {
+				target, ok := fighterGroupsByID[group.TargetFighterGroupID]
+				if !ok {
+					return fmt.Errorf("tactical Fighter group %d references missing target Fighter group %d", group.GroupID, group.TargetFighterGroupID)
+				}
+				if target.GroupID == group.GroupID || target.SourceSeatID == group.SourceSeatID {
+					return fmt.Errorf("tactical Fighter group %d target Fighter group %d is not hostile", group.GroupID, group.TargetFighterGroupID)
+				}
+			}
 		}
 	}
 
@@ -393,4 +455,29 @@ func equalCoreIDList(a, b []core.ID) bool {
 		}
 	}
 	return true
+}
+
+func migrateSlice178Checkpoint3State(snapshot *LiveSnapshot, legacyDisabled bool) error {
+	if snapshot == nil || snapshot.Tactical == nil || snapshot.Spec.Tactical == nil {
+		return nil
+	}
+	if snapshot.Tactical.Slice178StateVersion != 1 {
+		return nil
+	}
+	tactical := *snapshot.Tactical
+	tactical.State = cloneTacticalState(snapshot.Tactical.State)
+	tactical.Events = cloneTacticalEvents(snapshot.Tactical.Events)
+	if snapshot.Tactical.Ordnance != nil {
+		ordnance := cloneTacticalOrdnanceState(*snapshot.Tactical.Ordnance)
+		tactical.Ordnance = &ordnance
+	}
+	fighters := TacticalFighterState{NextGroupID: 1}
+	if !legacyDisabled {
+		fighters = initialTacticalFighterState(*snapshot.Spec.Tactical)
+	}
+	tactical.Fighters = &fighters
+	tactical.Legacy17_8Disabled = legacyDisabled || tactical.Legacy17_8Disabled
+	tactical.Slice178StateVersion = 2
+	snapshot.Tactical = &tactical
+	return nil
 }

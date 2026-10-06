@@ -321,3 +321,40 @@ Validation:
 - `git diff --check` PASS
 
 Next: Gate 3 Checkpoint 3 - Fighter actor lifecycle / Fighter combat resolution.
+
+
+### Gate 3 Checkpoint 3 - complete
+
+Checkpoint 3 is **PASS / COMPLETE**.
+
+Implemented:
+
+- authoritative Fighter/Bomber/Heavy-Fighter Bay and moving-actor runtime;
+- shared Fighter/projectile monotone `spawn_order`;
+- `battle.launch_fighters` action projection and strict target/rejection handling;
+- deterministic movement, target validation/retarget, durability/interception and return/recovery;
+- per-craft Fighter Beam/Bomb resolution and Heavy-Fighter paired cadence;
+- Fighter groups as legal moving-actor Beam targets plus reactive Point Defense;
+- Lightning Field pre-impact mutable-multiplicity ordering for Fighter groups;
+- Fighter LiveSnapshot v2 persistence/migration/validation;
+- evidence-driven doctrine correction for frozen Fighter OCV and moving-actor DCV scalars.
+
+The Gate-2 freeze now contains binding clarification 25.7 for the OCV/DCV snapshot omission found during CP3 review. Gate-1 terminology was corrected to identify original `+0x8A6` as Ship Attack; re-disassembly also confirms Fighter-class `Missile_Dcv_` uses `speed * 5 + fleet pilot + Ship Defense(+0x8A5)`.
+
+Current MOOX has no authoritative fleet-officer/pilot runtime, so those unavailable original terms are explicitly frozen as zero at Battle creation rather than inferred. Best-known Computer plus race Ship Attack/Defense are projected now.
+
+Validation:
+
+- focused `TestSlice178Gate3Checkpoint3*` PASS
+- focused Fighter-doctrine projection PASS
+- `go test ./internal/ruleset` PASS
+- `go test ./internal/battle` PASS
+- `go test ./internal/game` PASS
+- `go test ./...` PASS
+- `git diff --check` PASS
+
+Ruleset SHA remains unchanged from Checkpoint 2:
+
+`68c06a57bb9fdc18c0ff8045b54241e51cc9cba41298898fbfb535b6a338bd46`
+
+Next: Gate 3 Checkpoint 4 - **Boarding / Capture**. Do not begin Checkpoint 5 Special lifecycle before Checkpoint 4 is independently reviewed and green.

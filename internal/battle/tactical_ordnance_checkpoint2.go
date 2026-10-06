@@ -302,7 +302,8 @@ func advanceTacticalOrdnanceRound(spec TacticalSpec, r *tacticalRuntime) error {
 		}
 	}
 	refreshTacticalOrdnanceReadiness(spec, r)
-	return processTacticalProjectiles(spec, r, 0, 0)
+	refreshTacticalFighterReadiness(spec, r)
+	return processTacticalMovingActors(spec, r, 0, 0)
 }
 
 func processTacticalProjectiles(spec TacticalSpec, r *tacticalRuntime, eventSeat protocol.SeatID, commandSequence uint32) error {

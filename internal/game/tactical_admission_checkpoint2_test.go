@@ -166,7 +166,8 @@ func TestSlice175Checkpoint2LaterFamilyWeaponsDoNotBlockAdmission(t *testing.T) 
 			}
 			if weaponID == "fighter_bays" {
 				tactical.FighterDoctrines = []battle.TacticalFighterDoctrineSpec{{
-					SeatID: 1, EmpireID: 1, BestWarpDriveIndex: 1, ArmorDurabilityMultiple: 1,
+					SeatID: 1, EmpireID: 1, BestWarpDriveIndex: 1, ArmorDurabilityMultiple: 1, FighterBeamOffense: 50,
+					BeamPayload: &battle.TacticalFighterPayloadSpec{WeaponID: "laser_cannon", MinDamage: 1, MaxDamage: 4, PointDefenseMode: true},
 				}}
 			}
 			session, err := battle.NewSession(checkpoint2BattleSpec(encounter, tactical))
