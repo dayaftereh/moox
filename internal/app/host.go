@@ -656,6 +656,19 @@ func (g *hostedGame) drivePlanningControllers(status session.Status) (bool, bool
 			humanPending = true
 			continue
 		}
+		if g.reference != nil && g.reference.HoldBuiltinAIPlanning {
+			batch := protocol.CommandBatch{
+				SchemaVersion: protocol.CommandSchemaVersion,
+				GameID:        player.GameID,
+				SeatID:        seatID,
+				Turn:          player.Turn,
+				BaseRevision:  player.Revision,
+			}
+			if err := g.submitBuiltinAITurn(seatID, batch); err != nil {
+				return false, false, fmt.Errorf("held builtin AI seat %d: %w", seatID, err)
+			}
+			return true, false, nil
+		}
 		view, decision, err := g.builtinDecisionWithView(seatID)
 		if err != nil {
 			return false, false, err

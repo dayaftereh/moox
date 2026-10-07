@@ -431,3 +431,32 @@ Gate 3 may now implement:
 - isolation/determinism/persistence regressions.
 
 Gate 3 must not open Slice 17.1 or implement new hull/component/weapon/special gameplay mechanics.
+
+## 2026-10-07 binding addendum - permanent Combat Review reference game
+
+User review of Slice 17.8 promotes the dedicated Tactical combat fixture from a temporary review aid to a permanent member of the development reference-game contract.
+
+Stable identity:
+
+- public game ID: `game-triangle-combat-review`;
+- scenario ID: `triangle-combat-review-all-tech-v1`;
+- technology profile: `all_tech`;
+- control seat: Seat 1 / local Human;
+- opponent: Seat 2 / built-in AI;
+- bootstrap: deterministic Triangle-derived state plus a neutral central `Fight System`;
+- combat payload: three identical `Falcon MK1` ships for the Human and three identical `Falcon MK1` ships for the AI;
+- diplomacy: Human and the review AI are mutually at war;
+- admission path: ordinary strategic encounter -> authoritative Tactical `BattleSession`.
+
+This fixture is **durable, not disposable**. Whenever the server is started with `-reference-games`, the registered reference set must include `game-triangle-combat-review` in addition to the existing standard/Baseline/Mid-Tech/All-Tech games.
+
+The fixture may evolve when later slices need broader combat coverage, but its stable public identity and purpose must not be silently removed or replaced. Any intentional retirement or incompatible replacement requires an explicit documented contract change and user approval.
+
+Regression requirements:
+
+1. reference-game bootstrap tests must fail if `game-triangle-combat-review` is absent;
+2. fixture tests must prove the `Fight System`, mutual hostility, three-vs-three Falcon fleets and Tactical admission remain valid;
+3. Reference advancement must stop at the interactive Encounter boundary rather than allowing built-in AI planning to consume the prepared review fight;
+4. production servers without `-reference-games` remain unaffected.
+
+This addendum extends the durable Triangle reference family. It does **not** change the baseline/mid-tech/all-tech comparability invariant above; Combat Review is intentionally a derived combat fixture with additional system/fleet state.

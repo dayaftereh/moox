@@ -6,6 +6,7 @@ import (
 
 	"moox/internal/app"
 	"moox/internal/game"
+	"moox/internal/session"
 )
 
 func TestDefaultHTTPAddress(t *testing.T) {
@@ -53,14 +54,14 @@ func TestReferenceGamesRequireExplicitFlag(t *testing.T) {
 		t.Fatal(err)
 	}
 	games := host.ListGames()
-	if len(games) != 4 {
-		t.Fatalf("reference games=%+v, want exactly four", games)
+	if len(games) != 5 {
+		t.Fatalf("reference games=%+v, want exactly five", games)
 	}
 	seen := map[string]bool{}
 	for _, summary := range games {
 		seen[summary.GameID] = true
 	}
-	for _, gameID := range []string{standardReferenceGameID, triangleReferenceGameID, triangleMidTechReferenceGameID, triangleAllTechReferenceGameID} {
+	for _, gameID := range []string{standardReferenceGameID, triangleReferenceGameID, triangleMidTechReferenceGameID, triangleAllTechReferenceGameID, triangleCombatReviewReferenceGameID} {
 		if !seen[gameID] {
 			t.Fatalf("reference game IDs=%v missing %q", seen, gameID)
 		}
@@ -91,6 +92,7 @@ func TestReferenceGamesRequireExplicitFlag(t *testing.T) {
 		{triangleReferenceGameID, game.ReferenceTriangleScenarioID, string(game.ReferenceTriangleProfileBaseline), 7, 19},
 		{triangleMidTechReferenceGameID, game.ReferenceTriangleMidTechScenarioID, string(game.ReferenceTriangleProfileMidTech), 36, 94},
 		{triangleAllTechReferenceGameID, game.ReferenceTriangleAllTechScenarioID, string(game.ReferenceTriangleProfileAllTech), 75, 202},
+		{triangleCombatReviewReferenceGameID, game.ReferenceTriangleCombatReviewScenarioID, string(game.ReferenceTriangleProfileAllTech), 75, 202},
 	} {
 		human, err := host.PlayerSnapshot(tc.gameID, 1)
 		if err != nil {
@@ -117,5 +119,55 @@ func TestReferenceGamesRequireExplicitFlag(t *testing.T) {
 				t.Fatalf("%s fields=%d techs=%d", tc.gameID, len(human.View.Empire.KnownTechnologyFieldIDs), len(human.View.Empire.KnownTechnologyIDs))
 			}
 		}
+	}
+}
+
+func TestCombatReviewReferenceStopsAtSingleFightSystemBattle(t *testing.T) {
+	host, err := newServerHost(filepath.Join("..", "..", "data", "rulesets", "moo2-1.31"), false, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	before, err := host.PlayerSnapshot(triangleCombatReviewReferenceGameID, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if before.Reference == nil || !before.Reference.HoldBuiltinAIPlanning {
+		t.Fatalf("combat review reference=%+v want held builtin planning", before.Reference)
+	}
+	var fightSystemID uint64
+	if before.Decision == nil {
+		t.Fatal("combat review has no decision view")
+	}
+	for _, system := range before.Decision.Strategic.Galaxy.Systems {
+		if system.Name == "Fight System" {
+			fightSystemID = uint64(system.ID)
+			break
+		}
+	}
+	if fightSystemID == 0 {
+		t.Fatal("Fight System missing from combat review")
+	}
+	result, err := host.AdvanceReference(triangleCombatReviewReferenceGameID, app.ReferenceAdvanceRequest{
+		SchemaVersion: app.SchemaVersion,
+		SeatID:        1,
+		BaseRevision:  before.View.Revision,
+		Mode:          app.ReferenceAdvanceTurns,
+		Turns:         1,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.StopReason != "interactive_boundary" || result.FinalPhase != session.PhaseEncounters || result.TurnsAdvanced != 0 {
+		t.Fatalf("advance=%+v want immediate encounter boundary", result)
+	}
+	after, err := host.PlayerSnapshot(triangleCombatReviewReferenceGameID, 1)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(after.Battles) != 1 {
+		t.Fatalf("battles=%d want exactly one: %+v", len(after.Battles), after.Battles)
+	}
+	if uint64(after.Battles[0].Spec.SystemID) != fightSystemID {
+		t.Fatalf("battle system=%d want Fight System %d", after.Battles[0].Spec.SystemID, fightSystemID)
 	}
 }

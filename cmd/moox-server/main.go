@@ -27,6 +27,7 @@ const standardReferenceGameID = "game-1"
 const triangleReferenceGameID = "game-triangle-2pc"
 const triangleMidTechReferenceGameID = "game-triangle-mid-tech"
 const triangleAllTechReferenceGameID = "game-triangle-all-tech"
+const triangleCombatReviewReferenceGameID = "game-triangle-combat-review"
 const defaultHTTPAddress = "127.0.0.1:7171"
 
 func main() {
@@ -37,7 +38,7 @@ func main() {
 		enableObserver        = flag.Bool("enable-observer", false, "enable privileged observer snapshot endpoint")
 		enablePersistence     = flag.Bool("enable-persistence", false, "enable privileged explicit live snapshot save/import/restore endpoints; no automatic disk autosave/reload")
 		demoFixture           = flag.Bool("demo-fixture", false, "development only: pre-register the legacy core.NewSmallFixture demo game")
-		referenceGames        = flag.Bool("reference-games", false, "development only: pre-register game-1 plus durable baseline/mid-tech/all-tech 3-player 2pc triangle reference games")
+		referenceGames        = flag.Bool("reference-games", false, "development only: pre-register game-1 plus durable baseline/mid-tech/all-tech triangle and Falcon 3v3 combat-review reference games")
 		allowInsecureNonLocal = flag.Bool("insecure-allow-nonloopback", false, "UNSAFE: allow unauthenticated direct non-loopback binding")
 	)
 	flag.Parse()
@@ -145,6 +146,44 @@ func registerReferenceGames(host *app.Host, rules *game.EconomyRules) error {
 	}
 	if err := registerTriangleReferenceGame(host, rules, triangleAllTechReferenceGameID, game.ReferenceTriangleAllTechScenarioID, game.ReferenceTriangleProfileAllTech); err != nil {
 		return err
+	}
+	if err := registerTriangleCombatReviewReferenceGame(host, rules); err != nil {
+		return err
+	}
+	return nil
+}
+
+func registerTriangleCombatReviewReferenceGame(host *app.Host, rules *game.EconomyRules) error {
+	generated, err := rules.NewReferenceTriangleCombatReviewGame(game.ReferenceTriangleSeed)
+	if err != nil {
+		return fmt.Errorf("build triangle combat review game: %w", err)
+	}
+	resolver, err := game.NewEconomyResolver(rules)
+	if err != nil {
+		return fmt.Errorf("create triangle combat review resolver: %w", err)
+	}
+	seats := make([]session.Seat, len(generated.Players))
+	for i, player := range generated.Players {
+		controller := session.ControllerBuiltinAI
+		if player.SeatID == 1 {
+			controller = session.ControllerLocalHuman
+		}
+		seats[i] = session.Seat{ID: player.SeatID, EmpireID: player.EmpireID, Name: player.Name, Controller: controller}
+	}
+	gameSession, err := session.NewGameSession(triangleCombatReviewReferenceGameID, generated.State, seats)
+	if err != nil {
+		return fmt.Errorf("create triangle combat review session: %w", err)
+	}
+	if err := host.Register(app.Registration{
+		Session: gameSession, Resolver: resolver, ImmediateResolver: resolver,
+		Reference: &app.ReferenceGameInfo{
+			ScenarioID:            game.ReferenceTriangleCombatReviewScenarioID,
+			ProfileID:             string(game.ReferenceTriangleProfileAllTech),
+			ControlSeatID:         1,
+			HoldBuiltinAIPlanning: true,
+		},
+	}); err != nil {
+		return fmt.Errorf("register triangle combat review session: %w", err)
 	}
 	return nil
 }

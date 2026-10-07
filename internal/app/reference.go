@@ -24,11 +24,12 @@ var (
 )
 
 type ReferenceGameInfo struct {
-	ScenarioID           string          `json:"scenario_id"`
-	ProfileID            string          `json:"profile_id"`
-	ControlSeatID        protocol.SeatID `json:"control_seat_id"`
-	MaxTurnsPerRequest   int             `json:"max_turns_per_request"`
-	MaxConstructionTurns int             `json:"max_construction_turns"`
+	ScenarioID            string          `json:"scenario_id"`
+	ProfileID             string          `json:"profile_id"`
+	ControlSeatID         protocol.SeatID `json:"control_seat_id"`
+	MaxTurnsPerRequest    int             `json:"max_turns_per_request"`
+	MaxConstructionTurns  int             `json:"max_construction_turns"`
+	HoldBuiltinAIPlanning bool            `json:"hold_builtin_ai_planning,omitempty"`
 }
 
 type ReferenceGrantBCRequest struct {
