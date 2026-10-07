@@ -657,9 +657,63 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
 
           {movementSelectionActive && reachableGridD && (
             <path d={reachableGridD} className="tactical-reachable-grid" pointerEvents="none" />
-          )}          {movementSelectionActive && legalMoves.filter((move) => move.movement_kind === 'teleport').map((move) => (
+          )}
+          {movementSelectionActive && legalMoves.map((move) => (
+            <rect
+              key={`move-cursor:${move.movement_kind}:${move.x}:${move.y}`}
+              x={move.x - .5}
+              y={move.y - .5}
+              width={1}
+              height={1}
+              className="tactical-move-cursor-cell"
+              aria-hidden="true"
+            />
+          ))}
+          {movementSelectionActive && legalMoves.filter((move) => move.movement_kind === 'teleport').map((move) => (
             <circle key={`teleport:${move.x}:${move.y}`} cx={move.x} cy={move.y} r={0.32} className="tactical-teleport-node" pointerEvents="none" />
           ))}
+          {ships.map((ship) => {
+            const isActive = ship.ship_id === tactical.state.active_ship_id
+            const isOwn = ship.seat_id === ownSeatID
+            const isLegalTarget = mode !== 'scan' && legalShipTargetByID.has(ship.ship_id)
+            const isScanned = mode === 'scan' && scannedShipID === ship.ship_id
+            const genome = decodeShipVisualGenome(ship.visual_genome)
+            const visualHullID = genome?.hullId ?? ship.hull_id
+            const footprint = shipHullFootprint(visualHullID)
+            const visualSize = Math.min(1, Math.max(.26, footprint))
+            const angle = ship.facing * 22.5
+            return (
+              <g
+                key={ship.ship_id}
+                className={`tactical-ship ${isOwn ? 'own' : 'enemy'} ${isActive ? 'active' : ''} ${selectedShipID === ship.ship_id ? 'selected' : ''} ${isLegalTarget ? 'legal-target' : ''} ${isScanned ? 'scanned' : ''} ${ship.destroyed ? 'destroyed' : ''}`}
+                transform={`translate(${ship.x} ${ship.y})`}
+                pointerEvents={ship.destroyed && mode !== 'scan' ? 'none' : undefined}
+                onClick={(event) => { event.stopPropagation(); selectShip(ship) }}
+                role="button"
+                tabIndex={ship.destroyed && mode !== 'scan' ? -1 : 0}
+                aria-label={t('battlefield.shipMarker', { name: shipName(ship.ship_id), x: ship.x, y: ship.y })}
+                onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') selectShip(ship) }}
+              >
+                <rect x={-0.5} y={-0.5} width={1} height={1} className="tactical-ship-hit-cell" />
+                <g className="tactical-ship-facing" transform={`rotate(${angle})`} pointerEvents="none">
+                  <ProceduralShipGlyph
+                    className="tactical-ship-vector"
+                    x={-visualSize / 2}
+                    y={-visualSize / 2}
+                    width={visualSize}
+                    height={visualSize}
+                    seed={genome?.seed ?? `${ship.empire_id}:${ship.source_design_id ?? ship.ship_id}:${ship.source_design_revision ?? 0}:${ship.strategic_picture_id ?? 0}`}
+                    hullId={visualHullID}
+                    genome={genome}
+                    weaponCount={(ship.weapons ?? []).reduce((sum, weapon) => sum + weapon.count, 0)}
+                    footprint={footprint}
+                    tightViewBox
+                  />
+                </g>
+              </g>
+            )
+          })}
+
           {projectiles.map((projectile) => {
             const isOwn = projectile.source_seat_id === ownSeatID
             const isLegalTarget = mode !== 'scan' && legalProjectileTargetByID.has(projectile.projectile_id)
@@ -669,6 +723,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                 key={`projectile:${projectile.projectile_id}`}
                 className={`tactical-projectile ${isOwn ? 'own' : 'enemy'} ${isLegalTarget ? 'legal-target' : ''}`}
                 transform={`translate(${projectile.x} ${projectile.y})`}
+                pointerEvents={mode !== 'scan' && isLegalTarget ? 'auto' : 'none'}
                 onClick={(event) => { event.stopPropagation(); selectProjectile(projectile) }}
                 role="button"
                 tabIndex={isLegalTarget ? 0 : -1}
@@ -698,6 +753,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                 key={`fighter-group:${fighter.group_id}`}
                 className={`tactical-fighter-group ${isOwn ? 'own' : 'enemy'} ${isLegalTarget ? 'legal-target' : ''} is-${fighter.phase}`}
                 transform={`translate(${fighter.x} ${fighter.y})`}
+                pointerEvents={mode !== 'scan' && isLegalTarget ? 'auto' : 'none'}
                 onClick={(event) => { event.stopPropagation(); selectFighterGroup(fighter) }}
                 role="button"
                 tabIndex={isLegalTarget ? 0 : -1}
@@ -712,46 +768,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
               </g>
             )
           })}
-          {ships.map((ship) => {
-            const isActive = ship.ship_id === tactical.state.active_ship_id
-            const isOwn = ship.seat_id === ownSeatID
-            const isLegalTarget = mode !== 'scan' && legalShipTargetByID.has(ship.ship_id)
-            const isScanned = mode === 'scan' && scannedShipID === ship.ship_id
-            const genome = decodeShipVisualGenome(ship.visual_genome)
-            const visualHullID = genome?.hullId ?? ship.hull_id
-            const footprint = shipHullFootprint(visualHullID)
-            const visualSize = Math.min(1, Math.max(.26, footprint))
-            const angle = ship.facing * 22.5
-            return (
-              <g
-                key={ship.ship_id}
-                className={`tactical-ship ${isOwn ? 'own' : 'enemy'} ${isActive ? 'active' : ''} ${selectedShipID === ship.ship_id ? 'selected' : ''} ${isLegalTarget ? 'legal-target' : ''} ${isScanned ? 'scanned' : ''} ${ship.destroyed ? 'destroyed' : ''}`}
-                transform={`translate(${ship.x} ${ship.y})`}
-                onClick={(event) => { event.stopPropagation(); selectShip(ship) }}
-                role="button"
-                tabIndex={0}
-                aria-label={t('battlefield.shipMarker', { name: shipName(ship.ship_id), x: ship.x, y: ship.y })}
-                onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') selectShip(ship) }}
-              >
-                <rect x={-0.5} y={-0.5} width={1} height={1} className="tactical-ship-hit-cell" />
-                <g className="tactical-ship-facing" transform={`rotate(${angle})`} pointerEvents="none">
-                  <ProceduralShipGlyph
-                    className="tactical-ship-vector"
-                    x={-visualSize / 2}
-                    y={-visualSize / 2}
-                    width={visualSize}
-                    height={visualSize}
-                    seed={genome?.seed ?? `${ship.empire_id}:${ship.source_design_id ?? ship.ship_id}:${ship.source_design_revision ?? 0}:${ship.strategic_picture_id ?? 0}`}
-                    hullId={visualHullID}
-                    genome={genome}
-                    weaponCount={(ship.weapons ?? []).reduce((sum, weapon) => sum + weapon.count, 0)}
-                    footprint={footprint}
-                    tightViewBox
-                  />
-                </g>
-              </g>
-            )
-          })}
+
 
           {moveAnimation && (
             <g className={`tactical-move-animation is-${moveAnimation.movementKind}`} data-sequence={moveAnimation.sequence} data-movement-kind={moveAnimation.movementKind} pointerEvents="none">

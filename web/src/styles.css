@@ -3731,11 +3731,13 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 .tactical-viewport:active { cursor: grabbing; }
 .tactical-space { fill: rgba(2, 9, 16, .94); }
 .tactical-grid-line { fill: none; stroke: rgba(99, 145, 173, .16); stroke-width: .045; vector-effect: non-scaling-stroke; }
-.tactical-move-node { cursor: pointer; outline: none; }
+.tactical-move-node { cursor: move; outline: none; }
+.tactical-move-cursor-cell { fill: transparent; stroke: none; pointer-events: all; cursor: move; }
 .tactical-move-node > circle:first-child { fill: rgba(85, 211, 227, .8); stroke: rgba(184, 247, 255, .9); stroke-width: .075; vector-effect: non-scaling-stroke; }
 .tactical-move-node:hover > circle:first-child, .tactical-move-node:focus > circle:first-child { fill: #d2fbff; stroke: #fff; }
 .tactical-move-hit { fill: transparent; stroke: none; pointer-events: all; }
 .tactical-ship { cursor: pointer; outline: none; }
+.tactical-ship.legal-target { cursor: crosshair; }
 .tactical-ship-hit-cell { fill: transparent; stroke: none; pointer-events: all; }
 .tactical-ship-fallback { stroke-width: .09; vector-effect: non-scaling-stroke; opacity: .2; }
 .tactical-ship.own .tactical-ship-fallback { fill: #74cfdf; stroke: #d1f8ff; }
@@ -3749,7 +3751,7 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 .tactical-ship.selected .tactical-ship-vector { filter: drop-shadow(0 0 4px rgba(112, 186, 255, .95)); }
 .tactical-ship.own { --ship-vector: #74cfdf; --ship-vector-highlight: #d1f8ff; --ship-vector-engine: #f0d682; }
 .tactical-ship.enemy { --ship-vector: #d47976; --ship-vector-highlight: #ffd4cf; --ship-vector-engine: #f0a982; }
-.tactical-ship.destroyed { opacity: .32; filter: grayscale(1); }
+.tactical-ship.destroyed { opacity: .32; filter: grayscale(1); cursor: default; }
 .tactical-ship-label { fill: #eef8ff; font-size: .66px; font-weight: 800; paint-order: stroke; stroke: rgba(0, 0, 0, .92); stroke-width: .16px; stroke-linejoin: round; pointer-events: none; }
 .tactical-viewport-hint { position: absolute; left: 10px; bottom: 9px; max-width: calc(100% - 20px); padding: 5px 8px; border-radius: 6px; background: rgba(3, 11, 18, .78); color: #91a8b9; font-size: .66rem; pointer-events: none; }
 .tactical-command-panel { display: grid; align-content: start; gap: 10px; min-width: 0; }
@@ -7726,7 +7728,7 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 
 /* Slice 17.7 Gate 3 CP5: authoritative tactical ordnance presentation. */
 .tactical-projectile { cursor: default; outline: none; }
-.tactical-projectile.legal-target { cursor: pointer; }
+.tactical-projectile.legal-target { cursor: crosshair; }
 .tactical-projectile-hit-cell { fill: transparent; stroke: none; pointer-events: all; }
 .tactical-projectile-vector { stroke-width: .07; vector-effect: non-scaling-stroke; }
 .tactical-projectile.own .tactical-projectile-vector { fill: rgba(116, 207, 223, .82); stroke: #d1f8ff; }
@@ -7867,7 +7869,7 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 .tactical-move-animation.is-teleport .tactical-move-trail { stroke-dasharray: .22 .18; }
 .tactical-move-animation.is-teleport .tactical-move-arrival { fill: rgba(205, 166, 255, .8); }
 .tactical-fighter-group { cursor: default; outline: none; }
-.tactical-fighter-group.legal-target { cursor: pointer; }
+.tactical-fighter-group.legal-target { cursor: crosshair; }
 .tactical-fighter-hit-cell { fill: transparent; stroke: none; pointer-events: all; }
 .tactical-fighter-vector { stroke-width: .07; vector-effect: non-scaling-stroke; }
 .tactical-fighter-group.own .tactical-fighter-vector { fill: rgba(116, 207, 223, .86); stroke: #d1f8ff; }
