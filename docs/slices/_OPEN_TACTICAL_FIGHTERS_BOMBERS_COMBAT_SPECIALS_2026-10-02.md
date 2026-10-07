@@ -111,3 +111,9 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Cue holds are now reactive PD 624 ms, Beam 1320 ms, Fighter attack 1500 ms, movement 840 ms and projectile 900 ms.
 - Matching finite Beam/Fighter/movement/projectile animation durations and propulsion flicker cycles are also scaled by 1.20 so the visual motion stays synchronized with the calmer cue cadence.
 - Combat zoom/framing and the 4 px one-click targeting drag tolerance remain unchanged from the preceding review fix.
+
+## User-review work item - ship destruction explosion
+
+- New review evidence shows that ship_destroyed has no dedicated ship-explosion presentation and that the original shared ship-explosion damage consumer is not yet present in MOOX production code.
+- Review work is tracked in docs/research/SLICE_17_8_USER_REVIEW_SHIP_EXPLOSION_2026-10-07.md.
+- The fix must preserve authoritative event/replay semantics, recover the original ordinary explosion-power/radius rules before implementation, consume the already-frozen Quantum Detonator x3 multiplier, and drive browser VFX only from authoritative events.
