@@ -942,16 +942,17 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                 <>
                   <line x1={projectileAnimation.fromX} y1={projectileAnimation.fromY} x2={projectileAnimation.toX} y2={projectileAnimation.toY} className="tactical-projectile-event-trail" />
                   {projectileAnimation.kind === 'projectile_moved' && (
-                    <g className="tactical-projectile-flight" data-multiplicity={projectileAnimation.multiplicity}>
-                      <animateTransform
-                        attributeName="transform"
-                        type="translate"
-                        from={projectileAnimation.fromX + ' ' + projectileAnimation.fromY}
-                        to={projectileAnimation.toX + ' ' + projectileAnimation.toY}
-                        dur="820ms"
-                        fill="freeze"
-                      />
-                      <g transform={'rotate(' + (Math.atan2(projectileAnimation.toY - projectileAnimation.fromY, projectileAnimation.toX - projectileAnimation.fromX) * 180 / Math.PI) + ')'}>
+                    <g transform={'translate(' + projectileAnimation.fromX + ' ' + projectileAnimation.fromY + ')'}>
+                      <g className="tactical-projectile-flight" data-multiplicity={projectileAnimation.multiplicity}>
+                        <animateTransform
+                          attributeName="transform"
+                          type="translate"
+                          from="0 0"
+                          to={(projectileAnimation.toX - projectileAnimation.fromX) + ' ' + (projectileAnimation.toY - projectileAnimation.fromY)}
+                          dur="820ms"
+                          fill="freeze"
+                        />
+                        <g transform={'rotate(' + (Math.atan2(projectileAnimation.toY - projectileAnimation.fromY, projectileAnimation.toX - projectileAnimation.fromX) * 180 / Math.PI) + ')'}>
                         {tacticalMiniFormation(projectileAnimation.multiplicity).map((glyph, index) => (
                           <g key={'flight-projectile:' + projectileAnimation.projectileID + ':' + index} transform={'translate(' + glyph.x + ' ' + glyph.y + ') scale(' + glyph.scale + ')'}>
                             <path d="M -0.46 -0.1 L 0.2 -0.1 L 0.48 0 L 0.2 0.1 L -0.46 0.1 Z" className="tactical-projectile-flight-body" />
@@ -966,7 +967,8 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                               <animate attributeName="opacity" values="1;0" dur="180ms" repeatCount="indefinite" />
                             </circle>
                           </g>
-                        ))}
+                          ))}
+                        </g>
                       </g>
                     </g>
                   )}

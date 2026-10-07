@@ -738,3 +738,7 @@ Gate 3 does not start until this Gate-2 freeze is committed and the repository i
 **FROZEN / PASS - Gate 2 complete; Gate 3 implementation ready / not started.**
 
 No production Tactical ordnance gameplay behavior is changed by this document.
+
+### 2026-10-07 user-review refinement - partial trajectory
+
+For a projectile quantum that cannot reach the locked target, the shared moving-actor geometry spends the full available field budget and chooses the straightest in-budget grid endpoint toward the target before using remaining distance and deterministic coordinate order as tie-breakers. This preserves the existing ceil-Euclidean field metric while preventing axis-heavy partial movement that visually travels straight on X/Y and corrects toward the target only in a later round.

@@ -7937,6 +7937,8 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 }
 .tactical-projectile-flight-flame {
   fill: #fff0a2;
+  transform-box: fill-box;
+  transform-origin: center;
   filter: drop-shadow(0 0 3px rgba(255, 168, 46, 1));
   animation: tactical-projectile-flame 110ms ease-in-out infinite alternate;
 }
@@ -7945,8 +7947,8 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   to { opacity: 1; }
 }
 @keyframes tactical-projectile-flame {
-  from { opacity: .6; transform: scale(.72); transform-origin: center; }
-  to { opacity: 1; transform: scale(1.22); transform-origin: center; }
+  from { opacity: .6; transform: scale(.72); }
+  to { opacity: 1; transform: scale(1.22); }
 }
 @keyframes tactical-projectile-engine-core {
   from { opacity: .72; }

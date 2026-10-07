@@ -61,6 +61,27 @@ func checkpoint2EventData(t *testing.T, event TacticalEvent) map[string]any {
 	return data
 }
 
+func TestTacticalProjectileDestinationFollowsDirectDiagonalTrajectory(t *testing.T) {
+	tests := []struct {
+		name                           string
+		fromX, fromY, targetX, targetY int
+		maxFields                      int
+		wantX, wantY, wantMoved        int
+	}{
+		{name: "fighter-speed-20", fromX: 25, fromY: 9, targetX: 54, targetY: 12, maxFields: 20, wantX: 44, wantY: 11, wantMoved: 20},
+		{name: "missile-speed-16", fromX: 25, fromY: 9, targetX: 55, targetY: 13, maxFields: 16, wantX: 40, wantY: 11, wantMoved: 16},
+		{name: "reverse-diagonal", fromX: 55, fromY: 13, targetX: 25, targetY: 9, maxFields: 16, wantX: 40, wantY: 11, wantMoved: 16},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			x, y, moved := tacticalProjectileDestination(tc.fromX, tc.fromY, tc.targetX, tc.targetY, tc.maxFields)
+			if x != tc.wantX || y != tc.wantY || moved != tc.wantMoved {
+				t.Fatalf("destination=(%d,%d) moved=%d want (%d,%d) moved=%d", x, y, moved, tc.wantX, tc.wantY, tc.wantMoved)
+			}
+		})
+	}
+}
+
 func TestSlice177Gate3Checkpoint2LaunchesAndMovesStableOrdnanceActors(t *testing.T) {
 	spec := checkpoint1OrdnanceSpec()
 	spec.Tactical.Ships[1].X = 100

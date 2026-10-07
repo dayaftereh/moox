@@ -78,3 +78,15 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Miniature missile actors now add a luminous nose, cyan energy spine, bright engine core and animated orange/yellow exhaust plume while retaining the compact exact-multiplicity formation.
 - Projectile flight animation carries the same nose/spine/engine language with a longer animated plume and bright flame core, making moving salvos read as powered sci-fi missiles rather than simple geometric markers.
 - Browser contract coverage now requires the new static missile plume/energy detail and Fighter-family propulsion detail.
+
+## User-review fix - direct diagonal moving-actor trajectory
+
+- Shared Fighter/projectile partial movement now spends the full movement-field quantum first and chooses the straightest in-budget grid endpoint toward the locked target before using remaining distance as a tie-breaker.
+- This prevents the previous axis-heavy behavior where a Fighter/projectile aimed several rows away advanced almost entirely on X before correcting Y on a later round.
+- Diagonal movement remains governed by the existing ceil-Euclidean tactical field metric; movement budget, speed, impact/arrival, retargeting and scheduling are unchanged.
+
+## User-review fix - projectile animation origin
+
+- Projectile flight animation now anchors the SVG group statically at the authoritative from_x/from_y before any animation frame and animates only the relative delta toward to_x/to_y.
+- This removes the transient render at SVG (0,0) that made freshly fired missiles appear to pull in from the upper-left corner.
+- The animated flame now uses transform-box: fill-box with a local center origin so pulse scaling cannot shift the exhaust particle around the global SVG viewport.

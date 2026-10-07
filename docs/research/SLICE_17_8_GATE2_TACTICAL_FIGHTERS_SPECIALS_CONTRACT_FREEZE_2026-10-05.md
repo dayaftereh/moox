@@ -1370,3 +1370,7 @@ The accepted refinement is server-authoritative:
 - returning groups still recover at their source carrier through the existing return/recovery lifecycle.
 
 This refines the spatial meaning of "reaches its current target" in Section 7.2 without changing Fighter/Bomber/Heavy-Fighter payload composition, attack stock, damage RNG, retargeting or recovery arithmetic.
+
+### 2026-10-07 user-review refinement - shared diagonal trajectory
+
+Fighter-family actors inherit the refined shared moving-actor partial trajectory: a quantum uses its full field budget and selects the straightest in-budget grid endpoint toward its current authoritative target. Fighter attack-station, payload, retarget and recovery semantics remain unchanged.

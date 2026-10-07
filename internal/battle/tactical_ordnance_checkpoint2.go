@@ -484,10 +484,10 @@ func tacticalProjectileDestination(fromX, fromY, targetX, targetY, maxFields int
 			if cross < 0 {
 				cross = -cross
 			}
-			if remaining < bestRemaining ||
-				(remaining == bestRemaining && cross < bestCross) ||
-				(remaining == bestRemaining && cross == bestCross && move > bestMove) ||
-				(remaining == bestRemaining && cross == bestCross && move == bestMove && (fromY+oy < bestY || (fromY+oy == bestY && fromX+ox < bestX))) {
+			if move > bestMove ||
+				(move == bestMove && cross < bestCross) ||
+				(move == bestMove && cross == bestCross && remaining < bestRemaining) ||
+				(move == bestMove && cross == bestCross && remaining == bestRemaining && (fromY+oy < bestY || (fromY+oy == bestY && fromX+ox < bestX))) {
 				bestX, bestY = fromX+ox, fromY+oy
 				bestMove = move
 				bestRemaining = remaining
