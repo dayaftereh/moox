@@ -2369,7 +2369,7 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 				}
 				if activeState.StructureDamage >= active.StructureMax {
 					activeState.Destroyed = true
-					if err := r.appendEvent("ship_destroyed", seatID, commandSequence, map[string]any{"ship_id": active.ShipID, "reason": "reflection"}); err != nil {
+					if err := tacticalResolveShipDestruction(*spec.Tactical, r, active.ShipID, seatID, commandSequence, "reflection"); err != nil {
 						return nil, err
 					}
 					winner := remainingWinner(spec, r)
@@ -2420,7 +2420,7 @@ func prepareFireBeam(spec Spec, r *tacticalRuntime, seatID protocol.SeatID, comm
 	}
 	if hitCount > 0 && targetState.StructureDamage >= targetSpec.StructureMax {
 		targetState.Destroyed = true
-		if err := r.appendEvent("ship_destroyed", seatID, commandSequence, map[string]any{"ship_id": targetSpec.ShipID}); err != nil {
+		if err := tacticalResolveShipDestruction(*spec.Tactical, r, targetSpec.ShipID, seatID, commandSequence, "beam"); err != nil {
 			return nil, err
 		}
 		winner := remainingWinner(spec, r)

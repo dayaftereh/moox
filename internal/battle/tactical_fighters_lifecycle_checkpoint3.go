@@ -537,7 +537,7 @@ func tacticalFighterApplyShipDamage(spec TacticalSpec, r *tacticalRuntime, group
 		return err
 	}
 	if !wasDestroyed && targetState.Destroyed {
-		if err := r.appendEvent("ship_destroyed", group.SourceSeatID, commandSequence, map[string]any{"ship_id": targetSpec.ShipID}); err != nil {
+		if err := tacticalResolveShipDestruction(spec, r, targetSpec.ShipID, group.SourceSeatID, commandSequence, "fighter"); err != nil {
 			return err
 		}
 	}

@@ -8026,3 +8026,122 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 .tactical-boarding-strip select, .tactical-boarding-strip input { min-height: 30px; border-radius: 6px; }
 .tactical-boarding-strip input { width: 72px; }
 .tactical-boarding-strip button { min-height: 30px; }
+
+/* Slice 17.8 user review: authoritative ship-destruction presentation. */
+.tactical-ship-explosion-animation,
+.tactical-ship-explosion-animation * {
+  pointer-events: none;
+}
+.tactical-ship-explosion-core,
+.tactical-ship-explosion-halo,
+.tactical-ship-explosion-shockwave,
+.tactical-ship-explosion-quantum-field,
+.tactical-ship-explosion-quantum-core {
+  transform-box: fill-box;
+  transform-origin: center;
+  vector-effect: non-scaling-stroke;
+}
+.tactical-ship-explosion-core {
+  fill: rgba(255, 250, 222, .98);
+  stroke: rgba(255, 191, 91, 1);
+  stroke-width: .12;
+  filter: drop-shadow(0 0 5px rgba(255, 135, 39, .98));
+  animation: tactical-ship-explosion-core 2.16s cubic-bezier(.12,.72,.18,1) both;
+}
+.tactical-ship-explosion-halo {
+  fill: rgba(255, 113, 48, .2);
+  stroke: rgba(255, 210, 116, .92);
+  stroke-width: .1;
+  filter: drop-shadow(0 0 7px rgba(255, 91, 31, .76));
+  animation: tactical-ship-explosion-halo 2.16s ease-out both;
+}
+.tactical-ship-explosion-shockwave {
+  fill: none;
+  stroke: rgba(255, 225, 157, .96);
+  stroke-width: .13;
+  animation: tactical-ship-explosion-wave 2.16s cubic-bezier(.1,.72,.2,1) both;
+}
+.tactical-ship-explosion-shockwave.is-secondary {
+  stroke: rgba(103, 220, 255, .72);
+  stroke-width: .08;
+  animation-delay: .12s;
+}
+.tactical-ship-explosion-rays line {
+  stroke: rgba(255, 174, 76, .96);
+  stroke-width: .1;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  animation: tactical-ship-explosion-ray 2.16s ease-out both;
+}
+.tactical-ship-explosion-debris line {
+  stroke: rgba(255, 235, 185, .96);
+  stroke-width: .11;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  animation: tactical-ship-explosion-debris 2.16s cubic-bezier(.12,.65,.18,1) both;
+}
+.tactical-ship-explosion-animation.is-quantum .tactical-ship-explosion-core {
+  fill: rgba(235, 247, 255, 1);
+  stroke: rgba(118, 233, 255, 1);
+  filter: drop-shadow(0 0 7px rgba(97, 178, 255, .98));
+}
+.tactical-ship-explosion-animation.is-quantum .tactical-ship-explosion-halo {
+  fill: rgba(123, 84, 255, .24);
+  stroke: rgba(184, 151, 255, .96);
+}
+.tactical-ship-explosion-quantum-field {
+  fill: rgba(83, 97, 255, .035);
+  stroke: rgba(128, 221, 255, .82);
+  stroke-width: .08;
+  stroke-dasharray: .32 .18;
+  animation: tactical-ship-explosion-quantum-field 2.16s cubic-bezier(.08,.68,.18,1) both;
+}
+.tactical-ship-explosion-quantum-core {
+  fill: none;
+  stroke: rgba(215, 170, 255, .9);
+  stroke-width: .12;
+  animation: tactical-ship-explosion-quantum-core 2.16s ease-out both;
+}
+@keyframes tactical-ship-explosion-core {
+  0% { opacity: 0; transform: scale(.12); }
+  8% { opacity: 1; transform: scale(.7); }
+  28% { opacity: 1; transform: scale(1.45); }
+  58% { opacity: .82; transform: scale(1.9); }
+  100% { opacity: 0; transform: scale(2.35); }
+}
+@keyframes tactical-ship-explosion-halo {
+  0% { opacity: 0; transform: scale(.15); }
+  16% { opacity: .95; transform: scale(.9); }
+  62% { opacity: .48; transform: scale(2.6); }
+  100% { opacity: 0; transform: scale(3.5); }
+}
+@keyframes tactical-ship-explosion-wave {
+  0% { opacity: 0; transform: scale(.16); }
+  14% { opacity: 1; }
+  74% { opacity: .68; }
+  100% { opacity: 0; transform: scale(5.2); }
+}
+@keyframes tactical-ship-explosion-ray {
+  0% { opacity: 0; stroke-dasharray: 0 2; }
+  16% { opacity: 1; stroke-dasharray: .8 .2; }
+  72% { opacity: .8; }
+  100% { opacity: 0; stroke-dasharray: .12 1.2; }
+}
+@keyframes tactical-ship-explosion-debris {
+  0% { opacity: 0; transform: scale(.4); }
+  18% { opacity: 1; }
+  76% { opacity: .72; }
+  100% { opacity: 0; transform: scale(3.8); }
+}
+@keyframes tactical-ship-explosion-quantum-field {
+  0% { opacity: 0; transform: scale(.04); }
+  10% { opacity: .9; }
+  72% { opacity: .6; }
+  100% { opacity: 0; transform: scale(1); }
+}
+@keyframes tactical-ship-explosion-quantum-core {
+  0% { opacity: 0; transform: scale(.2) rotate(0deg); }
+  18% { opacity: 1; }
+  70% { opacity: .68; }
+  100% { opacity: 0; transform: scale(3.2) rotate(90deg); }
+}

@@ -252,7 +252,7 @@ func resolveTacticalProjectileImpact(spec TacticalSpec, r *tacticalRuntime, proj
 	outcome := tacticalProjectileQuantumOutcome{DestroyReason: "impact_complete"}
 	if !targetWasDestroyed && targetState.Destroyed {
 		outcome.DestroyedShipID = target.ShipID
-		if err := r.appendEvent("ship_destroyed", projectile.SourceSeatID, commandSequence, map[string]any{"ship_id": target.ShipID}); err != nil {
+		if err := tacticalResolveShipDestruction(spec, r, target.ShipID, projectile.SourceSeatID, commandSequence, "ordnance"); err != nil {
 			return tacticalProjectileQuantumOutcome{}, err
 		}
 	}

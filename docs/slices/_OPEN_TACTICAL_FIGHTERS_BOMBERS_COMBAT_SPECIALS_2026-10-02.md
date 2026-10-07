@@ -117,3 +117,13 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - New review evidence shows that ship_destroyed has no dedicated ship-explosion presentation and that the original shared ship-explosion damage consumer is not yet present in MOOX production code.
 - Review work is tracked in docs/research/SLICE_17_8_USER_REVIEW_SHIP_EXPLOSION_2026-10-07.md.
 - The fix must preserve authoritative event/replay semantics, recover the original ordinary explosion-power/radius rules before implementation, consume the already-frozen Quantum Detonator x3 multiplier, and drive browser VFX only from authoritative events.
+
+
+## User-review result - ship destruction explosion implemented
+
+- The ship-explosion review fix is implemented and QA-green.
+- Ordinary ship destruction now has authoritative event-driven explosion presentation only; it does not invent AoE damage.
+- Functional Quantum Detonator death uses the original-derived hull explosion power, x3 multiplier, 135px spherical radius/falloff and server-side shared damage pipeline, including deterministic chained destruction and friendly fire.
+- All production ship-destruction entry points converge on the shared resolver.
+- Browser VFX/camera consume ship_destroyed metadata only; Quantum shows the authoritative blast field.
+- Keep Slice 17.8 open for the user's visual/manual acceptance.

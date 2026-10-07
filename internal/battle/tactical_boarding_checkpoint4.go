@@ -593,10 +593,7 @@ func resolveTacticalCapture(spec TacticalSpec, r *tacticalRuntime, seatID protoc
 			}); err != nil {
 				return err
 			}
-			return r.appendEvent("ship_destroyed", seatID, commandSequence, map[string]any{
-				"ship_id": target.ShipID,
-				"reason":  "quantum_detonator_capture",
-			})
+			return tacticalResolveShipDestruction(spec, r, target.ShipID, seatID, commandSequence, "quantum_detonator_capture")
 		}
 	}
 

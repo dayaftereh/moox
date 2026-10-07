@@ -46,6 +46,7 @@ type TacticalBeamAnimation = { sequence: number; fromX: number; fromY: number; t
 type TacticalMoveAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; movementKind: string }
 type TacticalProjectileAnimation = { sequence: number; projectileID: number; kind: string; fromX?: number; fromY?: number; toX: number; toY: number; multiplicity: number }
 type TacticalFighterAttackAnimation = { sequence: number; groupID: number; payloadKind: string; weaponID: string; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number }
+type TacticalShipExplosionAnimation = { sequence: number; shipID: number; x: number; y: number; quantum: boolean; power: number; radiusFields: number }
 type TacticalPresentationCue = {
   sequence: number
   fromX: number
@@ -57,6 +58,7 @@ type TacticalPresentationCue = {
   move?: TacticalMoveAnimation
   projectile?: TacticalProjectileAnimation
   fighterAttack?: TacticalFighterAttackAnimation
+  shipExplosion?: TacticalShipExplosionAnimation
 }
 
 
@@ -114,6 +116,7 @@ const COMBAT_CUE_BEAM_MS = 1320
 const COMBAT_CUE_FIGHTER_ATTACK_MS = 1500
 const COMBAT_CUE_MOVE_MS = 840
 const COMBAT_CUE_PROJECTILE_MS = 900
+const COMBAT_CUE_EXPLOSION_MS = 2160
 const DRAG_THRESHOLD_PX = 4
 const PINCH_THRESHOLD = 0.01
 const DAMAGE_FEEDBACK_MS = 4200
@@ -335,6 +338,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const [moveAnimation, setMoveAnimation] = useState<TacticalMoveAnimation | null>(null)
   const [projectileAnimation, setProjectileAnimation] = useState<TacticalProjectileAnimation | null>(null)
   const [fighterAttackAnimations, setFighterAttackAnimations] = useState<TacticalFighterAttackAnimation[]>([])
+  const [shipExplosionAnimation, setShipExplosionAnimation] = useState<TacticalShipExplosionAnimation | null>(null)
   const [scannedShipID, setScannedShipID] = useState<number | null>(null)
   const [selectedShipID, setSelectedShipID] = useState<number | null>(() => ownActivation ? activeShip?.ship_id ?? null : null)
   const [busy, setBusy] = useState(false)
@@ -489,6 +493,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     setMoveAnimation(cue.move ?? null)
     setProjectileAnimation(cue.projectile ?? null)
     setFighterAttackAnimations(cue.fighterAttack ? [cue.fighterAttack] : [])
+    setShipExplosionAnimation(cue.shipExplosion ?? null)
     presentationTimerRef.current = window.setTimeout(playNextPresentationCue, cue.holdMs)
   }
 
@@ -588,6 +593,33 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             fighterAttack,
           })
         }
+      } else if (event.kind === 'ship_destroyed') {
+        const shipID = eventNumber(event.data, 'ship_id')
+        const ship = ships.find((candidate) => candidate.ship_id === shipID)
+        if (shipID != null && ship) {
+          const radiusPixels = eventNumber(event.data, 'explosion_radius_pixels') ?? 0
+          const pixelsPerField = eventNumber(event.data, 'explosion_pixels_per_field') ?? 20
+          const radiusFields = radiusPixels > 0 && pixelsPerField > 0 ? radiusPixels / pixelsPerField : 0
+          const quantum = event.data?.quantum_detonator === true
+          const shipExplosion: TacticalShipExplosionAnimation = {
+            sequence: event.sequence,
+            shipID,
+            x: ship.x,
+            y: ship.y,
+            quantum,
+            power: eventNumber(event.data, 'explosion_power') ?? 0,
+            radiusFields,
+          }
+          enqueuePresentationCue({
+            sequence: event.sequence,
+            fromX: quantum && radiusFields > 0 ? ship.x - radiusFields : ship.x,
+            fromY: ship.y,
+            toX: quantum && radiusFields > 0 ? ship.x + radiusFields : ship.x,
+            toY: ship.y,
+            holdMs: COMBAT_CUE_EXPLOSION_MS,
+            shipExplosion,
+          })
+        }
       } else if (event.kind === 'ship_moved') {
         const fromX = eventNumber(event.data, 'from_x')
         const fromY = eventNumber(event.data, 'from_y')
@@ -676,6 +708,15 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     const timer = window.setTimeout(() => setFighterAttackAnimations([]), 1260)
     return () => window.clearTimeout(timer)
   }, [fighterAttackAnimations.map((animation) => animation.sequence).join(':')])
+
+  useEffect(() => {
+    if (!shipExplosionAnimation) return
+    const timer = window.setTimeout(
+      () => setShipExplosionAnimation((current) => current?.sequence === shipExplosionAnimation.sequence ? null : current),
+      2280,
+    )
+    return () => window.clearTimeout(timer)
+  }, [shipExplosionAnimation])
 
   const runCommand = async (command: ProtocolCommand) => {
     if (commandsDisabled || busy) return
@@ -1086,6 +1127,40 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                 </>
               )}
               <circle cx={projectileAnimation.toX} cy={projectileAnimation.toY} r={0.34} className="tactical-projectile-event-pulse" />
+            </g>
+          )}
+
+          {shipExplosionAnimation && (
+            <g
+              key={'ship-explosion:' + shipExplosionAnimation.sequence}
+              className={'tactical-ship-explosion-animation ' + (shipExplosionAnimation.quantum ? 'is-quantum' : 'is-normal')}
+              data-sequence={shipExplosionAnimation.sequence}
+              data-ship-id={shipExplosionAnimation.shipID}
+              data-quantum={shipExplosionAnimation.quantum ? 'true' : 'false'}
+              data-explosion-power={shipExplosionAnimation.power}
+              transform={'translate(' + shipExplosionAnimation.x + ' ' + shipExplosionAnimation.y + ')'}
+              pointerEvents="none"
+            >
+              <circle r={0.28} className="tactical-ship-explosion-core" />
+              <circle r={0.64} className="tactical-ship-explosion-halo" />
+              <circle r={0.42} className="tactical-ship-explosion-shockwave" />
+              <circle r={0.8} className="tactical-ship-explosion-shockwave is-secondary" />
+              <g className="tactical-ship-explosion-rays">
+                {Array.from({ length: 8 }, (_, index) => (
+                  <line key={'ray:' + index} x1={0.22} y1={0} x2={1.24 + (index % 3) * 0.18} y2={0} transform={'rotate(' + index * 45 + ')'} />
+                ))}
+              </g>
+              <g className="tactical-ship-explosion-debris">
+                {Array.from({ length: 6 }, (_, index) => (
+                  <line key={'debris:' + index} x1={0.32} y1={0} x2={0.72 + (index % 2) * 0.2} y2={0} transform={'rotate(' + (index * 60 + 18) + ')'} />
+                ))}
+              </g>
+              {shipExplosionAnimation.quantum && shipExplosionAnimation.radiusFields > 0 && (
+                <>
+                  <circle r={shipExplosionAnimation.radiusFields} className="tactical-ship-explosion-quantum-field" />
+                  <circle r={1.05} className="tactical-ship-explosion-quantum-core" />
+                </>
+              )}
             </g>
           )}
 

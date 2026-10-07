@@ -275,9 +275,7 @@ func tacticalResolveEnergyAbsorberPreWeapon(spec TacticalSpec, r *tacticalRuntim
 
 	sourceState.EnergyAbsorberStored = 0
 	if !wasDestroyed && targetState.Destroyed {
-		if err := r.appendEvent("ship_destroyed", seatID, commandSequence, map[string]any{
-			"ship_id": target.ShipID, "reason": "energy_absorber",
-		}); err != nil {
+		if err := tacticalResolveShipDestruction(spec, r, target.ShipID, seatID, commandSequence, "energy_absorber"); err != nil {
 			return false, err
 		}
 	}

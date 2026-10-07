@@ -4,6 +4,7 @@ import "testing"
 
 func slice178Checkpoint4BattleSpec() Spec {
 	spec := baselineTacticalBattleSpec()
+	spec.Tactical.Rules.Specials = slice178Checkpoint2SpecialRules()
 	spec.Tactical.Rules.Boarding = &TacticalBoardingRulesSnapshot{
 		PhysicalRange:                1,
 		TransporterRange:             4,
