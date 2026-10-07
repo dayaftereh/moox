@@ -97,3 +97,10 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - The camera auto-frames the action span for Ship movement/Beam fire, Fighter-family movement/attack and projectile flight so both source and target remain visible where possible; low-value launch/retarget/impact/recovery bookkeeping does not create duplicate camera stops. Outbound Fighter movement is folded into the attack cue when that attack immediately follows in the same authoritative event batch, and reactive PD volleys use a shorter hold.
 - Fighter movement receives a distinct cyan trail; returning Fighter movement uses an amber trail so carrier recovery is visually legible rather than appearing as an unexplained disappearance.
 - Fighter lifecycle rules are unchanged: Fighter/Bomber/Heavy-Fighter attack stock remains 4/1/2 respectively; exhausted groups return to a functional carrier and recover, while intercepted groups are destroyed.
+
+## User-review refinement - calmer combat camera and one-click targeting
+
+- Combat presentation pacing is deliberately calmer: Beam, Fighter, movement and projectile cues remain event-driven but hold longer before the next camera cut.
+- Combat framing keeps wider context around source and target and caps automatic combat zoom at 2.8, avoiding the previous close-up 4.4 zoom.
+- Tactical mouse targeting now tolerates normal pointer jitter. Single-pointer motion must accumulate 4 CSS pixels before the battlefield is treated as a pan/drag, and the camera does not pan at all below that threshold.
+- The target click handler remains unchanged and server-authoritative; the usability fix prevents tiny pointer motion from suppressing the first legal Ship/Fighter/projectile click.

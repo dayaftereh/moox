@@ -105,6 +105,17 @@ function weaponUnavailableLabel(reason: string | undefined, t: Translator): stri
 const MIN_ZOOM = 0.45
 const MAX_ZOOM = 7
 const FOCUS_ZOOM = 3.2
+const COMBAT_CAMERA_MIN_ZOOM = 1.05
+const COMBAT_CAMERA_MAX_ZOOM = 2.8
+const COMBAT_CAMERA_PAD_X = 12
+const COMBAT_CAMERA_PAD_Y = 9
+const COMBAT_CUE_REACTIVE_PD_MS = 520
+const COMBAT_CUE_BEAM_MS = 1100
+const COMBAT_CUE_FIGHTER_ATTACK_MS = 1250
+const COMBAT_CUE_MOVE_MS = 700
+const COMBAT_CUE_PROJECTILE_MS = 750
+const DRAG_THRESHOLD_PX = 4
+const PINCH_THRESHOLD = 0.01
 const DAMAGE_FEEDBACK_MS = 4200
 
 function humanize(value: string | undefined) {
@@ -367,6 +378,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const pointersRef = useRef(new Map<number, PointerPoint>())
   const gestureRef = useRef<GestureSnapshot | null>(null)
   const draggedRef = useRef(false)
+  const dragDistanceRef = useRef(0)
   const ignoreClickRef = useRef(false)
   const observedEventSequenceRef = useRef<number | null>(null)
   const presentationQueueRef = useRef<TacticalPresentationCue[]>([])
@@ -455,12 +467,12 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const focusCombatSpan = (fromX: number, fromY: number, toX: number, toY: number) => {
     const spanX = Math.abs(toX - fromX)
     const spanY = Math.abs(toY - fromY)
-    const zoomX = bounds.width / Math.max(10, spanX + 8)
-    const zoomY = bounds.height / Math.max(7, spanY + 6)
+    const zoomX = bounds.width / Math.max(14, spanX + COMBAT_CAMERA_PAD_X)
+    const zoomY = bounds.height / Math.max(10, spanY + COMBAT_CAMERA_PAD_Y)
     setCamera({
       cx: (fromX + toX) / 2,
       cy: (fromY + toY) / 2,
-      zoom: clamp(Math.min(zoomX, zoomY), 1.15, 4.4),
+      zoom: clamp(Math.min(zoomX, zoomY), COMBAT_CAMERA_MIN_ZOOM, COMBAT_CAMERA_MAX_ZOOM),
     })
   }
 
@@ -546,7 +558,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
           enqueuePresentationCue({
             sequence: event.sequence,
             fromX: source.x, fromY: source.y, toX: targetX, toY: targetY,
-            holdMs: event.data?.reactive_point_defense === true ? 320 : 800,
+            holdMs: event.data?.reactive_point_defense === true ? COMBAT_CUE_REACTIVE_PD_MS : COMBAT_CUE_BEAM_MS,
             beam,
           })
         }
@@ -572,7 +584,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
           enqueuePresentationCue({
             sequence: event.sequence,
             fromX: source.x, fromY: source.y, toX: target.x, toY: target.y,
-            holdMs: 950,
+            holdMs: COMBAT_CUE_FIGHTER_ATTACK_MS,
             fighterAttack,
           })
         }
@@ -587,7 +599,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             fromX, fromY, toX, toY,
             movementKind: eventString(event.data, 'movement_kind') ?? 'normal',
           }
-          enqueuePresentationCue({ sequence: event.sequence, fromX, fromY, toX, toY, holdMs: 500, move })
+          enqueuePresentationCue({ sequence: event.sequence, fromX, fromY, toX, toY, holdMs: COMBAT_CUE_MOVE_MS, move })
         }
       } else if (event.kind === 'fighter_group_moved') {
         const groupID = eventNumber(event.data, 'group_id')
@@ -607,7 +619,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             fromX, fromY, toX, toY,
             movementKind: phase === 'returning' ? 'fighter-returning' : 'fighter',
           }
-          enqueuePresentationCue({ sequence: event.sequence, fromX, fromY, toX, toY, holdMs: 500, move })
+          enqueuePresentationCue({ sequence: event.sequence, fromX, fromY, toX, toY, holdMs: COMBAT_CUE_MOVE_MS, move })
         }
       } else if (event.kind === 'projectile_moved') {
         const projectileID = eventNumber(event.data, 'projectile_id')
@@ -634,7 +646,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
           enqueuePresentationCue({
             sequence: event.sequence,
             fromX, fromY, toX: position.x, toY: position.y,
-            holdMs: 500,
+            holdMs: COMBAT_CUE_PROJECTILE_MS,
             projectile,
           })
         }
@@ -776,6 +788,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     if (event.pointerType === 'mouse' && event.button === 2) event.preventDefault()
     if (pointersRef.current.size === 0) {
       draggedRef.current = false
+      dragDistanceRef.current = 0
       ignoreClickRef.current = false
     }
     pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY })
@@ -796,7 +809,8 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     const dx = currentGesture.x - previous.x
     const dy = currentGesture.y - previous.y
     const pinchFactor = previous.distance > 0 && currentGesture.distance > 0 ? currentGesture.distance / previous.distance : 1
-    const moved = Math.abs(dx) + Math.abs(dy) > 0.5 || Math.abs(pinchFactor - 1) > 0.002
+    dragDistanceRef.current += Math.hypot(dx, dy)
+    const moved = dragDistanceRef.current >= DRAG_THRESHOLD_PX || Math.abs(pinchFactor - 1) > PINCH_THRESHOLD
     if (moved) {
       draggedRef.current = true
       ignoreClickRef.current = true
@@ -804,11 +818,13 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         try { event.currentTarget.setPointerCapture(event.pointerId) } catch { /* synthetic/ended pointer: capture is optional */ }
       }
     }
-    setCamera((current) => ({
-      cx: current.cx - dx * (bounds.width / current.zoom) / rect.width,
-      cy: current.cy - dy * (bounds.height / current.zoom) / rect.height,
-      zoom: clamp(current.zoom * pinchFactor, MIN_ZOOM, MAX_ZOOM),
-    }))
+    if (draggedRef.current) {
+      setCamera((current) => ({
+        cx: current.cx - dx * (bounds.width / current.zoom) / rect.width,
+        cy: current.cy - dy * (bounds.height / current.zoom) / rect.height,
+        zoom: clamp(current.zoom * pinchFactor, MIN_ZOOM, MAX_ZOOM),
+      }))
+    }
     gestureRef.current = currentGesture
   }
 
