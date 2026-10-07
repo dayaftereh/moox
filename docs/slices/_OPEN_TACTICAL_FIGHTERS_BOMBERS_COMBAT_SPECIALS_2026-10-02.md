@@ -104,3 +104,10 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Combat framing keeps wider context around source and target and caps automatic combat zoom at 2.8, avoiding the previous close-up 4.4 zoom.
 - Tactical mouse targeting now tolerates normal pointer jitter. Single-pointer motion must accumulate 4 CSS pixels before the battlefield is treated as a pan/drag, and the camera does not pan at all below that threshold.
 - The target click handler remains unchanged and server-authoritative; the usability fix prevents tiny pointer motion from suppressing the first legal Ship/Fighter/projectile click.
+
+## User-review refinement - combat presentation 20 percent slower
+
+- The complete Tactical presentation cadence is slowed uniformly by factor 1.20 without changing authoritative combat timing or gameplay rules.
+- Cue holds are now reactive PD 624 ms, Beam 1320 ms, Fighter attack 1500 ms, movement 840 ms and projectile 900 ms.
+- Matching finite Beam/Fighter/movement/projectile animation durations and propulsion flicker cycles are also scaled by 1.20 so the visual motion stays synchronized with the calmer cue cadence.
+- Combat zoom/framing and the 4 px one-click targeting drag tolerance remain unchanged from the preceding review fix.

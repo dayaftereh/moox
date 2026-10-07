@@ -109,11 +109,11 @@ const COMBAT_CAMERA_MIN_ZOOM = 1.05
 const COMBAT_CAMERA_MAX_ZOOM = 2.8
 const COMBAT_CAMERA_PAD_X = 12
 const COMBAT_CAMERA_PAD_Y = 9
-const COMBAT_CUE_REACTIVE_PD_MS = 520
-const COMBAT_CUE_BEAM_MS = 1100
-const COMBAT_CUE_FIGHTER_ATTACK_MS = 1250
-const COMBAT_CUE_MOVE_MS = 700
-const COMBAT_CUE_PROJECTILE_MS = 750
+const COMBAT_CUE_REACTIVE_PD_MS = 624
+const COMBAT_CUE_BEAM_MS = 1320
+const COMBAT_CUE_FIGHTER_ATTACK_MS = 1500
+const COMBAT_CUE_MOVE_MS = 840
+const COMBAT_CUE_PROJECTILE_MS = 900
 const DRAG_THRESHOLD_PX = 4
 const PINCH_THRESHOLD = 0.01
 const DAMAGE_FEEDBACK_MS = 4200
@@ -662,18 +662,18 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
 
   useEffect(() => {
     if (!moveAnimation) return
-    const timer = window.setTimeout(() => setMoveAnimation((current) => current?.sequence === moveAnimation.sequence ? null : current), 720)
+    const timer = window.setTimeout(() => setMoveAnimation((current) => current?.sequence === moveAnimation.sequence ? null : current), 864)
     return () => window.clearTimeout(timer)
   }, [moveAnimation])
   useEffect(() => {
     if (!projectileAnimation) return
-    const timer = window.setTimeout(() => setProjectileAnimation((current) => current?.sequence === projectileAnimation.sequence ? null : current), 980)
+    const timer = window.setTimeout(() => setProjectileAnimation((current) => current?.sequence === projectileAnimation.sequence ? null : current), 1176)
     return () => window.clearTimeout(timer)
   }, [projectileAnimation])
 
   useEffect(() => {
     if (fighterAttackAnimations.length === 0) return
-    const timer = window.setTimeout(() => setFighterAttackAnimations([]), 1050)
+    const timer = window.setTimeout(() => setFighterAttackAnimations([]), 1260)
     return () => window.clearTimeout(timer)
   }, [fighterAttackAnimations.map((animation) => animation.sequence).join(':')])
 
@@ -1060,7 +1060,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                           type="translate"
                           from="0 0"
                           to={(projectileAnimation.toX - projectileAnimation.fromX) + ' ' + (projectileAnimation.toY - projectileAnimation.fromY)}
-                          dur="820ms"
+                          dur="984ms"
                           fill="freeze"
                         />
                         <g transform={'rotate(' + (Math.atan2(projectileAnimation.toY - projectileAnimation.fromY, projectileAnimation.toX - projectileAnimation.fromX) * 180 / Math.PI) + ')'}>
@@ -1073,9 +1073,9 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                             <circle cx={-0.46} cy={0} r={0.052} className="tactical-projectile-flight-engine-core" />
                             <path d="M -0.47 -0.07 L -1.06 0 L -0.47 0.07 Z" className="tactical-projectile-flight-exhaust" />
                             <circle cx={-0.62} cy={0} r={0.06} className="tactical-projectile-flight-flame">
-                              <animate attributeName="cx" values="-0.56;-0.92" dur="180ms" repeatCount="indefinite" />
-                              <animate attributeName="r" values="0.055;0.018" dur="180ms" repeatCount="indefinite" />
-                              <animate attributeName="opacity" values="1;0" dur="180ms" repeatCount="indefinite" />
+                              <animate attributeName="cx" values="-0.56;-0.92" dur="216ms" repeatCount="indefinite" />
+                              <animate attributeName="r" values="0.055;0.018" dur="216ms" repeatCount="indefinite" />
+                              <animate attributeName="opacity" values="1;0" dur="216ms" repeatCount="indefinite" />
                             </circle>
                           </g>
                           ))}

@@ -5060,32 +5060,32 @@ button.galaxy-node-marker-player-fleet.is-open {
   stroke-width: 1.2;
   stroke-linecap: round;
   stroke-dasharray: 5 3;
-  animation: tactical-move-trail-fade .72s ease-out both;
+  animation: tactical-move-trail-fade .864s ease-out both;
 }
 .tactical-move-arrival {
   fill: rgba(119, 230, 255, .2);
   stroke: rgba(178, 245, 255, .98);
   stroke-width: 1;
-  animation: tactical-move-arrival-pulse .72s ease-out both;
+  animation: tactical-move-arrival-pulse .864s ease-out both;
 }
 .tactical-beam-glow {
   stroke: rgba(255, 65, 65, .52);
   stroke-width: 5;
   stroke-linecap: round;
   filter: blur(2px);
-  animation: tactical-beam-flash 1.35s ease-out both;
+  animation: tactical-beam-flash 1.62s ease-out both;
 }
 .tactical-beam-core {
   stroke: rgba(255, 238, 225, 1);
   stroke-width: 1.35;
   stroke-linecap: round;
-  animation: tactical-beam-flash 1.35s ease-out both;
+  animation: tactical-beam-flash 1.62s ease-out both;
 }
 .tactical-beam-impact {
   fill: rgba(255, 92, 70, .2);
   stroke: rgba(255, 218, 197, 1);
   stroke-width: 1.2;
-  animation: tactical-beam-impact 1.35s ease-out both;
+  animation: tactical-beam-impact 1.62s ease-out both;
 }
 .tactical-damage-number {
   font-size: .62px;
@@ -5098,7 +5098,7 @@ button.galaxy-node-marker-player-fleet.is-open {
   pointer-events: none;
   transform-box: fill-box;
   transform-origin: center;
-  animation: tactical-damage-float 4s cubic-bezier(.16,.78,.24,1) both;
+  animation: tactical-damage-float 4.8s cubic-bezier(.16,.78,.24,1) both;
 }
 .tactical-damage-number.is-shield { fill: #68d8ff; }
 .tactical-damage-number.is-armor { fill: #ffc45e; }
@@ -7754,13 +7754,13 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   stroke-width: .38;
   stroke-linecap: round;
   filter: blur(.45px);
-  animation: tactical-fighter-shot-flash .92s ease-out both;
+  animation: tactical-fighter-shot-flash 1.104s ease-out both;
 }
 .tactical-fighter-beam-core {
   stroke: rgba(224, 252, 255, 1);
   stroke-width: .1;
   stroke-linecap: round;
-  animation: tactical-fighter-shot-flash .92s ease-out both;
+  animation: tactical-fighter-shot-flash 1.104s ease-out both;
 }
 .tactical-fighter-beam-impact {
   fill: rgba(118, 230, 255, .2);
@@ -7768,14 +7768,14 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   stroke-width: .08;
   transform-box: fill-box;
   transform-origin: center;
-  animation: tactical-fighter-attack-impact .92s ease-out both;
+  animation: tactical-fighter-attack-impact 1.104s ease-out both;
 }
 .tactical-fighter-bomb-trail {
   stroke: rgba(255, 191, 79, .96);
   stroke-width: .13;
   stroke-linecap: round;
   stroke-dasharray: .34 .16;
-  animation: tactical-fighter-bomb-run .92s ease-out both;
+  animation: tactical-fighter-bomb-run 1.104s ease-out both;
 }
 .tactical-fighter-bomb-impact {
   fill: rgba(255, 151, 53, .2);
@@ -7783,7 +7783,7 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   stroke-width: .1;
   transform-box: fill-box;
   transform-origin: center;
-  animation: tactical-fighter-attack-impact .92s ease-out both;
+  animation: tactical-fighter-attack-impact 1.104s ease-out both;
 }
 .tactical-fighter-attack-animation.is-miss .tactical-fighter-beam-core,
 .tactical-fighter-attack-animation.is-miss .tactical-fighter-bomb-trail {
@@ -7819,7 +7819,7 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   stroke-linecap: round;
   stroke-dasharray: .35 .18;
   vector-effect: non-scaling-stroke;
-  animation: tactical-projectile-event-trail .9s ease-out both;
+  animation: tactical-projectile-event-trail 1.08s ease-out both;
 }
 .tactical-projectile-event-pulse {
   fill: rgba(255, 186, 88, .16);
@@ -7828,7 +7828,7 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   vector-effect: non-scaling-stroke;
   transform-box: fill-box;
   transform-origin: center;
-  animation: tactical-projectile-event-pulse .9s ease-out both;
+  animation: tactical-projectile-event-pulse 1.08s ease-out both;
 }
 .tactical-projectile-animation.is-projectile_interception_resolved .tactical-projectile-event-pulse {
   stroke: #ff8b7a;
@@ -7908,7 +7908,7 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   stroke-width: .025;
   vector-effect: non-scaling-stroke;
   filter: drop-shadow(0 0 3px rgba(255, 156, 44, 1));
-  animation: tactical-projectile-engine-core 150ms ease-in-out infinite alternate;
+  animation: tactical-projectile-engine-core 180ms ease-in-out infinite alternate;
 }
 .tactical-projectile-static-plume {
   fill: rgba(255, 107, 31, .9);
@@ -7918,7 +7918,7 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   transform-box: fill-box;
   transform-origin: right center;
   filter: drop-shadow(0 0 3px rgba(255, 94, 24, .96));
-  animation: tactical-projectile-static-plume 125ms ease-in-out infinite alternate;
+  animation: tactical-projectile-static-plume 150ms ease-in-out infinite alternate;
 }
 .tactical-projectile-flight-body {
   fill: #eef8ff;
@@ -7933,14 +7933,14 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   stroke-width: .035;
   vector-effect: non-scaling-stroke;
   filter: drop-shadow(0 0 3px rgba(255, 102, 30, .95));
-  animation: tactical-projectile-exhaust 140ms ease-in-out infinite alternate;
+  animation: tactical-projectile-exhaust 168ms ease-in-out infinite alternate;
 }
 .tactical-projectile-flight-flame {
   fill: #fff0a2;
   transform-box: fill-box;
   transform-origin: center;
   filter: drop-shadow(0 0 3px rgba(255, 168, 46, 1));
-  animation: tactical-projectile-flame 110ms ease-in-out infinite alternate;
+  animation: tactical-projectile-flame 132ms ease-in-out infinite alternate;
 }
 @keyframes tactical-projectile-exhaust {
   from { opacity: .55; }
@@ -8001,7 +8001,7 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   stroke-width: .028;
   vector-effect: non-scaling-stroke;
   filter: drop-shadow(0 0 2px rgba(255, 179, 55, 1));
-  animation: tactical-fighter-engine-core 180ms ease-in-out infinite alternate;
+  animation: tactical-fighter-engine-core 216ms ease-in-out infinite alternate;
 }
 .tactical-fighter-exhaust {
   fill: rgba(255, 115, 38, .9);
@@ -8011,7 +8011,7 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   transform-box: fill-box;
   transform-origin: right center;
   filter: drop-shadow(0 0 3px rgba(255, 102, 30, .95));
-  animation: tactical-fighter-engine-flame 145ms ease-in-out infinite alternate;
+  animation: tactical-fighter-engine-flame 174ms ease-in-out infinite alternate;
 }
 @keyframes tactical-fighter-engine-core {
   from { opacity: .72; }
