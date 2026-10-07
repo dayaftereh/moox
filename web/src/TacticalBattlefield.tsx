@@ -847,8 +847,11 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                   {tacticalMiniFormation(projectile.multiplicity).map((glyph, index) => (
                     <g key={'projectile-glyph:' + projectile.projectile_id + ':' + index} transform={'translate(' + glyph.x + ' ' + glyph.y + ') scale(' + glyph.scale + ')'}>
                       <path d="M -0.34 -0.085 L 0.18 -0.085 L 0.42 0 L 0.18 0.085 L -0.34 0.085 Z" className="tactical-projectile-vector tactical-projectile-body" />
+                      <path d="M .18 -.085 L .42 0 L .18 .085 L .08 0 Z" className="tactical-projectile-nose" />
+                      <line x1={-0.12} y1={0} x2={0.2} y2={0} className="tactical-projectile-energy-spine" />
                       <path d="M -0.24 -0.085 L -0.38 -0.19 L -0.08 -0.085 Z M -0.24 0.085 L -0.38 0.19 L -0.08 0.085 Z" className="tactical-projectile-fin" />
-                      <line x1={-0.36} y1={0} x2={-0.58} y2={0} className="tactical-projectile-static-exhaust" />
+                      <circle cx={-0.34} cy={0} r={0.038} className="tactical-projectile-engine-core" />
+                      <path d="M -.34 -.06 L -.72 0 L -.34 .06 Z" className="tactical-projectile-static-plume" />
                     </g>
                   ))}
                 </g>
@@ -876,6 +879,21 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                   {tacticalMiniFormation(fighter.multiplicity).map((glyph, index) => (
                     <g key={'fighter-glyph:' + fighter.group_id + ':' + index} transform={'translate(' + glyph.x + ' ' + glyph.y + ') scale(' + glyph.scale + ')'}>
                       <path d={fighterMiniGlyphPath(fighter.kind)} className={'tactical-fighter-vector is-' + fighter.kind} />
+                      <path d="M .17 0 L .025 -.06 L -.09 0 L .025 .06 Z" className="tactical-fighter-cockpit" />
+                      <path d="M .05 -.045 L -.17 -.14 M .05 .045 L -.17 .14" className="tactical-fighter-panel" />
+                      {fighter.kind === 'bomber' ? (
+                        <>
+                          <circle cx={-.15} cy={-.085} r={.035} className="tactical-fighter-engine-core" />
+                          <circle cx={-.15} cy={.085} r={.035} className="tactical-fighter-engine-core" />
+                          <path d="M -.16 -.12 L -.48 -.08 L -.16 -.04 Z" className="tactical-fighter-exhaust" />
+                          <path d="M -.16 .12 L -.48 .08 L -.16 .04 Z" className="tactical-fighter-exhaust" />
+                        </>
+                      ) : (
+                        <>
+                          <circle cx={-.17} cy={0} r={.04} className="tactical-fighter-engine-core" />
+                          <path d="M -.17 -.055 L -.48 0 L -.17 .055 Z" className="tactical-fighter-exhaust" />
+                        </>
+                      )}
                     </g>
                   ))}
                 </g>
@@ -937,9 +955,12 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                         {tacticalMiniFormation(projectileAnimation.multiplicity).map((glyph, index) => (
                           <g key={'flight-projectile:' + projectileAnimation.projectileID + ':' + index} transform={'translate(' + glyph.x + ' ' + glyph.y + ') scale(' + glyph.scale + ')'}>
                             <path d="M -0.46 -0.1 L 0.2 -0.1 L 0.48 0 L 0.2 0.1 L -0.46 0.1 Z" className="tactical-projectile-flight-body" />
+                            <path d="M .2 -.1 L .48 0 L .2 .1 L .08 0 Z" className="tactical-projectile-flight-nose" />
+                            <line x1={-0.14} y1={0} x2={0.23} y2={0} className="tactical-projectile-flight-spine" />
                             <path d="M -0.28 -0.1 L -0.46 -0.24 L -0.08 -0.1 Z M -0.28 0.1 L -0.46 0.24 L -0.08 0.1 Z" className="tactical-projectile-flight-fin" />
-                            <path d="M -0.47 -0.07 L -0.96 0 L -0.47 0.07 Z" className="tactical-projectile-flight-exhaust" />
-                            <circle cx={-0.56} cy={0} r={0.05} className="tactical-projectile-flight-flame">
+                            <circle cx={-0.46} cy={0} r={0.052} className="tactical-projectile-flight-engine-core" />
+                            <path d="M -0.47 -0.07 L -1.06 0 L -0.47 0.07 Z" className="tactical-projectile-flight-exhaust" />
+                            <circle cx={-0.62} cy={0} r={0.06} className="tactical-projectile-flight-flame">
                               <animate attributeName="cx" values="-0.56;-0.92" dur="180ms" repeatCount="indefinite" />
                               <animate attributeName="r" values="0.055;0.018" dur="180ms" repeatCount="indefinite" />
                               <animate attributeName="opacity" values="1;0" dur="180ms" repeatCount="indefinite" />

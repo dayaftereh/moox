@@ -7885,12 +7885,40 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   stroke-width: .035;
   vector-effect: non-scaling-stroke;
 }
-.tactical-projectile-static-exhaust {
-  stroke: #ff9a45;
-  stroke-width: .09;
+.tactical-projectile-nose,
+.tactical-projectile-flight-nose {
+  fill: #fff3c8;
+  stroke: #fff8df;
+  stroke-width: .035;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 2px rgba(255, 216, 104, .95));
+}
+.tactical-projectile-energy-spine,
+.tactical-projectile-flight-spine {
+  stroke: #7cecff;
+  stroke-width: .034;
   stroke-linecap: round;
   vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 0 2px rgba(255, 126, 49, .8));
+  filter: drop-shadow(0 0 2px rgba(69, 216, 255, .92));
+}
+.tactical-projectile-engine-core,
+.tactical-projectile-flight-engine-core {
+  fill: #fff6c5;
+  stroke: #ffca64;
+  stroke-width: .025;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 3px rgba(255, 156, 44, 1));
+  animation: tactical-projectile-engine-core 150ms ease-in-out infinite alternate;
+}
+.tactical-projectile-static-plume {
+  fill: rgba(255, 107, 31, .9);
+  stroke: rgba(255, 217, 105, .96);
+  stroke-width: .028;
+  vector-effect: non-scaling-stroke;
+  transform-box: fill-box;
+  transform-origin: right center;
+  filter: drop-shadow(0 0 3px rgba(255, 94, 24, .96));
+  animation: tactical-projectile-static-plume 125ms ease-in-out infinite alternate;
 }
 .tactical-projectile-flight-body {
   fill: #eef8ff;
@@ -7920,6 +7948,14 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   from { opacity: .6; transform: scale(.72); transform-origin: center; }
   to { opacity: 1; transform: scale(1.22); transform-origin: center; }
 }
+@keyframes tactical-projectile-engine-core {
+  from { opacity: .72; }
+  to { opacity: 1; }
+}
+@keyframes tactical-projectile-static-plume {
+  from { opacity: .58; transform: scaleX(.68) scaleY(.82); }
+  to { opacity: 1; transform: scaleX(1.16) scaleY(1.08); }
+}
 
 /* Slice 17.8 tactical actor/integration projection */
 .tactical-teleport-node { fill: rgba(180, 120, 255, .14); stroke: rgba(214, 183, 255, .9); stroke-width: .08; vector-effect: non-scaling-stroke; }
@@ -7934,6 +7970,51 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 .tactical-fighter-group.own .tactical-fighter-vector { fill: rgba(116, 207, 223, .86); stroke: #d1f8ff; }
 .tactical-fighter-group.enemy .tactical-fighter-vector { fill: rgba(212, 121, 118, .88); stroke: #ffd4cf; }
 .tactical-fighter-group.legal-target .tactical-fighter-vector { filter: drop-shadow(0 0 3px rgba(255,218,105,.95)); stroke: #ffe58e; stroke-width: .11; }
+.tactical-fighter-cockpit {
+  fill: #eafcff;
+  stroke: rgba(154, 236, 255, .95);
+  stroke-width: .045;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 2px rgba(70, 213, 255, .9));
+}
+.tactical-fighter-group.enemy .tactical-fighter-cockpit {
+  fill: #fff1e9;
+  stroke: rgba(255, 172, 145, .96);
+  filter: drop-shadow(0 0 2px rgba(255, 102, 72, .88));
+}
+.tactical-fighter-panel {
+  fill: none;
+  stroke: rgba(219, 248, 255, .84);
+  stroke-width: .035;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.tactical-fighter-engine-core {
+  fill: #fff2ad;
+  stroke: #ffd06d;
+  stroke-width: .028;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 2px rgba(255, 179, 55, 1));
+  animation: tactical-fighter-engine-core 180ms ease-in-out infinite alternate;
+}
+.tactical-fighter-exhaust {
+  fill: rgba(255, 115, 38, .9);
+  stroke: rgba(255, 216, 105, .96);
+  stroke-width: .03;
+  vector-effect: non-scaling-stroke;
+  transform-box: fill-box;
+  transform-origin: right center;
+  filter: drop-shadow(0 0 3px rgba(255, 102, 30, .95));
+  animation: tactical-fighter-engine-flame 145ms ease-in-out infinite alternate;
+}
+@keyframes tactical-fighter-engine-core {
+  from { opacity: .72; }
+  to { opacity: 1; }
+}
+@keyframes tactical-fighter-engine-flame {
+  from { opacity: .58; transform: scaleX(.72) scaleY(.84); }
+  to { opacity: 1; transform: scaleX(1.18) scaleY(1.08); }
+}
 .tactical-boarding-strip { display: flex; flex-wrap: wrap; align-items: end; gap: 6px; width: 100%; }
 .tactical-boarding-strip label { display: grid; gap: 2px; font-size: .58rem; font-weight: 800; }
 .tactical-boarding-strip select, .tactical-boarding-strip input { min-height: 30px; border-radius: 6px; }

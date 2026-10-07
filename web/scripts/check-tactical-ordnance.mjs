@@ -49,6 +49,11 @@ requireFragment(battlefield, 'tacticalMiniFormation(projectile.multiplicity)', '
 requireFragment(battlefield, 'tacticalMiniFormation(projectileAnimation.multiplicity)', 'exact miniature projectile flight rendering')
 requireFragment(battlefield, 'data-multiplicity={projectileAnimation.multiplicity}', 'animated salvo multiplicity')
 requireFragment(styles, '.tactical-projectile-flight-flame', 'missile exhaust flame style')
+requireFragment(battlefield, 'tactical-projectile-static-plume', 'static missile propulsion plume')
+requireFragment(styles, '.tactical-projectile-static-plume', 'static missile propulsion plume style')
+requireFragment(battlefield, 'tactical-projectile-energy-spine', 'missile sci-fi energy spine')
+requireFragment(battlefield, 'tactical-fighter-exhaust', 'Fighter-family propulsion plume')
+requireFragment(styles, '.tactical-fighter-exhaust', 'Fighter-family propulsion plume style')
 if (battlefield.includes('tactical-projectile-count') || battlefield.includes('tactical-projectile-flight-count')) {
   throw new Error('Tactical ordnance browser contract forbids visible projectile xN count labels; multiplicity must be rendered as miniature missile glyphs.')
 }

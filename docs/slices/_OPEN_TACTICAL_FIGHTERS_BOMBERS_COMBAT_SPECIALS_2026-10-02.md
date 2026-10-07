@@ -66,3 +66,15 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Tactical projectile groups now use the same in-cell mini-formation principle: one small missile silhouette per authoritative multiplicity, both at rest and during projectile flight animation.
 - Visible projectile xN labels are removed; the large transparent projectile hitbox remains unchanged for usability.
 - Projectile count, targeting, movement, interception and damage remain server-authoritative and unchanged.
+
+## User-review cosmetic pass - sci-fi Fighter propulsion detail
+
+- Miniature Fighter-family actors now layer the existing silhouette with a luminous cockpit/energy canopy, panel/wing accents, engine cores and animated exhaust flames.
+- Bombers use twin engine cores and twin exhaust plumes; Fighter/Heavy-Fighter actors use a single central engine plume.
+- Exact group multiplicity, actor identity, targeting and the large interaction hitbox remain unchanged.
+
+## User-review cosmetic pass - sci-fi missile propulsion detail
+
+- Miniature missile actors now add a luminous nose, cyan energy spine, bright engine core and animated orange/yellow exhaust plume while retaining the compact exact-multiplicity formation.
+- Projectile flight animation carries the same nose/spine/engine language with a longer animated plume and bright flame core, making moving salvos read as powered sci-fi missiles rather than simple geometric markers.
+- Browser contract coverage now requires the new static missile plume/energy detail and Fighter-family propulsion detail.
