@@ -7738,15 +7738,6 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   stroke: #ffe58e;
   stroke-width: .11;
 }
-.tactical-projectile-count {
-  fill: #eef8ff;
-  font-size: .42px;
-  font-weight: 900;
-  text-anchor: middle;
-  paint-order: stroke;
-  stroke: rgba(0, 0, 0, .94);
-  stroke-width: .12px;
-}
 .tactical-fighter-attack-animation {
   pointer-events: none;
 }
@@ -7921,15 +7912,6 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   filter: drop-shadow(0 0 3px rgba(255, 168, 46, 1));
   animation: tactical-projectile-flame 110ms ease-in-out infinite alternate;
 }
-.tactical-projectile-flight-count {
-  fill: #fff6ce;
-  stroke: rgba(20, 28, 40, .9);
-  stroke-width: .035;
-  paint-order: stroke;
-  font-size: .34px;
-  font-weight: 800;
-  text-anchor: start;
-}
 @keyframes tactical-projectile-exhaust {
   from { opacity: .55; }
   to { opacity: 1; }
@@ -7947,10 +7929,11 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 .tactical-fighter-group.legal-target { cursor: crosshair; }
 .tactical-fighter-hit-cell { fill: transparent; stroke: none; pointer-events: all; }
 .tactical-fighter-vector { stroke-width: .07; vector-effect: non-scaling-stroke; }
+.tactical-fighter-vector.is-bomber { stroke-width: .095; }
+.tactical-fighter-vector.is-heavy_fighter { stroke-width: .09; }
 .tactical-fighter-group.own .tactical-fighter-vector { fill: rgba(116, 207, 223, .86); stroke: #d1f8ff; }
 .tactical-fighter-group.enemy .tactical-fighter-vector { fill: rgba(212, 121, 118, .88); stroke: #ffd4cf; }
 .tactical-fighter-group.legal-target .tactical-fighter-vector { filter: drop-shadow(0 0 3px rgba(255,218,105,.95)); stroke: #ffe58e; stroke-width: .11; }
-.tactical-fighter-count { fill: #f4fbff; font-size: .42px; font-weight: 900; paint-order: stroke; stroke: rgba(0,0,0,.9); stroke-width: .1px; pointer-events: none; }
 .tactical-boarding-strip { display: flex; flex-wrap: wrap; align-items: end; gap: 6px; width: 100%; }
 .tactical-boarding-strip label { display: grid; gap: 2px; font-size: .58rem; font-weight: 800; }
 .tactical-boarding-strip select, .tactical-boarding-strip input { min-height: 30px; border-radius: 6px; }

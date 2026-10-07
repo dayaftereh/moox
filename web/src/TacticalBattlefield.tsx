@@ -47,11 +47,29 @@ type TacticalMoveAnimation = { sequence: number; fromX: number; fromY: number; t
 type TacticalProjectileAnimation = { sequence: number; projectileID: number; kind: string; fromX?: number; fromY?: number; toX: number; toY: number; multiplicity: number }
 type TacticalFighterAttackAnimation = { sequence: number; groupID: number; payloadKind: string; weaponID: string; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number }
 
-function projectileSalvoOffsets(multiplicity: number): number[] {
-  const visible = Math.max(1, Math.min(5, Math.trunc(multiplicity) || 1))
-  const spacing = 0.22
-  const start = -((visible - 1) * spacing) / 2
-  return Array.from({ length: visible }, (_, index) => start + index * spacing)
+
+type TacticalMiniGlyph = { x: number; y: number; scale: number }
+
+function tacticalMiniFormation(multiplicity: number): TacticalMiniGlyph[] {
+  const count = Math.max(1, Math.trunc(multiplicity) || 1)
+  const columns = Math.max(1, Math.ceil(Math.sqrt(count)))
+  const rows = Math.max(1, Math.ceil(count / columns))
+  const spacingX = columns > 1 ? Math.min(.24, .72 / (columns - 1)) : 0
+  const spacingY = rows > 1 ? Math.min(.24, .72 / (rows - 1)) : 0
+  const scale = Math.max(.14, Math.min(.34, .4 - (Math.max(columns, rows) - 1) * .035))
+  const startX = -((columns - 1) * spacingX) / 2
+  const startY = -((rows - 1) * spacingY) / 2
+  return Array.from({ length: count }, (_, index) => ({
+    x: startX + (index % columns) * spacingX,
+    y: startY + Math.floor(index / columns) * spacingY,
+    scale,
+  }))
+}
+
+function fighterMiniGlyphPath(kind: string): string {
+  if (kind === 'bomber') return 'M .3 0 L -.08 -.23 L -.25 -.17 L -.12 0 L -.25 .17 L -.08 .23 Z'
+  if (kind === 'heavy_fighter') return 'M .34 0 L -.03 -.2 L -.21 -.17 L -.1 0 L -.21 .17 L -.03 .2 Z'
+  return 'M .32 0 L -.22 -.13 L -.08 0 L -.22 .13 Z'
 }
 function weaponUnavailableLabel(reason: string | undefined, t: Translator): string {
   switch (reason) {
@@ -824,17 +842,16 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                 aria-label={t('battlefield.projectileMarker', { id: projectile.projectile_id, weapon: humanize(projectile.weapon_id), count: projectile.multiplicity, x: projectile.x, y: projectile.y })}
                 onKeyDown={(event) => { if (isLegalTarget && (event.key === 'Enter' || event.key === ' ')) selectProjectile(projectile) }}
               >
-                <circle r={0.48 + Math.min(4, projectileSalvoOffsets(projectile.multiplicity).length - 1) * 0.07} className="tactical-projectile-hit-cell" />
-                <g transform={`rotate(${angle})`} pointerEvents="none">
-                  {projectileSalvoOffsets(projectile.multiplicity).map((offset, index) => (
-                    <g key={`projectile-glyph:${projectile.projectile_id}:${index}`} transform={`translate(${-Math.abs(offset) * 0.08} ${offset})`}>
+                <circle r={0.48} className="tactical-projectile-hit-cell" />
+                <g transform={'rotate(' + angle + ')'} pointerEvents="none" data-glyph-count={projectile.multiplicity}>
+                  {tacticalMiniFormation(projectile.multiplicity).map((glyph, index) => (
+                    <g key={'projectile-glyph:' + projectile.projectile_id + ':' + index} transform={'translate(' + glyph.x + ' ' + glyph.y + ') scale(' + glyph.scale + ')'}>
                       <path d="M -0.34 -0.085 L 0.18 -0.085 L 0.42 0 L 0.18 0.085 L -0.34 0.085 Z" className="tactical-projectile-vector tactical-projectile-body" />
                       <path d="M -0.24 -0.085 L -0.38 -0.19 L -0.08 -0.085 Z M -0.24 0.085 L -0.38 0.19 L -0.08 0.085 Z" className="tactical-projectile-fin" />
-                       <line x1={-0.36} y1={0} x2={-0.58} y2={0} className="tactical-projectile-static-exhaust" />
+                      <line x1={-0.36} y1={0} x2={-0.58} y2={0} className="tactical-projectile-static-exhaust" />
                     </g>
                   ))}
                 </g>
-                {projectile.multiplicity > 5 && <text x={0.38} y={-0.34} className="tactical-projectile-count" pointerEvents="none">×{projectile.multiplicity}</text>}
               </g>            )
           })}
 
@@ -855,10 +872,13 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                 onKeyDown={(event) => { if (isLegalTarget && (event.key === 'Enter' || event.key === ' ')) selectFighterGroup(fighter) }}
               >
                 <circle r={0.46} className="tactical-fighter-hit-cell" />
-                <g transform={`rotate(${angle})`} pointerEvents="none">
-                  <path d="M .34 0 L -.24 -.2 L -.12 0 L -.24 .2 Z" className="tactical-fighter-vector" />
+                <g transform={'rotate(' + angle + ')'} pointerEvents="none" data-glyph-count={fighter.multiplicity} data-fighter-kind={fighter.kind}>
+                  {tacticalMiniFormation(fighter.multiplicity).map((glyph, index) => (
+                    <g key={'fighter-glyph:' + fighter.group_id + ':' + index} transform={'translate(' + glyph.x + ' ' + glyph.y + ') scale(' + glyph.scale + ')'}>
+                      <path d={fighterMiniGlyphPath(fighter.kind)} className={'tactical-fighter-vector is-' + fighter.kind} />
+                    </g>
+                  ))}
                 </g>
-                <text x={0.3} y={-0.28} className="tactical-fighter-count" pointerEvents="none">×{fighter.multiplicity}</text>
               </g>
             )
           })}
@@ -914,8 +934,8 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                         fill="freeze"
                       />
                       <g transform={'rotate(' + (Math.atan2(projectileAnimation.toY - projectileAnimation.fromY, projectileAnimation.toX - projectileAnimation.fromX) * 180 / Math.PI) + ')'}>
-                        {projectileSalvoOffsets(projectileAnimation.multiplicity).map((offset, index) => (
-                          <g key={`flight-projectile:${projectileAnimation.projectileID}:${index}`} transform={`translate(${-Math.abs(offset) * 0.1} ${offset})`}>
+                        {tacticalMiniFormation(projectileAnimation.multiplicity).map((glyph, index) => (
+                          <g key={'flight-projectile:' + projectileAnimation.projectileID + ':' + index} transform={'translate(' + glyph.x + ' ' + glyph.y + ') scale(' + glyph.scale + ')'}>
                             <path d="M -0.46 -0.1 L 0.2 -0.1 L 0.48 0 L 0.2 0.1 L -0.46 0.1 Z" className="tactical-projectile-flight-body" />
                             <path d="M -0.28 -0.1 L -0.46 -0.24 L -0.08 -0.1 Z M -0.28 0.1 L -0.46 0.24 L -0.08 0.1 Z" className="tactical-projectile-flight-fin" />
                             <path d="M -0.47 -0.07 L -0.96 0 L -0.47 0.07 Z" className="tactical-projectile-flight-exhaust" />
@@ -927,9 +947,6 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                           </g>
                         ))}
                       </g>
-                      {projectileAnimation.multiplicity > 5 && (
-                        <text x={0.54} y={-0.4} className="tactical-projectile-flight-count">×{projectileAnimation.multiplicity}</text>
-                      )}
                     </g>
                   )}
                 </>

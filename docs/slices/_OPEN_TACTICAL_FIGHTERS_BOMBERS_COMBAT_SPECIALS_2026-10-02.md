@@ -54,3 +54,15 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Bomber Bomb payloads render a short bomb-run trail and impact pulse.
 - Heavy Fighters can display both Beam and Bomb payload events from the same attack cycle; misses are rendered with subdued feedback.
 - The animation does not derive combat results or timing; it only visualizes already-resolved server events.
+
+## User-review cosmetic pass - miniature Fighter/Bomber formations
+
+- Fighter-family groups keep their existing server multiplicity and large interaction hitbox, but the battlefield now renders one small aircraft silhouette per actor in the group instead of one oversized marker plus xN text.
+- Fighter, Bomber and Heavy-Fighter silhouettes are visually distinct and auto-scale/pack into the tactical cell as group size grows.
+- This first cosmetic checkpoint changes presentation only; targeting, group identity, movement and combat semantics remain unchanged.
+
+## User-review cosmetic pass - miniature projectile salvos
+
+- Tactical projectile groups now use the same in-cell mini-formation principle: one small missile silhouette per authoritative multiplicity, both at rest and during projectile flight animation.
+- Visible projectile xN labels are removed; the large transparent projectile hitbox remains unchanged for usability.
+- Projectile count, targeting, movement, interception and damage remain server-authoritative and unchanged.

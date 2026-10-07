@@ -45,8 +45,13 @@ requireFragment(styles, '.tactical-projectile-animation', 'projectile event anim
 requireFragment(battlefield, '<animateTransform', 'projectile flight animation')
 requireFragment(battlefield, 'tactical-projectile-flight-body', 'moving projectile glyph')
 requireFragment(styles, '.tactical-projectile-flight-body', 'moving projectile style')
-requireFragment(battlefield, 'projectileSalvoOffsets', 'multiplicity-aware projectile salvo rendering')
+requireFragment(battlefield, 'tacticalMiniFormation(projectile.multiplicity)', 'exact miniature projectile salvo rendering')
+requireFragment(battlefield, 'tacticalMiniFormation(projectileAnimation.multiplicity)', 'exact miniature projectile flight rendering')
 requireFragment(battlefield, 'data-multiplicity={projectileAnimation.multiplicity}', 'animated salvo multiplicity')
 requireFragment(styles, '.tactical-projectile-flight-flame', 'missile exhaust flame style')
+if (battlefield.includes('tactical-projectile-count') || battlefield.includes('tactical-projectile-flight-count')) {
+  throw new Error('Tactical ordnance browser contract forbids visible projectile xN count labels; multiplicity must be rendered as miniature missile glyphs.')
+}
+
 
 console.log('Tactical ordnance browser contract passed: authoritative projectiles, server-projected targets, launch/interception event presentation, ammo and cooldown wiring.')
