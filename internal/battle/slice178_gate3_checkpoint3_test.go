@@ -76,6 +76,26 @@ func slice178Checkpoint3Events(events []TacticalEvent, kind string) []TacticalEv
 	return out
 }
 
+func TestSlice178ReviewPointDefenseProjectsFighterAndBomberTargets(t *testing.T) {
+	spec := slice178Checkpoint3Spec("fighter_bays", 1)
+	spec.Tactical.Ships[0].Weapons = append(spec.Tactical.Ships[0].Weapons, TacticalWeaponSpec{
+		Slot: 2, WeaponID: "laser_cannon", WeaponFamily: "beam", Count: 1,
+		MountType: "point_defense", FiringArcID: "360", MinDamage: 1, MaxDamage: 4, TacticalSupport: "beam",
+	})
+	r := slice178Checkpoint3Runtime(t, spec)
+	r.fighters.Groups = []TacticalFighterGroupState{
+		{GroupID: 71, SourceSeatID: 2, Kind: "fighter", X: 5, Y: 0, Multiplicity: 4},
+		{GroupID: 72, SourceSeatID: 2, Kind: "bomber", X: 6, Y: 0, Multiplicity: 4},
+	}
+	active := &spec.Tactical.Ships[0]
+	state := r.shipState(active.ShipID)
+	weapon := active.Weapons[len(active.Weapons)-1]
+	targets := tacticalBeamFighterTargets(*spec.Tactical, &r, active, state, weapon)
+	if len(targets) != 2 || targets[0].TargetFighterGroupID != 71 || targets[1].TargetFighterGroupID != 72 {
+		t.Fatalf("PD moving-actor targets=%+v want Fighter 71 and Bomber 72", targets)
+	}
+}
+
 func TestSlice178Gate3Checkpoint3VectorALaunchLossRecovery(t *testing.T) {
 	spec := slice178Checkpoint3Spec("fighter_bays", 2)
 	spec.Tactical.Ships[1].X = 30

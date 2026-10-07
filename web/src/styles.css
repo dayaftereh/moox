@@ -7872,7 +7872,7 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 .tactical-fighter-vector { stroke-width: .07; vector-effect: non-scaling-stroke; }
 .tactical-fighter-group.own .tactical-fighter-vector { fill: rgba(116, 207, 223, .86); stroke: #d1f8ff; }
 .tactical-fighter-group.enemy .tactical-fighter-vector { fill: rgba(212, 121, 118, .88); stroke: #ffd4cf; }
-.tactical-fighter-group.legal-target .tactical-fighter-vector { filter: drop-shadow(0 0 3px rgba(255,255,255,.95)); }
+.tactical-fighter-group.legal-target .tactical-fighter-vector { filter: drop-shadow(0 0 3px rgba(255,218,105,.95)); stroke: #ffe58e; stroke-width: .11; }
 .tactical-fighter-count { fill: #f4fbff; font-size: .42px; font-weight: 900; paint-order: stroke; stroke: rgba(0,0,0,.9); stroke-width: .1px; pointer-events: none; }
 .tactical-boarding-strip { display: flex; flex-wrap: wrap; align-items: end; gap: 6px; width: 100%; }
 .tactical-boarding-strip label { display: grid; gap: 2px; font-size: .58rem; font-weight: 800; }

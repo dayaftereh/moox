@@ -901,8 +901,8 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                     >
                       <GameIcon name="fleet-combat" />
                       <span>
-                        <strong>S{weapon.slot + 1} {humanize(weapon.weapon_id)} ×{weapon.count}</strong>
-                        <small>{t('battlefield.baseDamageShort', { min: weapon.min_damage, max: weapon.max_damage })} · {action?.available ? t('battlefield.targets', { count: action.targets?.length ?? 0 }) : weaponUnavailableLabel(action?.unavailable_reason, t)}{ordnanceStatus ? ` · ${ordnanceStatus}` : ''}</small>
+                        <strong>S{weapon.slot + 1} {humanize(weapon.weapon_id)} ×{weapon.count}{weapon.mount_type === 'point_defense' ? ' · PD' : weapon.mount_type === 'heavy' ? ' · Heavy' : ''}</strong>
+                        <small>{t('battlefield.baseDamageShort', { min: weapon.min_damage, max: weapon.max_damage })}{weapon.mount_type === 'point_defense' ? ` · ${weapon.firing_arc_id === '360' ? '360°' : humanize(weapon.firing_arc_id ?? '')}` : ''} · {action?.available ? t('battlefield.targets', { count: action.targets?.length ?? 0 }) : weaponUnavailableLabel(action?.unavailable_reason, t)}{ordnanceStatus ? ` · ${ordnanceStatus}` : ''}</small>
                       </span>
                     </button>
                   )

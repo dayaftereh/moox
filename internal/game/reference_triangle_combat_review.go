@@ -109,7 +109,7 @@ func referenceCombatReviewFalconSpec() core.ShipDesignSpec {
 			{Slot: 0, WeaponID: "zeon_missile", Count: 2, MountType: core.ShipWeaponMountStandard, ModifierIDs: []core.ShipWeaponModifierID{core.ShipWeaponModifierArmored, core.ShipWeaponModifierFast}, Ammo: 5, FiringArcID: core.ShipWeaponFiringArc360},
 			{Slot: 1, WeaponID: "particle_beam", Count: 3, MountType: core.ShipWeaponMountHeavy, FiringArcID: core.ShipWeaponFiringArc360},
 			{Slot: 2, WeaponID: "particle_beam", Count: 1, MountType: core.ShipWeaponMountHeavy, FiringArcID: core.ShipWeaponFiringArc360},
-			{Slot: 3, WeaponID: "particle_beam", Count: 4, MountType: core.ShipWeaponMountPointDefense, FiringArcID: core.ShipWeaponFiringArcForward},
+			{Slot: 3, WeaponID: "particle_beam", Count: 4, MountType: core.ShipWeaponMountPointDefense, FiringArcID: core.ShipWeaponFiringArc360},
 			{Slot: 4, WeaponID: "merculite_missile", Count: 2, MountType: core.ShipWeaponMountStandard, ModifierIDs: []core.ShipWeaponModifierID{core.ShipWeaponModifierArmored, core.ShipWeaponModifierFast}, Ammo: 5, FiringArcID: core.ShipWeaponFiringArc360},
 			{Slot: 5, WeaponID: "fighter_bays", Count: 1, MountType: core.ShipWeaponMountStandard},
 			{Slot: 6, WeaponID: "bomber_bays", Count: 1, MountType: core.ShipWeaponMountStandard},

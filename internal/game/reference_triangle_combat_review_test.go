@@ -33,6 +33,9 @@ func TestReferenceTriangleCombatReviewGameCreatesImmediateFalconEncounter(t *tes
 		t.Fatal("combat review empires are not mutually hostile")
 	}
 	wantSpec := referenceCombatReviewFalconSpec()
+	if len(wantSpec.Weapons) <= 3 || wantSpec.Weapons[3].MountType != core.ShipWeaponMountPointDefense || wantSpec.Weapons[3].FiringArcID != core.ShipWeaponFiringArc360 {
+		t.Fatalf("combat review Falcon PD slot=%+v want Point Defense / 360", wantSpec.Weapons)
+	}
 	for _, empireID := range []core.ID{humanID, aiID} {
 		var reviewFleet *core.StrategicFleet
 		for i := range state.StrategicFleets {
