@@ -96,6 +96,82 @@ func TestSlice178ReviewPointDefenseProjectsFighterAndBomberTargets(t *testing.T)
 	}
 }
 
+func TestSlice178ReviewShipTargetFightersUseAdjacentAttackStations(t *testing.T) {
+	for _, weaponID := range []string{"fighter_bays", "bomber_bays", "heavy_fighter_bays"} {
+		t.Run(weaponID, func(t *testing.T) {
+			spec := slice178Checkpoint3Spec(weaponID, 1)
+			r := slice178Checkpoint3Runtime(t, spec)
+			target := r.shipState(200)
+			if target == nil {
+				t.Fatal("target ship state missing")
+			}
+
+			if err := prepareLaunchFighters(spec, &r, 1, 1, LaunchFightersPayload{
+				ShipID: 100, WeaponSlot: 1, TargetShipID: 200,
+			}); err != nil {
+				t.Fatal(err)
+			}
+			if len(r.fighters.Groups) != 1 {
+				t.Fatalf("%s group count=%d want 1", weaponID, len(r.fighters.Groups))
+			}
+			group := r.fighters.Groups[0]
+			if group.X == target.X && group.Y == target.Y {
+				t.Fatalf("%s group illegally occupies target ship cell (%d,%d)", weaponID, group.X, group.Y)
+			}
+			dx, dy := group.X-target.X, group.Y-target.Y
+			if dx < -1 || dx > 1 || dy < -1 || dy > 1 || (dx == 0 && dy == 0) {
+				t.Fatalf("%s group attack station=(%d,%d) target=(%d,%d) is not adjacent", weaponID, group.X, group.Y, target.X, target.Y)
+			}
+			if len(slice178Checkpoint3Events(r.events, "fighter_attack_resolved")) == 0 {
+				t.Fatalf("%s did not attack from adjacent station: events=%+v", weaponID, r.events)
+			}
+
+			if group.Phase == TacticalFighterPhaseOutbound && group.AttackStock > 0 {
+				beforeX, beforeY := group.X, group.Y
+				if err := processTacticalFighterGroupByID(*spec.Tactical, &r, group.GroupID, 1, 2); err != nil {
+					t.Fatal(err)
+				}
+				if len(r.fighters.Groups) != 1 {
+					t.Fatalf("%s group unexpectedly disappeared after repeated attack", weaponID)
+				}
+				group = r.fighters.Groups[0]
+				if group.X == target.X && group.Y == target.Y {
+					t.Fatalf("%s repeated attack moved onto target ship cell", weaponID)
+				}
+				if group.X != beforeX || group.Y != beforeY {
+					t.Fatalf("%s repeated attack station moved (%d,%d)->(%d,%d)", weaponID, beforeX, beforeY, group.X, group.Y)
+				}
+			}
+		})
+	}
+}
+
+func TestSlice178ReviewShipAttackStationsSpreadWhenSpaceExists(t *testing.T) {
+	spec := slice178Checkpoint3Spec("fighter_bays", 1)
+	r := slice178Checkpoint3Runtime(t, spec)
+	target := r.shipState(200)
+	if target == nil {
+		t.Fatal("target ship state missing")
+	}
+	first := TacticalFighterGroupState{GroupID: 1, X: 10, Y: 10}
+	x1, y1, ok := tacticalFighterShipAttackPosition(&r, first, *target)
+	if !ok {
+		t.Fatal("first attack station missing")
+	}
+	r.fighters.Groups = append(r.fighters.Groups, TacticalFighterGroupState{GroupID: 1, X: x1, Y: y1})
+	second := TacticalFighterGroupState{GroupID: 2, X: 10, Y: 10}
+	x2, y2, ok := tacticalFighterShipAttackPosition(&r, second, *target)
+	if !ok {
+		t.Fatal("second attack station missing")
+	}
+	if x1 == x2 && y1 == y2 {
+		t.Fatalf("attack stations stacked despite free adjacent cells: (%d,%d)", x1, y1)
+	}
+	if (x1 == target.X && y1 == target.Y) || (x2 == target.X && y2 == target.Y) {
+		t.Fatal("attack station overlaps target ship")
+	}
+}
+
 func TestSlice178Gate3Checkpoint3VectorALaunchLossRecovery(t *testing.T) {
 	spec := slice178Checkpoint3Spec("fighter_bays", 2)
 	spec.Tactical.Ships[1].X = 30

@@ -1356,3 +1356,17 @@ Binding correction:
 Current MOOX has authoritative best-known Computer and race Ship Attack/Ship Defense state, but no authoritative fleet-officer / pilot runtime. Therefore Battle creation freezes the representable terms now (`+50 + best Computer offense + race Ship Attack` and race Ship Defense respectively); unavailable fleet-offensive/pilot terms are explicitly `0`, not inferred. A later leader/officer slice may populate those terms at Battle creation without changing Fighter replay semantics, because the BattleSession continues consuming only the frozen scalars.
 
 This is a contract correction required by already accepted Gate-1 executable evidence, not a new mechanic.
+
+## 2026-10-07 user-review refinement - ship-target attack stations
+
+Manual Slice-17.8 review exposed a usability and spatial-consistency defect in the frozen arrival wording: Fighter-family moving actors were persisted on the same tactical cell as their target Ship while executing payload cycles.
+
+The accepted refinement is server-authoritative:
+
+- a Ship-targeting Fighter/Bomber/Heavy-Fighter group must never persist on the target Ship cell;
+- the server resolves a deterministic free adjacent attack station around the live target Ship and treats that station as the group's outbound arrival coordinate;
+- free neighboring stations are distributed across groups when possible; if every neighboring station is already occupied by moving actors, station sharing is permitted, but the Ship cell itself remains forbidden;
+- pre-impact defenses and payload execution occur when the group reaches that adjacent attack station;
+- returning groups still recover at their source carrier through the existing return/recovery lifecycle.
+
+This refines the spatial meaning of "reaches its current target" in Section 7.2 without changing Fighter/Bomber/Heavy-Fighter payload composition, attack stock, damage RNG, retargeting or recovery arithmetic.

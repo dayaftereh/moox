@@ -78,6 +78,75 @@ func tacticalFighterLegalTargetsForEmpire(spec TacticalSpec, r *tacticalRuntime,
 	return out
 }
 
+func tacticalFighterShipAttackPosition(r *tacticalRuntime, group TacticalFighterGroupState, target TacticalShipState) (x, y int, ok bool) {
+	if r == nil {
+		return 0, 0, false
+	}
+	shipOccupied := make(map[[2]int]struct{}, len(r.state.Ships))
+	for _, ship := range r.state.Ships {
+		shipOccupied[[2]int{ship.X, ship.Y}] = struct{}{}
+	}
+	fighterOccupied := make(map[[2]int]struct{}, len(r.fighters.Groups))
+	for _, other := range r.fighters.Groups {
+		if other.GroupID == group.GroupID {
+			continue
+		}
+		fighterOccupied[[2]int{other.X, other.Y}] = struct{}{}
+	}
+	type candidate struct {
+		x, y       int
+		moveFields int
+		distance2  int64
+	}
+	choose := func(avoidFighters bool) (int, int, bool) {
+		candidates := make([]candidate, 0, 8)
+		for oy := -1; oy <= 1; oy++ {
+			for ox := -1; ox <= 1; ox++ {
+				if ox == 0 && oy == 0 {
+					continue
+				}
+				cx, cy := target.X+ox, target.Y+oy
+				if _, blocked := shipOccupied[[2]int{cx, cy}]; blocked {
+					continue
+				}
+				if avoidFighters {
+					if _, blocked := fighterOccupied[[2]int{cx, cy}]; blocked {
+						continue
+					}
+				}
+				dx, dy := cx-group.X, cy-group.Y
+				candidates = append(candidates, candidate{
+					x: cx, y: cy,
+					moveFields: tacticalProjectileFieldDistance(dx, dy),
+					distance2:  int64(dx)*int64(dx) + int64(dy)*int64(dy),
+				})
+			}
+		}
+		if len(candidates) == 0 {
+			return 0, 0, false
+		}
+		sort.Slice(candidates, func(i, j int) bool {
+			if candidates[i].moveFields != candidates[j].moveFields {
+				return candidates[i].moveFields < candidates[j].moveFields
+			}
+			if candidates[i].distance2 != candidates[j].distance2 {
+				return candidates[i].distance2 < candidates[j].distance2
+			}
+			if candidates[i].y != candidates[j].y {
+				return candidates[i].y < candidates[j].y
+			}
+			return candidates[i].x < candidates[j].x
+		})
+		return candidates[0].x, candidates[0].y, true
+	}
+	if x, y, ok := choose(true); ok {
+		return x, y, true
+	}
+	// More than eight moving actors may surround one ship. In that case sharing
+	// an adjacent Fighter station is preferable to ever occupying a ship cell.
+	return choose(false)
+}
+
 func tacticalFighterTargetPosition(spec TacticalSpec, r *tacticalRuntime, group TacticalFighterGroupState) (x, y int, ok bool) {
 	sourceEmpire, sourceOK := tacticalFighterSourceEmpire(spec, group)
 	if !sourceOK {
@@ -97,7 +166,7 @@ func tacticalFighterTargetPosition(spec TacticalSpec, r *tacticalRuntime, group 
 		if targetSpec == nil || !tacticalShipTargetable(state) || tacticalOwnerEmpire(*targetSpec, state) == sourceEmpire {
 			return 0, 0, false
 		}
-		return state.X, state.Y, true
+		return tacticalFighterShipAttackPosition(r, group, *state)
 	}
 	if group.TargetProjectileID != 0 {
 		if group.Kind == "bomber" {

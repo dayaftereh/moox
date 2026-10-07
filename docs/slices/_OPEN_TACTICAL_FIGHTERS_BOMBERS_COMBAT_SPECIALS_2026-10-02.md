@@ -39,3 +39,9 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Legal weapon targets (Ship, projectile, Fighter/Bomber group) use a target crosshair cursor.
 - Only server-projected legal movement cells use the movement cursor; illegal battlefield cells retain the normal pan/grab cursor.
 - Cursor affordance therefore mirrors the currently selected authoritative action without deriving legality in the browser.
+
+## User-review fix - Fighter/Bomber ship-cell separation
+
+- Outbound Fighter, Bomber and Heavy-Fighter groups targeting a Ship attack from a deterministic free adjacent attack station instead of entering the Ship's own tactical cell.
+- Ship cells remain physically exclusive to Ships. The server chooses the nearest free neighboring attack station, spreads groups across free stations where possible, and only allows Fighter groups to share an adjacent station after all neighboring stations are occupied.
+- Existing pre-impact defenses, payload cadence, retargeting and return/recovery semantics remain authoritative; only the ship-target arrival coordinate is refined.
