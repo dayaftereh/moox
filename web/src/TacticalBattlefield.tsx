@@ -46,6 +46,18 @@ type TacticalBeamAnimation = { sequence: number; fromX: number; fromY: number; t
 type TacticalMoveAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; movementKind: string }
 type TacticalProjectileAnimation = { sequence: number; projectileID: number; kind: string; fromX?: number; fromY?: number; toX: number; toY: number; multiplicity: number }
 type TacticalFighterAttackAnimation = { sequence: number; groupID: number; payloadKind: string; weaponID: string; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number }
+type TacticalPresentationCue = {
+  sequence: number
+  fromX: number
+  fromY: number
+  toX: number
+  toY: number
+  holdMs: number
+  beam?: TacticalBeamAnimation
+  move?: TacticalMoveAnimation
+  projectile?: TacticalProjectileAnimation
+  fighterAttack?: TacticalFighterAttackAnimation
+}
 
 
 type TacticalMiniGlyph = { x: number; y: number; scale: number }
@@ -357,6 +369,9 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const draggedRef = useRef(false)
   const ignoreClickRef = useRef(false)
   const observedEventSequenceRef = useRef<number | null>(null)
+  const presentationQueueRef = useRef<TacticalPresentationCue[]>([])
+  const presentationTimerRef = useRef<number | null>(null)
+  const presentationPlayingRef = useRef(false)
 
   useEffect(() => {
     const selected = weaponActions.find((action) => action.weapon_slot === selectedWeaponSlot)
@@ -437,6 +452,48 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const zoomBy = (factor: number) => setCamera((current) => ({ ...current, zoom: clamp(current.zoom * factor, MIN_ZOOM, MAX_ZOOM) }))
   const focusShip = (ship: TacticalShipView) => setCamera((current) => ({ cx: ship.x, cy: ship.y, zoom: Math.max(current.zoom, FOCUS_ZOOM) }))
 
+  const focusCombatSpan = (fromX: number, fromY: number, toX: number, toY: number) => {
+    const spanX = Math.abs(toX - fromX)
+    const spanY = Math.abs(toY - fromY)
+    const zoomX = bounds.width / Math.max(10, spanX + 8)
+    const zoomY = bounds.height / Math.max(7, spanY + 6)
+    setCamera({
+      cx: (fromX + toX) / 2,
+      cy: (fromY + toY) / 2,
+      zoom: clamp(Math.min(zoomX, zoomY), 1.15, 4.4),
+    })
+  }
+
+  const playNextPresentationCue = () => {
+    const cue = presentationQueueRef.current.shift()
+    if (!cue) {
+      presentationPlayingRef.current = false
+      presentationTimerRef.current = null
+      return
+    }
+    presentationPlayingRef.current = true
+    focusCombatSpan(cue.fromX, cue.fromY, cue.toX, cue.toY)
+    setBeamAnimation(cue.beam ?? null)
+    setMoveAnimation(cue.move ?? null)
+    setProjectileAnimation(cue.projectile ?? null)
+    setFighterAttackAnimations(cue.fighterAttack ? [cue.fighterAttack] : [])
+    presentationTimerRef.current = window.setTimeout(playNextPresentationCue, cue.holdMs)
+  }
+
+  const enqueuePresentationCue = (cue: TacticalPresentationCue) => {
+    presentationQueueRef.current.push(cue)
+    if (!presentationPlayingRef.current) {
+      presentationPlayingRef.current = true
+      playNextPresentationCue()
+    }
+  }
+
+  useEffect(() => () => {
+    if (presentationTimerRef.current != null) window.clearTimeout(presentationTimerRef.current)
+    presentationQueueRef.current = []
+    presentationPlayingRef.current = false
+  }, [])
+
   useEffect(() => {
     if (!activeShip) return
     setCamera((current) => ({ cx: activeShip.x, cy: activeShip.y, zoom: Math.max(current.zoom, FOCUS_ZOOM) }))
@@ -475,7 +532,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
           : [event]
         const shotHits = shotEvents.map((shot) => shot.data?.hit === true)
         if (source && targetX != null && targetY != null) {
-          setBeamAnimation({
+          const beam: TacticalBeamAnimation = {
             sequence: event.sequence, fromX: source.x, fromY: source.y, toX: targetX, toY: targetY,
             hit: shotHits.some(Boolean),
             damage: event.kind === 'beam_volley_resolved' ? eventNumber(event.data, 'total_damage') ?? 0 : eventNumber(event.data, 'damage') ?? 0,
@@ -485,6 +542,12 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             physicalWeaponCount: eventNumber(event.data, 'physical_weapon_count') ?? 1,
             burstShotCount: eventNumber(event.data, 'burst_shot_count') ?? 1,
             layers: damageLayersForBeam(events, event),
+          }
+          enqueuePresentationCue({
+            sequence: event.sequence,
+            fromX: source.x, fromY: source.y, toX: targetX, toY: targetY,
+            holdMs: event.data?.reactive_point_defense === true ? 320 : 800,
+            beam,
           })
         }
       } else if (event.kind === 'fighter_attack_resolved') {
@@ -494,7 +557,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         const target = fighterAttackTargetPosition(events, event, fighterGroups, projectiles, ships)
         if (groupID != null && source && target) {
           const outcome = fighterAttackOutcome(event.data)
-          const animation: TacticalFighterAttackAnimation = {
+          const fighterAttack: TacticalFighterAttackAnimation = {
             sequence: event.sequence,
             groupID,
             payloadKind,
@@ -506,7 +569,12 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             hit: outcome.hit,
             damage: outcome.damage,
           }
-          setFighterAttackAnimations((current) => [...current.filter((candidate) => candidate.sequence !== animation.sequence), animation].slice(-6))
+          enqueuePresentationCue({
+            sequence: event.sequence,
+            fromX: source.x, fromY: source.y, toX: target.x, toY: target.y,
+            holdMs: 950,
+            fighterAttack,
+          })
         }
       } else if (event.kind === 'ship_moved') {
         const fromX = eventNumber(event.data, 'from_x')
@@ -514,15 +582,34 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         const toX = eventNumber(event.data, 'to_x')
         const toY = eventNumber(event.data, 'to_y')
         if (fromX != null && fromY != null && toX != null && toY != null) {
-          setMoveAnimation({ sequence: event.sequence, fromX, fromY, toX, toY, movementKind: eventString(event.data, 'movement_kind') ?? 'normal' })
+          const move: TacticalMoveAnimation = {
+            sequence: event.sequence,
+            fromX, fromY, toX, toY,
+            movementKind: eventString(event.data, 'movement_kind') ?? 'normal',
+          }
+          enqueuePresentationCue({ sequence: event.sequence, fromX, fromY, toX, toY, holdMs: 500, move })
         }
-      } else if (event.kind === 'ordnance_launched'
-        || event.kind === 'projectile_moved'
-        || event.kind === 'projectile_retargeted'
-        || event.kind === 'projectile_interception_resolved'
-        || event.kind === 'projectile_mirv_split'
-        || event.kind === 'projectile_impact_resolved'
-        || event.kind === 'projectile_destroyed') {
+      } else if (event.kind === 'fighter_group_moved') {
+        const groupID = eventNumber(event.data, 'group_id')
+        const fromX = eventNumber(event.data, 'from_x')
+        const fromY = eventNumber(event.data, 'from_y')
+        const toX = eventNumber(event.data, 'to_x')
+        const toY = eventNumber(event.data, 'to_y')
+        const phase = eventString(event.data, 'phase') ?? 'outbound'
+        const attacksImmediately = phase !== 'returning' && groupID != null && unseen.some((candidate) =>
+          candidate.sequence > event.sequence
+          && candidate.sequence <= event.sequence + 24
+          && candidate.kind === 'fighter_attack_resolved'
+          && eventNumber(candidate.data, 'group_id') === groupID)
+        if (!attacksImmediately && fromX != null && fromY != null && toX != null && toY != null) {
+          const move: TacticalMoveAnimation = {
+            sequence: event.sequence,
+            fromX, fromY, toX, toY,
+            movementKind: phase === 'returning' ? 'fighter-returning' : 'fighter',
+          }
+          enqueuePresentationCue({ sequence: event.sequence, fromX, fromY, toX, toY, holdMs: 500, move })
+        }
+      } else if (event.kind === 'projectile_moved') {
         const projectileID = eventNumber(event.data, 'projectile_id')
         const position = projectileEventPosition(events, event, projectiles, ships)
         if (projectileID != null && position) {
@@ -532,7 +619,9 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             ?? eventNumber(event.data, 'multiplicity')
             ?? liveProjectile?.multiplicity
             ?? 1
-          setProjectileAnimation({
+          const fromX = eventNumber(event.data, 'from_x') ?? eventNumber(event.data, 'start_x') ?? position.x
+          const fromY = eventNumber(event.data, 'from_y') ?? eventNumber(event.data, 'start_y') ?? position.y
+          const projectile: TacticalProjectileAnimation = {
             sequence: event.sequence,
             projectileID,
             kind: event.kind,
@@ -541,11 +630,17 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             toX: position.x,
             toY: position.y,
             multiplicity: Math.max(1, Math.trunc(multiplicity)),
+          }
+          enqueuePresentationCue({
+            sequence: event.sequence,
+            fromX, fromY, toX: position.x, toY: position.y,
+            holdMs: 500,
+            projectile,
           })
         }
       }
     }
-  }, [tactical.events, ships, projectiles])
+  }, [tactical.events, ships, projectiles, fighterGroups])
 
   useEffect(() => {
     if (!beamAnimation) return

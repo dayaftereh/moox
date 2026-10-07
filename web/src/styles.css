@@ -7963,6 +7963,10 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 .tactical-teleport-node { fill: rgba(180, 120, 255, .14); stroke: rgba(214, 183, 255, .9); stroke-width: .08; vector-effect: non-scaling-stroke; }
 .tactical-move-animation.is-teleport .tactical-move-trail { stroke-dasharray: .22 .18; }
 .tactical-move-animation.is-teleport .tactical-move-arrival { fill: rgba(205, 166, 255, .8); }
+.tactical-move-animation.is-fighter .tactical-move-trail { stroke: rgba(100, 238, 255, .98); stroke-width: .16; }
+.tactical-move-animation.is-fighter .tactical-move-arrival { fill: rgba(100, 238, 255, .32); stroke: rgba(191, 251, 255, .98); stroke-width: .08; }
+.tactical-move-animation.is-fighter-returning .tactical-move-trail { stroke: rgba(255, 196, 92, .96); stroke-width: .16; }
+.tactical-move-animation.is-fighter-returning .tactical-move-arrival { fill: rgba(255, 196, 92, .28); stroke: rgba(255, 229, 171, .98); stroke-width: .08; }
 .tactical-fighter-group { cursor: default; outline: none; }
 .tactical-fighter-group.legal-target { cursor: crosshair; }
 .tactical-fighter-hit-cell { fill: transparent; stroke: none; pointer-events: all; }

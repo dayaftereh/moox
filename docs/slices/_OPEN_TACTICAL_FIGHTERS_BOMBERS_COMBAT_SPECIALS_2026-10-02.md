@@ -90,3 +90,10 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Projectile flight animation now anchors the SVG group statically at the authoritative from_x/from_y before any animation frame and animates only the relative delta toward to_x/to_y.
 - This removes the transient render at SVG (0,0) that made freshly fired missiles appear to pull in from the upper-left corner.
 - The animated flame now uses transform-box: fill-box with a local center origin so pulse scaling cannot shift the exhaust particle around the global SVG viewport.
+
+## User-review cosmetic fix - event-driven combat camera
+
+- Tactical presentation now queues authoritative combat events instead of collapsing a multi-event AI/moving-actor batch to the final animation state.
+- The camera auto-frames the action span for Ship movement/Beam fire, Fighter-family movement/attack and projectile flight so both source and target remain visible where possible; low-value launch/retarget/impact/recovery bookkeeping does not create duplicate camera stops. Outbound Fighter movement is folded into the attack cue when that attack immediately follows in the same authoritative event batch, and reactive PD volleys use a shorter hold.
+- Fighter movement receives a distinct cyan trail; returning Fighter movement uses an amber trail so carrier recovery is visually legible rather than appearing as an unexplained disappearance.
+- Fighter lifecycle rules are unchanged: Fighter/Bomber/Heavy-Fighter attack stock remains 4/1/2 respectively; exhausted groups return to a functional carrier and recover, while intercepted groups are destroyed.

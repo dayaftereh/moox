@@ -27,13 +27,7 @@ requireFragment(battlefield, 'legalProjectileTargetByID', 'server-projected proj
 requireFragment(battlefield, 'tacticalFireOrdnanceCommand', 'ordnance launch UI')
 requireFragment(battlefield, 'tacticalFireBeamProjectileCommand', 'manual Beam projectile targeting UI')
 for (const eventKind of [
-  'ordnance_launched',
   'projectile_moved',
-  'projectile_retargeted',
-  'projectile_interception_resolved',
-  'projectile_mirv_split',
-  'projectile_impact_resolved',
-  'projectile_destroyed',
 ]) {
   requireFragment(battlefield, eventKind, `event-driven ${eventKind} presentation`)
 }
@@ -47,6 +41,11 @@ requireFragment(battlefield, 'tactical-projectile-flight-body', 'moving projecti
 requireFragment(styles, '.tactical-projectile-flight-body', 'moving projectile style')
 requireFragment(battlefield, 'tacticalMiniFormation(projectile.multiplicity)', 'exact miniature projectile salvo rendering')
 requireFragment(battlefield, 'tacticalMiniFormation(projectileAnimation.multiplicity)', 'exact miniature projectile flight rendering')
+requireFragment(battlefield, 'type TacticalPresentationCue', 'authoritative event presentation queue')
+requireFragment(battlefield, 'presentationQueueRef', 'combat presentation queue state')
+requireFragment(battlefield, 'focusCombatSpan', 'combat action camera framing')
+requireFragment(battlefield, "event.kind === 'fighter_group_moved'", 'Fighter movement camera cue')
+requireFragment(battlefield, "event.kind === 'fighter_attack_resolved'", 'Fighter attack camera cue')
 requireFragment(battlefield, "transform={'translate(' + projectileAnimation.fromX + ' ' + projectileAnimation.fromY + ')'}", 'projectile flight static start transform')
 requireFragment(battlefield, 'from="0 0"', 'projectile flight relative animation origin')
 requireFragment(battlefield, 'projectileAnimation.toX - projectileAnimation.fromX', 'projectile flight relative X delta')
