@@ -45,3 +45,12 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Outbound Fighter, Bomber and Heavy-Fighter groups targeting a Ship attack from a deterministic free adjacent attack station instead of entering the Ship's own tactical cell.
 - Ship cells remain physically exclusive to Ships. The server chooses the nearest free neighboring attack station, spreads groups across free stations where possible, and only allows Fighter groups to share an adjacent station after all neighboring stations are occupied.
 - Existing pre-impact defenses, payload cadence, retargeting and return/recovery semantics remain authoritative; only the ship-target arrival coordinate is refined.
+
+
+## User-review cosmetic fix - Fighter/Bomber attack feedback
+
+- The Tactical browser now consumes authoritative fighter_attack_resolved events for visible attack feedback.
+- Fighter Beam payloads render a short beam pulse from the Fighter group to its authoritative target.
+- Bomber Bomb payloads render a short bomb-run trail and impact pulse.
+- Heavy Fighters can display both Beam and Bomb payload events from the same attack cycle; misses are rendered with subdued feedback.
+- The animation does not derive combat results or timing; it only visualizes already-resolved server events.

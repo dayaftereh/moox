@@ -45,6 +45,7 @@ type TacticalDamageLayer = { kind: TacticalDamageLayerKind; amount: number }
 type TacticalBeamAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number; shotCount: number; shotHits: boolean[]; weaponID: string; physicalWeaponCount: number; burstShotCount: number; layers: TacticalDamageLayer[] }
 type TacticalMoveAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; movementKind: string }
 type TacticalProjectileAnimation = { sequence: number; projectileID: number; kind: string; fromX?: number; fromY?: number; toX: number; toY: number; multiplicity: number }
+type TacticalFighterAttackAnimation = { sequence: number; groupID: number; payloadKind: string; weaponID: string; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number }
 
 function projectileSalvoOffsets(multiplicity: number): number[] {
   const visible = Math.max(1, Math.min(5, Math.trunc(multiplicity) || 1))
@@ -169,7 +170,72 @@ function projectileEventPosition(
     if (x != null && y != null) return { x, y }
   }
   return null
-}function beamShotOffset(animation: TacticalBeamAnimation, index: number) {
+}
+
+function fighterGroupEventPosition(
+  events: TacticalEvent[],
+  event: TacticalEvent,
+  groupID: number,
+  fighters: TacticalFighterGroupState[],
+): { x: number; y: number } | null {
+  const eventIndex = events.findIndex((candidate) => candidate.sequence === event.sequence)
+  for (let i = (eventIndex >= 0 ? eventIndex : events.length) - 1; i >= 0; i -= 1) {
+    const candidate = events[i]
+    if (eventNumber(candidate.data, 'group_id') !== groupID) continue
+    const x = eventNumber(candidate.data, 'to_x') ?? eventNumber(candidate.data, 'start_x')
+    const y = eventNumber(candidate.data, 'to_y') ?? eventNumber(candidate.data, 'start_y')
+    if (x != null && y != null) return { x, y }
+  }
+  const live = fighters.find((fighter) => fighter.group_id === groupID)
+  return live ? { x: live.x, y: live.y } : null
+}
+
+function fighterAttackTargetPosition(
+  events: TacticalEvent[],
+  event: TacticalEvent,
+  fighters: TacticalFighterGroupState[],
+  projectiles: TacticalProjectileState[],
+  ships: TacticalShipView[],
+): { x: number; y: number } | null {
+  const targetShipID = eventNumber(event.data, 'target_ship_id')
+  if (targetShipID != null && targetShipID !== 0) {
+    const target = ships.find((ship) => ship.ship_id === targetShipID)
+    if (target) return { x: target.x, y: target.y }
+  }
+  const targetFighterGroupID = eventNumber(event.data, 'target_fighter_group_id')
+  if (targetFighterGroupID != null && targetFighterGroupID !== 0) {
+    return fighterGroupEventPosition(events, event, targetFighterGroupID, fighters)
+  }
+  const targetProjectileID = eventNumber(event.data, 'target_projectile_id')
+  if (targetProjectileID != null && targetProjectileID !== 0) {
+    const eventIndex = events.findIndex((candidate) => candidate.sequence === event.sequence)
+    for (let i = (eventIndex >= 0 ? eventIndex : events.length) - 1; i >= 0; i -= 1) {
+      const candidate = events[i]
+      if (eventNumber(candidate.data, 'projectile_id') !== targetProjectileID) continue
+      const x = eventNumber(candidate.data, 'to_x') ?? eventNumber(candidate.data, 'start_x') ?? eventNumber(candidate.data, 'target_x')
+      const y = eventNumber(candidate.data, 'to_y') ?? eventNumber(candidate.data, 'start_y') ?? eventNumber(candidate.data, 'target_y')
+      if (x != null && y != null) return { x, y }
+    }
+    const live = projectiles.find((projectile) => projectile.projectile_id === targetProjectileID)
+    if (live) return { x: live.x, y: live.y }
+  }
+  return null
+}
+
+function fighterAttackOutcome(data: Record<string, unknown> | undefined): { hit: boolean; damage: number } {
+  const attempts = Array.isArray(data?.attempts) ? data.attempts : []
+  let hit = false
+  let damage = 0
+  for (const raw of attempts) {
+    if (!raw || typeof raw !== 'object') continue
+    const attempt = raw as Record<string, unknown>
+    if (attempt.hit === true) hit = true
+    if (typeof attempt.damage === 'number' && Number.isFinite(attempt.damage)) damage += Math.max(0, attempt.damage)
+  }
+  return { hit, damage }
+}
+
+function beamShotOffset(animation: TacticalBeamAnimation, index: number) {
   if (animation.shotCount <= 1) return { x: 0, y: 0 }
   const dx = animation.toX - animation.fromX
   const dy = animation.toY - animation.fromY
@@ -227,6 +293,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const [beamAnimation, setBeamAnimation] = useState<TacticalBeamAnimation | null>(null)
   const [moveAnimation, setMoveAnimation] = useState<TacticalMoveAnimation | null>(null)
   const [projectileAnimation, setProjectileAnimation] = useState<TacticalProjectileAnimation | null>(null)
+  const [fighterAttackAnimations, setFighterAttackAnimations] = useState<TacticalFighterAttackAnimation[]>([])
   const [scannedShipID, setScannedShipID] = useState<number | null>(null)
   const [selectedShipID, setSelectedShipID] = useState<number | null>(() => ownActivation ? activeShip?.ship_id ?? null : null)
   const [busy, setBusy] = useState(false)
@@ -402,6 +469,27 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             layers: damageLayersForBeam(events, event),
           })
         }
+      } else if (event.kind === 'fighter_attack_resolved') {
+        const groupID = eventNumber(event.data, 'group_id')
+        const payloadKind = eventString(event.data, 'payload_kind') ?? 'beam'
+        const source = groupID != null ? fighterGroupEventPosition(events, event, groupID, fighterGroups) : null
+        const target = fighterAttackTargetPosition(events, event, fighterGroups, projectiles, ships)
+        if (groupID != null && source && target) {
+          const outcome = fighterAttackOutcome(event.data)
+          const animation: TacticalFighterAttackAnimation = {
+            sequence: event.sequence,
+            groupID,
+            payloadKind,
+            weaponID: eventString(event.data, 'weapon_id') ?? '',
+            fromX: source.x,
+            fromY: source.y,
+            toX: target.x,
+            toY: target.y,
+            hit: outcome.hit,
+            damage: outcome.damage,
+          }
+          setFighterAttackAnimations((current) => [...current.filter((candidate) => candidate.sequence !== animation.sequence), animation].slice(-6))
+        }
       } else if (event.kind === 'ship_moved') {
         const fromX = eventNumber(event.data, 'from_x')
         const fromY = eventNumber(event.data, 'from_y')
@@ -457,6 +545,12 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     const timer = window.setTimeout(() => setProjectileAnimation((current) => current?.sequence === projectileAnimation.sequence ? null : current), 980)
     return () => window.clearTimeout(timer)
   }, [projectileAnimation])
+
+  useEffect(() => {
+    if (fighterAttackAnimations.length === 0) return
+    const timer = window.setTimeout(() => setFighterAttackAnimations([]), 1050)
+    return () => window.clearTimeout(timer)
+  }, [fighterAttackAnimations.map((animation) => animation.sequence).join(':')])
 
   const runCommand = async (command: ProtocolCommand) => {
     if (commandsDisabled || busy) return
@@ -769,6 +863,33 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             )
           })}
 
+
+          {fighterAttackAnimations.map((animation) => (
+            <g
+              key={'fighter-attack:' + animation.sequence}
+              className={'tactical-fighter-attack-animation is-' + animation.payloadKind + ' ' + (animation.hit ? 'is-hit' : 'is-miss')}
+              data-sequence={animation.sequence}
+              data-group-id={animation.groupID}
+              data-payload-kind={animation.payloadKind}
+              data-weapon-id={animation.weaponID}
+              data-hit={animation.hit ? 'true' : 'false'}
+              data-damage={animation.damage}
+              pointerEvents="none"
+            >
+              {animation.payloadKind === 'bomb' ? (
+                <>
+                  <line x1={animation.fromX} y1={animation.fromY} x2={animation.toX} y2={animation.toY} className="tactical-fighter-bomb-trail" />
+                  <circle cx={animation.toX} cy={animation.toY} r={0.34} className="tactical-fighter-bomb-impact" />
+                </>
+              ) : (
+                <>
+                  <line x1={animation.fromX} y1={animation.fromY} x2={animation.toX} y2={animation.toY} className="tactical-fighter-beam-glow" />
+                  <line x1={animation.fromX} y1={animation.fromY} x2={animation.toX} y2={animation.toY} className="tactical-fighter-beam-core" />
+                  <circle cx={animation.toX} cy={animation.toY} r={0.24} className="tactical-fighter-beam-impact" />
+                </>
+              )}
+            </g>
+          ))}
 
           {moveAnimation && (
             <g className={`tactical-move-animation is-${moveAnimation.movementKind}`} data-sequence={moveAnimation.sequence} data-movement-kind={moveAnimation.movementKind} pointerEvents="none">

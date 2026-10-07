@@ -7747,6 +7747,81 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   stroke: rgba(0, 0, 0, .94);
   stroke-width: .12px;
 }
+.tactical-fighter-attack-animation {
+  pointer-events: none;
+}
+.tactical-fighter-beam-glow,
+.tactical-fighter-beam-core,
+.tactical-fighter-beam-impact,
+.tactical-fighter-bomb-trail,
+.tactical-fighter-bomb-impact {
+  pointer-events: none;
+  vector-effect: non-scaling-stroke;
+}
+.tactical-fighter-beam-glow {
+  stroke: rgba(98, 221, 255, .52);
+  stroke-width: .38;
+  stroke-linecap: round;
+  filter: blur(.45px);
+  animation: tactical-fighter-shot-flash .92s ease-out both;
+}
+.tactical-fighter-beam-core {
+  stroke: rgba(224, 252, 255, 1);
+  stroke-width: .1;
+  stroke-linecap: round;
+  animation: tactical-fighter-shot-flash .92s ease-out both;
+}
+.tactical-fighter-beam-impact {
+  fill: rgba(118, 230, 255, .2);
+  stroke: rgba(225, 253, 255, .98);
+  stroke-width: .08;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: tactical-fighter-attack-impact .92s ease-out both;
+}
+.tactical-fighter-bomb-trail {
+  stroke: rgba(255, 191, 79, .96);
+  stroke-width: .13;
+  stroke-linecap: round;
+  stroke-dasharray: .34 .16;
+  animation: tactical-fighter-bomb-run .92s ease-out both;
+}
+.tactical-fighter-bomb-impact {
+  fill: rgba(255, 151, 53, .2);
+  stroke: rgba(255, 222, 152, .98);
+  stroke-width: .1;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: tactical-fighter-attack-impact .92s ease-out both;
+}
+.tactical-fighter-attack-animation.is-miss .tactical-fighter-beam-core,
+.tactical-fighter-attack-animation.is-miss .tactical-fighter-bomb-trail {
+  opacity: .5;
+  stroke-dasharray: .22 .2;
+}
+.tactical-fighter-attack-animation.is-miss .tactical-fighter-beam-impact,
+.tactical-fighter-attack-animation.is-miss .tactical-fighter-bomb-impact {
+  opacity: .22;
+}
+@keyframes tactical-fighter-shot-flash {
+  0% { opacity: 0; stroke-dashoffset: .7; }
+  12% { opacity: 1; }
+  58% { opacity: .92; }
+  100% { opacity: 0; stroke-dashoffset: 0; }
+}
+@keyframes tactical-fighter-bomb-run {
+  0% { opacity: 0; stroke-dashoffset: 1.5; }
+  16% { opacity: 1; }
+  72% { opacity: .9; }
+  100% { opacity: 0; stroke-dashoffset: 0; }
+}
+@keyframes tactical-fighter-attack-impact {
+  0% { opacity: 0; transform: scale(.22); }
+  22% { opacity: 1; transform: scale(.8); }
+  55% { opacity: .95; transform: scale(1.2); }
+  100% { opacity: 0; transform: scale(1.85); }
+}
+
 .tactical-projectile-event-trail {
   stroke: rgba(255, 192, 105, .88);
   stroke-width: .11;
