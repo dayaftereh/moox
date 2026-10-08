@@ -135,3 +135,12 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - On valid carrier loss, exhausted Fighter groups are removed with carrier_unavailable instead of making AI EndActivation fail and incorrectly falling back to retreat.
 - An authoritative battle_completed summary stays visible on its battle route until Continue is explicitly selected, even across same-ID reference resets.
 - Tactical retreat results explicitly identify the side that withdrew.
+
+## User review - freeze tactical commands during combat presentation (2026-10-08)
+
+- Tactical events still resolve authoritatively on the server, but their ordered client-side combat presentation is now an input interlock. The interlock starts before the refreshed event snapshot is painted and remains active through the complete animation queue.
+- Ship movement orders and their reachable-grid markers, weapon selection/targeting, Fighter/ordnance shots, ship selection, Wait/Finish/Retreat, scanning and player-initiated battlefield pan/zoom are disabled while presentation is active. Both the visible buttons and the underlying command handler enforce this rule; the latter also uses a synchronous one-command-in-flight guard.
+- A localized status message communicates that the combat animation is still playing. The presentation camera returns to the active friendly ship after the final cue; controls re-enable only after the principal visual duration of the final effect.
+- Live QA on a freshly reset canonical 7171 Combat Review: a launched ordnance event locked controls and did not allow a second command; a Beam volley blocked a direct Finish click, weapon-slot change and alternate target click, with exactly one new server command (sequence 4 -> 5); a ship move similarly blocked Finish/weapon selection, with exactly one command (sequence 5 -> 6) and its ship_moved event. Both single-cue cases returned to normal controls after playback.
+- Live multi-event QA: completing the third Human activation triggered a full Darlok AI round. The display remained presentation-locked across successive Beam sequence changes and exposed no Finish action during the queued playback; when the entire queue drained, the UI automatically unlocked and Finish became available again.
+- Web production build, TypeScript and tactical presentation contract passed. Slice 17.8 remains open for user acceptance.

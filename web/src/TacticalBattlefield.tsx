@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
 import {
   decodeShipVisualGenome,
   tacticalBoardShipCommand,
@@ -342,6 +342,11 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const [scannedShipID, setScannedShipID] = useState<number | null>(null)
   const [selectedShipID, setSelectedShipID] = useState<number | null>(() => ownActivation ? activeShip?.ship_id ?? null : null)
   const [busy, setBusy] = useState(false)
+  const [presentationLocked, setPresentationLocked] = useState(false)
+  const presentationLockedRef = useRef(false)
+  const commandInFlightRef = useRef(false)
+  const currentActivationRef = useRef({ ship: activeShip, own: ownActivation })
+  currentActivationRef.current = { ship: activeShip, own: ownActivation }
   const [retreatConfirmOpen, setRetreatConfirmOpen] = useState(false)
   const [commandError, setCommandError] = useState('')
   const [selectedBoardingTargetID, setSelectedBoardingTargetID] = useState<number | null>(() => availableBoardingActions[0]?.target_ship_id ?? null)
@@ -445,7 +450,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const reachableGridD = useMemo(() => reachableGridPath(legalMoves), [legalMoves])
   const scannedShip = ships.find((ship) => ship.ship_id === scannedShipID)
   const selectedShip = ships.find((ship) => ship.ship_id === selectedShipID && ship.seat_id === ownSeatID)
-  const movementSelectionActive = mode !== 'scan' && ownActivation && !!activeShip && selectedShipID === activeShip.ship_id
+  const movementSelectionActive = !presentationLocked && mode !== 'scan' && ownActivation && !!activeShip && selectedShipID === activeShip.ship_id
   const boardingSelectionKey = availableBoardingActions.map((action) => `${action.target_ship_id}:${action.max_marine_count}:${(action.allowed_modes ?? []).join(',')}`).join('|')
   useEffect(() => {
     const action = availableBoardingActions.find((candidate) => candidate.target_ship_id === selectedBoardingTargetID) ?? availableBoardingActions[0]
@@ -463,9 +468,18 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const viewHeight = bounds.height / camera.zoom
   const viewX = camera.cx - viewWidth / 2
   const viewY = camera.cy - viewHeight / 2
-  const controlsDisabled = commandsDisabled || busy || !ownActivation
+  const controlsDisabled = commandsDisabled || busy || presentationLocked || !ownActivation
 
-  const zoomBy = (factor: number) => setCamera((current) => ({ ...current, zoom: clamp(current.zoom * factor, MIN_ZOOM, MAX_ZOOM) }))
+  const updatePresentationLock = (locked: boolean) => {
+    if (presentationLockedRef.current === locked) return
+    presentationLockedRef.current = locked
+    setPresentationLocked(locked)
+  }
+
+  const zoomBy = (factor: number) => {
+    if (presentationLockedRef.current) return
+    setCamera((current) => ({ ...current, zoom: clamp(current.zoom * factor, MIN_ZOOM, MAX_ZOOM) }))
+  }
   const focusShip = (ship: TacticalShipView) => setCamera((current) => ({ cx: ship.x, cy: ship.y, zoom: Math.max(current.zoom, FOCUS_ZOOM) }))
 
   const focusCombatSpan = (fromX: number, fromY: number, toX: number, toY: number) => {
@@ -485,19 +499,36 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     if (!cue) {
       presentationPlayingRef.current = false
       presentationTimerRef.current = null
+      const { ship, own } = currentActivationRef.current
+      if (ship && own) {
+        setCamera((current) => ({
+          cx: ship.x, cy: ship.y, zoom: Math.max(current.zoom, FOCUS_ZOOM),
+        }))
+      }
+      updatePresentationLock(false)
       return
     }
     presentationPlayingRef.current = true
+    updatePresentationLock(true)
     focusCombatSpan(cue.fromX, cue.fromY, cue.toX, cue.toY)
     setBeamAnimation(cue.beam ?? null)
     setMoveAnimation(cue.move ?? null)
     setProjectileAnimation(cue.projectile ?? null)
     setFighterAttackAnimations(cue.fighterAttack ? [cue.fighterAttack] : [])
     setShipExplosionAnimation(cue.shipExplosion ?? null)
-    presentationTimerRef.current = window.setTimeout(playNextPresentationCue, cue.holdMs)
+    // Never re-enable commands before the principal effect for this cue finishes.
+    // Floating damage labels may linger, but moving ships, shots and explosions must end.
+    const visualMs = cue.shipExplosion ? 2280
+      : cue.projectile ? 1176
+        : cue.move ? 864
+          : cue.fighterAttack ? 1260
+            : cue.beam ? 1620
+              : 0
+    presentationTimerRef.current = window.setTimeout(playNextPresentationCue, Math.max(cue.holdMs, visualMs))
   }
 
   const enqueuePresentationCue = (cue: TacticalPresentationCue) => {
+    updatePresentationLock(true)
     presentationQueueRef.current.push(cue)
     if (!presentationPlayingRef.current) {
       presentationPlayingRef.current = true
@@ -512,11 +543,13 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   }, [])
 
   useEffect(() => {
-    if (!activeShip) return
+    if (!activeShip || presentationPlayingRef.current) return
     setCamera((current) => ({ cx: activeShip.x, cy: activeShip.y, zoom: Math.max(current.zoom, FOCUS_ZOOM) }))
   }, [activeShip?.ship_id])
 
-  useEffect(() => {
+  // Layout effect acquires the lock before the just-refreshed server view is
+  // painted: the previous command cannot become clickable between snapshots.
+  useLayoutEffect(() => {
     const events = tactical.events ?? []
     const newestSequence = events.reduce((max, event) => Math.max(max, event.sequence), 0)
     if (observedEventSequenceRef.current == null) {
@@ -719,7 +752,8 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   }, [shipExplosionAnimation])
 
   const runCommand = async (command: ProtocolCommand) => {
-    if (commandsDisabled || busy) return
+    if (commandsDisabled || commandInFlightRef.current || presentationLockedRef.current || !ownActivation) return
+    commandInFlightRef.current = true
     setBusy(true)
     setCommandError('')
     try {
@@ -727,6 +761,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     } catch (reason) {
       setCommandError(reason instanceof Error ? reason.message : String(reason))
     } finally {
+      commandInFlightRef.current = false
       setBusy(false)
     }
   }
@@ -748,7 +783,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   }
 
   const selectShip = (ship: TacticalShipView) => {
-    if (ignoreClickRef.current) return
+    if (ignoreClickRef.current || presentationLockedRef.current) return
     if (mode === 'scan') {
       setScannedShipID(ship.ship_id)
       focusShip(ship)
@@ -825,6 +860,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   }
 
   const pointerDown = (event: ReactPointerEvent<SVGSVGElement>) => {
+    if (presentationLockedRef.current) return
     if (event.pointerType === 'mouse' && event.button !== 0 && event.button !== 2) return
     if (event.pointerType === 'mouse' && event.button === 2) event.preventDefault()
     if (pointersRef.current.size === 0) {
@@ -837,7 +873,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   }
 
   const pointerMove = (event: ReactPointerEvent<SVGSVGElement>) => {
-    if (!pointersRef.current.has(event.pointerId)) return
+    if (presentationLockedRef.current || !pointersRef.current.has(event.pointerId)) return
     const previous = gestureRef.current
     pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY })
     const currentGesture = gestureSnapshot(pointersRef.current)
@@ -886,10 +922,14 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   }
 
   return (
-    <div className="tactical-battlefield tactical-screen">
+    <div
+      className={'tactical-battlefield tactical-screen' + (presentationLocked ? ' is-presentation-locked' : '')}
+      data-presentation-locked={presentationLocked ? 'true' : 'false'}
+      aria-busy={presentationLocked}
+    >
       <div className="tactical-screen-status" aria-live="polite">
         <span className={`tactical-status-dot ${ownActivation ? 'is-own' : 'is-waiting'}`} />
-        <strong>{activeShip ? (ownActivation ? t('battlefield.yourActivation') : t('battlefield.waitingActivation', { empire: empireName(activeShip.empire_id) })) : t('battlefield.noActiveShip')}</strong>
+        <strong>{presentationLocked ? t('battlefield.presentationLocked') : activeShip ? (ownActivation ? t('battlefield.yourActivation') : t('battlefield.waitingActivation', { empire: empireName(activeShip.empire_id) })) : t('battlefield.noActiveShip')}</strong>
         {(selectedShip ?? activeShip) && <span>{selectedShip ? `${shipName(selectedShip.ship_id)} · ` : ''}{(selectedShip ?? activeShip)?.movement_current}/{(selectedShip ?? activeShip)?.movement_max}</span>}
       </div>
 
@@ -1225,6 +1265,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                   aria-current={active ? 'true' : undefined}
                   aria-label={`${shipName(ship.ship_id)} · ${statusLabel}`}
                   title={`${shipName(ship.ship_id)} · ${statusLabel}`}
+                  disabled={presentationLocked}
                   onClick={() => selectShip(ship)}
                 >
                   <span className="tactical-roster-glyph" aria-hidden="true"><ProceduralShipGlyph seed={genome?.seed ?? `${ship.empire_id}:${ship.source_design_id ?? ship.ship_id}:${ship.source_design_revision ?? 0}:${ship.strategic_picture_id ?? 0}`} hullId={visualHullID} genome={genome} weaponCount={weaponTotal} footprint={shipHullFootprint(visualHullID)} /></span>
@@ -1298,7 +1339,9 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             <button
               type="button"
               className={`tactical-scan-toggle ${mode === 'scan' ? 'is-active' : ''}`}
+              disabled={presentationLocked}
               onClick={() => {
+                if (presentationLockedRef.current) return
                 setMode((current) => current === 'scan' ? 'combat' : 'scan')
                 setScannedShipID(null)
               }}
