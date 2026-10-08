@@ -49,6 +49,7 @@ type TacticalFighterAttackAnimation = { sequence: number; groupID: number; paylo
 type TacticalShipExplosionAnimation = { sequence: number; shipID: number; x: number; y: number; quantum: boolean; power: number; radiusFields: number }
 type TacticalPresentationCue = {
   sequence: number
+  followCamera: boolean
   fromX: number
   fromY: number
   toX: number
@@ -347,6 +348,8 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const commandInFlightRef = useRef(false)
   const currentActivationRef = useRef({ ship: activeShip, own: ownActivation })
   currentActivationRef.current = { ship: activeShip, own: ownActivation }
+
+
   const [retreatConfirmOpen, setRetreatConfirmOpen] = useState(false)
   const [commandError, setCommandError] = useState('')
   const [selectedBoardingTargetID, setSelectedBoardingTargetID] = useState<number | null>(() => availableBoardingActions[0]?.target_ship_id ?? null)
@@ -381,9 +384,27 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     }
   }, [points])
 
-  const [camera, setCamera] = useState<CameraState>(() => activeShip
-    ? { cx: activeShip.x, cy: activeShip.y, zoom: FOCUS_ZOOM }
-    : { cx: bounds.cx, cy: bounds.cy, zoom: 1 })
+  // Start a human activation with a battlefield overview instead of an auto-zoomed ship.
+  const [camera, setCamera] = useState<CameraState>(() => ownActivation
+    ? { cx: bounds.cx, cy: bounds.cy, zoom: 1 }
+    : activeShip
+      ? { cx: activeShip.x, cy: activeShip.y, zoom: COMBAT_CAMERA_MAX_ZOOM }
+      : { cx: bounds.cx, cy: bounds.cy, zoom: 1 })
+  const manualCameraRef = useRef<CameraState>({ cx: bounds.cx, cy: bounds.cy, zoom: 1 })
+  const previousOwnActivationRef = useRef(ownActivation)
+  // Keep manual zoom fixed as legal moves, fighters and projectiles alter the battlefield bounds.
+  const cameraExtentRef = useRef({ width: bounds.width, height: bounds.height })
+
+  useLayoutEffect(() => {
+    if (previousOwnActivationRef.current === ownActivation) return
+    if (ownActivation) {
+      // Returning control to the player must also restore their last manual viewport.
+      setCamera(manualCameraRef.current)
+    } else {
+      manualCameraRef.current = camera
+    }
+    previousOwnActivationRef.current = ownActivation
+  }, [ownActivation, camera])
   const pointersRef = useRef(new Map<number, PointerPoint>())
   const gestureRef = useRef<GestureSnapshot | null>(null)
   const draggedRef = useRef(false)
@@ -393,6 +414,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const presentationQueueRef = useRef<TacticalPresentationCue[]>([])
   const presentationTimerRef = useRef<number | null>(null)
   const presentationPlayingRef = useRef(false)
+  const presentationAutoFollowedRef = useRef(false)
 
   useEffect(() => {
     const selected = weaponActions.find((action) => action.weapon_slot === selectedWeaponSlot)
@@ -464,8 +486,8 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     setBoardingMarineCount((current) => clamp(current, 1, action.max_marine_count))
     if (!(action.allowed_modes ?? []).includes(boardingMode)) setBoardingMode(action.allowed_modes?.[0] ?? 'raid')
   }, [boardingSelectionKey, selectedBoardingTargetID, boardingMode])
-  const viewWidth = bounds.width / camera.zoom
-  const viewHeight = bounds.height / camera.zoom
+  const viewWidth = cameraExtentRef.current.width / camera.zoom
+  const viewHeight = cameraExtentRef.current.height / camera.zoom
   const viewX = camera.cx - viewWidth / 2
   const viewY = camera.cy - viewHeight / 2
   const controlsDisabled = commandsDisabled || busy || presentationLocked || !ownActivation
@@ -478,15 +500,23 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
 
   const zoomBy = (factor: number) => {
     if (presentationLockedRef.current) return
-    setCamera((current) => ({ ...current, zoom: clamp(current.zoom * factor, MIN_ZOOM, MAX_ZOOM) }))
+    setCamera((current) => {
+      const next = { ...current, zoom: clamp(current.zoom * factor, MIN_ZOOM, MAX_ZOOM) }
+      if (ownActivation) manualCameraRef.current = next
+      return next
+    })
   }
-  const focusShip = (ship: TacticalShipView) => setCamera((current) => ({ cx: ship.x, cy: ship.y, zoom: Math.max(current.zoom, FOCUS_ZOOM) }))
+  const focusShip = (ship: TacticalShipView) => setCamera((current) => {
+    const next = { cx: ship.x, cy: ship.y, zoom: Math.max(current.zoom, FOCUS_ZOOM) }
+    if (ownActivation) manualCameraRef.current = next
+    return next
+  })
 
   const focusCombatSpan = (fromX: number, fromY: number, toX: number, toY: number) => {
     const spanX = Math.abs(toX - fromX)
     const spanY = Math.abs(toY - fromY)
-    const zoomX = bounds.width / Math.max(14, spanX + COMBAT_CAMERA_PAD_X)
-    const zoomY = bounds.height / Math.max(10, spanY + COMBAT_CAMERA_PAD_Y)
+    const zoomX = cameraExtentRef.current.width / Math.max(14, spanX + COMBAT_CAMERA_PAD_X)
+    const zoomY = cameraExtentRef.current.height / Math.max(10, spanY + COMBAT_CAMERA_PAD_Y)
     setCamera({
       cx: (fromX + toX) / 2,
       cy: (fromY + toY) / 2,
@@ -499,18 +529,23 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     if (!cue) {
       presentationPlayingRef.current = false
       presentationTimerRef.current = null
-      const { ship, own } = currentActivationRef.current
-      if (ship && own) {
-        setCamera((current) => ({
-          cx: ship.x, cy: ship.y, zoom: Math.max(current.zoom, FOCUS_ZOOM),
-        }))
+      // Replay may include the entire AI turn even when the server has already
+      // handed control back to the Human in the final authoritative snapshot.
+      if (presentationAutoFollowedRef.current && currentActivationRef.current.own) {
+        setCamera(manualCameraRef.current)
       }
+      presentationAutoFollowedRef.current = false
       updatePresentationLock(false)
       return
     }
     presentationPlayingRef.current = true
     updatePresentationLock(true)
-    focusCombatSpan(cue.fromX, cue.fromY, cue.toX, cue.toY)
+    // An authoritative cue still plays/locks input during the player's turn,
+    // but only an opponent activation may steer the camera to the action.
+    if (cue.followCamera) {
+      presentationAutoFollowedRef.current = true
+      focusCombatSpan(cue.fromX, cue.fromY, cue.toX, cue.toY)
+    }
     setBeamAnimation(cue.beam ?? null)
     setMoveAnimation(cue.move ?? null)
     setProjectileAnimation(cue.projectile ?? null)
@@ -540,12 +575,16 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     if (presentationTimerRef.current != null) window.clearTimeout(presentationTimerRef.current)
     presentationQueueRef.current = []
     presentationPlayingRef.current = false
+    presentationAutoFollowedRef.current = false
   }, [])
 
   useEffect(() => {
-    if (!activeShip || presentationPlayingRef.current) return
-    setCamera((current) => ({ cx: activeShip.x, cy: activeShip.y, zoom: Math.max(current.zoom, FOCUS_ZOOM) }))
-  }, [activeShip?.ship_id])
+    if (!activeShip || ownActivation || presentationPlayingRef.current) return
+    setCamera((current) => ({
+      cx: activeShip.x, cy: activeShip.y,
+      zoom: clamp(current.zoom, COMBAT_CAMERA_MIN_ZOOM, COMBAT_CAMERA_MAX_ZOOM),
+    }))
+  }, [activeShip?.ship_id, ownActivation])
 
   // Layout effect acquires the lock before the just-refreshed server view is
   // painted: the previous command cannot become clickable between snapshots.
@@ -558,6 +597,38 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     }
     const unseen = events.filter((event) => event.sequence > (observedEventSequenceRef.current ?? 0)).sort((a, b) => a.sequence - b.sequence)
     observedEventSequenceRef.current = newestSequence
+
+    // Replay follows the ownership of the authoritative activation timeline,
+    // not the current snapshot's active ship. The server may already have
+    // returned to the Human while a whole AI round is still being presented.
+    const seatByShip = new Map(ships.map((ship) => [ship.ship_id, ship.seat_id]))
+    const followCameraBySequence = new Map<number, boolean>()
+    let roundInitiative: number[] = []
+    let initiativeIndex = 0
+    let knownRound = false
+    for (const event of [...events].sort((a, b) => a.sequence - b.sequence)) {
+      if (event.kind === 'round_started') {
+        const order = event.data?.initiative_order
+        roundInitiative = Array.isArray(order) ? order.filter((shipID): shipID is number => typeof shipID === 'number') : []
+        const activeID = eventNumber(event.data, 'active_ship_id')
+        const startedIndex = roundInitiative.indexOf(activeID ?? -1)
+        initiativeIndex = startedIndex >= 0 ? startedIndex : 0
+        knownRound = roundInitiative.length > 0
+      }
+      const actingShipID = roundInitiative[initiativeIndex]
+      const humanTurn = knownRound && actingShipID !== undefined && seatByShip.get(actingShipID) === ownSeatID
+      followCameraBySequence.set(event.sequence, knownRound ? !humanTurn : !ownActivation)
+      if (event.kind === 'activation_ended' || event.kind === 'activation_auto_ended') {
+        const endedID = eventNumber(event.data, 'ship_id')
+        const endedIndex = roundInitiative.indexOf(endedID ?? -1)
+        if (endedIndex >= 0) initiativeIndex = endedIndex + 1
+      }
+    }
+    const enqueueEventCue = (cue: Omit<TacticalPresentationCue, 'followCamera'>) =>
+      enqueuePresentationCue({
+        ...cue,
+        followCamera: followCameraBySequence.get(cue.sequence) ?? !ownActivation,
+      })
     for (const event of unseen) {
       if (event.kind === 'beam_fired' || event.kind === 'beam_volley_resolved') {
         const shotCount = eventNumber(event.data, 'shot_count') ?? 1
@@ -593,7 +664,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             burstShotCount: eventNumber(event.data, 'burst_shot_count') ?? 1,
             layers: damageLayersForBeam(events, event),
           }
-          enqueuePresentationCue({
+          enqueueEventCue({
             sequence: event.sequence,
             fromX: source.x, fromY: source.y, toX: targetX, toY: targetY,
             holdMs: event.data?.reactive_point_defense === true ? COMBAT_CUE_REACTIVE_PD_MS : COMBAT_CUE_BEAM_MS,
@@ -619,7 +690,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             hit: outcome.hit,
             damage: outcome.damage,
           }
-          enqueuePresentationCue({
+          enqueueEventCue({
             sequence: event.sequence,
             fromX: source.x, fromY: source.y, toX: target.x, toY: target.y,
             holdMs: COMBAT_CUE_FIGHTER_ATTACK_MS,
@@ -643,7 +714,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             power: eventNumber(event.data, 'explosion_power') ?? 0,
             radiusFields,
           }
-          enqueuePresentationCue({
+          enqueueEventCue({
             sequence: event.sequence,
             fromX: quantum && radiusFields > 0 ? ship.x - radiusFields : ship.x,
             fromY: ship.y,
@@ -664,7 +735,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             fromX, fromY, toX, toY,
             movementKind: eventString(event.data, 'movement_kind') ?? 'normal',
           }
-          enqueuePresentationCue({ sequence: event.sequence, fromX, fromY, toX, toY, holdMs: COMBAT_CUE_MOVE_MS, move })
+          enqueueEventCue({ sequence: event.sequence, fromX, fromY, toX, toY, holdMs: COMBAT_CUE_MOVE_MS, move })
         }
       } else if (event.kind === 'fighter_group_moved') {
         const groupID = eventNumber(event.data, 'group_id')
@@ -684,7 +755,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             fromX, fromY, toX, toY,
             movementKind: phase === 'returning' ? 'fighter-returning' : 'fighter',
           }
-          enqueuePresentationCue({ sequence: event.sequence, fromX, fromY, toX, toY, holdMs: COMBAT_CUE_MOVE_MS, move })
+          enqueueEventCue({ sequence: event.sequence, fromX, fromY, toX, toY, holdMs: COMBAT_CUE_MOVE_MS, move })
         }
       } else if (event.kind === 'projectile_moved') {
         const projectileID = eventNumber(event.data, 'projectile_id')
@@ -708,7 +779,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             toY: position.y,
             multiplicity: Math.max(1, Math.trunc(multiplicity)),
           }
-          enqueuePresentationCue({
+          enqueueEventCue({
             sequence: event.sequence,
             fromX, fromY, toX: position.x, toY: position.y,
             holdMs: COMBAT_CUE_PROJECTILE_MS,
@@ -717,7 +788,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         }
       }
     }
-  }, [tactical.events, ships, projectiles, fighterGroups])
+  }, [tactical.events, ships, projectiles, fighterGroups, ownSeatID, ownActivation])
 
   useEffect(() => {
     if (!beamAnimation) return
@@ -790,8 +861,8 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
       return
     }
     if (ship.seat_id === ownSeatID) {
+      // Selecting another friendly ship must not pan or zoom the player's viewport.
       setSelectedShipID(ship.ship_id)
-      focusShip(ship)
       if (!controlsDisabled && ownActivation && activeShip && ship.ship_id !== activeShip.ship_id && waitTargetShipIDSet.has(ship.ship_id)) {
         void runCommand(tacticalWaitActivationCommand(tactical, activeShip.ship_id, ship.ship_id))
       }
@@ -896,11 +967,15 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
       }
     }
     if (draggedRef.current) {
-      setCamera((current) => ({
-        cx: current.cx - dx * (bounds.width / current.zoom) / rect.width,
-        cy: current.cy - dy * (bounds.height / current.zoom) / rect.height,
-        zoom: clamp(current.zoom * pinchFactor, MIN_ZOOM, MAX_ZOOM),
-      }))
+      setCamera((current) => {
+        const next = {
+          cx: current.cx - dx * (cameraExtentRef.current.width / current.zoom) / rect.width,
+          cy: current.cy - dy * (cameraExtentRef.current.height / current.zoom) / rect.height,
+          zoom: clamp(current.zoom * pinchFactor, MIN_ZOOM, MAX_ZOOM),
+        }
+        if (ownActivation) manualCameraRef.current = next
+        return next
+      })
     }
     gestureRef.current = currentGesture
   }

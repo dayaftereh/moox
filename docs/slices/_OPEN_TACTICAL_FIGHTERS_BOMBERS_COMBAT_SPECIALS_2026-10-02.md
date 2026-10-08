@@ -152,3 +152,12 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Display a single moving rocket/engine during its flight cue and pin the flame at the nozzle, restoring the authoritative static marker after playback.
 - Live Chrome confirmed near-zero hit/pulse displacement, correct debris angle, a real Beam volley and a real Zeon missile flight. See docs/research/SLICE_17_8_TACTICAL_VFX_PIVOT_CHROME_AUDIT_2026-10-08.md.
 - User review pending. Keep only Slice 17.8 OPEN; do not open Slice 17.9.
+
+## User-review fix – Tactical camera follows only opponent activations (2026-10-08)
+
+- User camera center/zoom are stable during Human targeting, Beam firing, ordnance launch, Fighter/Bomber launch and the associated presentation queue. Friendly ship selection does not force a camera zoom.
+- Automatic combat-action framing remains enabled only for opponent events, based on the event's authoritative initiative/activation timeline rather than the current snapshot's active ship. This handles entire AI rounds arriving after the server has already returned control to Human.
+- The saved player viewport is restored after opponent presentation finishes. Stable camera extent prevents new projectiles/Fighter groups from causing incidental viewBox shifts.
+- Animation input locking and the combat event sequencing remain unchanged.
+- Chrome before/after measurements and QA contract: `docs/research/SLICE_17_8_TACTICAL_CAMERA_OWNERSHIP_CHROME_QA_2026-10-08.md`.
+- Slice 17.8 remains open pending explicit manual approval; do not start 17.9.
