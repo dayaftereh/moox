@@ -746,6 +746,9 @@ func resolveTacticalFighterAttack(spec TacticalSpec, r *tacticalRuntime, groupID
 	}
 	group := r.fighters.Groups[index]
 	if group.AttackStock <= 0 {
+		if !tacticalFighterCarrierFunctional(spec, r, group) {
+			return nil // Arrival resolves carrier loss into a destroyed-group outcome.
+		}
 		return tacticalFighterBeginReturn(spec, r, &r.fighters.Groups[index], "attack_stock_exhausted", group.SourceSeatID, commandSequence)
 	}
 	switch group.Kind {
@@ -782,6 +785,9 @@ func resolveTacticalFighterAttack(spec TacticalSpec, r *tacticalRuntime, groupID
 	groupPtr := &r.fighters.Groups[index]
 	groupPtr.AttackStock--
 	if groupPtr.AttackStock <= 0 {
+		if !tacticalFighterCarrierFunctional(spec, r, *groupPtr) {
+			return nil // The caller emits fighter_group_destroyed: carrier_unavailable.
+		}
 		return tacticalFighterBeginReturn(spec, r, groupPtr, "attack_stock_exhausted", groupPtr.SourceSeatID, commandSequence)
 	}
 	return nil
@@ -814,6 +820,12 @@ func resolveTacticalFighterArrival(spec TacticalSpec, r *tacticalRuntime, groupI
 	}
 	if err := resolveTacticalFighterAttack(spec, r, groupID, commandSequence); err != nil {
 		return tacticalFighterQuantumOutcome{}, err
+	}
+	if index := tacticalFighterGroupIndexByID(r, groupID); index >= 0 {
+		group = &r.fighters.Groups[index]
+		if group.AttackStock <= 0 && !tacticalFighterCarrierFunctional(spec, r, *group) {
+			return tacticalFighterQuantumOutcome{DestroyReason: "carrier_unavailable"}, nil
+		}
 	}
 	return tacticalFighterQuantumOutcome{Keep: true}, nil
 }

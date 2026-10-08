@@ -83,6 +83,15 @@ export function BattleRouteView({ snapshot, battleID, resolution, onContinue, on
       : t('battle.unknownWinner')
   const destroyed = battleSummary?.destroyed_ship_ids ?? battle?.result?.destroyed_ship_ids ?? []
   const survivors = battleSummary?.surviving_ship_ids ?? []
+  const isRetreat = battleSummary?.outcome === 'tactical_retreat'
+  const retreatingEmpireID = isRetreat
+    ? battleSummary?.winner_empire_id === battleSummary?.attacker_empire_id
+      ? battleSummary?.defender_empire_id
+      : battleSummary?.winner_empire_id === battleSummary?.defender_empire_id
+        ? battleSummary?.attacker_empire_id
+        : undefined
+    : undefined
+  const outcomeLabel = isRetreat ? t('battle.outcomeRetreat') : humanize(battleSummary?.outcome)
   const colonyIDs = battle?.spec.defender_colony_ids ?? battleSummary?.defender_colony_ids ?? []
   const strategicTurn = battle?.spec.strategic_turn ?? resolution?.turn ?? snapshot.view.turn
   const starSeed = battle?.spec.seed ?? battleID
@@ -162,10 +171,17 @@ export function BattleRouteView({ snapshot, battleID, resolution, onContinue, on
             <>
               <dl className="battle-result-facts">
                 <div><dt>{t('battle.winner')}</dt><dd>{winner}</dd></div>
-                <div><dt>{t('battle.outcome')}</dt><dd>{humanize(battleSummary.outcome)}</dd></div>
+                <div><dt>{t('battle.outcome')}</dt><dd>{outcomeLabel}</dd></div>
                 <div><dt>{t('battle.destroyed')}</dt><dd>{destroyed.length}</dd></div>
                 <div><dt>{t('battle.surviving')}</dt><dd>{survivors.length}</dd></div>
               </dl>
+              {isRetreat && (
+                <Notice title={t('battle.outcomeRetreat')}>
+                  {retreatingEmpireID
+                    ? t('battle.retreatingEmpire', { empire: empireName(retreatingEmpireID) })
+                    : t('battle.retreatUnknownSide')}
+                </Notice>
+              )}
               {destroyed.length > 0 && <div className="battle-result-list"><strong>{t('battle.destroyedShips')}</strong><div className="battle-chip-list">{destroyed.map((id) => <span className="badge danger" key={id}>{shipName(id)}</span>)}</div></div>}
               {survivors.length > 0 && <div className="battle-result-list"><strong>{t('battle.survivingShips')}</strong><div className="battle-chip-list">{survivors.map((id) => <span className="badge" key={id}>{shipName(id)}</span>)}</div></div>}
               {colonyIDs.length > 0 && <div className="battle-result-list"><strong>{t('battle.colonyConsequence')}</strong><div className="battle-chip-list">{colonyIDs.map((id) => <span className="badge" key={id}>{colonyName(id)}</span>)}</div></div>}

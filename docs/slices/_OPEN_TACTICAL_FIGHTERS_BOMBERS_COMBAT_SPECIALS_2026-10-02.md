@@ -127,3 +127,11 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - All production ship-destruction entry points converge on the shared resolver.
 - Browser VFX/camera consume ship_destroyed metadata only; Quantum shows the authoritative blast field.
 - Keep Slice 17.8 open for the user's visual/manual acceptance.
+
+
+## User-review fix - forced AI retreat and missing Battle Review
+
+- See docs/research/SLICE_17_8_USER_REVIEW_FORCED_RETREAT_RESULT_2026-10-08.md for deterministic reproducer, carrier-unavailable Fighter lifecycle fix, and route/acknowledgement regression.
+- On valid carrier loss, exhausted Fighter groups are removed with carrier_unavailable instead of making AI EndActivation fail and incorrectly falling back to retreat.
+- An authoritative battle_completed summary stays visible on its battle route until Continue is explicitly selected, even across same-ID reference resets.
+- Tactical retreat results explicitly identify the side that withdrew.

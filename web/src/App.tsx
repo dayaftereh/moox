@@ -1336,7 +1336,11 @@ function App() {
     if (route.section !== 'battle') return
     const routedBattle = route.entityID ? snapshot.battles.find((battle) => battle.spec.id === route.entityID) : undefined
     const routedSummary = route.entityID ? summaries.find((summary) => summary.kind === 'battle_completed' && summary.battle?.battle_id === route.entityID) : undefined
-    if (!routedBattle || (routedSummary && acknowledgedResolutionIDs.has(routedSummary.id))) {
+    // A Battle Review must stay visible until the user explicitly continues.
+    // Reference-game resets can reuse resolution IDs (for example event-16), so a
+    // sessionStorage acknowledgement from an earlier playthrough must not silently
+    // redirect a newly completed combat away from its authoritative result.
+    if (!routedBattle && !routedSummary) {
       navigate({ kind: 'game', gameID: route.gameID, section: 'galaxy' })
     }
   }, [snapshot, route, acknowledgedResolutionIDs])

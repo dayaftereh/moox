@@ -9,6 +9,9 @@ const read = (relative) => fs.readFileSync(path.join(webRoot, relative), 'utf8')
 const api = read('src/api.ts')
 const battlefield = read('src/TacticalBattlefield.tsx')
 const styles = read('src/styles.css')
+const app = read('src/App.tsx')
+const battleRoute = read('src/BattleRouteView.tsx')
+const i18n = read('src/i18n.tsx')
 
 const requireFragment = (source, fragment, label) => {
   if (!source.includes(fragment)) {
@@ -17,6 +20,10 @@ const requireFragment = (source, fragment, label) => {
 }
 
 requireFragment(api, 'target_projectile_id?: number', 'projectile target DTO')
+requireFragment(app, 'if (!routedBattle && !routedSummary)', 'retain acknowledged Battle Review results after a reference-game reset')
+requireFragment(battleRoute, "battleSummary?.outcome === 'tactical_retreat'", 'authoritative tactical retreat result rendering')
+requireFragment(battleRoute, "t('battle.retreatingEmpire'", 'named retreating side in result view')
+requireFragment(i18n, "'battle.outcomeRetreat': 'Retreat'", 'localized tactical retreat outcome')
 requireFragment(api, 'ordnance: TacticalOrdnanceState', 'ordnance projection DTO')
 requireFragment(api, "kind: 'battle.fire_ordnance'", 'ordnance command transport')
 requireFragment(api, 'tacticalFireBeamProjectileCommand', 'Beam projectile command transport')
