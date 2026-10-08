@@ -144,3 +144,11 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Live QA on a freshly reset canonical 7171 Combat Review: a launched ordnance event locked controls and did not allow a second command; a Beam volley blocked a direct Finish click, weapon-slot change and alternate target click, with exactly one new server command (sequence 4 -> 5); a ship move similarly blocked Finish/weapon selection, with exactly one command (sequence 5 -> 6) and its ship_moved event. Both single-cue cases returned to normal controls after playback.
 - Live multi-event QA: completing the third Human activation triggered a full Darlok AI round. The display remained presentation-locked across successive Beam sequence changes and exposed no Finish action during the queued playback; when the entire queue drained, the UI automatically unlocked and Finish became available again.
 - Web production build, TypeScript and tactical presentation contract passed. Slice 17.8 remains open for user acceptance.
+
+## User review – tactical VFX pivot and rocket thruster alignment (2026-10-08)
+
+- Chrome confirmed: Beam hit and movement-arrival circles were scaled around SVG viewBox instead of their local positions; animated explosion debris lost its direction because CSS transform overrode SVG rotate.
+- Anchored both animated circles using SVG fill-box pivots; rotated explosion debris via parent SVG groups and local fragment scaling.
+- Display a single moving rocket/engine during its flight cue and pin the flame at the nozzle, restoring the authoritative static marker after playback.
+- Live Chrome confirmed near-zero hit/pulse displacement, correct debris angle, a real Beam volley and a real Zeon missile flight. See docs/research/SLICE_17_8_TACTICAL_VFX_PIVOT_CHROME_AUDIT_2026-10-08.md.
+- User review pending. Keep only Slice 17.8 OPEN; do not open Slice 17.9.

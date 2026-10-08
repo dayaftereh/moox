@@ -5063,6 +5063,9 @@ button.galaxy-node-marker-player-fleet.is-open {
   animation: tactical-move-trail-fade .864s ease-out both;
 }
 .tactical-move-arrival {
+  /* SVG view-box scaling pulls this effect toward the viewport origin. */
+  transform-box: fill-box;
+  transform-origin: center;
   fill: rgba(119, 230, 255, .2);
   stroke: rgba(178, 245, 255, .98);
   stroke-width: 1;
@@ -5082,6 +5085,9 @@ button.galaxy-node-marker-player-fleet.is-open {
   animation: tactical-beam-flash 1.62s ease-out both;
 }
 .tactical-beam-impact {
+  /* Scale the hit at the target, not around the camera / SVG viewBox. */
+  transform-box: fill-box;
+  transform-origin: center;
   fill: rgba(255, 92, 70, .2);
   stroke: rgba(255, 218, 197, 1);
   stroke-width: 1.2;
@@ -8074,6 +8080,9 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   animation: tactical-ship-explosion-ray 2.16s ease-out both;
 }
 .tactical-ship-explosion-debris line {
+  /* Scale outward along the fragment's own axis. Rotation lives on its parent. */
+  transform-box: fill-box;
+  transform-origin: left center;
   stroke: rgba(255, 235, 185, .96);
   stroke-width: .11;
   stroke-linecap: round;

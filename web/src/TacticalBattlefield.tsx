@@ -1019,6 +1019,10 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
           })}
 
           {projectiles.map((projectile) => {
+            // The authoritative snapshot already contains the projectile at its
+            // final position. Do not draw a second rocket (and second engine)
+            // there while its flight cue is showing the same projectile in motion.
+            if (projectileAnimation?.kind === 'projectile_moved' && projectileAnimation.projectileID === projectile.projectile_id) return null
             const isOwn = projectile.source_seat_id === ownSeatID
             const isLegalTarget = mode !== 'scan' && legalProjectileTargetByID.has(projectile.projectile_id)
             const angle = projectile.facing * 22.5
@@ -1153,11 +1157,10 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                             <path d="M -0.28 -0.1 L -0.46 -0.24 L -0.08 -0.1 Z M -0.28 0.1 L -0.46 0.24 L -0.08 0.1 Z" className="tactical-projectile-flight-fin" />
                             <circle cx={-0.46} cy={0} r={0.052} className="tactical-projectile-flight-engine-core" />
                             <path d="M -0.47 -0.07 L -1.06 0 L -0.47 0.07 Z" className="tactical-projectile-flight-exhaust" />
-                            <circle cx={-0.62} cy={0} r={0.06} className="tactical-projectile-flight-flame">
-                              <animate attributeName="cx" values="-0.56;-0.92" dur="216ms" repeatCount="indefinite" />
-                              <animate attributeName="r" values="0.055;0.018" dur="216ms" repeatCount="indefinite" />
-                              <animate attributeName="opacity" values="1;0" dur="216ms" repeatCount="indefinite" />
-                            </circle>
+                            {/* Keep the engine flare at a fixed offset from the
+                                tail. The pulsing CSS glow provides flicker without
+                                moving the exhaust independently of the rocket. */}
+                            <circle cx={-0.62} cy={0} r={0.06} className="tactical-projectile-flight-flame" />
                           </g>
                           ))}
                         </g>
@@ -1192,7 +1195,9 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
               </g>
               <g className="tactical-ship-explosion-debris">
                 {Array.from({ length: 6 }, (_, index) => (
-                  <line key={'debris:' + index} x1={0.32} y1={0} x2={0.72 + (index % 2) * 0.2} y2={0} transform={'rotate(' + (index * 60 + 18) + ')'} />
+                  <g key={'debris:' + index} transform={'rotate(' + (index * 60 + 18) + ')'}>
+                    <line x1={0.32} y1={0} x2={0.72 + (index % 2) * 0.2} y2={0} />
+                  </g>
                 ))}
               </g>
               {shipExplosionAnimation.quantum && shipExplosionAnimation.radiusFields > 0 && (

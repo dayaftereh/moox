@@ -50,6 +50,14 @@ requireFragment(battlefield, 'tacticalMiniFormation(projectile.multiplicity)', '
 requireFragment(battlefield, 'tacticalMiniFormation(projectileAnimation.multiplicity)', 'exact miniature projectile flight rendering')
 requireFragment(battlefield, 'type TacticalPresentationCue', 'authoritative event presentation queue')
 requireFragment(battlefield, 'presentationQueueRef', 'combat presentation queue state')
+requireFragment(styles, '.tactical-move-arrival {\n  /* SVG view-box scaling', 'movement arrival anchored to its world-space cell')
+requireFragment(styles, '.tactical-beam-impact {\n  /* Scale the hit at the target', 'beam hit anchored to target')
+requireFragment(styles, '.tactical-ship-explosion-debris line {\n  /* Scale outward', 'debris scales on local axis')
+requireFragment(battlefield, "transform={'rotate(' + (index * 60 + 18) + ')'}", 'debris parent retains rotation while child animates')
+requireFragment(battlefield, "projectileAnimation?.kind === 'projectile_moved' && projectileAnimation.projectileID === projectile.projectile_id", 'no static duplicate rocket engine during its movement')
+requireFragment(battlefield, '<circle cx={-0.62} cy={0} r={0.06} className="tactical-projectile-flight-flame" />', 'flight rocket engine plume stays attached to tail')
+
+
 requireFragment(battlefield, 'presentationLockedRef', 'synchronous animation playback input interlock')
 requireFragment(battlefield, 'presentationLocked || !ownActivation', 'server command controls disabled throughout playback')
 requireFragment(battlefield, 'useLayoutEffect(() => {', 'presentation event lock before refreshed render is painted')
