@@ -197,3 +197,12 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - QA and browser evidence: docs/research/SLICE_17_8_TACTICAL_DIRECTIONAL_SHIELDS_PIERCING_CHROME_QA_2026-10-09.md
 - No combat rules or server events were changed. Keep canonical 7171's in-memory reference game intact; no reset needed for this Web-only change.
 - Manual user acceptance still outstanding. Leave Slice 17.8 OPEN and do not open Slice 17.9.
+
+## User Review - Selected Ship Condition Percentages (2026-10-09)
+
+- Show three compact bars directly above the blue movement-selection square of the currently active selected Human ship: blue shield (sum of four sectors), yellow armor/hull, red structure.
+- Calculate all three percentages exclusively from the authoritative Tactical ship snapshot, using the existing clamped percentage helper, and display numeric `%` text even for an empty bar.
+- Share the established `movementSelectionActive` presentation/ownership/movement gate: bars do not obscure animation playback, completed activations, enemy ships or disabled selection. The SVG overlay does not intercept pointer events.
+- Real Chrome QA confirmed full 100/100/100 percentages, proper transfer from Falcon #40 to #41, animation hiding, and correct 75/0/24 percentages after actual AI-caused shield/armor/structure damage.
+- Detailed test report: `docs/research/SLICE_17_8_TACTICAL_SELECTED_SHIP_VITALS_CHROME_QA_2026-10-09.md`.
+- Slice 17.8 stays OPEN pending the User's visual acceptance. Do not open Slice 17.9 or push without a direct request.

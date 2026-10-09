@@ -136,6 +136,18 @@ requireFragment(battlefield, 'const shipDragRef = useRef<TacticalShipDrag | null
 requireFragment(battlefield, 'shipDrop && movementSelectionActive && !controlsDisabled', 'ship movement ends on a legal drop')
 requireFragment(battlefield, '{movementSelectionActive && selectedShip && (', 'blue selected-ship square only when movement is available')
 requireFragment(battlefield, 'className="tactical-selected-cell"', 'blue selection cell is rendered')
+requireFragment(battlefield, 'function TacticalSelectedShipVitals', 'selected ship has a three-level percentage HUD')
+requireFragment(battlefield, 'ship.shield_arc_current.reduce((sum, charge) => sum + Math.max(0, charge), 0)', 'blue bar sums authoritative shield sectors')
+requireFragment(battlefield, 'meterPercent(shieldCurrent, ship.shield_arc_max * 4)', 'shield bar uses four-sector maximum')
+requireFragment(battlefield, 'meterPercent(ship.armor_current, ship.armor_max)', 'yellow armor percentage uses real armor')
+requireFragment(battlefield, 'meterPercent(ship.structure_current, ship.structure_max)', 'red structure percentage uses real remaining structure')
+requireFragment(battlefield, 'data-percent={meter.percent}', 'HUD exposes percentages for browser QA')
+requireFragment(styles, '.tactical-vitals-fill.is-shield {', 'blue shield bar style')
+requireFragment(styles, '.tactical-vitals-fill.is-armor {', 'yellow armor bar style')
+requireFragment(styles, '.tactical-vitals-fill.is-structure {', 'red structure bar style')
+if (!/\{movementSelectionActive && selectedShip && \(\s*<TacticalSelectedShipVitals/.test(battlefield)) {
+  throw new Error('Ship percentage HUD must follow the existing selection-square visibility gate')
+}
 requireFragment(styles, '.tactical-selected-cell {', 'blue selection outline style exists')
 requireFragment(battlefield, '{movementSelectionActive && selectedShip && ships.filter(', 'red occupied cells while selected ship can move')
 requireFragment(battlefield, '{movementSelectionActive && reachableGridD && (', 'green grid shown while selected ship can move')

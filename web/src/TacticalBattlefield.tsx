@@ -417,6 +417,44 @@ function TacticalDamageFeedback({ layers, x, y, shieldBroken }: {
   )
 }
 
+type TacticalVitalLayer = 'shield' | 'armor' | 'structure'
+
+function TacticalSelectedShipVitals({ ship, labels }: {
+  ship: TacticalShipView
+  labels: Record<TacticalVitalLayer, string>
+}) {
+  const shieldCurrent = ship.shield_arc_current.reduce((sum, charge) => sum + Math.max(0, charge), 0)
+  const meters: Array<{ layer: TacticalVitalLayer; percent: number; label: string }> = [
+    { layer: 'shield', percent: Math.round(meterPercent(shieldCurrent, ship.shield_arc_max * 4)), label: labels.shield },
+    { layer: 'armor', percent: Math.round(meterPercent(ship.armor_current, ship.armor_max)), label: labels.armor },
+    { layer: 'structure', percent: Math.round(meterPercent(ship.structure_current, ship.structure_max)), label: labels.structure },
+  ]
+  return (
+    <g className="tactical-selected-ship-vitals"
+      data-ship-id={ship.ship_id}
+      transform={'translate(' + ship.x + ' ' + ship.y + ')'}
+      pointerEvents="none"
+      role="img"
+      aria-label={meters.map((meter) => meter.label + ': ' + meter.percent + '%').join(', ')}>
+      <rect className="tactical-vitals-backplate" x={-1.43} y={-2.60} width={2.86} height={1.57} rx={.13} />
+      {meters.map((meter, index) => {
+        const y = -2.48 + index * .48
+        return (
+          <g key={meter.layer} data-layer={meter.layer} data-percent={meter.percent}
+            className={'tactical-vitals-row is-' + meter.layer}>
+            <rect className="tactical-vitals-track" x={-1.3} y={y} width={2.6} height={.37} rx={.065} />
+            {meter.percent > 0 && (
+              <rect className={'tactical-vitals-fill is-' + meter.layer} x={-1.3} y={y}
+                width={2.6 * meter.percent / 100} height={.37} rx={.065} />
+            )}
+            <text className="tactical-vitals-percent" x={0} y={y + .282}>{meter.percent}%</text>
+          </g>
+        )
+      })}
+    </g>
+  )
+}
+
 export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, commandsDisabled, onCommand, t }: TacticalBattlefieldProps) {
   const tactical = battle.tactical
   if (!tactical) return <Notice title={t('battle.tacticalUnavailableTitle')} tone="warning">{t('battle.noTacticalSpec')}</Notice>
@@ -1427,6 +1465,14 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
               <TacticalDamageFeedback layers={impactAnimation.layers} x={impactAnimation.x}
                 y={impactAnimation.y} shieldBroken={impactAnimation.shieldBroken} />
             </g>
+          )}
+
+          {movementSelectionActive && selectedShip && (
+            <TacticalSelectedShipVitals ship={selectedShip} labels={{
+              shield: t('battlefield.shields'),
+              armor: t('battlefield.armor'),
+              structure: t('battlefield.structure'),
+            }} />
           )}
 
           {moveAnimation && (
