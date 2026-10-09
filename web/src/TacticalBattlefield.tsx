@@ -618,13 +618,21 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const reachableGridD = useMemo(() => reachableGridPath(legalMoves), [legalMoves])
   const scannedShip = ships.find((ship) => ship.ship_id === scannedShipID)
   const selectedShip = ships.find((ship) => ship.ship_id === selectedShipID && ship.seat_id === ownSeatID)
-  // Show movement overlays for the selected active ship only while it has
-  // server-authorized move cells and movement points. Presentation playback,
-  // outstanding commands and completed activations must leave the arena clear.
-  const movementSelectionActive = !presentationLocked && !commandsDisabled && !busy
-    && mode !== 'scan' && ownActivation && !!activeShip && !activeShip.activation_complete
-    && selectedShipID === activeShip.ship_id && activeShip.movement_current > 0
+  // Ship focus must not depend on whether the server offers a legal move.
+  // A selected active ship can still fire, even when it has leftover movement
+  // points insufficient to pay for its next facing change.
+  const selectionFocusActive = !presentationLocked && !commandsDisabled && !busy
+    && mode !== 'scan' && ownActivation && !!activeShip && !activeShip.destroyed
+    && !activeShip.activation_complete && selectedShipID === activeShip.ship_id
+  const movementSelectionActive = selectionFocusActive && activeShip.movement_current > 0
     && legalMoves.length > 0
+  // A blue square means movement is possible. Red means selection is retained
+  // with no legal move but an available attack/boarding action. Otherwise use
+  // a subdued frame so an active, selected ship never becomes invisible.
+  const selectionFocusKind = movementSelectionActive ? 'movement'
+    : weaponActions.some((action) => action.available) || availableBoardingActions.length > 0
+      ? 'attack'
+      : 'idle'
   const boardingSelectionKey = availableBoardingActions.map((action) => `${action.target_ship_id}:${action.max_marine_count}:${(action.allowed_modes ?? []).join(',')}`).join('|')
   useEffect(() => {
     const action = availableBoardingActions.find((candidate) => candidate.target_ship_id === selectedBoardingTargetID) ?? availableBoardingActions[0]
@@ -1257,8 +1265,11 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         >
           <rect x={viewX} y={viewY} width={viewWidth} height={viewHeight} className="tactical-space" />
 
-          {movementSelectionActive && selectedShip && (
-            <rect x={selectedShip.x - .5} y={selectedShip.y - .5} width={1} height={1} className="tactical-selected-cell" pointerEvents="none" />
+          {selectionFocusActive && selectedShip && (
+            <rect x={selectedShip.x - .5} y={selectedShip.y - .5} width={1} height={1}
+              className={'tactical-selected-cell' + (selectionFocusKind === 'attack'
+                ? ' is-attack-ready' : selectionFocusKind === 'idle' ? ' is-exhausted' : '')}
+              data-focus-kind={selectionFocusKind} pointerEvents="none" />
           )}
 
           {movementSelectionActive && selectedShip && ships.filter((ship) => !ship.destroyed && ship.ship_id !== selectedShip.ship_id).map((ship) => (
@@ -1469,7 +1480,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             </g>
           )}
 
-          {movementSelectionActive && selectedShip && (
+          {selectionFocusActive && selectedShip && (
             <TacticalSelectedShipVitals ship={selectedShip} labels={{
               shield: t('battlefield.shields'),
               armor: t('battlefield.armor'),

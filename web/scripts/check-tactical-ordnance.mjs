@@ -128,14 +128,21 @@ requireFragment(styles, '.tactical-shield-hit-flash.is-shield-break {', 'shield 
 if (battlefield.includes("kind: 'structure' as const, amount: beamAnimation.damage")) {
   throw new Error('Do not render invented red structure losses from raw Beam damage')
 }
-requireFragment(battlefield, 'const movementSelectionActive = !presentationLocked && !commandsDisabled && !busy', 'only ready human activations may expose movement overlays')
-requireFragment(battlefield, "mode !== 'scan' && ownActivation && !!activeShip && !activeShip.activation_complete", 'movement overlays only for active human ship')
-requireFragment(battlefield, 'selectedShipID === activeShip.ship_id && activeShip.movement_current > 0', 'active focused ship must still have movement points')
-requireFragment(battlefield, 'legalMoves.length > 0', 'movement overlays require authoritative legal destinations')
+requireFragment(battlefield, 'const selectionFocusActive = !presentationLocked && !commandsDisabled && !busy', 'ship focus shown for any playable selected active ship, not only movable ships')
+requireFragment(battlefield, "mode !== 'scan' && ownActivation && !!activeShip && !activeShip.destroyed", 'selected ship focus hidden during animation/scan/opponent activation/destruction')
+requireFragment(battlefield, '!activeShip.activation_complete && selectedShipID === activeShip.ship_id', 'only selected active unfinished ship has focused square')
+requireFragment(battlefield, 'const movementSelectionActive = selectionFocusActive && activeShip.movement_current > 0', 'move cells require focus and remaining move points')
+requireFragment(battlefield, 'legalMoves.length > 0', 'movement grid requires authoritative destinations')
+requireFragment(battlefield, "const selectionFocusKind = movementSelectionActive ? 'movement'", 'separate selected ship focus state from movement grid')
+requireFragment(battlefield, 'weaponActions.some((action) => action.available)', 'combat-ready frame derives from available projected weapons')
+requireFragment(battlefield, "selectionFocusKind === 'attack'", 'selected combat-ready ship has a red square')
+requireFragment(battlefield, "selectionFocusKind === 'idle'", 'still-selected but spent ship gets subdued frame')
+requireFragment(battlefield, '{selectionFocusActive && selectedShip && (', 'selection frame remains shown without legal moves')
+requireFragment(battlefield, 'data-focus-kind={selectionFocusKind}', 'selection mode available to browser QA')
+requireFragment(styles, '.tactical-selected-cell.is-attack-ready {', 'red attack-ready selection square')
+requireFragment(styles, '.tactical-selected-cell.is-exhausted {', 'muted selection square without remaining actions')
 requireFragment(battlefield, 'const shipDragRef = useRef<TacticalShipDrag | null>(null)', 'drag-to-move remains available')
-requireFragment(battlefield, 'shipDrop && movementSelectionActive && !controlsDisabled', 'ship movement ends on a legal drop')
-requireFragment(battlefield, '{movementSelectionActive && selectedShip && (', 'blue selected-ship square only when movement is available')
-requireFragment(battlefield, 'className="tactical-selected-cell"', 'blue selection cell is rendered')
+requireFragment(battlefield, 'shipDrop && movementSelectionActive && !controlsDisabled', 'ship movement requires server-authorized cell')
 requireFragment(battlefield, 'function TacticalSelectedShipVitals', 'selected ship has compact inline condition strips')
 requireFragment(battlefield, 'ship.shield_arc_current.reduce((sum, charge) => sum + Math.max(0, charge), 0)', 'blue bar sums authoritative shield sectors')
 requireFragment(battlefield, 'meterPercent(shieldCurrent, ship.shield_arc_max * 4)', 'shield bar uses four-sector maximum')
@@ -154,8 +161,8 @@ if (battlefield.includes('tactical-vitals-backplate') || battlefield.includes('t
     || styles.includes('.tactical-vitals-percent')) {
   throw new Error('Inline condition microbars cannot float a panel or print percentages on the battlefield')
 }
-if (!/\{movementSelectionActive && selectedShip && \(\s*<TacticalSelectedShipVitals/.test(battlefield)) {
-  throw new Error('Inline condition bars must follow the existing blue selection-square visibility gate')
+if (!/\{selectionFocusActive && selectedShip && \(\s*<TacticalSelectedShipVitals/.test(battlefield)) {
+  throw new Error('Inline condition bars must follow ship focus even when no legal movement remains')
 }
 requireFragment(styles, '.tactical-selected-cell {', 'blue selection outline style exists')
 requireFragment(battlefield, '{movementSelectionActive && selectedShip && ships.filter(', 'red occupied cells while selected ship can move')

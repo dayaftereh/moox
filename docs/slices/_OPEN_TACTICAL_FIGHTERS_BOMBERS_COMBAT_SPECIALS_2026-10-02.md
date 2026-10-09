@@ -216,3 +216,14 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Real isolated Chrome reference battle confirmed the strip group's full bounding rectangle is contained in the blue selection square, active ship movement, disappearance during Beam and AI animations, restoration after lock, and a real damaged ship showing shield 75%, armor 0%, structure 24% as fill lengths only.
 - Detailed QA: `docs/research/SLICE_17_8_TACTICAL_INLINE_SELECTION_VITALS_CHROME_QA_2026-10-09.md`.
 - Slice 17.8 remains OPEN pending user acceptance; no Slice 17.9, push or canonical 7171 reset.
+
+## User-review fix — selected ship remains visibly focused without legal moves (2026-10-09)
+
+- User reproduced Falcon MK1 1 (#40) apparently no longer selectable, despite 1/16 movement left and still-ready weapons in the canonical Combat Review on 7171.
+- Fresh read-only Chrome audit found ship40 was **already active and internally selected** at (37,4), facing15, with 1 movement point, **zero authoritative legal move destinations**, and **three available projected weapon actions**; the old `movementSelectionActive` gate incorrectly suppressed both its selection square and in-square condition bars.
+- Separate `selectionFocusActive` from `movementSelectionActive`. The blue selection square and green/red movement guides continue to show only when the server offers legal moves. A selected active ship with no legal moves but available attack/boarding actions now receives a clearly visible **red focus square** containing its inline shield/armor/structure bars. If all actions are spent, the focus square remains subdued gray until activation completion.
+- Preserve all input locks and player-only camera policy: no square, grid or bars during animation, scan mode, enemy turns, completed or destroyed ship activations. Do not invent a legal move solely because `movement_current` is 1; normal move cost includes heading-change cost.
+- Real canonical Chrome QA (no combat commands): red `is-attack-ready` focus and three status bars restored for ship40, still zero green-grid cells, weapon actions still 3, next command sequence unchanged at 26. Clicking ship40 maintained the focus without submitting a command.
+- Isolated Chrome QA (7174): verified the original blue movable selection, five occupied red squares and green grid when 260 legal moves exist, actual click-to-move, and hiding/restoring selection during Heavy Particle Beam animations.
+- Audit report: docs/research/SLICE_17_8_TACTICAL_SELECTION_FOCUS_WITHOUT_MOVEMENT_CHROME_QA_2026-10-09.md.
+- Slice 17.8 remains OPEN pending explicit user approval. No Slice 17.9, no push, and no canonical 7171 game reset.

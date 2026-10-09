@@ -5056,6 +5056,19 @@ button.galaxy-node-marker-player-fleet.is-open {
   shape-rendering: crispEdges;
   vector-effect: non-scaling-stroke;
 }
+/* Keep a distinct visual focus even when turning cost leaves no legal moves:
+   red = selected and still combat-ready; subdued = selected but spent. */
+.tactical-selected-cell.is-attack-ready {
+  fill: rgba(255, 77, 67, .21);
+  stroke: #ff7066;
+  stroke-width: 1.7;
+  filter: drop-shadow(0 0 3px rgba(255, 107, 93, .55));
+}
+.tactical-selected-cell.is-exhausted {
+  fill: rgba(101, 114, 131, .19);
+  stroke: rgba(182, 193, 210, .92);
+  stroke-width: 1.25;
+}
 .tactical-occupied-cell {
   fill: rgba(255, 80, 77, .28);
   stroke: rgba(255, 96, 92, .98);
