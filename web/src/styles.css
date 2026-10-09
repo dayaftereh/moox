@@ -5027,32 +5027,56 @@ button.galaxy-node-marker-player-fleet.is-open {
   vector-effect: non-scaling-stroke;
 }
 
+/* The selected tile and occupied cells are subtle UNDERLAYS beneath ships
+   and health rings. No contrasting box stroke can cross their circles. */
 .tactical-selected-cell {
-  fill: rgba(54, 142, 255, .44);
-  stroke: rgba(131, 200, 255, .98);
-  stroke-width: 1.2;
-  shape-rendering: crispEdges;
-  vector-effect: non-scaling-stroke;
+  fill: rgba(73, 157, 233, .09);
+  stroke: none;
 }
-/* Keep a distinct visual focus even when turning cost leaves no legal moves:
-   red = selected and still combat-ready; subdued = selected but spent. */
 .tactical-selected-cell.is-attack-ready {
-  fill: rgba(255, 77, 67, .21);
-  stroke: #ff7066;
-  stroke-width: 1.7;
-  filter: drop-shadow(0 0 3px rgba(255, 107, 93, .55));
+  fill: rgba(255, 92, 85, .09);
 }
 .tactical-selected-cell.is-exhausted {
-  fill: rgba(101, 114, 131, .19);
-  stroke: rgba(182, 193, 210, .92);
-  stroke-width: 1.25;
+  fill: rgba(129, 146, 160, .07);
 }
 .tactical-occupied-cell {
-  fill: rgba(255, 80, 77, .28);
-  stroke: rgba(255, 96, 92, .98);
-  stroke-width: 1.25;
-  shape-rendering: crispEdges;
+  fill: rgba(255, 87, 85, .14);
+  stroke: none;
+}
+
+/* A single active OWN ship gets a pointer just below its outer shield ring.
+   Move=cyan, fire-only=coral, spent=muted. The number is its stable ordinal
+   among own ships, not an unstable runtime ship ID. */
+.tactical-ship-focus-marker {
+  --focus-color: #82e2ff;
+  pointer-events: none;
+}
+.tactical-ship-focus-marker.is-attack {
+  --focus-color: #ff8177;
+}
+.tactical-ship-focus-marker.is-idle {
+  --focus-color: #b1bfcb;
+}
+.tactical-ship-focus-pointer {
+  fill: var(--focus-color);
+  stroke: none;
+  filter: drop-shadow(0 0 1.5px rgba(10, 22, 34, .9));
+}
+.tactical-ship-focus-number-plate {
+  fill: rgba(4, 16, 28, .9);
+  stroke: var(--focus-color);
+  stroke-width: .7px;
   vector-effect: non-scaling-stroke;
+}
+.tactical-ship-focus-number {
+  fill: #f3fcff;
+  font-size: .42px;
+  font-weight: 850;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: rgba(4, 16, 28, .9);
+  stroke-width: .065px;
+  stroke-linejoin: round;
 }
 .tactical-reachable-grid {
   fill: none;

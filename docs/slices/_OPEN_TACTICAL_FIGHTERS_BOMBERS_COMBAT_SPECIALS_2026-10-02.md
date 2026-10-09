@@ -238,3 +238,13 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Canonical 7171 read-only QA: enemy ship #45 actually had shield [0,100,100,100] / 400, armor 0/500 and structure 32/50. Browser showed 75% directional blue shield (Front depleted), 0% yellow with gray tracks, and 64% red structure in each quarter. No commands sent to the canonical battle.
 - QA report: `docs/research/SLICE_17_8_TACTICAL_CONCENTRIC_SHIELD_ARMOR_STRUCTURE_CHROME_QA_2026-10-09.md`.
 - Keep Slice 17.8 OPEN until explicit user visual approval; no push or Slice 17.9.
+
+## User-review correction - Focus pointer and unobtrusive occupied tiles (2026-10-09)
+
+- Addressed the collision of bright red occupied-square borders (and strong own selected-square borders) with the new blue/yellow/red concentric health rings. Do **not** enlarge the board grid or modify the rings.
+- The selected own active ship receives one small state-colored pointer and stable own-ship ordinal (1, 2, 3...) **beneath** its outer ring. Cyan = can still move, coral/red = cannot move but combat actions remain, gray = selected but no actions. Ordinals sort own `ship_id` values including destroyed ships so numbers stay stable.
+- Occupied tiles are now very faint red backgrounds rendered underneath ships and all three condition rings, with no visible stroke. The own selected tile also has an unobtrusive state-dependent background with no border.
+- The authoritative green legal-movement grid, click-/drag-to-move, focus behavior without legal movement, pointer lock, manual camera and existing combat logic remain intact.
+- Real isolated Chrome tested six ships, 18 condition rings, 5 faint occupied areas, focus ship1→ship2→ship3, move 25,9→26,9 and 26,9→41,9 (0 movement left), coral attack-only pointer, Heavy Particle Beam fire while out of movement, and hiding/restoring marker during cinematic lock. Canonical 7171 read-only check showed current Human ship #42 with marker #3, zero bright occupied outlines and unchanged command sequence 49.
+- EN/DE hint updated and Tactical UI contract revised. QA evidence: `docs/research/SLICE_17_8_TACTICAL_FOCUS_MARKER_OCCUPIED_UNDERLAY_CHROME_QA_2026-10-09.md`.
+- Manual User visual acceptance remains outstanding. Keep Slice 17.8 OPEN; do not push or open Slice 17.9 yet.

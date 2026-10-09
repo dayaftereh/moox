@@ -659,6 +659,13 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const reachableGridD = useMemo(() => reachableGridPath(legalMoves), [legalMoves])
   const scannedShip = ships.find((ship) => ship.ship_id === scannedShipID)
   const selectedShip = ships.find((ship) => ship.ship_id === selectedShipID && ship.seat_id === ownSeatID)
+  // Stable display ordinal for own ships. Keep destroyed ships in the count
+  // so a surviving Falcon does not unexpectedly change its visible number.
+  const selectedOwnShipNumber = selectedShip
+    ? [...ships].filter((ship) => ship.seat_id === ownSeatID)
+        .sort((a, b) => a.ship_id - b.ship_id)
+        .findIndex((ship) => ship.ship_id === selectedShip.ship_id) + 1
+    : 0
   // Ship focus must not depend on whether the server offers a legal move.
   // A selected active ship can still fire, even when it has leftover movement
   // points insufficient to pay for its next facing change.
@@ -667,9 +674,8 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     && !activeShip.activation_complete && selectedShipID === activeShip.ship_id
   const movementSelectionActive = selectionFocusActive && activeShip.movement_current > 0
     && legalMoves.length > 0
-  // A blue square means movement is possible. Red means selection is retained
-  // with no legal move but an available attack/boarding action. Otherwise use
-  // a subdued frame so an active, selected ship never becomes invisible.
+  // Focus color now belongs to a small numbered marker below the health rings,
+  // not a heavy selection-square outline that intersects the three rings.
   const selectionFocusKind = movementSelectionActive ? 'movement'
     : weaponActions.some((action) => action.available) || availableBoardingActions.length > 0
       ? 'attack'
@@ -1310,11 +1316,11 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             <rect x={selectedShip.x - .5} y={selectedShip.y - .5} width={1} height={1}
               className={'tactical-selected-cell' + (selectionFocusKind === 'attack'
                 ? ' is-attack-ready' : selectionFocusKind === 'idle' ? ' is-exhausted' : '')}
-              data-focus-kind={selectionFocusKind} pointerEvents="none" />
+              data-focus-kind={selectionFocusKind} pointerEvents="none" aria-hidden="true" />
           )}
 
           {movementSelectionActive && selectedShip && ships.filter((ship) => !ship.destroyed && ship.ship_id !== selectedShip.ship_id).map((ship) => (
-            <rect key={`occupied:${ship.ship_id}`} x={ship.x - .5} y={ship.y - .5} width={1} height={1} className="tactical-occupied-cell" pointerEvents="none" />
+            <rect key={`occupied:${ship.ship_id}`} x={ship.x - .5} y={ship.y - .5} width={1} height={1} className="tactical-occupied-cell" rx={.1} pointerEvents="none" />
           ))}
 
           {movementSelectionActive && reachableGridD && (
@@ -1376,6 +1382,22 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
               </g>
             )
           })}
+
+          {selectionFocusActive && selectedShip && selectedOwnShipNumber > 0 && (
+            <g className={'tactical-ship-focus-marker is-' + selectionFocusKind}
+              transform={'translate(' + selectedShip.x + ' ' + selectedShip.y + ')'}
+              data-focus-kind={selectionFocusKind}
+              data-ship-id={selectedShip.ship_id}
+              data-ship-number={selectedOwnShipNumber}
+              pointerEvents="none" aria-hidden="true">
+              <path className="tactical-ship-focus-pointer"
+                d="M -.19 1.17 L 0 1.015 L .19 1.17 Z" />
+              <rect className="tactical-ship-focus-number-plate"
+                x={-.34} y={1.24} width={.68} height={.61} rx={.16} />
+              <text className="tactical-ship-focus-number"
+                x={0} y={1.72}>{selectedOwnShipNumber}</text>
+            </g>
+          )}
 
           {projectiles.map((projectile) => {
             // The authoritative snapshot already contains the projectile at its
