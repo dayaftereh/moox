@@ -227,3 +227,14 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Isolated Chrome QA (7174): verified the original blue movable selection, five occupied red squares and green grid when 260 legal moves exist, actual click-to-move, and hiding/restoring selection during Heavy Particle Beam animations.
 - Audit report: docs/research/SLICE_17_8_TACTICAL_SELECTION_FOCUS_WITHOUT_MOVEMENT_CHROME_QA_2026-10-09.md.
 - Slice 17.8 remains OPEN pending explicit user approval. No Slice 17.9, no push, and no canonical 7171 game reset.
+
+## User review – Persistent three-layer circular hull indicators (2026-10-09)
+
+- Removed the previous selected-ship-only blue/yellow/red microbar stack from inside the blue/red tactical selection square; focus color and movement/targeting controls remain unchanged.
+- Every live Human or enemy ship now has **three** concentric, ship-centered health rings: outer BLUE directional shield, middle YELLOW armor/hull, inner RED structure. Rings follow ship facing, persist through animation presentation, and never intercept clicks.
+- Blue uses real four-way `shield_arc_current[]` against `shield_arc_max` and disappears when all shield charge is depleted. Yellow armor and red structure draw four equal quarters of a single *global* authoritative pool (`armor_current/max` and `structure_current/max` respectively); they must not pretend to encode direction-specific damage. Empty armor/structure tracks remain visible at zero.
+- Destroyed ships omit the rings entirely. Scan details still provide exact numeric values. No combat/server/event or camera behavior changed.
+- Isolated real-Chrome battle QA: 6 ships, 18 rings/72 quarters initially; Particle Beam damaged target Armor 500→401 with yellow ring 80.2%, Blue and Red full. After real Rocket impacts shield sector fell from 100→75; destroyed ship lost all rings.
+- Canonical 7171 read-only QA: enemy ship #45 actually had shield [0,100,100,100] / 400, armor 0/500 and structure 32/50. Browser showed 75% directional blue shield (Front depleted), 0% yellow with gray tracks, and 64% red structure in each quarter. No commands sent to the canonical battle.
+- QA report: `docs/research/SLICE_17_8_TACTICAL_CONCENTRIC_SHIELD_ARMOR_STRUCTURE_CHROME_QA_2026-10-09.md`.
+- Keep Slice 17.8 OPEN until explicit user visual approval; no push or Slice 17.9.

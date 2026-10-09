@@ -5027,28 +5027,6 @@ button.galaxy-node-marker-player-fleet.is-open {
   vector-effect: non-scaling-stroke;
 }
 
-/* Condition indicator stays inside the existing 1x1 movement selection square:
-   prominent blue shield line along the top, two hairline status strips below.
-   No floating plate or percentage text obscures the battlefield. */
-.tactical-selected-ship-vitals {
-  pointer-events: none;
-}
-.tactical-vitals-track {
-  fill: rgba(12, 24, 39, .86);
-  stroke: rgba(166, 188, 203, .62);
-  stroke-width: .35px;
-  vector-effect: non-scaling-stroke;
-}
-.tactical-vitals-fill.is-shield {
-  fill: #68d8ff;
-  filter: drop-shadow(0 0 1px rgba(104, 216, 255, .72));
-}
-.tactical-vitals-fill.is-armor {
-  fill: #ffc45e;
-}
-.tactical-vitals-fill.is-structure {
-  fill: #ff5a57;
-}
 .tactical-selected-cell {
   fill: rgba(54, 142, 255, .44);
   stroke: rgba(131, 200, 255, .98);
@@ -5145,27 +5123,50 @@ button.galaxy-node-marker-player-fleet.is-open {
 .tactical-damage-number.is-shield { fill: #68d8ff; }
 .tactical-damage-number.is-armor { fill: #ffc45e; }
 .tactical-damage-number.is-structure { fill: #ff5a57; }
-/* The shield ring is a combat-state indicator, independent of the blue
-   movement-selection square. It stays visible during presentation playback
-   while any of the four authoritative shield arcs still has charge. */
-.tactical-shield-field {
+/* Persistent 3-layer ship condition rings for both seats. Outer cyan is
+   four REAL independent shield arcs. Yellow armor and red structure represent
+   GLOBAL pools, drawn in four equal quarters without implying impact facing.
+   Rings are noninteractive and never replace the square combat focus. */
+.tactical-ship-condition-rings,
+.tactical-condition-ring,
+.tactical-condition-sector {
   pointer-events: none;
 }
-.tactical-shield-sector-track,
-.tactical-shield-sector-charge {
+.tactical-condition-track,
+.tactical-condition-charge {
   fill: none;
   stroke-linecap: butt;
   vector-effect: non-scaling-stroke;
   pointer-events: none;
 }
-.tactical-shield-sector-track {
-  stroke: rgba(113, 179, 211, .30);
+.tactical-condition-track {
+  stroke-width: 1.55px;
+}
+.tactical-condition-charge {
+  stroke-width: 2.1px;
+}
+.tactical-condition-ring.is-shield .tactical-condition-track {
+  stroke: rgba(113, 179, 211, .32);
   stroke-width: 1.8px;
 }
-.tactical-shield-sector-charge {
+.tactical-condition-ring.is-shield .tactical-condition-charge {
   stroke: #68d8ff;
   stroke-width: 2.35px;
-  filter: drop-shadow(0 0 2px rgba(79, 201, 255, .84));
+  filter: drop-shadow(0 0 2px rgba(79, 201, 255, .78));
+}
+.tactical-condition-ring.is-armor .tactical-condition-track {
+  stroke: rgba(205, 166, 99, .27);
+}
+.tactical-condition-ring.is-armor .tactical-condition-charge {
+  stroke: #ffc45e;
+  filter: drop-shadow(0 0 1px rgba(255, 196, 94, .46));
+}
+.tactical-condition-ring.is-structure .tactical-condition-track {
+  stroke: rgba(193, 88, 91, .28);
+}
+.tactical-condition-ring.is-structure .tactical-condition-charge {
+  stroke: #ff5a57;
+  filter: drop-shadow(0 0 1px rgba(255, 90, 87, .46));
 }
 .tactical-beam-shield-piercing {
   font-size: .56px;

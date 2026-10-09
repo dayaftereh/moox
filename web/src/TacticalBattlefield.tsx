@@ -365,21 +365,25 @@ const TACTICAL_SHIELD_SECTORS = [
   { index: 2, key: 'rear', centerDegrees: 180, label: 'battlefield.shieldRear' },
   { index: 1, key: 'left', centerDegrees: 270, label: 'battlefield.shieldLeft' },
 ] as const
-const SHIELD_SECTOR_RADIUS = .77
+const SHIELD_SECTOR_RADIUS = .95
+const ARMOR_SECTOR_RADIUS = .78
+const STRUCTURE_SECTOR_RADIUS = .61
 const SHIELD_SECTOR_HALF_ANGLE = 36
 
-function tacticalShieldSectorPath(centerDegrees: number, fraction: number): string {
+// Shared shape and quarter-gap geometry for all three concentric rings.
+// Only the blue shield layer has independent directional charges.
+function tacticalShieldSectorPath(centerDegrees: number, fraction: number, radius = SHIELD_SECTOR_RADIUS): string {
   const amount = clamp(fraction, 0, 1)
   if (amount <= 0) return ''
   const start = (centerDegrees - SHIELD_SECTOR_HALF_ANGLE) * Math.PI / 180
   const end = (centerDegrees - SHIELD_SECTOR_HALF_ANGLE + SHIELD_SECTOR_HALF_ANGLE * 2 * amount) * Math.PI / 180
   const point = (angle: number) => [
-    (Math.cos(angle) * SHIELD_SECTOR_RADIUS).toFixed(4),
-    (Math.sin(angle) * SHIELD_SECTOR_RADIUS).toFixed(4),
+    (Math.cos(angle) * radius).toFixed(4),
+    (Math.sin(angle) * radius).toFixed(4),
   ]
   const [startX, startY] = point(start)
   const [endX, endY] = point(end)
-  return 'M ' + startX + ' ' + startY + ' A ' + SHIELD_SECTOR_RADIUS + ' ' + SHIELD_SECTOR_RADIUS + ' 0 0 1 ' + endX + ' ' + endY
+  return 'M ' + startX + ' ' + startY + ' A ' + radius + ' ' + radius + ' 0 0 1 ' + endX + ' ' + endY
 }
 
 function tacticalWeaponCanPierceShields(weapon: { weapon_id: string; modifier_ids?: string[]; innate_effect_ids?: string[] }): boolean {
@@ -417,46 +421,83 @@ function TacticalDamageFeedback({ layers, x, y, shieldBroken }: {
   )
 }
 
-type TacticalVitalLayer = 'shield' | 'armor' | 'structure'
+type TacticalShipConditionLayer = 'shield' | 'armor' | 'structure'
 
-function TacticalSelectedShipVitals({ ship, labels }: {
-  ship: TacticalShipView
-  labels: Record<TacticalVitalLayer, string>
-}) {
-  // Inline microbars share the blue movement-square footprint (Â±0.5).
-  // The stronger blue shield line sits at the top edge; thin yellow armor
-  // and red structure lines sit at the bottom, leaving the sprite visible.
-  const shieldCurrent = ship.shield_arc_current.reduce((sum, charge) => sum + Math.max(0, charge), 0)
-  const meters: Array<{ layer: TacticalVitalLayer; percent: number; label: string; y: number; height: number }> = [
-    { layer: 'shield', percent: Math.round(meterPercent(shieldCurrent, ship.shield_arc_max * 4)), label: labels.shield, y: -.455, height: .105 },
-    { layer: 'armor', percent: Math.round(meterPercent(ship.armor_current, ship.armor_max)), label: labels.armor, y: .318, height: .055 },
-    { layer: 'structure', percent: Math.round(meterPercent(ship.structure_current, ship.structure_max)), label: labels.structure, y: .404, height: .055 },
+function TacticalShipConditionRings({ ship, angle }: { ship: TacticalShipView; angle: number }) {
+  if (ship.destroyed) return null
+  const shieldCurrent = ship.shield_arc_current.reduce((sum, value) => sum + Math.max(0, value), 0)
+  const layers: Array<{
+    kind: TacticalShipConditionLayer
+    radius: number
+    current: number
+    max: number
+    fraction: number
+    visible: boolean
+    directional: boolean
+  }> = [
+    {
+      kind: 'shield', radius: SHIELD_SECTOR_RADIUS,
+      current: shieldCurrent, max: ship.shield_arc_max * 4,
+      fraction: meterPercent(shieldCurrent, ship.shield_arc_max * 4) / 100,
+      visible: ship.shield_arc_max > 0 && ship.shield_arc_current.some((value) => value > 0),
+      directional: true,
+    },
+    {
+      kind: 'armor', radius: ARMOR_SECTOR_RADIUS,
+      current: ship.armor_current, max: ship.armor_max,
+      fraction: meterPercent(ship.armor_current, ship.armor_max) / 100,
+      visible: ship.armor_max > 0, directional: false,
+    },
+    {
+      kind: 'structure', radius: STRUCTURE_SECTOR_RADIUS,
+      current: ship.structure_current, max: ship.structure_max,
+      fraction: meterPercent(ship.structure_current, ship.structure_max) / 100,
+      visible: ship.structure_max > 0, directional: false,
+    },
   ]
-  const barX = -.44
-  const barWidth = .88
   return (
-    <g className="tactical-selected-ship-vitals"
+    <g className="tactical-ship-condition-rings"
       data-ship-id={ship.ship_id}
-      data-placement="inside-selection"
-      transform={'translate(' + ship.x + ' ' + ship.y + ')'}
-      pointerEvents="none"
-      role="img"
-      aria-label={meters.map((meter) => meter.label + ': ' + meter.percent + '%').join(', ')}>
-      {meters.map((meter) => (
-        <g key={meter.layer} data-layer={meter.layer} data-percent={meter.percent}
-          className={'tactical-vitals-row is-' + meter.layer}>
-          <rect className="tactical-vitals-track" x={barX} y={meter.y}
-            width={barWidth} height={meter.height} rx={.018} />
-          {meter.percent > 0 && (
-            <rect className={'tactical-vitals-fill is-' + meter.layer} x={barX} y={meter.y}
-              width={barWidth * meter.percent / 100} height={meter.height} rx={.018} />
-          )}
+      data-shield-current={shieldCurrent} data-shield-max={ship.shield_arc_max * 4}
+      data-armor-current={ship.armor_current} data-armor-max={ship.armor_max}
+      data-structure-current={ship.structure_current} data-structure-max={ship.structure_max}
+      transform={'rotate(' + angle + ')'}
+      pointerEvents="none" aria-hidden="true">
+      {layers.filter((layer) => layer.visible).map((layer) => (
+        <g key={layer.kind}
+          className={layer.kind === 'shield' ? 'tactical-shield-field tactical-condition-ring is-shield' : 'tactical-condition-ring is-' + layer.kind}
+          data-layer={layer.kind}
+          data-current={layer.current} data-max={layer.max}
+          data-fraction={layer.fraction.toFixed(3)}
+          data-directional={layer.directional ? 'true' : 'false'}>
+          {TACTICAL_SHIELD_SECTORS.map((sector) => {
+            // A shield arc is its real facing sector. Armor and structure are
+            // global hitpoint pools: all four quarters repeat the SAME ratio.
+            const current = layer.directional ? Math.max(0, ship.shield_arc_current[sector.index] ?? 0) : layer.current
+            const max = layer.directional ? ship.shield_arc_max : layer.max
+            const fraction = layer.directional ? meterPercent(current, max) / 100 : layer.fraction
+            return (
+              <g key={sector.index}
+                className={layer.kind === 'shield' ? 'tactical-shield-sector tactical-condition-sector' : 'tactical-condition-sector'}
+                data-arc-index={sector.index}
+                data-sector={layer.directional ? sector.key : undefined}
+                data-global-pool={layer.directional ? undefined : 'true'}
+                data-current={current} data-max={max}
+                data-fraction={fraction.toFixed(2)}>
+                <path d={tacticalShieldSectorPath(sector.centerDegrees, 1, layer.radius)}
+                  className={layer.kind === 'shield' ? 'tactical-shield-sector-track tactical-condition-track' : 'tactical-condition-track'} />
+                {fraction > 0 && (
+                  <path d={tacticalShieldSectorPath(sector.centerDegrees, fraction, layer.radius)}
+                    className={layer.kind === 'shield' ? 'tactical-shield-sector-charge tactical-condition-charge' : 'tactical-condition-charge'} />
+                )}
+              </g>
+            )
+          })}
         </g>
       ))}
     </g>
   )
 }
-
 export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, commandsDisabled, onCommand, t }: TacticalBattlefieldProps) {
   const tactical = battle.tactical
   if (!tactical) return <Notice title={t('battle.tacticalUnavailableTitle')} tone="warning">{t('battle.noTacticalSpec')}</Notice>
@@ -1331,31 +1372,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                     tightViewBox
                   />
                 </g>
-                {!ship.destroyed && ship.shield_arc_current.some((value) => value > 0) && (
-                  <g className="tactical-shield-field"
-                    transform={'rotate(' + angle + ')'}
-                    pointerEvents="none" aria-hidden="true"
-                    data-shield-current={ship.shield_arc_current.reduce((sum, value) => sum + value, 0)}
-                    data-shield-max={ship.shield_arc_max * 4}>
-                    {TACTICAL_SHIELD_SECTORS.map((sector) => {
-                      const current = Math.max(0, ship.shield_arc_current[sector.index] ?? 0)
-                      const fraction = clamp(current / Math.max(1, ship.shield_arc_max), 0, 1)
-                      return (
-                        <g key={sector.index} className="tactical-shield-sector"
-                          data-sector={sector.key} data-arc-index={sector.index}
-                          data-current={current} data-max={ship.shield_arc_max}
-                          data-fraction={fraction.toFixed(2)}>
-                          <path d={tacticalShieldSectorPath(sector.centerDegrees, 1)}
-                            className="tactical-shield-sector-track" />
-                          {fraction > 0 && (
-                            <path d={tacticalShieldSectorPath(sector.centerDegrees, fraction)}
-                              className="tactical-shield-sector-charge" />
-                          )}
-                        </g>
-                      )
-                    })}
-                  </g>
-                )}
+                <TacticalShipConditionRings ship={ship} angle={angle} />
               </g>
             )
           })}
@@ -1480,13 +1497,6 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             </g>
           )}
 
-          {selectionFocusActive && selectedShip && (
-            <TacticalSelectedShipVitals ship={selectedShip} labels={{
-              shield: t('battlefield.shields'),
-              armor: t('battlefield.armor'),
-              structure: t('battlefield.structure'),
-            }} />
-          )}
 
           {moveAnimation && (
             <g className={`tactical-move-animation is-${moveAnimation.movementKind}`} data-sequence={moveAnimation.sequence} data-movement-kind={moveAnimation.movementKind} pointerEvents="none">
