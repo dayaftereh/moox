@@ -43,7 +43,7 @@ type TacticalShipDrag = { pointerID: number; startX: number; startY: number; dra
 type GestureSnapshot = { x: number; y: number; distance: number }
 type TacticalDamageLayerKind = 'shield' | 'armor' | 'structure' | 'projectile'
 type TacticalDamageLayer = { kind: TacticalDamageLayerKind; amount: number }
-type TacticalBeamAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number; shotCount: number; shotHits: boolean[]; weaponID: string; physicalWeaponCount: number; burstShotCount: number; layers: TacticalDamageLayer[]; shieldBroken: boolean }
+type TacticalBeamAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number; shotCount: number; shotHits: boolean[]; weaponID: string; physicalWeaponCount: number; burstShotCount: number; layers: TacticalDamageLayer[]; shieldBroken: boolean; shieldPiercing: boolean }
 type TacticalMoveAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; movementKind: string }
 type TacticalProjectileAnimation = { sequence: number; projectileID: number; kind: string; fromX?: number; fromY?: number; toX: number; toY: number; multiplicity: number }
 type TacticalFighterAttackAnimation = { sequence: number; groupID: number; payloadKind: string; weaponID: string; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number; layers: TacticalDamageLayer[]; shieldBroken: boolean }
@@ -355,6 +355,44 @@ function reachableGridPath(moves: Array<{ x: number; y: number }>): string {
     const b = parts[1].split(',')
     return 'M ' + a[0] + ' ' + a[1] + ' L ' + b[0] + ' ' + b[1]
   }).join(' ')
+}
+
+/** Arc indices relative to facing (0=front, 3=right, 2=rear, 1=left).
+ * Positive SVG Y is down, matching tacticalShieldImpactArc. */
+const TACTICAL_SHIELD_SECTORS = [
+  { index: 0, key: 'front', centerDegrees: 0, label: 'battlefield.shieldFront' },
+  { index: 3, key: 'right', centerDegrees: 90, label: 'battlefield.shieldRight' },
+  { index: 2, key: 'rear', centerDegrees: 180, label: 'battlefield.shieldRear' },
+  { index: 1, key: 'left', centerDegrees: 270, label: 'battlefield.shieldLeft' },
+] as const
+const SHIELD_SECTOR_RADIUS = .77
+const SHIELD_SECTOR_HALF_ANGLE = 36
+
+function tacticalShieldSectorPath(centerDegrees: number, fraction: number): string {
+  const amount = clamp(fraction, 0, 1)
+  if (amount <= 0) return ''
+  const start = (centerDegrees - SHIELD_SECTOR_HALF_ANGLE) * Math.PI / 180
+  const end = (centerDegrees - SHIELD_SECTOR_HALF_ANGLE + SHIELD_SECTOR_HALF_ANGLE * 2 * amount) * Math.PI / 180
+  const point = (angle: number) => [
+    (Math.cos(angle) * SHIELD_SECTOR_RADIUS).toFixed(4),
+    (Math.sin(angle) * SHIELD_SECTOR_RADIUS).toFixed(4),
+  ]
+  const [startX, startY] = point(start)
+  const [endX, endY] = point(end)
+  return 'M ' + startX + ' ' + startY + ' A ' + SHIELD_SECTOR_RADIUS + ' ' + SHIELD_SECTOR_RADIUS + ' 0 0 1 ' + endX + ' ' + endY
+}
+
+function tacticalWeaponCanPierceShields(weapon: { weapon_id: string; modifier_ids?: string[]; innate_effect_ids?: string[] }): boolean {
+  return weapon.weapon_id === 'particle_beam'
+    || weapon.modifier_ids?.includes('shield_piercing') === true
+    || weapon.innate_effect_ids?.includes('natural_shield_piercing') === true
+    || weapon.innate_effect_ids?.includes('shield_piercing') === true
+}
+
+function tacticalBeamShotCanPierceShields(event: TacticalEvent): boolean {
+  const modifiers = event.data?.modifier_ids
+  return event.data?.weapon_id === 'particle_beam'
+    || (Array.isArray(modifiers) && modifiers.includes('shield_piercing'))
 }
 
 function TacticalDamageFeedback({ layers, x, y, shieldBroken }: {
@@ -728,6 +766,12 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             .sort((a, b) => (eventNumber(a.data, 'shot_index') ?? 0) - (eventNumber(b.data, 'shot_index') ?? 0))
           : [event]
         const shotHits = shotEvents.map((shot) => shot.data?.hit === true)
+        // Functional Hard Shields counter natural and modified Shield Piercing.
+        const targetHardShields = target?.specials?.some((special) =>
+          special.special_id === 'hard_shields' && special.functional) === true
+        const shieldPiercing = !!target && !targetHardShields
+          && (shotEvents.some(tacticalBeamShotCanPierceShields)
+            || source?.weapons?.some((weapon) => weapon.slot === weaponSlot && tacticalWeaponCanPierceShields(weapon)) === true)
         if (source && targetX != null && targetY != null) {
           const layers = damageLayersForBeam(events, event)
           const beam: TacticalBeamAnimation = {
@@ -741,6 +785,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             burstShotCount: eventNumber(event.data, 'burst_shot_count') ?? 1,
             layers,
             shieldBroken: shieldBrokenAfterHit(target, layers),
+            shieldPiercing,
           }
           enqueueEventCue({
             sequence: event.sequence,
@@ -1236,11 +1281,29 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                   />
                 </g>
                 {!ship.destroyed && ship.shield_arc_current.some((value) => value > 0) && (
-                  <circle r={0.72} className="tactical-shield-field"
+                  <g className="tactical-shield-field"
+                    transform={'rotate(' + angle + ')'}
                     pointerEvents="none" aria-hidden="true"
                     data-shield-current={ship.shield_arc_current.reduce((sum, value) => sum + value, 0)}
-                    data-shield-max={ship.shield_arc_max * 4}
-                    opacity={Math.max(.44, Math.min(1, ship.shield_arc_current.reduce((sum, value) => sum + value, 0) / Math.max(1, ship.shield_arc_max * 4)))} />
+                    data-shield-max={ship.shield_arc_max * 4}>
+                    {TACTICAL_SHIELD_SECTORS.map((sector) => {
+                      const current = Math.max(0, ship.shield_arc_current[sector.index] ?? 0)
+                      const fraction = clamp(current / Math.max(1, ship.shield_arc_max), 0, 1)
+                      return (
+                        <g key={sector.index} className="tactical-shield-sector"
+                          data-sector={sector.key} data-arc-index={sector.index}
+                          data-current={current} data-max={ship.shield_arc_max}
+                          data-fraction={fraction.toFixed(2)}>
+                          <path d={tacticalShieldSectorPath(sector.centerDegrees, 1)}
+                            className="tactical-shield-sector-track" />
+                          {fraction > 0 && (
+                            <path d={tacticalShieldSectorPath(sector.centerDegrees, fraction)}
+                              className="tactical-shield-sector-charge" />
+                          )}
+                        </g>
+                      )
+                    })}
+                  </g>
                 )}
               </g>
             )
@@ -1465,6 +1528,11 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
               })}
               <TacticalDamageFeedback layers={beamAnimation.layers} x={beamAnimation.toX}
                 y={beamAnimation.toY} shieldBroken={beamAnimation.shieldBroken} />
+              {beamAnimation.hit && beamAnimation.shieldPiercing && (
+                <text x={beamAnimation.toX} y={beamAnimation.toY - .97}
+                  className="tactical-beam-shield-piercing"
+                  data-shield-piercing="true">{t('battlefield.shieldPiercing')}</text>
+              )}
 
             </g>
           )}
@@ -1545,6 +1613,11 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                       <GameIcon name="fleet-combat" />
                       <span>
                         <strong>S{weapon.slot + 1} {humanize(weapon.weapon_id)} ×{weapon.count}{weapon.mount_type === 'point_defense' ? ' · PD' : weapon.mount_type === 'heavy' ? ' · Heavy' : ''}</strong>
+                        {tacticalWeaponCanPierceShields(weapon) && (
+                          <small className="tactical-weapon-shield-piercing" data-shield-piercing="capability">
+                            {t('battlefield.shieldPiercing')}
+                          </small>
+                        )}
                         <small>{t('battlefield.baseDamageShort', { min: weapon.min_damage, max: weapon.max_damage })}{weapon.mount_type === 'point_defense' ? ` · ${weapon.firing_arc_id === '360' ? '360°' : humanize(weapon.firing_arc_id ?? '')}` : ''} · {action?.available ? t('battlefield.targets', { count: action.targets?.length ?? 0 }) : weaponUnavailableLabel(action?.unavailable_reason, t)}{ordnanceStatus ? ` · ${ordnanceStatus}` : ''}</small>
                       </span>
                     </button>
@@ -1626,6 +1699,16 @@ function TacticalScanDetails({ ship, shipName, empireName, t }: { ship: Tactical
         <div><dt>{t('battlefield.beamOffense')}</dt><dd>{ship.beam_offense}</dd></div>
         <div><dt>{t('battlefield.beamDefense')}</dt><dd>{ship.beam_defense}</dd></div>        <div><dt>{t('battlefield.marines')}</dt><dd>{ship.marine_current}/{ship.marine_max}</dd></div>
         <div><dt>{t('battlefield.shields')}</dt><dd>{ship.shield_arc_current.reduce((sum, value) => sum + value, 0)}/{ship.shield_arc_max * 4}</dd></div>
+        {ship.shield_arc_max > 0 && (
+          <div className="tactical-scan-shield-sectors">
+            {TACTICAL_SHIELD_SECTORS.map((sector) => (
+              <span key={sector.key} data-sector={sector.key}>
+                <strong>{t(sector.label)}</strong>
+                <span>{ship.shield_arc_current[sector.index]}/{ship.shield_arc_max}</span>
+              </span>
+            ))}
+          </div>
+        )}
         <div><dt>{t('battlefield.cloakState')}</dt><dd>{humanize(ship.cloak_state)}</dd></div>
       </dl>
       <div className="tactical-health-row">

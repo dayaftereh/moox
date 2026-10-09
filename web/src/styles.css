@@ -5114,12 +5114,37 @@ button.galaxy-node-marker-player-fleet.is-open {
    movement-selection square. It stays visible during presentation playback
    while any of the four authoritative shield arcs still has charge. */
 .tactical-shield-field {
-  fill: none;
-  stroke: rgba(104, 214, 255, .96);
-  stroke-width: 1.8px;
-  vector-effect: non-scaling-stroke;
-  filter: drop-shadow(0 0 3px rgba(63, 189, 255, .7));
   pointer-events: none;
+}
+.tactical-shield-sector-track,
+.tactical-shield-sector-charge {
+  fill: none;
+  stroke-linecap: butt;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+.tactical-shield-sector-track {
+  stroke: rgba(113, 179, 211, .30);
+  stroke-width: 1.8px;
+}
+.tactical-shield-sector-charge {
+  stroke: #68d8ff;
+  stroke-width: 2.35px;
+  filter: drop-shadow(0 0 2px rgba(79, 201, 255, .84));
+}
+.tactical-beam-shield-piercing {
+  font-size: .56px;
+  font-weight: 900;
+  fill: #8fdfff;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: rgba(5, 18, 32, .93);
+  stroke-width: .14px;
+  stroke-linejoin: round;
+  pointer-events: none;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: tactical-damage-float 1.62s ease-out both;
 }
 .tactical-shield-hit-flash {
   fill: rgba(69, 207, 255, .09);
@@ -5383,6 +5408,11 @@ button.galaxy-node-marker-player-fleet.is-open {
 .tactical-weapon-strip button > span { display: grid; min-width: 0; justify-items: start; }
 .tactical-weapon-strip button strong { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tactical-weapon-strip button small { color: #8da5b6; font-size: .52rem; font-weight: 700; }
+.tactical-weapon-strip button .tactical-weapon-shield-piercing {
+  color: #80dfff;
+  font-weight: 900;
+  font-size: .52rem;
+}
 .tactical-weapon-strip button.is-active { border-color: rgba(99, 220, 157, .82); background: rgba(30, 91, 61, .56); color: #eafff0; box-shadow: inset 0 0 0 1px rgba(99, 220, 157, .18); }
 .tactical-weapon-strip button.is-spent { border-color: rgba(121, 139, 151, .28); background: rgba(20, 28, 34, .7); color: #81919c; }
 .tactical-weapon-strip button:disabled { opacity: .58; cursor: default; }
@@ -8193,4 +8223,28 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
   18% { opacity: 1; }
   70% { opacity: .68; }
   100% { opacity: 0; transform: scale(3.2) rotate(90deg); }
+}
+
+.tactical-scan-shield-sectors {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  padding: 6px;
+  border: 1px solid rgba(91, 177, 218, .24);
+  border-radius: 7px;
+}
+.tactical-scan-shield-sectors > span {
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  font-size: .7rem;
+}
+.tactical-scan-shield-sectors > span strong {
+  font-weight: 750;
+  color: #91d5ff;
+}
+.tactical-scan-shield-sectors > span span {
+  color: #d4eaff;
+  font-variant-numeric: tabular-nums;
 }

@@ -187,3 +187,13 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Isolated Chrome verified the actual 3-vs-3 encounter with 6 initial shield circles, blue -25 shield, yellow -52 armor and red -50 structure numbers, including combined Bomber impacts.
 - Research and QA record: `docs/research/SLICE_17_8_TACTICAL_SHIELDS_DAMAGE_FEEDBACK_CHROME_QA_2026-10-09.md`.
 - Manual User Review remains pending; do not close 17.8 or open 17.9 until explicitly approved.
+
+## User Review: Four Directional Shield Sectors & Shield Piercing Callout (2026-10-09)
+
+- Replaced the single global cyan shield circle with four rotatable shield-sector arcs and dim empty tracks, each rendered from the server's own per-facing arc charge. Ring vanishes only after complete shield loss or destruction.
+- The active weapon selector flags naturally shield-piercing Particle Beams and weapons with Shield Piercing modifiers. Successful ship hits with this effect display an in-combat Schilddurchdringend / Shield-piercing label; Hard Shields suppresses that hit label when the special is functional.
+- Scan inspection now lists all four shield-side charge values with EN/DE names.
+- Isolated Chrome demonstrated a 75/100 rear sector with a 75% visible arc after a real Rocket impact, plus unchanged full sectors; actual Particle Beam hits bypassed shields and reduced armor as intended.
+- QA and browser evidence: docs/research/SLICE_17_8_TACTICAL_DIRECTIONAL_SHIELDS_PIERCING_CHROME_QA_2026-10-09.md
+- No combat rules or server events were changed. Keep canonical 7171's in-memory reference game intact; no reset needed for this Web-only change.
+- Manual user acceptance still outstanding. Leave Slice 17.8 OPEN and do not open Slice 17.9.
