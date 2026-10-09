@@ -423,34 +423,36 @@ function TacticalSelectedShipVitals({ ship, labels }: {
   ship: TacticalShipView
   labels: Record<TacticalVitalLayer, string>
 }) {
+  // Inline microbars share the blue movement-square footprint (Â±0.5).
+  // The stronger blue shield line sits at the top edge; thin yellow armor
+  // and red structure lines sit at the bottom, leaving the sprite visible.
   const shieldCurrent = ship.shield_arc_current.reduce((sum, charge) => sum + Math.max(0, charge), 0)
-  const meters: Array<{ layer: TacticalVitalLayer; percent: number; label: string }> = [
-    { layer: 'shield', percent: Math.round(meterPercent(shieldCurrent, ship.shield_arc_max * 4)), label: labels.shield },
-    { layer: 'armor', percent: Math.round(meterPercent(ship.armor_current, ship.armor_max)), label: labels.armor },
-    { layer: 'structure', percent: Math.round(meterPercent(ship.structure_current, ship.structure_max)), label: labels.structure },
+  const meters: Array<{ layer: TacticalVitalLayer; percent: number; label: string; y: number; height: number }> = [
+    { layer: 'shield', percent: Math.round(meterPercent(shieldCurrent, ship.shield_arc_max * 4)), label: labels.shield, y: -.455, height: .105 },
+    { layer: 'armor', percent: Math.round(meterPercent(ship.armor_current, ship.armor_max)), label: labels.armor, y: .318, height: .055 },
+    { layer: 'structure', percent: Math.round(meterPercent(ship.structure_current, ship.structure_max)), label: labels.structure, y: .404, height: .055 },
   ]
+  const barX = -.44
+  const barWidth = .88
   return (
     <g className="tactical-selected-ship-vitals"
       data-ship-id={ship.ship_id}
+      data-placement="inside-selection"
       transform={'translate(' + ship.x + ' ' + ship.y + ')'}
       pointerEvents="none"
       role="img"
       aria-label={meters.map((meter) => meter.label + ': ' + meter.percent + '%').join(', ')}>
-      <rect className="tactical-vitals-backplate" x={-1.43} y={-2.60} width={2.86} height={1.57} rx={.13} />
-      {meters.map((meter, index) => {
-        const y = -2.48 + index * .48
-        return (
-          <g key={meter.layer} data-layer={meter.layer} data-percent={meter.percent}
-            className={'tactical-vitals-row is-' + meter.layer}>
-            <rect className="tactical-vitals-track" x={-1.3} y={y} width={2.6} height={.37} rx={.065} />
-            {meter.percent > 0 && (
-              <rect className={'tactical-vitals-fill is-' + meter.layer} x={-1.3} y={y}
-                width={2.6 * meter.percent / 100} height={.37} rx={.065} />
-            )}
-            <text className="tactical-vitals-percent" x={0} y={y + .282}>{meter.percent}%</text>
-          </g>
-        )
-      })}
+      {meters.map((meter) => (
+        <g key={meter.layer} data-layer={meter.layer} data-percent={meter.percent}
+          className={'tactical-vitals-row is-' + meter.layer}>
+          <rect className="tactical-vitals-track" x={barX} y={meter.y}
+            width={barWidth} height={meter.height} rx={.018} />
+          {meter.percent > 0 && (
+            <rect className={'tactical-vitals-fill is-' + meter.layer} x={barX} y={meter.y}
+              width={barWidth * meter.percent / 100} height={meter.height} rx={.018} />
+          )}
+        </g>
+      ))}
     </g>
   )
 }

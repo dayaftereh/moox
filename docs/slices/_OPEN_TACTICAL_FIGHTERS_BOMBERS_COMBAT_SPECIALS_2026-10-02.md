@@ -206,3 +206,13 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Real Chrome QA confirmed full 100/100/100 percentages, proper transfer from Falcon #40 to #41, animation hiding, and correct 75/0/24 percentages after actual AI-caused shield/armor/structure damage.
 - Detailed test report: `docs/research/SLICE_17_8_TACTICAL_SELECTED_SHIP_VITALS_CHROME_QA_2026-10-09.md`.
 - Slice 17.8 stays OPEN pending the User's visual acceptance. Do not open Slice 17.9 or push without a direct request.
+
+## User-review correction – Compact status microbars inside the selection square (2026-10-09)
+
+- Supersedes the floating selected-ship condition percentages from commit 17d0be7: the Shield (blue), Armor (yellow) and Structure (red) status strips now render entirely **inside** the same 1x1 blue movement selection square.
+- Blue Shield strip along the top is slightly thicker; a thin yellow Armor and red Structure strip sit near the bottom edge. Gray/dark tracks remain visible at zero. No floating backplate and no on-map numeric labels.
+- All percentages continue to come from authoritative Tactical shield/armor/structure current/max values. Numeric percentages remain available to assistive technology and browser QA via attributes, without obscuring ships.
+- Bars follow the existing `movementSelectionActive` visibility gate and are non-interactive, preserving drag/click-to-move, target selection, and animation input lock.
+- Real isolated Chrome reference battle confirmed the strip group's full bounding rectangle is contained in the blue selection square, active ship movement, disappearance during Beam and AI animations, restoration after lock, and a real damaged ship showing shield 75%, armor 0%, structure 24% as fill lengths only.
+- Detailed QA: `docs/research/SLICE_17_8_TACTICAL_INLINE_SELECTION_VITALS_CHROME_QA_2026-10-09.md`.
+- Slice 17.8 remains OPEN pending user acceptance; no Slice 17.9, push or canonical 7171 reset.

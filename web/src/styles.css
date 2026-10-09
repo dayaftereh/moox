@@ -5027,42 +5027,27 @@ button.galaxy-node-marker-player-fleet.is-open {
   vector-effect: non-scaling-stroke;
 }
 
-/* Compact, three-level condition display above only the currently selected
-   playable ship. Tracks remain visible at 0%; digits remain readable at 100%. */
+/* Condition indicator stays inside the existing 1x1 movement selection square:
+   prominent blue shield line along the top, two hairline status strips below.
+   No floating plate or percentage text obscures the battlefield. */
 .tactical-selected-ship-vitals {
   pointer-events: none;
 }
-.tactical-vitals-backplate {
-  fill: rgba(3, 13, 24, .91);
-  stroke: rgba(139, 190, 218, .73);
-  stroke-width: .65px;
-  vector-effect: non-scaling-stroke;
-}
 .tactical-vitals-track {
-  fill: rgba(19, 35, 51, .96);
-  stroke: rgba(138, 178, 204, .32);
+  fill: rgba(12, 24, 39, .86);
+  stroke: rgba(166, 188, 203, .62);
   stroke-width: .35px;
   vector-effect: non-scaling-stroke;
 }
 .tactical-vitals-fill.is-shield {
   fill: #68d8ff;
+  filter: drop-shadow(0 0 1px rgba(104, 216, 255, .72));
 }
 .tactical-vitals-fill.is-armor {
   fill: #ffc45e;
 }
 .tactical-vitals-fill.is-structure {
   fill: #ff5a57;
-}
-.tactical-vitals-percent {
-  fill: #f4fbff;
-  font-size: .41px;
-  font-weight: 900;
-  text-anchor: middle;
-  paint-order: stroke;
-  stroke: #04101c;
-  stroke-width: .105px;
-  stroke-linejoin: round;
-  pointer-events: none;
 }
 .tactical-selected-cell {
   fill: rgba(54, 142, 255, .44);
