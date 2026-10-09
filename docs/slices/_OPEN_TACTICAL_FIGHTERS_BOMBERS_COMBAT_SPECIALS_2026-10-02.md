@@ -248,3 +248,14 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Real isolated Chrome tested six ships, 18 condition rings, 5 faint occupied areas, focus ship1→ship2→ship3, move 25,9→26,9 and 26,9→41,9 (0 movement left), coral attack-only pointer, Heavy Particle Beam fire while out of movement, and hiding/restoring marker during cinematic lock. Canonical 7171 read-only check showed current Human ship #42 with marker #3, zero bright occupied outlines and unchanged command sequence 49.
 - EN/DE hint updated and Tactical UI contract revised. QA evidence: `docs/research/SLICE_17_8_TACTICAL_FOCUS_MARKER_OCCUPIED_UNDERLAY_CHROME_QA_2026-10-09.md`.
 - Manual User visual acceptance remains outstanding. Keep Slice 17.8 OPEN; do not push or open Slice 17.9 yet.
+
+## User Review - Mobile pan/pinch optimization and non-directional ship focus label (2026-10-09)
+
+- User found the small 1/2/3 focus arrow confusing (appears to indicate travel direction) and Android tactical pan, pinch and scrolling sluggish.
+- Removed directional triangle; active own ship now shows an explicit localized **'Schiff 1/2/3' / 'Ship 1/2/3'** selection badge below the concentric rings. Existing cyan/coral/muted selection status preserved; all health rings and target/weapon semantics unchanged.
+- Performance root cause: about 905 SVG nodes with 72 costly per-ring glowing paths, plus a full React camera state update on each pointermove/wheel event. Reworked touch pan/pinch to update only SVG viewBox+background rect once per requestAnimationFrame, committing React camera on final pointer release. Wheel zoom likewise coalesces and commits on idle; stable ship-ring geometry memoized.
+- Mobile coarse-pointer CSS removes GPU-heavy SVG drop shadows from ship condition rings and procedural sprite, retaining red/yellow/blue ring strokes. Matching selector specificity is critical.
+- Click/drop target cells now use the LIVE SVG screen CTM (preserveAspectRatio-safe), preventing misaligned taps after gestures.
+- Isolated Chrome QA: 1-finger pan, 2-finger pinch, wheel idle commit, click-to-move ship#41 (25,11)->(26,11), drag-to-move (26,11)->(27,11), focus label Schiff 1/Schiff 2, ring preservation. Chrome managed tab is hidden so touch gesture tests used a test-only RAF shim; **actual Android FPS was not measured**, user review needed.
+- Automated npm build/Tactical contracts, targeted Go tests and vet passed. Research QA: `docs/research/SLICE_17_8_TACTICAL_MOBILE_CAMERA_PERFORMANCE_FOCUS_BADGE_2026-10-09.md`.
+- Preserve newly reset 7171 Combat Review reference-game starting state; do not advance/restart it or push changes without user request. Continue Slice 17.8 User Review, do not open Slice 17.9.

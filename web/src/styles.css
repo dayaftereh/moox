@@ -5044,9 +5044,8 @@ button.galaxy-node-marker-player-fleet.is-open {
   stroke: none;
 }
 
-/* A single active OWN ship gets a pointer just below its outer shield ring.
-   Move=cyan, fire-only=coral, spent=muted. The number is its stable ordinal
-   among own ships, not an unstable runtime ship ID. */
+/* One unambiguous labeled ship badge BELOW the rings: no triangle that could
+   be mistaken for a course/direction arrow. Move=cyan, fire-only=coral. */
 .tactical-ship-focus-marker {
   --focus-color: #82e2ff;
   pointer-events: none;
@@ -5057,11 +5056,7 @@ button.galaxy-node-marker-player-fleet.is-open {
 .tactical-ship-focus-marker.is-idle {
   --focus-color: #b1bfcb;
 }
-.tactical-ship-focus-pointer {
-  fill: var(--focus-color);
-  stroke: none;
-  filter: drop-shadow(0 0 1.5px rgba(10, 22, 34, .9));
-}
+
 .tactical-ship-focus-number-plate {
   fill: rgba(4, 16, 28, .9);
   stroke: var(--focus-color);
@@ -5070,7 +5065,7 @@ button.galaxy-node-marker-player-fleet.is-open {
 }
 .tactical-ship-focus-number {
   fill: #f3fcff;
-  font-size: .42px;
+  font-size: .35px;
   font-weight: 850;
   text-anchor: middle;
   paint-order: stroke;
@@ -8307,4 +8302,14 @@ button.shipdesigner-system-row-main:hover, button.shipdesigner-system-row-main:f
 .tactical-scan-shield-sectors > span span {
   color: #d4eaff;
   font-variant-numeric: tabular-nums;
+}
+/* SVG drop-shadows are GPU-heavy on touch hardware, especially during pinch.
+   Preserve clean colored ring strokes, omit per-sector filters on mobile. */
+@media (hover: none) and (pointer: coarse) {
+  .tactical-condition-ring.is-shield .tactical-condition-charge,
+  .tactical-condition-ring.is-armor .tactical-condition-charge,
+  .tactical-condition-ring.is-structure .tactical-condition-charge,
+  .tactical-ship-vector.procedural-ship-glyph {
+    filter: none;
+  }
 }

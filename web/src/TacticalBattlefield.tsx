@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
+import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type MouseEvent as ReactMouseEvent, type PointerEvent as ReactPointerEvent, type WheelEvent as ReactWheelEvent } from 'react'
 import {
   decodeShipVisualGenome,
   tacticalBoardShipCommand,
@@ -423,7 +423,7 @@ function TacticalDamageFeedback({ layers, x, y, shieldBroken }: {
 
 type TacticalShipConditionLayer = 'shield' | 'armor' | 'structure'
 
-function TacticalShipConditionRings({ ship, angle }: { ship: TacticalShipView; angle: number }) {
+const TacticalShipConditionRings = memo(function TacticalShipConditionRings({ ship, angle }: { ship: TacticalShipView; angle: number }) {
   if (ship.destroyed) return null
   const shieldCurrent = ship.shield_arc_current.reduce((sum, value) => sum + Math.max(0, value), 0)
   const layers: Array<{
@@ -497,6 +497,14 @@ function TacticalShipConditionRings({ ship, angle }: { ship: TacticalShipView; a
       ))}
     </g>
   )
+})
+/** Read the live SVG camera transform so taps stay correct after pan/pinch,
+ * including preserveAspectRatio letterboxing on narrow screens. */
+function tacticalViewportCell(svg: SVGSVGElement, clientX: number, clientY: number): { x: number; y: number } | null {
+  const matrix = svg.getScreenCTM()
+  if (!matrix) return null
+  const point = new DOMPoint(clientX, clientY).matrixTransform(matrix.inverse())
+  return { x: Math.round(point.x), y: Math.round(point.y) }
 }
 export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, commandsDisabled, onCommand, t }: TacticalBattlefieldProps) {
   const tactical = battle.tactical
@@ -579,6 +587,14 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const previousOwnActivationRef = useRef(ownActivation)
   // Keep manual zoom fixed as legal moves, fighters and projectiles alter the battlefield bounds.
   const cameraExtentRef = useRef({ width: bounds.width, height: bounds.height })
+  // A gesture now moves only the SVG camera, not the entire React battle tree.
+  // Commit once at pointer release; pinch and pan share the same live camera.
+  const liveCameraRef = useRef<CameraState>(camera)
+  const gestureCameraDirtyRef = useRef(false)
+  const viewportRef = useRef<SVGSVGElement | null>(null)
+  const spaceRectRef = useRef<SVGRectElement | null>(null)
+  const viewportFrameRef = useRef<number | null>(null)
+  const wheelCommitTimerRef = useRef<number | null>(null)
 
   useLayoutEffect(() => {
     if (previousOwnActivationRef.current === ownActivation) return
@@ -597,6 +613,44 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const draggedRef = useRef(false)
   const dragDistanceRef = useRef(0)
   const ignoreClickRef = useRef(false)
+  useLayoutEffect(() => {
+    if (pointersRef.current.size === 0) liveCameraRef.current = camera
+  }, [camera])
+  useEffect(() => () => {
+    if (viewportFrameRef.current !== null) window.cancelAnimationFrame(viewportFrameRef.current)
+    if (wheelCommitTimerRef.current !== null) window.clearTimeout(wheelCommitTimerRef.current)
+  }, [])
+
+  const finishGestureCamera = () => {
+    if (!gestureCameraDirtyRef.current) return
+    gestureCameraDirtyRef.current = false
+    if (viewportFrameRef.current !== null) {
+      window.cancelAnimationFrame(viewportFrameRef.current)
+      viewportFrameRef.current = null
+    }
+    setCamera(liveCameraRef.current)
+  }
+
+  const scheduleGestureViewport = () => {
+    if (viewportFrameRef.current !== null) return
+    viewportFrameRef.current = window.requestAnimationFrame(() => {
+      viewportFrameRef.current = null
+      const viewport = viewportRef.current
+      const rect = spaceRectRef.current
+      if (!viewport || !rect || !gestureCameraDirtyRef.current) return
+      const current = liveCameraRef.current
+      const width = cameraExtentRef.current.width / current.zoom
+      const height = cameraExtentRef.current.height / current.zoom
+      const x = current.cx - width / 2
+      const y = current.cy - height / 2
+      viewport.setAttribute('viewBox', x + ' ' + y + ' ' + width + ' ' + height)
+      rect.setAttribute('x', String(x))
+      rect.setAttribute('y', String(y))
+      rect.setAttribute('width', String(width))
+      rect.setAttribute('height', String(height))
+    })
+  }
+
   const observedEventSequenceRef = useRef<number | null>(null)
   const presentationQueueRef = useRef<TacticalPresentationCue[]>([])
   const presentationTimerRef = useRef<number | null>(null)
@@ -1092,11 +1146,9 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const battlefieldClick = (event: ReactMouseEvent<SVGSVGElement>) => {
     if (!movementSelectionActive || ignoreClickRef.current || controlsDisabled || !activeShip) return
     if ((event.target as Element).closest?.('.tactical-ship')) return
-    const rect = event.currentTarget.getBoundingClientRect()
-    if (rect.width <= 0 || rect.height <= 0) return
-    const x = Math.round(viewX + ((event.clientX - rect.left) / rect.width) * viewWidth)
-    const y = Math.round(viewY + ((event.clientY - rect.top) / rect.height) * viewHeight)
-    const move = legalMoveByCell.get(`${x}:${y}`)
+    const cell = tacticalViewportCell(event.currentTarget, event.clientX, event.clientY)
+    if (!cell) return
+    const move = legalMoveByCell.get(cell.x + ':' + cell.y)
     if (move) moveTo(move.x, move.y)
   }
 
@@ -1239,15 +1291,16 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
       }
     }
     if (draggedRef.current) {
-      setCamera((current) => {
-        const next = {
-          cx: current.cx - dx * (cameraExtentRef.current.width / current.zoom) / rect.width,
-          cy: current.cy - dy * (cameraExtentRef.current.height / current.zoom) / rect.height,
-          zoom: clamp(current.zoom * pinchFactor, MIN_ZOOM, MAX_ZOOM),
-        }
-        if (ownActivation) manualCameraRef.current = next
-        return next
-      })
+      const current = liveCameraRef.current
+      const next = {
+        cx: current.cx - dx * (cameraExtentRef.current.width / current.zoom) / rect.width,
+        cy: current.cy - dy * (cameraExtentRef.current.height / current.zoom) / rect.height,
+        zoom: clamp(current.zoom * pinchFactor, MIN_ZOOM, MAX_ZOOM),
+      }
+      liveCameraRef.current = next
+      gestureCameraDirtyRef.current = true
+      if (ownActivation) manualCameraRef.current = next
+      scheduleGestureViewport()
     }
     gestureRef.current = currentGesture
   }
@@ -1263,23 +1316,33 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
       try { event.currentTarget.releasePointerCapture(event.pointerId) } catch { /* capture already ended */ }
     }
     gestureRef.current = gestureSnapshot(pointersRef.current)
+    if (pointersRef.current.size === 0) finishGestureCamera()
     if (pointersRef.current.size === 0 && draggedRef.current) {
       window.setTimeout(() => { ignoreClickRef.current = false }, 0)
     }
     if (shipDrop && movementSelectionActive && !controlsDisabled && activeShip) {
-      const rect = event.currentTarget.getBoundingClientRect()
-      if (rect.width > 0 && rect.height > 0) {
-        const x = Math.round(viewX + ((event.clientX - rect.left) / rect.width) * viewWidth)
-        const y = Math.round(viewY + ((event.clientY - rect.top) / rect.height) * viewHeight)
-        const move = legalMoveByCell.get((x) + ':' + (y))
-        if (move) void runCommand(tacticalMoveCommand(tactical, activeShip.ship_id, move.x, move.y))
-      }
+      const cell = tacticalViewportCell(event.currentTarget, event.clientX, event.clientY)
+      const move = cell && legalMoveByCell.get(cell.x + ':' + cell.y)
+      if (move) void runCommand(tacticalMoveCommand(tactical, activeShip.ship_id, move.x, move.y))
     }
   }
 
   const wheel = (event: ReactWheelEvent<SVGSVGElement>) => {
     event.preventDefault()
-    zoomBy(Math.exp(-event.deltaY * 0.0015))
+    if (presentationLockedRef.current || event.deltaY === 0) return
+    const current = liveCameraRef.current
+    const zoom = clamp(current.zoom * Math.exp(-event.deltaY * 0.0015), MIN_ZOOM, MAX_ZOOM)
+    if (zoom === current.zoom) return
+    const next = { ...current, zoom }
+    liveCameraRef.current = next
+    gestureCameraDirtyRef.current = true
+    if (ownActivation) manualCameraRef.current = next
+    scheduleGestureViewport()
+    if (wheelCommitTimerRef.current !== null) window.clearTimeout(wheelCommitTimerRef.current)
+    wheelCommitTimerRef.current = window.setTimeout(() => {
+      wheelCommitTimerRef.current = null
+      if (pointersRef.current.size === 0) finishGestureCamera()
+    }, 110)
   }
 
   return (
@@ -1299,6 +1362,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
 
       <div className="tactical-viewport-shell">
         <svg
+          ref={viewportRef}
           className="tactical-viewport"
           viewBox={`${viewX} ${viewY} ${viewWidth} ${viewHeight}`}
           onPointerDown={pointerDown}
@@ -1310,7 +1374,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
           onContextMenu={(event) => event.preventDefault()}
           aria-label={t('battlefield.viewportLabel')}
         >
-          <rect x={viewX} y={viewY} width={viewWidth} height={viewHeight} className="tactical-space" />
+          <rect ref={spaceRectRef} x={viewX} y={viewY} width={viewWidth} height={viewHeight} className="tactical-space" />
 
           {selectionFocusActive && selectedShip && (
             <rect x={selectedShip.x - .5} y={selectedShip.y - .5} width={1} height={1}
@@ -1390,12 +1454,10 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
               data-ship-id={selectedShip.ship_id}
               data-ship-number={selectedOwnShipNumber}
               pointerEvents="none" aria-hidden="true">
-              <path className="tactical-ship-focus-pointer"
-                d="M -.19 1.17 L 0 1.015 L .19 1.17 Z" />
               <rect className="tactical-ship-focus-number-plate"
-                x={-.34} y={1.24} width={.68} height={.61} rx={.16} />
+                x={-.86} y={1.12} width={1.72} height={.62} rx={.27} />
               <text className="tactical-ship-focus-number"
-                x={0} y={1.72}>{selectedOwnShipNumber}</text>
+                x={0} y={1.565}>{t('battlefield.focusShipBadge', { number: selectedOwnShipNumber })}</text>
             </g>
           )}
 

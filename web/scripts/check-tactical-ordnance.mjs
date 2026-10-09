@@ -165,9 +165,45 @@ requireFragment(battlefield, '.sort((a, b) => a.ship_id - b.ship_id)', 'own ship
 requireFragment(battlefield, '{selectionFocusActive && selectedShip && selectedOwnShipNumber > 0 && (', 'one pointer on the active own selected ship')
 requireFragment(battlefield, "className={'tactical-ship-focus-marker is-' + selectionFocusKind}", 'pointer communicates movement/attack/idle state')
 requireFragment(battlefield, 'data-ship-number={selectedOwnShipNumber}', 'numeric focus index remains externally verifiable')
-requireFragment(battlefield, 'className="tactical-ship-focus-pointer"', 'small arrow is rendered outside shield ring')
-requireFragment(battlefield, 'className="tactical-ship-focus-number-plate"', 'number sits on a compact dark backing')
-requireFragment(battlefield, 'className="tactical-ship-focus-number"', 'ship number is drawn below the arrow')
+requireFragment(battlefield, 'className="tactical-ship-focus-number-plate"', 'selected ship has a labeled badge with no direction arrow')
+requireFragment(battlefield, 'className="tactical-ship-focus-number"', 'ship ID number is in a clear non-directional label')
+requireFragment(battlefield, "t('battlefield.focusShipBadge', { number: selectedOwnShipNumber })", 'focus chip says Ship/Schiff rather than suggesting flight direction')
+requireFragment(i18n, "'battlefield.focusShipBadge': 'Ship {number}'", 'localized English ship focus badge')
+requireFragment(i18n, "'battlefield.focusShipBadge': 'Schiff {number}'", 'localized German ship focus badge')
+if (battlefield.includes('tactical-ship-focus-pointer') || styles.includes('.tactical-ship-focus-pointer')) {
+  throw new Error('Focus marker must be a label, not an ambiguous directional triangle')
+}
+requireFragment(battlefield, 'const viewportFrameRef = useRef<number | null>(null)', 'camera frame updates are RAF-batched')
+requireFragment(battlefield, 'const wheelCommitTimerRef = useRef<number | null>(null)', 'rapid wheel updates have a single idle-time camera commit')
+requireFragment(battlefield, 'if (wheelCommitTimerRef.current !== null) window.clearTimeout(wheelCommitTimerRef.current)', 'wheel commit timer is cleaned up')
+requireFragment(battlefield, "const zoom = clamp(current.zoom * Math.exp(-event.deltaY * 0.0015)", 'wheel uses the same live camera as touch pinch')
+requireFragment(battlefield, 'if (pointersRef.current.size === 0) finishGestureCamera()', 'wheel and gesture complete without repeated React reconciliation')
+const wheelSource = battlefield.slice(battlefield.indexOf('const wheel ='), battlefield.indexOf('return (', battlefield.indexOf('const wheel =')))
+if (wheelSource.includes('zoomBy(') || wheelSource.includes('setCamera(')) {
+  throw new Error('Rapid wheel events must update SVG camera without rerendering the entire React battle tree')
+}
+requireFragment(battlefield, 'window.requestAnimationFrame(() => {', 'pan/pinch camera viewBox updates are synced with animation frames')
+requireFragment(battlefield, "viewport.setAttribute('viewBox',", 'live gesture updates the SVG viewport without React rerender')
+requireFragment(battlefield, "rect.setAttribute('width', String(width))", 'space background follows live camera viewport')
+requireFragment(battlefield, 'setCamera(liveCameraRef.current)', 'gesture commits React camera state once on release')
+requireFragment(battlefield, 'window.cancelAnimationFrame(viewportFrameRef.current)', 'gesture frame cancellation prevents stale writes')
+requireFragment(battlefield, 'const TacticalShipConditionRings = memo(function', 'per-ship status SVG paths reuse static React rendering')
+requireFragment(styles, '@media (hover: none) and (pointer: coarse)', 'mobile GPU avoids expensive SVG filter effects')
+requireFragment(battlefield, 'function tacticalViewportCell(svg: SVGSVGElement', 'hit testing uses live SVG camera')
+requireFragment(battlefield, 'new DOMPoint(clientX, clientY).matrixTransform(matrix.inverse())', 'click/drop mapping respects the live viewBox and letterboxing')
+if ((battlefield.match(/tacticalViewportCell\(event\.currentTarget, event\.clientX, event\.clientY\)/g) ?? []).length !== 2) {
+  throw new Error('Both click-to-move and ship drop must use the live SVG transform, not stale React viewBox coordinates')
+}
+const touchMedia = styles.slice(styles.lastIndexOf('@media (hover: none) and (pointer: coarse)'))
+for (const layer of ['shield', 'armor', 'structure']) {
+  if (!touchMedia.includes('.tactical-condition-ring.is-' + layer + ' .tactical-condition-charge')) {
+    throw new Error('Mobile GPU filter removal must override the specific ' + layer + ' ring shadow rule')
+  }
+}
+const pointerMoveSource = battlefield.slice(battlefield.indexOf('const pointerMove ='), battlefield.indexOf('const pointerEnd ='))
+if (pointerMoveSource.includes('setCamera(')) {
+  throw new Error('Pan/pinch must not rerender the entire React battle scene per pointermove')
+}
 requireFragment(styles, '.tactical-ship-focus-marker.is-attack {', 'attack-only selected ship uses coral pointer')
 requireFragment(styles, '.tactical-ship-focus-marker.is-idle {', 'spent ship keeps muted pointer')
 requireFragment(styles, '.tactical-ship-focus-number {', 'focus label number legible on compact scale')
