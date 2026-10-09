@@ -408,7 +408,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   }, [ownActivation, camera])
   const pointersRef = useRef(new Map<number, PointerPoint>())
   const shipDragRef = useRef<TacticalShipDrag | null>(null)
-  const [shipDragActive, setShipDragActive] = useState(false)
+
   const gestureRef = useRef<GestureSnapshot | null>(null)
   const draggedRef = useRef(false)
   const dragDistanceRef = useRef(0)
@@ -475,10 +475,13 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const reachableGridD = useMemo(() => reachableGridPath(legalMoves), [legalMoves])
   const scannedShip = ships.find((ship) => ship.ship_id === scannedShipID)
   const selectedShip = ships.find((ship) => ship.ship_id === selectedShipID && ship.seat_id === ownSeatID)
-  const movementSelectionActive = !presentationLocked && mode !== 'scan' && ownActivation && !!activeShip && selectedShipID === activeShip.ship_id
-  // Occupied red cells and reachable move guides appear only while physically
-  // dragging the active ship, never while aiming, firing or watching animations.
-  const movementDragVisible = movementSelectionActive && shipDragActive
+  // Show movement overlays for the selected active ship only while it has
+  // server-authorized move cells and movement points. Presentation playback,
+  // outstanding commands and completed activations must leave the arena clear.
+  const movementSelectionActive = !presentationLocked && !commandsDisabled && !busy
+    && mode !== 'scan' && ownActivation && !!activeShip && !activeShip.activation_complete
+    && selectedShipID === activeShip.ship_id && activeShip.movement_current > 0
+    && legalMoves.length > 0
   const boardingSelectionKey = availableBoardingActions.map((action) => `${action.target_ship_id}:${action.max_marine_count}:${(action.allowed_modes ?? []).join(',')}`).join('|')
   useEffect(() => {
     const action = availableBoardingActions.find((candidate) => candidate.target_ship_id === selectedBoardingTargetID) ?? availableBoardingActions[0]
@@ -952,7 +955,6 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     } else if (shipDragRef.current) {
       // A second pointer is a pan/pinch gesture, not a ship movement.
       shipDragRef.current = null
-      setShipDragActive(false)
     }
     pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY })
     gestureRef.current = gestureSnapshot(pointersRef.current)
@@ -969,7 +971,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         shipDrag.dragging = true
         draggedRef.current = true
         ignoreClickRef.current = true
-        setShipDragActive(true)
+
         if (!event.currentTarget.hasPointerCapture(event.pointerId)) {
           try { event.currentTarget.setPointerCapture(event.pointerId) } catch { /* synthetic or ended pointer */ }
         }
@@ -1017,7 +1019,6 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     const shipDrop = shipDrag?.pointerID === event.pointerId && shipDrag.dragging && event.type === 'pointerup'
     if (shipDrag?.pointerID === event.pointerId) {
       shipDragRef.current = null
-      setShipDragActive(false)
     }
     pointersRef.current.delete(event.pointerId)
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
@@ -1073,16 +1074,18 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         >
           <rect x={viewX} y={viewY} width={viewWidth} height={viewHeight} className="tactical-space" />
 
-          {/* Ship sprites themselves convey position; never paint a blue selection square.
-              Red collision cells are useful only when planning an actual ship drag. */}
-          {movementDragVisible && selectedShip && ships.filter((ship) => !ship.destroyed && ship.ship_id !== selectedShip.ship_id).map((ship) => (
+          {movementSelectionActive && selectedShip && (
+            <rect x={selectedShip.x - .5} y={selectedShip.y - .5} width={1} height={1} className="tactical-selected-cell" pointerEvents="none" />
+          )}
+
+          {movementSelectionActive && selectedShip && ships.filter((ship) => !ship.destroyed && ship.ship_id !== selectedShip.ship_id).map((ship) => (
             <rect key={`occupied:${ship.ship_id}`} x={ship.x - .5} y={ship.y - .5} width={1} height={1} className="tactical-occupied-cell" pointerEvents="none" />
           ))}
 
-          {movementDragVisible && reachableGridD && (
+          {movementSelectionActive && reachableGridD && (
             <path d={reachableGridD} className="tactical-reachable-grid" pointerEvents="none" />
           )}
-          {movementDragVisible && legalMoves.map((move) => (
+          {movementSelectionActive && legalMoves.map((move) => (
             <rect
               key={`move-cursor:${move.movement_kind}:${move.x}:${move.y}`}
               x={move.x - .5}
@@ -1093,7 +1096,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
               aria-hidden="true"
             />
           ))}
-          {movementDragVisible && legalMoves.filter((move) => move.movement_kind === 'teleport').map((move) => (
+          {movementSelectionActive && legalMoves.filter((move) => move.movement_kind === 'teleport').map((move) => (
             <circle key={`teleport:${move.x}:${move.y}`} cx={move.x} cy={move.y} r={0.32} className="tactical-teleport-node" pointerEvents="none" />
           ))}
           {ships.map((ship) => {

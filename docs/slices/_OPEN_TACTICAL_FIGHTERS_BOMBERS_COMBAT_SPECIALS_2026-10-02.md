@@ -162,10 +162,19 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Chrome before/after measurements and QA contract: `docs/research/SLICE_17_8_TACTICAL_CAMERA_OWNERSHIP_CHROME_QA_2026-10-08.md`.
 - Slice 17.8 remains open pending explicit manual approval; do not start 17.9.
 
-## User-review fix – no idle Tactical cell overlays (2026-10-09)
+## Superseded review experiment - drag-only Tactical overlays (2026-10-09)
 
 - Remove persistent red occupied-cell rectangles and blue selected-ship rectangle from the idle/aiming/animation battlefield. Keep ordinary ship sprites without an additional blue selected/active halo.
 - Red collision cells and green legal move guides are visible only during an active Human ship-drag gesture. Drop the active ship on an authoritative legal cell to move; the existing click-to-move workflow remains available.
 - End, cancel, hostile activation, or animation playback shows no movement overlays. Normal background pan and touch interactions stay available.
 - Real Chrome reproduction, before/after measurements, authorized move command and animation overlay QA: `docs/research/SLICE_17_8_TACTICAL_MOVEMENT_OVERLAY_CHROME_QA_2026-10-09.md`.
 - Keep Slice 17.8 OPEN for manual user approval. Do not open Slice 17.9.
+
+## User-review clarification - show movement grid while selected and able to move (2026-10-09)
+
+- Supersedes the drag-only overlay experiment above from commit a556207. The blue selected-ship field, red occupied fields and green authorized move grid remain visible while the selected active Human ship has movement points AND at least one server-authorized move destination.
+- All three overlays hide for an active animation/input lock, pending commands, non-Human activation, completed ship activation, zero movement points, or no legal destinations. They return after animation only if movement is still possible.
+- Click-to-move and drag-to-move both remain operational. A move consuming all movement points hides the grid immediately; selecting the next active ship after Finish restores it if that ship can move.
+- The normal ship sprite receives no extra selection glow. Only the blue selection cell is restored.
+- Isolated real Chrome QA and server-authoritative move verification: docs/research/SLICE_17_8_TACTICAL_SELECTION_MOVEMENT_GRID_CORRECTION_CHROME_QA_2026-10-09.md
+- Slice 17.8 remains OPEN, user acceptance pending. No Slice 17.9 and no unrequested push.

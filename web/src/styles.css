@@ -5027,6 +5027,13 @@ button.galaxy-node-marker-player-fleet.is-open {
   vector-effect: non-scaling-stroke;
 }
 
+.tactical-selected-cell {
+  fill: rgba(54, 142, 255, .44);
+  stroke: rgba(131, 200, 255, .98);
+  stroke-width: 1.2;
+  shape-rendering: crispEdges;
+  vector-effect: non-scaling-stroke;
+}
 .tactical-occupied-cell {
   fill: rgba(255, 80, 77, .28);
   stroke: rgba(255, 96, 92, .98);

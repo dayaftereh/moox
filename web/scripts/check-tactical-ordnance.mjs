@@ -82,19 +82,21 @@ if (battlefield.includes('if (ship && own) {') && battlefield.includes('cx: ship
   throw new Error('Tactical camera must not snap to the active human ship when combat cue playback ends')
 }
 requireFragment(battlefield, 'COMBAT_CAMERA_MAX_ZOOM = 2.8', 'restrained combat camera zoom')
-requireFragment(battlefield, 'const movementDragVisible = movementSelectionActive && shipDragActive', 'collision and move overlays only while active ship is being dragged')
-requireFragment(battlefield, 'const shipDragRef = useRef<TacticalShipDrag | null>(null)', 'ship-drag gesture state')
-requireFragment(battlefield, 'setShipDragActive(true)', 'show move guides after drag begins')
-requireFragment(battlefield, 'setShipDragActive(false)', 'hide move guides on release and cancellation')
-requireFragment(battlefield, 'shipDrop && movementSelectionActive && !controlsDisabled', 'release onto a server-authorized movement cell')
-requireFragment(battlefield, '{movementDragVisible && selectedShip && ships.filter(', 'red occupied cells only during active ship drag')
-requireFragment(battlefield, '{movementDragVisible && reachableGridD && (', 'reachable grid only during active ship drag')
-requireFragment(battlefield, '{movementDragVisible && legalMoves.map((move) => (', 'move pointer hit areas only during active ship drag')
-if (battlefield.includes('className="tactical-selected-cell"') || styles.includes('.tactical-selected-cell')) {
-  throw new Error('Never paint a blue ship selection square on the tactical battlefield')
-}
-if (styles.includes('.tactical-ship.selected .tactical-ship-vector') || styles.includes('.tactical-ship.active .tactical-ship-vector')) {
-  throw new Error('Do not tint or halo selected/active ship artwork with the old blue focus effect')
+requireFragment(battlefield, 'const movementSelectionActive = !presentationLocked && !commandsDisabled && !busy', 'only ready human activations may expose movement overlays')
+requireFragment(battlefield, "mode !== 'scan' && ownActivation && !!activeShip && !activeShip.activation_complete", 'movement overlays only for active human ship')
+requireFragment(battlefield, 'selectedShipID === activeShip.ship_id && activeShip.movement_current > 0', 'active focused ship must still have movement points')
+requireFragment(battlefield, 'legalMoves.length > 0', 'movement overlays require authoritative legal destinations')
+requireFragment(battlefield, 'const shipDragRef = useRef<TacticalShipDrag | null>(null)', 'drag-to-move remains available')
+requireFragment(battlefield, 'shipDrop && movementSelectionActive && !controlsDisabled', 'ship movement ends on a legal drop')
+requireFragment(battlefield, '{movementSelectionActive && selectedShip && (', 'blue selected-ship square only when movement is available')
+requireFragment(battlefield, 'className="tactical-selected-cell"', 'blue selection cell is rendered')
+requireFragment(styles, '.tactical-selected-cell {', 'blue selection outline style exists')
+requireFragment(battlefield, '{movementSelectionActive && selectedShip && ships.filter(', 'red occupied cells while selected ship can move')
+requireFragment(battlefield, '{movementSelectionActive && reachableGridD && (', 'green grid shown while selected ship can move')
+requireFragment(battlefield, '{movementSelectionActive && legalMoves.map((move) => (', 'legal movement hit areas shown for click-to-move')
+requireFragment(battlefield, "{movementSelectionActive && legalMoves.filter((move) => move.movement_kind === 'teleport').map((move) => (", 'legal teleport indicators follow movement availability')
+if (battlefield.includes('movementDragVisible') || battlefield.includes('shipDragActive')) {
+  throw new Error('Movement guides must not wait for dragging: they are shown when the active selected ship can move')
 }
 requireFragment(battlefield, 'COMBAT_CUE_BEAM_MS = 1320', '20-percent slower combat camera beam hold')
 requireFragment(battlefield, 'COMBAT_CUE_FIGHTER_ATTACK_MS = 1500', '20-percent slower Fighter attack hold')
