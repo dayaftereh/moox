@@ -82,6 +82,20 @@ if (battlefield.includes('if (ship && own) {') && battlefield.includes('cx: ship
   throw new Error('Tactical camera must not snap to the active human ship when combat cue playback ends')
 }
 requireFragment(battlefield, 'COMBAT_CAMERA_MAX_ZOOM = 2.8', 'restrained combat camera zoom')
+requireFragment(battlefield, 'const movementDragVisible = movementSelectionActive && shipDragActive', 'collision and move overlays only while active ship is being dragged')
+requireFragment(battlefield, 'const shipDragRef = useRef<TacticalShipDrag | null>(null)', 'ship-drag gesture state')
+requireFragment(battlefield, 'setShipDragActive(true)', 'show move guides after drag begins')
+requireFragment(battlefield, 'setShipDragActive(false)', 'hide move guides on release and cancellation')
+requireFragment(battlefield, 'shipDrop && movementSelectionActive && !controlsDisabled', 'release onto a server-authorized movement cell')
+requireFragment(battlefield, '{movementDragVisible && selectedShip && ships.filter(', 'red occupied cells only during active ship drag')
+requireFragment(battlefield, '{movementDragVisible && reachableGridD && (', 'reachable grid only during active ship drag')
+requireFragment(battlefield, '{movementDragVisible && legalMoves.map((move) => (', 'move pointer hit areas only during active ship drag')
+if (battlefield.includes('className="tactical-selected-cell"') || styles.includes('.tactical-selected-cell')) {
+  throw new Error('Never paint a blue ship selection square on the tactical battlefield')
+}
+if (styles.includes('.tactical-ship.selected .tactical-ship-vector') || styles.includes('.tactical-ship.active .tactical-ship-vector')) {
+  throw new Error('Do not tint or halo selected/active ship artwork with the old blue focus effect')
+}
 requireFragment(battlefield, 'COMBAT_CUE_BEAM_MS = 1320', '20-percent slower combat camera beam hold')
 requireFragment(battlefield, 'COMBAT_CUE_FIGHTER_ATTACK_MS = 1500', '20-percent slower Fighter attack hold')
 requireFragment(battlefield, 'COMBAT_CUE_REACTIVE_PD_MS = 624', '20-percent slower reactive PD hold')

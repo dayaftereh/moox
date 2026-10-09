@@ -161,3 +161,11 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Animation input locking and the combat event sequencing remain unchanged.
 - Chrome before/after measurements and QA contract: `docs/research/SLICE_17_8_TACTICAL_CAMERA_OWNERSHIP_CHROME_QA_2026-10-08.md`.
 - Slice 17.8 remains open pending explicit manual approval; do not start 17.9.
+
+## User-review fix – no idle Tactical cell overlays (2026-10-09)
+
+- Remove persistent red occupied-cell rectangles and blue selected-ship rectangle from the idle/aiming/animation battlefield. Keep ordinary ship sprites without an additional blue selected/active halo.
+- Red collision cells and green legal move guides are visible only during an active Human ship-drag gesture. Drop the active ship on an authoritative legal cell to move; the existing click-to-move workflow remains available.
+- End, cancel, hostile activation, or animation playback shows no movement overlays. Normal background pan and touch interactions stay available.
+- Real Chrome reproduction, before/after measurements, authorized move command and animation overlay QA: `docs/research/SLICE_17_8_TACTICAL_MOVEMENT_OVERLAY_CHROME_QA_2026-10-09.md`.
+- Keep Slice 17.8 OPEN for manual user approval. Do not open Slice 17.9.
