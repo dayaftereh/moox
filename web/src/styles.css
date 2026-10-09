@@ -5110,6 +5110,45 @@ button.galaxy-node-marker-player-fleet.is-open {
 .tactical-damage-number.is-shield { fill: #68d8ff; }
 .tactical-damage-number.is-armor { fill: #ffc45e; }
 .tactical-damage-number.is-structure { fill: #ff5a57; }
+/* The shield ring is a combat-state indicator, independent of the blue
+   movement-selection square. It stays visible during presentation playback
+   while any of the four authoritative shield arcs still has charge. */
+.tactical-shield-field {
+  fill: none;
+  stroke: rgba(104, 214, 255, .96);
+  stroke-width: 1.8px;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 3px rgba(63, 189, 255, .7));
+  pointer-events: none;
+}
+.tactical-shield-hit-flash {
+  fill: rgba(69, 207, 255, .09);
+  stroke: #81e3ff;
+  stroke-width: 2.2px;
+  vector-effect: non-scaling-stroke;
+  transform-box: fill-box;
+  transform-origin: center;
+  pointer-events: none;
+  animation: tactical-shield-impact 1.42s ease-out both;
+}
+.tactical-shield-hit-flash.is-shield-break {
+  fill: rgba(147, 239, 255, .24);
+  stroke: #d5f9ff;
+  stroke-width: 3px;
+  stroke-dasharray: 5 4;
+  animation: tactical-shield-break 1.68s ease-out both;
+}
+@keyframes tactical-shield-impact {
+  0% { opacity: 0; transform: scale(.8); }
+  20% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.26); }
+}
+@keyframes tactical-shield-break {
+  0% { opacity: 0; transform: scale(.92); }
+  20% { opacity: 1; transform: scale(1.02); }
+  60% { opacity: .86; transform: scale(1.18) rotate(8deg); }
+  100% { opacity: 0; transform: scale(1.56) rotate(18deg); }
+}
 .tactical-beam-animation.is-miss .tactical-beam-core,
 .tactical-beam-shot.is-miss .tactical-beam-core {
   stroke: rgba(255, 182, 126, .9);

@@ -43,10 +43,11 @@ type TacticalShipDrag = { pointerID: number; startX: number; startY: number; dra
 type GestureSnapshot = { x: number; y: number; distance: number }
 type TacticalDamageLayerKind = 'shield' | 'armor' | 'structure' | 'projectile'
 type TacticalDamageLayer = { kind: TacticalDamageLayerKind; amount: number }
-type TacticalBeamAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number; shotCount: number; shotHits: boolean[]; weaponID: string; physicalWeaponCount: number; burstShotCount: number; layers: TacticalDamageLayer[] }
+type TacticalBeamAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number; shotCount: number; shotHits: boolean[]; weaponID: string; physicalWeaponCount: number; burstShotCount: number; layers: TacticalDamageLayer[]; shieldBroken: boolean }
 type TacticalMoveAnimation = { sequence: number; fromX: number; fromY: number; toX: number; toY: number; movementKind: string }
 type TacticalProjectileAnimation = { sequence: number; projectileID: number; kind: string; fromX?: number; fromY?: number; toX: number; toY: number; multiplicity: number }
-type TacticalFighterAttackAnimation = { sequence: number; groupID: number; payloadKind: string; weaponID: string; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number }
+type TacticalFighterAttackAnimation = { sequence: number; groupID: number; payloadKind: string; weaponID: string; fromX: number; fromY: number; toX: number; toY: number; hit: boolean; damage: number; layers: TacticalDamageLayer[]; shieldBroken: boolean }
+type TacticalImpactAnimation = { sequence: number; projectileID: number; targetShipID: number; x: number; y: number; layers: TacticalDamageLayer[]; shieldBroken: boolean }
 type TacticalShipExplosionAnimation = { sequence: number; shipID: number; x: number; y: number; quantum: boolean; power: number; radiusFields: number }
 type TacticalPresentationCue = {
   sequence: number
@@ -60,6 +61,7 @@ type TacticalPresentationCue = {
   move?: TacticalMoveAnimation
   projectile?: TacticalProjectileAnimation
   fighterAttack?: TacticalFighterAttackAnimation
+  impact?: TacticalImpactAnimation
   shipExplosion?: TacticalShipExplosionAnimation
 }
 
@@ -157,6 +159,60 @@ function eventString(data: Record<string, unknown> | undefined, key: string): st
   const value = data?.[key]
   return typeof value === 'string' ? value : undefined
 }
+function damageLayersFromApplications(damageEvents: TacticalEvent[]): TacticalDamageLayer[] {
+  // The server reports actual shield charge, armor and structure before/after
+  // values. Never infer a red hull number from raw incoming weapon damage.
+  const amounts = new Map<TacticalDamageLayerKind, number>()
+  for (const damageEvent of damageEvents) {
+    const shieldBefore = eventNumber(damageEvent.data, 'shield_before')
+    const shieldAfter = eventNumber(damageEvent.data, 'shield_after')
+    if (shieldBefore != null && shieldAfter != null && shieldBefore > shieldAfter) amounts.set('shield', (amounts.get('shield') ?? 0) + shieldBefore - shieldAfter)
+    const armorBefore = eventNumber(damageEvent.data, 'armor_before')
+    const armorAfter = eventNumber(damageEvent.data, 'armor_after')
+    if (armorBefore != null && armorAfter != null && armorBefore > armorAfter) amounts.set('armor', (amounts.get('armor') ?? 0) + armorBefore - armorAfter)
+    const structureBefore = eventNumber(damageEvent.data, 'structure_damage_before')
+    const structureAfter = eventNumber(damageEvent.data, 'structure_damage_after')
+    if (structureBefore != null && structureAfter != null && structureAfter > structureBefore) amounts.set('structure', (amounts.get('structure') ?? 0) + structureAfter - structureBefore)
+  }
+  return (['shield', 'armor', 'structure'] as TacticalDamageLayerKind[])
+    .map((kind) => ({ kind, amount: amounts.get(kind) ?? 0 }))
+    .filter((layer) => layer.amount > 0)
+}
+
+function damageLayersForFighterAttack(events: TacticalEvent[], attack: TacticalEvent): TacticalDamageLayer[] {
+  const groupID = eventNumber(attack.data, 'group_id')
+  if (groupID == null) return []
+  const previousAttack = events
+    .filter((event) => event.kind === 'fighter_attack_resolved' && event.command_sequence === attack.command_sequence
+      && eventNumber(event.data, 'group_id') === groupID && event.sequence < attack.sequence)
+    .reduce((latest, event) => Math.max(latest, event.sequence), 0)
+  const targetShipID = eventNumber(attack.data, 'target_ship_id')
+  return damageLayersFromApplications(events.filter((event) => event.kind === 'battle_damage_applied'
+    && event.command_sequence === attack.command_sequence
+    && event.sequence < attack.sequence && event.sequence > previousAttack
+    && eventNumber(event.data, 'fighter_group_id') === groupID
+    && (targetShipID == null || eventNumber(event.data, 'target_ship_id') === targetShipID)))
+}
+
+function damageLayersForProjectileImpact(events: TacticalEvent[], impact: TacticalEvent): TacticalDamageLayer[] {
+  const projectileID = eventNumber(impact.data, 'projectile_id')
+  const impactIndex = eventNumber(impact.data, 'impact_index')
+  if (projectileID == null || impactIndex == null) return []
+  return damageLayersFromApplications(events.filter((event) => event.kind === 'battle_damage_applied'
+    && event.command_sequence === impact.command_sequence
+    && event.sequence > impact.sequence
+    && eventNumber(event.data, 'projectile_id') === projectileID
+    && eventNumber(event.data, 'impact_index') === impactIndex
+    && eventNumber(event.data, 'target_ship_id') === eventNumber(impact.data, 'target_ship_id')))
+}
+
+function shieldBrokenAfterHit(target: TacticalShipView | undefined, layers: TacticalDamageLayer[]): boolean {
+  // Only announce a shield collapse for a real shield-charge decrease ending
+  // with all four authoritative arcs depleted.
+  return !!target && layers.some((layer) => layer.kind === 'shield')
+    && target.shield_arc_current.every((value) => value <= 0)
+}
+
 function damageLayersForBeam(events: TacticalEvent[], beam: TacticalEvent): TacticalDamageLayer[] {
   const isVolley = beam.kind === 'beam_volley_resolved'
   const hit = isVolley ? (eventNumber(beam.data, 'hit_count') ?? 0) > 0 : beam.data?.hit === true
@@ -174,21 +230,7 @@ function damageLayersForBeam(events: TacticalEvent[], beam: TacticalEvent): Tact
     && (targetShipID == null || eventNumber(event.data, 'target_ship_id') === targetShipID)
     && (weaponSlot == null || eventNumber(event.data, 'weapon_slot') === weaponSlot)
     && (shotIndex == null || eventNumber(event.data, 'shot_index') === shotIndex))
-  const amounts = new Map<TacticalDamageLayerKind, number>()
-  for (const damageEvent of damageEvents) {
-    const shieldBefore = eventNumber(damageEvent.data, 'shield_before')
-    const shieldAfter = eventNumber(damageEvent.data, 'shield_after')
-    if (shieldBefore != null && shieldAfter != null && shieldBefore > shieldAfter) amounts.set('shield', (amounts.get('shield') ?? 0) + shieldBefore - shieldAfter)
-    const armorBefore = eventNumber(damageEvent.data, 'armor_before')
-    const armorAfter = eventNumber(damageEvent.data, 'armor_after')
-    if (armorBefore != null && armorAfter != null && armorBefore > armorAfter) amounts.set('armor', (amounts.get('armor') ?? 0) + armorBefore - armorAfter)
-    const structureBefore = eventNumber(damageEvent.data, 'structure_damage_before')
-    const structureAfter = eventNumber(damageEvent.data, 'structure_damage_after')
-    if (structureBefore != null && structureAfter != null && structureAfter > structureBefore) amounts.set('structure', (amounts.get('structure') ?? 0) + structureAfter - structureBefore)
-  }
-  return (['shield', 'armor', 'structure'] as TacticalDamageLayerKind[])
-    .map((kind) => ({ kind, amount: amounts.get(kind) ?? 0 }))
-    .filter((layer) => layer.amount > 0)
+  return damageLayersFromApplications(damageEvents)
 }
 
 function projectileEventPosition(
@@ -315,6 +357,28 @@ function reachableGridPath(moves: Array<{ x: number; y: number }>): string {
   }).join(' ')
 }
 
+function TacticalDamageFeedback({ layers, x, y, shieldBroken }: {
+  layers: TacticalDamageLayer[]; x: number; y: number; shieldBroken: boolean
+}) {
+  if (layers.length === 0) return null
+  const shieldHit = layers.some((layer) => layer.kind === 'shield')
+  return (
+    <g className="tactical-layer-damage-feedback" pointerEvents="none" data-layers={layers.map((layer) => layer.kind).join(',')}>
+      {shieldHit && (
+        <circle cx={x} cy={y} r={0.73}
+          className={'tactical-shield-hit-flash' + (shieldBroken ? ' is-shield-break' : '')}
+          data-shield-break={shieldBroken ? 'true' : 'false'} />
+      )}
+      {layers.map((layer, index) => (
+        <text key={layer.kind} x={x} y={y - .18 - index * .28}
+          className={'tactical-damage-number is-' + layer.kind} data-layer={layer.kind}>
+          -{layer.amount}
+        </text>
+      ))}
+    </g>
+  )
+}
+
 export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, commandsDisabled, onCommand, t }: TacticalBattlefieldProps) {
   const tactical = battle.tactical
   if (!tactical) return <Notice title={t('battle.tacticalUnavailableTitle')} tone="warning">{t('battle.noTacticalSpec')}</Notice>
@@ -340,6 +404,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
   const [moveAnimation, setMoveAnimation] = useState<TacticalMoveAnimation | null>(null)
   const [projectileAnimation, setProjectileAnimation] = useState<TacticalProjectileAnimation | null>(null)
   const [fighterAttackAnimations, setFighterAttackAnimations] = useState<TacticalFighterAttackAnimation[]>([])
+  const [impactAnimation, setImpactAnimation] = useState<TacticalImpactAnimation | null>(null)
   const [shipExplosionAnimation, setShipExplosionAnimation] = useState<TacticalShipExplosionAnimation | null>(null)
   const [scannedShipID, setScannedShipID] = useState<number | null>(null)
   const [selectedShipID, setSelectedShipID] = useState<number | null>(() => ownActivation ? activeShip?.ship_id ?? null : null)
@@ -559,6 +624,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
     setMoveAnimation(cue.move ?? null)
     setProjectileAnimation(cue.projectile ?? null)
     setFighterAttackAnimations(cue.fighterAttack ? [cue.fighterAttack] : [])
+    setImpactAnimation(cue.impact ?? null)
     setShipExplosionAnimation(cue.shipExplosion ?? null)
     // Never re-enable commands before the principal effect for this cue finishes.
     // Floating damage labels may linger, but moving ships, shots and explosions must end.
@@ -566,8 +632,9 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
       : cue.projectile ? 1176
         : cue.move ? 864
           : cue.fighterAttack ? 1260
-            : cue.beam ? 1620
-              : 0
+            : cue.impact ? 1100
+              : cue.beam ? 1620
+                : 0
     presentationTimerRef.current = window.setTimeout(playNextPresentationCue, Math.max(cue.holdMs, visualMs))
   }
 
@@ -662,6 +729,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
           : [event]
         const shotHits = shotEvents.map((shot) => shot.data?.hit === true)
         if (source && targetX != null && targetY != null) {
+          const layers = damageLayersForBeam(events, event)
           const beam: TacticalBeamAnimation = {
             sequence: event.sequence, fromX: source.x, fromY: source.y, toX: targetX, toY: targetY,
             hit: shotHits.some(Boolean),
@@ -671,7 +739,8 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             weaponID: typeof event.data?.weapon_id === 'string' ? event.data.weapon_id : '',
             physicalWeaponCount: eventNumber(event.data, 'physical_weapon_count') ?? 1,
             burstShotCount: eventNumber(event.data, 'burst_shot_count') ?? 1,
-            layers: damageLayersForBeam(events, event),
+            layers,
+            shieldBroken: shieldBrokenAfterHit(target, layers),
           }
           enqueueEventCue({
             sequence: event.sequence,
@@ -687,6 +756,7 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
         const target = fighterAttackTargetPosition(events, event, fighterGroups, projectiles, ships)
         if (groupID != null && source && target) {
           const outcome = fighterAttackOutcome(event.data)
+          const layers = damageLayersForFighterAttack(events, event)
           const fighterAttack: TacticalFighterAttackAnimation = {
             sequence: event.sequence,
             groupID,
@@ -698,6 +768,8 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             toY: target.y,
             hit: outcome.hit,
             damage: outcome.damage,
+            layers,
+            shieldBroken: shieldBrokenAfterHit(ships.find((ship) => ship.ship_id === eventNumber(event.data, 'target_ship_id')), layers),
           }
           enqueueEventCue({
             sequence: event.sequence,
@@ -705,6 +777,25 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
             holdMs: COMBAT_CUE_FIGHTER_ATTACK_MS,
             fighterAttack,
           })
+        }
+      } else if (event.kind === 'projectile_impact_resolved') {
+        const projectileID = eventNumber(event.data, 'projectile_id')
+        const targetShipID = eventNumber(event.data, 'target_ship_id')
+        const target = ships.find((ship) => ship.ship_id === targetShipID)
+        if (projectileID != null && targetShipID != null && target) {
+          const layers = damageLayersForProjectileImpact(events, event)
+          if (layers.length > 0) {
+            const impact: TacticalImpactAnimation = {
+              sequence: event.sequence, projectileID, targetShipID,
+              x: target.x, y: target.y, layers,
+              shieldBroken: shieldBrokenAfterHit(target, layers),
+            }
+            enqueueEventCue({
+              sequence: event.sequence,
+              fromX: target.x, fromY: target.y, toX: target.x, toY: target.y,
+              holdMs: 1100, impact,
+            })
+          }
         }
       } else if (event.kind === 'ship_destroyed') {
         const shipID = eventNumber(event.data, 'ship_id')
@@ -798,6 +889,13 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
       }
     }
   }, [tactical.events, ships, projectiles, fighterGroups, ownSeatID, ownActivation])
+
+  useEffect(() => {
+    if (!impactAnimation) return
+    const timer = window.setTimeout(() => setImpactAnimation((current) =>
+      current?.sequence === impactAnimation.sequence ? null : current), DAMAGE_FEEDBACK_MS)
+    return () => window.clearTimeout(timer)
+  }, [impactAnimation])
 
   useEffect(() => {
     if (!beamAnimation) return
@@ -1137,6 +1235,13 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                     tightViewBox
                   />
                 </g>
+                {!ship.destroyed && ship.shield_arc_current.some((value) => value > 0) && (
+                  <circle r={0.72} className="tactical-shield-field"
+                    pointerEvents="none" aria-hidden="true"
+                    data-shield-current={ship.shield_arc_current.reduce((sum, value) => sum + value, 0)}
+                    data-shield-max={ship.shield_arc_max * 4}
+                    opacity={Math.max(.44, Math.min(1, ship.shield_arc_current.reduce((sum, value) => sum + value, 0) / Math.max(1, ship.shield_arc_max * 4)))} />
+                )}
               </g>
             )
           })}
@@ -1245,8 +1350,21 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                   <circle cx={animation.toX} cy={animation.toY} r={0.24} className="tactical-fighter-beam-impact" />
                 </>
               )}
+              <TacticalDamageFeedback layers={animation.layers} x={animation.toX}
+                y={animation.toY} shieldBroken={animation.shieldBroken} />
             </g>
           ))}
+
+          {impactAnimation && (
+            <g className="tactical-projectile-impact-animation"
+              data-sequence={impactAnimation.sequence}
+              data-projectile-id={impactAnimation.projectileID}
+              data-target-ship-id={impactAnimation.targetShipID}
+              pointerEvents="none">
+              <TacticalDamageFeedback layers={impactAnimation.layers} x={impactAnimation.x}
+                y={impactAnimation.y} shieldBroken={impactAnimation.shieldBroken} />
+            </g>
+          )}
 
           {moveAnimation && (
             <g className={`tactical-move-animation is-${moveAnimation.movementKind}`} data-sequence={moveAnimation.sequence} data-movement-kind={moveAnimation.movementKind} pointerEvents="none">
@@ -1345,17 +1463,9 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
                   </g>
                 )
               })}
-              {(beamAnimation.layers.length > 0 ? beamAnimation.layers : (beamAnimation.hit && beamAnimation.damage > 0 ? [{ kind: 'structure' as const, amount: beamAnimation.damage }] : [])).map((layer, index) => (
-                <text
-                  key={`${beamAnimation.sequence}:${layer.kind}:${index}`}
-                  x={beamAnimation.toX}
-                  y={beamAnimation.toY - .18 - index * .28}
-                  className={`tactical-damage-number is-${layer.kind}`}
-                  data-layer={layer.kind}
-                >
-                  -{layer.amount}
-                </text>
-              ))}
+              <TacticalDamageFeedback layers={beamAnimation.layers} x={beamAnimation.toX}
+                y={beamAnimation.toY} shieldBroken={beamAnimation.shieldBroken} />
+
             </g>
           )}
         </svg>

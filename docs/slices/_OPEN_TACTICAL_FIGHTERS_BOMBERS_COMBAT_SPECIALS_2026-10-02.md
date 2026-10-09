@@ -178,3 +178,12 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - The normal ship sprite receives no extra selection glow. Only the blue selection cell is restored.
 - Isolated real Chrome QA and server-authoritative move verification: docs/research/SLICE_17_8_TACTICAL_SELECTION_MOVEMENT_GRID_CORRECTION_CHROME_QA_2026-10-09.md
 - Slice 17.8 remains OPEN, user acceptance pending. No Slice 17.9 and no unrequested push.
+## User-review fix - Tactical shield rings and colored damage deltas (2026-10-09)
+
+- Display a subtle blue shield ring around each non-destroyed Tactical ship while any authoritative `shield_arc_current` sector has remaining charge. Ring opacity indicates total shield fraction; it vanishes when all charge is gone.
+- Render real negative damage deltas by layer: blue shield charge, yellow armor/panzerung, red structure. Shared `battle_damage_applied` before/after events drive the labels; never color raw incoming Beam damage as fictitious structure loss.
+- Show Shield-hit pulses and shield-break pulses as appropriate, anchored locally to the struck ship. Added event-joined damage feedback for Beam, Fighter/Bomber and rocket impacts.
+- Preserve Slice 17.8 manual camera ownership and move-grid presentation gates. Combat and animation timing is unaffected outside short missile impact cues.
+- Isolated Chrome verified the actual 3-vs-3 encounter with 6 initial shield circles, blue -25 shield, yellow -52 armor and red -50 structure numbers, including combined Bomber impacts.
+- Research and QA record: `docs/research/SLICE_17_8_TACTICAL_SHIELDS_DAMAGE_FEEDBACK_CHROME_QA_2026-10-09.md`.
+- Manual User Review remains pending; do not close 17.8 or open 17.9 until explicitly approved.
