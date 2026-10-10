@@ -97,11 +97,18 @@ requireFragment(battlefield, "kind: 'structure', radius: STRUCTURE_SECTOR_RADIUS
 requireFragment(battlefield, 'meterPercent(ship.armor_current, ship.armor_max) / 100', 'armor ring driven by authoritative global armor charge')
 requireFragment(battlefield, 'meterPercent(ship.structure_current, ship.structure_max) / 100', 'structure ring driven by authoritative global structure charge')
 requireFragment(battlefield, 'data-directional={layer.directional', 'only the blue shield ring is directional')
-requireFragment(battlefield, "data-global-pool={layer.directional ? undefined : 'true'}", 'armor/structure quarters explicitly mark global pool')
-requireFragment(battlefield, 'const fraction = layer.directional ? meterPercent(current, max) / 100 : layer.fraction', 'four real shield sectors, repeated global armor/structure ratios')
+requireFragment(battlefield, 'className="tactical-condition-track" data-global-pool="true"', 'armor and structure share one global four-quarter track')
+requireFragment(battlefield, 'const fraction = meterPercent(current, ship.shield_arc_max) / 100', 'four independent authoritative directional shield fractions')
 requireFragment(battlefield, 'data-arc-index={sector.index}', 'shield sector indices stay canonical')
-requireFragment(battlefield, 'data-fraction={fraction.toFixed(2)}', 'each ring sector exposes visible fraction')
+requireFragment(battlefield, 'data-fraction={fraction.toFixed(2)}', 'shield sectors expose visible fraction')
 requireFragment(battlefield, 'tacticalShieldSectorPath(sector.centerDegrees, fraction, layer.radius)', 'three concentric radii use shared quarter geometry')
+requireFragment(battlefield, 'layer.directional ? TACTICAL_SHIELD_SECTORS.map', 'real shield quadrants still rendered independently')
+requireFragment(battlefield, 'className="tactical-condition-charge" data-global-pool="true"', 'armor and structure paint one compound four-quarter charge path')
+requireFragment(battlefield, 'tacticalShieldSectorPath(sector.centerDegrees, layer.fraction, layer.radius)', 'compound global layer retains the same four-quarter geometry')
+if (battlefield.includes('tactical-move-cursor-cell') || styles.includes('.tactical-move-cursor-cell')) {
+  throw new Error('Authoritative move-cell hit testing must not allocate hundreds of invisible per-cell SVG rectangles')
+}
+requireFragment(battlefield, 'const move = legalMoveByCell.get(cell.x +', 'movement click still uses authoritative lookup with live camera')
 requireFragment(battlefield, "transform={'rotate(' + angle + ')'}", 'rings rotate with ship facing')
 requireFragment(battlefield, 'pointerEvents="none" aria-hidden="true"', 'ring overlays cannot intercept ship selection and movement')
 requireFragment(styles, '.tactical-condition-ring.is-shield .tactical-condition-charge {', 'outer cyan shield ring')
@@ -216,7 +223,7 @@ if (!/\.tactical-occupied-cell\s*\{[^}]*fill:\s*rgba\(255,\s*87,\s*85,\s*\.14\)/
 }
 requireFragment(battlefield, '{movementSelectionActive && selectedShip && ships.filter(', 'red occupied cells while selected ship can move')
 requireFragment(battlefield, '{movementSelectionActive && reachableGridD && (', 'green grid shown while selected ship can move')
-requireFragment(battlefield, '{movementSelectionActive && legalMoves.map((move) => (', 'legal movement hit areas shown for click-to-move')
+requireFragment(battlefield, 'tacticalViewportCell(event.currentTarget, event.clientX, event.clientY)', 'legal moves use one authoritative SVG hit-test, not hundreds of invisible SVG cells')
 requireFragment(battlefield, "{movementSelectionActive && legalMoves.filter((move) => move.movement_kind === 'teleport').map((move) => (", 'legal teleport indicators follow movement availability')
 if (battlefield.includes('movementDragVisible') || battlefield.includes('shipDragActive')) {
   throw new Error('Movement guides must not wait for dragging: they are shown when the active selected ship can move')

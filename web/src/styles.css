@@ -3732,7 +3732,6 @@ tbody .colony-sticky-column { background: #0c1b2d !important; }
 .tactical-space { fill: rgba(2, 9, 16, .94); }
 .tactical-grid-line { fill: none; stroke: rgba(99, 145, 173, .16); stroke-width: .045; vector-effect: non-scaling-stroke; }
 .tactical-move-node { cursor: move; outline: none; }
-.tactical-move-cursor-cell { fill: transparent; stroke: none; pointer-events: all; cursor: move; }
 .tactical-move-node > circle:first-child { fill: rgba(85, 211, 227, .8); stroke: rgba(184, 247, 255, .9); stroke-width: .075; vector-effect: non-scaling-stroke; }
 .tactical-move-node:hover > circle:first-child, .tactical-move-node:focus > circle:first-child { fill: #d2fbff; stroke: #fff; }
 .tactical-move-hit { fill: transparent; stroke: none; pointer-events: all; }

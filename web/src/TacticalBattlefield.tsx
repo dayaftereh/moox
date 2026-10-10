@@ -470,29 +470,36 @@ const TacticalShipConditionRings = memo(function TacticalShipConditionRings({ sh
           data-current={layer.current} data-max={layer.max}
           data-fraction={layer.fraction.toFixed(3)}
           data-directional={layer.directional ? 'true' : 'false'}>
-          {TACTICAL_SHIELD_SECTORS.map((sector) => {
-            // A shield arc is its real facing sector. Armor and structure are
-            // global hitpoint pools: all four quarters repeat the SAME ratio.
-            const current = layer.directional ? Math.max(0, ship.shield_arc_current[sector.index] ?? 0) : layer.current
-            const max = layer.directional ? ship.shield_arc_max : layer.max
-            const fraction = layer.directional ? meterPercent(current, max) / 100 : layer.fraction
+          {layer.directional ? TACTICAL_SHIELD_SECTORS.map((sector) => {
+            const current = Math.max(0, ship.shield_arc_current[sector.index] ?? 0)
+            const fraction = meterPercent(current, ship.shield_arc_max) / 100
             return (
-              <g key={sector.index}
-                className={layer.kind === 'shield' ? 'tactical-shield-sector tactical-condition-sector' : 'tactical-condition-sector'}
-                data-arc-index={sector.index}
-                data-sector={layer.directional ? sector.key : undefined}
-                data-global-pool={layer.directional ? undefined : 'true'}
-                data-current={current} data-max={max}
+              <g key={sector.index} className="tactical-shield-sector tactical-condition-sector"
+                data-arc-index={sector.index} data-sector={sector.key}
+                data-current={current} data-max={ship.shield_arc_max}
                 data-fraction={fraction.toFixed(2)}>
                 <path d={tacticalShieldSectorPath(sector.centerDegrees, 1, layer.radius)}
-                  className={layer.kind === 'shield' ? 'tactical-shield-sector-track tactical-condition-track' : 'tactical-condition-track'} />
+                  className="tactical-shield-sector-track tactical-condition-track" />
                 {fraction > 0 && (
                   <path d={tacticalShieldSectorPath(sector.centerDegrees, fraction, layer.radius)}
-                    className={layer.kind === 'shield' ? 'tactical-shield-sector-charge tactical-condition-charge' : 'tactical-condition-charge'} />
+                    className="tactical-shield-sector-charge tactical-condition-charge" />
                 )}
               </g>
             )
-          })}
+          }) : (
+            <>
+              {/* Armor and structure are global pools. Combine the four visual
+                  quarters into ONE compound path instead of 4x2 path nodes. */}
+              <path className="tactical-condition-track" data-global-pool="true"
+                d={TACTICAL_SHIELD_SECTORS.map((sector) =>
+                  tacticalShieldSectorPath(sector.centerDegrees, 1, layer.radius)).join(' ')} />
+              {layer.fraction > 0 && (
+                <path className="tactical-condition-charge" data-global-pool="true"
+                  d={TACTICAL_SHIELD_SECTORS.map((sector) =>
+                    tacticalShieldSectorPath(sector.centerDegrees, layer.fraction, layer.radius)).join(' ')} />
+              )}
+            </>
+          )}
         </g>
       ))}
     </g>
@@ -1390,17 +1397,6 @@ export function TacticalBattlefield({ battle, ownSeatID, shipName, empireName, c
           {movementSelectionActive && reachableGridD && (
             <path d={reachableGridD} className="tactical-reachable-grid" pointerEvents="none" />
           )}
-          {movementSelectionActive && legalMoves.map((move) => (
-            <rect
-              key={`move-cursor:${move.movement_kind}:${move.x}:${move.y}`}
-              x={move.x - .5}
-              y={move.y - .5}
-              width={1}
-              height={1}
-              className="tactical-move-cursor-cell"
-              aria-hidden="true"
-            />
-          ))}
           {movementSelectionActive && legalMoves.filter((move) => move.movement_kind === 'teleport').map((move) => (
             <circle key={`teleport:${move.x}:${move.y}`} cx={move.x} cy={move.y} r={0.32} className="tactical-teleport-node" pointerEvents="none" />
           ))}
