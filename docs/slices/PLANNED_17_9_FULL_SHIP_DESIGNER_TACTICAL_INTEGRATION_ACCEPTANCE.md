@@ -95,3 +95,11 @@ The final integrated product must preserve:
 Slice 17 closes only when a player can design a broad legal military ship, build that exact immutable revision, deploy it in a normal Combat Fleet, enter Tactical without fixture-only restrictions, use every weapon/fighter/special mechanic accepted by the 17.6-17.8 contracts, see authoritative outcomes presented correctly, finish the battle, and continue the strategic game with exact reconciliation and stable persistence.
 
 Any intentionally unsupported mechanic must remain explicit and owned; no legal design is advertised as tactically complete merely because its metadata can be persisted.
+
+## Conditional Tactical camera-performance follow-up (prepared 2026-10-11)
+
+- User-reported Android Tactical 2D pan/pinch responsiveness remains a known **mobile acceptance risk**, despite SVG nodes falling from 904 to 524 in commit `5819db1`.
+- `PLANNED_17_8A_TACTICAL_GPU_COMPOSITED_CAMERA.md` is a **conditional, not-open** performance follow-up. It is not automatically required for 17.9 and must not add a second `_OPEN_` marker while 17.8 is in User Review.
+- At 17.9 Gate 1, explicitly check the real Android review evidence and decide: (a) performance accepted -> keep compositor work parked; (b) measurable mobile interaction blocker -> agree sequencing/ownership for a separate focused performance task before final browser/mobile acceptance.
+- Gate 4 may not claim a smooth Android Tactical experience solely from desktop Chrome or SVG DOM counts; require the user's real-device acceptance or document the remaining performance limitation transparently.
+- A full Canvas/WebGL renderer is **out of scope** unless a separate architecture decision and evidence justify it.

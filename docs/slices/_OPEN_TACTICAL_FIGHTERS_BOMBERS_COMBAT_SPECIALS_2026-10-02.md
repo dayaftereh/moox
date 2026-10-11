@@ -269,3 +269,11 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - In isolated QA, an actual Heavy Particle Beam hit target #45 and reduced armor 500→401; its combined yellow progress path became exactly 80.2% of the full track. Real click-to-move 25,9→27,9, then after pinch/one-finger pan 27,9→29,9, followed by pointer drag 29,9→30,9 all succeeded without per-cell hitboxes.
 - Retained original FPS caveat: managed desktop Chrome 7174 tests are not an Android hardware FPS measurement. Further device visual/interaction acceptance needed. Research report: `docs/research/SLICE_17_8_TACTICAL_SVG_DOM_REDUCTION_2026-10-10.md`.
 - Preserve canonical 7171 game and servers 7172/7173; no push, keep one OPEN Slice17.8 marker until explicit User Review approval.
+
+## GPU composited camera - conditional planning decision (2026-10-11)
+
+- The user asked whether to plan hardware-assisted/compositor-friendly pan/pinch now. **Yes: specification prepared, not implemented and NOT opened as a new slice.**
+- Planned follow-up: `docs/slices/PLANNED_17_8A_TACTICAL_GPU_COMPOSITED_CAMERA.md`. Gate 1 first profiles the actual Android browser after the `5819db1` SVG node reduction (904 -> 524 nodes, -42%). There is no verified Android FPS result yet.
+- Decision: keep 17.8 as the sole `_OPEN_` slice for current personal User Review. If navigation performance is acceptable, retain 17.8A as backlog and continue to 17.9 only after explicit 17.8 approval. If it is a blocker, first decide a bounded fix vs. explicitly sequenced 17.8A; never open two active slices in parallel or silently expand the 17.9 acceptance scope.
+- Preferred experiment: CSS compositor-friendly temporary `transform` of one world layer only while moving/zooming, with accurate current-view hit testing and a single state/viewBox commit on release. Fallback to current SVG viewBox camera; Canvas/WebGL only if profiling shows the simpler experiment is insufficient.
+- No production files, canonical 7171 reference game, or slice state changed by this **planning-only** decision.
