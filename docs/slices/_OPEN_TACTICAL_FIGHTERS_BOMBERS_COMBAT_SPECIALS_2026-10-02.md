@@ -277,3 +277,11 @@ User decision on 2026-10-07: `game-triangle-combat-review` is a permanent member
 - Decision: keep 17.8 as the sole `_OPEN_` slice for current personal User Review. If navigation performance is acceptable, retain 17.8A as backlog and continue to 17.9 only after explicit 17.8 approval. If it is a blocker, first decide a bounded fix vs. explicitly sequenced 17.8A; never open two active slices in parallel or silently expand the 17.9 acceptance scope.
 - Preferred experiment: CSS compositor-friendly temporary `transform` of one world layer only while moving/zooming, with accurate current-view hit testing and a single state/viewBox commit on release. Fallback to current SVG viewBox camera; Canvas/WebGL only if profiling shows the simpler experiment is insufficient.
 - No production files, canonical 7171 reference game, or slice state changed by this **planning-only** decision.
+
+## User-Review correction - Remove persistent ship-number badges (2026-10-12)
+
+- Removed the selected-ship badge displaying 'Schiff 1/2/3' / 'Ship 1/2/3' beneath the Tactical combat ships. It no longer renders any marker plate or number text.
+- Removed unused own-ship numbering calculation, EN/DE label keys, badge-only CSS and obsolete UI hints. Tactical contract now rejects reintroduction of the numbered badge.
+- Kept the subtle blue/red/neutral selected-cell underlay, authoritative green movement grid, ship click/drag actions, scanning, weapons and all three concentric health rings.
+- `npm.cmd run build` passed including Tactical contract, TypeScript, Vite and encoding checks. Real managed Chrome on canonical 7171 confirmed six ships with 18 health rings, one selected-cell underlay with no stroke and zero focus badges; navigation only, no game command submitted.
+- Slice 17.8 remains the sole OPEN marker until explicit personal User Review approval. No changes to conditional PLANNED 17.8A GPU camera, no push and no server/game reset.

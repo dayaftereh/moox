@@ -167,18 +167,8 @@ if (battlefield.includes('TacticalSelectedShipVitals') || battlefield.includes('
 requireFragment(battlefield, "const selectionFocusActive = !presentationLocked && !commandsDisabled && !busy", 'ship focus still independent of moving')
 requireFragment(battlefield, '{selectionFocusActive && selectedShip && (', 'active ship focus and status underlays remain')
 requireFragment(styles, '.tactical-selected-cell {', 'selection tile underlay style exists')
-requireFragment(battlefield, 'const selectedOwnShipNumber = selectedShip', 'stable own-ship number is derived from battle ships')
-requireFragment(battlefield, '.sort((a, b) => a.ship_id - b.ship_id)', 'own ship numbers stable regardless of render iteration order')
-requireFragment(battlefield, '{selectionFocusActive && selectedShip && selectedOwnShipNumber > 0 && (', 'one pointer on the active own selected ship')
-requireFragment(battlefield, "className={'tactical-ship-focus-marker is-' + selectionFocusKind}", 'pointer communicates movement/attack/idle state')
-requireFragment(battlefield, 'data-ship-number={selectedOwnShipNumber}', 'numeric focus index remains externally verifiable')
-requireFragment(battlefield, 'className="tactical-ship-focus-number-plate"', 'selected ship has a labeled badge with no direction arrow')
-requireFragment(battlefield, 'className="tactical-ship-focus-number"', 'ship ID number is in a clear non-directional label')
-requireFragment(battlefield, "t('battlefield.focusShipBadge', { number: selectedOwnShipNumber })", 'focus chip says Ship/Schiff rather than suggesting flight direction')
-requireFragment(i18n, "'battlefield.focusShipBadge': 'Ship {number}'", 'localized English ship focus badge')
-requireFragment(i18n, "'battlefield.focusShipBadge': 'Schiff {number}'", 'localized German ship focus badge')
-if (battlefield.includes('tactical-ship-focus-pointer') || styles.includes('.tactical-ship-focus-pointer')) {
-  throw new Error('Focus marker must be a label, not an ambiguous directional triangle')
+if (/selectedOwnShipNumber|tactical-ship-focus-(marker|pointer|number)|battlefield\.focusShipBadge/.test(battlefield + styles + i18n)) {
+  throw new Error('Tactical battlefield must not display persistent Ship/Schiff number labels')
 }
 requireFragment(battlefield, 'const viewportFrameRef = useRef<number | null>(null)', 'camera frame updates are RAF-batched')
 requireFragment(battlefield, 'const wheelCommitTimerRef = useRef<number | null>(null)', 'rapid wheel updates have a single idle-time camera commit')
@@ -211,9 +201,6 @@ const pointerMoveSource = battlefield.slice(battlefield.indexOf('const pointerMo
 if (pointerMoveSource.includes('setCamera(')) {
   throw new Error('Pan/pinch must not rerender the entire React battle scene per pointermove')
 }
-requireFragment(styles, '.tactical-ship-focus-marker.is-attack {', 'attack-only selected ship uses coral pointer')
-requireFragment(styles, '.tactical-ship-focus-marker.is-idle {', 'spent ship keeps muted pointer')
-requireFragment(styles, '.tactical-ship-focus-number {', 'focus label number legible on compact scale')
 if (!/\.tactical-selected-cell\s*\{[^}]*stroke:\s*none;/s.test(styles)
     || !/\.tactical-occupied-cell\s*\{[^}]*stroke:\s*none;/s.test(styles)) {
   throw new Error('Selected and occupied cells must have no bright outline intersecting health circles')

@@ -5043,35 +5043,6 @@ button.galaxy-node-marker-player-fleet.is-open {
   stroke: none;
 }
 
-/* One unambiguous labeled ship badge BELOW the rings: no triangle that could
-   be mistaken for a course/direction arrow. Move=cyan, fire-only=coral. */
-.tactical-ship-focus-marker {
-  --focus-color: #82e2ff;
-  pointer-events: none;
-}
-.tactical-ship-focus-marker.is-attack {
-  --focus-color: #ff8177;
-}
-.tactical-ship-focus-marker.is-idle {
-  --focus-color: #b1bfcb;
-}
-
-.tactical-ship-focus-number-plate {
-  fill: rgba(4, 16, 28, .9);
-  stroke: var(--focus-color);
-  stroke-width: .7px;
-  vector-effect: non-scaling-stroke;
-}
-.tactical-ship-focus-number {
-  fill: #f3fcff;
-  font-size: .35px;
-  font-weight: 850;
-  text-anchor: middle;
-  paint-order: stroke;
-  stroke: rgba(4, 16, 28, .9);
-  stroke-width: .065px;
-  stroke-linejoin: round;
-}
 .tactical-reachable-grid {
   fill: none;
   stroke: rgba(91, 247, 146, .96);
